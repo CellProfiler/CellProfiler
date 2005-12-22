@@ -4,7 +4,7 @@ function PlotMeasurement(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Allows plotting bar charts, line charts, or scatter plots.
+% Plots measured data in bar charts, line charts, or scatterplots.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %

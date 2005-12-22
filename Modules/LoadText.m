@@ -4,9 +4,9 @@ function handles = LoadText(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Loads text information corresponding to images. This data (e.g. Gene
-% Names) can be displayed on a grid or exported with the measurements to
-% help track samples.
+% Loads text information corresponding to images. This data (e.g. gene
+% names or sample numbers) can be displayed on a grid or exported with the
+% measurements to help track samples.
 % *************************************************************************
 %
 % Use this tool to load in text information. This is useful for certain

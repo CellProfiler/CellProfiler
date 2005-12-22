@@ -4,7 +4,8 @@ function ExportData(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Export measurements into excel file.
+% Exports measurements into a tab-delimited text file which can be opened
+% in Excel.
 % *************************************************************************
 %
 % Once image analysis is complete, use this tool to select the

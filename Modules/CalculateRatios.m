@@ -4,8 +4,8 @@ function handles = CalculateRatios(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the ratio between any measurements already measured
-% (e.g. Intensity of green staining in cytoplasm/Area of cells)
+% Calculates the ratio between any measurements already measured (e.g.
+% Intensity of green staining in cytoplasm/Area of cells)
 % *************************************************************************
 %
 % This module can take any measurements produced by previous modules and

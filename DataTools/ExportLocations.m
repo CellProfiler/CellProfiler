@@ -4,9 +4,10 @@ function ExportLocations(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Export center locations of objects. Good for creating locations list for
-% microscope.
+% Exports center locations of objects. Specialty function for creating a
+% locations list for microscopy image acquisition of gridded spots.
 % *************************************************************************
+% Useful for creating a locations list for microscope.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

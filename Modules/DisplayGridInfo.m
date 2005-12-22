@@ -4,7 +4,7 @@ function handles = DisplayGridInfo(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Displays text info on grid (i.e. gene names)
+% Displays text info on grid (i.e. gene names).
 % *************************************************************************
 %
 % This module will display text information in a grid pattern. It requires

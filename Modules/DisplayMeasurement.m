@@ -4,7 +4,7 @@ function handles = DisplayMeasurement(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Plot measured data in several formats.
+% Plots measured data in several formats.
 % *************************************************************************
 %
 % The resulting plots can be saved using the Save Images module.

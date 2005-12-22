@@ -6,7 +6,7 @@ function handles = CreateBatchScripts(handles)
 % SHORT DESCRIPTION:
 % Produces script files (these are files of plain text) which allow
 % individual batches of images to be processed separately on a cluster
-% computer.
+% of computers.
 % *************************************************************************
 % Note: this module is beta-version and has not been thoroughly checked.
 %

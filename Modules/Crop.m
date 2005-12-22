@@ -4,9 +4,9 @@ function handles = Crop(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Images can be cropped into a rectangle, ellipse, an arbitrary shape
-% provided by the user, a shape identified by an identify module, or a
-% shape used at a previous step in the pipeline on another image.
+% Crops images into a rectangle, ellipse, an arbitrary shape provided by
+% the user, a shape identified by an identify module, or a shape used at a
+% previous step in the pipeline on another image.
 % *************************************************************************
 %
 % Warnings about this module: The cropping module will remove rows and

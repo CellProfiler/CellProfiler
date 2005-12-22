@@ -6,9 +6,10 @@ function handles = ColorToGray(handles)
 % SHORT DESCRIPTION:
 % Converts RGB (Red, Green, Blue) color images to grayscale. All channels
 % can be merged into one grayscale image or each channel can extracted into
-% a separate grayscale image. All identify modules require grayscale
-% images.
+% a separate grayscale image.
 % *************************************************************************
+% Note: this module is especially helpful because all identify modules
+% require grayscale images.
 %
 % Settings:
 %

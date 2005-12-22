@@ -4,7 +4,7 @@ function handles = ShowDataOnImage(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Displays an image with corresponding measurements overlaid on top.
+% Produces an image with measured data on top of identified objects.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %

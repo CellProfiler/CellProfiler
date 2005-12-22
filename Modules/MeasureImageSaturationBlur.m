@@ -5,7 +5,7 @@ function handles = MeasureImageSaturationBlur(handles)
 %
 % SHORT DESCRIPTION:
 % Measures the percentage of pixels in the image that are saturated and
-% measures blur using a focus score.
+% measures blur (poor focus). 
 % *************************************************************************
 %
 % The percentage of pixels that are saturated is calculated and stored as a

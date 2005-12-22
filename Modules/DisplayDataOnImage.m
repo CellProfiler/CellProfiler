@@ -4,7 +4,7 @@ function handles = DisplayDataOnImage(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Produce image with measured data on top of measured objects.
+% Produces an image with measured data on top of identified objects.
 % *************************************************************************
 %
 % The resulting images with data on top can be saved using the Save Images

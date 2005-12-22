@@ -4,7 +4,7 @@ function handles = PlaceAdjacent(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Place up to six images next to each other, either horizontally or
+% Places up to six images next to each other, either horizontally or
 % vertically, to produce a single image.
 % *************************************************************************
 %

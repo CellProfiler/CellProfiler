@@ -4,7 +4,7 @@ function MeasurementCalculator(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Allows the user to multiply or divide measurements in output files.
+% Multiplies or divides measurements in output files.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 

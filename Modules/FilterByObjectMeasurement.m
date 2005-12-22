@@ -4,8 +4,8 @@ function handles = FilterByObjectMeasurement(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Eliminates objects based on their measurements (e.g. Area, Shape,
-% Texture, Intensity).
+% Eliminates objects based on their measurements (e.g. area, shape,
+% texture, intensity).
 % *************************************************************************
 %
 % This module removes objects based on their measurements produced by

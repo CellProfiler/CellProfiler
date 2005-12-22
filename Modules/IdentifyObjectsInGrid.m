@@ -4,8 +4,8 @@ function handles = IdentifyObjectsInGrid(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% After a grid has been established by the Define Grid module, this module
-% will identify objects within each section of the grid.
+% Identifies objects within each section of a grid that has been defined by
+% the Define Grid module. 
 % *************************************************************************
 %
 % This module identifies objects that are in a grid pattern which allows

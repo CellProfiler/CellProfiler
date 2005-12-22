@@ -1,5 +1,5 @@
 function ManualTableWizard
-
+%%% Must be run in the main CellProfiler directory.
 fid = fopen('ManualTableWizardText.xls','w');
 
 Modulefilelist = dir('Modules/*.m');
@@ -24,7 +24,7 @@ for i=1:length(Modulefilelist)
 end
 
 fprintf(fid,'MODULES\n');
-fprintf(fid,'File Processing Files\n');
+fprintf(fid,'File Processing Modules\n');
 for i=1:length(FileProcessingFiles)
     name = FileProcessingFiles{i};
     name = name(1:end-2);
@@ -46,7 +46,7 @@ for i=1:length(FileProcessingFiles)
     end
 end
 
-fprintf(fid,'\nImage Processing Files\n');
+fprintf(fid,'\nImage Processing Modules\n');
 for i=1:length(PreProcessingFiles)
     name = PreProcessingFiles{i};
     name = name(1:end-2);
@@ -68,7 +68,7 @@ for i=1:length(PreProcessingFiles)
     end
 end
 
-fprintf(fid,'\nObject Processing Files\n');
+fprintf(fid,'\nObject Processing Modules\n');
 for i=1:length(ObjectProcessingFiles)
     name = ObjectProcessingFiles{i};
     name = name(1:end-2);
@@ -90,7 +90,7 @@ for i=1:length(ObjectProcessingFiles)
     end
 end
 
-fprintf(fid,'\nMeasurement Files\n');
+fprintf(fid,'\nMeasurement Modules\n');
 for i=1:length(MeasurementFiles)
     name = MeasurementFiles{i};
     name = name(1:end-2);
@@ -112,7 +112,7 @@ for i=1:length(MeasurementFiles)
     end
 end
 
-fprintf(fid,'\nOther Files\n');
+fprintf(fid,'\nOther Modules\n');
 for i=1:length(OtherFiles)
     name = OtherFiles{i};
     name = name(1:end-2);

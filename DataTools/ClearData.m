@@ -4,7 +4,7 @@ function handles = ClearData(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Allows removing information/measurements from an output file.
+% Removes information/measurements from an output file.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %

@@ -75,7 +75,7 @@ MultiplyFactor2 = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 %textVAR06 = Do you want negative values in the image to be set to zero?
 %choiceVAR06 = Yes
 %choiceVAR06 = No
-Truncate = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+Truncate = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %%%VariableRevisionNumber = 3

@@ -2,13 +2,9 @@ Mike's TODO list
 
 - Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
 
-- Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
-
 - Anne 12/15 - Make sure the instructions for uploading the cp website to jura are up to date now.
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
-
-- For some reason the HelpProgrammingNotes do not scroll properly in the text display box - there is no way to scroll in small enough increments to see all the text. I think this is our longest text file so maybe that's why it behaves strangely.
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

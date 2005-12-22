@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/22) Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
+
 -(Mike 12/22) Anne 12/21 - answer the form factor question i emailed you.
 
 -(Mike 12/22) Anne 12/21 - need the list of modules w/short descriptions to be in their categories.

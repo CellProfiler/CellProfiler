@@ -1,5 +1,7 @@
 Mike's TODO list
 
+Note: sample 48 = String, sample 340 = CyclinA
+
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug?
 
 Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.

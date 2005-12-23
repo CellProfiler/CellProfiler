@@ -1,5 +1,25 @@
 Mike's TODO list
 
+****** Anne 12/23 - MANUSCRIPT PROJECTS ******
+Figure B-a: Dros cell count (or just do Human)
+Figure B-b: Human cell count (or just do Dros)
+Figure B-c: CPvalid1 cell area figure
+Figure B-d: CPvalid1 cell cycle figure
+Figure B-d HUMAN: Process images and prepare Jason’s human cell cycle vs flow cytometry figures (waiting for jason to give us a matched set of flow data + images).
+Figure B-e: Separate G2 and M phase cells by size, even though they are all 4N. Probably use Jason control cells, or Dros no dsRNA cells from CPvalid1 though I think they don't change size as dramatically.
+Figure B-f: pH3 (red) is localized in the nucleus.
+Figure B-g: shape and texture for wt cells.
+Figure B-h: shape (or maybe texture) outliers.
+
+Figure C: validation across many organisms - some histograms of wt vs. abnormal, and some before/after frames from movie:
+- Put before/after frames from movie into illustrator (HeLa, yeast, c elegans).
+- mouse cell cycle (Shomit)
+- non-Movie Yeast example - SCMD was a bust, waiting for images from Franco or U. Australia. Don’t forget that normalization may be necessary to line the histograms up from one image ot the next.
+- plants?
+- bacteria?
+- CHO cells - do not bother, David thinks it's no big deal.
+***********************************
+
 - Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
 
 - Anne 12/15 - Make sure the instructions for uploading the cp website to jura are up to date now.

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 12/22) Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
+
 -(Mike 12/22) Anne 12/15 - Make sure the Compile wizard instructions are up to date now.
 
 -(Mike 12/22) Anne 12/21 - answer the form factor question i emailed you.

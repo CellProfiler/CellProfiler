@@ -1,5 +1,6 @@
 Mike's TODO list
 
+=======
 ****** Anne 12/23 - MANUSCRIPT PROJECTS ******
 Figure B-a: Dros cell count (or just do Human)
 Figure B-b: Human cell count (or just do Dros)
@@ -19,8 +20,6 @@ Figure C: validation across many organisms - some histograms of wt vs. abnormal,
 - bacteria?
 - CHO cells - do not bother, David thinks it's no big deal.
 ***********************************
-
-- Anne 12/21 - Could you run every module we have (well, ok, as many as you can stand) and make sure that the table of measures is complete? Many non "Measure" modules actually put stuff in the handles.Measurements so I want to be sure I covered everything.
 
 - Anne 12/15 - Make sure the instructions for uploading the cp website to jura are up to date now.
 

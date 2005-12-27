@@ -92,7 +92,7 @@ if (handles.Current.SetBeingAnalyzed > 1),
 end
 
 %%% Load the data file
-BatchData = load(fullfile(BatchPath,BatchFilePrefix,'data.mat'));
+BatchData = load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
 
 %%% Merge into the measurements
 handles.Measurements = BatchData.handles.Measurements;
@@ -107,7 +107,7 @@ Matches = ~ cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-
 FileList = FileList(Matches);
 
 for i = 1:length(FileList),
-    SubsetData = load(FileList(i).name);
+    SubsetData = load(fullfile(BatchPath,FileList(i).name));
     FileList(i).name
 
     if (isfield(SubsetData.handles, 'BatchError')),
@@ -116,15 +116,22 @@ for i = 1:length(FileList),
 
     SubSetMeasurements = SubsetData.handles.Measurements;
 
-    for fieldnum=1:length(Fieldnames),
-        idxs = ~ cellfun('isempty', SubSetMeasurements.(Fieldnames{fieldnum}));
-        if (fieldnum == 1),
-            lo = min(find(idxs(2:end))+1);
-            hi = max(find(idxs(2:end))+1);
-            disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
+    for fieldnum=1:length(Fieldnames)
+        secondfields = fieldnames(handles.Measurements.(Fieldnames{fieldnum}));
+        % Some fields should not be merged, remove these from the list of fields
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Pathname')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
+        for j = 1:length(secondfields)
+            idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));
+            idxs(1) = 0;
+            if (fieldnum == 1),
+                lo = min(find(idxs(2:end))+1);
+                hi = max(find(idxs(2:end))+1);
+                disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
+            end
+            handles.Measurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs) = ...
+                SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs);
         end
-        handles.Measurements.(Fieldnames{fieldnum})(idxs) = ...
-            SubSetMeasurements.(Fieldnames{fieldnum})(idxs);
     end
 end
 

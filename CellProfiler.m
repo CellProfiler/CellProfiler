@@ -3527,6 +3527,14 @@ else
 
                 CancelWaiting = get(handles.timertexthandle,'string');
 
+                %%% Save the time elapsed so far in the handles structure.
+                %%% Check first to see that the set being analyzed is not zero, or else an
+                %%% error will be produced when trying to do this.
+                if setbeinganalyzed ~= 0
+                    handles.Measurements.Image.TimeElapsed{setbeinganalyzed} = toc;
+                    guidata(gcbo, handles)
+                end
+
                 %%% Save all data that is in the handles structure to the output file
                 %%% name specified by the user, but only save it
                 %%% in the increments that the user has specified
@@ -3568,10 +3576,6 @@ else
                 %%% Restore StartingImageSet for those modules that
                 %%% need it.
                 handles.Current.StartingImageSet = startingImageSet;
-                %%% The setbeinganalyzed is increased by one and stored in the handles structure.
-                setbeinganalyzed = setbeinganalyzed + 1;
-                handles.Current.SetBeingAnalyzed = setbeinganalyzed;
-                guidata(gcbo, handles)
                 %%% If a "cancel" signal is waiting, break and go to the "end" that goes
                 %%% with the "while" loop.
                 if strncmp(CancelWaiting,'Cancel',6) == 1
@@ -3588,18 +3592,16 @@ else
                 else
                     TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
                 end
+                %% Add variable to hold time elapsed for each image set.
                 set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
-                ThisSet = handles.Current.SetBeingAnalyzed - 1;
-                if handles.Current.SetBeingAnalyzed-1 == startingImageSet
-                    set_text = ['        Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
-                    show_set_text = set_text;
-                else
-                    set_text = [show_set_text '       Set' num2str(handles.Current.SetBeingAnalyzed-1) '           '];
-                    show_set_text = set_text;
-                end
-                %% Add variable to hold time elapsed for each image
-                %% set.
-                %set_time_elapsed(handles.Current.SetBeingAnalyzed) = str2num(time_elapsed);
+%                 ThisSet = handles.Current.SetBeingAnalyzed;
+%                 if handles.Current.SetBeingAnalyzed == startingImageSet
+%                     set_text = ['        Set' num2str(handles.Current.SetBeingAnalyzed) '           '];
+%                     show_set_text = set_text;
+%                 else
+%                     set_text = [show_set_text '       Set' num2str(handles.Current.SetBeingAnalyzed) '           '];
+%                     show_set_text = set_text;
+%                 end
                 if (time_elapsed > 60)
                     if (time_elapsed > 3600)
                         time_elapsed = time_elapsed/3600;
@@ -3616,15 +3618,15 @@ else
                 end
 
                 number_analyzed = ['Number of cycles completed = ',...
-                    num2str(setbeinganalyzed-1), ' of ', num2str(handles.Current.NumberOfImageSets)];
-                if setbeinganalyzed ~=0
+                    num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
+                if setbeinganalyzed ~= 0
                     time_per_set = ['Time per cycle (seconds) = ', ...
                         num2str(round(10*toc/setbeinganalyzed)/10,'%11.3g')];
                 else time_per_set = 'Time per cycle (seconds) = none completed';
                 end
-                if setbeinganalyzed == startingImageSet+1
+                if setbeinganalyzed == startingImageSet
                     time_set1 = ['Time for first cycle (seconds) = ' num2str(TotalSetTime,'%11.3g')];
-                elseif setbeinganalyzed <=startingImageSet+1
+                elseif setbeinganalyzed <= startingImageSet
                     time_set1 = '  ';
                 end
                 timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};
@@ -3632,13 +3634,10 @@ else
                 %%% the "Timer" window by changing the string property.
                 set(text_handle,'string',timertext)
                 drawnow
-                %%% Save the time elapsed so far in the handles structure.
-                %%% Check first to see that the set being analyzed is not zero, or else an
-                %%% error will be produced when trying to do this.
-                if setbeinganalyzed ~= 0
-                    handles.Measurements.Image.TimeElapsed{setbeinganalyzed} = toc;
-                    guidata(gcbo, handles)
-                end
+                %%% The setbeinganalyzed is increased by one and stored in the handles structure.
+                setbeinganalyzed = setbeinganalyzed + 1;
+                handles.Current.SetBeingAnalyzed = setbeinganalyzed;
+                guidata(gcbo, handles)
             end %%% This "end" goes with the "while" loop (going through the cycles).
 
             %%% After all the cycle have been processed, the following checks to

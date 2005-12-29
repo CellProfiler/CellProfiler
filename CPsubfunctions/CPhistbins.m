@@ -27,7 +27,7 @@ function [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbin
 % $Revision: 2802 $
 
 if nargin <= 5
-    CountOption = 'Normal'
+    CountOption = 'Normal';
 end
 
 ErrorFlag = 0;

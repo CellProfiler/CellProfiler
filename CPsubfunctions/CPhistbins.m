@@ -67,7 +67,15 @@ end
 
 if strcmpi(PlotLog,'Yes')
     MaxLog = log10(MaxHistogramValue);
-    MinLog = log10(MinHistogramValue);
+    if MinHistogramValue == 0
+        if PotentialMaxHistogramValue > 1
+            MinLog = 0;
+        else
+            MinLog = 0;
+        end
+    else
+        MinLog = log10(MinHistogramValue);
+    end
     HistogramRange = MaxLog - MinLog;
     if HistogramRange <= 0
         CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');

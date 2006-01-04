@@ -544,7 +544,7 @@ H7 = sum(((2:2*Levels)' - H6).^2 .* p_xplusy);
 H8 = -sum(p_xplusy .* log(p_xplusy+eps));
 
 % H9. Entropy
-H9 = - sum(P(:).*log(P(:)+eps));
+H9 = HXY;
 
 % H10. Difference Variance
 H10 = sum(p_xminusy.*((0:Levels-1)' - sum((0:Levels-1)'.*p_xminusy)).^2);

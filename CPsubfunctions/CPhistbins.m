@@ -71,7 +71,8 @@ if strcmpi(PlotLog,'Yes')
         if PotentialMaxHistogramValue > 1
             MinLog = 0;
         else
-            MinLog = 0;
+            A=SelectedMeasurementsMatrix(SelectedMeasurementsMatrix~=0);
+            MinLog = log10(min(A));
         end
     else
         MinLog = log10(MinHistogramValue);

@@ -1,12 +1,20 @@
 Mike's TODO list
 
-FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE
+FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
+
+Anne 1/5: Try new plots for “separating G2/M based on nuclear area” figure: 
+Select these subpopulations and make separate line histograms (displayed in the same chart) of their nuclear area (right now CP lets you make histograms based on threshold data, but the thresholding can be based on one parameter but not two, I think, so perhaps doing this in excel or matlab might be easiest):
+	- 4N cells that are pH3 positive (should show smaller nuclear area - at least a subpopulation)
+	- 4N cells that are pH3 negative 
+	- (maybe) All 4N cells together, though this doesn’t really add much info.
 
 Note: sample 48 = String, sample 340 = CyclinA
 
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug?
 
 Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
+
+Anne 1/5: we might need to process Jason's human images to produce the last  figure of the paper. This is just a reminder that this might be a project down the road. 
 
 NOTE: for manual cell counting, feel free to post images on web and ask Joo Han to count them - he is an author on the paper but as yet has not done any work on the paper itself.  Robert might also be able to help. It'd be nice to have two people count them to give us error bars for person-to-person variation.
 

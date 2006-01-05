@@ -128,7 +128,7 @@ if strcmpi(PlotLog,'Yes')
 end
 
 if strcmp(upper(CountOption(1)),'C')
-    YData = histc(SelectedMeasurementsMatrix,BinLocations);
+    YData = histc(SelectedMeasurementsMatrix,real(BinLocations));
 else
-    YData = hist(SelectedMeasurementsMatrix,BinLocations);
+    YData = hist(SelectedMeasurementsMatrix,real(BinLocations));
 end

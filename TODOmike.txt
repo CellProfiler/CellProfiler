@@ -1,5 +1,9 @@
 Mike's TODO list
 
+WEBSITE:
+Instructions for installing on 10.4; can't download X11 for 10.4 you need 10.4 installation disk to get X11
+Possibly compile on 10.2
+
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
 
 Anne 1/5: Try new plots for “separating G2/M based on nuclear area” figure: 

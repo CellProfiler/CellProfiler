@@ -1,5 +1,7 @@
 Mike's TODO list
 
+FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE
+
 Note: sample 48 = String, sample 340 = CyclinA
 
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug?
@@ -37,3 +39,5 @@ Figure C: validation across many organisms - some histograms of wt vs. abnormal,
 - (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.
+
+EDIT: INSTEAD, TRY LIMITING THE NUMBER OF ENTRIES FOR HANDLES, THEN AT END OF IMAGE ANALYSIS COMBINE SEPERATE VARIABLES

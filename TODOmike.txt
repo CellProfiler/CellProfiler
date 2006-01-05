@@ -14,7 +14,7 @@ Anne 12/23: I noticed something peculiar in the movie I am analyzing - several t
 
 Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
 
-Anne 1/5: we might need to process Jason's human images to produce the last  figure of the paper. This is just a reminder that this might be a project down the road. 
+Anne 1/5: we might need to process Jason's human images to produce the last  figure of the paper. This is just a reminder that this might be a project down the road. It would give you the chance to process images on the cluster.
 
 NOTE: for manual cell counting, feel free to post images on web and ask Joo Han to count them - he is an author on the paper but as yet has not done any work on the paper itself.  Robert might also be able to help. It'd be nice to have two people count them to give us error bars for person-to-person variation.
 

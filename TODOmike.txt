@@ -1,6 +1,7 @@
 Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
+GIVE pcusers group WRITE PERMISSION.
 
 As of 1/7/06: Figure B-a, left (Drosophila cell count)
 - waiting for manual counts from Robert

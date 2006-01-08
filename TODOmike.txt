@@ -1,6 +1,71 @@
 Mike's TODO list
 
-Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later.
+****** Anne 1/7 - MANUSCRIPT FIGURES ******
+
+As of 1/7/06: Figure B-a, left (Drosophila cell count)
+- waiting for manual counts from Robert
+- Probably change to bar chart to match human (but w/nice colors that visually group similar samples)?
+- larger font: final size of each plot will be < 1 inch.
+
+As of 1/7/06: Figure B-a, right (Human cell count)
+- Waiting for manual cell counts from moms
+- larger font: final size of each plot will be < 1 inch.
+
+As of 1/7/06: Figure B-b (Cell Size)
+- Mean and Arbitrary Units should be lower case
+- Make legend not bold.
+- larger font: final size of each plot will be < 1 inch.
+
+As of 1/7/06: Figure B-c (cell cycle)
+- Content and Cells should be lowercase.
+- take out (in thousands) and replace with (x 10^3) or (thousands), your choice.
+- Add comma: DNA content, log scale
+
+Figure B-d (G2/M separation)
+- Anne will show David the possible plots to decide what to show.
+
+Figure B-e (pH3 levels)
+- We haven’t even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In Han’s database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
+
+Figure B-f: (pH3 localization)
+- Do we have this for Jason’s images? We tried it for Fly experiments but it did not look good for some bizarre reason? Could choose a fly cell cycle gene from Fly200 and/or get replicate images from the genome-wide kc screen.
+
+Figure B-g (speckles)
+- need to make into a nice figure (not black background, larger fonts, very small figure overall). 
+- There are no error bars here - can we show data from more than just one image per timepoint? 
+- need scale bars for images.
+
+Figure B-h (small plots of shape & texture)
+Done
+
+Figure B-i (kiger hits quantified)
+- We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).
+
+Figure C-a (DNA content histograms)
+Still need to collect images and process...
+As of 1/7/06: Human: DONE, but these changes still:
+- Cells, Content should be lower case
+- Add comma: DNA content, log scale
+- Tell Anne how many images analyzed
+- Are the X axes stretched relative to each other? Any way to make them more constant? Otherwise, it just looks like AurkB has more S phase cells, but really I think it has more > 4N cells?
+- What is the full, real name of AurkB? Is AurkB it?
+
+Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, Shomit’s didn’t look so good) 
+** Zebrafish - Sive lab?
+** Xenopus - Sive lab?
+** Planaria - Reddien lab?
+** plant cells??
+** bacteria ??
+* Drosophila S2 cells - we should have some from Fly200
+* Maybe Yeast from Franco or guy that Mike emailed]
+
+As of 1/7/06: Figure C-b (Cell Cycle movies)
+- Change After Division > After division 
+- Tell me the scale bar sizes.
+
+Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.
+
+****** END OF MANUSCRIPT PROJECTS ******
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
 
@@ -11,26 +76,6 @@ Anne 12/23: I noticed something peculiar in the movie I am analyzing - several t
 Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
 
 Anne 1/5: we might need to process Jason's human images to produce the last  figure of the paper. This is just a reminder that this might be a project down the road. It would give you the chance to process images on the cluster.
-
-****** Anne 12/23 - MANUSCRIPT PROJECTS ******
-Figure B-a: Dros cell count (or just do Human)
-Figure B-b: Human cell count (or just do Dros)
-Figure B-c: CPvalid1 cell area figure
-Figure B-d: CPvalid1 cell cycle figure
-Figure B-d HUMAN: Process images and prepare Jason’s human cell cycle vs flow cytometry figures (waiting for jason to give us a matched set of flow data + images).
-Figure B-e: Separate G2 and M phase cells by size, even though they are all 4N. Probably use Jason control cells, or Dros no dsRNA cells from CPvalid1 though I think they don't change size as dramatically.
-Figure B-f: pH3 (red) is localized in the nucleus.
-Figure B-g: shape and texture for wt cells.
-Figure B-h: shape (or maybe texture) outliers.
-
-Figure C: validation across many organisms - some histograms of wt vs. abnormal, and some before/after frames from movie:
-- Put before/after frames from movie into illustrator (HeLa, yeast, c elegans).
-- mouse cell cycle (Shomit)
-- non-Movie Yeast example - SCMD was a bust, waiting for images from Franco or U. Australia. Don’t forget that normalization may be necessary to line the histograms up from one image ot the next.
-- plants?
-- bacteria?
-- CHO cells - do not bother, David thinks it's no big deal.
-***********************************
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
 

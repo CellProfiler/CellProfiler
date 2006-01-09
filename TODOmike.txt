@@ -1,38 +1,44 @@
 Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
+PUT ALL YOUR EXPT FOLDERS THAT PERTAIN TO FIGURES INTO THE PROPER FIGURES" FOLDER ON SAB 3 ATA. Note renumbering of figures now. 
 
-As of 1/7/06: Figure B-a, left (Drosophila cell count)
+For any parts of figures that you have updated since Saturday, please place them into the appropriate spot in the figures. Note that I typically resized things by even numbers, so it should be easy to place things to fit in their spot.
+
+Change all lowercase figure labels a,b,c to A,B,C.
+---
+
+As of 1/7/06: Figure 2-a, left (Drosophila cell count)
 - waiting for manual counts from Robert
 - larger font: final size of each plot will be < 1 inch.
 
-As of 1/7/06: Figure B-a, right (Human cell count)
+As of 1/7/06: Figure 2-a, right (Human cell count)
 - Waiting for manual cell counts from moms
 - larger font: final size of each plot will be < 1 inch.
 
-As of 1/7/06: Figure B-b (Cell Size)
+As of 1/7/06: Figure 2-b (Cell Size)
 
-As of 1/7/06: Figure B-c (cell cycle)
+As of 1/7/06: Figure 2-c (cell cycle)
 
-Figure B-d (G2/M separation)
+Figure 2-d (G2/M separation)
 - Anne will show David the possible plots to decide what to show.
 
-Figure B-e (pH3 levels)
+Figure 2-e (pH3 levels)
 - We havenÕt even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In HanÕs database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
 
-Figure B-f: (pH3 localization)
+Figure 2-f: (pH3 localization)
 - Do we have this for JasonÕs images? We tried it for Fly experiments but it did not look good for some bizarre reason? Could choose a fly cell cycle gene from Fly200 and/or get replicate images from the genome-wide kc screen.
 
-Figure B-g (speckles)
+Figure 2-g (speckles)
 - need scale bars for images.
 
-Figure B-h (small plots of shape & texture)
+Figure 2-h (small plots of shape & texture)
 Done
 
-Figure B-i (kiger hits quantified)
+Figure 2-i (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).
 
-Figure C-a (DNA content histograms)
+Figure 3-a (DNA content histograms)
 Still need to collect images and process...
 As of 1/7/06: Human: DONE, but these changes still:
 - Tell Anne how many images analyzed
@@ -48,7 +54,7 @@ Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, Shomi
 * Drosophila S2 cells - we should have some from Fly200
 * Maybe Yeast from Franco or guy that Mike emailed]
 
-As of 1/7/06: Figure C-b (Cell Cycle movies) 
+As of 1/7/06: Figure 3-b (Cell Cycle movies) 
 - Tell me the scale bar sizes.
 - David says remove the boxes from the top panels (c elegans) to be consistent with the others - just show the outlined image like the others have - but I would show the large image showing the entire embryo rather than just the little box, if possible. needs scale bar too.
 

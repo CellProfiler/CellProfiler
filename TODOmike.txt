@@ -50,6 +50,7 @@ Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, Shomi
 
 As of 1/7/06: Figure C-b (Cell Cycle movies) 
 - Tell me the scale bar sizes.
+- David says remove the boxes from the top panels (c elegans) to be consistent with the others - just show the outlined image like the others have - but I would show the large image showing the entire embryo rather than just the little box, if possible. needs scale bar too.
 
 Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.
 

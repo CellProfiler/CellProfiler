@@ -1,5 +1,7 @@
 Mike's TODO list
 
+I updated the website's papers page. Please upload when convenient.
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 - You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
 
@@ -8,6 +10,7 @@ PUT ALL YOUR EXPT FOLDERS THAT PERTAIN TO FIGURES INTO THE PROPER FIGURES" FOLDE
 For any parts of figures that you have updated since Saturday, please place them into the appropriate spot in the figures. Note that I typically resized things by even numbers, so it should be easy to place things to fit in their spot.
 
 Change all lowercase figure labels a,b,c to A,B,C.
+Move Dros to the right and human to the left in figure 2-a.
 ---
 
 As of 1/7/06: Figure 2-a, left (Drosophila cell count)

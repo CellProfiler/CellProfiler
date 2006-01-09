@@ -1,11 +1,9 @@
 Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
-GIVE pcusers group WRITE PERMISSION.
 
 As of 1/7/06: Figure B-a, left (Drosophila cell count)
 - waiting for manual counts from Robert
-- Probably change to bar chart to match human (but w/nice colors that visually group similar samples)?
 - larger font: final size of each plot will be < 1 inch.
 
 As of 1/7/06: Figure B-a, right (Human cell count)
@@ -13,14 +11,8 @@ As of 1/7/06: Figure B-a, right (Human cell count)
 - larger font: final size of each plot will be < 1 inch.
 
 As of 1/7/06: Figure B-b (Cell Size)
-- Mean and Arbitrary Units should be lower case
-- Make legend not bold.
-- larger font: final size of each plot will be < 1 inch.
 
 As of 1/7/06: Figure B-c (cell cycle)
-- Content and Cells should be lowercase.
-- take out (in thousands) and replace with (x 10^3) or (thousands), your choice.
-- Add comma: DNA content, log scale
 
 Figure B-d (G2/M separation)
 - Anne will show David the possible plots to decide what to show.
@@ -32,8 +24,6 @@ Figure B-f: (pH3 localization)
 - Do we have this for JasonÕs images? We tried it for Fly experiments but it did not look good for some bizarre reason? Could choose a fly cell cycle gene from Fly200 and/or get replicate images from the genome-wide kc screen.
 
 Figure B-g (speckles)
-- need to make into a nice figure (not black background, larger fonts, very small figure overall). 
-- There are no error bars here - can we show data from more than just one image per timepoint? 
 - need scale bars for images.
 
 Figure B-h (small plots of shape & texture)
@@ -45,8 +35,6 @@ Figure B-i (kiger hits quantified)
 Figure C-a (DNA content histograms)
 Still need to collect images and process...
 As of 1/7/06: Human: DONE, but these changes still:
-- Cells, Content should be lower case
-- Add comma: DNA content, log scale
 - Tell Anne how many images analyzed
 - Are the X axes stretched relative to each other? Any way to make them more constant? Otherwise, it just looks like AurkB has more S phase cells, but really I think it has more > 4N cells?
 - What is the full, real name of AurkB? Is AurkB it?
@@ -54,14 +42,13 @@ As of 1/7/06: Human: DONE, but these changes still:
 Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, ShomitÕs didnÕt look so good) 
 ** Zebrafish - Sive lab?
 ** Xenopus - Sive lab?
-** Planaria - Reddien lab?
+** Planaria - Reddien lab? NOT GOOD
 ** plant cells??
 ** bacteria ??
 * Drosophila S2 cells - we should have some from Fly200
 * Maybe Yeast from Franco or guy that Mike emailed]
 
-As of 1/7/06: Figure C-b (Cell Cycle movies)
-- Change After Division > After division 
+As of 1/7/06: Figure C-b (Cell Cycle movies) 
 - Tell me the scale bar sizes.
 
 Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.

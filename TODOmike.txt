@@ -24,7 +24,7 @@ As of 1/7/06: Figure 2-b (Cell Size)
 As of 1/7/06: Figure 2-c (cell cycle)
 
 Figure 2-d (G2/M separation)
-- Anne will show David the possible plots to decide what to show. Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei.
+- David chose fraction of cells to be the axis, and show pos and neg as the samples (rather than all). So that will be part one of this panel, for part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei.
 
 Figure 2-e (pH3 levels)
 - We haven’t even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In Han’s database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
@@ -46,7 +46,7 @@ Still need to collect images and process...
 As of 1/7/06: Human: DONE, but these changes still:
 - Tell Anne how many images analyzed
 
-Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, Shomit’s didn’t look so good) 
+Mouse:  no leads (Baltus rescinded permission, Ittai's and Shomit’s didn’t look so good due to focal plane issues) 
 ** Zebrafish - Sive lab?
 ** Xenopus - Sive lab?
 ** Planaria - Reddien lab? NOT GOOD

@@ -15,18 +15,16 @@ Move Dros to the right and human to the left in figure 2-a.
 
 As of 1/7/06: Figure 2-a, left (Drosophila cell count)
 - waiting for manual counts from Robert
-- larger font: final size of each plot will be < 1 inch.
 
 As of 1/7/06: Figure 2-a, right (Human cell count)
 - Waiting for manual cell counts from moms
-- larger font: final size of each plot will be < 1 inch.
 
 As of 1/7/06: Figure 2-b (Cell Size)
 
 As of 1/7/06: Figure 2-c (cell cycle)
 
 Figure 2-d (G2/M separation)
-- Anne will show David the possible plots to decide what to show.
+- Anne will show David the possible plots to decide what to show. Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei.
 
 Figure 2-e (pH3 levels)
 - We havenÕt even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In HanÕs database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
@@ -47,8 +45,6 @@ Figure 3-a (DNA content histograms)
 Still need to collect images and process...
 As of 1/7/06: Human: DONE, but these changes still:
 - Tell Anne how many images analyzed
-- Are the X axes stretched relative to each other? Any way to make them more constant? Otherwise, it just looks like AurkB has more S phase cells, but really I think it has more > 4N cells?
-- What is the full, real name of AurkB? Is AurkB it?
 
 Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, ShomitÕs didnÕt look so good) 
 ** Zebrafish - Sive lab?
@@ -61,7 +57,6 @@ Mouse:  Anne - Maybe find images from Ittai??(Baltus rescinded permission, Shomi
 
 As of 1/7/06: Figure 3-b (Cell Cycle movies) 
 - Tell me the scale bar sizes.
-- David says remove the boxes from the top panels (c elegans) to be consistent with the others - just show the outlined image like the others have - but I would show the large image showing the entire embryo rather than just the little box, if possible. needs scale bar too.
 
 Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.
 

@@ -1,5 +1,9 @@
 Mike's TODO list
 
+Send Lynne values for images.
+Re-process Scott Floyd's images with illumination correction.
+Run SBS image set overnight.
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 WEDNESDAY>>>- You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
 ---

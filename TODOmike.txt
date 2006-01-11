@@ -45,6 +45,8 @@ As of 1/7/06: Figure 3-b (Cell Cycle movies)
 
 Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.
 
+Anne 1/11: Gather the list of sources for all the images for all the figures so we properly cite/thank the people.
+
 ****** END OF MANUSCRIPT PROJECTS ******
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???

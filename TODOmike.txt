@@ -1,7 +1,5 @@
 Mike's TODO list
 
-I updated the website's papers page. Please upload when convenient.
-
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 WEDNESDAY>>>- You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
 

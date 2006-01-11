@@ -3,8 +3,6 @@ Mike's TODO list
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 WEDNESDAY>>>- You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
 
-PUT ALL YOUR EXPT FOLDERS THAT PERTAIN TO FIGURES INTO THE PROPER FIGURES" FOLDER ON SAB 3 ATA. Note renumbering of figures now. 
-
 Change all lowercase figure labels a,b,c to A,B,C.
 ---
 

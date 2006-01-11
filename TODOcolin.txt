@@ -1,6 +1,9 @@
 Colin's TODO list
 
 
+
+- (Requested by Anne 12-16-05)- Try to make a cute icon for the Mac and PC compiled CellProfiler.
+
 -There are some problems with the Help Menus.
 
 - Colin, I made a ton of changes to identify modules so they all produce outlines consistently. Could you please check that they all still work with overlay outlines?

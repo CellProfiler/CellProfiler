@@ -221,6 +221,6 @@ FeatureNames = {'ImageAreaOccupied','ImageAreaOccupiedThreshold'};
 fieldname = ['AreaOccupied_',ObjectName,'Features'];
 handles.Measurements.Image.(fieldname) = FeatureNames;
 
-fieldname = ['AreaOccupied',ObjectName];
+fieldname = ['AreaOccupied_',ObjectName];
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = Threshold;

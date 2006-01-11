@@ -1,5 +1,7 @@
 Mike's TODO list
 
+Make a pipeline for Lynne's wound healing assay.
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 WEDNESDAY>>>- You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
 
@@ -12,24 +14,14 @@ As of 1/7/06: Figure 2-a, left (Drosophila cell count)
 As of 1/7/06: Figure 2-a, right (Human cell count)
 - Waiting for manual cell counts from moms
 
-As of 1/7/06: Figure 2-b (Cell Size)
-
-As of 1/7/06: Figure 2-c (cell cycle)
-
 Figure 2-d (G2/M separation)
 - David chose fraction of cells to be the axis, and show pos and neg as the samples (rather than all). So that will be part one of this panel, for part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei.
 
 Figure 2-e (pH3 levels)
 - We haven’t even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In Han’s database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
 
-Figure 2-f: (pH3 localization)
-- Do we have this for Jason’s images? We tried it for Fly experiments but it did not look good for some bizarre reason? Could choose a fly cell cycle gene from Fly200 and/or get replicate images from the genome-wide kc screen.
-
-Figure 2-g (speckles)
-- need scale bars for images.
-
-Figure 2-h (small plots of shape & texture)
-Done
+Figure 2-f: (localization)
+- We decided to abandon pH3 and analyze the cyto/nuc Vitra plate: 4 positive and 4 negative control images. The figure should probably show one example image from pos and neg (showing just 2 or 3 cells each), plus a bar graph with error bars.
 
 Figure 2-i (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).

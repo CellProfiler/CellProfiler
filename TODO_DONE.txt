@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 1/11) - (Requested by Anne 12-16-05)- An error dialog produced by Crop is wrong, i think. It said "Image procs canceled b/s an image you wanted to analyze is not the same size as the image used for cropping. The pixel dimensions must be identical". The real problem was that I was using rectangle, coordinates and the coordinates I entered worked fine for the initial large images but were outside the range of the later, smaller images. The error box should reflect a more general statement about the image size I guess.
+
 -(Mike 1/5) Anne 12/15 - Make sure the instructions for uploading the cp website to jura are up to date now.
 
 -(Mike 1/5) NOTE: for manual cell counting, feel free to post images on web and ask Joo Han to count them - he is an author on the paper but as yet has not done any work on the paper itself.  Robert might also be able to help. It'd be nice to have two people count them to give us error bars for person-to-person variation.

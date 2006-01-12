@@ -49,9 +49,7 @@ Mouse:  no leads (Baltus rescinded permission, Ittai's and ShomitÕs didnÕt look 
 * Drosophila S2 cells - we should have some from Fly200 - use CV to get histograms out. Try cyclin a and string??
 * Maybe Yeast from Franco or guy that Mike emailed]
 
-As of 1/7/06: Figure 3-b (Cell Cycle movies) 
-
-Anne 1/6: Please re-run the SBS images through, and add all the Measure modules: area & shape for nucleus (don't bother for cells, cytoplasm), and then intensity and texture for nucleus, cytoplasm, and cell, for both blue and green. I will explain why later > For the High throughput figure.
+As of 1/7/06: Figure 3-b (Cell Cycle movies)
 
 Anne 1/11: Gather the list of sources for all the images for all the figures so we properly cite/thank the people.
 

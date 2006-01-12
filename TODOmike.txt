@@ -4,7 +4,17 @@ Run Scott Floyd's images with illumination correction.
 Run SBS image set overnight.
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
-WEDNESDAY>>>- You and I will image some cells to show the nice effects of our illumination correction on cell cycle distribution.
+Figure 1: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:
+1. Make sure the images were collected in the same position on the slide (roughly at least).
+2. Move the partial images at the bottom of the tiled image (where we moved off the slide) elsewhere because we don't want to include them.
+3. Make a nice illum corrxn function image (done!)
+4. run pipelines:
+a. ID and measure the Zeiss-white-ref'd image set (Test2).
+b. ID and measure the uncorrected image set (Test1).
+c. apply the illum corrxn fxn and ID and measure (Test1). Also save the resulting corrected images and then tile them together. The figure will probaly show the uncorrected, tiled images next to our corrected, tiled images.
+  
+Then make DNA content histograms and see if ours looks any cleaner - may not be obvious by eye. We might just point out that ours is as good (not necessarily better).
+
 ---
 
 As of 1/7/06: Figure 2-a, left (Drosophila cell count)

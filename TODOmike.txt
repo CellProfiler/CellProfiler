@@ -46,7 +46,7 @@ Mouse:  no leads (Baltus rescinded permission, Ittai's and Shomit’s didn’t look 
 ** Planaria - Reddien lab? NOT GOOD
 ** plant cells??
 ** bacteria ??
-* Drosophila S2 cells - we should have some from Fly200
+* Drosophila S2 cells - we should have some from Fly200 - use CV to get histograms out. Try cyclin a and string??
 * Maybe Yeast from Franco or guy that Mike emailed]
 
 As of 1/7/06: Figure 3-b (Cell Cycle movies) 

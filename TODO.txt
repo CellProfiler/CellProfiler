@@ -10,7 +10,6 @@ for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray)
     handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2);
 end
 
-- (Requested by Anne 12-16-05)- Is the Save Image window (from the image tool sub-window) and the image tool sub-window itself using the usr's choice of font size?
 
 - (Requested by Anne 12-15-05)- When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
 

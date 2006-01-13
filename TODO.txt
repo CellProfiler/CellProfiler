@@ -28,11 +28,13 @@ end
 
 - (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.
 
-- (Requested by Anne 12-15-05)- ShowDataOnImage data tool does not have the RGB toggle checkboxes or the CP Image Tools.
-
 - Figures save handles in UserData, what should really be there? (get rid of stuff that shouldnt, saved fig files are huge)
 
 - (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.
+
+- (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
+
+- (Requested By Colin 1-13-06) - There is an error when you close out of the window that pops up after clicking on the NumberOfDecimals button.
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 

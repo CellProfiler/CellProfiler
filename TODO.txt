@@ -4,8 +4,6 @@ December 16, 2005
 - (Requested by Anne 12-16-05)- Design an informational brochure
 
 
-- (Requested by Anne 12-16-05)- In the plot measurement window, when choosing line plot, are the grey lines stdev or the range? the black = mean I assume. We need to add this documentation to the help for this tool.
-
 - (Requested by Anne 12-16-05)- Filter by object measurement: if you are NOT using intensity or texture, i think it goes and retrieves the image anyway, because I had left a color image in the 'which image' variable and it complained that the image was a color image and errored out, even though it should not be using that image at all if i am filtering by area shape.
 
 - (Requested by Anne 12-16-05)- Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example:

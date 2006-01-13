@@ -1,7 +1,6 @@
 Mike's TODO list
 
 Run Scott Floyd's images with illumination correction.
-Run SBS image set overnight.
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 Figure 1: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:

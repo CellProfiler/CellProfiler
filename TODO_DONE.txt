@@ -1,5 +1,6 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Colin 1/13) - Stopped variables from being stored in the workspace and things being displayed in the command window.
 
 - (Colin 1/13) - (Requested by Anne 12-15-05)- ShowDataOnImage data tool does not have the RGB toggle checkboxes or the CP Image Tools.
 

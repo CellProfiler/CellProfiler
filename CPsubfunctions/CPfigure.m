@@ -56,7 +56,7 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
         set(FigHandle,'Toolbar','figure');
         FigUserData = get(FigHandle,'UserData');
         if strcmpi(FigureType,'Image')
-            if isfield(FigUserData,'ImageFlag') & (FigUserData.ImageFlag == 1) %#ok Ignore MLint
+            if isfield(FigUserData,'ImageFlag') && (FigUserData.ImageFlag == 1) %#ok Ignore MLint
                 userData.ImageFlag = 1;
             else
                 userData.ImageFlag = 1;

@@ -163,8 +163,8 @@ setappdata(gcf,'zoomparams',zoomparams);
 
 function zoomfcn
 zoomparams = getappdata(gcf,'zoomparams');
-children = get(zoomparams.currax,'Children');
-if ~strcmp(get(children(1),'type'),'image')
+children = findobj(zoomparams.currax,'type','image');
+if isempty(children)
     return;
 end
 posn = get(zoomparams.refax,'currentpoint');

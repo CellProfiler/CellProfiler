@@ -121,7 +121,11 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+if strcmp(MeasureChoice,'Intensity') || strcmp(MeasureChoice,'Texture')
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+else
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
+end
 LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 if strcmp(MeasureChoice,'Intensity')

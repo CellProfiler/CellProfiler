@@ -286,7 +286,7 @@ handles.Current.CurrentHandles = findobj;
 %%% confirmation prior to closing.
 %%% First, obtains the handle for the main GUI window (aka figure1).
 ClosingFunction = ...
-    ['deleteme = CPquestdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes'';  CellProfiler(''CloseWindows_Helper'',gcbo,[],guidata(gcbo)), delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear deleteme'];
+    ['deleteme = CPquestdlg(''Do you really want to quit?'', ''Confirm quit'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes'';  CellProfiler(''CloseWindows_Helper'',gcbo,[],guidata(gcbo)), delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; end; clear deleteme'];
 %%% Sets the closing function of the Main GUI window to be the line
 %%% above.
 set(handles.figure1,'CloseRequestFcn',ClosingFunction);

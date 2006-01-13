@@ -158,8 +158,8 @@ Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
-FigureHandle = CPfigure; 
-CPimagesc(ImageToDisplay,handles)
+FigureHandle = CPfigure(handles,'image');
+CPimagesc(ImageToDisplay,handles);
 FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
 ImageDisp = ImageFileName{1};
 title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])

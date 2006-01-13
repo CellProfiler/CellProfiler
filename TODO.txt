@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
-- (Requested by Anne 1-10-06)- When using IdentifyPrimAutomatic with testPIPE.mat and liverdapip14_1(11)bwCorr.tif (see DeveloperDropBox), the threshold stated in the first IdentifyPrim window seems incorrect. It says Threshold = .036, but if you zoom in on some cells and ShowPixelData, it looks like most of the background is .07-.09, and the dividing lines are somewhere more like around 0.10 What is going on?
-
 - (Requested by Anne 12-16-05)- Design an informational brochure
 
 

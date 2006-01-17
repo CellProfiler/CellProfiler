@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 1/17) - (Requested by Anne 12-16-05)- Try to make a cute icon for the Mac and PC compiled CellProfiler.
+
 -(Colin 1/13) - (Requested by Anne 12-16-05)- Is the Save Image window (from the image tool sub-window) and the image tool sub-window itself using the usr's choice of font size?
 
 - (Colin 1/13) - (Requested by Anne 12-16-05)- Filter by object measurement: if you are NOT using intensity or texture, i think it goes and retrieves the image anyway, because I had left a color image in the 'which image' variable and it complained that the image was a color image and errored out, even though it should not be using that image at all if i am filtering by area shape.

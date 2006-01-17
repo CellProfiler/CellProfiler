@@ -1,6 +1,19 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
+- (Requested by Anne 1-17-06) - Make the figures stop storing the entire handles structure in them!!  The Histograms I just made are 280 MB for a single figure! Apparently we need some info that is in there (fontsize, maybe the locations of default directories or something), so that's why it is there. So we need to determine what do we actually need that is in there so we don't lose functionality.
+
+- (Requested by Anne 1-17-06) - Histogram data tool requests:
+* When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
+* I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+* When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix?
+* Compressed heat maps: the X and Y axis labels seem swapped.
+
+- (Requested by Anne 1-17-06) - POTENTIAL REAL PROJECT - This paper has many thresholding functions implemented. We could add many of them to CP, or at least the best one: Rajagopalan, Lu, Yaszemski, Robb, J Biomed Mater Res 2005. When finished, we should compare to current results and see if it improves things. Right now, thresholding is a real problem for us.
+
+- (Requested by Anne 1-17-06) - POTENTIAL REAL PROJECT - We should make a new module to calculate the KS statistic for every image set. It would require notifying the software which images are controls, because this statistic compares the distribution of individual cell measures from each image to the distribution of individual cell measures from the control image(s). Once finished, we should see whether the calculated KS statistic produces a better Z' score than the 'percent above threshold' method for the BioImage cyto-nuc translocation assay. References: Chakravart LaR: Handbook of methods of applied statistics. Vol 1New york: John wiley, 1967:392-394; also Giuliano, Chen, Taylor, J Biomol Screening 2004; 9:557-568. See also Wilson, Si, Thompson, Smellie, Ashwell et al, J Biomol Screen 2005 or 2006 "Identification of a small molecule that induces mitotic arrest using s simplified high-content screening assay and data analysis method." because this has an example where KS statistics are calculated between several control images and this value is subtracted from the KS values for each image. Also, Smellie J Chem Inf Model 2005 or 2006.
+
+
 - (Requested by Anne 12-16-05)- Design an informational brochure
 
 

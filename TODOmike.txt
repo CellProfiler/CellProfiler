@@ -1,7 +1,5 @@
 Mike's TODO list
 
-Run Scott Floyd's images with illumination correction.
-
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 1C/D: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:

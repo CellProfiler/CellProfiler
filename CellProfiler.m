@@ -2827,54 +2827,7 @@ CancelButton = uicontrol(...
 %%% Waits for the user to respond to the window.
 uiwait(SetPreferencesWindowHandle)
 %%% Allows canceling by checking whether EnteredPreferences exists.
-if exist('EnteredPreferences','var') == 1
-    if ~isempty(EnteredPreferences)
-        %%% Retrieves the data that the user entered and saves it to the
-        %%% handles structure.
-        handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
-        handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
-        handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
-        handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
-        handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;
-        handles.Preferences.IntensityColorMap = EnteredPreferences.IntensityColorMap;
-        handles.Preferences.LabelColorMap = EnteredPreferences.LabelColorMap;
-        handles.Preferences.StripPipeline = EnteredPreferences.StripPipeline;
-        handles.Preferences.SkipErrors = EnteredPreferences.SkipErrors;
-        clear global EnteredPreferences
-
-        %%% Now that handles.Preferences.(5 different variables) has been filled
-        %%% in, the handles.Current values and edit box displays are set.
-        handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
-        handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
-%        handles.Current.PixelSize = handles.Preferences.PixelSize;
-        handles.Settings.PixelSize = handles.Preferences.PixelSize;
-
-        %%% (No need to set a current module directory or display it in an
-        %%% edit box; the one stored in preferences is the only one ever
-        %%% used).
-        set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
-        set(handles.DefaultOutputDirectoryEditBox,'String',handles.Preferences.DefaultOutputDirectory)
-        set(handles.DefaultImageDirectoryEditBox,'String',handles.Preferences.DefaultImageDirectory)
-        %%% Retrieves the list of image file names from the chosen directory,
-        %%% stores them in the handles structure, and displays them in the
-        %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
-        handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
-        %%% Adds the default module directory to Matlab's search path.
-        if ~isdeployed
-            addpath(handles.Preferences.DefaultModuleDirectory)
-        end
-
-        %%% Set new fontsize
-        names = fieldnames(handles);
-        for k = 1: length(names)
-            if ishandle(handles.(names{k}))
-                set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Preferences.FontSize,'FontName','helvetica');
-            end
-        end
-        %%% Updates the handles structure to incorporate all the changes.
-        guidata(gcbo, handles);
-    end
-end
+LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% TECHNICAL DIAGNOSIS BUTTON %%%
@@ -3053,22 +3006,34 @@ if strcmp(get(gcf,'SelectionType'),'open')
     String = get(handles.FilenamesListBox,'string');
     FileName = char(String(Val));
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
-
-    flag = 0;
     if strcmpi(FileName(end-3:end),'.mat')
         test = load(fullfile(PathName,FileName));
         if isfield(test,'Settings') || isfield(test,'handles')
-            flag = 1;
+            Answer = CPquestdlg('Would you like to load the pipeline from this file?','Confirm','Yes','No','Yes');
+            if strcmp(Answer,'Yes')
+                eventdata.SettingsPathname = PathName;
+                eventdata.SettingsFileName = FileName;
+                LoadPipeline_Callback(hObject,eventdata,handles);
+            end
+        elseif isfield(test,'Image')
+            try
+                %%% Reads the image.
+                Image = CPimread(fullfile(PathName, FileName));
+                FigureHandle = CPfigure(handles,'image','name',FileName);
+                CPimagesc(Image,handles);
+                colormap(gray);
+                FileName = strrep(FileName,'_','\_');
+                title(FileName);
+            catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
+            end
+        elseif isfield(test,'SavedPreferences')
+            EnteredPreferences = test.SavedPreferences;
+            LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
+        else
+            CPerrordlg('This mat file is not a proper pipeline or output file.');  
         end
-    end
-
-    if flag == 1
-        Answer = CPquestdlg('Would you like to load the pipeline from this file?','Confirm','Yes','No','Yes');
-        if strcmp(Answer,'Yes')
-            eventdata.SettingsPathname = PathName;
-            eventdata.SettingsFileName = FileName;
-            LoadPipeline_Callback(hObject,eventdata,handles);
-        end
+    elseif strcmpi(FileName(end-3:end),'.fig')
+        open(fullfile(PathName,FileName));
     else
         try
             %%% Reads the image.
@@ -3078,7 +3043,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
             colormap(gray);
             FileName = strrep(FileName,'_','\_');
             title(FileName);
-        catch CPerrordlg('There was an error opening this file. It is possible that it is not an image.');
+        catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
         end
     end
 end
@@ -4234,6 +4199,9 @@ else
         return
     end
 end
+LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
+
+function LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences)
 
 if exist('EnteredPreferences','var')
     if ~isempty(EnteredPreferences)

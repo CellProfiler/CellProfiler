@@ -23,6 +23,7 @@ Figure 2-f: (localization)
 
 Figure 2-i (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).
+[[[RAY IS SORT OF WORKING ON THIS, SO WAIT AND SEE WHAT HE COMES UP WITH]]]
 
 Figure 3-a (DNA content histograms)
 * Drosophila S2R+ cells - we should have some from Fly200 (S6 slides) - use CV to get histograms out. Try cyclin a and string??

@@ -26,17 +26,20 @@ function handles = IdentifySecondary(handles)
 % Settings:
 %
 % Methods to identify secondary objects:
-% * Propagation - For task (a), this method will find dividing lines between
-% clumped objects where the image stained for secondary objects shows a
-% change in staining (i.e. either a dimmer or a brighter line). Smoother
-% lines work better, but unlike the watershed method, small gaps are
-% tolerated. This method is considered an improvement on the traditional
-% watershed method. The dividing lines between objects are determined by a
-% combination of the distance to the nearest primary object and intensity
-% gradients. Reference: TR Jones, AE Carpenter, P Golland (2005)
-% Voronoi-Based Segmentation of Cells on Image Manifolds, ICCV Workshop on
-% Computer Vision for Biomedical Image Applications, pp. 535-543. For task
-% (b), thresholding is used.
+% * Propagation - For task (a), this method will find dividing lines
+% between clumped objects where the image stained for secondary objects
+% shows a change in staining (i.e. either a dimmer or a brighter line).
+% Smoother lines work better, but unlike the watershed method, small gaps
+% are tolerated. This method is considered an improvement on the
+% traditional watershed method. The dividing lines between objects are
+% determined by a combination of the distance to the nearest primary object
+% and intensity gradients. This algorithm uses local image similarity to
+% guide the location of boundaries between cells. Boundaries are
+% preferentially placed where the image's local appearance changes
+% perpendicularly to the boundary. Reference: TR Jones, AE Carpenter, P
+% Golland (2005) Voronoi-Based Segmentation of Cells on Image Manifolds,
+% ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
+% 535-543. For task (b), thresholding is used.
 %
 % * Watershed - For task (a), this method will find dividing lines between
 % objects by looking for dim lines between objects. For task (b),

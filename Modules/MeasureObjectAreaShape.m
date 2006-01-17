@@ -83,9 +83,9 @@ function handles = MeasureObjectAreaShape(handles)
 % convex hull that are also in the object. Computed as Area/ConvexArea.
 % *Extent - The proportion of the pixels in the bounding box that are also
 % in the region. Computed as the Area divided by the area of the bounding box.
-% *Euler number - Equal to the number of ‘objects’ in the object minus the
+% *Euler number - Equal to the number of objects in the image minus the
 % number of holes in those objects. For modules built to date, the number
-% of ‘objects’ in the object is always 1.
+% of objects in the image is always 1.
 % *MajorAxisLength - The length (in pixels) of the major axis of the
 % ellipse that has the same normalized second central moments as the
 % region.

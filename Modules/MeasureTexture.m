@@ -22,6 +22,19 @@ function handles = MeasureTexture(handles)
 % the scale of texture you are measuring) the texture cannot be measured
 % and will result in a value of NaN in the output file (Not a Number).
 %
+% Note that texture measures are affected by the overall intensity of the
+% object (or image). For example if Image1 = Image2 + 0.2, then the texture
+% measurements should be the same for Image1 and Image2. However, if the
+% images are scaled differently, for example Image1 = 0.9*Image2, then this
+% will be reflected in the texture measurements, and they will be
+% different. This must be so. For example, in the extreme case of Image1 =
+% 0*Image2 it is obvious that the texture measurements must be different.
+% To make the measurements useful (both intensity, texture, etc.), it must
+% be ensured that the images are scaled similarly. In other words, if
+% differences in intensity are seen between two images or objects, the
+% differences in texture cannot be trusted as being completely independent
+% of the intensity difference.
+% 
 % Measurement:             Feature Number:
 % AngularSecondMoment     |       1
 % Contrast                |       2

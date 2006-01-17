@@ -81,6 +81,9 @@ if strcmpi(PlotLog,'Yes')
     if HistogramRange <= 0
         CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
         ErrorFlag = 1;
+    elseif imag(HistogramRange) ~= 0
+        CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
+        ErrorFlag = 1;
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);

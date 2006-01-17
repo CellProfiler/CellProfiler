@@ -3,7 +3,8 @@ Mike's TODO list
 Run Scott Floyd's images with illumination correction.
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
-Figure 1: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:
+
+Figure 1C/D: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:
 1. Make sure the images were collected in the same position on the slide (roughly at least).
 2. Move the partial images at the bottom of the tiled image (where we moved off the slide) elsewhere because we don't want to include them.
 3. Make a nice illum corrxn function image (done!)
@@ -11,46 +12,33 @@ Figure 1: show the nice effects of our illumination correction on cell cycle dis
 a. ID and measure the Zeiss-white-ref'd image set (Test2).
 b. ID and measure the uncorrected image set (Test1).
 c. apply the illum corrxn fxn and ID and measure (Test1). Also save the resulting corrected images and then tile them together. The figure will probaly show the uncorrected, tiled images next to our corrected, tiled images.
-  
 Then make DNA content histograms and see if ours looks any cleaner - may not be obvious by eye. We might just point out that ours is as good (not necessarily better).
-
----
-
-As of 1/7/06: Figure 2-a, left (Drosophila cell count)
-- waiting for manual counts from Robert
-
-As of 1/7/06: Figure 2-a, right (Human cell count)
-- Waiting for manual cell counts from moms
 
 Figure 2-d (G2/M separation)
 - For part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei. {UPDATE: We have already done a full phenotypic analysis of jason's image set - In Han is setting up CV to access this data and then we can go into the database and look for high p-H3 staining + small nuclei + eccentric nuclei and look for hits and then check the original images to see if they look metaphase arrested.}
 
 Figure 2-e (pH3 levels)
-- We haven’t even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In Han’s database. Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
+- We haven’t even started this expt! We want to use Drosophila, since that is what this section covers. We can use phospho-H3 or phospho-S6 from the Fly200 experiment that is in In Han’s database (CV). Need to find an outlier gene that makes sense that should have increased or decreased staining. We can then show a histogram of staining intensity (probably mean, maybe integrated) for the two populations (control + the outlier)].
 
 Figure 2-f: (localization)
-- We decided to abandon pH3 and analyze the cyto/nuc Vitra plate: 4 positive and 4 negative control images. The figure should probably show one example image from pos and neg (showing just 2 or 3 cells each), plus a bar graph with error bars.
+- Add one example image from pos and neg (showing just 2 or 3 cells each).
 
 Figure 2-i (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).
 
 Figure 3-a (DNA content histograms)
-Still need to collect images and process...
-As of 1/7/06: Human: DONE, but these changes still:
-- Tell Anne how many images analyzed
+* Drosophila S2R+ cells - we should have some from Fly200 (S6 slides) - use CV to get histograms out. Try cyclin a and string??
 
-Mouse:  no leads (Baltus rescinded permission, Ittai's and Shomit’s didn’t look so good due to focal plane issues) 
+** Mouse:  no leads (Baltus rescinded permission, Ittai's and Shomit’s didn’t look so good due to focal plane issues) 
 ** Zebrafish - Sive lab?
 ** Xenopus - Sive lab?
 ** Planaria - Reddien lab? NOT GOOD
 ** plant cells??
 ** bacteria ??
-* Drosophila S2 cells - we should have some from Fly200 - use CV to get histograms out. Try cyclin a and string??
-* Maybe Yeast from Franco or guy that Mike emailed]
-
-As of 1/7/06: Figure 3-b (Cell Cycle movies)
+** Maybe Yeast from Franco or guy that Mike emailed
 
 Anne 1/11: Gather the list of sources for all the images for all the figures so we properly cite/thank the people.
+Post all the example images and pipelines at cellprofiler.org
 
 ****** END OF MANUSCRIPT PROJECTS ******
 

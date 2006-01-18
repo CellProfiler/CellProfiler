@@ -26,7 +26,8 @@ Figure 2-i (kiger hits quantified)
 [[[RAY IS SORT OF WORKING ON THIS, SO WAIT AND SEE WHAT HE COMES UP WITH]]]
 
 Figure 3-a (DNA content histograms)
-* Drosophila S2R+ cells - we should have some from Fly200 (S6 slides) - use CV to get histograms out. Try cyclin a and string??
+* Drosophila S2R+ cells - we should have some from Fly200 (S6 slides) - use CV to get histograms out. Try cyclin a and string?? (there's a gene called polo (CG12306) in there which I think would be a good control gene that screws up the cell cycle, if you can see it in the DNA content data.)
+- David says it would be cool to show example images for the human and Dros S2R+ cells, with outlines on top, esp. for a crowded part of an image. I am getting the S2R+ pipeline to you soon, so if you choose the gene you want, we can find the raw images and re-process them to produce our own histograms and outlined images.
 
 ** Mouse:  no leads (Baltus rescinded permission, Ittai's and Shomit’s didn’t look so good due to focal plane issues) 
 ** Zebrafish - Sive lab?

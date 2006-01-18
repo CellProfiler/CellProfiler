@@ -106,9 +106,15 @@ TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = What fraction should the images be sized (the resolution will be changed)?
-%defaultVAR09 = .1
-SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Would you like to go in tile them in meander mode?
+%choiceVAR09 = No
+%choiceVAR09 = Yes
+MeanderMode = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 = What fraction should the images be sized (the resolution will be changed)?
+%defaultVAR10 = .1
+SizeChange = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 SizeChange = str2double(SizeChange);
 
 %%%VariableRevisionNumber = 1
@@ -181,9 +187,19 @@ if handles.Current.SetBeingAnalyzed == 1
     end
 
     if strcmp(RowOrColumn,'Row')
+        if strcmp(MeanderMode,'Yes')
+            for (i=[2:2:NumberRows])
+                FileList((i-1)*NumberColumns+1:i*NumberColumns) = FileList(i*NumberColumns:-1:(i-1)*NumberColumns+1);
+            end
+        end
         NewFileList = reshape(FileList,NumberColumns,NumberRows);
         NewFileList = NewFileList';
     elseif strcmp(RowOrColumn,'Column')
+        if strcmp(MeanderMode,'Yes')
+            for (i=[2:2:NumberColumns])
+                FileList((i-1)*NumberRows+1:i*NumberRows) = FileList(i*NumberRows:-1:(i-1)*NumberRows+1);
+            end
+        end
         NewFileList = reshape(FileList,NumberRows,NumberColumns);
     end
     if strcmp(LeftOrRight,'Right')
@@ -226,16 +242,25 @@ ImageHeight = RetrievedTileData.ImageHeight;
 ImageWidth = RetrievedTileData.ImageWidth;
 NumberColumns = RetrievedTileData.NumberColumns;
 NumberRows = RetrievedTileData.NumberRows;
+NewFileList = RetrievedTileData.NewFileList;
+
 
 CurrentImage = handles.Pipeline.(ImageName);
 CurrentImage = imresize(CurrentImage,SizeChange);
 
+
 if strcmp(RowOrColumn,'Column')
     HorzPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberRows);
     VertPos = handles.Current.SetBeingAnalyzed - HorzPos*NumberRows-1;
+    if strcmp(MeanderMode,'Yes') && mod(HorzPos,2)==1
+        VertPos = NumberRows - VertPos - 1;
+    end
 elseif strcmp(RowOrColumn,'Row')
     VertPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberColumns);
     HorzPos = handles.Current.SetBeingAnalyzed - VertPos*NumberColumns-1;
+    if strcmp(MeanderMode,'Yes') && mod(VertPos,2)==1
+        HorzPos = NumberColumns - HorzPos-1;
+    end
 end
 
 if strcmp(TopOrBottom,'Bottom')

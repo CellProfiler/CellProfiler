@@ -1,6 +1,6 @@
 Colin's TODO list
 
-
+- We have ordered a new iMac so that more people can use CellProfiler & CellVIsualizer. When it arrives, IT will install basic software but I would like you to install MAtlab and CellProfiler (the svn'd checked-out version) and CellVisualizer. Instructions for the first two are on the wiki, under protocols. If the instructions are poor, please update them! Also set up the Connect To Servers commands (see wiki).  The computer should be named CellProfilerG5_3 (though I think IT does the naming). The new computer should go in room A (where the printer is). Thanks! 
 
 -There are some problems with the Help Menus.
 

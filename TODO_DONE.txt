@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
-- (Requested by Anne 12-15-05)- Allow doubleclicking a .fig file in the image folder list box and have the figure window open.  Also, make doubleclicking allow to load a saved preference file.
+- (Colin 1/18) - Put in a meandermode option in tile.
+
+- (Colin 1/17) - (Requested by Anne 12-15-05)- Allow doubleclicking a .fig file in the image folder list box and have the figure window open.  Also, make doubleclicking allow to load a saved preference file.
 
 -(Colin 1/17) - (Requested by Anne 12-16-05)- Try to make a cute icon for the Mac and PC compiled CellProfiler.
 

@@ -1,7 +1,6 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
-- (Requested by Anne 1-17-06) - Make the figures stop storing the entire handles structure in them!!  The Histograms I just made are 280 MB for a single figure! Apparently we need some info that is in there (fontsize, maybe the locations of default directories or something), so that's why it is there. So we need to determine what do we actually need that is in there so we don't lose functionality.
 
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
 * When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.

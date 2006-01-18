@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+(C(Colin 1/18) - (Requested by Anne 1-17-06) - Make the figures stop storing the entire handles structure in them!!  The Histograms I just made are 280 MB for a single figure! Apparently we need some info that is in there (fontsize, maybe the locations of default directories or something), so that's why it is there. So we need to determine what do we actually need that is in there so we don't lose functionality.
+
 - (Colin 1/18) - Put in a meandermode option in tile.
 
 - (Colin 1/17) - (Requested by Anne 12-15-05)- Allow doubleclicking a .fig file in the image folder list box and have the figure window open.  Also, make doubleclicking allow to load a saved preference file.

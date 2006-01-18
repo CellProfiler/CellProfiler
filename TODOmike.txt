@@ -57,6 +57,8 @@ hundreds of nuclei instead of zero (bad thresholding).  We need to go
 back in and fix this at some point.  I think the spots where it
 happened are obvious: they have a very low threshold.
 
+- Anne 1-18 - David Approved ~ $4 k to buy/build a computer. Go ahead and put a price list together and show it to me so i can approve it and we can buy it! If we need more money, we can scrape it from other grants, so just figure out what will be really useful/valuable and not absurdly expensive.
+
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.

@@ -51,7 +51,11 @@ Anne 12/23: I noticed something peculiar in the movie I am analyzing - several t
 
 Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
 
-Anne 1/5: we might need to process Jason's human images to produce the last  figure of the paper. This is just a reminder that this might be a project down the road. It would give you the chance to process images on the cluster.
+Anne 1/5: Playing with Jason's human images: the data is already processed through CellProfiler, but we have to fix a few images... some of the puro
++ (which is supposed to kill uninfected cells) identified
+hundreds of nuclei instead of zero (bad thresholding).  We need to go
+back in and fix this at some point.  I think the spots where it
+happened are obvious: they have a very low threshold.
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
 

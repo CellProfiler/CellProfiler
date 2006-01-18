@@ -834,11 +834,21 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     FigureHandle = CPfigure;
     set(FigureHandle,'Color',[1 1 1])
     if strcmpi(RowImageOrBin,'image') == 1
-        CPimagesc(FinalHistogramData,handles),
+        CPimagesc(FinalHistogramData,handles);
         AxisHandle = gca;
         set(get(AxisHandle,'XLabel'),'String',MeasurementToExtract)
+        %%% TODO: Should make this more sophisticated so that it rounds decimal
+        %%% numbers to 2 significant digits. Or, maybe it would be better
+        %%% to have a button, like the histogram windows normally have,
+        %%% that lets the user choose fewer labels or fewer decimal places.
+        if  XTickLabels{end-1} - XTickLabels{2} > NumberOfBins
+            for n = 2:length(XTickLabels) - 1
+                XTickLabels{n} = round(XTickLabels{n});
+            end
+
+        end
         set(AxisHandle,'XTickLabel',XTickLabels)
-        NewPlotBinLocations = 1:2:length(FinalHistogramData');
+        NewPlotBinLocations = 1:length(FinalHistogramData');
         set(AxisHandle,'XTick',NewPlotBinLocations)
     elseif strcmpi(RowImageOrBin,'bin') == 1
         CPimagesc(flipud(FinalHistogramData'),handles),
@@ -847,7 +857,9 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
         XTickLabels = flipud(XTickLabels');
         %%% Checks the spread of the data to decide whether to round
         %%% it off.
-        if XTickLabels{2} - XTickLabels{end-1} > NumberOfBins
+        %%% Also, note that it is setting the Y to be X, since we are in
+        %%% 'bin', not 'image' mode.
+        if XTickLabels{end-1} - XTickLabels{2} > NumberOfBins
             YTickLabels{1} = XTickLabels{1};
             YTickLabels{length(XTickLabels)} = XTickLabels{end};
             for n = 2:length(XTickLabels) - 1

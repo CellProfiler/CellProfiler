@@ -747,7 +747,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Style','pushbutton', ...
         'FontSize',FontSize);
     %%% Hide every other label button.
-    Button8Callback = 'tempData = get(gcbo,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    Button8Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
     Button8 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -759,7 +759,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'UserData',0,...
         'FontSize',FontSize);
     %%% Decimal places X axis labels.
-    Button9Callback = 'tempData = get(gcbo,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
+    Button9Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
     Button9 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit,...
         'BackgroundColor',[.7 .7 .9], ...
@@ -771,7 +771,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'UserData',0,...
         'FontSize',FontSize);
     %%% Restore original X axis labels.
-    Button10Callback = 'tempData = get(gcbo,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+    Button10Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
     Button10 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -782,7 +782,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Style','pushbutton', ...
         'FontSize',FontSize);
     %%% Button for adding control graph
-    Button11Callback = 'CPcontrolhistogram(get(gcbo,''parent''),get(gcbo,''UserData''));';
+    Button11Callback = 'CPcontrolhistogram(get(gcbo,''parent''),get(gcf,''UserData''));';
     Button11 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -807,7 +807,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'String','Export Data to Matlab', ...
         'Style','pushbutton', ...
         'FontSize',FontSize);
-    %%% This code sets the UserData for Button8, Button9, and Button10
+    %%% This code sets the UserData for the figure
     tempData.HideOption = 0;
     tempData.DecimalOption = 0;
     tempData.HideHandle = Button8;
@@ -816,13 +816,10 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     tempData.GreaterOrLessThan = GreaterOrLessThan;
     tempData.ThresholdValue = ThresholdValue;
     tempData.NumberOrPercent = NumberOrPercent;
-    % tempData.FigureSettings
+    tempData.FigureSettings
     tempData.BinLocations = BinLocations;
-    tempData.handles = handles;
-    set(Button8,'UserData',tempData);
-    set(Button9,'UserData',tempData);
-    set(Button10,'UserData',tempData);
-    set(Button11,'UserData',tempData);
+    tempData.handles = rmfield(handles,'Pipeline');
+    set(FigureHandle,'UserData',tempData);
     %%% Puts the menu and tool bar in the figure window.
     set(FigureHandle,'toolbar','figure')
 
@@ -881,7 +878,6 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
         ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image'])
     else ylabel(ColorbarHandle, ['Number of ', ObjectTypename])
     end
-    set(FigureHandle,'UserData',FigureSettings)
     set(gca,'fontname','Helvetica','fontsize',FontSize)
     set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2)
     xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)

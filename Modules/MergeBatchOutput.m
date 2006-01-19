@@ -79,9 +79,9 @@ drawnow
 
 if strncmp(BatchPath,'.',1)
     if length(BatchPath) == 1
-        BatchPath = handles.Current.DefaultImageDirectory;
+        BatchPath = handles.Current.DefaultOutputDirectory;
     else
-        BatchPath = fullfile(handles.Current.DefaultImageDirectory,BatchPath(2:end));
+        BatchPath = fullfile(handles.Current.DefaultOutputDirectory,BatchPath(2:end));
     end
 end
 

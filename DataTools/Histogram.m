@@ -816,9 +816,9 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     tempData.GreaterOrLessThan = GreaterOrLessThan;
     tempData.ThresholdValue = ThresholdValue;
     tempData.NumberOrPercent = NumberOrPercent;
-    tempData.FigureSettings
     tempData.BinLocations = BinLocations;
     tempData.handles = rmfield(handles,'Pipeline');
+    tempData.Application = 'CellProfiler';
     set(FigureHandle,'UserData',tempData);
     %%% Puts the menu and tool bar in the figure window.
     set(FigureHandle,'toolbar','figure')

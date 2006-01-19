@@ -97,7 +97,7 @@ Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = 100,5
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = For ANGLE and ONLY ONCE, by what angle would you like to rotate the image (in degrees, positive = clockwise and negative = counterclockwise)?
+%textVAR09 = For ANGLE and ONLY ONCE, by what angle would you like to rotate the image (in degrees, positive = counterclockwise and negative = clockwise)?
 %defaultVAR09 = 5
 Angle = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 

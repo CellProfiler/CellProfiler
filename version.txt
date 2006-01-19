@@ -1,4 +1,6 @@
 Version 1.0.XXXX
+ - Rotate correctly states that a positve angle gives counterclockwise rotation
+ - MergeBatchOutput now looks in Default Output Folder
 
 Version 1.0.3215
  - ClassifyObjects can now handle no objects

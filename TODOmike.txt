@@ -41,6 +41,8 @@ Post all the example images and pipelines at cellprofiler.org
 
 ****** END OF MANUSCRIPT PROJECTS ******
 
+When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata.
+
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
 
 Note: sample 48 = String, sample 340 = CyclinA

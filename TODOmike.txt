@@ -1,5 +1,7 @@
 Mike's TODO list
 
+Mike, it would be nice to allow Matlab to export a transparent image of gridlines and (separately) gene names to help us navigate the low-res scanned genome-wide arrays. Ideally, we would use the 'display grid info' module in CellProfiler, but since Matlab can't handle the huge high res images, it would be nice to allow CP to make a grid and export the grid (and gene names) to an image file which we could then open in photoshop and paste into a new channel over the original image. This is a frequent issue, when we want to poke around by eye on the low res scanned image but we can't get our bearings for what gene is where.
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 1C/D: show the nice effects of our illumination correction on cell cycle distribution - we collected images so now:

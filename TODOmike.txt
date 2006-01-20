@@ -18,7 +18,7 @@ Figure 2-d (G2/M separation)
 [PICK SOMETHING FROM THE NIRHT_4N_nucsize hit list that looks like it has a lot of metaphase nuclei. TEMP COPY of these images are on CP_G5 so you can choose a nice one. We might need to use shape (eccentricity) too - not just nuc size and 4N content. We wrote out two options for displaying - not sure which will be nicer.]
 
 Figure 2-e (pH3 levels)
-- Chose polo - combine the 3 images into one and calc percent above threshold.
+- Chose polo - calc percent above threshold.
 
 Figure 2-i (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).

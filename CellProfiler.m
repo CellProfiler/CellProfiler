@@ -20,7 +20,7 @@ function varargout = CellProfiler(varargin)
 %   Thouis Ray Jones
 %   In Han Kang
 %   Ola Friman
-%   Steve Lowe
+%   Steve Lowegt
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
@@ -3090,7 +3090,8 @@ end
 %%% Finds and closes timer windows, which have HandleVisibility off.
 TimerHandles = findall(findobj, 'Name', 'Timer');
 try
-    delete(TimerHandles)
+    delete(TimerHandles);
+    delete(timerfind);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3154,7 +3155,6 @@ sum = 0; %%% Initial value.
 for i = 1:handles.Current.NumberOfModules;
     sum = sum + iscellstr(handles.Settings.ModuleNames(i));
 end
-TimerStart = 0;
 if sum == 0
     CPerrordlg('You do not have any analysis modules loaded');
 else
@@ -3231,47 +3231,98 @@ else
             %%% Label we attach to figures (as UserData) so we know they are ours
             userData.Application = 'CellProfiler';
             userData.MyHandles = handles;
-            timer_handle = figure('name','Timer','position',[0 BottomOfTimer 495 120],...
+            timerFig = figure('name','Timer','position',[0 BottomOfTimer 450 120],...
                 'menubar','none','NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
                 'color',[0.7,0.7,0.9],'UserData',userData);
+            TimerData.timerFig = timerFig;
+            TimerData.SetBeingAnalyzed = 1;
+            TimerData.NumberOfImageSets = 1;
+            TimerData.StartingImageSet = 1;
+            
+            timer_handle = timer('StartFcn','tic','period',1,'ExecutionMode','fixedRate','tag','CellProfilerTimer');
+            handles.timer_handle = timer_handle;
+            
+            Timer_Callback = ['Timers=timerfind(''Tag'',''CellProfilerTimer'');',...
+                'TimerData = get(Timers(1),''UserData'');',...
+                'if strncmpi(get(TimerData.timertexthandle,''string''),''Cancel'',6),',...
+                    'return;',...
+                'end;'...
+                'time_elapsed = round(toc*10)/10;',...                
+                'if (time_elapsed > 60),',...
+                    'if (time_elapsed > 3600),',...
+                        'timer_elapsed_text =  [''Time elapsed = '',num2str(floor(time_elapsed/3600)),'':'',sprintf(''%02.0f'',abs(mod(time_elapsed,3600))/60),'':'',sprintf(''%02.0f'',abs(mod(time_elapsed,60)))];',...
+                    'else,',...
+                        'timer_elapsed_text =  [''Time elapsed = '',num2str(floor(time_elapsed/60)),'':'',sprintf(''%02.0f'',abs(mod(time_elapsed,60)))];',...
+                    'end;',...
+                'else,',...
+                    'timer_elapsed_text =  [''Time elapsed = '',num2str(floor(time_elapsed))];',...
+                'end;',...
+                'number_analyzed = [''Number of cycles completed = '',num2str(TimerData.SetBeingAnalyzed), '' of '', num2str(TimerData.NumberOfImageSets)];',...
+                'if TimerData.SetBeingAnalyzed ~= 0,',...
+                    'time_per_set = [''Time per cycle (seconds) = '', num2str(round(10*time_elapsed/TimerData.SetBeingAnalyzed)/10)];',...
+                'else, time_per_set = ''Time per cycle (seconds) = none completed'';',...
+                'end;',...
+                'if TimerData.SetBeingAnalyzed > TimerData.StartingImageSet,',...
+                    'time_set1 = [''Time for first cycle (seconds) = '', num2str(round(10*TimerData.TimerTime(end,1))/10)];',...
+                'else,',...
+                    'time_set1 = ''  '';',...
+                'end;',...
+                'timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};',...
+                'set(TimerData.timertexthandle,''string'',timertext);',...
+                'clear Timers TimerData number_analyzed time_elapsed time_per_set time_set1 timer_elapsed_text timertext;'];
+            
+            TimerStopFcn = ['Timers=timerfind(''Tag'',''CellProfilerTimer'');TimerData = get(Timers(1),''UserData'');set(TimerData.timertexthandle,''String'',''Image analysis is complete'');set(TimerData.timerFig,''Color'',[.4 .4 .6]);set(TimerData.timertexthandle,''BackgroundColor'',[.4 .4 .6]);figure(TimerData.timerFig);clear Timers TimerData'];
+  
+            set(timer_handle,'TimerFcn',Timer_Callback,'StopFcn',TimerStopFcn);
+              
+                
+        
             %%% Sets initial text to be displayed in the text box within the timer window.
-            timertext = 'First cycle is being processed';
+            timertext = 'Timer is starting';
             %%% Creates the text box within the timer window which will display the
             %%% timer text.
-            text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
-                'parent',timer_handle,'position', [0 40 494 74],'FontName','Helvetica',...
+            text_handle = uicontrol(timerFig,'string',timertext,'style','text',...
+                'parent',timerFig,'position', [10 40 290 74],'FontName','Helvetica','HorizontalAlignment','left',...
                 'FontSize',handles.Preferences.FontSize,'FontWeight','bold','BackgroundColor',[0.7,0.7,0.9]);
             %%% Saves text handle to the handles structure.
             handles.timertexthandle = text_handle;
+            TimerData.timertexthandle = text_handle;
+            set(timer_handle,'UserData',TimerData);
             %%% Creates the Cancel and Pause buttons.
             PauseButton_handle = uicontrol('Style', 'pushbutton', ...
                 'String', 'Pause', 'Position', [5 10 40 30], ...
-                'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
-            CancelAfterImageSetButton_handle = uicontrol('Style', 'pushbutton', ...
-                'String', 'Cancel after current cycle', 'Position', [50 10 120 30], ...
-                'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
+                'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
+            CancelAfterCycleButton_handle = uicontrol('Style', 'pushbutton', ...
+                'String', 'Cancel after cycle', 'Position', [300 80 120 30], ...
+                'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
             CancelAfterModuleButton_handle = uicontrol('Style', 'pushbutton', ...
-                'String', 'Cancel after module', 'Position', [175 10 115 30], ...
-                'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
-            CancelNowCloseButton_handle = uicontrol('Style', 'pushbutton', ...
-                'String', 'Cancel & close CellProfiler', 'Position', [295 10 160 30], ...
-                'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
+                'String', 'Cancel after module', 'Position', [300 45 120 30], ...
+                'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
+            %CancelNowButton_handle = uicontrol('Style', 'pushbutton', ...
+            %    'String', 'Cancel now', 'Position', [300 10 120 30], ...
+            %    'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,'UserData',0);
 
             %%% Sets the functions to be called when the Cancel and Pause buttons
             %%% within the Timer window are pressed.
             PauseButtonFunction = 'if ~exist(''h''); h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h; end';
             set(PauseButton_handle,'Callback', PauseButtonFunction)
-            CancelAfterImageSetButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this cycle? Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current cycle to be complete. You can press the Cancel after module button to cancel more quickly, but data relating to the current cycle will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
-            set(CancelAfterImageSetButton_handle, 'Callback', CancelAfterImageSetButtonFunction)
-            CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterImageSetButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Immediate canceling in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
+            CancelAfterCycleButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this cycle? Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current cycle to be complete. You can press the Cancel after module button or cancel now button to cancel more quickly, but data relating to the current cycle will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
+            set(CancelAfterCycleButton_handle, 'Callback', CancelAfterCycleButtonFunction)
+            CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling after current module in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
             set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
-            CancelNowCloseButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately and close CellProfiler? The CellProfiler program will close, losing your current settings. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'', ''Confirm cancel & close'',''Yes'',''No'',''Yes''); CPhelpdlg(''The CellProfiler program should have closed itself. Important: Go to the command line of Matlab and press Control-C to stop processes in progress. Then type clear and press the enter key at the command line.  Figure windows will not close properly: to close them, type delete(N) at the command line of Matlab, where N is the figure number. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.''); switch enddeleteme; case ''Yes''; delete(', num2str((handles.figure1)*8192), '/8192); case ''No''; return; end; clear enddeleteme delme3; end'];
-            set(CancelNowCloseButton_handle,'Callback', CancelNowCloseButtonFunction)
-            HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after cycle: Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled. Cancel now & close CellProfiler: CellProfiler will immediately close itself. The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing when using the output file.'')';
+            %CancelNowButtonFunction = ['if ~exist(''delme3''); delme3=1; enddeleteme = CPquestdlg(''Paused. Are you sure you want to cancel immediately? The output file might be corrupt or confusing depending on where it is exactly canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch enddeleteme; case ''Yes''; set(', num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling immediately.  Matlab must wait until the current computation is complete); case ''No''; clear enddeleteme delme3; return; end; end;'];
+            %set(CancelNowButton_handle,'Callback', CancelNowButtonFunction)
+            HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after cycle: Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled. Cancel now: The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing or corrupt when using the output file.'')';
             %%% HelpButton
             uicontrol('Style', 'pushbutton', ...
-                'String', '?', 'Position', [460 10 15 30], 'FontName','Helvetica','FontSize', handles.Preferences.FontSize,...
-                'Callback', HelpButtonFunction, 'parent',timer_handle, 'BackgroundColor',[0.7,0.7,0.9]);
+                'String', '?', 'Position', [360 10 15 30], 'FontName','Helvetica','FontSize', handles.Preferences.FontSize,...
+                'Callback', HelpButtonFunction, 'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9]);
+            
+            %uicontrol('Style','pushbutton','String','Details','Position',[50 10 100 30],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,...
+            %    'parent',timerFig,'BackgroundColor',[.7 .7 .9],'Callback',[...
+            %    'if isempty(findobj(''tag'',''DetailWindow''));',...
+            %        'CPfigure(''tag'',''DetailWindow'',''position'',[400 100 500 200]);',...
+            %    'end;']);
 
             %%% The timertext string is read by the analyze all images button's callback
             %%% at the end of each time around the loop (i.e. at the end of each image
@@ -3282,8 +3333,8 @@ else
             guidata(gcbo, handles);
             %%% Sets the timer window to show a warning box before allowing it to be
             %%% closed.
-            CloseFunction = ['deleteme = CPquestdlg(''DO NOT CLOSE the Timer window while image processing is in progress!! Are you sure you want to close the timer?'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; delete(',num2str(timer_handle*8192), '/8192); case ''No''; return; end; clear deleteme'];
-            set(timer_handle,'CloseRequestFcn',CloseFunction)
+            CloseFunction = ['deleteme = CPquestdlg(''DO NOT CLOSE the Timer window while image processing is in progress!! Are you sure you want to close the timer?'', ''Confirm close'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; delete(',num2str(timerFig*8192), '/8192); clear deleteme; case ''No''; clear deleteme; return; end;'];
+            set(timerFig,'CloseRequestFcn',CloseFunction)
             %%% Note: The size of the text object that fits inside the timer window is
             %%% officially 1 pixel smaller than the size of the timer window itself.
             %%%  There is, however, a ~20 pixel gap at the top of the timer window: I
@@ -3315,7 +3366,7 @@ else
             handles.Pipeline = struct;
             handles.Measurements = struct;
             %%% Start the timer.
-            tic
+            start(timer_handle)
             %%% Update the handles structure.
             guidata(gcbo, handles);
 
@@ -3333,9 +3384,6 @@ else
                 a=clock;
                 begin_set=a(5:6);
                 for SlotNumber = 1:handles.Current.NumberOfModules
-                    %%% Variables for timer, time per module.
-                    a=clock;
-                    begin=a(5:6);
                     %%% If a module is not chosen in this slot, continue on to the next.
                     ModuleNumberAsString = TwoDigitString(SlotNumber);
                     ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
@@ -3376,6 +3424,13 @@ else
                             %%% argument.
                             handles.Measurements.Image.ModuleErrorFeatures(str2num(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
+                            guidata(handles.figure1,handles);
+                            try
+                                TimerData = get(handles.timer_handle,'UserData');
+                                TimerData.NumberOfImageSets = handles.Current.NumberOfImageSets;
+                                TimerData.StartingImageSet = handles.Current.StartingImageSet;
+                                set(handles.timer_handle,'UserData',TimerData);
+                            end
                             try
                                 FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
                             end
@@ -3409,7 +3464,7 @@ else
 
                         %%% Check for a pending "Cancel after Module"
                         CancelWaiting = get(handles.timertexthandle,'string');
-                        if (strncmp(CancelWaiting, 'Immediate', 9) == 1),
+                        if strncmpi(CancelWaiting, 'Canceling after current module', 30)
                             break_outer_loop = 1;
                             break
                         end
@@ -3458,26 +3513,10 @@ else
                         end
                     end
 
-                    %%% Finds and records total time to run module.
-                    a=clock;
-                    finish=a(5:6);
-                    if begin(1) > finish(1)
-                        TotalModuleTime = round(60*(finish(1)+(60-begin(1)))+(finish(2)-begin(2)));
-                    else
-                        TotalModuleTime = round(60*(finish(1)-begin(1))+(finish(2)-begin(2)));
-                    end
-
-                    if TimerStart < handles.Current.NumberOfModules
-                        ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) =  TotalModuleTime;
-                        TimerStart = TimerStart + 1;
-                    else
-                        ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) = ModuleTimeAdd(str2num(handles.Current.CurrentModuleNumber)) + TotalModuleTime;
-                    end
-
-                    TotalModuleTime = num2str(TotalModuleTime);
-                    while numel(TotalModuleTime) <=5
-                        TotalModuleTime = [TotalModuleTime ' '];
-                    end
+                    %%% Finds and records total  to run module.
+                    TimerData = get(handles.timer_handle,'UserData');
+                    TimerData.TimerTime(SlotNumber,handles.Current.SetBeingAnalyzed) = toc;
+                    set(handles.timer_handle,'UserData',TimerData);
 
                 end %%% ends loop over slot number
 
@@ -3491,14 +3530,6 @@ else
                 end
 
                 CancelWaiting = get(handles.timertexthandle,'string');
-
-                %%% Save the time elapsed so far in the handles structure.
-                %%% Check first to see that the set being analyzed is not zero, or else an
-                %%% error will be produced when trying to do this.
-                if setbeinganalyzed ~= 0
-                    handles.Measurements.Image.TimeElapsed{setbeinganalyzed} = toc;
-                    guidata(gcbo, handles)
-                end
 
                 %%% Save all data that is in the handles structure to the output file
                 %%% name specified by the user, but only save it
@@ -3543,65 +3574,16 @@ else
                 handles.Current.StartingImageSet = startingImageSet;
                 %%% If a "cancel" signal is waiting, break and go to the "end" that goes
                 %%% with the "while" loop.
-                if strncmp(CancelWaiting,'Cancel',6) == 1
+                if strncmpi(CancelWaiting,'Cancel',6)
                     break
                 end
-                %%% Make calculations for the Timer window. Round to
-                %%% 1/10:th of seconds
-                time_elapsed = round(toc*10)/10;
-                %%% Record time elapsed for each cycle.
-                a=clock;
-                finish_set=a(5:6);
-                if begin_set(1) > finish_set(1)
-                    TotalSetTime=60*(finish_set(1)+(60-begin_set(1)))+(finish_set(2)-begin_set(2));
-                else
-                    TotalSetTime=60*(finish_set(1)-begin_set(1))+(finish_set(2)-begin_set(2));
-                end
-                %% Add variable to hold time elapsed for each image set.
-                set_time_elapsed(handles.Current.SetBeingAnalyzed) = TotalSetTime;
-%                 ThisSet = handles.Current.SetBeingAnalyzed;
-%                 if handles.Current.SetBeingAnalyzed == startingImageSet
-%                     set_text = ['        Set' num2str(handles.Current.SetBeingAnalyzed) '           '];
-%                     show_set_text = set_text;
-%                 else
-%                     set_text = [show_set_text '       Set' num2str(handles.Current.SetBeingAnalyzed) '           '];
-%                     show_set_text = set_text;
-%                 end
-                if (time_elapsed > 60)
-                    if (time_elapsed > 3600)
-                        time_elapsed = time_elapsed/3600;
-                        time_elapsed = num2str(round(time_elapsed*10)/10);
-                        timer_elapsed_text =  ['Time elapsed (hours) = ',time_elapsed];
-                    else
-                        time_elapsed = time_elapsed/60;
-                        time_elapsed = num2str(round(time_elapsed*10)/10);
-                        timer_elapsed_text =  ['Time elapsed (minutes) = ',time_elapsed];
-                    end
-                else
-                    time_elapsed = num2str(round(toc*10)/10);
-                    timer_elapsed_text =  ['Time elapsed (seconds) = ',time_elapsed];
-                end
-
-                number_analyzed = ['Number of cycles completed = ',...
-                    num2str(setbeinganalyzed), ' of ', num2str(handles.Current.NumberOfImageSets)];
-                if setbeinganalyzed ~= 0
-                    time_per_set = ['Time per cycle (seconds) = ', ...
-                        num2str(round(10*toc/setbeinganalyzed)/10,'%11.3g')];
-                else time_per_set = 'Time per cycle (seconds) = none completed';
-                end
-                if setbeinganalyzed == startingImageSet
-                    time_set1 = ['Time for first cycle (seconds) = ' num2str(TotalSetTime,'%11.3g')];
-                elseif setbeinganalyzed <= startingImageSet
-                    time_set1 = '  ';
-                end
-                timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};
-                %%% Display calculations in
-                %%% the "Timer" window by changing the string property.
-                set(text_handle,'string',timertext)
                 drawnow
                 %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                 setbeinganalyzed = setbeinganalyzed + 1;
                 handles.Current.SetBeingAnalyzed = setbeinganalyzed;
+                TimerData = get(handles.timer_handle,'UserData');
+                TimerData.SetBeingAnalyzed = setbeinganalyzed;
+                set(handles.timer_handle,'UserData',TimerData);
                 guidata(gcbo, handles)
             end %%% This "end" goes with the "while" loop (going through the cycles).
 
@@ -3690,58 +3672,8 @@ else
             %%% Update the handles structure.
             guidata(gcbo, handles)
 
-            %%% Calculate total time elapsed and display Complete in the Timer window.
-            total_time_elapsed_num = round(10*toc)/10;
-
-            if (total_time_elapsed_num > 60)
-                if (total_time_elapsed_num > 3600)
-                    total_time_elapsed_num = round((total_time_elapsed_num))/3600;
-                    total_time_elapsed = ['Total time elapsed (hours) = ',num2str(total_time_elapsed_num,'%11.3g')];
-                else
-                    total_time_elapsed_num = round((total_time_elapsed_num))/60;
-                    total_time_elapsed = ['Total time elapsed (minutes) = ',num2str(total_time_elapsed_num,'%11.3g')];
-                end
-            else
-                total_time_elapsed = ['Total time elapsed (seconds) = ',num2str(total_time_elapsed_num,'%11.3g')];
-            end
-
-            number_analyzed = ['Number of cycles completed = ',...
-                num2str(setbeinganalyzed - 1)];
-
-            if setbeinganalyzed ~=1
-                time_per_set = ['Time per cycle (seconds) = ', ...
-                    num2str(round(10*toc/(setbeinganalyzed - 1))/10,'%11.3g')];
-            else time_per_set = 'Time per cycle (seconds) = none completed';
-            end
-
-            text_handle = uicontrol(timer_handle,'string',timertext,'style','text',...
-                'parent',timer_handle,'position', [0 40 494 74],'FontName','Helvetica',...
-                'FontSize',handles.Preferences.FontSize,'FontWeight','bold','backgroundcolor',[0.7,0.7,0.9]);
-            timertext = {'IMAGE PROCESSING IS COMPLETE!';total_time_elapsed; number_analyzed; time_per_set};
-
-            set(text_handle,'string',timertext)
-            set(timer_handle,'CloseRequestFcn','closereq')
-
-            %%% Show seperate calcualtion times for each cycle.
-            try
-                set_time_elapsed = set_time_elapsed(set_time_elapsed ~=0);
-                show_time_elapsed = {['Time elapsed for cycle #1 (seconds) = ' num2str(set_time_elapsed(1),'%11.3g') ]};
-                if handles.Current.NumberOfImageSets > 1
-                    show_time_elapsed(2) = {['Average time elapsed for other cycles (seconds) = ' num2str((round(10*toc)/10 - set_time_elapsed(1))/(handles.Current.NumberOfImageSets-1),'%11.3g')]};
-                end
-
-                ModCount=1;
-                while ModCount<=handles.Current.NumberOfModules
-                    AvgTimeAdd(ModCount) = ModuleTimeAdd(ModCount)/(handles.Current.NumberOfImageSets);
-                    show_avg_mod(ModCount) = {['Module ' num2str(ModCount) ' (seconds): ' num2str(AvgTimeAdd(ModCount),'%11.3g')]};
-                    ModCount=ModCount+1;
-                end
-
-                show_avg_mod = char(show_avg_mod);
-                show_time_elapsed = char(show_time_elapsed);
-                split_time_elapsed = strvcat(show_time_elapsed, 'The following is the average time for each cycle broken down by module:', show_avg_mod);
-                timebox = CPmsgbox(split_time_elapsed);
-            end
+            set(timerFig,'CloseRequestFcn','closereq')
+            stop(timer_handle);
 
             %%% Re-enable/disable appropriate buttons.
             set(handles.IndividualModulesText,'visible','on')
@@ -3762,9 +3694,9 @@ else
             set(handles.CloseFigureButton,'visible','off');
             set(handles.OpenFigureButton,'visible','off');
             set(CancelAfterModuleButton_handle,'enable','off')
-            set(CancelAfterImageSetButton_handle,'enable','off')
+            set(CancelAfterCycleButton_handle,'enable','off')
             set(PauseButton_handle,'enable','off')
-            set(CancelNowCloseButton_handle,'enable','off')
+            %set(CancelNowButton_handle,'enable','off')
             %%% Sets the figure windows' Closing Functions back to normal, if
             %%% the figure windows are still open.  If this is not done,
             %%% after the analysis is complete, these windows cannot be closed with the

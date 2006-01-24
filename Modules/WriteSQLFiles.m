@@ -120,10 +120,6 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
-    %%% This is necessary to make sure the export works with the last
-    %%% set.  Otherwise, the TimeElapsed array is missing the last
-    %%% element.  The corresponding 'tic' is in CellProfiler.m.
-    handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
     CPconvertsql(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet);
 end
 

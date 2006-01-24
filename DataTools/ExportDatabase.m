@@ -138,11 +138,6 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         LastSet = length(handles.Measurements.Image.FileNames);
     end
 
-    %%% This is necessary to make sure the export works with the last
-    %%% set.  Otherwise, the TimeElapsed array is missing the last
-    %%% element.  The corresponding 'tic' is in CellProfiler.m.
-
-    handles.Measurements.Image.TimeElapsed{handles.Current.SetBeingAnalyzed} = toc;
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
     CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);

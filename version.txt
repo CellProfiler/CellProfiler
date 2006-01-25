@@ -1,4 +1,5 @@
 Version 1.0.XXXX
+ - Added meander mode for tiling images
  - Rotate correctly states that a positve angle gives counterclockwise rotation
  - MergeBatchOutput now looks in Default Output Folder
 

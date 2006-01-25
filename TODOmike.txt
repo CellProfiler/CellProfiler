@@ -28,7 +28,6 @@ Figure 3-a (DNA content histograms)
 ** bacteria ??
 ** Maybe Yeast from Franco or guy that Mike emailed
 
-Anne 1/11: Gather the list of sources for all the images for all the figures so we properly cite/thank the people.
 Post all the example images and pipelines at cellprofiler.org
 
 ****** END OF MANUSCRIPT PROJECTS ******

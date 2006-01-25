@@ -1,6 +1,7 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
+- (Requested by Mike 1-25-06) Allow DefineGrid to save grid-lines as an RGB image, where R = grayscale image, G = gridlines, B = possibly text. This image can be opened in Photoshop and the grid can be applied/removed by showing or hiding the channel. Also if possible we would like a way to have gene names displayed within each location, but this may prove difficult since text and grid-lines are vector graphics and not pixel values.
 
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
 * When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.

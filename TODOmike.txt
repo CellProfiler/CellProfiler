@@ -5,8 +5,6 @@ Mike, it would be nice to allow Matlab to export a transparent image of gridline
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 1C/D: show the nice effects of our illumination correction on cell cycle distribution:
-c. apply the illum corrxn fxn and ID and measure (Test1). Also save the resulting corrected images and then tile them together. The figure will probaly show the uncorrected, tiled images next to our corrected, tiled images.
-Then make DNA content histograms and see if ours looks any cleaner - may not be obvious by eye. We might just point out that ours is as good (not necessarily better).
 
 Figure 2-d (G2/M separation)
 - For part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei. {UPDATE: We have already done a full phenotypic analysis of jason's image set - In Han is setting up CV to access this data and then we can go into the database and look for high p-H3 staining + small nuclei + eccentric nuclei and look for hits and then check the original images to see if they look metaphase arrested.}
@@ -44,8 +42,6 @@ Note: sample 48 = String, sample 340 = CyclinA
 Anne 1/17: I think you mentioned wanting to make MergeBatchOutput a data tool rather than a module so that we fix the time elapsed problems that were preventing exporting. Also, MergeBatchOutput produces an output file that has lost its real pipeline - the pipeline is just the MergeBatchOutput module. It should take the Pipeline and settings from the Batch_data.mat (first image set's output file).
 
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug? [Anne asked Ola 1/9/06]
-
-Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
 
 Anne 1/5: Playing with Jason's human images: the data is already processed through CellProfiler, but we have to fix a few images... some of the puro
 + (which is supposed to kill uninfected cells) identified

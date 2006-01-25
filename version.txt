@@ -7,3 +7,6 @@ Version 1.0.3215
  - ClassifyObjects can now handle no objects
  - MeasureCorrelation white background has been changed to CP colors
  - CPhistbins can now handle data sets with zeroes
+
+Version 1.0.3304
+ - Timer functionality is improved

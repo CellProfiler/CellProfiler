@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 1/26) - (Requested by Mike 1-25-06) Allow DefineGrid to save grid-lines as an RGB image, where R = grayscale image, G = gridlines, B = possibly text. This image can be opened in Photoshop and the grid can be applied/removed by showing or hiding the channel. Also if possible we would like a way to have gene names displayed within each location, but this may prove difficult since text and grid-lines are vector graphics and not pixel values.
+
 -(Colin 1/25) - Completely updated it. (Requested by Anne 12-15-05)- Most of the text doesn't fit on the Timer window buttons.
 -(Mike 1/25) Anne 12/23: Matlab license issues - think ahead whether we will need to license matlab on the whole cluster next year? did you hear from fran?  If it helps for us to cut back the needed licenses, you could put on your TODO long term to get the cluster compiled version figured out.
 

@@ -99,6 +99,10 @@ drawnow
 %%% pixels (which cannot be measured in subsequent measure modules) in the
 %%% cases where the secondary object is exactly the same size as the
 %%% primary object.
+%%%
+%%% WARNING: THIS MEANS TERTIARY REGIONS ARE NOT EXCLUSIVE PRIMARY +
+%%% SECONDARY ~= TERTIARY
+%%%
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
 SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
 

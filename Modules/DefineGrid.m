@@ -120,7 +120,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 ControlSpotMode = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = For MANUAL, what is the original image on which to mark/display the grid?
+%textVAR10 = For MANUAL or if you are saving an RGB image, what is the original image on which to mark/display the grid?
 %infotypeVAR10 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
@@ -162,6 +162,13 @@ try
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.']);
 end
+
+
+%textVAR15 - What would you like to call an RGB image with R = the image, G = grid lines, and B = text?
+%defaultVAR15 = Do Not Save
+%infotype = imagegroup indep
+RGBname = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+
 
 %%%VariableRevisionNumber = 2
 
@@ -313,6 +320,46 @@ else
     GridYLocations = Grid.GridYLocations;
     YLocations = Grid.YLocations;
     XLocations = Grid.XLocations;
+    
+    if ~strcmp(RGBname,'Do Not Save')
+        
+        tempfig = figure('Color','black','CloseRequestFcn','','visible','off');
+        colormap(gray);
+        imagesc(OrigImage);  %makes sure the axes are right
+        delete(findobj(tempfig,'type','image'));
+        
+        line(VertLinesX,VertLinesY,'Color','white');
+        line(HorizLinesX,HorizLinesY,'Color','white');
+        set(gca,'color','black');
+        saveas(gcf,'Temp.jpg');
+        imageG = imread('Temp.jpg');
+        imageG = round(sum(imageG,3)/3);
+        imageG = imageG/max(max(imageG));
+        imageG = imageG(69:802,157:1088);
+        imageG = imresize(imageG,size(OrigImage));
+        imageG = im2bw(imageG,graythresh(imageG));
+        imageG = ~imageG;
+        
+        delete(get(gca,'children'));
+        TextHandles = text((floor(XLocations+XSpacing/6)),(YLocations+floor(YSpacing/2)),cellstr(num2str(reshape(SpotTable,1,[])'))','color','white','fontsize',handles.Preferences.FontSize);
+        set(gca,'visible','off');
+        saveas(gcf,'Temp.jpg');
+        imageB = imread('Temp.jpg');
+        delete(tempfig);
+        imageB = round(sum(imageB,3)/3);
+        imageB = imageB/max(max(imageB));
+        imageB = imageB(69:802,157:1088);
+        imageB = imresize(imageB,size(OrigImage));
+        imageB = im2bw(imageB,graythresh(imageB));
+        imageB = ~imageB;
+        
+        imageR = sum(OrigImage,3);
+        
+        ColorImage(:,:,1) = imageR;
+        ColorImage(:,:,2) = imageG;
+        ColorImage(:,:,3) = imageB;    
+    end
+   
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -478,3 +525,7 @@ measfield = [GridName,'Info'];
 GridFeatures = {'XLocationOfLowestXSpot' 'YLocationOfLowestYSpot' 'XSpacing' 'YSpacing' 'Rows' 'Columns' 'TotalHeight' 'TotalWidth' 'LeftOrRightNum' 'TopOrBottomNum' 'RowsOrColumnsNum'};
 handles.Measurements.Image.(featfield) = GridFeatures;
 handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed} = GridInfoList;
+
+if ~strcmp(RGBname,'Do Not Save')
+    handles.Pipeline.(RGBname) = ColorImage;
+end

@@ -127,7 +127,7 @@ for ImageNumber = 1:length(Locations)
     FixedLocations(:,1) = FixedLocations(:,1) - (FixedLocations(1,1)-FirstSpotX);
     FixedLocations(:,2) = FixedLocations(:,2) - (FixedLocations(1,2)-FirstSpotY);
     for ObjectNumber = 1:size(Locations{ImageNumber},1)
-        fprintf(fid,[num2str(FixedLocations(ObjectNumber,1)),'\t',num2str(FixedLocations(ObjectNumber,2)),'\n']);
+        fprintf(fid,[num2str(FixedLocations(ObjectNumber,1)),',',num2str(FixedLocations(ObjectNumber,2)),'\n']);
     end
     fclose(fid);
 end

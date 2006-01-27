@@ -3244,7 +3244,6 @@ else
             
             delete(timerfind);
             timer_handle = timer('StartFcn','tic','period',1,'ExecutionMode','fixedRate','tag','CellProfilerTimer');
-            handles.timer_handle = timer_handle;
             
             Timer_Callback = ['Timers=timerfind(''Tag'',''CellProfilerTimer'');',...
                 'TimerData = get(Timers(1),''UserData'');',...
@@ -3470,10 +3469,10 @@ else
                             handles = feval(ModuleName,handles);
                             guidata(handles.figure1,handles);
                             try
-                                TimerData = get(handles.timer_handle,'UserData');
+                                TimerData = get(timer_handle,'UserData');
                                 TimerData.NumberOfImageSets = handles.Current.NumberOfImageSets;
                                 TimerData.StartingImageSet = handles.Current.StartingImageSet;
-                                set(handles.timer_handle,'UserData',TimerData);
+                                set(timer_handle,'UserData',TimerData);
                             end
                             try
                                 FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
@@ -3558,13 +3557,13 @@ else
                     end
 
                     %%% Finds and records total  to run module.
-                    TimerData = get(handles.timer_handle,'UserData');
+                    TimerData = get(timer_handle,'UserData');
                     if SlotNumber==1 && handles.Current.SetBeingAnalyzed==handles.Current.StartingImageSet
                         TimerData.TimerTime(SlotNumber,handles.Current.SetBeingAnalyzed) = toc;
                     else
                         TimerData.TimerTime(SlotNumber,handles.Current.SetBeingAnalyzed) = toc - sum(TimerData.TimerTime(:));
                     end
-                    set(handles.timer_handle,'UserData',TimerData);
+                    set(timer_handle,'UserData',TimerData);
                     if ~isempty(findobj('Tag','DetailWindow'))
                         eval(get(DetailButton,'callback'));
                     end
@@ -3632,9 +3631,9 @@ else
                 %%% The setbeinganalyzed is increased by one and stored in the handles structure.
                 setbeinganalyzed = setbeinganalyzed + 1;
                 handles.Current.SetBeingAnalyzed = setbeinganalyzed;
-                TimerData = get(handles.timer_handle,'UserData');
+                TimerData = get(timer_handle,'UserData');
                 TimerData.SetBeingAnalyzed = setbeinganalyzed;
-                set(handles.timer_handle,'UserData',TimerData);
+                set(timer_handle,'UserData',TimerData);
                 guidata(gcbo, handles)
             end %%% This "end" goes with the "while" loop (going through the cycles).
 

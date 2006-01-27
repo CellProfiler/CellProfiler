@@ -4,8 +4,6 @@ Mike's TODO list
 
 Figure 5:  Anne 1-26-06: Process 2nd BioImage CNT image set, from Arne.
 
-Figure 1: DONE! except change the y axes to be identical in 1D.
-
 Figure 2D (G2/M separation)
 - For part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei. {UPDATE: We have already done a full phenotypic analysis of jason's image set - In Han is setting up CV to access this data and then we can go into the database and look for high p-H3 staining + small nuclei + eccentric nuclei and look for hits and then check the original images to see if they look metaphase arrested.}
 [PICK SOMETHING FROM THE NIRHT_4N_nucsize hit list that looks like it has a lot of metaphase nuclei. TEMP COPY of these images are on CP_G5 so you can choose a nice one. We might need to use shape (eccentricity) too - not just nuc size and 4N content. We wrote out two options for displaying - not sure which will be nicer.] [[UPDATE 1-26-06: I think now you have that spot number we found when looking with Ray and that is the image you want to use for this, right?]]
@@ -14,14 +12,9 @@ Figure 2I (kiger hits quantified)
 - We need to figure out if it will be feasible to find neat Kiger examples. We can use images from our kc genome-wide screen (or her original images).
 [[[RAY IS SORT OF WORKING ON THIS, SO WAIT AND SEE WHAT HE COMES UP WITH]]]
 
-Figure 3A (DNA content histograms)
-Anne 1-26-06: We are abandoning S2R+ cells, so just show example images for the human cells as noted on the figure, with outlines on top, esp. for a crowded part of an image. 
-
 Anne 1-27-06: Switch the positions and rename figure 4B and C (be careful because 4B has so many little elements that are not grouped at the moment. Then, draw lines from the proper row of the new 4B (red heatmap) to the proper panel of the new 4C (charts). E.g. panel 1 is cell count so a line should go from line 1 of the heatmap to this chart.  See the supplemental table 4 to figure out which panel is which row of the figure. Hopefully it will be pretty easy to match up.
 
 Post all the example images and pipelines at cellprofiler.org
-
-Anne 1-26-06: Give me the sources (names of people, institutions, web address, experimental details - whatever we have) of all the image files used in the paper (outside our own lab). Giving it to me all at once, in email form would probably be easiest.
 
 ****** END OF MANUSCRIPT PROJECTS ******
 

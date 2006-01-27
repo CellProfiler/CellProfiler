@@ -346,6 +346,7 @@ else
         saveas(gcf,'Temp.jpg');
         imageB = imread('Temp.jpg');
         delete(tempfig);
+        delete('Temp.jpg');
         imageB = round(sum(imageB,3)/3);
         imageB = imageB/max(max(imageB));
         imageB = imageB(69:802,157:1088);

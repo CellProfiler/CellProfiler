@@ -17,6 +17,8 @@ Figure 2I (kiger hits quantified)
 Figure 3A (DNA content histograms)
 Anne 1-26-06: We are abandoning S2R+ cells, so just show example images for the human cells as noted on the figure, with outlines on top, esp. for a crowded part of an image. 
 
+Anne 1-27-06: Switch the positions and rename figure 4B and C (be careful because 4B has so many little elements that are not grouped at the moment. Then, draw lines from the proper row of the new 4B (red heatmap) to the proper panel of the new 4C (charts). E.g. panel 1 is cell count so a line should go from line 1 of the heatmap to this chart.  See the supplemental table 4 to figure out which panel is which row of the figure. Hopefully it will be pretty easy to match up.
+
 Post all the example images and pipelines at cellprofiler.org
 
 Anne 1-26-06: Give me the sources (names of people, institutions, web address, experimental details - whatever we have) of all the image files used in the paper (outside our own lab). Giving it to me all at once, in email form would probably be easiest.

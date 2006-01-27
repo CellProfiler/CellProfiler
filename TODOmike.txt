@@ -1,7 +1,5 @@
 Mike's TODO list
 
-[I guess Colin is working on this>>>]: Mike, it would be nice to allow Matlab to export a transparent image of gridlines and (separately) gene names to help us navigate the low-res scanned genome-wide arrays. Ideally, we would use the 'display grid info' module in CellProfiler, but since Matlab can't handle the huge high res images, it would be nice to allow CP to make a grid and export the grid (and gene names) to an image file which we could then open in photoshop and paste into a new channel over the original image. This is a frequent issue, when we want to poke around by eye on the low res scanned image but we can't get our bearings for what gene is where.
-
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 5:  Anne 1-26-06: Process 2nd BioImage CNT image set, from Arne.
@@ -40,8 +38,6 @@ Anne 1/5: Playing with Jason's human images: the data is already processed throu
 hundreds of nuclei instead of zero (bad thresholding).  We need to go
 back in and fix this at some point.  I think the spots where it
 happened are obvious: they have a very low threshold.
-
-- Anne 1-18 - David Approved ~ $4 k to buy/build a computer. Go ahead and put a price list together and show it to me so i can approve it and we can buy it! If we need more money, we can scrape it from other grants, so just figure out what will be really useful/valuable and not absurdly expensive.
 
 - (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
 

@@ -122,7 +122,7 @@ for n = 1:length(FileNames)
         ZerosToAdd = num2str(zeros(NumberOfZerosToAdd,1))';
         NewText = [ZerosToAdd,OldNumber];
     else
-        NewText = OldFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
+        NewText = '';
     end
 
     %Renaming Stage

@@ -171,7 +171,7 @@ Prompts{4} = 'Enter the number of bins you want for the histogram(s). This numbe
 Prompts{5} = 'Any measurements less than this value will be combined in the leftmost bin. Enter automatic to determine this value automatically.';
 Prompts{6} = 'Any measurements greater than or equal to this value will be combined in the rightmost bin. Enter automatic to determine this value automatically.';
 Prompts{7} = 'Do you want to calculate one histogram for all the images you selected? (The alternative is to calculate a separate histogram for each image?';
-Prompts{8} = 'If you want to calculate histogram data only for objects meeting a threshold in a measurement, enter >, >=, =, <=, <, and enter the threshold in the box below, or leave the letter A to include all objects';
+Prompts{8} = 'If you want to calculate histogram data only for objects meeting a threshold in a measurement, enter >, >=, =, <=, <, and enter the threshold in the next page, or leave the letter A to include all objects';
 Prompts{9} = 'Threshold value, if applicable';
 Prompts{10} = 'Do you want the Y-axis (number of objects) to be absolute or relative?';
 Prompts{11} = 'Display as a compressed histogram (heatmap)?';

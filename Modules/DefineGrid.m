@@ -170,7 +170,7 @@ end
 RGBname = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

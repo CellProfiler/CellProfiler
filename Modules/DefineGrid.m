@@ -165,7 +165,7 @@ end
 
 
 %textVAR15 - What would you like to call an RGB image with R = the image, G = grid lines, and B = text?
-%defaultVAR15 = Do Not Save
+%defaultVAR15 = Do not save
 %infotype = imagegroup indep
 RGBname = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
@@ -321,7 +321,7 @@ else
     YLocations = Grid.YLocations;
     XLocations = Grid.XLocations;
     
-    if ~strcmp(RGBname,'Do Not Save')
+    if ~strcmp(RGBname,'Do not save')
         
         tempfig = figure('Color','black','CloseRequestFcn','','visible','off');
         colormap(gray);
@@ -527,6 +527,6 @@ GridFeatures = {'XLocationOfLowestXSpot' 'YLocationOfLowestYSpot' 'XSpacing' 'YS
 handles.Measurements.Image.(featfield) = GridFeatures;
 handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed} = GridInfoList;
 
-if ~strcmp(RGBname,'Do Not Save')
+if ~strcmp(RGBname,'Do not save')
     handles.Pipeline.(RGBname) = ColorImage;
 end

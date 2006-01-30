@@ -4,11 +4,6 @@ Mike's TODO list
 
 Still need the percent difference for cell counts (FIg 2A) between CP and Manual and between Manual 1 and Manual 2 (i think we had a bunch of emails going back and forth about this).
 
-Please upload the website, it has changed.
-
-Figure 5:  Anne 1-26-06: Process 2nd BioImage CNT image set, from Arne.
-[PROBABLY DONE, WAIT FOR ANNE TO ANALYZE AND SEE IF WE REALLY NEED ANYTHING MORE ON THIS].
-
 Figure 2D (G2/M separation)
 - For part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei. {UPDATE: We have already done a full phenotypic analysis of jason's image set - In Han is setting up CV to access this data and then we can go into the database and look for high p-H3 staining + small nuclei + eccentric nuclei and look for hits and then check the original images to see if they look metaphase arrested.}
 [PICK SOMETHING FROM THE NIRHT_4N_nucsize hit list that looks like it has a lot of metaphase nuclei. TEMP COPY of these images are on CP_G5 so you can choose a nice one. We might need to use shape (eccentricity) too - not just nuc size and 4N content. We wrote out two options for displaying - not sure which will be nicer.] [[UPDATE 1-26-06: I think now you have that spot number we found when looking with Ray and that is the image you want to use for this, right?]]
@@ -21,31 +16,30 @@ Anne 1-27-06: Switch the positions and rename figure 4B and C (be careful becaus
 
 Post all the example images and pipelines at cellprofiler.org
 
-****** END OF MANUSCRIPT PROJECTS ******
-
 When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
 
-Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
+****** END OF MANUSCRIPT PROJECTS ******
+
+Mike 1-31-06: Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
+
+Mike 1-31-06: Make ExportData a module.
+
+Mike 1-31-06: Compile CP for cluster purposes.
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
-
-Note: sample 48 = String, sample 340 = CyclinA
 
 Anne 1/17: I think you mentioned wanting to make MergeBatchOutput a data tool rather than a module so that we fix the time elapsed problems that were preventing exporting. Also, MergeBatchOutput produces an output file that has lost its real pipeline - the pipeline is just the MergeBatchOutput module. It should take the Pipeline and settings from the Batch_data.mat (first image set's output file).
 
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug? [Anne asked Ola 1/9/06]
 
-Anne 1/5: Playing with Jason's human images: the data is already processed through CellProfiler, but we have to fix a few images... some of the puro
-+ (which is supposed to kill uninfected cells) identified
+Anne 1/5: BE SURE TO TELL ASHA: Playing with Jason's human images: the data is already processed through CellProfiler, but we have to fix a few images... some of the puro+ (which is supposed to kill uninfected cells) identified
 hundreds of nuclei instead of zero (bad thresholding).  We need to go
 back in and fix this at some point.  I think the spots where it
 happened are obvious: they have a very low threshold.
 
-- (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication!
+- (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication! [waiting for Arne to confirm doses].
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
-
-- (Requested by Anne 10-31-05) - It'd be fun to see how long an image processing run takes on Matlab developer's version vs. the compiled version (which ought to be faster).  Eventually, we probably should do some real test runs (on the final version) so we can state in the paper the expected difference in speed between the two versions.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.
 EDIT: INSTEAD, TRY LIMITING THE NUMBER OF ENTRIES FOR HANDLES, THEN AT END OF IMAGE ANALYSIS COMBINE SEPERATE VARIABLES

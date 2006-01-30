@@ -2,6 +2,8 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
+Still need the percent difference for cell counts (FIg 2A) between CP and Manual and between Manual 1 and Manual 2 (i think we had a bunch of emails going back and forth about this).
+
 Please upload the website, it has changed.
 
 Figure 5:  Anne 1-26-06: Process 2nd BioImage CNT image set, from Arne.
@@ -22,6 +24,8 @@ Post all the example images and pipelines at cellprofiler.org
 ****** END OF MANUSCRIPT PROJECTS ******
 
 When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
+
+Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
 

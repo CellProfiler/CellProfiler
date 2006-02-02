@@ -358,6 +358,8 @@ See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into
 
 - (Requested by Anne 12-16-05)- There are a few neat movies we could process as examples at carpente_ata/AnnePermanentFiles. See Disc13 Cell Cycle movies (cool gastrulation movie) and Disc17 SyncytialNucDivisionMovies (drosophila movies).
 
+- (Requested by Anne)- Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5
+
 [ASK RAY IF THIS IS WORTH IT (HE SAYS PROBABLY NOT)]>
 
 +++ Restructure CellProfiler.m so that the GUI creates a configuration file which is then sent to a simple pipeline program. That would make farming out jobs to multiple machines easier, running a job that broke somewhere, and it would make it easier to create new GUIs aimed at different tasks, if people wanted to. The current GUI wouldn't actually need to change, it could still call the pipeline-running-function and parse errors from it (which is a definite good thing to keep around).   It would be entirely under the hood.

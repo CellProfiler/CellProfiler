@@ -20,8 +20,6 @@ When the manuscript is submitted, *please* move *everything* you've ever process
 
 Mike 1-31-06: Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
 
-Mike 1-31-06: Make ExportData a module.
-
 Mike 1-31-06: Compile CP for cluster purposes.
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???

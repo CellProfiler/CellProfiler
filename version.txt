@@ -3,6 +3,7 @@ Version 1.0.XXXX
  - Rotate correctly states that a positive angle gives counterclockwise rotation
  - MergeBatchOutput now looks in Default Output Folder
  - Timer functionality is improved
+ - Added ExportToExcel module (same function as ExportData)
 
 Version 1.0.3215
  - ClassifyObjects can now handle no objects

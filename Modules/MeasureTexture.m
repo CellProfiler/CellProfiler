@@ -362,8 +362,8 @@ for i = 1:6
         end
     end
     %%% Save measurements
-    handles.Measurements.(ObjectName).(['Texture_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
-    handles.Measurements.(ObjectName).(['Texture_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
+    handles.Measurements.(ObjectName).(['Texture_',num2str(ScaleOfTexture),'_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
+    handles.Measurements.(ObjectName).(['Texture_',num2str(ScaleOfTexture),'_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
 
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;

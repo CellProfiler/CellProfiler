@@ -25,16 +25,12 @@ Mike 1-31-06: Compile CP for cluster purposes.
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
 
-Anne 1/17: I think you mentioned wanting to make MergeBatchOutput a data tool rather than a module so that we fix the time elapsed problems that were preventing exporting. Also, MergeBatchOutput produces an output file that has lost its real pipeline - the pipeline is just the MergeBatchOutput module. It should take the Pipeline and settings from the Batch_data.mat (first image set's output file).
-
 Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug? [Anne asked Ola 1/9/06]
 
 Anne 1/5: BE SURE TO TELL ASHA: Playing with Jason's human images: the data is already processed through CellProfiler, but we have to fix a few images... some of the puro+ (which is supposed to kill uninfected cells) identified
 hundreds of nuclei instead of zero (bad thresholding).  We need to go
 back in and fix this at some point.  I think the spots where it
 happened are obvious: they have a very low threshold.
-
-- (Anne 12/15) - Sometime in January, process BioImage and Vitra cytoplasm to nucleus translocation data sets and send results to Ilya for publication! [waiting for Arne to confirm doses].
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

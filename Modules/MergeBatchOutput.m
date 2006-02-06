@@ -103,7 +103,7 @@ handles.Pipeline = BatchData.handles.Pipeline;
 Fieldnames = fieldnames(handles.Measurements);
 
 FileList = dir(BatchPath);
-Matches = ~ cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
+Matches = ~cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
 FileList = FileList(Matches);
 
 for i = 1:length(FileList),

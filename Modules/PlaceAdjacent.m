@@ -85,7 +85,6 @@ AdjacentImageName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %choiceVAR08 = Horizontal
 %choiceVAR08 = Vertical
 HorizontalOrVertical = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-HorizontalOrVertical = HorizontalOrVertical(1);
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = Should the incoming images be deleted from the pipeline after they are placed? (This saves memory, but prevents you from using the incoming images later in the pipeline)
@@ -127,54 +126,28 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Check that the images are the same height or width and place them
-%%% adjacent to each other.
-if strcmpi(HorizontalOrVertical,'H')
-    for i=1:(length(OrigImage)-1)
-        if size(OrigImage{i},1) ~= size(OrigImage{i+1},1)
-            error(['Image processingwas canceled in the ', ModuleName, ' module because the two input images must have the same height if they are to be placed horizontally adjacent to each other.'])
-        end
-        %%% If one of the images is multidimensional (color), the other
-        %%% one is replicated to match its dimensions.
-        if size(OrigImage{i},3) ~= size(OrigImage{i+1},3)
-            DesiredLayers = max(size(OrigImage{i},3),size(OrigImage{i+1},3));
-            if size(OrigImage{i},3) > size(OrigImage{i+1},3)
-                for i = 1:DesiredLayers, OrigImage{i+1}(:,:,i) = OrigImage{i+1}(:,:,1); end
-            else
-                for i = 1:DesiredLayers, OrigImage{i}(:,:,i) = OrigImage{i}(:,:,1); end
-            end
-        end
-        if i == 1
-            TempAdjacentImage = cat(2,OrigImage{i},OrigImage{i+1});
-        else
-            TempAdjacentImage = cat(2,TempAdjacentImage,OrigImage{i+1});
-        end
+%%% Determine which dimension to check for the same height or width.
+if strcmpi(HorizontalOrVertical,'Vertical')
+    DimensionToCheck = 2;
+    PotentialErrorMsg = 'width if they are to be placed vertically';
+    DimensionToPlace = 1;
+elseif strcmpi(HorizontalOrVertical,'Horizontal')
+    DimensionToCheck = 1;
+    PotentialErrorMsg = 'height if they are to be placed horizontally';
+    DimensionToPlace = 2;
+end
+
+for i=1:(length(OrigImage)-1)
+    if size(OrigImage{i},DimensionToCheck) ~= size(OrigImage{i+1},DimensionToCheck)
+        error(['Image processing was canceled in the ', ModuleName, ' module because the two input images must have the same ',PotentialErrorMsg,' adjacent to each other.'])
     end
-    AdjacentImage = TempAdjacentImage;
-elseif strcmpi(HorizontalOrVertical,'V')
-    for i=1:(length(OrigImage)-1)
-        if size(OrigImage{i},2) ~= size(OrigImage{i+1},2)
-            error(['Image processing was canceled in the ', ModuleName, ' module because the two input images must have the same height if they are to be placed horizontally adjacent to each other.'])
-        end
-        %%% If one of the images is multidimensional (color), the other
-        %%% one is replicated to match its dimensions.
-        if size(OrigImage{i},3) ~= size(OrigImage{i+1},3)
-            DesiredLayers = max(size(OrigImage{i},3),size(OrigImage{i+1},3));
-            if size(OrigImage{i},3) > size(OrigImage{i+1},3)
-                for i = 1:DesiredLayers, OrigImage{i+1}(:,:,i) = OrigImage{i+1}(:,:,1); end
-            else
-                for i = 1:DesiredLayers, OrigImage{i}(:,:,i) = OrigImage{i}(:,:,1); end
-            end
-        end
-        if i == 1
-            TempAdjacentImage = cat(1,OrigImage{i},OrigImage{i+1});
-        else
-            TempAdjacentImage = cat(1,TempAdjacentImage,OrigImage{i+1});
-        end
+    OrigImage = MakeLayersMatch(OrigImage,i);
+    
+    if i == 1
+        AdjacentImage = cat(DimensionToPlace,OrigImage{i},OrigImage{i+1});
+    else
+        AdjacentImage = cat(DimensionToPlace,AdjacentImage,OrigImage{i+1});
     end
-    AdjacentImage = TempAdjacentImage;
-else
-    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter H or V to specify whether to place the images adjacent to each other horizontally or vertically.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -198,6 +171,23 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the procesed imge to the
-%%% handles structure so it can be used by subsequent modules.
+%%% Saves the processed image to the handles structure so it can be used by
+%%% subsequent modules.
 handles.Pipeline.(AdjacentImageName) = AdjacentImage;
+
+%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION %%%
+%%%%%%%%%%%%%%%%%%%
+
+function OrigImage = MakeLayersMatch(OrigImage,i)
+
+%%% If one of the images is multidimensional (color), the other one is
+%%% replicated to match its dimensions.
+if size(OrigImage{i},3) ~= size(OrigImage{i+1},3)
+    DesiredLayers = max(size(OrigImage{i},3),size(OrigImage{i+1},3));
+    if size(OrigImage{i},3) > size(OrigImage{i+1},3)
+        for j = 1:DesiredLayers, OrigImage{i+1}(:,:,j) = OrigImage{i+1}(:,:,1); end
+    else
+        for j = 1:DesiredLayers, OrigImage{i}(:,:,j) = OrigImage{i}(:,:,1); end
+    end
+end

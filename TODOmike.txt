@@ -1,5 +1,8 @@
 Mike's TODO list
 
+Mike, we should develop a Programming note to answer the FAQ "I already have a Matlab script that does most of my processing; can I just use one CellProfiler module to do a particular step?" 
+This would give us a place to document how to call modules 'headless'. In particular, like what you are specifying for Sheldon, it would describe what components of the handles structure are needed (handles.Settings, handles.Preferences.FontSize or whatever).
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 DONE: Still need the percent difference for cell counts (FIg 2A) between CP and Manual and between Manual 1 and Manual 2 (i think we had a bunch of emails going back and forth about this).

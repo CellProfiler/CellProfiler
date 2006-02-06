@@ -1,6 +1,16 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
+- (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
+??? Error using ==> uigetdir
+STARTPATH argument must be a string.
+Error in ==> CellProfiler>LoadPipeline_Callback at 593
+        Pathname = uigetdir('','Please select directory where modules are located');
+Error in ==> CellProfiler>gui_mainfcn at 5204
+        feval(varargin{:});
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
 
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
 * When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.

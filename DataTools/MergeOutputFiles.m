@@ -1,19 +1,38 @@
-function MergeOutputFiles(handles)
+function MergeBatch(handles)
 
-% Help for the Merge Output Files tool:
+% Help for the Merge Batch Output module:
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
 % Merges together output files produced by the Create Batch Scripts module
-% into one regular CellProfiler output file. 
+% into one regular CellProfiler output file.
 % *************************************************************************
-% Note: this tool is beta-version and has not been thoroughly checked.
+% Note: this module is beta-version and has not been thoroughly checked.
 %
-% This tool merges CellProfiler output files that were created using the
-% Create Batch Scripts module. No image data will be stored in the final
-% output file, even if it was present in the original files. Be careful
-% that the resulting file that will be produced is not too large to be
-% opened in memory on your computer.
+% After a batch run has completed (using scripts created by the Create
+% Batch Scripts module), the individual output files contain results from a
+% subset of images and can be merged into a single output file. This module
+% assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
+% batch output file. The combined output is written to the output filename
+% as specified in the lower right box of CellProfiler's main window. Once
+% merged, this output file should be compatible with data tools.
+%
+% It does not make sense to run this module in conjunction with other
+% modules.  It should be the only module in the pipeline.
+%
+% Sometimes output files can be quite large, so before attempting merging,
+% be sure that the total size of the merged output file is of a reasonable
+% size to be opened on your computer (based on the amount of memory
+% available on your computer). It may be preferable instead to import data
+% from individual output files directly into a database - see the
+% ExportData data tool.
+%
+% Technical notes: The handles.Measurements field of the resulting output
+% file will contain all of the merged measurement data, but
+% handles.Pipeline is a snapshot of the pipeline after the first cycle
+% completes.
+%
+% See also: CreateBatchScripts.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -37,114 +56,102 @@ function MergeOutputFiles(handles)
 %
 % $Revision$
 
+%%% We want to load the handles from the batch process
+clear handles
 
 %%% Let the user select one output file to indicate the directory
-[ExampleFile, Pathname] = uigetfile('*.mat','Select one CellProfiler output file');
-if ~Pathname,return,end
-
-%%% Get all files with .mat extension in the chosen directory.
-%%% If the selected file name contains an 'OUT', it is assumed
-%%% that all interesting files contain an 'OUT'.
-AllFiles = dir(Pathname);                                                        % Get all file names in the chosen directory
-AllFiles = {AllFiles.name};                                                      % Cell array with file names
-files = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));                  % Keep files that has a .mat extension
-if strfind(ExampleFile,'OUT')
-    files = files(~cellfun('isempty',strfind(files,'OUT')));                     % Keep files with an 'OUT' in the name
+[BatchFile, BatchPath] = uigetfile('*.mat','Select the first batch CellProfiler output file, which ends in data.mat');
+if ~BatchPath
+    return
 end
-
-%%% Let the user select the files to be merged
-[selection,ok] = listdlg('liststring',files,'name','Merge Output Files',...
-    'PromptString','Select files to merge. Use Ctrl+Click or Shift+Click.','listsize',[300 500]);
-if ~ok,return, end
-files = files(selection);
-
-%%% Load the first file and check if it seems to be a CellProfiler file
-load(fullfile(Pathname, files{1}));
-if ~exist('handles','var')
-    CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{1}))
+if ~strfind(BatchFile,'data.mat')
+    msg = CPmsgbox('You must choose the first output file, ending in data.mat');
+    uiwait(msg);
     return
 end
 
-%%% Create a superhandles structure, the following files must have
-%%% the same structure as this superhandles structure.
-superhandles.Measurements = handles.Measurements;
-superhandles.Settings = handles.Settings;
-superhandles.Preferences = handles.Preferences;
-superhandles.Current.TimeStarted = handles.Current.TimeStarted;
-supermodules = superhandles.Settings.ModuleNames;
-
-%%% Let the user choose a name for the new output file.
-%%% Repeat until a valid filename is given.
 valid = 0;
 while valid == 0
-    answer = inputdlg({'Name for merged output file:'},'Merge output files',1,{'MergedOUT.mat'});
-    if isempty(answer),return;end
-    if length(answer{1}) < 4 | ~strcmp(answer{1}(end-3:end),'.mat') %#ok Ignore MLint
+    Answers = inputdlg({'What is the Batch file prefix?','What do you want to call the merged output file?'},'Merge output files',1,{'Batch_','MergedOUT.mat'});
+    if isempty(Answers)
+        return
+    end
+
+    if length(Answers{2}) < 4 | ~strcmp(Answers{2}(end-3:end),'.mat') %#ok Ignore MLint
         msg = CPmsgbox('The filename must have a .mat extension.');
         uiwait(msg);
-    elseif isempty(strfind(answer{1},'OUT'))
+        continue
+    elseif isempty(strfind(Answers{2},'OUT'))
         msg = CPmsgbox('The filename must contain an ''OUT'' to indicated that it is a CellProfiler file.');
         uiwait(msg);
-    else
-        valid = 1;
+        continue
     end
+
+    if ~exist(fullfile(BatchPath,[Answers{1},'data.mat']),'file')
+        msg = CPmsgbox(sprintf('The file %s does not exist.',[Answers{1},'data.mat']));
+        uiwait(msg);
+        continue
+    end
+
+    valid = 1;
 end
-OutputFileName = answer{1};
+OutputFileName = Answers{2};
+BatchFilePrefix = Answers{1};
 
+%%% Load the data file and check that it contains handles
+load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
+if ~exist('handles','var')
+    CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',[BatchFilePrefix,'data.mat']))
+    return
+end
 
-%%% Loop over the selected files and add the data to the superhandles structure.
-waitbarhandle = waitbar(1/length(files),'Merging files');
-for fileno = 2:length(files)
+Fieldnames = fieldnames(handles.Measurements);
 
-    %%% Clear the handles structure before loading the next file
-    clear handles
+FileList = dir(BatchPath);
+Matches = ~cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
+FileList = FileList(Matches);
 
-    %%% Load the file and check that it seems to be a CellProfiler file
-    load(fullfile(Pathname, files{fileno}));
-    if ~exist('handles','var')
-        CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',files{fileno}))
-        return
+waitbarhandle = CPwaitbar(0,'Merging files');
+for i = 1:length(FileList)
+    SubsetData = load(fullfile(BatchPath,FileList(i).name));
+    FileList(i).name
+
+    if (isfield(SubsetData.handles, 'BatchError')),
+        error(['Image processing was canceled in the ', ModuleName, ' module because there was an error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
     end
 
-    %%% Check for inconsistencies
-    %%% Compare the modules used. If they don't match, abort.
-    modulenames = handles.Settings.ModuleNames;
-    if length(modulenames) ~= length(supermodules)
-        CPerrordlg(sprintf('Inconsistency in file %s.',files{fileno}))
-        return
-    end
-    for j = 1:length(modulenames)
-        if ~strcmp(modulenames{j},supermodules{j})
-            CPerrordlg(sprintf('Inconsistency in file %s.',files{fileno}))
-            return
-        end
-    end
+    SubSetMeasurements = SubsetData.handles.Measurements;
 
-    %%% OK, it looks like we can merge the files
-    %%% Note that only the fields under handles.Measurements are merged
-    %%% There should be two levels under handles.Measurements
-    firstfields = fieldnames(handles.Measurements);                                         % The first level contains for example Image, Cells, Nuclei,...
-    for i = 1:length(firstfields)
-        secondfields = fieldnames(handles.Measurements.(firstfields{i}));
-
+    for fieldnum=1:length(Fieldnames)
+        secondfields = fieldnames(handles.Measurements.(Fieldnames{fieldnum}));
         % Some fields should not be merged, remove these from the list of fields
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Pathname')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
-
-        % Merge!
         for j = 1:length(secondfields)
-            superhandles.Measurements.(firstfields{i}).(secondfields{j}) = ...
-                cat(2,superhandles.Measurements.(firstfields{i}).(secondfields{j}),...
-                handles.Measurements.(firstfields{i}).(secondfields{j}));
+            idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));
+            idxs(1) = 0;
+            if (fieldnum == 1),
+                lo = min(find(idxs(2:end))+1);
+                hi = max(find(idxs(2:end))+1);
+                disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
+            end
+            handles.Measurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs) = SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs);
         end
     end
 
-    %%% Update waitbar
-    waitbar(fileno/length(files),waitbarhandle);drawnow
+    %%% Update the waitbar.
+    CPwaitbar(i/length(FileList),waitbarhandle);
+    drawnow
 end
 
-%%% Done! Close waitbar, save the file and restore the old handles structure
-close(waitbarhandle)
-CPmsgbox('Merging is completed.')
-handles = superhandles;
-save(fullfile(Pathname,OutputFileName),'handles');
+%%% These fields are not calculated during batch processing and should be
+%%% removed.
+if isfield(handles.Measurements.Image,'TimeElapsed')
+    handles.Measurements.Image = rmfield(handles.Measurements.Image,'TimeElapsed');
+end
+handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleError');
+handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
+
+close(waitbarhandle);
+CPmsgbox('Merging is completed.');
+save(fullfile(BatchPath,OutputFileName),'handles');

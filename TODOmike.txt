@@ -1,5 +1,7 @@
 Mike's TODO list
 
+(Anne 2-7-06) - please install python 2.4 on one of the macs and let me know. There is an open-source tool for clustering genome-wide data I think we should try out.
+
 Mike, we should develop a Programming note to answer the FAQ "I already have a Matlab script that does most of my processing; can I just use one CellProfiler module to do a particular step?" 
 This would give us a place to document how to call modules 'headless'. In particular, like what you are specifying for Sheldon, it would describe what components of the handles structure are needed (handles.Settings, handles.Preferences.FontSize or whatever).
 

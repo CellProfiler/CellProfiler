@@ -67,6 +67,22 @@ function handles = IdentifyPrimAutomatic(handles)
 % quality-control filters, e.g. a second watershed on the distance
 % transformed image to break up remaining clusters (Wahlby et al., 2004).
 %
+% Malpica, N., de Solorzano, C. O., Vaquero, J. J., Santos, A., Vallcorba,
+% I., Garcia-Sagredo, J. M., and del Pozo, F. (1997). Applying watershed
+% algorithms to the segmentation of clustered nuclei. Cytometry 28,
+% 289-297.
+% Meyer, F., and Beucher, S. (1990). Morphological segmentation. J Visual
+% Communication and Image Representation 1, 21-46.
+% Ortiz de Solorzano, C., Rodriguez, E. G., Jones, A., Pinkel, D., Gray, J.
+% W., Sudar, D., and Lockett, S. J. (1999). Segmentation of confocal
+% microscope images of cell nuclei in thick tissue sections. Journal of
+% Microscopy-Oxford 193, 212-226.
+% Wahlby, C. (2003) Algorithms for applied digital image cytometry, Ph.D.,
+% Uppsala University, Uppsala.
+% Wahlby, C., Sintorn, I. M., Erlandsson, F., Borgefors, G., and Bengtsson,
+% E. (2004). Combining intensity, edge and shape information for 2D and 3D
+% segmentation of cell nuclei in tissue sections. J Microsc 215, 67-76.
+%
 % Settings:
 %
 % Typical diameter of objects, in pixel units (Min,Max):

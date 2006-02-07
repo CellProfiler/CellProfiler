@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 2/7) Mike 1-31-06: Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
+
+-(Mike 2/7) Mike, we should develop a Programming note to answer the FAQ "I already have a Matlab script that does most of my processing; can I just use one CellProfiler module to do a particular step?" 
+This would give us a place to document how to call modules 'headless'. In particular, like what you are specifying for Sheldon, it would describe what components of the handles structure are needed (handles.Settings, handles.Preferences.FontSize or whatever).
+
 -(Mike 2/6) Anne 1/17: I think you mentioned wanting to make MergeBatchOutput a data tool rather than a module so that we fix the time elapsed problems that were preventing exporting. Also, MergeBatchOutput produces an output file that has lost its real pipeline - the pipeline is just the MergeBatchOutput module. It should take the Pipeline and settings from the Batch_data.mat (first image set's output file).
 
 -(Mike 2/2) Mike 1-31-06: Make ExportData a module.

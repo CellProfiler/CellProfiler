@@ -407,3 +407,29 @@ helpdlg(help('HelpProgrammingNotes'))
 % visible. We are not using CPhelpdlg because this allows the help to be
 % accessed from the command line of Matlab. The code of theis module
 % (helpdlg) is never run from inside CP anyway.
+%
+% *** RUNNING CELLPROFILER WITHOUT THE GRAPHICAL USER INTERFACE ***
+%
+% In order to run CellProfiler modules without the GUI you must have the 
+% following variables:
+% 
+% handles.Settings.ModuleNames (for all modules in pipeline)
+% handles.Settings.VariableValues (for all modules in pipeline)
+% handles.Current.CurrentModuleNumber (must be consistent with pipeline)
+% handles.Current.SetBeingAnalyzed (must be consistent with pipeline)
+% handles.Current.FigureNumberForModuleXX (for all modules in pipeline)
+% handles.Current.NumberOfImageSets (set by LoadImages, so if it is run
+% first, you do not need to set it)
+% handles.Current.DefaultOutputDirectory
+% handles.Current.DefaultImageDirectory
+% handles.Current.NumberOfModules
+% handles.Preferences.IntensityColorMap (only used for display purposes)
+% handles.Preferences.LabelColorMap (only used for display purposes)
+% handles.Preferences.FontSize (only used for display purposes)
+% 
+% You will also need to have the CPsubfunctions folder, since our Modules
+% call CP subfunctions for many tasks. The CurrentModuleNumber needs to be
+% set correctly for each module in the pipeline since this is how the
+% variable values are called. In order to see what all of these variables 
+% look like, run a sample analysis and then go to File -> Tech Diagnosis.
+% This will let you manipulate the handles variable in MatLab.

@@ -2,9 +2,6 @@ Mike's TODO list
 
 (Anne 2-7-06) - please install python 2.4 on one of the macs and let me know. There is an open-source tool for clustering genome-wide data I think we should try out.
 
-Mike, we should develop a Programming note to answer the FAQ "I already have a Matlab script that does most of my processing; can I just use one CellProfiler module to do a particular step?" 
-This would give us a place to document how to call modules 'headless'. In particular, like what you are specifying for Sheldon, it would describe what components of the handles structure are needed (handles.Settings, handles.Preferences.FontSize or whatever).
-
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 2D (G2/M separation)
@@ -20,8 +17,6 @@ Post all the example images and pipelines at cellprofiler.org
 When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
 
 ****** END OF MANUSCRIPT PROJECTS ******
-
-Mike 1-31-06: Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
 
 Mike 1-31-06: Compile CP for cluster purposes.
 

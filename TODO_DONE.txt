@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 2/8) (Anne 2-7-06) - Some people at the meeting who downloaded mentioned that it was not obvious they'd need Matlab 7 - can you make sure the installation instructions/website are clear? Also, people seem to always miss the fact that the installation instructions and manual are there near the download button. Can we redesign the page to make it more clear?
+
+-(Mike 2/8) (Anne 2-7-06) - please install python 2.4 on one of the macs and let me know. There is an open-source tool for clustering genome-wide data I think we should try out.
+
 -(Mike 2/7) Mike 1-31-06: Prepare stuff to send to Sheldon for OME - test which substructures are needed for running CP 'headless'. Add this info to the programming notes, too (list of substructures needed by modules: X,y,z)
 
 -(Mike 2/7) Mike, we should develop a Programming note to answer the FAQ "I already have a Matlab script that does most of my processing; can I just use one CellProfiler module to do a particular step?" 

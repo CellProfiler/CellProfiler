@@ -1,9 +1,5 @@
 Mike's TODO list
 
-(Anne 2-7-06) - Some people at the meeting who downloaded mentioned that it was not obvious they'd need Matlab 7 - can you make sure the installation instructions/website are clear? Also, people seem to always miss the fact that the installation instructions and manual are there near the download button. Can we redesign the page to make it more clear?
-
-(Anne 2-7-06) - please install python 2.4 on one of the macs and let me know. There is an open-source tool for clustering genome-wide data I think we should try out.
-
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 Figure 2D (G2/M separation)

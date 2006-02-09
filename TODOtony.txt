@@ -2,7 +2,6 @@ Tony's TODO list
 
 - (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.
 
-
 - (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.
 
 -(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?

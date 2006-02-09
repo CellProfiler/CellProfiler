@@ -1,6 +1,14 @@
 Colin's TODO list
 
+(Anne 2-9-06) Colin, you can take the iMac off your list because Mike has it set up, and also the business card thing doesn't need to be done - mike will print his own soon.
 
+(Anne 2-9-06 URGENT) - someone tried opening tif files that do not have an extension and they do not even show up in the window of CP. We need to fix the display in the window, plus the LoadImages module to handle files with no extension. There is a variable that asks the user what the format is, if no extension is present, but we have never set it up to work. I put a tif file called slide3-1 in the Dev DropBox, plus slide3-1.tif.
+
+(Anne 2-9-06 URGENT) - Please modify the IdentifyPrimManual so that after each clicking/identification step, the user has the choice of clicking/identifying another object within the image or continuing on in the pipeline. This would allow them to identify an unlimited number of objects per image, rather than just one.
+
+(Anne 2-9-06 URGENT) - There is a weird bug in the IdentifyPrimManual in the pipeline I put in the Dev. DropBox (temp1PIPE.mat, which goes with slide3-1.tif) I usually try to outline a cell with ~10 clicks in a circular shape and it fails but does not give much of an error msg.
+
+(Anne 2-9-06) Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
 
 - We have ordered a new iMac so that more people can use CellProfiler & CellVIsualizer. When it arrives, IT will install basic software but I would like you to install MAtlab and CellProfiler (the svn'd checked-out version) and CellVisualizer. Instructions for the first two are on the wiki, under protocols. If the instructions are poor, please update them! Also set up the Connect To Servers commands (see wiki).  The computer should be named CellProfilerG5_3 (though I think IT does the naming). The new computer should go in room A (where the printer is). Thanks! 
 

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Colin 2/10) (Anne 2-9-06 URGENT) - someone tried opening tif files that do not have an extension and they do not even show up in the window of CP. We need to fix the display in the window, plus the LoadImages module to handle files with no extension. There is a variable that asks the user what the format is, if no extension is present, but we have never set it up to work. I put a tif file called slide3-1 in the Dev DropBox, plus slide3-1.tif.
+
 -(Mike 2/8) (Anne 2-7-06) - Some people at the meeting who downloaded mentioned that it was not obvious they'd need Matlab 7 - can you make sure the installation instructions/website are clear? Also, people seem to always miss the fact that the installation instructions and manual are there near the download button. Can we redesign the page to make it more clear?
 
 -(Mike 2/8) (Anne 2-7-06) - please install python 2.4 on one of the macs and let me know. There is an open-source tool for clustering genome-wide data I think we should try out.

@@ -54,13 +54,15 @@ else
         
     DiscardsByExtension = zeros(size(FileNamesNoDir));
     for i = [1:length(DiscardsByExtension)]
-        DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
+        if ~isempty(strfind(FileNamesNoDir{i},'.'))
+            DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
+        end
     end
    
     %%% Combines all of the DiscardLogical arrays into one.
     DiscardLogical = DiscardLogical1 | DiscardsByExtension;
     %%% Eliminates filenames to be discarded.
-    if isempty(DiscardLogical) == 1
+    if isempty(DiscardLogical)
         NotYetTextMatchedFileNames = FileNamesNoDir;
     else NotYetTextMatchedFileNames = FileNamesNoDir(~DiscardLogical);
     end

@@ -1,8 +1,5 @@
 Colin's TODO list
 
-(Anne 2-9-06) Colin, you can take the iMac off your list because Mike has it set up, and also the business card thing doesn't need to be done - mike will print his own soon.
-
-(Anne 2-9-06 URGENT) - someone tried opening tif files that do not have an extension and they do not even show up in the window of CP. We need to fix the display in the window, plus the LoadImages module to handle files with no extension. There is a variable that asks the user what the format is, if no extension is present, but we have never set it up to work. I put a tif file called slide3-1 in the Dev DropBox, plus slide3-1.tif.
 
 (Anne 2-9-06 URGENT) - Please modify the IdentifyPrimManual so that after each clicking/identification step, the user has the choice of clicking/identifying another object within the image or continuing on in the pipeline. This would allow them to identify an unlimited number of objects per image, rather than just one.
 
@@ -10,13 +7,9 @@ Colin's TODO list
 
 (Anne 2-9-06) Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
 
-- We have ordered a new iMac so that more people can use CellProfiler & CellVIsualizer. When it arrives, IT will install basic software but I would like you to install MAtlab and CellProfiler (the svn'd checked-out version) and CellVisualizer. Instructions for the first two are on the wiki, under protocols. If the instructions are poor, please update them! Also set up the Connect To Servers commands (see wiki).  The computer should be named CellProfilerG5_3 (though I think IT does the naming). The new computer should go in room A (where the printer is). Thanks! 
-
 -There are some problems with the Help Menus.
 
 - Colin, I made a ton of changes to identify modules so they all produce outlines consistently. Could you please check that they all still work with overlay outlines?
 
 - (Requested by Anne 9-21-05) - We haven't tested these modules in a *very* long time - so we should try them out & make sure they work!
 Restart
-
-- Create business cards for yourself! I've put files in Promotional > Business Cards, plus instructions for doing it. For mine, I'd like to keep the format of having WIBR-stuff on the front and CP stuff on the back. You are welcome to create CP-only cards (this is probably better because officially the WIBR doesn't like us to use their logo without getting it approved through the administration which is a pain).  I've got a word file that contains many links to the same business card file - that way you can adjust the business card file for different people or to update contact info, and then just change the link in the word file and it should all update. I bought stiff paper which apparently feeds through laser printers ok - it's on my desk. We have a laser printer in Lahra/David Sabatini's office called SABATINI COLOR you can use, but we should try to minimize how much color ink we use, so making the cards have a white background would be a good idea, and would look nice for the CP logo (for mine, with the WIBR stuff, i think we have to keep it purple background, but for practicing, I'd stick to a white background card). I'm sure we ca n find a paper cutter somewhere (perhaps the printing room, which i think is room 213).  The spacing of the cards on those template files may be messed up because it's designed for perforated business card paper, but that paper is kind of lame because it leaves little fuzzies on the edges of the cards so i think we are better off using plain card stock and a paper cutter.  Once you have things set up for you, I'd like one sheet of cards, and you can ask Mike & Susan if they'd like some too. Update the instructions if anything changes. I guess we could SVN commit a new card for each person?  or just store a card for each person on your local computer but leave the template untouched. whatever. have fun.  don't give yourself a fancy title.  :)  Colin Clarke, VP of UROPs.  :)

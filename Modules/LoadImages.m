@@ -218,13 +218,7 @@ ImagesPerSet = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = If your file names do not have extensions, choose the file format of the images (Note, this doesn't work currently)
-%choiceVAR12 = tif
-%choiceVAR12 = bmp
-%choiceVAR12 = gif
-%choiceVAR12 = jpg
-%choiceVAR12 = mat
-%choiceVAR12 = DIB
+%textVAR12 = If you are loading a movie, what is the extension?
 %choiceVAR12 = avi
 %choiceVAR12 = stk
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
@@ -297,7 +291,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .tif, .jpg, .DIB).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Image');
+            FileNames = CPretrievemediafilenames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Image');
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
@@ -327,7 +321,7 @@ if SetBeingAnalyzed == 1
         else
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .avi or .stk).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(SpecifiedPathname,['.',FileFormat],AnalyzeSubDir,'Regular','Movie');
+            FileNames = CPretrievemediafilenames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Movie');
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
@@ -570,7 +564,7 @@ for n = 1:length(ImageName)
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         catch ErrorMessage = lasterr;
             ErrorNumber = {'first','second','third','fourth'};
-            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in the format you specified: ', FileFormat, '. Matlab says the problem is: ', ErrorMessage])
+            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
         end % Goes with: catch
 
         % Create a cell array with the filenames

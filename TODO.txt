@@ -1,6 +1,15 @@
 CellProfiler cell image analysis software development 
 December 16, 2005
 
+********** IMPORTANT **************
+
+- Currently, when module variables change, loading saved settings does not work and even loading default variables does not work correctly. Here is what Anne and Mike decided would be the best way to handle this:
+
+When a module that has been updated is encountered, CellProfiler should simply open a dialog box which tells the user that Module #X LoadImages is out of date and here are the values used in the previous version. Then CellProfiler should load all the default settings for that module (correctly, i am pretty sure it doesnt work now).
+
+
+***********************************
+
 - (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
 ??? Error using ==> uigetdir
 STARTPATH argument must be a string.

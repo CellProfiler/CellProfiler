@@ -121,32 +121,32 @@ if handles.Current.SetBeingAnalyzed == 1
     for i = per_image_names,
         p=p+1;
         if strfind(i{1}, 'Filename')
-            fprintf(fsetup, ', %s VARCHAR2(128)', ['col',num2str(p)]);
+            fprintf(fsetup, ',\n%s VARCHAR2(128)', ['col',num2str(p)]);
         elseif  strfind(i{1}, 'Path'),
-            fprintf(fsetup, ', %s VARCHAR2(128)', ['col',num2str(p)]);
+            fprintf(fsetup, ',\n%s VARCHAR2(128)', ['col',num2str(p)]);
         else
-            fprintf(fsetup, ', %s FLOAT', ['col',num2str(p)]);
+            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
         end
     end
 
     %add columns for mean and stddev for per_object_names
     for j=per_object_names,
         p=p+1;
-        fprintf(fsetup, ', %s FLOAT', ['col',num2str(p)]);
+        fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
     end
 
     for h=per_object_names,
         p=p+1;
-        fprintf(fsetup, ', %s FLOAT', ['col',num2str(p)]);
+        fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
     end
 
     fprintf(fsetup, ');\n');
     p = p+1;
     PrimKeyPosition = p;
-    fprintf(fsetup, 'CREATE TABLE IF NOT EXISTS %s_Per_Object (col1 NUMBER, %s NUMBER', TablePrefix,['col',num2str(p)]);
+    fprintf(fsetup, 'CREATE TABLE %s_Per_Object (col1 NUMBER, %s NUMBER', TablePrefix,['col',num2str(p)]);
     for i = per_object_names
         p=p+1;
-        fprintf(fsetup, ', %s FLOAT', ['col',num2str(p)]);
+        fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
     end
 
     fprintf(fsetup, ');\n');
@@ -157,7 +157,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%%%%%%%%%%%%%%%%%%
 
     ffinish = fopen(fullfile(OutDir, [TablePrefix, '_FINISH.SQL']), 'W');
-    fprintf(ffinish, 'ALTER TABLE %s_Per_Image ADD PRIMARY KEY (col1);',TablePrefix);
+    fprintf(ffinish, 'ALTER TABLE %s_Per_Image ADD PRIMARY KEY (col1);\n',TablePrefix);
     fprintf(ffinish, 'ALTER TABLE %s_Per_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
     fclose(ffinish);
 
@@ -217,7 +217,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%%%%%%%%%%%%%%%%%%%%
 
     fcolload = fopen(fullfile(OutDir, [TablePrefix, '_LOADCOLUMNS.CTL']), 'W');
-    fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %s_Column_Names FIELDS TERMINATED '' '' (shortname, longname)',[TablePrefix, '_columnnames.CSV'],TablePrefix);
+    fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %s_Column_Names FIELDS TERMINATED BY '' '' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[TablePrefix, '_columnnames.CSV'],TablePrefix);
     fclose(fcolload);
 
     %%%%%%%%%%%%%%%%%%%%
@@ -241,9 +241,9 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
     end
 
-    fprintf(fimageloader, 'INTO TABLE  %s_Per_Image FIELDS TERMINATED BY '' '' (col1,',TablePrefix);
+    fprintf(fimageloader, 'INTO TABLE  %s_Per_Image FIELDS TERMINATED BY '' '' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
     for i = 2:(PrimKeyPosition-1)
-        fprintf(fimageloader, '\n%s', ['col',num2str(i),',']);
+        fprintf(fimageloader, ',\n%s', ['col',num2str(i)]);
     end
     fprintf(fimageloader, ')');
 
@@ -270,9 +270,9 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
     end
 
-    fprintf(fobjectloader, 'INTO TABLE  %s_Per_Object FIELDS TERMINATED BY '' '' (col1,',TablePrefix);
+    fprintf(fobjectloader, 'INTO TABLE  %s_Per_Object FIELDS TERMINATED BY '' '' (col1',TablePrefix);
     for i = PrimKeyPosition:FinalColumnPosition
-        fprintf(fobjectloader, '\n%s', ['col',num2str(i),',']);
+        fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
     end
     fprintf(fobjectloader, ')');
 
@@ -333,18 +333,18 @@ for img_idx = FirstSet:LastSet
 
             if strcmp(SubFieldname, 'Image'),
                 if ischar(vals)
-                    fprintf(fimage, '\t%s', vals);
+                    fprintf(fimage, ',%s', vals);
                     %vals{} is cellarray, need loop through to get all elements value
                 elseif iscell(vals)
                     if ischar(vals{1}) %is char
                         for cellindex = 1:size(vals,2),
-                            fprintf(fimage, '\t%s', vals{cellindex});
+                            fprintf(fimage, ',%s', vals{cellindex});
                         end
                     else %vals{cellindex} is not char
-                        fprintf(fimage, '\t%g', cell2mat(vals));
+                        fprintf(fimage, ',%g', cell2mat(vals));
                     end
                 else %vals is number
-                    fprintf(fimage, '\t%g', vals);
+                    fprintf(fimage, ',%g', vals);
                 end
             else
                 if ~isa(vals,'numeric')
@@ -368,24 +368,24 @@ for img_idx = FirstSet:LastSet
     end
     %print mean, stdev for all measurements per image
 
-    fprintf(fimage,'\t');
-    formatstr = ['%g' repmat('\t%g',1,size(perobjectvals_mean, 2)-1)];
+    fprintf(fimage,',');
+    formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean, 2)-1)];
     if size(perobjectvals_mean,1)==1
         fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
-        fprintf(fimage,'\t');
+        fprintf(fimage,',');
         for i= 1:size(perobjectvals_mean,2),
-            fprintf(fimage,'\t',''); %ignore NaN
+            fprintf(fimage,',',''); %ignore NaN
         end
         fprintf(fimage, '\n');
     else
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
-        fprintf(fimage,'\t');
+        fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
         fprintf(fimage, '\n');
     end
 end
 
-formatstr = ['%g' repmat('\t%g',1,size(perobjectvals, 2)-1) '\n'];
+formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];
 %if vals{1} is empty skip writting into object file
 if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
     fprintf(fobject, formatstr, perobjectvals');

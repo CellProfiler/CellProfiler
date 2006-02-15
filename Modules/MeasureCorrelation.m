@@ -191,7 +191,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                 index = find(LabelMatrixImage{ObjectNameNbr} == ObjectNbr);   % Get the indexes for the this object number
                 try
                     if isempty(index) || numel(index) == 1 % If the object does not exist in the label matrix or is only one pixel, the correlation calculation will fail, so we assign the correlation to be NaN.
-                        CorrelationForCurrentObject = NaN;
+                        CorrelationForCurrentObject = 0;
                     else
                         c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
                         CorrelationForCurrentObject = c(1,2);

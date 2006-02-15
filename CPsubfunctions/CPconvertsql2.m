@@ -167,29 +167,23 @@ if handles.Current.SetBeingAnalyzed == 1
 
     fcol = fopen(fullfile(OutDir, [TablePrefix, '_columnnames.CSV']), 'W');
     fprintf(fcol, '%s', 'col1');
-    fprintf(fcol, '\t%s','ImageNumber');
-    fprintf(fcol, '\n');
+    fprintf(fcol, ',%s\n','ImageNumber');
 
     p=1;
     for k=per_image_names
         p=p+1;
         fprintf(fcol, '%s', ['col', num2str(p)] );
-        fprintf(fcol, '\t%s', k{1} );
-        fprintf(fcol, '\n');
-
+        fprintf(fcol, ',%s\n', k{1} );
     end
     for l=per_object_names
         p=p+1;
         fprintf(fcol, '%s', ['col', num2str(p)]);
-        fprintf(fcol, '\t%s', ['Mean_', l{1}]);
-        fprintf(fcol, '\n');
-
+        fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
     end
     for m=per_object_names
         p=p+1;
         fprintf(fcol, '%s', ['col', num2str(p)]);
-        fprintf(fcol, '\t%s', ['Stdev_', m{1}]);
-        fprintf(fcol, '\n');
+        fprintf(fcol, ',%s\n', ['Stdev_', m{1}]);
     end
 
     p=p+1;
@@ -199,14 +193,12 @@ if handles.Current.SetBeingAnalyzed == 1
 
     % Per_Object table's colnames
     fprintf(fcol, '%s', ['col', num2str(p)]);
-    fprintf(fcol, '\t%s','ObjectNumber');
-    fprintf(fcol, '\n');
+    fprintf(fcol, ',%s\n','ObjectNumber');
 
     for n=per_object_names
         p=p+1;
         fprintf(fcol, '%s', ['col', num2str(p)]);
-        fprintf(fcol, '\t%s', n{1} );
-        fprintf(fcol, '\n');
+        fprintf(fcol, ',%s\n', n{1} );
     end
     fclose(fcol);
 
@@ -217,7 +209,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%%%%%%%%%%%%%%%%%%%%
 
     fcolload = fopen(fullfile(OutDir, [TablePrefix, '_LOADCOLUMNS.CTL']), 'W');
-    fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %s_Column_Names FIELDS TERMINATED BY '' '' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[TablePrefix, '_columnnames.CSV'],TablePrefix);
+    fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %s_Column_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[TablePrefix, '_columnnames.CSV'],TablePrefix);
     fclose(fcolload);
 
     %%%%%%%%%%%%%%%%%%%%
@@ -231,6 +223,7 @@ if handles.Current.SetBeingAnalyzed == 1
         if isnan(BatchSize)
             errordlg('STOP!');
         end
+        fprintf(fimageloader, 'INFILE %s1_to_1_image.CSV\n', OutfilePrefix);
         for n = 2:BatchSize:handles.Current.NumberOfImageSets
             StartImage = n;
             EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
@@ -241,7 +234,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
     end
 
-    fprintf(fimageloader, 'INTO TABLE  %s_Per_Image FIELDS TERMINATED BY '' '' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
+    fprintf(fimageloader, 'INTO TABLE  %s_Per_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
     for i = 2:(PrimKeyPosition-1)
         fprintf(fimageloader, ',\n%s', ['col',num2str(i)]);
     end
@@ -260,6 +253,7 @@ if handles.Current.SetBeingAnalyzed == 1
         if isnan(BatchSize)
             errordlg('STOP!');
         end
+        fprintf(fobjectloader, 'INFILE %s1_to_1_object.CSV\n', OutfilePrefix);
         for n = 2:BatchSize:handles.Current.NumberOfImageSets
             StartImage = n;
             EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
@@ -270,7 +264,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
     end
 
-    fprintf(fobjectloader, 'INTO TABLE  %s_Per_Object FIELDS TERMINATED BY '' '' (col1',TablePrefix);
+    fprintf(fobjectloader, 'INTO TABLE  %s_Per_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
     for i = PrimKeyPosition:FinalColumnPosition
         fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
     end
@@ -386,7 +380,8 @@ for img_idx = FirstSet:LastSet
 end
 
 formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];
-%if vals{1} is empty skip writting into object file
+%%% THIS LINE WRITES ENTIRE OBJECT VALS FILE
+%%% if vals{1} is empty skip writting into object file
 if ~iscell(vals) ||( iscell(vals) && (~isempty(vals{1}))  )
     fprintf(fobject, formatstr, perobjectvals');
 end

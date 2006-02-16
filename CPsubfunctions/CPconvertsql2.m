@@ -223,11 +223,11 @@ if handles.Current.SetBeingAnalyzed == 1
         if isnan(BatchSize)
             errordlg('STOP!');
         end
-        fprintf(fimageloader, 'INFILE %s1_to_1_image.CSV\n', OutfilePrefix);
+        fprintf(fimageloader, 'INFILE %s1_1_image.CSV\n', OutfilePrefix);
         for n = 2:BatchSize:handles.Current.NumberOfImageSets
             StartImage = n;
             EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-            SQLFileName = sprintf('%s%d_to_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
+            SQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
             fprintf(fimageloader, 'INFILE %s\n', SQLFileName);
         end
     else
@@ -253,11 +253,11 @@ if handles.Current.SetBeingAnalyzed == 1
         if isnan(BatchSize)
             errordlg('STOP!');
         end
-        fprintf(fobjectloader, 'INFILE %s1_to_1_object.CSV\n', OutfilePrefix);
+        fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
         for n = 2:BatchSize:handles.Current.NumberOfImageSets
             StartImage = n;
             EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-            SQLFileName = sprintf('%s%d_to_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
+            SQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
             fprintf(fobjectloader, 'INFILE %s\n', SQLFileName);
         end
     else

@@ -9,6 +9,24 @@ When a module with a newer variable revision number is encountered, CellProfiler
 
 ***********************************
 
+- (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. I put in a Crop module to produce OrigGreen in the pipeline instead of loading it directly. When I went to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), CP I think tries to remove that image name from the image group, causing problems in downstream modules. Here's the error:
+??? Assignment has more non-singleton rhs dimensions than non-singleton
+subscripts
+
+Error in ==> CellProfiler>storevariable at 2158
+                    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = VarVals;
+
+Error in ==> CellProfiler>VariableBox_Callback at 2243
+        storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
+
+Error in ==> CellProfiler>gui_mainfcn at 5209
+        feval(varargin{:});
+
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+
+??? Error while evaluating uicontrol Callback.
+
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
 
 -TIMER ISSUES: a) Number of sets analyzed is actually the current set being analyzed so either change the text to reflect this or subtract 1 from the count. b) The timing for first cycle is way off (told me 3 seconds when it is more like 40), and I think this calculation is also effecting time for other cycles. The first cycle should NOT be included in the calculation for time for other cycles.

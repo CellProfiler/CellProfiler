@@ -9,7 +9,7 @@ When a module with a newer variable revision number is encountered, CellProfiler
 
 ***********************************
 
-- (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. I put in a Crop module to produce OrigGreen in the pipeline instead of loading it directly. When I went to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), CP I think tries to remove that image name from the image group, causing problems in downstream modules. Here's the error:
+- (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline (ProblemPIPE.mat in the DevDropBox) was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. If I load the pipeline and go to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), it yields an error. Normally this sort of thing works just fine and any place in the pipeline that had OrigGreen is converted to one of the other image names. Here's the error:
 ??? Assignment has more non-singleton rhs dimensions than non-singleton
 subscripts
 

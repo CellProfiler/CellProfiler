@@ -186,11 +186,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
             tmpMeasurements = AllSuperMeasurements{k};
             if ExportInfo.IgnoreNaN == 1
                 for imageset = 1:length(Measurements)
-                    Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
+                    Measurements{imageset} = cat(2,Measurements{imageset},CPnanstd(tmpMeasurements{imageset},1));
                 end
             else
                 for imageset = 1:length(Measurements)
-                    Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
+                    Measurements{imageset} = cat(2,Measurements{imageset},std(tmpMeasurements{imageset},1));
                 end
             end
         end

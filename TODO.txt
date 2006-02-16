@@ -1,8 +1,6 @@
 CellProfiler cell image analysis software development 
 February 14, 2006
 
-- (Requested by Anne 2-16-06) - Please make ExportData data tool have the option of exporting standard deviations instead of means by clicking a box.  Be sure to use existing code as much as possible.
-
 ********** IMPORTANT **************
 - (Requested by Mike 2-10-06)
 - Currently, when module variables change (as indicated by a more recent Variable Revision NUmber), loading saved settings does not work and even loading default variables does not work correctly. Here is what Anne and Mike decided would be the best way to handle this:

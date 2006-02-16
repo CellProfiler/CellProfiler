@@ -1,5 +1,7 @@
 Tony's TODO list
 
+- (Requested by Anne 2-16-06) - Please make ExportData data tool have the option of exporting standard deviations instead of means by clicking a box.  Be sure to use existing code as much as possible. This will probably require sending an additional variable to CPwritemeasurements. Someday we might also allow the option of medians, etc. but for now st dev is critical.
+
 - (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.
 
 - (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.

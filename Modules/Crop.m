@@ -412,11 +412,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
 
         elseif strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points.
-            CroppingFigureHandle = CPfigure(handles,'name','Manual Rectangle Cropping');
+            CroppingFigureHandle = CPfigure(handles,'image','name','Manual Rectangle Cropping');
             %%% OK to use imagesc rather than CPimagesc, because the
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
-            colormap(handles);
+            colormap(handles.Preferences.IntensityColorMap);
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);

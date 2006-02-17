@@ -2,11 +2,6 @@ Mike's TODO list
 
 (Anne 2-16) Put figure 5's SBS PIPE and examples on the website as the more typical CNT assay. Also, put all those unzipped example folders into our SVN repository.
 
-Just checking - did you order having those holes drilled in the desks, and also some surface spray cleaner for our desks?
-
-(Anne 2-9-06) Please reprocess Fly135 Slide07 (5600 gene set) and deposit data into the database under a new name.
-ASAP!!
-
 (Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
 (Anne 2-9-06) Please reprocess NIRHT and deposit data into the database under a new name.
 [[[HAVE ASHA HELP/OBSERVE/DO IT HERSELF]]]

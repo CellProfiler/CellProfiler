@@ -140,7 +140,7 @@ if handles.Current.SetBeingAnalyzed == 1
             LastFrameRead = i*FramesPerSplitMovie;
         end
     else
-        Filenames = CPretrievemediafileNames(ExistingPath,TargetMovieFileName,'N','E','Movie');
+        Filenames = CPretrievemediafilenames(ExistingPath,TargetMovieFileName,'N','E','Movie');
         %%% Checks whether any files are left.
         if isempty(Filenames)
             error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TargetMovieFileName, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])

@@ -1,4 +1,4 @@
-function FileNames = CPretrievemediafileNames(Pathname, TextToFind, recurse, ExactOrRegExp, ImageOrMovie)
+function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, ExactOrRegExp, ImageOrMovie)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -97,7 +97,7 @@ if(strncmpi(recurse,'Y',1))
     DirNames = DirNamesNoFiles(~DiscardLogical1Dir);
     if (length(DirNames) > 0)
         for i=1:length(DirNames),
-            MoreFileNames = CPretrievemediafileNames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp, ImageOrMovie);
+            MoreFileNames = CPretrievemediafilenames(fullfile(Pathname, char(DirNames(i))), TextToFind, recurse, ExactOrRegExp, ImageOrMovie);
             for j = 1:length(MoreFileNames)
                 MoreFileNames{j} = fullfile(char(DirNames(i)), char(MoreFileNames(j)));
             end

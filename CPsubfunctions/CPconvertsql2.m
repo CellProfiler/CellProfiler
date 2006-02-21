@@ -110,7 +110,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
 
-        frpintf(fmain, 'CREATE DATABASE %s;\n', DBname);
+        fprintf(fmain, 'CREATE DATABASE %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);
 
         fprintf(fmain, 'CREATE TABLE Per_Image (ImageNumber INTEGER PRIMARY KEY,\n');

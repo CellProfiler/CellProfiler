@@ -108,16 +108,14 @@ if handles.Current.SetBeingAnalyzed == 1
 
     if strcmp(SQLchoice,'MySQL')
 
-        fmain = fopen(fullfile(OutDir, [basename '.SQL']), 'W');
+        fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
 
         fprintf(fmain, 'CREATE DATABASE %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);
 
-        fprintf(fmain, 'CREATE TABLE Per_Image (ImageNumber INTEGER PRIMARY KEY,\n');
+        fprintf(fmain, 'CREATE TABLE Per_Image (ImageNumber INTEGER PRIMARY KEY');
 
-        p=1;
         for i = per_image_names,
-            p=p+1;
             if strfind(i{1}, 'Filename')
                 fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
             elseif  strfind(i{1}, 'Path'),
@@ -129,20 +127,17 @@ if handles.Current.SetBeingAnalyzed == 1
 
         %add columns for mean and stddev for per_object_names
         for j=per_object_names,
-            p=p+1;
-            fprintf(fmain, ',\n%s FLOAT', j{1});
+            fprintf(fmain, ',\n%s FLOAT', ['Mean_', j{1}]);
         end
 
-        for h=per_object_names,
-            p=p+1;
-            fprintf(fmain, ',\n%s FLOAT', j{1});
+        for k=per_object_names,
+            fprintf(fmain, ',\n%s FLOAT', ['StDev_', k{1}]);
         end
 
         fprintf(fmain, ');\n\n');
 
         fprintf(fmain, 'CREATE TABLE Per_Object(ImageNumber INTEGER,ObjectNumber INTEGER');
         for i = per_object_names
-            p=p+1;
             fprintf(fmain, ',\n%s FLOAT', i{1});
         end
 

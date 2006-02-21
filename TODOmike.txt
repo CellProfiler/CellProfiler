@@ -22,6 +22,26 @@ When the manuscript is submitted, *please* move *everything* you've ever process
 
 ****** END OF MANUSCRIPT PROJECTS ******
 
+Anne 2-21-06 New pipeline bug:
+I tried to remove the last two modules (by highlighting both and pressing -) in the 2006_2_16_1130NIRHTPIPE.mat from sabatini3_ata and got this error:
+
+??? Matrix index is out of range for deletion.
+
+Error in ==> CellProfiler>RemoveModule_Helper at 1669
+    handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
+
+Error in ==> CellProfiler>RemoveModule_Callback at 1623
+RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, 'Confirm');
+
+Error in ==> CellProfiler>gui_mainfcn at 5209
+        feval(varargin{:});
+
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+
+??? Error while evaluating uicontrol Callback.
+
+
 Mike 1-31-06: Compile CP for cluster purposes.
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???

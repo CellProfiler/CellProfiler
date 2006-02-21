@@ -120,7 +120,7 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
-    CPconvertsql2(handles, DataPath, FilePrefix, TablePrefix, FirstSet, LastSet);
+    CPconvertsql2(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet, 'MySQL');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -148,19 +148,19 @@ if handles.Current.SetBeingAnalyzed == 1
             if isnan(BatchSize)
                 errordlg('STOP!');
             end
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE %s1_1_image.CSV REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', OutfilePrefix);
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE %s1_1_object.CSV REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', OutfilePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', OutfilePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', OutfilePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
                 StartImage = n;
                 EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
                 ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
                 ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE %s REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', ImageSQLFileName);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE %s REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', ObjectSQLFileName);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', ImageSQLFileName);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', ObjectSQLFileName);
             end
         else
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE %s_image.CSV REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', basename);
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE %s_object.CSV REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', basename);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', basename);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', basename);
         end
 
         fclose(fmain);

@@ -1,5 +1,9 @@
 Mike's TODO list
 
+(Anne 2-22) Robert reports that Zeiss will *probably* fix the macro, possibly even by thursday or friday, but in the meantime, please run a pipeline where we rotate the SYBR green image so the top two spots are horizontal and then make a position list from the identified spots. That way, Robert can test the position list imaging on Thursday after lab meeting and also we will have a chance to see how the new computer handles this big job.
+
+(Anne 2-22) Run Arne's latest images.
+
 (Anne 2-16) Put figure 5's SBS PIPE and examples on the website as the more typical CNT assay. Also, put all those unzipped example folders into our SVN repository.
 
 (Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
@@ -8,22 +12,15 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
-Figure 2D (G2/M separation)
-- For part 2 we hope we Will use jason's suggested mutant and see if we can see an increase in metaphase nuclei. {UPDATE: We have already done a full phenotypic analysis of jason's image set - In Han is setting up CV to access this data and then we can go into the database and look for high p-H3 staining + small nuclei + eccentric nuclei and look for hits and then check the original images to see if they look metaphase arrested.}
-[PICK SOMETHING FROM THE NIRHT_4N_nucsize hit list that looks like it has a lot of metaphase nuclei. TEMP COPY of these images are on CP_G5 so you can choose a nice one. We might need to use shape (eccentricity) too - not just nuc size and 4N content. We wrote out two options for displaying - not sure which will be nicer.] [[UPDATE 1-26-06: I think now you have that spot number we found when looking with Ray and that is the image you want to use for this, right?]]
-
 Post all the example images and pipelines at cellprofiler.org
 
 When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
 
 ****** END OF MANUSCRIPT PROJECTS ******
 
-
 Mike 1-31-06: Compile CP for cluster purposes.
 
 FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
-
-Anne 12/23: I noticed something peculiar in the movie I am analyzing - several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance. Can you check whether this is true for other images, and if it's a bug? [Anne asked Ola 1/9/06]
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

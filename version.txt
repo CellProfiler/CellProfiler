@@ -4,6 +4,7 @@ Version 1.0.XXXX
  - MergeBatchOutput now looks in Default Output Folder
  - Timer functionality is improved
  - Added ExportToExcel module (same function as ExportData)
+ - WriteSQLFiles now creates a correct SQL file to setup and import all CSV files
 
 Version 1.0.3215
  - ClassifyObjects can now handle no objects

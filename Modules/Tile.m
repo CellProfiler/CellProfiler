@@ -235,19 +235,16 @@ if handles.Current.SetBeingAnalyzed == 1
 end
 
 %gets data from handles
-RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
-
-TiledImage = RetrievedTileData.TiledImage;
-ImageHeight = RetrievedTileData.ImageHeight;
-ImageWidth = RetrievedTileData.ImageWidth;
-NumberColumns = RetrievedTileData.NumberColumns;
-NumberRows = RetrievedTileData.NumberRows;
-NewFileList = RetrievedTileData.NewFileList;
-
+ImageHeight = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).ImageHeight;
+ImageWidth = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).ImageWidth;
+NumberColumns = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NumberColumns;
+NumberRows = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
+NewFileList = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList;
 
 CurrentImage = handles.Pipeline.(ImageName);
-CurrentImage = imresize(CurrentImage,SizeChange);
-
+if SizeChange ~= 1
+    CurrentImage = imresize(CurrentImage,SizeChange);
+end
 
 if strcmp(RowOrColumn,'Column')
     HorzPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberRows);
@@ -271,9 +268,9 @@ if strcmp(LeftOrRight,'Right')
     HorzPos = NumberColumns - HorzPos-1;
 end
 
+% pack
 %%% Memory errors can occur here if the tiled image is too big.
-TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
-handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage = TiledImage;
+handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
@@ -283,26 +280,20 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     drawnow
 
     %gets data from handles
-    RetrievedTileData = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]);
-    TiledImage = RetrievedTileData.TiledImage;
-    ImageHeight = RetrievedTileData.ImageHeight;
-    ImageWidth = RetrievedTileData.ImageWidth;
-    NumberColumns = RetrievedTileData.NumberColumns;
-    NumberRows = RetrievedTileData.NumberRows;
-    TotalWidth = RetrievedTileData.TotalWidth;
-    TotalHeight = RetrievedTileData.TotalHeight;
-    NewFileList = RetrievedTileData.NewFileList;
+    TotalWidth = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TotalWidth;
+    TotalHeight = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TotalHeight;
+    NewFileList = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList;
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(TiledImage,'OneByOne',ThisModuleFigureNumber)
+            CPresizefigure(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,'OneByOne',ThisModuleFigureNumber)
         end
         %%% Displays the image.
-        CPimagesc(TiledImage,handles);
+        CPimagesc(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,handles);
         title('Tiled image')
-        
+
         FontSize = handles.Preferences.FontSize;
         ToggleGridButtonFunction = ...
             ['Handles = findobj(''type'',''line'');'...
@@ -565,7 +556,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Saves the tiled image to the handles structure so it can be used by
     %%% subsequent modules.
-    handles.Pipeline.(TiledImageName) = TiledImage;
+    handles.Pipeline.(TiledImageName) = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
 else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)

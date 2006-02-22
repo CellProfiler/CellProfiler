@@ -1,5 +1,24 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 2/22) Anne 2-21-06 New pipeline bug:
+I tried to remove the last two modules (by highlighting both and pressing -) in the 2006_2_16_1130NIRHTPIPE.mat from sabatini3_ata and got this error:
+
+??? Matrix index is out of range for deletion.
+
+Error in ==> CellProfiler>RemoveModule_Helper at 1669
+    handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
+
+Error in ==> CellProfiler>RemoveModule_Callback at 1623
+RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, 'Confirm');
+
+Error in ==> CellProfiler>gui_mainfcn at 5209
+        feval(varargin{:});
+
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+
+??? Error while evaluating uicontrol Callback.
+
 -(Colin 2/10) (Anne 2-9-06 URGENT) - someone tried opening tif files that do not have an extension and they do not even show up in the window of CP. We need to fix the display in the window, plus the LoadImages module to handle files with no extension. There is a variable that asks the user what the format is, if no extension is present, but we have never set it up to work. I put a tif file called slide3-1 in the Dev DropBox, plus slide3-1.tif.
 
 -(Mike 2/8) (Anne 2-7-06) - Some people at the meeting who downloaded mentioned that it was not obvious they'd need Matlab 7 - can you make sure the installation instructions/website are clear? Also, people seem to always miss the fact that the installation instructions and manual are there near the download button. Can we redesign the page to make it more clear?

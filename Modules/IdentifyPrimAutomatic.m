@@ -493,7 +493,7 @@ MinimumThreshold = ThresholdRange(1:index-1);
 MaximumThreshold = ThresholdRange(index+1:end);
 
 %%% Check the smoothing filter size parameter
-if ~strcmp(SizeOfSmoothingFilter,'Automatic')
+if ~strcmpi(SizeOfSmoothingFilter,'Automatic')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
     if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])

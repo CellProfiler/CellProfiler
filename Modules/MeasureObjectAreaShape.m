@@ -294,6 +294,9 @@ for i = 1:length(ObjectNameList)
             FormFactor,...
             cat(1,props.MajorAxisLength)*PixelSize,...
             cat(1,props.MinorAxisLength)*PixelSize];
+    else
+        Basic = zeros(1,9);
+        Zernike = zeros(1,30);
     end
 
     %%% Save measurements

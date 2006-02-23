@@ -562,7 +562,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
 
                 %%% Smooth images for maxima suppression
-                if strcmp(SizeOfSmoothingFilter,'Automatic')
+                if strcmpi(SizeOfSmoothingFilter,'Automatic')
                     sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.
                 else
                     sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
@@ -595,14 +595,14 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% maxima to be shifted somewhat from the center of the object.
                 if strcmp(UseLowRes,'Yes') && MinDiameter > 10
                     ImageResizeFactor = 10/MinDiameter;
-                    if strcmp(MaximaSuppressionSize,'Automatic')
+                    if strcmpi(MaximaSuppressionSize,'Automatic')
                         MaximaSuppressionSize = 7;             % ~ 10/1.5
                     else
                         MaximaSuppressionSize = round(MaximaSuppressionSize*ImageResizeFactor);
                     end
                 else
                     ImageResizeFactor = 1;
-                    if strcmp(MaximaSuppressionSize,'Automatic')
+                    if strcmpi(MaximaSuppressionSize,'Automatic')
                         MaximaSuppressionSize = round(MinDiameter/1.5);
                     else
                         MaximaSuppressionSize = round(MaximaSuppressionSize);

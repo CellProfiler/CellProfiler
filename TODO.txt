@@ -10,6 +10,8 @@ When a module with a newer variable revision number is encountered, CellProfiler
 ***********************************
 - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 
+- (Requested by Anne 2-23-06) - Make Calculate Ratios Data Tool (in the Developer's drop box) into a real data tool (right now, you run it from the command line with all the variables hardcoded). Share code with the Calc Ratios module as much as possible.
+
 - (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline (ProblemPIPE.mat in the DevDropBox) was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. If I load the pipeline and go to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), it yields an error. Normally this sort of thing works just fine and any place in the pipeline that had OrigGreen is converted to one of the other image names. Here's the error:
 ??? Assignment has more non-singleton rhs dimensions than non-singleton
 subscripts

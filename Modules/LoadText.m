@@ -97,7 +97,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% Parse text file %%%
     fid = fopen(fullfile(PathName,TextFileName),'r');
     if fid == -1
-        error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid location.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid location. You specified this: ',fullfile(PathName,TextFileName)]);
     end
 
     % Get description

@@ -381,7 +381,11 @@ for img_idx = FirstSet:LastSet
                 continue;
             end
 
-            vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
+            if size(handles.Measurements.(SubFieldname).(ssf),2) >= img_idx
+                vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
+            else
+                vals = [];
+            end
 
             if strcmp(SubFieldname, 'Image'),
                 if ischar(vals)

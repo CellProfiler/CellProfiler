@@ -20,7 +20,7 @@ function varargout = CellProfiler(varargin)
 %   Thouis Ray Jones
 %   In Han Kang
 %   Ola Friman
-%   Steve Lowegt
+%   Steve Lowe
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht

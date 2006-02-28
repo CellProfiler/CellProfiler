@@ -4,13 +4,9 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
--Post all the example images and pipelines at cellprofiler.org
-
 -When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
 
 ****** END OF MANUSCRIPT PROJECTS ******
-
-- CreateBatchScripts should be able to handles going from PC to Linux
 
 -(Mike 1-31-06) Compile CP for cluster purposes.
 

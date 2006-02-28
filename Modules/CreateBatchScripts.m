@@ -486,9 +486,6 @@ if strncmp(BatchCellProfilerPath, '.',1)
     BatchCellProfilerPath = fullfile(handles.Preferences.DefaultModuleDirectory, '..');
 end
 
-%%% Saves a snapshot of handles.
-handles_in = handles;
-
 %%% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
     error(['Image processing was canceled because ', ModuleName, ' must be the last module in the pipeline.']);
@@ -514,16 +511,14 @@ if strcmp(OldPathname, '.') ~= 1
     %%% Changes pathnames in variables within this module.
     %%% BatchSavePath is not changed, because that function is carried
     %%% out on the local machine.
-    BatchCellProfilerPath = strrep(BatchCellProfilerPath,OldPathname,NewPathname);
-    BatchImagePath = strrep(BatchImagePath,OldPathname,NewPathname);
-    BatchOutputPath = strrep(BatchOutputPath,OldPathname,NewPathname);
-    BatchRemotePath = strrep(BatchRemotePath,OldPathname,NewPathname);
+    %%% BatchCellProfilerPath = strrep(fullfile(NewPathname,strrep(BatchCellProfilerPath,OldPathname,'')),'\','/');
+    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
+    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
+    BatchRemotePath = strrep(fullfile(NewPathname,strrep(BatchRemotePath,OldPathname,'')),'\','/');
     %%% Changes the default output and image pathnames.
-    OldDefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
-    NewDefaultOutputDirectory = strrep(OldDefaultOutputDirectory,OldPathname,NewPathname);
+    NewDefaultOutputDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultOutputDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
-    OldDefaultImageDirectory = handles.Current.DefaultImageDirectory;
-    NewDefaultImageDirectory = strrep(OldDefaultImageDirectory,OldPathname,NewPathname);
+    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
 end
 
@@ -599,9 +594,6 @@ CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.
 %%% module.  It should cause a cancel so no further processing is done
 %%% on this machine.
 set(handles.timertexthandle,'string','Cancel')
-
-%%% Undo the changes to handles.Pipeline, above.
-handles = handles_in;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

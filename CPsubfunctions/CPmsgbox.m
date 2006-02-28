@@ -215,8 +215,13 @@ FigColor=get(BoxHandle,'Color');
 MsgTxtBackClr=FigColor;
 
 Font.FontUnits = 'points';
-handles = guidata(findobj('Tag','figure1'));
-Font.FontSize = handles.Preferences.FontSize;
+MainGUIhandle = findobj('Tag','figure1');
+if isempty(MainGUIhandle)
+    Font.FontSize = 12;
+else
+    handles = guidata(MainGUIhandle);
+    Font.FontSize = handles.Preferences.FontSize;
+end
 Font.FontName = 'Helvetica';
 
 OKHandle=uicontrol(BoxHandle           , Font                             , ...

@@ -10,10 +10,6 @@ Mike's TODO list
 
 -(Mike 1-31-06) Compile CP for cluster purposes.
 
-- Run pipeline without display (For Jason's analysis)
-
-- FIGURE OUT WHY NUMBERS ARE WEIRD FOR PHOSPHO HISTONE 3 DATA IN DATABASE - e.g. why isn't pH3 staining within the nucleus???
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.

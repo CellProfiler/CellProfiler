@@ -2,9 +2,6 @@ Mike's TODO list
 
 (Anne 2-24) CP image analysis pipeline text is up high on the mac's.
 
-(Anne 2-24) There is something wrong with exporting data, or with how measurements are recorded. See sab3_ata > 02_14 Arne images > 03_2DoseResponseOnly, RowsAB_OUT__5.mat. The LoadImages ModuleError column has some empties and some zeros - the zero lines are offset relative to the others. This is one of the only times I set my pref's to skip modules with errors, though no errors popped up during analysis. Maybe it's something related to that. I put this on your list rather than general TODO because exporting of data is so critical I don't want it to get messed up.  In fact, I am really suspicious of the data i exported from these files, because the numbers don't seem to come out right, even after I move the obvious cells over to make the columns line up properly. I think maybe the column headings are messed up or something.
-UPDATE> ok, I re ran the job and changed the prefs to not skip errors so everything should be pretty normal. Things are still messed up when you export the data.
-
 (Anne 2-22) Robert reports that Zeiss will *probably* fix the macro, possibly even by thursday or friday, but in the meantime, please run a pipeline where we rotate the SYBR green image so the top two spots are horizontal and then make a position list from the identified spots. That way, Robert can test the position list imaging on Thursday after lab meeting and also we will have a chance to see how the new computer handles this big job.
 
 (Anne 2-22) Run Arne's latest images.

@@ -112,6 +112,7 @@ if handles.Current.SetBeingAnalyzed == 1
     Text = [];
     while 1
         s = fgetl(fid);
+        s = strrep(s,sprintf('\t'),' ');
         if ~ischar(s), break, end
         if ~isempty(s)
             Text{end+1} = s;

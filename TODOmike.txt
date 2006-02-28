@@ -1,16 +1,6 @@
 Mike's TODO list
 
-(Anne 2-24) CP image analysis pipeline text is up high on the mac's.
-
-(Anne 2-22) Robert reports that Zeiss will *probably* fix the macro, possibly even by thursday or friday, but in the meantime, please run a pipeline where we rotate the SYBR green image so the top two spots are horizontal and then make a position list from the identified spots. That way, Robert can test the position list imaging on Thursday after lab meeting and also we will have a chance to see how the new computer handles this big job.
-
-(Anne 2-22) Run Arne's latest images.
-
-(Anne 2-16) Put figure 5's SBS PIPE and examples on the website as the more typical CNT assay. Also, put all those unzipped example folders into our SVN repository.
-
 (Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
-(Anne 2-9-06) Please reprocess NIRHT and deposit data into the database under a new name.
-[[[HAVE ASHA HELP/OBSERVE/DO IT HERSELF]]]
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 

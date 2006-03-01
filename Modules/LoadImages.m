@@ -388,7 +388,7 @@ if SetBeingAnalyzed == 1
             if length(UniqueNumbers) ~= 1
                 CharMovieName = char(ImageName);
                 CharNumberOfFiles = char(NumberOfFiles);
-                Number = length(CharNumberOfFiles);
+                Number = length(NumberOfFiles);
                 for f = 1:Number
                     SpacesArray(f,:) = ':     ';
                 end
@@ -500,7 +500,7 @@ if SetBeingAnalyzed == 1
         if length(UniqueNumbers) ~= 1
             CharImageName = char(ImageName2);
             CharNumberOfFiles = char(NumberOfFiles);
-            Number = length(CharNumberOfFiles);
+            Number = length(NumberOfFiles);
             for f = 1:Number
                 SpacesArray(f,:) = ':     ';
             end

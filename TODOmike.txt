@@ -4,11 +4,11 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
--When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate.
+-When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
 
 ****** END OF MANUSCRIPT PROJECTS ******
 
--(Mike 1-31-06) Compile CP for cluster purposes.
+-(Mike 1-31-06) Compile CP for cluster purposes. REPORT BUG TO MATLAB.
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

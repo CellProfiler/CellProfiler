@@ -1,5 +1,7 @@
 Mike's TODO list
 
+-(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
+
 -(Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******

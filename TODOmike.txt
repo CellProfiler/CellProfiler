@@ -1,5 +1,7 @@
 Mike's TODO list
 
+-(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
+
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
 
 -(Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.

@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 2/28) (Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
+
 -(Mike 2/28) Run pipeline without display (For Jason's analysis)
 
 -(Mike 2/28) CreateBatchScripts should be able to handles going from PC to Linux

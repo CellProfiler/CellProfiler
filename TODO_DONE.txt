@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 3/6) (Requested by Mike 2-10-06) Currently, when module variables change (as indicated by a more recent Variable Revision NUmber), loading saved settings does not work and even loading default variables does not work correctly. Here is what Anne and Mike decided would be the best way to handle this:
+
+When a module with a newer variable revision number is encountered, CellProfiler should simply open a dialog box which tells the user that Module #X LoadImages is out of date and here are the values used in the previous version (we have all the code for this already because currently the dialog box opens showing you the saved and default settings side by side). Then CellProfiler should load all the default settings for that module (correctly, i am pretty sure it doesn't work now). The saved settings window should stay open so that after the rest of the pipeline loads, the user can see the saved settings and change from the default settings as needed. 
+
+-(Mike 3/6) (Anne 2-21-06) The timer says Number of cycles completed = 7 of 8 when it's in the middle of processing the 7th cycle (i/e/ number 7 is not yet completed). It's ok to leave the calculation as is and just change the text to say Cycle being processed = 7 of 8.
+
 -(Mike 2/28) (Anne 2-9-06) Please reprocess Fly200, all slides, and deposit data into the database under a new name.
 
 -(Mike 2/28) Run pipeline without display (For Jason's analysis)

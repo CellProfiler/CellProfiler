@@ -42,8 +42,6 @@ Error in ==> Histogram at 569
 
 (Anne 2-9-06) Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
 
-(Anne 2-21-06) The timer says Number of cycles completed = 7 of 8 when it's in the middle of processing the 7th cycle (i/e/ number 7 is not yet completed). It's ok to leave the calculation as is and just change the text to say Cycle being processed = 7 of 8.
-
 -There are some problems with the Help Menus.
 
 - Colin, I made a ton of changes to identify modules so they all produce outlines consistently. Could you please check that they all still work with overlay outlines?

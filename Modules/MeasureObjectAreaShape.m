@@ -23,38 +23,39 @@ function handles = MeasureObjectAreaShape(handles)
 % Form factor             |       7
 % MajorAxisLength         |       8
 % MinorAxisLength         |       9
+% Orientation             |      10
 %
 % Zernike shape features:
-%     'Zernike0_0'        |      10
-%     'Zernike1_1'        |      11
-%     'Zernike2_0'        |      12
-%     'Zernike2_2'        |      13
-%     'Zernike3_1'        |      14
-%     'Zernike3_3'        |      15
-%     'Zernike4_0'        |      16
-%     'Zernike4_2'        |      17
-%     'Zernike4_4'        |      18
-%     'Zernike5_1'        |      19
-%     'Zernike5_3'        |      20
-%     'Zernike5_5'        |      21
-%     'Zernike6_0'        |      22
-%     'Zernike6_2'        |      23
-%     'Zernike6_4'        |      24
-%     'Zernike6_6'        |      25
-%     'Zernike7_1'        |      26
-%     'Zernike7_3'        |      27
-%     'Zernike7_5'        |      28
-%     'Zernike7_7'        |      29
-%     'Zernike8_0'        |      30
-%     'Zernike8_2'        |      31
-%     'Zernike8_4'        |      32
-%     'Zernike8_6'        |      33
-%     'Zernike8_8'        |      34
-%     'Zernike9_1'        |      35
-%     'Zernike9_3'        |      36
-%     'Zernike9_5'        |      37
-%     'Zernike9_7'        |      38
-%     'Zernike9_9'        |      39
+%     'Zernike0_0'        |      11
+%     'Zernike1_1'        |      12
+%     'Zernike2_0'        |      13
+%     'Zernike2_2'        |      14
+%     'Zernike3_1'        |      15
+%     'Zernike3_3'        |      16
+%     'Zernike4_0'        |      17
+%     'Zernike4_2'        |      18
+%     'Zernike4_4'        |      19
+%     'Zernike5_1'        |      20
+%     'Zernike5_3'        |      21
+%     'Zernike5_5'        |      22
+%     'Zernike6_0'        |      23
+%     'Zernike6_2'        |      24
+%     'Zernike6_4'        |      25
+%     'Zernike6_6'        |      26
+%     'Zernike7_1'        |      27
+%     'Zernike7_3'        |      28
+%     'Zernike7_5'        |      29
+%     'Zernike7_7'        |      30
+%     'Zernike8_0'        |      31
+%     'Zernike8_2'        |      32
+%     'Zernike8_4'        |      33
+%     'Zernike8_6'        |      34
+%     'Zernike8_8'        |      35
+%     'Zernike9_1'        |      36
+%     'Zernike9_3'        |      37
+%     'Zernike9_5'        |      38
+%     'Zernike9_7'        |      39
+%     'Zernike9_9'        |      40
 %
 % Zernike shape features measure shape by describing a binary object (or
 % more precisely, a patch with background and an object in the center) in a
@@ -170,7 +171,13 @@ ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR08 = Would you like to calculate the Zernike features for each object (with lots of objects, this can be very slow)?
+%choiceVAR08 = Yes
+%choiceVAR08 = No
+ZernikeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%% Set up the window for displaying the results
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -213,17 +220,20 @@ for i = 1:length(ObjectNameList)
         'Perimeter',...
         'Form factor',...
         'MajorAxisLength',...
-        'MinorAxisLength'};
+        'MinorAxisLength'...
+        'Orientation'};
 
-    % Get index for Zernike functions
-    Zernike = [];
-    Zernikeindex = [];
-    ZernikeFeatures = {};
-    for n = 0:9
-        for m = 0:n
-            if rem(n-m,2) == 0
-                Zernikeindex = [Zernikeindex;n m];
-                ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike%d_%d',n,m)});
+    if strcmp(ZernikeChoice,'Yes')
+        % Get index for Zernike functions
+        Zernike = [];
+        Zernikeindex = [];
+        ZernikeFeatures = {};
+        for n = 0:9
+            for m = 0:n
+                if rem(n-m,2) == 0
+                    Zernikeindex = [Zernikeindex;n m];
+                    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike%d_%d',n,m)});
+                end
             end
         end
     end
@@ -233,54 +243,55 @@ for i = 1:length(ObjectNameList)
 
         %%% Get the basic shape features
         props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-            'MajorAxisLength','MinorAxisLength','Perimeter');
+            'MajorAxisLength','MinorAxisLength','Perimeter','Orientation');
 
-        Zernike = zeros(NumObjects,size(Zernikeindex,1));
+        if strcmp(ZernikeChoice,'Yes')
+            Zernike = zeros(NumObjects,size(Zernikeindex,1));
 
-        for Object = 1:NumObjects
-            %%% Calculate Zernike shape features
-            [xcord,ycord] = find(LabelMatrixImage==Object);
-            diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
-            if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
+            for Object = 1:NumObjects
+                %%% Calculate Zernike shape features
+                [xcord,ycord] = find(LabelMatrixImage==Object);
+                diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
+                if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
-            % Calculate the Zernike basis functions
-            [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
-            r = sqrt(x.^2+y.^2);
-            phi = atan(y./(x+eps));
-            Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+                % Calculate the Zernike basis functions
+                [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+                r = sqrt(x.^2+y.^2);
+                phi = atan(y./(x+eps));
+                Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
 
-            for k = 1:size(Zernikeindex,1)
-                n = Zernikeindex(k,1);
-                m = Zernikeindex(k,2);
-                s = zeros(size(x));
-                for l = 0:(n-m)/2;
-                    s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+                for k = 1:size(Zernikeindex,1)
+                    n = Zernikeindex(k,1);
+                    m = Zernikeindex(k,2);
+                    s = zeros(size(x));
+                    for l = 0:(n-m)/2;
+                        s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+                    end
+                    s(r>1) = 0;
+                    Zf(:,:,k) = s;
                 end
-                s(r>1) = 0;
-                Zf(:,:,k) = s;
+
+                % Get image patch
+                rmax = max(xcord);
+                rmin = max(xcord)-diameter+1;
+                if rmin < 1
+                    rmin = 1;
+                    rmax = diameter;
+                end
+
+                cmax = max(ycord);
+                cmin = max(ycord)-diameter+1;
+                if cmin < 1
+                    cmin = 1;
+                    cmax = diameter;
+                end
+
+                BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+
+                % Apply Zernike functions
+                Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
             end
-
-            % Get image patch
-            rmax = max(xcord);
-            rmin = max(xcord)-diameter+1;
-            if rmin < 1
-                rmin = 1;
-                rmax = diameter;
-            end
-
-            cmax = max(ycord);
-            cmin = max(ycord)-diameter+1;
-            if cmin < 1
-                cmin = 1;
-                cmax = diameter;
-            end
-
-            BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-
-            % Apply Zernike functions
-            Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
         end
-
         % Form factor
         FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
@@ -293,15 +304,23 @@ for i = 1:length(ObjectNameList)
             cat(1,props.Perimeter)*PixelSize,...
             FormFactor,...
             cat(1,props.MajorAxisLength)*PixelSize,...
-            cat(1,props.MinorAxisLength)*PixelSize];
+            cat(1,props.MinorAxisLength)*PixelSize,...
+            cat(1,props.Orientation)];
     else
-        Basic = zeros(1,9);
-        Zernike = zeros(1,30);
+        Basic = zeros(1,10);
+        if strcmp(ZernikeChoice,'Yes')
+            Zernike = zeros(1,30);
+        end
     end
 
-    %%% Save measurements
-    handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
-    handles.Measurements.(ObjectName).AreaShape(handles.Current.SetBeingAnalyzed) = {[Basic Zernike]};
+    if strcmp(ZernikeChoice,'Yes')
+        %%% Save measurements
+        handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
+        handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = [Basic Zernike];
+    else
+        handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures);
+        handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = Basic;
+    end
 
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;
@@ -325,20 +344,22 @@ for i = 1:length(ObjectNameList)
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Basic features:','UserData',handles.Current.SetBeingAnalyzed);
-        for k = 1:7
+        for k = 1:10
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'string',BasicFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
         end
 
-        % Text for Zernike features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45 0.25 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-            'fontsize',FontSize,'fontweight','bold','string','First 5 Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
-        for k = 1:5
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.45-0.04*k 0.25 0.03],...
+        if strcmp(ZernikeChoice,'Yes')
+            % Text for Zernike features
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.35 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                'fontsize',FontSize,'string',ZernikeFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
+                'fontsize',FontSize,'fontweight','bold','string','First 5 Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
+            for k = 1:5
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.35-0.04*k 0.25 0.03],...
+                    'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+                    'fontsize',FontSize,'string',ZernikeFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
+            end
         end
 
         % The name of the object image
@@ -354,17 +375,19 @@ for i = 1:length(ObjectNameList)
         % Report features, if there are any.
         if max(LabelMatrixImage(:)) > 0
             % Basic shape features
-            for k = 1:7
+            for k = 1:10
                 uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end
 
-            % Zernike shape features
-            for k = 1:5
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.45-0.04*k 0.1 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
+            if strcmp(ZernikeChoice,'Yes')
+                % Zernike shape features
+                for k = 1:5
+                    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.35-0.04*k 0.1 0.03],...
+                        'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+                        'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
+                end
             end
         end
         % This variable is used to write results in the correct column

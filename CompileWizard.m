@@ -140,11 +140,7 @@ for i=1:length(Modulefilelist)
     fid3=fopen(fullfile(pwd,'Modules',[name,'.txt']),'w');
     while 1;
         output = fgetl(fid2); if ~ischar(output); break; end;
-        if strncmp(output,'%Start VariableSet',18)
-            fprintf(fid3,[fixthistext2(output),'\n']);
-        elseif strncmp(output,'%End VariableSet',16)
-            fprintf(fid3,[fixthistext2(output),'\n']);
-        elseif strncmp(output,'%defaultVAR',11)
+        if strncmp(output,'%defaultVAR',11)
             fprintf(fid3,[fixthistext2(output),'\n']);
         elseif strncmp(output,'%choiceVAR',10)
             fprintf(fid3,[fixthistext2(output),'\n']);

@@ -485,7 +485,6 @@ end
 
 if strcmp(Answer,'Yes')
     handles.Settings.ModuleNames = {};
-    handles.Settings.SelectedOption = [];
     handles.Settings.VariableValues = {};
     handles.Settings.VariableInfoTypes = {};
     handles.Settings.VariableRevisionNumbers = [];
@@ -572,12 +571,6 @@ catch
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
-try
-    handles.Settings.SelectedOption = Settings.SelectedOption;
-catch
-    handles.Settings.SelectedOption = zeros(1,NumberOfModules);
-end
-
 handles.Settings.VariableValues = {};
 handles.Settings.VariableInfoTypes = {};
 handles.Settings.VariableRevisionNumbers = [];
@@ -602,55 +595,36 @@ else
     end
 end
 
-%%defaultVariableRevisionNumbers and revisionConfirm are both variables
-%%used when asking user which variable revision number to save in settings
-%%file
 revisionConfirm = 0;
-for ModuleNum=1:length(handles.Settings.ModuleNames),
-    SelectedOption = handles.Settings.SelectedOption(ModuleNum);
-
-    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)), SelectedOption);
+for ModuleNum=1:length(handles.Settings.ModuleNames)
+    
+    %%% Load the module's settings
+    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
+    
     if Failed == 0
-        if (isfield(Settings,'VariableRevisionNumbers')),
+        if isfield(Settings,'VariableRevisionNumbers')
             SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
         else
             SavedVarRevNum = 0;
         end
-        if(SavedVarRevNum == DefVarRevNum)
-            if(handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum))
+        if SavedVarRevNum == DefVarRevNum
+            if handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum)
                 handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-                handles.Settings.VariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-                defaultVariableRevisionNumbers(ModuleNum) = DefVarRevNum;
+                handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
                 varChoice = 3;
             else
-                errorString = 'Variable Revision Number same, but number of variables different for some reason';
                 savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-                for i=1:(length(savedVariableValues)),
-                    if (iscellstr(savedVariableValues(i)) == 0)
-                        savedVariableValues(i) = {''};
-                    end
-                end
-                varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues, defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+                FailedModule(handles, savedVariableValues, defDescriptions, char(handles.Settings.ModuleNames(ModuleNum)),ModuleNum);
+                varChoice = 1;
                 revisionConfirm = 1;
             end
         else
-            errorString = 'Variable Revision Numbers are not the same';
             savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-            for i=1:(length(savedVariableValues)),
-                if (iscellstr(savedVariableValues(i)) == 0)
-                    savedVariableValues(i) = {''};
-                end
-            end
-            varChoice = LoadSavedVariables(handles, savedVariableValues, defVariableValues,  defDescriptions, errorString, char(handles.Settings.ModuleNames(ModuleNum)));
+            FailedModule(handles, savedVariableValues, defDescriptions, char(handles.Settings.ModuleNames(ModuleNum)),ModuleNum);
+            varChoice = 1;
             revisionConfirm = 1;
         end
-        if (varChoice == 1),
-            handles.Settings.VariableValues(ModuleNum,1:handles.Settings.NumbersOfVariables(ModuleNum)) = defVariableValues(1:handles.Settings.NumbersOfVariables(ModuleNum));
-            handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-            handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
-            handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-            savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-        elseif (varChoice == 2),
+        if varChoice == 1
             for k = 1:handles.Settings.NumbersOfVariables(ModuleNum)
                 if strcmp(defVariableValues(k),'Pipeline Value')
                     handles.Settings.VariableValues(ModuleNum,k) = {''};
@@ -667,22 +641,18 @@ for ModuleNum=1:length(handles.Settings.ModuleNames),
             end
             handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
             handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-            savedVariableRevisionNumbers(ModuleNum) = SavedVarRevNum;
-        elseif (varChoice == 0),
+        elseif varChoice == 0
             set(handles.ModulePipelineListBox,'String','No Modules Loaded');
-            break;
+            break
         end
         clear defVariableInfoTypes;
-    else
-        set(handles.ModulePipelineListBox,'String','No Modules Loaded');
-        break;
     end
 end
 
-if (varChoice == 0) || Failed == 1,
+if Failed == 1
     %%% Update handles structure.
-    handles.Settings.VariableValues = {};
-    handles.Settings.VariableInfoTypes = {};
+    handles.Settings.VariableValues = {[]};
+    handles.Settings.VariableInfoTypes = {[]};
     handles.Settings.VariableRevisionNumbers = [];
     delete(get(handles.variablepanel,'children'));
     handles.VariableBox = {};
@@ -752,14 +722,13 @@ else
 end
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum Failed] = LoadSettings_Helper(Pathname, ModuleName, SelectedOption)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum Failed] = LoadSettings_Helper(Pathname, ModuleName)
 
 VariableValues = {[]};
 VariableInfoTypes = {[]};
 VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
-OptionInCode = 0;
 Failed = 0;
 try
     if isdeployed
@@ -768,46 +737,45 @@ try
         ModuleNamedotm = [ModuleName '.m'];
     end
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
-    while 1;
-        output = fgetl(fid); if ~ischar(output); break; end;
-        if strncmp(output,'%Start VariableSet',18)
-            OptionInCode = str2num(output(19:end));
-        elseif strncmp(output,'%End VariableSet',16)
-            OptionInCode = 0;
-        elseif strncmp(output,'%defaultVAR',11) && (OptionInCode == SelectedOption)
+    while 1
+        output = fgetl(fid);
+        if ~ischar(output)
+            break
+        end
+        if strncmp(output,'%defaultVAR',11)
             displayval = output(17:end);
             istr = output(12:13);
             i = str2num(istr);
             VariableValues(i) = {displayval};
-        elseif strncmp(output,'%choiceVAR',10) && (OptionInCode == SelectedOption),
+        elseif strncmp(output,'%choiceVAR',10)
             if ~iscellstr(VariableValues(i))
                 displayval = output(16:end);
                 istr = output(11:12);
                 i = str2num(istr);
                 VariableValues(i) = {displayval};
             end
-        elseif strncmp(output,'%textVAR',8) && (OptionInCode == SelectedOption);
+        elseif strncmp(output,'%textVAR',8)
             displayval = output(13:end);
             istr = output(9:10);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
-        elseif strncmp(output,'%pathnametextVAR',16) && OptionInCode == SelectedOption
+        elseif strncmp(output,'%pathnametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
-        elseif strncmp(output,'%filenametextVAR',16) && OptionInCode == SelectedOption
+        elseif strncmp(output,'%filenametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
             i = str2num(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
-        elseif strncmp(output,'%infotypeVAR',12) && (OptionInCode == SelectedOption)
+        elseif strncmp(output,'%infotypeVAR',12)
             displayval = output(18:end);
             istr = output(13:14);
             i = str2num(istr);
@@ -815,7 +783,7 @@ try
             if ~strcmp(output((length(output)-4):end),'indep') && isempty(VariableValues{i})
                 VariableValues(i) = {'Pipeline Value'};
             end
-        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
+        elseif strncmp(output,'%%%VariableRevisionNumber',25)
             try
                 VarRevNum = str2num(output(29:30));
             catch
@@ -830,18 +798,12 @@ catch
 end
 
 %%% SUBFUNCTION %%%
-function varChoice = LoadSavedVariables(handles, savedVariables, defaultVariables, defaultDescriptions, errorString, ModuleName)
-global variableChoice;
-helpText = ['The settings contained within this file are based on an old version of the '...
-    ModuleName ' module, as indicated by the Variable Revision Number of the'...
-    ' module. As a result, it is possible that your old settings are no longer reasonable.'...
-    '  Displayed below are the settings retrieved from your file (Saved settings) and the '...
-    'default settings retrieved from the more recent version of the module (Default settings).'...
-    '  Which do you want to try to load?"'];
-
-savedbuttoncallback = 'LoadSavedWindowHandle = findobj(''name'',''LoadSavedWindow''); global variableChoice; variableChoice = 1; close(LoadSavedWindowHandle), clear LoadSavedWindowHandle';
-defaultbuttoncallback = 'LoadSavedWindowHandle = findobj(''name'',''LoadSavedWindow''); global variableChoice; variableChoice = 2; close(LoadSavedWindowHandle), clear LoadSavedWindowHandle';
-cancelbuttoncallback = 'LoadSavedWindowHandle = findobj(''name'',''LoadSavedWindow''); global variableChoice; variableChoice = 0; close(LoadSavedWindowHandle), clear LoadSavedWindowHandle';
+function FailedModule(handles, savedVariables, defaultDescriptions, ModuleName, ModuleNum)
+helpText = ['The settings contained within the selected file are based on an old version of the ',ModuleName,...
+    ' module. As a result, it is possible that your old settings are no longer reasonable. '...
+    'Displayed below are the settings retrieved from your file. The default settings for the module '...
+    'have been loaded. You can use the saved settings and to attempt to set up the module again. Sorry '...
+    'for the inconvenience.'];
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
 MainWinPos = get(handles.figure1,'Position');
@@ -855,25 +817,36 @@ Color = [0.7 .7 .9];
 
 %%% Label we attach to figures (as UserData) so we know they are ours
 userData.Application = 'CellProfiler';
-userData.MyHandles=handles;
 LoadSavedWindowHandle = figure(...
     'Units','pixels',...
     'Color',Color,...
     'DockControls','off',...
     'MenuBar','none',...
-    'Name','LoadSavedWindow',...
+    'Name',['Saved Variables for Module ',num2str(ModuleNum)],...
     'NumberTitle','off',...
     'Position',FigPosition,...
     'Resize','off',...
     'HandleVisibility','on',...
-    'Tag','figure1',...
+    'Tag','savedwindow',...
     'UserData',userData);
+
+informtext = uicontrol(...
+    'Parent',LoadSavedWindowHandle,...
+    'BackgroundColor',Color',...
+    'Units','normalized',...
+    'Position',[0.05 0.70 0.9 0.25],...
+    'String',helpText,...
+    'Style','text',...
+    'FontName','helvetica',...
+    'HorizontalAlignment','left',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','informtext');
 
 savedbox = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
     'BackgroundColor', Color,...
     'Units','normalized',...
-    'Position',[0.41 0.155 0.23 0.464],...
+    'Position',[0.7 0.1 0.25 0.55],...
     'String',savedVariables,...
     'Style','listbox',...
     'Value',1,...
@@ -881,23 +854,11 @@ savedbox = uicontrol(...
     'FontSize',handles.Preferences.FontSize,...
     'Tag','savedbox');
 
-defaultbox = uicontrol(...
-    'Parent',LoadSavedWindowHandle,...
-    'BackgroundColor',Color,...
-    'Units','normalized',...
-    'Position',[0.68 0.155 0.23 0.464],...
-    'String',defaultVariables,...
-    'Style','listbox',...
-    'Value',1,...
-    'FontName','helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'Tag','defaultbox');
-
 descriptionbox = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
     'BackgroundColor',Color,...
     'Units','normalized',...
-    'Position',[0.08 0.155 0.275 0.464],...
+    'Position',[0.05 0.1 0.6 0.55],...
     'String',defaultDescriptions,...
     'Style','listbox',...
     'Value',1,...
@@ -905,70 +866,16 @@ descriptionbox = uicontrol(...
     'FontSize',handles.Preferences.FontSize,...
     'Tag','descriptionbox');
 
-cancelbutton = uicontrol(...
-    'Parent',LoadSavedWindowHandle,...
-    'BackgroundColor',Color,...
-    'Units','normalized',...
-    'Callback',cancelbuttoncallback,...
-    'Position',[0.42 0.077 0.202 0.06],...
-    'String','Cancel',...
-    'FontName','helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'Tag','cancelbutton');
-
-savedbutton = uicontrol(...
-    'Parent',LoadSavedWindowHandle,...
-    'BackgroundColor',Color,...
-    'Units','normalized',...
-    'Callback',savedbuttoncallback,...
-    'Position',[0.42 0.642 0.202 0.06],...
-    'String','Load Saved Settings',...
-    'FontName','helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'Tag','savedbutton');
-
-defaultbutton = uicontrol(...
-    'Parent',LoadSavedWindowHandle,...
-    'BackgroundColor',Color',...
-    'Units','normalized',...
-    'Callback',defaultbuttoncallback,...
-    'Position',[0.69 0.642 0.202 0.06],...
-    'String','Load Default Settings',...
-    'FontName','helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'Tag','defaultbutton');
-
-informtext = uicontrol(...
-    'Parent',LoadSavedWindowHandle,...
-    'BackgroundColor',Color',...
-    'Units','normalized',...
-    'Position',[0.112 0.70 0.76 0.21],...
-    'String',helpText,...
-    'Style','text',...
-    'FontName','helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'Tag','informtext');
-
 descriptiontext = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
     'BackgroundColor',Color,...
     'Units','normalized',...
-    'Position',[0.1 0.642 0.223 0.062],...
-    'String',{'Variable', 'Descriptions'},...
+    'Position',[0.015 0.65 0.25 0.05],...
+    'String','Variable Descriptions:',...
     'Style','text',...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
     'Tag','descriptiontext');
-
-varChoice = 0;
-
-uiwait(LoadSavedWindowHandle);
-if exist('variableChoice','var')
-    if ~isempty(variableChoice)
-        varChoice = variableChoice;
-        clear global variableChoice;
-    end
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE PIPELINE BUTTON %%%
@@ -1033,9 +940,6 @@ if FileName ~= 0
     end
     if isfield(handles.Settings,'VariableRevisionNumbers'),
         Settings.VariableRevisionNumbers = handles.Settings.VariableRevisionNumbers;
-    end
-    if isfield(handles.Settings,'SelectedOption'),
-        Settings.SelectedOption = handles.Settings.SelectedOption;
     end
     save(fullfile(Pathname,FileName),'Settings')
     %%% Writes settings into a readable text file.
@@ -1177,9 +1081,6 @@ if ModuleNamedotm ~= 0,
             handles.Settings.VariableInfoTypes(ModuleCurrent+1,:) = handles.Settings.VariableInfoTypes(ModuleCurrent,:);
 
         end
-        %%% 6. Copy then clear the selected option in the handles
-        %%% structure.
-        handles.Settings.SelectedOption(ModuleCurrent+1) = handles.Settings.SelectedOption(ModuleCurrent);
         contents = get(handles.ModulePipelineListBox,'String');
         contents{ModuleCurrent+1} = handles.Settings.ModuleNames{ModuleCurrent};
         set(handles.ModulePipelineListBox,'String',contents);
@@ -1197,8 +1098,6 @@ if ModuleNamedotm ~= 0,
 
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
-    SelectedOption = 0;
-    OptionInCode = 0;
 
     numberExtraLinesOfDescription = 0;
     varSpacing = 25;
@@ -1207,26 +1106,11 @@ if ModuleNamedotm ~= 0,
     pixelSpacing = 2;
 
     while 1;
-        output = fgetl(fid); if ~ischar(output); break; end;
-        if strcmp(output,'%AskOptionSelect') == 1
-            while 1;
-                output=fgetl(fid); if ~ischar(output); break; end;
-                if strncmp(output,'%OptionList',11) == 1
-                    OptionList(str2double(output(12:13)))={output(17:end)};
-                end
-                if strncmp(output,'%ModuleFile',11) == 1
-                    ModuleFile(str2double(output(12:13)))={output(17:end)};
-                end
-                if strncmp(output,'%Question',9) == 1
-                    SelectedOption = listdlg('ListString',OptionList,'PromptString',output(13:end),'SelectionMode','single');
-                    break;
-                end
-            end
-        elseif strncmp(output,'%Start VariableSet',18)
-            OptionInCode = str2num(output(19:end));
-        elseif strncmp(output,'%End VariableSet',16)
-            OptionInCode = 0;
-        elseif (strncmp(output,'%defaultVAR',11) == 1) && (OptionInCode == SelectedOption)
+        output = fgetl(fid);
+        if ~ischar(output)
+            break
+        end
+        if strncmp(output,'%defaultVAR',11)
             displayval = output(17:end);
             istr = output(12:13);
             lastVariableCheck = str2double(istr);
@@ -1236,7 +1120,7 @@ if ModuleNamedotm ~= 0,
             if isempty(CheckVal{1})
                 handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = {displayval};
             end
-        elseif (strncmp(output,'%textVAR',8) == 1) && (OptionInCode == SelectedOption)
+        elseif strncmp(output,'%textVAR',8)
             lastVariableCheck = str2double(output(9:10));
             if ~RunInBG
                 handles.Settings.VariableValues(ModuleNums, lastVariableCheck) = {''};
@@ -1294,7 +1178,7 @@ if ModuleNamedotm ~= 0,
             varYSize = normBoxHeight;
             set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [varXPos varYPos varXSize varYSize]);
 
-        elseif strncmp(output,'%filenametextVAR',16) && OptionInCode == SelectedOption
+        elseif strncmp(output,'%filenametextVAR',16)
 
             lastVariableCheck = str2double(output(17:18));
             if ~RunInBG
@@ -1368,7 +1252,7 @@ if ModuleNamedotm ~= 0,
             set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [305 varYPos 195 23]);
             set(handles.BrowseButton{ModuleNums}(lastVariableCheck), 'Position', [501 varYPos 63 20]);
 
-        elseif strncmp(output,'%pathnametextVAR',16) && OptionInCode == SelectedOption
+        elseif strncmp(output,'%pathnametextVAR',16)
 
             lastVariableCheck = str2double(output(17:18));
             if ~RunInBG
@@ -1442,7 +1326,7 @@ if ModuleNamedotm ~= 0,
             set(handles.VariableBox{ModuleNums}(lastVariableCheck), 'Position', [305 varYPos 195 23]);
             set(handles.BrowseButton{ModuleNums}(lastVariableCheck), 'Position', [501 varYPos 63 20]);
 
-        elseif (strncmp(output,'%choiceVAR',10) == 1 ) && (OptionInCode == SelectedOption);
+        elseif strncmp(output,'%choiceVAR',10)
             if ~(exist('StrSet'))
                 StrSet = cell(1);
                 StrSet{1} = output(16:end);
@@ -1452,7 +1336,7 @@ if ModuleNamedotm ~= 0,
             if isempty(handles.Settings.VariableValues(ModuleNums,lastVariableCheck))
                 handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = StrSet(1);
             end
-        elseif (strncmp(output,'%infotypeVAR',12) == 1) && (OptionInCode == SelectedOption);
+        elseif strncmp(output,'%infotypeVAR',12)
             lastVariableCheck = str2double(output(13:14));
             try
                 set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData', output(18:end));
@@ -1468,7 +1352,7 @@ if ModuleNamedotm ~= 0,
                 end
             end
             guidata(handles.figure1,handles);
-        elseif (strncmp(output,'%inputtypeVAR',13) == 1) && (OptionInCode == SelectedOption);
+        elseif strncmp(output,'%inputtypeVAR',13)
             lastVariableCheck = str2double(output(14:15));
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'style', output(19:27));
             VersionCheck = version;
@@ -1520,7 +1404,7 @@ if ModuleNamedotm ~= 0,
             end
 
             clear StrSet
-        elseif (strncmp(output,'%%%VariableRevisionNumber',25) == 1) && (OptionInCode == SelectedOption)
+        elseif strncmp(output,'%%%VariableRevisionNumber',25)
             try
                 handles.Settings.VariableRevisionNumbers(ModuleNums) = str2num(output(29:30));
             catch
@@ -1576,7 +1460,6 @@ if ModuleNamedotm ~= 0,
     % Find which module slot number this callback was called for.
 
     handles.Settings.ModuleNames{ModuleNums} = ModuleName;
-    handles.Settings.SelectedOption(ModuleNums) = SelectedOption;
     if ~RunInBG
         contents = get(handles.ModulePipelineListBox,'String');
         if iscell(contents)
@@ -1599,7 +1482,6 @@ if ModuleNamedotm ~= 0,
     MaxInfo = get(handles.slider1,'UserData');
     MaxInfo = [MaxInfo(1:ModuleNums-1) ((handles.Settings.NumbersOfVariables(ModuleNums)-12+numberExtraLinesOfDescription)*25) MaxInfo(ModuleNums:end)];
     set(handles.slider1,'UserData',MaxInfo);
-
 
     %%% Updates the handles structure to incorporate all the changes.
     guidata(handles.figure1,handles);
@@ -1751,11 +1633,6 @@ if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
         copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
         handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleUp,:);
         handles.Settings.VariableInfoTypes(ModuleUp,:) = copyVarInfoTypes;
-        %%% 6. Copy then clear the selected option in the handles
-        %%% structure.
-        copySelectedOption = handles.Settings.SelectedOption(ModuleNow);
-        handles.Settings.SelectedOption(ModuleNow) = handles.Settings.SelectedOption(ModuleUp);
-        handles.Settings.SelectedOption(ModuleUp)  = copySelectedOption;
 
         CopyVariableDescription = handles.VariableDescription(ModuleNow);
         handles.VariableDescription(ModuleNow) = handles.VariableDescription(ModuleUp);
@@ -1823,11 +1700,6 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
         copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
         handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleDown,:);
         handles.Settings.VariableInfoTypes(ModuleDown,:) = copyVarInfoTypes;
-        %%% 6. Copy then clear the selected option in the handles
-        %%% structure.
-        copySelectedOption = handles.Settings.SelectedOption(ModuleNow);
-        handles.Settings.SelectedOption(ModuleNow) = handles.Settings.SelectedOption(ModuleDown);
-        handles.Settings.SelectedOption(ModuleDown)  = copySelectedOption;
 
         CopyVariableDescription = handles.VariableDescription(ModuleNow);
         handles.VariableDescription(ModuleNow) = handles.VariableDescription(ModuleDown);
@@ -3302,25 +3174,23 @@ else
                 'else,',...
                 'timer_elapsed_text =  [''Time elapsed = '',num2str(floor(time_elapsed))];',...
                 'end;',...
-                'number_analyzed = [''Number of cycles completed = '',num2str(TimerData.SetBeingAnalyzed), '' of '', num2str(TimerData.NumberOfImageSets)];',...
-                'if TimerData.SetBeingAnalyzed ~= 0,',...
-                'time_per_set = [''Time per cycle (seconds) = '', num2str(round(10*time_elapsed/TimerData.SetBeingAnalyzed)/10)];',...
-                'else, time_per_set = ''Time per cycle (seconds) = none completed'';',...
-                'end;',...
+                'number_analyzed = [''Number of cycles completed = '',num2str(TimerData.SetBeingAnalyzed-1), '' of '', num2str(TimerData.NumberOfImageSets)];',...
                 'if TimerData.SetBeingAnalyzed > TimerData.StartingImageSet,',...
-                'time_set1 = [''Time for first cycle (seconds) = '', num2str(round(10*TimerData.TimerTime(end,1))/10)];',...
+                'time_set1 = [''Time for first cycle (seconds) = '', num2str(round(10*sum(TimerData.TimerTime(:,1)))/10)];',...
                 'else,',...
-                'time_set1 = ''  '';',...
+                'time_set1 = '' '';',...
                 'end;',...
-                'timertext = {timer_elapsed_text; number_analyzed; time_per_set; time_set1};',...
+                'if TimerData.SetBeingAnalyzed > TimerData.StartingImageSet + 1,',...
+                'time_per_set = [''Time per cycle (seconds) = '', num2str(round(10*(sum(sum(TimerData.TimerTime(:,2:(TimerData.SetBeingAnalyzed-1)))))/(TimerData.SetBeingAnalyzed-TimerData.StartingImageSet-1))/10)];',...
+                'else, time_per_set = '' '';',...
+                'end;',...
+                'timertext = {timer_elapsed_text; number_analyzed; time_set1; time_per_set};',...
                 'set(TimerData.timertexthandle,''string'',timertext);',...
                 'clear Timers TimerData number_analyzed time_elapsed time_per_set time_set1 timer_elapsed_text timertext;'];
 
             TimerStopFcn = ['Timers=timerfind(''Tag'',''CellProfilerTimer'');TimerData = get(Timers(1),''UserData'');set(TimerData.timertexthandle,''String'',''Image analysis is complete'');set(TimerData.timerFig,''Color'',[.5 .5 .7]);set(TimerData.timertexthandle,''BackgroundColor'',[.5 .5 .7]);figure(TimerData.timerFig);clear Timers TimerData'];
 
             set(timer_handle,'TimerFcn',Timer_Callback,'StopFcn',TimerStopFcn);
-
-
 
             %%% Sets initial text to be displayed in the text box within the timer window.
             timertext = 'Timer is starting';
@@ -3352,9 +3222,9 @@ else
             %%% within the Timer window are pressed.
             PauseButtonFunction = 'if ~exist(''h''); h = CPmsgbox(''Image processing is paused without causing any damage. Processing will restart when you close the Pause window or click OK.''); waitfor(h); clear h; end';
             set(PauseButton_handle,'Callback', PauseButtonFunction)
-            CancelAfterCycleButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this cycle? Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current cycle to be complete. You can press the Cancel after module button or cancel now button to cancel more quickly, but data relating to the current cycle will not be saved in the output file.''); case ''No''; return; end; clear deleteme; clear delme; end'];
+            CancelAfterCycleButtonFunction = ['if ~exist(''delme''); delme=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this cycle? Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(',num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling in progress; Waiting for the processing of current cycle to be complete. You can press the Cancel after module button or cancel now button to cancel more quickly, but data relating to the current cycle will not be saved in the output file.''); case ''No''; clear deleteme; clear delme; return; end; clear deleteme; clear delme; end'];
             set(CancelAfterCycleButton_handle, 'Callback', CancelAfterCycleButtonFunction)
-            CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling after current module in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; return; end; clear deleteme; clear delme2; end'];
+            CancelAfterModuleButtonFunction = ['if ~exist(''delme2''); delme2=1; deleteme = CPquestdlg(''Paused. Are you sure you want to cancel after this module? Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled.'', ''Confirm cancel'',''Yes'',''No'',''Yes''); switch deleteme; case ''Yes''; set(', num2str(CancelAfterCycleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(CancelAfterModuleButton_handle*8192), '/8192,''enable'',''off''); set(', num2str(text_handle*8192), '/8192,''string'',''Canceling after current module in progress; Waiting for the processing of current module to be complete in order to avoid corrupting the current CellProfiler settings.''); case ''No''; clear deleteme; clear delme2; return; end; clear deleteme; clear delme2; end'];
             set(CancelAfterModuleButton_handle,'Callback', CancelAfterModuleButtonFunction)
             HelpButtonFunction = 'CPmsgbox(''Pause button: The current processing is immediately suspended without causing any damage. Processing restarts when you close the Pause window or click OK. Cancel after cycle: Processing will continue on the current cycle, the data up to and including this cycle will be saved in the output file, and then the analysis will be canceled.  Cancel after module: Processing will continue until the current image analysis module is completed, to avoid corrupting the current settings of CellProfiler. Data up to the *previous* cycle are saved in the output file and processing is canceled. Cancel now: The data up to the *previous* cycle will be saved in the output file, but the current cycle data will be stored incomplete in the output file, which might be confusing or corrupt when using the output file.'')';
             %%% HelpButton
@@ -3569,8 +3439,8 @@ else
                     if (setbeinganalyzed < startingImageSet)
                         handles.Current.SetBeingAnalyzed = startingImageSet;
                         guidata(gcbo,handles);
-                        break;  %% break out of SlotNumber loop
-                    end;
+                        break  %% break out of SlotNumber loop
+                    end
 
                     openFig = openFigures;
                     openFigures = [];
@@ -3602,7 +3472,7 @@ else
                         end
                     end
 
-                    %%% Finds and records total  to run module.
+                    %%% Finds and records total to run module.
                     TimerData = get(timer_handle,'UserData');
                     if SlotNumber==1 && handles.Current.SetBeingAnalyzed==handles.Current.StartingImageSet
                         TimerData.TimerTime(SlotNumber,handles.Current.SetBeingAnalyzed) = toc;

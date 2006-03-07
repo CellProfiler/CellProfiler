@@ -10,8 +10,6 @@ Mike's TODO list
 
 ****** END OF MANUSCRIPT PROJECTS ******
 
--(Mike 1-31-06) Compile CP for cluster purposes. REPORT BUG TO MATLAB.
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.

@@ -888,6 +888,11 @@ if handles.Current.NumberOfModules == 0
     return
 end
 
+if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.ModuleNames)
+    CPmsgbox('STOP! Somehow the NumbersOfVariable was not set correctly! Please record EVERYTHING you have done in the past few minutes and send to mrl@wi.mit.edu! Be sure to include what modules are in your pipeline and what you tried to do to cause this error (Adding, Subtracting, Moving modules, how many?). PLEASE NOTE YOUR PIPELINE WILL STILL BE SAVED AND THIS ERROR WILL BE CORRECTED. REPORTING HOW THIS ERROR OCCURRED WILL HELP US DETERMINE HOW TO FIX IT!');
+    handles.Settings.NumbersOfVariables((length(handles.Settings.ModuleNames)+1):end) = [];
+end
+
 %%% The "Settings" variable is saved to the file name the user chooses.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [FileName,Pathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'), 'Save Pipeline As...');
@@ -1567,6 +1572,10 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     MaxInfo = [MaxInfo(1:(ModuleHighlighted(ModuleDelete)-ModuleDelete)) MaxInfo((ModuleHighlighted(ModuleDelete)-ModuleDelete+2):end)];
 end
 
+if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.ModuleNames)
+    CPmsgbox('STOP! Somehow the NumbersOfVariable was not set correctly! Please record EVERYTHING you have done in the past few minutes and send to mrl@wi.mit.edu! Be sure to include what modules are in your pipeline and what you tried to do to cause this error (Adding, Subtracting, Moving modules, how many?).');
+end
+
 set(handles.slider1,'UserData',MaxInfo);
 
 %%% 5. Update the number of modules loaded
@@ -1669,6 +1678,10 @@ if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
     ModulePipelineListBox_Callback(hObject, eventdata, handles)
 end
 
+if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.ModuleNames)
+    CPmsgbox('STOP! Somehow the NumbersOfVariable was not set correctly! Please record EVERYTHING you have done in the past few minutes and send to mrl@wi.mit.edu! Be sure to include what modules are in your pipeline and what you tried to do to cause this error (Adding, Subtracting, Moving modules, how many?).');
+end
+
 function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
@@ -1733,6 +1746,10 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
     %%% Updates the handles structure to incorporate all the changes.
     guidata(gcbo, handles);
     ModulePipelineListBox_Callback(hObject, eventdata, handles)
+end
+
+if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.ModuleNames)
+    CPmsgbox('STOP! Somehow the NumbersOfVariable was not set correctly! Please record EVERYTHING you have done in the past few minutes and send to mrl@wi.mit.edu! Be sure to include what modules are in your pipeline and what you tried to do to cause this error (Adding, Subtracting, Moving modules, how many?).');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

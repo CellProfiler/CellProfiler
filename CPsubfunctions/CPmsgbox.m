@@ -84,7 +84,6 @@ switch nargin,
         TitleString=varargin{2};
         IconString=varargin{3};IconData=varargin{4};
         IconCMap=varargin{5};
-
 end
 
 CreateMode=lower(CreateMode);
@@ -171,11 +170,11 @@ if ~strcmp(CreateMode,'non-modal'),
             OldFig(2:end)=[];
         end % if length
         BoxHandle=OldFig;
+        set(BoxHandle,'Visible','off');
         set(BoxHandle,'Position',DefFigPos);
         set(BoxHandle,'Color',[0.7 0.7 0.9]);
         BoxChildren=get(BoxHandle,'Children');
         delete(BoxChildren);
-        figure(BoxHandle);
     end
     set(0,'ShowHiddenHandles',TempHide);
 end
@@ -280,7 +279,6 @@ end % if ~strcmp
 
 OKXOffset=(FigWidth-OKWidth)/2;
 DefFigPos(3:4)=[FigWidth FigHeight];
-%DefFigPos = getnicedialoglocation(DefFigPos, get(BoxHandle,'Units'));
 
 % if there is a figure out there and it's modal, we need to be modal too
 if ~isempty(gcbf) && strcmp(get(gcbf,'WindowStyle'),'modal')
@@ -300,7 +298,7 @@ MsgHandle=text( ...
     Font                  , ...
     'HorizontalAlignment' ,'left'                            , ...
     'VerticalAlignment'   ,'bottom'                          , ...
-    'Position'            ,[ MsgTxtXOffset MsgTxtYOffset+5 0], ...
+    'Position'            ,[MsgTxtXOffset MsgTxtYOffset+5 0], ...
     'String'              ,WrapString                        , ...
     'Interpreter'         ,Interpreter                       , ...
     'Tag'                 ,'MessageBox'                        ...
@@ -348,15 +346,16 @@ if ~strcmp(IconString,'none'),
 end % if ~strcmp
 
 % make sure we are on screen
-movegui(BoxHandle)
+movegui(BoxHandle,'center')
 
 set(BoxHandle,'HandleVisibility','callback','Visible','on');
 
 % make sure the window gets drawn even if we are in a pause
 drawnow
 
-
-if nargout==1,varargout{1}=BoxHandle;end
+if nargout==1
+    varargout{1}=BoxHandle;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% InternalCreateFlag %%%%%
@@ -385,20 +384,3 @@ switch(evd.Key)
     case {'return','space','escape'}
         delete(gcbf);
 end
-
-
-function figure_size = getnicedialoglocation(figure_size, figure_units)
-parentHandle = gcbf;
-propName = 'Position';
-if isempty(parentHandle)
-    parentHandle = 0;
-    propName = 'ScreenSize';
-end
-
-old_u = get(parentHandle,'Units');
-set(parentHandle,'Units',figure_units);
-container_size=get(parentHandle,propName);
-set(parentHandle,'Units',old_u);
-
-figure_size(1) = container_size(1)  + 1/2*(container_size(3) - figure_size(3));
-figure_size(2) = container_size(2)  + 2/3*(container_size(4) - figure_size(4));

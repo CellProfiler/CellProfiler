@@ -137,11 +137,12 @@ elseif strcmpi(HorizontalOrVertical,'Horizontal')
     DimensionToPlace = 2;
 end
 
+OrigImage = MakeLayersMatch(OrigImage);
+
 for i=1:(length(OrigImage)-1)
     if size(OrigImage{i},DimensionToCheck) ~= size(OrigImage{i+1},DimensionToCheck)
         error(['Image processing was canceled in the ', ModuleName, ' module because the two input images must have the same ',PotentialErrorMsg,' adjacent to each other.'])
     end
-    OrigImage = MakeLayersMatch(OrigImage,i);
     
     if i == 1
         AdjacentImage = cat(DimensionToPlace,OrigImage{i},OrigImage{i+1});
@@ -178,16 +179,19 @@ handles.Pipeline.(AdjacentImageName) = AdjacentImage;
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION %%%
 %%%%%%%%%%%%%%%%%%%
+function OrigImage = MakeLayersMatch(OrigImage)
 
-function OrigImage = MakeLayersMatch(OrigImage,i)
+maxDim = 1;
+for i=1:length(OrigImage)
+    maxDim = max(maxDim,size(OrigImage{i},3));
+end
 
-%%% If one of the images is multidimensional (color), the other one is
-%%% replicated to match its dimensions.
-if size(OrigImage{i},3) ~= size(OrigImage{i+1},3)
-    DesiredLayers = max(size(OrigImage{i},3),size(OrigImage{i+1},3));
-    if size(OrigImage{i},3) > size(OrigImage{i+1},3)
-        for j = 1:DesiredLayers, OrigImage{i+1}(:,:,j) = OrigImage{i+1}(:,:,1); end
-    else
-        for j = 1:DesiredLayers, OrigImage{i}(:,:,j) = OrigImage{i}(:,:,1); end
+if maxDim > 1
+    for i=1:length(OrigImage)
+        if size(OrigImage{i},3) < maxDim
+            for j = 1:maxDim
+                OrigImage{i}(:,:,j) = OrigImage{i}(:,:,1);
+            end
+        end
     end
 end

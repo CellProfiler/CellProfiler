@@ -194,7 +194,37 @@ for n = 1:length(ImageName)
     FileNames(n) = {CurrentFileName};
 end
 
-%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% The figure window display is unnecessary for this module, so the figure
+%%% window is closed the first time through the module.
+%%% Determines the figure number.
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+%%% Closes the window if it is open.
+if any(findobj == ThisModuleFigureNumber)
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
+    end
+    for n = 1:length(ImageName)
+        drawnow
+        %%% Activates the appropriate figure window.
+        CPfigure(handles,'Text',ThisModuleFigureNumber);
+        if iscell(ImageName)
+            TextString = [ImageName{n},': ',FileNames{n}];
+        else
+            TextString = [ImageName,': ',FileNames];
+        end
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
 
 %%% First, fix feature names and the pathname
@@ -233,30 +263,3 @@ handles.Measurements.Image.FileNamesText                   = FileNamesText;
 handles.Measurements.Image.FileNames(SetBeingAnalyzed)     = {FileNames};
 handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
-
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-%%% The figure window display is unnecessary for this module, so the figure
-%%% window is closed the first time through the module.
-%%% Determines the figure number.
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-%%% Closes the window if it is open.
-if any(findobj == ThisModuleFigureNumber)
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
-    end
-    for n = 1:length(ImageName)
-        drawnow
-        %%% Activates the appropriate figure window.
-        CPfigure(handles,'Text',ThisModuleFigureNumber);
-        if iscell(ImageName)
-            TextString = [ImageName{n},': ',FileNames{n}];
-        else
-            TextString = [ImageName,': ',FileNames];
-        end
-        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
-    end
-end

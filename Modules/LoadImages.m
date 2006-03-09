@@ -50,14 +50,14 @@ function handles = LoadImages(handles)
 % regular expressions to match text. For example, typing image[12]dapi in
 % the box asking for text in common and typing R in the Exact/Regular
 % expression box will select any file containing the digit 1 or 2
-% immediately in between the text 'image' and 'dapi'. 
+% immediately in between the text 'image' and 'dapi'.
 % Order is used when images (or movies) are present in a repeating order,
 % like DAPI, FITC, Red, DAPI, FITC, Red, and so on, where images are
 % selected based on how many images are in each group and what position
 % within each group a particular color is located (e.g. three images per
-% group, DAPI is always first). 
+% group, DAPI is always first).
 %
-% Analyze all subfolders within the selected folder? 
+% Analyze all subfolders within the selected folder?
 % You may have subfolders within the folder that is being searched, but if
 % you are in TEXT mode, the names of the folders themselves must not
 % contain the text you are searching for or an error will result.
@@ -548,9 +548,9 @@ for n = 1:length(ImageName)
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
-%%% Note, we are not using the CPretrieveimage subfunction because we are
-%%% here retrieving the image from the hard drive, not from the handles
-%%% structure.
+            %%% Note, we are not using the CPretrieveimage subfunction because we are
+            %%% here retrieving the image from the hard drive, not from the handles
+            %%% structure.
             if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == 1)
                 CPwarndlg(['Warning: the images loaded by ', ModuleName, ' are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. If this is the case, use the Rescale Intensity module in "Enter max and min" mode to rescale the images using the values 0, 0.0625, 0, 1.'],'Outside 0-1 Range','replace');
             end
@@ -608,7 +608,33 @@ for n = 1:length(ImageName)
         FileNames(n) = {CurrentFileNameWithFrame};
     end
 end
-%%% -- Save to the handles.Measurements structure for reference in output files --------------- %%%
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+if any(findobj == ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
+    end
+    for n = 1:length(ImageName)
+        %%% Activates the appropriate figure window.
+        CPfigure(handles,'Text',ThisModuleFigureNumber);
+        if iscell(ImageName)
+            TextString = [ImageName{n},': ',FileNames{n}];
+        else
+            TextString = [ImageName,': ',FileNames];
+        end
+        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
 
 %%% First, fix feature names and the pathname
@@ -650,28 +676,6 @@ handles.Measurements.Image.FileNamesText                   = FileNamesText;
 handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
 handles.Measurements.Image.PathNamesText                   = PathNamesText;
 handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
-
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
-    end
-    for n = 1:length(ImageName)
-        %%% Activates the appropriate figure window.
-        CPfigure(handles,'Text',ThisModuleFigureNumber);
-        if iscell(ImageName)
-            TextString = [ImageName{n},': ',FileNames{n}];
-        else
-            TextString = [ImageName,': ',FileNames];
-        end
-        uicontrol('style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
-    end
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%

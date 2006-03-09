@@ -5,6 +5,8 @@ Version 1.0.XXXX
  - Timer functionality is improved
  - Added ExportToExcel module (same function as ExportData)
  - WriteSQLFiles now creates a correct SQL file to setup and import all CSV files
+ - LoadImages and LoadSingleImage always display correct filenames
+ - Pipelines should no longer become corrupt. If the error occurs, a warning tells the user to report to mrl@wi.mit.edu
 
 Version 1.0.3215
  - ClassifyObjects can now handle no objects

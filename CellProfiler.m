@@ -597,10 +597,10 @@ end
 
 revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames)
-    
+
     %%% Load the module's settings
     [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
-    
+
     if Failed == 0
         if isfield(Settings,'VariableRevisionNumbers')
             SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
@@ -1544,7 +1544,7 @@ for ModuleDelete = 1:length(ModuleHighlighted);
         if length(handles.BrowseButton) >= (ModuleHighlighted(ModuleDelete)-ModuleDelete+1)
             if ~isempty(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
                 for VariableNumber = 1:length(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1})
-                    if handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber) ~= 0
+                    if (handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber) ~= 0) && ishandle(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber))
                         delete(handles.BrowseButton{ModuleHighlighted(ModuleDelete)-ModuleDelete+1}(VariableNumber));
                     end
                 end
@@ -2056,6 +2056,11 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                         handles.Settings.VariableValues(ModNum, BoxNum) = VarVals(1);
                     else
                         handles.Settings.VariableValues(ModNum, BoxNum) = VarVals;
+                    end
+                else
+                    OldVal = get(ModList(i),'Value');
+                    if (OldVal ~= 0) && OldVal > MatchedIndice
+                        set(ModList(i),'Value',(OldVal-1));
                     end
                 end
             end

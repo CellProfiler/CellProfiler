@@ -4,6 +4,9 @@ Mike's TODO list
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
 
+-(Anne 3-13-06) this website is linking to cellprofiler, but it links to the MCRinstaller.exe which is silly. At some point, we should notify them that they are not linking to the right thing?  It's really kind of annoying.
+http://www.softpedia.com/progDownload/CellProfiler-Download-31132.html
+
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
 -When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.

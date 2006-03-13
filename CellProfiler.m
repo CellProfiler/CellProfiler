@@ -2052,7 +2052,11 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 if get(ModList(i),'Value')==MatchedIndice
                     set(ModList(i),'Value',1);
                     VarVals = get(ModList(i),'string');
-                    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = VarVals;
+                    if iscell(VarVals)
+                        handles.Settings.VariableValues(ModNum, BoxNum) = VarVals(1);
+                    else
+                        handles.Settings.VariableValues(ModNum, BoxNum) = VarVals;
+                    end
                 end
             end
         elseif isempty(ModList4)

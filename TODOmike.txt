@@ -1,5 +1,17 @@
 Mike's TODO list
 
+****** Anne 1/7 - MANUSCRIPT FIGURES ******
+
+-(Anne 3-14-06) Make changes to figures as we discussed in lab mtg.
+
+-(Anne 3-14-06) Determine whether the 3 wdb CG5643 dsRNAs are really different locations along the gene or not. (original vs genomewide array 218 vs 219)
+
+-(Anne 3-14-06) In NIRHT, DMS wants another control of some random gene that does not produce metaphase arrest. Find a gene in a well nearby PPP2R5E, pick one well (puro + and -) (= 2 montages of 6 images) and 2 control wells (puro - only), and blind label and score for metaphase. (could choose same control wells as one we have done before, but should-rescore them so that it's done at the same time). Let me know where they are and I will score them too. FYI, in sabatini3ata there is a script renumber random.py which has instructions therein to help renumber, but in this case since it's only two images you would see the relabeling, so actually someone else shoudl relabel. I'd put this project in 2006 Fly200 hit analysis/2006 3 3 NIRHT followup. Hopefully we will be lucky and this random gene will not affect metaphase, and that one well will be sufficient to get good enough statistics! You will also need cell counts for the images you score in order to get the percent metaphase.
+
+-When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
+
+****** END OF MANUSCRIPT PROJECTS ******
+
 -(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
@@ -7,11 +19,6 @@ Mike's TODO list
 -(Anne 3-13-06) this website is linking to cellprofiler, but it links to the MCRinstaller.exe which is silly. At some point, we should notify them that they are not linking to the right thing?  It's really kind of annoying.
 http://www.softpedia.com/progDownload/CellProfiler-Download-31132.html
 
-****** Anne 1/7 - MANUSCRIPT FIGURES ******
-
--When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
-
-****** END OF MANUSCRIPT PROJECTS ******
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

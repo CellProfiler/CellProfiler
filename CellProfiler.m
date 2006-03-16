@@ -101,7 +101,6 @@ if isdeployed
         LoadedPreferencesExist = 1;
         clear SavedPreferences
     end
-    handles.Current.DefaultModuleDirectory = fullfile(pwd,'Modules');
     handles.Preferences.DefaultModuleDirectory = fullfile(pwd,'Modules');
 else
     try
@@ -579,7 +578,7 @@ handles.VariableBox = {};
 handles.VariableDescription = {};
 
 if isdeployed
-    Pathname = handles.Current.DefaultModuleDirectory;
+    Pathname = handles.Preferences.DefaultModuleDirectory;
 else
     ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
     %%% Checks to make sure that the modules have not changed
@@ -2733,12 +2732,6 @@ ModuleDirEditBox = uicontrol(...
     'String',handles.Preferences.DefaultModuleDirectory,...
     'Style','edit',...
     'Tag','ModuleDirEditBox');
-
-if isdeployed
-    set(ModuleDirTextBox,'visible','off')
-    set(ModuleDirBrowseButton,'visible','off')
-    set(ModuleDirEditBox,'visible','off')
-end
 
 SaveButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...

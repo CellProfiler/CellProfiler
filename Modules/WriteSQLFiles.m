@@ -78,7 +78,7 @@ elseif handles.Current.NumberOfModules == 2
 end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
-    if isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
+    if (isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) && isempty((strmatch('CreateClusterFiles',handles.Settings.ModuleNames)))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
         error([ModuleName, ' must be the last module in the pipeline, or second to last if the Create Batch Scripts module is in the pipeline.']);
     end
 end;
@@ -120,7 +120,7 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
-    CPconvertsql2(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet, 'MySQL');
+    CPconvertsql(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'MySQL');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -2,6 +2,8 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
+-(Anne 3-17-06) The ExampleFlyPIPE complains that the Measure area shape module is outdated. We should update all our example PIPEs for the new format. Can you explain this project to Colin/Tony? They'll need to re-zip everything for the website, I presume. (Has to be done before reviewers try to download the software).
+
 -(Anne 3-14-06) Make changes to figures as we discussed in lab mtg.
 
 -(Anne 3-14-06) Determine whether the 3 wdb CG5643 dsRNAs are really different locations along the gene or not. (original vs genomewide array 218 vs 219)

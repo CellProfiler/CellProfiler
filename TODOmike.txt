@@ -2,17 +2,23 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
--(Anne 3-17-06) The ExampleFlyPIPE complains that the Measure area shape module is outdated. We should update all our example PIPEs for the new format. Can you explain this project to Colin/Tony? They'll need to re-zip everything for the website, I presume. (Has to be done before reviewers try to download the software).
+- (WEEKEND??) Determine whether the 3 wdb CG5643 dsRNAs are really different locations along the gene or not. (original vs genomewide array 218 vs 219)  And determine what is going on with CG13383 dicistronic.
 
--(Anne 3-14-06) Make changes to figures as we discussed in lab mtg.
+- (WEEKEND??) Make chart for wdb scoring by eye. See the chart that is in fig. 5 for the layout. The excel file I used to make it is in the sab 3 ata Fly200 hit analysis/ Fly200MetaTelo18.xls (or whatever the highest number is) on the sheet called Fly G-w confirm.
 
--(Anne 3-14-06) Determine whether the 3 wdb CG5643 dsRNAs are really different locations along the gene or not. (original vs genomewide array 218 vs 219)
+- (MONDAY) Move nuclei and nuclear outlines from fig 2 to fig 1 and add cells and Cell outlines. The ExampleFlyImages #2 (image #76) is good. clumpy - not perfect, but good.
 
--(Anne 3-14-06) In NIRHT, DMS wants another control of some random gene that does not produce metaphase arrest. Find a gene in a well nearby PPP2R5E, pick one well (puro + and -) (= 2 montages of 6 images) and 2 control wells (puro - only), and blind label and score for metaphase. (could choose same control wells as one we have done before, but should-rescore them so that it's done at the same time). Let me know where they are and I will score them too. FYI, in sabatini3ata there is a script renumber random.py which has instructions therein to help renumber, but in this case since it's only two images you would see the relabeling, so actually someone else shoudl relabel. I'd put this project in 2006 Fly200 hit analysis/2006 3 3 NIRHT followup. Hopefully we will be lucky and this random gene will not affect metaphase, and that one well will be sufficient to get good enough statistics! You will also need cell counts for the images you score in order to get the percent metaphase.
+- (MONDAY) Usually when Jason published virus shRNAs, each shRNA has a name like AURKB-558 where the 558 refers to the hairpin number or something? So I'd like our shRNAs to be labeled properly instead of using #1 to #5. Check with Jason to figure out where the hairpin number comes from; i am sure it's in our database.
 
--When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
+- (MONDAY) Write help for the modules that need them so Anne can compile manual.
+
+- (MONDAY) For Fig 2, for shape make the cells white blocks with black dividing lines, and for texture, make the image some sort of heatmap.
+
+- (MONDAY) The ExampleFlyPIPE complains that the Measure area shape module is outdated. We should update all our example PIPEs for the new format. Can you explain this project to Colin/Tony? They'll need to re-zip everything for the website, I presume. (Has to be done before reviewers try to download the software).
 
 ****** END OF MANUSCRIPT PROJECTS ******
+
+-When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
 
 -(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
 

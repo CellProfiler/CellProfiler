@@ -1,6 +1,14 @@
 CellProfiler cell image analysis software development 
 February 14, 2006
 
+- (Requested by Colin 3/20) - There is an error in definegrid.  Run ExamplYeastPatchImages and an error "Attempted to access Location(:,1); index out of bounds because size(Loaction) = [0, 0]. in  the DefineGrid module, which is module #09 in the pipeline" should occur.
+
+- (Requested by Colin 3/20) - I've put in ErrorExampleYeastPatchPIPE.mat into the developerdropbox.  It is an older version of a pipeline.  When one tries to load it, it creates an error and then there is an error for any module that you try to load until you restart CellProfiler.  Lets make sure this does not happen in the future when we try to use old pipelines.
+
+- (Requested by Colin 3/20) - I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype.
+
+- (Requested by Colin 3/20) - An error occurs when you click on the area between browse and browse on the main GUI (browse for image folder and output folder).
+
 - (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
 
 - (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.

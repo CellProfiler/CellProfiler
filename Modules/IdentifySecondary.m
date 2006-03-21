@@ -840,6 +840,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         fieldname = ['Segmented',SecondaryObjectName];
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
+        %%% TODO: why do we have the same thing twice here, with an OR?
         if strcmp(IdentChoice,'Propagation') || strcmp(IdentChoice,'Propagation')
             %%% Saves the Threshold value to the handles structure.
             %%% Storing the threshold is a little more complicated than storing other measurements

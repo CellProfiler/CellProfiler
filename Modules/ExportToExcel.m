@@ -6,6 +6,10 @@ function handles = ExportToExcel(handles)
 % SHORT DESCRIPTION:
 % Exports measurements to excel.
 % *************************************************************************
+% Note: this module is beta-version and has not been thoroughly checked.
+%
+% This module performs the same function as our Data Tool, Export Data.
+% Please refer to the help for the data tool as this module is still beta.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

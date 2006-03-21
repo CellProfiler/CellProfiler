@@ -4,8 +4,6 @@ Mike's TODO list
 
 - Usually when Jason published virus shRNAs, each shRNA has a name like AURKB-558 where the 558 refers to the hairpin number or something? So I'd like our shRNAs to be labeled properly instead of using #1 to #5. Check with Jason to figure out where the hairpin number comes from; i am sure it's in our database.
 
-- Write help for the modules that need them so Anne can compile manual. OK to just say beta for now.
-
 - Colin has apparently updated our example PIPEs for the new format. We should check them all and then zip them up and put them on the website. Apparently there is an error in ExampleYeastPatch in the define grid module (he put it on TODO), so we should just remove that PIPE for now.
 
 - Release software.

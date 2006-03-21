@@ -9,7 +9,7 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 %%%
 %%% When it is finished, open the program TexShop.
 %%% File > Open CellProfilerManual.tex
-%%% Then click Typeset It will process for a long time, and will pause
+%%% Then click Typeset. It will process for a long time, and will pause
 %%% often. When it is finished, run it again by clicking Typeset so
 %%% that the page numbers are placed appropriately.  Possibly run it
 %%% again, if it says something like  "references may have changed"

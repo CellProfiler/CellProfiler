@@ -68,7 +68,7 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What were the images called when the were originally loaded?
+%textVAR02 = What were the images called when they were originally loaded?
 %infotypeVAR02 = imagegroup
 OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu

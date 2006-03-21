@@ -8,6 +8,8 @@ Mike's TODO list
 
 - Write help for the modules that need them so Anne can compile manual. OK to just say beta for now.
 
+- (MONDAY) For Fig 2, for shape make the cells white blocks with black dividing lines, and for texture, make the image some sort of heatmap.
+
 - Paint bucket Myo3A shape figure.
 
 - Colin has apparently updated our example PIPEs for the new format. We should check them all and then zip them up and put them on the website. Apparently there is an error in ExampleYeastPatch in the define grid module (he put it on TODO), so we should just remove that PIPE for now.

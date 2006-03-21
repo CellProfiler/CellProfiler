@@ -332,6 +332,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
             drawnow
             %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
+            if max(Labels(:)) == 0,
+                Labels = ones(size(Labels));
+            end
             ExpandedRelabeledDilatedPrelimSecObjectImage = PrelimPrimaryLabelMatrixImage(Labels);
             %%% Removes the background pixels (those not labeled as foreground in the
             %%% DilatedPrelimSecObjectBinaryImage). This is necessary because the
@@ -354,7 +357,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         b=zeros(max(LookUpTable(:,1)+1),2);
         b(LookUpTable(:,1)+1,1)=LookUpTable(:,1);
         b(LookUpTable(:,1)+1,2)=LookUpTable(:,2);
-        b(:,1) = 0:length(b)-1;
+        b(:,1) = 0:size(b,1)-1;
         LookUpColumn = b(:,2);
         FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
 

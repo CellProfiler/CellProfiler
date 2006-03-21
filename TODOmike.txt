@@ -2,19 +2,19 @@ Mike's TODO list
 
 ****** Anne 1/7 - MANUSCRIPT FIGURES ******
 
-- (WEEKEND??) Determine whether the 3 wdb CG5643 dsRNAs are really different locations along the gene or not. (original vs genomewide array 218 vs 219)  And determine what is going on with CG13383 dicistronic.
+- I assume your findings about the  3 wdb CG5643 dsRNAs locations within the gene are in a file somewhere in case we need to look it up?
 
-- (WEEKEND??) Make chart for wdb scoring by eye. See the chart that is in fig. 5 for the layout. The excel file I used to make it is in the sab 3 ata Fly200 hit analysis/ Fly200MetaTelo18.xls (or whatever the highest number is) on the sheet called Fly G-w confirm.
+- Usually when Jason published virus shRNAs, each shRNA has a name like AURKB-558 where the 558 refers to the hairpin number or something? So I'd like our shRNAs to be labeled properly instead of using #1 to #5. Check with Jason to figure out where the hairpin number comes from; i am sure it's in our database.
 
-- (MONDAY) Move nuclei and nuclear outlines from fig 2 to fig 1 and add cells and Cell outlines. The ExampleFlyImages #2 (image #76) is good. clumpy - not perfect, but good.
+- Write help for the modules that need them so Anne can compile manual. OK to just say beta for now.
 
-- (MONDAY) Usually when Jason published virus shRNAs, each shRNA has a name like AURKB-558 where the 558 refers to the hairpin number or something? So I'd like our shRNAs to be labeled properly instead of using #1 to #5. Check with Jason to figure out where the hairpin number comes from; i am sure it's in our database.
+- Paint bucket Myo3A shape figure.
 
-- (MONDAY) Write help for the modules that need them so Anne can compile manual.
+- Colin has apparently updated our example PIPEs for the new format. We should check them all and then zip them up and put them on the website. Apparently there is an error in ExampleYeastPatch in the define grid module (he put it on TODO), so we should just remove that PIPE for now.
 
-- (MONDAY) For Fig 2, for shape make the cells white blocks with black dividing lines, and for texture, make the image some sort of heatmap.
+- Release software.
 
-- (MONDAY) The ExampleFlyPIPE complains that the Measure area shape module is outdated. We should update all our example PIPEs for the new format. Can you explain this project to Colin/Tony? They'll need to re-zip everything for the website, I presume. (Has to be done before reviewers try to download the software).
+- SHOW ANNE HOW TO UPDATE WEBSITE!
 
 ****** END OF MANUSCRIPT PROJECTS ******
 

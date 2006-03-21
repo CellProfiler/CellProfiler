@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 3/21) (Requested by Colin 3/20) - There is an error in definegrid.  Run ExamplYeastPatchImages and an error "Attempted to access Location(:,1); index out of bounds because size(Loaction) = [0, 0]. in  the DefineGrid module, which is module #09 in the pipeline" should occur.
+
+-(Mike 3/21) (Requested by Colin 3/20) - An error occurs when you click on the area between browse and browse on the main GUI (browse for image folder and output folder).
+
 -(Mike 3/8) (Anne 3-8-06) When several Load Images are run in a row, it says in the figure window it's loading the wrong image even though the right images are loaded. 
 
 -(Mike 3/7) (Mike 1-31-06) Compile CP for cluster purposes. REPORT BUG TO MATLAB.

@@ -1,4 +1,4 @@
-Version 1.0.XXXX
+Version 1.0.3443
  - Added meander mode for tiling images
  - Rotate correctly states that a positive angle gives counterclockwise rotation
  - MergeBatchOutput now looks in Default Output Folder
@@ -7,6 +7,7 @@ Version 1.0.XXXX
  - WriteSQLFiles now creates a correct SQL file to setup and import all CSV files
  - LoadImages and LoadSingleImage always display correct filenames
  - Pipelines should no longer become corrupt. If the error occurs, a warning tells the user to report to mrl@wi.mit.edu
+ - Several various bug fixes
 
 Version 1.0.3215
  - ClassifyObjects can now handle no objects

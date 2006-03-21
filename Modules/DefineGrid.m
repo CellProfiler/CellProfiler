@@ -223,8 +223,12 @@ else
         Location = cat(1,tmp.Centroid);
         %%% Chooses the coordinates of the objects at the farthest edges
         %%% of the incoming image.
+        if size(Location,1) > 1
         x = sort(Location(:,1));
         y = sort(Location(:,2));
+        else
+            error('Either no objects are identified or only one object is identified in the DefineGrid module, neither of which will work. Please make sure your objects are correctly identified.');
+        end
         XLocationOfLowestXSpot = floor(min(x));
         YLocationOfLowestYSpot = floor(min(y));
         XLocationOfHighestXSpot = ceil(max(x));

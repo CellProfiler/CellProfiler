@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 3/21) Usually when Jason published virus shRNAs, each shRNA has a name like AURKB-558 where the 558 refers to the hairpin number or something? So I'd like our shRNAs to be labeled properly instead of using #1 to #5. Check with Jason to figure out where the hairpin number comes from; i am sure it's in our database.
+
+-(Mike 3/21) Colin has apparently updated our example PIPEs for the new format. We should check them all and then zip them up and put them on the website. Apparently there is an error in ExampleYeastPatch in the define grid module (he put it on TODO), so we should just remove that PIPE for now.
+
+-(Mike 3/21) Release software.
+
 -(Mike 3/21) (Requested by Colin 3/20) - There is an error in definegrid.  Run ExamplYeastPatchImages and an error "Attempted to access Location(:,1); index out of bounds because size(Loaction) = [0, 0]. in  the DefineGrid module, which is module #09 in the pipeline" should occur.
 
 -(Mike 3/21) (Requested by Colin 3/20) - An error occurs when you click on the area between browse and browse on the main GUI (browse for image folder and output folder).

@@ -1,6 +1,10 @@
 CellProfiler cell image analysis software development 
 February 14, 2006
 
+- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray.
+
+- (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?
+
 - (Requested by Colin 3/20) - I've put in ErrorExampleYeastPatchPIPE.mat into the developerdropbox.  It is an older version of a pipeline.  When one tries to load it, it creates an error and then there is an error for any module that you try to load until you restart CellProfiler.  Lets make sure this does not happen in the future when we try to use old pipelines.
 
 - (Requested by Colin 3/20) - I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype.

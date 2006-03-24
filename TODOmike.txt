@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- (Anne 2-24-06) Please add this to the install.htm page of the website (i'd suggest just after the Mac 0s 10.4 instructions):  Intel-processor Mac users: Sorry, CellProfiler is not yet compatible with this new hardware.
+
 - (Anne 3-22-06) - send little matlab project to poornima. She interviews thursday the 30th with us again, so should probably send this on monday to her. I don't even know what language or what scope you should send her - it's up to you!
 
 - (Anne 3-22-06) - Should we send an email via the forum announcing the new version?

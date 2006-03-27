@@ -2938,6 +2938,10 @@ function FilenamesListBox_Callback(hObject, eventdata, handles) %#ok We want to 
 if strcmp(get(gcf,'SelectionType'),'open')
     Val = get(handles.FilenamesListBox,'value');
     String = get(handles.FilenamesListBox,'string');
+    %%% Check if there are images
+    if strcmpi(String,'No image files recognized')
+        return
+    end
     FileName = char(String(Val));
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
     if strcmpi(FileName(end-3:end),'.mat')

@@ -1,18 +1,6 @@
 Mike's TODO list
 
-- (Anne 2-24-06) Please add this to the install.htm page of the website (i'd suggest just after the Mac 0s 10.4 instructions):  Intel-processor Mac users: Sorry, CellProfiler is not yet compatible with this new hardware.
-
-- (Anne 3-22-06) - send little matlab project to poornima. She interviews thursday the 30th with us again, so should probably send this on monday to her. I don't even know what language or what scope you should send her - it's up to you!
-
 - (Anne 3-22-06) - Should we send an email via the forum announcing the new version?
-
-- (Anne 3-22-06) - Are you going to make the Forum not have spam somehow? I think you mentioned requiring login to post? I moved a bunch of posts to 'spam' because i didn't know how to delete en masse, and deleting one at a time was getting old after like 15 of them.
-
-- (Anne 3-22-06) -EMAILED ALSO - Yaz's analysis failed at the 14th cycle because the image had no objects - it's only a problem with the Distance option. Ray fixed the bug and restarted but I don't think it will finish before I leave today.  I don't know if this is key enough to warrant re-releasing when you get back, but it's just FYI. 
-     I just spoke to her and she says that it's not critical to her to get the data back until monday. I spoke to her about the fact that she and Jan both had really dim images and we agreed that perhaps there was something wrong with the acquisition because Jan and Yaz both got poor images (high background and/or low signal). So she will try to figure that out.  
-    So hopefully the data set will be all ready for you to analyze when you return. I thought you were going to set it up to do the ratio and then the classify thing so it would spit out the one number she needs, but I didn't see that in the pipeline. That is, I thought you were going to calculate the cyto/nuc ratio, log it, and then classify objects based on that value. But maybe the log step has to be done offline so you are going to run a matlab script later. It would be useful, I think, to write whatever modules we need so we can do this kind of analysis without running scripts later.
-
-- (Anne 3-21-06) - (EMAILED ALSO) When you have a chance, can you put a note on the forum about CP not yet being compatible with the intel mac?  And also that starting CellProfiler when another user is running X11 will cause errors (maybe copy the specific errors into the forum post so that if people go looking for that error msg they will see the answer). In the long term, can we write some sort of catch that figures out if the X11 problem will occur and tells the user?
 
 - (Anne 3-21-06) - The Mac compiled version - clicking on an image does not reveal the CP image tool window. the error msg is: undefined variable or function 'CPimagetool'
 
@@ -21,9 +9,6 @@ Mike's TODO list
 -(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
-
--(Anne 3-13-06) this website is linking to cellprofiler, but it links to the MCRinstaller.exe which is silly. At some point, we should notify them that they are not linking to the right thing?  It's really kind of annoying.
-http://www.softpedia.com/progDownload/CellProfiler-Download-31132.html
 
 -(Anne 3-15-06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames.
 

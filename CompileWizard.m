@@ -22,17 +22,19 @@ for i=1:length(ImageToolfilelist)
     fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
-        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
     else
         ToolList = ['''',ToolName(1:end-2),''''];
+    end
+    if exist('ToolListNoQuotes','var')
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
+    else
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
 fprintf(fid,['handles.Current.ImageToolsFilenames = {''Image tools'' ',ToolList,'};\n']);
-fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n');
-fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
+fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n\n');
 
-clear ToolList ToolListNoQuotes
+clear ToolList
 
 DataToolfilelist = dir('DataTools/*.m');
 fprintf(fid,'%%%%%% DATA TOOL HELP\n');
@@ -50,24 +52,26 @@ for i=1:length(DataToolfilelist)
     fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
-        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
     else
         ToolList = ['''',ToolName(1:end-2),''''];
+    end
+    if exist('ToolListNoQuotes','var')
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
+    else
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
 fprintf(fid,['handles.Current.DataToolsFilenames = {''Data tools'' ',ToolList,'};\n']);
-fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n');
-fprintf(fid,['%%#function ',ToolListNoQuotes,'\n\n']);
+fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n\n');
 
-clear ToolList ToolListNoQuotes
+clear ToolList
 
-DataToolfilelist = dir('Modules/*.m');
+Modulesfilelist = dir('Modules/*.m');
 fprintf(fid,'%%%%%% MODULES HELP\n');
-for i=1:length(DataToolfilelist)
-    ToolName = DataToolfilelist(i).name;
+for i=1:length(Modulesfilelist)
+    ToolName = Modulesfilelist(i).name;
     fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
-    body = char(strread(help(DataToolfilelist(i).name),'%s','delimiter','','whitespace',''));
+    body = char(strread(help(Modulesfilelist(i).name),'%s','delimiter','','whitespace',''));
     for j = 1:size(body,1)
         fixedtext = fixthistext(body(j,:));
         newtext = ['''',fixedtext,'\\n''...\n'];
@@ -79,6 +83,11 @@ for i=1:length(DataToolfilelist)
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
     else
         ToolList = ['''',ToolName(1:end-2),''''];
+    end
+    if exist('ToolListNoQuotes','var')
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
+    else
+        ToolListNoQuotes = ToolName(1:end-2);
     end
 end
 fprintf(fid,['handles.Current.ModuleFilenames = {',ToolList,'};\n']);
@@ -112,8 +121,7 @@ fprintf(fid,'handles.Current.Help = ToolHelp;\n\n');
 clear ToolList
 
 Modulefilelist = dir('Modules/*.m');
-fprintf(fid,'%%%%%% Module List\n');
-fprintf(fid,'%%#function');
+fprintf(fid,'%%%%%% load_listbox code (replace function in CellProfiler.m)\n\n');
 FileProcessingFiles ={};
 PreProcessingFiles={};
 ObjectProcessingFiles={};
@@ -122,7 +130,6 @@ OtherFiles={};
 for i=1:length(Modulefilelist)
     name=Modulefilelist(i).name;
     name=name(1:end-2);
-    fprintf(fid,[' ',name]);
     if file_in_category(Modulefilelist(i).name, 'File Processing')
         FileProcessingFiles(length(FileProcessingFiles)+1)=cellstr(name);
     elseif file_in_category(Modulefilelist(i).name, 'Image Processing')
@@ -162,7 +169,7 @@ for i=1:length(Modulefilelist)
     fclose(fid3);
     %%% END CODE TO WRITE TEXT FILES OF MODULES
 end
-fprintf(fid,'\n\nCategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\n');
+fprintf(fid,'CategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\n');
 
 fprintf(fid,'FileProcessingFiles = {');
 for i=1:length(FileProcessingFiles)
@@ -201,7 +208,20 @@ fprintf(fid,'AddModuleWindowHandles.ModuleStrings{2} = PreProcessingFiles;\n');
 fprintf(fid,'AddModuleWindowHandles.ModuleStrings{3} = ObjectProcessingFiles;\n');
 fprintf(fid,'AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;\n');
 fprintf(fid,'AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;\n');
-fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\n');
+fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\n\n');
+
+CPsubfunctionfilelist = dir('CPsubfunctions/*.m');
+for i=1:length(CPsubfunctionfilelist)
+    ToolName = CPsubfunctionfilelist(i).name;
+    if exist('ToolListNoQuotes','var')
+        ToolListNoQuotes = [ToolListNoQuotes,' ',ToolName(1:end-2)];
+    else
+        ToolListNoQuotes = ToolName(1:end-2);
+    end
+end
+
+fprintf(fid,'%%%%%% FUNCTIONS TO ADD (place before first line of code in CellProfiler.m)\n');
+fprintf(fid,['%%#function ',ToolListNoQuotes]);
 
 fclose(fid);
 

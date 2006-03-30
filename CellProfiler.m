@@ -630,7 +630,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
                     handles.Settings.VariableValues(ModuleNum,k) = {''};
                     if exist('FixList')
                         FixList(end+1,1) = ModuleNum;
-                        FixList(end+1,2) = k;
+                        FixList(end,2) = k;
                     else
                         FixList(1,1) = ModuleNum;
                         FixList(1,2) = k;
@@ -688,7 +688,11 @@ else
 
     if exist('FixList')
         for k = 1:size(FixList,1)
+            try
             PipeList = get(handles.VariableBox{FixList(k,1)}(FixList(k,2)),'string');
+            catch
+                test=eps;
+            end
             FirstValue = PipeList(1);
             handles.Settings.VariableValues(FixList(k,1),FixList(k,2)) = FirstValue;
         end

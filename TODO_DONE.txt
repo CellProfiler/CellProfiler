@@ -1,5 +1,29 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike also did this before 3443 release) TIMER ISSUES: a) Number of sets analyzed is actually the current set being analyzed so either change the text to reflect this or subtract 1 from the count. b) The timing for first cycle is way off (told me 3 seconds when it is more like 40), and I think this calculation is also effecting time for other cycles. The first cycle should NOT be included in the calculation for time for other cycles.
+
+-(Mike did this before 3443 release) (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline (ProblemPIPE.mat in the DevDropBox) was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. If I load the pipeline and go to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), it yields an error. Normally this sort of thing works just fine and any place in the pipeline that had OrigGreen is converted to one of the other image names. Here's the error:
+??? Assignment has more non-singleton rhs dimensions than non-singleton
+subscripts
+
+Error in ==> CellProfiler>storevariable at 2158
+                    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = VarVals;
+
+Error in ==> CellProfiler>VariableBox_Callback at 2243
+        storevariable(ModuleNumber,VariableNumberStr,UserEntry, handles);
+
+Error in ==> CellProfiler>gui_mainfcn at 5209
+        feval(varargin{:});
+
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+
+??? Error while evaluating uicontrol Callback.
+
+-(Mike 3/30) (Requested by Colin 3/20) - I've put in ErrorExampleYeastPatchPIPE.mat into the developerdropbox.  It is an older version of a pipeline.  When one tries to load it, it creates an error and then there is an error for any module that you try to load until you restart CellProfiler.  Lets make sure this does not happen in the future when we try to use old pipelines.
+
+-(Fixed for next release) (Anne 3-21-06) - The Mac compiled version - clicking on an image does not reveal the CP image tool window. the error msg is: undefined variable or function 'CPimagetool'
+
 -(Mike 3/28) (Anne 3-22-06) -EMAILED ALSO - Yaz's analysis failed at the 14th cycle because the image had no objects - it's only a problem with the Distance option. Ray fixed the bug and restarted but I don't think it will finish before I leave today.  I don't know if this is key enough to warrant re-releasing when you get back, but it's just FYI. 
      I just spoke to her and she says that it's not critical to her to get the data back until monday. I spoke to her about the fact that she and Jan both had really dim images and we agreed that perhaps there was something wrong with the acquisition because Jan and Yaz both got poor images (high background and/or low signal). So she will try to figure that out.  
     So hopefully the data set will be all ready for you to analyze when you return. I thought you were going to set it up to do the ratio and then the classify thing so it would spit out the one number she needs, but I didn't see that in the pipeline. That is, I thought you were going to calculate the cyto/nuc ratio, log it, and then classify objects based on that value. But maybe the log step has to be done offline so you are going to run a matlab script later. It would be useful, I think, to write whatever modules we need so we can do this kind of analysis without running scripts later.

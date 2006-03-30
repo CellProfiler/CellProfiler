@@ -2,8 +2,6 @@ Mike's TODO list
 
 - (Anne 3-22-06) - Should we send an email via the forum announcing the new version?
 
-- (Anne 3-21-06) - The Mac compiled version - clicking on an image does not reveal the CP image tool window. the error msg is: undefined variable or function 'CPimagetool'
-
 -When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
 
 -(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.

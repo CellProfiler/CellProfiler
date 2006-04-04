@@ -143,7 +143,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
 
-        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts')
+        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts') || strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateClusterFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
             if isnan(BatchSize)
                 errordlg('STOP!');
@@ -277,7 +277,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         fimageloader = fopen(fullfile(OutDir, [TablePrefix, '_LOADIMAGE.CTL']), 'W');
         fprintf(fimageloader, 'LOAD DATA\n');
-        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts')
+        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts') || strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateClusterFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
             if isnan(BatchSize)
                 errordlg('STOP!');
@@ -307,7 +307,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         fobjectloader = fopen(fullfile(OutDir, [TablePrefix, '_LOADOBJECT.CTL']), 'W');
         fprintf(fobjectloader, 'LOAD DATA\n');
-        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts')
+        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchScripts') || strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateClusterFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
             if isnan(BatchSize)
                 errordlg('STOP!');

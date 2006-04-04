@@ -40,12 +40,10 @@ else
     DiscardLogical1 = strncmp(FileNamesNoDir,'.',1);
     
     if strncmpi(ImageOrMovie,'I',1)
-        formats = imformats;
         MediaExtensions = CPimread;
     elseif strncmpi(ImageOrMovie,'M',1)
         MediaExtensions = {'avi' 'stk'};
     elseif strncmpi(ImageOrMovie,'B',1)
-        formats = imformats;
         MediaExtensions = CPimread;
         MediaExtensions = [MediaExtensions, {'avi'}, {'stk'}];
     else
@@ -53,7 +51,7 @@ else
     end
         
     DiscardsByExtension = zeros(size(FileNamesNoDir));
-    for i = [1:length(DiscardsByExtension)]
+    for i = 1:length(DiscardsByExtension)
         if ~isempty(strfind(FileNamesNoDir{i},'.'))
             DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
         end

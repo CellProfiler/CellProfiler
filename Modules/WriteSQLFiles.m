@@ -104,7 +104,7 @@ end
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 
 % Special case: We're writing batch files, and this is the first cycle.
-if (strcmp(handles.Settings.ModuleNames{end},'CreateBatchScripts') && (handles.Current.SetBeingAnalyzed == 1)),
+if (strcmp(handles.Settings.ModuleNames{end},'CreateBatchScripts') || strcmp(handles.Settings.ModuleNames{end},'CreateClusterFiles')) && (handles.Current.SetBeingAnalyzed == 1)
     DoWriteSQL = 1;
     FirstSet = 1;
     LastSet = 1;

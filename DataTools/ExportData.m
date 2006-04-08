@@ -138,7 +138,7 @@ uiheight = 0.3;
 
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
-Height = 2.5+length(fields)*uiheight;
+Height = 2.5+length(fields)*uiheight + 0.5;
 Width  = 4.2;
 set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
@@ -206,6 +206,15 @@ uicontrol(ETh,'style','text','String','Ignore NaN''s?','FontName','Times','FontS
 IgnoreNaN = uicontrol(ETh,'Style','checkbox','units','inches','position',[3.4 basey+2.2 1.8 uiheight],...
     'BackgroundColor',get(ETh,'color'),'Value',1);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+uicontrol(ETh,'style','text','String','Export parameter for Images:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 basey+1.6 1.8 uiheight],'BackgroundColor',get(ETh,'color'));
+DataExportParameter = uicontrol(ETh,'style','popupmenu','String',{'Mean','Median','Standard Deviation'},'FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 basey+1.4 1.8 uiheight],'BackgroundColor',[1 1 1]);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
 exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'units','inches',...
@@ -236,7 +245,21 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
     else
         ExportInfo.SwapRowsColumnInfo = 'Yes';
     end
-
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if get(DataExportParameter,'Value')==1
+        ExportInfo.DataParameter = 'mean';
+    else if get(DataExportParameter,'Value')==2
+            ExportInfo.DataParameter = 'median';
+        else if get(DataExportParameter,'Value')==3
+                ExportInfo.DataParameter = 'std';
+            end;
+        end;
+    end;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+        
     % Get measurements to export
     if ~isempty(fields)
         buttonchoice = get(h,'Value');

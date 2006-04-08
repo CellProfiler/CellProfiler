@@ -898,7 +898,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
-                    title('Outlined objects');
+                    title('Outlined Nuclei/Cells');
 
                     %%% Report numbers
                     posx = get(hx,'Position');
@@ -1057,7 +1057,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
                     CPfigure('Tag','OutlinedFigure');
-                    uicontrol('style','text','units','normalized','string','OUTLINED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                    uicontrol('style','text','units','normalized','string','Outlined Nuclei/Cells: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 else
                     CPfigure(OutlinedFigures(1));
                 end

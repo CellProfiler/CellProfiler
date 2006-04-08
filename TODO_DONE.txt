@@ -20,6 +20,14 @@ Error in ==> CellProfiler at 60
 
 ??? Error while evaluating uicontrol Callback.
 
+-(Tony 3/31) (Requested by Anne 2-16-06) - Please make ExportData data tool have the option of exporting standard deviations instead of means by clicking a box.  Be sure to use existing code as much as possible. This will probably require sending an additional variable to CPwritemeasurements. Someday we might also allow the option of medians, etc. but for now st dev is critical.
+
+-(Tony 3/31) (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.
+
+-(Tony 3/31) (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.
+
+-(Tony 3/31) (Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
+
 -(Mike 3/30) (Requested by Colin 3/20) - I've put in ErrorExampleYeastPatchPIPE.mat into the developerdropbox.  It is an older version of a pipeline.  When one tries to load it, it creates an error and then there is an error for any module that you try to load until you restart CellProfiler.  Lets make sure this does not happen in the future when we try to use old pipelines.
 
 -(Fixed for next release) (Anne 3-21-06) - The Mac compiled version - clicking on an image does not reveal the CP image tool window. the error msg is: undefined variable or function 'CPimagetool'

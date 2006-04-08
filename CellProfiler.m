@@ -32,33 +32,56 @@ function varargout = CellProfiler(varargin)
 % $Revision$
 
 % Begin initialization code - DO NOT EDIT
-if ~nargin
-    SplashScreen;
-    tic
-    if ~isdeployed
-        try
-            addpath(genpath(fileparts(which('CellProfiler.m'))))
-            savepath
-        catch CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
+verInfo = ver;
+found = 0;
+ctr = 1;
+while 1
+    try
+        if strfind(verInfo(ctr).Name,'Image Processing Toolbox');
+            found = 1;     
+            break;
+        end;
+    catch
+        found = 0;
+        break;
+    end;
+    ctr = ctr + 1;           
+end;
+clear verInfo;
+clear ctr;
+if found == 0
+    warndlg('You do not have Image Processing Toolbox installed.');
+else
+
+    if ~nargin
+        SplashScreen;
+        tic
+        if ~isdeployed
+            try
+                addpath(genpath(fileparts(which('CellProfiler.m'))))
+                savepath
+            catch CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
+            end
         end
     end
-end
-gui_Singleton = 1;
-gui_State = struct('gui_Name',       mfilename, ...
-    'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @CellProfiler_OpeningFcn, ...
-    'gui_OutputFcn',  @CellProfiler_OutputFcn, ...
-    'gui_LayoutFcn',  @CellProfiler_LayoutFcn, ...
-    'gui_Callback',   []);
-if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
-end
-
-if nargout
-    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
-else
-    gui_mainfcn(gui_State, varargin{:});
-end
+    gui_Singleton = 1;
+    gui_State = struct('gui_Name',       mfilename, ...
+        'gui_Singleton',  gui_Singleton, ...
+        'gui_OpeningFcn', @CellProfiler_OpeningFcn, ...
+        'gui_OutputFcn',  @CellProfiler_OutputFcn, ...
+        'gui_LayoutFcn',  @CellProfiler_LayoutFcn, ...
+        'gui_Callback',   []);
+    if nargin && ischar(varargin{1})
+        gui_State.gui_Callback = str2func(varargin{1});
+    end
+    
+    if nargout
+        [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+    else
+        gui_mainfcn(gui_State, varargin{:});
+    end
+end;
+  
 % End initialization code - DO NOT EDIT
 
 %%%%%%%%%%%%%%%%%%%%%%%%

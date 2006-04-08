@@ -1,13 +1,5 @@
 Tony's TODO list
 
-- (Requested by Anne 2-16-06) - Please make ExportData data tool have the option of exporting standard deviations instead of means by clicking a box.  Be sure to use existing code as much as possible. This will probably require sending an additional variable to CPwritemeasurements. Someday we might also allow the option of medians, etc. but for now st dev is critical.
-
-- (Requested by Anne 12-15-05)- IdentifyPrimAutomatic says 'Outlined Objects' in the figure window instead of 'Outlined Nuclei' or 'Cells'.
-
-- (Requested by Anne 12-12-05)- The test mode for IdentifyPrimAuto does not have the CP image tools in the menu bar.
-
--(Requested by Anne 12-07-05)  Can we add "Help for image tools" to the CP image tools menu that appears as a result of CPfigure on each figure window, which would pop up the same help window as in the main GUI (Help>Image tools help)?
-
 - (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
 - (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 

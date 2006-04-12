@@ -1,8 +1,16 @@
-Produce Figure E with *real* data.
+- decide on what normalization is appropriate and build a tool in CellVisualizer to do it so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
-Make normalization happenable in CellVisualizer.
+- Investigate non-parametric population-comparison stats: Kolmogorov-Smirnov vs Kullback-Leibler. Have CellVisualizer calculate them for us and deposit into the database?
 
-Implement Loopy belief propagation for thresholding.
+- Try clustering based on KS statistics, Fly 5-replicate data.
+
+- Implement Loopy belief propagation for thresholding.
+
+- automated method to find background value when calculating the illumination correction function.
+
+- Figure out how to make texture and shape measures invariant to area and intensity. Many zernikes correlate to area, many textures correlate to mean or integrated intensity.
+
+- Several texture measures came out equal to 1 for every image: Contrast, InformationMeasure1, and DifferenceVariance, for the Dros movie in the paper and probably for our images overall. [Anne asked Ola 1/9/06 but he replied he doesn't know why and suggested we change the scale of texture]. 
 
 ---
 Chat with John Fisher about finding subpopulations using lower

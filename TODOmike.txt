@@ -1,9 +1,5 @@
 Mike's TODO list
 
-- (Anne 3-22-06) - Should we send an email via the forum announcing the new version?
-
--When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
-
 -(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
@@ -14,5 +10,3 @@ Mike's TODO list
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.
 EDIT: INSTEAD, TRY LIMITING THE NUMBER OF ENTRIES FOR HANDLES, THEN AT END OF IMAGE ANALYSIS COMBINE SEPERATE VARIABLES
-
-- Create business cards for yourself! I've put files in Promotional > Business Cards, plus instructions for doing it. For mine, I'd like to keep the format of having WIBR-stuff on the front and CP stuff on the back. You are welcome to create CP-only cards (this is probably better because officially the WIBR doesn't like us to use their logo without getting it approved through the administration which is a pain).  I've got a word file that contains many links to the same business card file - that way you can adjust the business card file for different people or to update contact info, and then just change the link in the word file and it should all update. I bought stiff paper which apparently feeds through laser printers ok - it's on my desk. We have a laser printer in Lahra/David Sabatini's office called SABATINI COLOR you can use, but we should try to minimize how much color ink we use, so making the cards have a white background would be a good idea, and would look nice for the CP logo (for mine, with the WIBR stuff, i think we have to keep it purple background, but for practicing, I'd stick to a white background card). I'm sure we ca n find a paper cutter somewhere (the office above Lahra's on the floor above us).  The spacing of the cards on those template files may be messed up because it's designed for perforated business card paper, but that paper is kind of lame because it leaves little fuzzies on the edges of the cards so i think we are better off using plain card stock and a paper cutter.  Update the instructions if anything changes. I guess we could SVN commit a new card for each person?  or just store a card for each person on your local computer but leave the template untouched. whatever.

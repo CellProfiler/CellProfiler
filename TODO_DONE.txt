@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
+
+-(Mike 4/17) (Anne 3-22-06) - Should we send an email via the forum announcing the new version?
+
 -(Mike also did this before 3443 release) TIMER ISSUES: a) Number of sets analyzed is actually the current set being analyzed so either change the text to reflect this or subtract 1 from the count. b) The timing for first cycle is way off (told me 3 seconds when it is more like 40), and I think this calculation is also effecting time for other cycles. The first cycle should NOT be included in the calculation for time for other cycles.
 
 -(Mike did this before 3443 release) (Requested by Anne 2-16-06) - there is a pipeline bug (sigh) - my pipeline (ProblemPIPE.mat in the DevDropBox) was loading OrigGreen image in the second space of the LoadImages module and had several modules downstream that use OrigGreen. If I load the pipeline and go to the LoadImages module to change OrigGreen to / (because I don't want to load an image in that space anymore), it yields an error. Normally this sort of thing works just fine and any place in the pipeline that had OrigGreen is converted to one of the other image names. Here's the error:

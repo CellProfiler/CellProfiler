@@ -69,7 +69,13 @@ MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %infotypeVAR04 = imagegroup indep
 SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 1
+%textVAR05 = For color images, what do you want the color of the outlines to be?
+%choiceVAR05 = White
+%choiceVAR05 = Black
+%inputtypeVAR05 = popupmenu
+OutlineColor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -95,12 +101,21 @@ if size(OrigImage,3) ~= 3
     NewImage = OrigImage;
     NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
 else
+    if strcmpi(OutlineColor,'Black')
+        Color1 = 0;
+        Color2 = 0;
+        Color3 = 0;
+    else
+        Color1 = 1;
+        Color2 = 1;
+        Color3 = 1;
+    end
     NewImage1 = OrigImage(:,:,1);
     NewImage2 = OrigImage(:,:,2);
     NewImage3 = OrigImage(:,:,3);
-    NewImage1(OutlineImage ~= 0) = 1;
-    NewImage2(OutlineImage ~= 0) = 1;
-    NewImage3(OutlineImage ~= 0) = 1;
+    NewImage1(OutlineImage ~= 0) = Color1;
+    NewImage2(OutlineImage ~= 0) = Color2;
+    NewImage3(OutlineImage ~= 0) = Color3;
     NewImage(:,:,1) = NewImage1;
     NewImage(:,:,2) = NewImage2;
     NewImage(:,:,3) = NewImage3;

@@ -126,6 +126,10 @@ for n = 1:6
         tmp1{end+1} = NameImageToCheck{n};
     end
 end
+if isempty(tmp1)
+    error('You have not selected any images to check for saturation and blur.')
+end
+
 NameImageToCheck = tmp1;
 
 for ImageNumber = 1:length(NameImageToCheck);

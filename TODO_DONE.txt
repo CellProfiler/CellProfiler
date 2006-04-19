@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
+-(Mike 4/18) (Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
+
+-(Mike 4/17) When the manuscript is submitted, *please* move *everything* you've ever processed on the G5's and your PC to its own, dated experiment folder on sabatini3_ata, within a Figure folder if appropriate. Move expts from within FIGURES subfolders out to the main directory, with FIG1 appended, etc.
 
 -(Mike 4/17) (Anne 3-22-06) - Should we send an email via the forum announcing the new version?
 

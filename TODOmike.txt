@@ -1,7 +1,5 @@
 Mike's TODO list
 
--(Anne 3-2-06) Copy 'Ready to delete' folder from kahuna ( i think it's in fly/images?) to the archivas. After a few weeks, we can delete the original copy. Email Robert that you are doing this, so he knows where the data went and also so that he doesn't add anything new to the 'ready to archive' folder between the time we copy it and the time we delete it.  Maybe also email him now and see if he has anything additional that he wants to archive with archivas.
-
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
 
 -(Anne 3-15-06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames.

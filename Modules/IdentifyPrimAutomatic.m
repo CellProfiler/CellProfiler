@@ -638,6 +638,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% Calculate distance transform
                     DistanceTransformedImage = bwdist(~Objects);
                     %%% Add some noise to get distinct maxima
+                    %%% First set seed to 0, so that it is reproducible
+                    rand('seed',0);
                     DistanceTransformedImage = DistanceTransformedImage + ...
                         0.001*rand(size(DistanceTransformedImage));
                     if strcmp(UseLowRes,'Yes')

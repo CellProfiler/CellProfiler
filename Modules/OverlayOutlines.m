@@ -72,6 +72,10 @@ SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = For color images, what do you want the color of the outlines to be?
 %choiceVAR05 = White
 %choiceVAR05 = Black
+%choiceVAR05 = Red
+%choiceVAR05 = Green
+%choiceVAR05 = Blue
+%choiceVAR05 = Yellow
 %inputtypeVAR05 = popupmenu
 OutlineColor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -101,14 +105,24 @@ if size(OrigImage,3) ~= 3
     NewImage = OrigImage;
     NewImage(OutlineImage ~= 0) = ValueToUseForOutlines;
 else
+    Color1 = 1;
+    Color2 = 1;
+    Color3 = 1;
     if strcmpi(OutlineColor,'Black')
         Color1 = 0;
         Color2 = 0;
         Color3 = 0;
-    else
-        Color1 = 1;
-        Color2 = 1;
-        Color3 = 1;
+    elseif strcmpi(OutlineColor,'Red')
+        Color2 = 0;
+        Color3 = 0;
+    elseif strcmpi(OutlineColor,'Green')
+        Color1 = 0;
+        Color3 = 0;
+    elseif strcmpi(OutlineColor,'Blue')
+        Color1 = 0;
+        Color2 = 0;
+    elseif strcmpi(OutlineColor,'Yellow')
+        Color3 = 0;
     end
     NewImage1 = OrigImage(:,:,1);
     NewImage2 = OrigImage(:,:,2);

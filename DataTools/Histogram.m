@@ -142,7 +142,7 @@ end
 %%% Determines whether any sample info has been loaded.  If sample
 %%% info is present, the fieldnames for those are extracted.
 ImportedFieldnames = fieldnames(handles.Measurements.Image);
-ImportedFieldnames = ImportedFieldnames(strncmp(ImportedFieldnames,'Imported',8) == 1 | strncmp(ImportedFieldnames,'Filename',8) == 1);
+ImportedFieldnames = ImportedFieldnames(strncmpi(ImportedFieldnames,'Imported',8) == 1 | strncmpi(ImportedFieldnames,'Filename',8) == 1);
 if ~isempty(ImportedFieldnames)
     %%% Allows the user to select a heading from the list.
     [Selection, ok] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 400],...
@@ -495,10 +495,16 @@ else
         %%% Deletes the last value of HistogramData, which
         %%% is always a zero (because it's the number of values that match
         %%% + inf).
-        HistogramData(end) = [];
-        FinalHistogramData(:,ImageNumber) = HistogramData;
+        if ~isempty(HistogramData)
+            HistogramData(end) = [];
+        end
+        if ~isempty(HistogramData)
+            FinalHistogramData(:,ImageNumber) = HistogramData;
+        end
         if exist('SampleNames','var') == 1
-            SampleName = SampleNames{ImageNumber};
+            try
+                SampleName = SampleNames{ImageNumber};
+            end;
             HistogramTitles{ImageNumber} = ['#', num2str(ImageNumber), ': ' , SampleName];
         else HistogramTitles{ImageNumber} = ['Image #', num2str(ImageNumber)];
         end
@@ -517,13 +523,7 @@ end
 %%% Saves this info in a variable, FigureSettings, which
 %%% will be stored later with the figure.
 FigureSettings{3} = FinalHistogramData;
-if ~strcmpi(GreaterOrLessThan,'A')
-    AnswerFileName = inputdlg({'Name the file'},'Name the file in which to save the subset of measurements',1,{'temp.mat'},'on');
-    try
-        save(fullfile(handles.DefaultOutputDirectory,AnswerFileName{1}),'OutputMeasurements')
-    catch uiwait(CPerrordlg('Saving did not work.'))
-    end
-end
+
 
 %%% Saves the data to an excel file if desired.
 if strcmpi(SaveData,'No') ~= 1
@@ -558,15 +558,21 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         Increment = Increment + 1;
         h = subplot(NumberDisplayRows,NumberDisplayColumns,Increment);
         if strcmpi(LineOrBar,'bar')
-            k=bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            if ~isempty(FinalHistogramData)
+                k=bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            end
             set(k,'FaceColor',GraphColor);
         elseif strcmpi(LineOrBar,'area')
-            k=area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            if ~isempty(FinalHistogramData)
+                k=area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            end
             set(k,'FaceColor',GraphColor);
         else
-            plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2,'color',GraphColor)
+            if ~isempty(FinalHistogramData)
+                plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2,'color',GraphColor);
+            end
         end
-        set(get(h,'XLabel'),'String',{MeasurementToExtract;AdditionalInfoForTitle})
+        set(get(h,'XLabel'),'String',cat(2,MeasurementToExtract,AdditionalInfoForTitle))
         set(h,'XTickLabel',XTickLabels)
         set(h,'XTick',PlotBinLocations)
         set(gca,'Tag','BarTag','ActivePositionProperty','Position')

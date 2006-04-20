@@ -1,41 +1,5 @@
 Colin's TODO list
 
-(Anne 2-14-06 URGENT) - (more URGENT than the other stuff!)  :)
-Can you fix this bug in histogram tool: I am trying to use the thresholding value. I am using the Jason MitHits file: \\gobo\sabatini3_ata\FIGURES\Figure2-validationPhenotypes\2006_02_13_MitosisHits\2006_2_14_1100MitHitsOUT.mat
-I am trying to do a histogram of Nuc AreaShape Eccentricity. Then the settings are:
-1
-8
-b
-30
-auto
-auto
-no 
->=
-[Next page]
-22
-relative
-no
-no
-image
-yes
-p
-line
-yes
-Then I pick Nuc Intens Blue, Integrated INtensity. For some reason it then asks me to the name the file (which I didn't ask to save). I click Ok and it says saving did not work. After closing that warning, my figure pops up displaying the first histogram but yielding this error:
-??? Error while evaluating uimenu Callback.
-
-??? Error using ==> set
-Cell array of strings may only contain string and numeric matrices.
-
-??? Error using ==> set
-Invalid cell array of strings.
-
-Error in ==> Histogram at 569
-        set(get(h,'XLabel'),'String',{MeasurementToExtract;AdditionalInfoForTitle})
-
-??? Error while evaluating uimenu Callback.
-------------
-
 (Anne 2-9-06 URGENT) - Please modify the IdentifyPrimManual so that after each clicking/identification step, the user has the choice of clicking/identifying another object within the image or continuing on in the pipeline. This would allow them to identify an unlimited number of objects per image, rather than just one.
 
 (Anne 2-9-06 URGENT) - There is a weird bug in the IdentifyPrimManual in the pipeline I put in the Dev. DropBox (temp1PIPE.mat, which goes with slide3-1.tif) I usually try to outline a cell with ~10 clicks in a circular shape and it fails but does not give much of an error msg.

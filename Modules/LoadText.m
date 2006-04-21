@@ -127,8 +127,8 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Measurements.Image.(FieldName) = Text;
         %%% If the entered field already exists we have to append to this field
     else
-        handles.Measurements.Image.([FieldName,'Description']) = cat(2,handles.Measurements.([FieldName,'Description']),{Description});
-        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.(FieldName),Text);
+        handles.Measurements.Image.([FieldName,'Description']) = cat(2,handles.Measurements.Image.([FieldName,'Description']),{Description});
+        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.Image.(FieldName),Text);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%

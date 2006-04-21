@@ -40,7 +40,8 @@ helpdlg(help('HelpCPInstallGuide'))
 % 4. (Optional steps) Get up and running quickly with one of the sample
 % pipelines on our Examples page, and check out Help > HelpGettingStarted
 % within CellProfiler. In CellProfiler, set some basic preferences in File
-% > Set preferences, which will make it easier to use CellProfiler.
+% > Set preferences, which will make it easier to use CellProfiler. On many
+% PC's, it is beneficial to set the font size to 8 instead of 10.
 % 
 % *************************************************************************
 % 

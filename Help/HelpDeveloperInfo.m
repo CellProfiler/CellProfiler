@@ -1,5 +1,5 @@
-function HelpProgrammingNotes
-helpdlg(help('HelpProgrammingNotes'))
+function HelpDeveloperInfo
+helpdlg(help('HelpDeveloperInfo'))
 
 % Programming Notes for CellProfiler Developer's version
 %

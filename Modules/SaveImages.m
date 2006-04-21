@@ -98,7 +98,7 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Type N to use sequential numbers or any word to use the same base name (for avi (movies) you need to have the same base name).
+%textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Alternately, type N to use sequential numbers for the file names, or type =DesiredFilename to use the single file name you specify (replace DesiredFilename with the name you actually want) for all files (this is *required* when saving an avi movie).
 %infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
@@ -221,22 +221,29 @@ if strcmpi(ColorMap,'Default') == 1
 end
 
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    try
-        if iscell(handles.Pipeline.(['Filename', ImageFileName]))
-            FileName = handles.Pipeline.(['Filename', ImageFileName]){SetBeingAnalyzed};
-        else
-            FileName = handles.Pipeline.(['Filename', ImageFileName]);
+    %%% If the user has selected sequential numbers for the file names.
+    if strcmpi(ImageFileName,'N')
+        FileName = TwoDigitString(SetBeingAnalyzed);
+    %%% If the user has selected to use the same base name for all the new file
+    %%% names (used for movies).
+    elseif strncmpi(ImageFileName,'=',1)
+        Spaces = isspace(ImageFileName);
+        if any(Spaces)
+            error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
         end
-        [temp FileName] = fileparts(FileName); %#ok Ignore MLint
-    catch
-        if strcmp(ImageFileName,'N')
-            FileName = TwoDigitString(SetBeingAnalyzed);
-        else
-            Spaces = isspace(FileName);
-            if any(Spaces)
-                error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
+        FileName = ImageFileName(2:end);
+    else
+        try
+            if iscell(handles.Pipeline.(['Filename', ImageFileName]))
+                FileName = handles.Pipeline.(['Filename', ImageFileName]){SetBeingAnalyzed};
+            else
+                FileName = handles.Pipeline.(['Filename', ImageFileName]);
             end
-            FileName = ImageFileName;
+            [temp FileName] = fileparts(FileName); %#ok Ignore MLint
+        catch
+            %%% If the user has selected an image name that is not straight from a load
+            %%% images module, the filenames will not be found in the handles structure.
+            error(['Image processing was canceled in the ', ModuleName, ' module because in answer to the question "Which images'' original filenames do you want to use as a base" you have entered improper text. You must choose N, text preceded with =, or an image name that was loaded directly from a LoadImages module.'])
         end
     end
 

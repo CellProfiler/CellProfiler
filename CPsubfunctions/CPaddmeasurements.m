@@ -26,6 +26,10 @@ FeaturesField = [Measure,'Features'];
 
 if isfield(handles.Measurements.(Object),FeaturesField)
     if handles.Current.SetBeingAnalyzed == 1
+        CheckForRedundant = strmatch(Feature,handles.Measurements.(Object).(FeaturesField));
+        if length(CheckForRedundant) > 1
+            error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');
+        end
         NewColumn = length(handles.Measurements.(Object).(FeaturesField)) + 1;
         handles.Measurements.(Object).(FeaturesField)(NewColumn) = {Feature};
         handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed}(:,NewColumn) = Data;

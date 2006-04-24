@@ -72,13 +72,13 @@ drawnow
 if handles.Current.NumberOfModules == 1
     error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportSQL data tool.']);
 elseif handles.Current.NumberOfModules == 2
-    if ~isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames)))
+    if ~isempty((strmatch('CreateBatchFiles',handles.Settings.ModuleNames)))
         error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than the Create Batch Scripts module. Probably you should use the ExportSQL data tool.']);
     end
 end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
-    if (isempty((strmatch('CreateBatchScripts',handles.Settings.ModuleNames))) && isempty((strmatch('CreateClusterFiles',handles.Settings.ModuleNames)))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
+    if isempty((strmatch('CreateBatchFiles',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
         error([ModuleName, ' must be the last module in the pipeline, or second to last if the Create Batch Scripts module is in the pipeline.']);
     end
 end;
@@ -104,7 +104,7 @@ end
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 
 % Special case: We're writing batch files, and this is the first cycle.
-if (strcmp(handles.Settings.ModuleNames{end},'CreateBatchScripts') || strcmp(handles.Settings.ModuleNames{end},'CreateClusterFiles')) && (handles.Current.SetBeingAnalyzed == 1)
+if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (handles.Current.SetBeingAnalyzed == 1)
     DoWriteSQL = 1;
     FirstSet = 1;
     LastSet = 1;

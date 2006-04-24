@@ -1,5 +1,5 @@
-function HelpGettingStarted
-helpdlg(help('HelpGettingStarted'))
+function GSGettingStarted
+helpdlg(help('GSGettingStarted'))
 
 % The best way to learn how to use CellProfiler is to load an example
 % pipeline (from www.cellprofiler.org) and try it out. Or, you can build a
@@ -100,5 +100,5 @@ helpdlg(help('HelpGettingStarted'))
 % pixel size. It will not save the default image or output folder.
 
 %%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
+%%% from the command line of Matlab. The code of this module (helpdlg) is
 %%% never run from inside CP anyway.

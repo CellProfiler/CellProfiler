@@ -395,10 +395,12 @@ handles.Current.DataToolsFilenames = ListOfTools;
 handles.Current.DataToolHelp = ToolHelp;
 
 ListOfTools = {};
+GSListOfTools = {};
 %%% Finds all available tools, which are .m files residing in the
 %%% Help folder.
 Pathname = fullfile(handles.Current.CellProfilerPathname,'Help');
 ListOfTools{1} = 'Help: none loaded';
+GSListOfTools{1} = 'Help: none loaded';
 try addpath(Pathname)
     %%% Lists all the contents of that path into a structure which includes the
     %%% name of each object as well as whether the object is a file or
@@ -414,9 +416,18 @@ try addpath(Pathname)
         %%% Looks for .m files.
         for i = 1:length(FileNamesNoDir),
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
-                ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                if strncmp(FileNamesNoDir{i}(1:2),'GS',2)
+                    GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
+                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                else
+                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
+                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                end
             end
+        end
+        if length(GSListOfTools) > 1
+            GSListOfTools(1) = {'GettingStarted'};
+        else ToolHelp = 'No help files were loaded upon starting up CellProfiler. Help files are Matlab m-files ending in ''.m'', and should be located in a folder called Help within the folder containing CellProfiler.m';
         end
         if length(ListOfTools) > 1
             ListOfTools(1) = {'Help'};
@@ -424,8 +435,12 @@ try addpath(Pathname)
         end
     end
 end
+handles.Current.GSFilenames = GSListOfTools;
+handles.Current.GS = GSToolHelp;
 handles.Current.HelpFilenames = ListOfTools;
 handles.Current.Help = ToolHelp;
+
+clear GSListOfTools GSToolHelp
 
 % Update handles structure
 guidata(hObject, handles);
@@ -454,7 +469,8 @@ end
 
 uimenu(WindowsMenu,'Label','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
 
-uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,[],guidata(gcbo))');
+uimenu(HelpMenu,'Label','Getting Started','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''GS'',guidata(gcbo))');
+uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''Help'',guidata(gcbo))');
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
@@ -3796,13 +3812,25 @@ ListOfTools = handles.Current.DataToolsFilenames;
 ToolsHelpSubfunction(handles, 'Data Tools', ListOfTools)
 
 function HelpFiles_Callback(hObject,eventdata, handles)
-ListOfHelp = handles.Current.HelpFilenames;
-for i=1:length(ListOfHelp)
-    if strncmpi(ListOfHelp{i},'help',4)
-        ListOfHelp{i} = ListOfHelp{i}(5:end);
+if strcmp(eventdata,'GS');
+    ListOfHelp = handles.Current.GSFilenames;
+    for i=1:length(ListOfHelp)
+        if strncmpi(ListOfHelp{i},'help',4)
+            ListOfHelp{i} = ListOfHelp{i}(5:end);
+        end
     end
+    ToolsHelpSubfunction(handles,'Getting Started',ListOfHelp)
+elseif strcmp(eventdata,'Help');
+    ListOfHelp = handles.Current.HelpFilenames;
+    for i=1:length(ListOfHelp)
+        if strncmpi(ListOfHelp{i},'help',4)
+            ListOfHelp{i} = ListOfHelp{i}(5:end);
+        end
+    end
+    ToolsHelpSubfunction(handles,'Help',ListOfHelp)
+else
+    CPerrordlg('Something is wrong.');
 end
-ToolsHelpSubfunction(handles,'Help',ListOfHelp)
 
 %%% SUBFUNCTION %%%
 function ToolsHelpSubfunction(handles, ImageDataOrHelp, ToolsCellArray)
@@ -3848,6 +3876,9 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
+    TextString = sprintf('CellProfiler version 1.0.3443\n\nPlease choose specific help below:');
+elseif strcmp(ImageDataOrHelp,'Getting Started')
+    set(ToolsHelpWindowHandle,'name','Getting Started');
     TextString = sprintf('CellProfiler version 1.0.3443\n\nPlease choose specific help below:');
 end
 
@@ -3908,6 +3939,9 @@ if(toolsChoice ~= 0)
         CPtextdisplaybox(HelpText,['CellProfiler Data Tools Help']);
     elseif strcmp(ImageDataOrHelp,'Help')
         HelpText = handles.Current.Help{toolsChoice};
+        CPtextdisplaybox(HelpText,['CellProfiler Help']);
+    elseif strcmp(ImageDataOrHelp,'Getting Started')
+        HelpText = handles.Current.GS{toolsChoice};
         CPtextdisplaybox(HelpText,['CellProfiler Help']);
     end
 end

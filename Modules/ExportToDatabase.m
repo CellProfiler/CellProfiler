@@ -1,6 +1,6 @@
-function handles = WriteSQLFiles(handles)
+function handles = ExportToDatabase(handles)
 
-% Help for the Write SQL Files module:
+% Help for the ExportToDatabase module:
 % Category: File Processing
 %
 % SHORT DESCRIPTION:

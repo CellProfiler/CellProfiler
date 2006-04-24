@@ -2,8 +2,6 @@ Mike's TODO list
 
 ************************************************************
 Changes for CP
--Create new help category for Batch processing
--(installation guide, programming notes, getting started, batch processing) into new category Geting Started
 -On website have source for Batch processing w/out matlab plus instructions
 -Combine createclusterfiles and createbatchscripts
 -Separate help for createbatchfiles module and how to run batch files
@@ -15,6 +13,8 @@ DONE:
 -Install guide (windows) change font size
 -Change name of programming notes
 -Check on old PC if can open huge directory
+-Create new help category for Batch processing
+-(installation guide, programming notes, getting started, batch processing) into new category Geting Started
 ************************************************************
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.

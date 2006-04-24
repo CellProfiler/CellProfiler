@@ -1,5 +1,5 @@
-function HelpCPInstallGuide
-helpdlg(help('HelpCPInstallGuide'))
+function GSCPInstallGuide
+helpdlg(help('GSCPInstallGuide'))
 
 % Get the latest code from www.cellprofiler.org
 %

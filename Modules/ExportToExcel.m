@@ -4,12 +4,13 @@ function handles = ExportToExcel(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Exports measurements to excel.
+% Exports measurements into a tab-delimited text file which can be opened
+% in Excel or other spreadsheet programs.
 % *************************************************************************
 % Note: this module is beta-version and has not been thoroughly checked.
 %
-% This module performs the same function as our Data Tool, Export Data.
-% Please refer to the help for the data tool as this module is still beta.
+% This module performs the same function as the data tool, Export Data.
+% Please refer to the help for the data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -122,7 +123,3 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     close(ThisModuleFigureNumber)
 end
-
-%%%%%%%%%%%%%%%%%%%%
-%%% SUBFUNCTIONS %%%
-%%%%%%%%%%%%%%%%%%%%

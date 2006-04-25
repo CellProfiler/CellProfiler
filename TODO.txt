@@ -1,7 +1,9 @@
 CellProfiler cell image analysis software development 
 February 14, 2006
 
-- (4/21/06) Re-design the Export Data window
+- (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
+
+- (Anne 4/21/06) Re-design the Export Data window
 
 - (Anne 4-21-06) Get the code from Shen, Nelson, Kennedy et al: Automatic tracking of biological cells and compartments using particle filters and active contours, Chemometrics and Intelligent Laboratory Systems, in press. At least try implementing the object-identification algorithm into IdentifyPrimAutomatic, but perhaps do the kinetic (time-lapse) part too.
 

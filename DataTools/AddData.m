@@ -10,13 +10,15 @@ function AddData(handles)
 %
 % Use this tool if you would like text information about each image to be
 % recorded in the output file along with measurements (e.g. Gene names,
-% accession numbers, or sample numbers). The same measurement can be added
-% to several files.
+% accession numbers, or sample numbers). The same text information per
+% image can be added to several output files at once. This text information
+% will be stored in the output files, which means, for example, that they
+% will be exported if you use the ExportData DataTool.
 %
 % The information to be added must be in a separate text file with the
 % following syntax:
 %
-% IDENTIFIER <identfier>
+% IDENTIFIER <identifier>
 % DESCRIPTION <description>
 % <Text info for image cycle #1>
 % <Text info for image cycle #2>

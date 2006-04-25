@@ -4,14 +4,28 @@ function ConvertBatchFiles(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Converts output files produced by the Create Batch Scripts module into
+% Converts output files produced by the Create Batch Files module into
 % regular CellProfiler output files.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
-% This module converts batch files to regular CellProfiler output files. It
-% does so by removing empty entries in the handles.Measurements structure.
-% It saves new files with 'Converted' as a prefix in the filename.
+% CellProfiler data tools do not function on the batch output files created
+% by the Create Batch Files module because they are incomplete. They are
+% incomplete because each batch output file contains only the measurements
+% for one batch of images.
+%
+% In order to access these measurements, they must be exported (using the
+% ExportDatabase data tool or ExportToDatabase module), or merged together
+% (using the MergeOutputFiles DataTool), or converted to regular
+% CellProfiler output files using this data tool. This data tool will save
+% new files with 'Converted' as a prefix in the filename. Important: note
+% that the image files will be renumbered, starting with 1. For example,
+% your batch output file 'Batch_102_to_201_OUT.mat' will be converted to
+% 'ConvertedBatch_102_to_201_OUT.mat', but when you access the data within
+% (e.g. using ViewData), image #102 will be image #1.
+%
+% Technical details: this data tool removes empty entries in the
+% handles.Measurements structure of the output file(s) you specify.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

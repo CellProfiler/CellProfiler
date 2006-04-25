@@ -17,22 +17,20 @@ function MergeOutputFiles(handles)
 % you specify. Once merged, this output file should be compatible with data
 % tools.
 %
-% It does not make sense to run this module in conjunction with other
-% modules.  It should be the only module in the pipeline.
-%
 % Sometimes output files can be quite large, so before attempting merging,
 % be sure that the total size of the merged output file is of a reasonable
 % size to be opened on your computer (based on the amount of memory
 % available on your computer). It may be preferable instead to import data
 % from individual output files directly into a database - see the
-% ExportData data tool.
+% ExportDatabase data tool or the ExportToDatabase module.
 %
 % Technical notes: The handles.Measurements field of the resulting output
 % file will contain all of the merged measurement data, but
 % handles.Pipeline is a snapshot of the pipeline after the first cycle
 % completes.
 %
-% See also: CreateBatchScripts.
+% See also: CreateBatchFiles, ExportDatabase (DataTool), ExportToDatabase
+% (Module).
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

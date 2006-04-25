@@ -11,12 +11,12 @@ helpdlg(help('GSGettingStarted'))
 %
 % STEP 1: Put the images and pipeline into a folder on your computer.
 %
-% STEP 2: Load the pipeline using File > Load Pipeline in the main menu of
+% STEP 2: Set the default image and output folders (lower right of the main
+% window) to be the folder where you put the images.
+% 
+% STEP 3: Load the pipeline using File > Load Pipeline in the main menu of
 % CellProfiler.
 %
-% STEP 3: Set the default image and output folders to be the folder where
-% you put the images.
-% 
 % STEP 4: Click "Analyze images" to start processing.
 % 
 % STEP 5: Examine the measurements using Data Tools.

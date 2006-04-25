@@ -97,7 +97,11 @@ function handles = ExportToDatabase(handles)
 %
 % Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
 %
-% See also: CreateBatchFiles.
+% Technical note: This module calls the CPconvertsql function to do the
+% actual exporting, which is same function as called by the ExportDatabase
+% data tool.
+%
+% See also: CreateBatchFiles, ExportDatabase data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -4,18 +4,22 @@ function ExportDatabase(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Exports measurements in database format.
+% Exports data in database readable format, including an importing file
+% with column names.
 % *************************************************************************
 %
 % NOTE:   
 % This tool is not functional right now - use the ExportToDatabase module
 % within your pipeline instead. Sorry for the inconvenience!!
 %
-% This tool exports measurements from one or several CellProfiler output
-% files to delimited text files. It also creates a SQL script that puts the
-% measurements into an SQL database. This tool calls the CPconvertsql
-% function to do the actual exporting, which is same function as called by
-% the ExportToDatabase module.
+% This data tool exports measurements to a SQL compatible format. It creates
+% MySQL or Oracle scripts and associated data files which will create a
+% database and import the data into it. You can also run the ExportToDatabase
+% module in your pipeline so this step happens automatically during
+% processing; its function is the same.
+%
+% See the help for the ExportToDatabase module for information on the
+% settings for this data tool and how to use it.
 %
 % Current known limitations and things to consider:
 %

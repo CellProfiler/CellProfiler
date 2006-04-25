@@ -1,5 +1,21 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 4/25)
+************************************************************
+Changes for CP
+-Install guide (windows) change font size
+-Change name of programming notes
+-Check on old PC if can open huge directory
+-Create new help category for Batch processing
+-(installation guide, programming notes, getting started, batch processing) into new category Geting Started
+-Combine createclusterfiles and createbatchscripts
+-Separate help for createbatchfiles module and how to run batch files
+-Make WriteSQL use both Oracle and MySQL, add help rename to ExportToDatabase, also add ability to keep in one database or use existing with changing the table names from Per_Image to Experiment_Per_Image
+-Add help for importing data into database
+-On website have source for Batch processing w/out matlab plus instructions
+-Add reference to Watershed
+************************************************************
+
 -(Colin 4/20) (Anne 2-14-06)
 Can you fix this bug in histogram tool: I am trying to use the thresholding value. I am using the Jason MitHits file: \\gobo\sabatini3_ata\FIGURES\Figure2-validationPhenotypes\2006_02_13_MitosisHits\2006_2_14_1100MitHitsOUT.mat
 I am trying to do a histogram of Nuc AreaShape Eccentricity. Then the settings are:

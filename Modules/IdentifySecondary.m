@@ -43,7 +43,10 @@ function handles = IdentifySecondary(handles)
 %
 % * Watershed - For task (a), this method will find dividing lines between
 % objects by looking for dim lines between objects. For task (b),
-% thresholding is used.
+% thresholding is used. Reference: Vincent, Luc, and Pierre Soille,
+% "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
+% Simulations," IEEE Transactions of Pattern Analysis and Machine
+% Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598.
 %
 % * Distance - This method is bit unusual because the edges of the primary
 % objects are expanded a specified distance to create the secondary

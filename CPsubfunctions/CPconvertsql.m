@@ -29,6 +29,12 @@ if ~isfield(handles,'Measurements')
     error('There are no measurements to be converted to SQL.')
 end
 
+if strcmp(TablePrefix,'/')
+    TablePrefix = '';
+else
+    TablePrefix = [TablePrefix,'_'];
+end
+
 basename = [OutfilePrefix,int2str(FirstSet),'_',int2str(LastSet)];
 
 %%% SubMeasurementFieldnames usually includes 'Image' and objects like 'Nuclei'
@@ -113,7 +119,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fmain, 'CREATE DATABASE %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);
 
-        fprintf(fmain, 'CREATE TABLE Per_Image (ImageNumber INTEGER PRIMARY KEY');
+        fprintf(fmain, 'CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY',TablePrefix);
 
         for i = per_image_names,
             if strfind(i{1}, 'Filename')
@@ -136,7 +142,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
         fprintf(fmain, ');\n\n');
 
-        fprintf(fmain, 'CREATE TABLE Per_Object(ImageNumber INTEGER,ObjectNumber INTEGER');
+        fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
         for i = per_object_names
             fprintf(fmain, ',\n%s FLOAT', i{1});
         end
@@ -144,37 +150,35 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
 
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
+            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
                 errordlg('STOP!');
             end
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', OutfilePrefix);
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', OutfilePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
                 StartImage = n;
                 EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
                 ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
                 ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', ImageSQLFileName);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', ObjectSQLFileName);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',ImageSQLFileName,TablePrefix);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',ObjectSQLFileName,TablePrefix);
             end
         else
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE Per_Image FIELDS TERMINATED BY '','';\n', basename);
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE Per_Object FIELDS TERMINATED BY '','';\n', basename);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
         end
-
         fclose(fmain);
-
-    else
+    elseif strcmp(SQLchoice,'Oracle')
         %%%%%%%%%%%%%%%%%%
         %%% SETUP FILE %%%
         %%%%%%%%%%%%%%%%%%
 
-        fsetup = fopen(fullfile(OutDir, [TablePrefix '_SETUP.SQL']), 'W');
+        fsetup = fopen(fullfile(OutDir, [DBname,'_SETUP.SQL']), 'W');
 
-        fprintf (fsetup, 'CREATE TABLE %s_Column_Names (SHORTNAME VARCHAR2(8), LONGNAME VARCHAR2(250));\n',TablePrefix);
+        fprintf (fsetup, 'CREATE TABLE %sColumn_Names (SHORTNAME VARCHAR2(8), LONGNAME VARCHAR2(250));\n',TablePrefix);
 
-        fprintf(fsetup, 'CREATE TABLE %s_Per_Image (col1 NUMBER', TablePrefix);
+        fprintf(fsetup, 'CREATE TABLE %sPer_Image (col1 NUMBER',TablePrefix);
 
         p=1;
         for i = per_image_names,
@@ -202,7 +206,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fprintf(fsetup, ');\n');
         p = p+1;
         PrimKeyPosition = p;
-        fprintf(fsetup, 'CREATE TABLE %s_Per_Object (col1 NUMBER, %s NUMBER', TablePrefix,['col',num2str(p)]);
+        fprintf(fsetup, 'CREATE TABLE %sPer_Object (col1 NUMBER, %s NUMBER',TablePrefix,['col',num2str(p)]);
         for i = per_object_names
             p=p+1;
             fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
@@ -215,18 +219,18 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% FINISH FILE %%%
         %%%%%%%%%%%%%%%%%%%
 
-        ffinish = fopen(fullfile(OutDir, [TablePrefix, '_FINISH.SQL']), 'W');
-        fprintf(ffinish, 'ALTER TABLE %s_Per_Image ADD PRIMARY KEY (col1);\n',TablePrefix);
-        fprintf(ffinish, 'ALTER TABLE %s_Per_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
+        ffinish = fopen(fullfile(OutDir, [DBname,'_FINISH.SQL']), 'W');
+        fprintf(ffinish, 'ALTER TABLE %sPer_Image ADD PRIMARY KEY (col1);\n',TablePrefix);
+        fprintf(ffinish, 'ALTER TABLE %sPer_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
         fclose(ffinish);
 
         %%%%%%%%%%%%%%%%%%%
         %%% COLUMN FILE %%%
         %%%%%%%%%%%%%%%%%%%
 
-        fcol = fopen(fullfile(OutDir, [TablePrefix, '_columnnames.CSV']), 'W');
-        fprintf(fcol, '%s', 'col1');
-        fprintf(fcol, ',%s\n','ImageNumber');
+        fcol = fopen(fullfile(OutDir, [DBname,'_columnnames.CSV']), 'W');
+        fprintf(fcol,'%s','col1');
+        fprintf(fcol,',%s\n','ImageNumber');
 
         p=1;
         for k=per_image_names
@@ -267,18 +271,18 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% COLUMN LOADER %%%
         %%%%%%%%%%%%%%%%%%%%%
 
-        fcolload = fopen(fullfile(OutDir, [TablePrefix, '_LOADCOLUMNS.CTL']), 'W');
-        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %s_Column_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[TablePrefix, '_columnnames.CSV'],TablePrefix);
+        fcolload = fopen(fullfile(OutDir, [DBname,'_LOADCOLUMNS.CTL']), 'W');
+        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
         fclose(fcolload);
 
         %%%%%%%%%%%%%%%%%%%%
         %%% IMAGE LOADER %%%
         %%%%%%%%%%%%%%%%%%%%
 
-        fimageloader = fopen(fullfile(OutDir, [TablePrefix, '_LOADIMAGE.CTL']), 'W');
+        fimageloader = fopen(fullfile(OutDir, [DBname, '_LOADIMAGE.CTL']), 'W');
         fprintf(fimageloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
+            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
                 errordlg('STOP!');
             end
@@ -293,7 +297,7 @@ if handles.Current.SetBeingAnalyzed == 1
             fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
         end
 
-        fprintf(fimageloader, 'INTO TABLE  %s_Per_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
+        fprintf(fimageloader, 'INTO TABLE  %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
         for i = 2:(PrimKeyPosition-1)
             fprintf(fimageloader, ',\n%s', ['col',num2str(i)]);
         end
@@ -305,10 +309,10 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% OBJECT LOADER %%%
         %%%%%%%%%%%%%%%%%%%%%
 
-        fobjectloader = fopen(fullfile(OutDir, [TablePrefix, '_LOADOBJECT.CTL']), 'W');
+        fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
         fprintf(fobjectloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,1}));
+            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
                 errordlg('STOP!');
             end
@@ -323,12 +327,11 @@ if handles.Current.SetBeingAnalyzed == 1
             fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
         end
 
-        fprintf(fobjectloader, 'INTO TABLE  %s_Per_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
+        fprintf(fobjectloader, 'INTO TABLE  %sPer_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
         for i = PrimKeyPosition:FinalColumnPosition
             fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
         end
         fprintf(fobjectloader, ')');
-
         fclose(fobjectloader);
     end
 end

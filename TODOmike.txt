@@ -3,10 +3,6 @@ Mike's TODO list
 ************************************************************
 Changes for CP
 -On website have source for Batch processing w/out matlab plus instructions
--Combine createclusterfiles and createbatchscripts
--Separate help for createbatchfiles module and how to run batch files
--Make WriteSQL use both Oracle and MySQL, add help rename to ExportToDatabase, also add ability to keep in one database or use existing with changing the table names from Per_Image to Experiment_Per_Image
--Add help for importing data into database
 -Add reference to Watershed
 
 DONE:
@@ -15,6 +11,10 @@ DONE:
 -Check on old PC if can open huge directory
 -Create new help category for Batch processing
 -(installation guide, programming notes, getting started, batch processing) into new category Geting Started
+-Combine createclusterfiles and createbatchscripts
+-Separate help for createbatchfiles module and how to run batch files
+-Make WriteSQL use both Oracle and MySQL, add help rename to ExportToDatabase, also add ability to keep in one database or use existing with changing the table names from Per_Image to Experiment_Per_Image
+-Add help for importing data into database
 ************************************************************
 
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.

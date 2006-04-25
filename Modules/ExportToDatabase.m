@@ -7,16 +7,87 @@ function handles = ExportToDatabase(handles)
 % Exports data in database readable format, including an importing file
 % with column names.
 % *************************************************************************
-% Note: this module is beta-version and has not been thoroughly checked.
 %
-% This module exports measurements to a SQL compatible format.
-% It creates a MySQL script and associated data files. It calls
-% the ExportSQL data tool.
+% This module exports measurements to a SQL compatible format. It creates a
+% MySQL or Oracle script and associated data files. This module must be run
+% at the end of a pipeline, or second to last if you are using the
+% CreateBatchFiles module.
 %
-% This module must be run at the end of a pipeline, or second to last if
-% you are using the Create Batch Scripts module.
+% The database is set up with two primary tables. These tables are the
+% Per_Image table and the Per_Object table. The Per_Image table consists of
+% all the Image measurements and the Mean and Standard Deviation of the
+% object measurements. There is one Per_Image row for every image. The
+% Per_Object table contains all the measurements for individual objects.
+% There is one row of object measurements per object identified. The two
+% tables are connected with the primary key column ImageNumber. The
+% Per_Object tables has another primary key called ObjectNumber, which is
+% unqiue per image.
 %
-% See also: CreateBatchScripts.
+% The Oracle database has an extra table called Column_Names. This table is
+% necessary because Oracle has the unfortunate setback of not being able to
+% handle column names longer than 32 characters. Since we must distinguish
+% many different objects and measurements, our column names are very long.
+% This required us to create a separate table which contains a short name
+% and corresponding long name. The short name is simply "col" with an
+% attached number, such as "col1" "col2" "col3" etc. The short name has a
+% corresponding long name such as "Nuclei_AreaShape_Area". Each of the
+% Per_Image and Per_Object columnnames are loaded as their "short name" but
+% the long name can be determined from the Column_Names table.
+%
+% Settings:
+% Database Type: The user can choose to export MySQL or Oracle database
+% scripts. The exported data is the same for each type, but the setup files
+% for MySQL and Oracle are different.
+%
+% Database Name: In MySQL, you can choose to create a database and import
+% the data or use an existing database. If the database already exists, the
+% user must edit the _SETUP.SQL file, and remove the first line:
+%
+% CREATE DATABASE "Your DBname"
+%
+% In Oracle, when the user logs in they must choose a Database to work
+% with, so it is impossible to create/destroy a Database with our scripts.
+%
+% Table Prefix: Here the user can choose what to append the table names
+% Per_Image and Per_Object. If the user leaves "/", the tables will not be
+% altered. This makes the most sense when using MySQL, since it is easy to
+% create and delete Databases. When in Oracle, a user should always choose
+% a table prefix.
+%
+% SQL File Prefix: All the CSV files will start with this prefix.
+%
+% ********************* How To Import MySQL *******************************
+% Step 1: Using a terminal, navigate to folder where the CSV output files
+% and the SETUP script is located.
+%
+% Step 2: Log into MySQL: "mysql -uUsername -pPassword -hHost"
+%
+% Step 3: Run SETUP script: "\. DefaultDB_SETUP.SQL"
+%
+% The SETUP file will do everything necessary to load the database.
+%
+% ********************* How To Import Oracle ******************************
+% Step 1: Using a terminal, navigate to folder where the CSV output files
+% and the SETUP script is located.
+%
+% Step 2: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
+% You may need to ask your IT department the name of DATABASESCRIPT.
+%
+% Step 3: Run SETUP script: "@DefaultDB_SETUP.SQL"
+%
+% Step 4: Exit SQLPlus: "exit"
+%
+% Step 5: Load data files (for columnames, images, and objects):
+%
+% sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADCOLUMNS.ctl
+% sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADIMAGE.ctl
+% sqlldr USERNAME/PASSWORD@DATABASESCRIPT control=DefaultDB_LOADOBJECT.ctl
+%
+% Step 6: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
+%
+% Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
+%
+% See also: CreateBatchFiles.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -47,22 +118,28 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%pathnametextVAR01 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
-DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = What type of database do you want to use?
+%choiceVAR01 = MySQL
+%choiceVAR01 = Oracle
+DatabaseType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = What is the name of the database to use?
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What prefix should be used to name the SQL files?
-%defaultVAR03 = SQL_
-FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "/" to have generic Per_Image and Per_Object tables)?
+%defaultVAR03 = /
+TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What prefix should be used to name the SQL Tables in the database (should be unique per experiment)?
-%defaultVAR04 = Expt1
-TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = What prefix should be used to name the SQL files?
+%defaultVAR04 = SQL_
+FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 3
+%pathnametextVAR05 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
+DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -70,18 +147,18 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 drawnow
 
 if handles.Current.NumberOfModules == 1
-    error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportSQL data tool.']);
+    error(['Image processing was canceled in the ', ModuleName, ' module because there are no other modules in the pipeline. Probably you should use the ExportDatabase data tool.']);
 elseif handles.Current.NumberOfModules == 2
     if ~isempty((strmatch('CreateBatchFiles',handles.Settings.ModuleNames)))
-        error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than the Create Batch Scripts module. Probably you should use the ExportSQL data tool.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because there are no modules in the pipeline other than the CreateBatchFiles module. Probably you should use the ExportDatabase data tool.']);
     end
 end
 
 if CurrentModuleNum ~= handles.Current.NumberOfModules
     if isempty((strmatch('CreateBatchFiles',handles.Settings.ModuleNames))) || handles.Current.NumberOfModules ~= CurrentModuleNum+1
-        error([ModuleName, ' must be the last module in the pipeline, or second to last if the Create Batch Scripts module is in the pipeline.']);
+        error([ModuleName, ' must be the last module in the pipeline, or second to last if the CreateBatchFiles module is in the pipeline.']);
     end
-end;
+end
 
 if strncmp(DataPath, '.',1)
     if length(DataPath) == 1
@@ -120,7 +197,7 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
-    CPconvertsql(handles, DataPath, FilePrefix, DatabaseName, TablePrefix, FirstSet, LastSet,'MySQL');
+    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

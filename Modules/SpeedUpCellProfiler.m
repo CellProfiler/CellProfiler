@@ -4,9 +4,11 @@ function handles = SpeedUpCellProfiler(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Prevents saving partial output files after every image cycle and/or
-% clears the memory.
+% Speeds up CellProfiler processing and conserves memory.
 % *************************************************************************
+%
+% Speeds up CellProfiler processing and conserves memory by reducing the
+% frequency of saving partial output files and/or clearing the memory.
 %
 % Settings:
 %
@@ -24,12 +26,13 @@ function handles = SpeedUpCellProfiler(handles)
 % images, because this slows down CellProfiler as well.
 %
 % Do you want to clear the memory?
-% If yes, everything in memory will be removed except for the images you
-% specify. Therefore, only the images you specify will be accessible to
-% modules downstream in the pipeline. This module can therefore be used to
-% clear space in the memory. Note: currently, this option will remove
-% everything in the memory, which may not be compatible with some modules,
-% which often store information in memory to be re-used during every cycle.
+% If yes, everything in temporary memory will be removed except for the
+% images you specify. Therefore, only the images you specify will be
+% accessible to modules downstream in the pipeline. This module can
+% therefore be used to clear space in the memory. Note: currently, this
+% option will remove everything in the memory, which may not be compatible
+% with some modules, which often store non-image information in memory to
+% be re-used during every cycle.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

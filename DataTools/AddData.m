@@ -8,12 +8,17 @@ function AddData(handles)
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
-% Use this tool if you would like text information about each image to be
-% recorded in the output file along with measurements (e.g. Gene names,
-% accession numbers, or sample numbers). The same text information per
-% image can be added to several output files at once. This text information
-% will be stored in the output files, which means, for example, that they
-% will be exported if you use the ExportData DataTool.
+% Use this tool if you would like to add text information about each image
+% (e.g. Gene names or sample numbers) to the output file alongside the
+% measurements that have been made. Then, the text information will be
+% exported with the measurements when you use the ExportData data tool,
+% helping you to keep track of your samples. You can also run the LoadText
+% module in your pipeline so this step happens automatically during
+% processing; its function is the same.
+%
+% Note that the number of text entries that you load with this module must
+% be identical to the number of cycles you are processing in order for
+% exporting to work properly.
 %
 % The information to be added must be in a separate text file with the
 % following syntax:
@@ -37,6 +42,10 @@ function AddData(handles)
 % Gene X
 % Gene Y
 % Gene Z
+% 
+% While not thoroughly tested, most likely you can load numerical data too.
+%
+% See also the LoadText module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

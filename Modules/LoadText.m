@@ -9,15 +9,23 @@ function handles = LoadText(handles)
 % measurements to help track samples.
 % *************************************************************************
 %
-% Use this tool to load in text information. This is useful for certain
-% modules that place text information onto images. It is also useful to
-% place text information in the output files alongside the measurements
-% that are made so that the information can be exported with the
-% measurements. While not thoroughly tested, most likely you can load
-% numerical data too.
+% Use this tool to load in text information. This is useful for two
+% reasons:
+% 1. Some modules, like DisplayGridInfo place text information onto images.
+% In this case, the number of text entries that you load with this module
+% must be identical to the number of grid locations.
+% 2. If the number of text entries that you load with this module is
+% identical to the number of cycles you are processing, the text
+% information you loaded will be placed in the output files alongside the
+% measurements that are made. Therefore, the information will be exported
+% with the measurements when you use the ExportData data tool, helping you
+% to keep track of your samples. If you forget this module, you can also
+% run the AddData data tool after processing is complete; its function is
+% the same for this purpose.
 %
-% The text information must be specified in a separate text file
-% with the following syntax:
+%
+% The text information to be loaded must be in a separate text file with
+% the following syntax:
 %
 % DESCRIPTION <description>
 % <Text info>
@@ -35,8 +43,10 @@ function handles = LoadText(handles)
 % Gene X
 % Gene Y
 % Gene Z
+% 
+% While not thoroughly tested, most likely you can load numerical data too.
 %
-% See also AddData data tool.
+% See also DisplayGridInfo, and the AddData data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

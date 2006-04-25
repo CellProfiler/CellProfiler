@@ -18,7 +18,6 @@ function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, Imag
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

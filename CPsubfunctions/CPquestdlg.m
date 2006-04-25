@@ -77,7 +77,6 @@ function ButtonName = CPquestdlg(Question,Title,Btn1,Btn2,Btn3,Default)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

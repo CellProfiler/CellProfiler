@@ -16,7 +16,6 @@ function CPresizefigure(OrigImage,Layout,FigHandle)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

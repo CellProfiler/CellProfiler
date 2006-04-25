@@ -94,7 +94,6 @@ function handles = MeasureImageAreaOccupied(handles)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

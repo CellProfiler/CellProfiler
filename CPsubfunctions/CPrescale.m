@@ -18,7 +18,6 @@ function [handles,OutputImage] = CPrescale(handles,InputImage,RescaleOption,Meth
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

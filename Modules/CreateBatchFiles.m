@@ -87,7 +87,6 @@ function handles = CreateBatchFiles(handles)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

@@ -26,7 +26,6 @@ function ShowToolboxHelp(vaargin)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

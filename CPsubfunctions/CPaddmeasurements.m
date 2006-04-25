@@ -16,7 +16,6 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

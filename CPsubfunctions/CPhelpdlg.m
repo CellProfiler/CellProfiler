@@ -30,7 +30,6 @@ function varargout = CPhelpdlg(HelpString,DlgName)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

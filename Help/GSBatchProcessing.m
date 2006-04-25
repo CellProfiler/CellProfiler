@@ -93,15 +93,24 @@ helpdlg(help('GSBatchProcessing'))
 % www.cellprofiler.org. If the versions there do not work, it means your
 % cluster is running different versions of the operating systems, so you
 % will have to download the CPCluster source code and compile it
-% specifically for your cluster. This requires a single MatLab license. See
-% [XXXXXXXXXXXXXX] for instructions on how to do this.
+% specifically for your cluster. This requires a single MATLAB license. For
+% more instructions on accomplishing this, see the instructions that are
+% downloaded with the CPCluster source code.
 %
-% Step 2: Create batchrun.sh file. This file is how jobs are submitted to
-% the cluster. THIS IS CURRENTLY DESIGNED TO WORK WITH OUR CLUSTER WHICH
-% RUNS LSF SOFTWARE. THERE ARE DIFFERENT CLUSTER SOFTWARE PROGRAMS AND THIS
-% FILE MUST BE EDITED TO WORK WITH YOUR SOFTWARE. PLEASE CONTACT IT FOR
-% HELP WITH THIS. Open any text editor and copy the following code:
-% 
+% Step 2: Create batchrun.sh file. This file will allow you to rapidly
+% submit jobs to your cluster, rather than you typing out commands one at a
+% time to submit jobs individually. There are different software programs
+% which control how jobs are submitted to a cluster. The example below is
+% for our cluster at the Whitehead Institute which uses LSF software.
+% Contact your IT department for help writing a similar file to work with
+% your own cluster.
+%
+% Example (LSF): Open any text editor and copy in the code below, then save
+% the file to any directory, usually your home directory is fine. Then
+% change the following lines to fit your cluster:
+% CPCluster=/Users/username/CPCluster
+% Also, you can specify your e-mail address after the qsub command.
+% ---
 % #!/bin/sh
 % if test $# -ne 5; then
 %     echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2
@@ -131,22 +140,16 @@ helpdlg(help('GSBatchProcessing'))
 %         fi
 %     fi
 % done
+% --- 
 % 
-% Save this file to any directory, usually your home directory is fine.
-% Then change the following lines to fit your cluster:
-% CPCluster=/Users/username/CPCluster
-% 
-% Also, you can specify your e-mail address after the qsub command.
-% 
-% Step 4: Change batchrun.sh to be executable. Open a terminal, navigate to
+% Step 3: Change batchrun.sh to be executable. Open a terminal, navigate to
 % the folder where batchrun.sh is located, and type:
 % 
 % chmod a+x batchrun.sh
 % 
-% If you don't know what this means, please ask your IT department for
-% help.
+% If you don't know what this means, please ask your IT department.
 %
-% Step 5: Submit files. See SUBMITTING FILES FOR BATCH PROCESSING below.
+% Step 4: Submit files. See SUBMITTING FILES FOR BATCH PROCESSING below.
 %
 % ********** END OF SETTING UP CLUSTER WITHOUT MATLAB *********************
 % 
@@ -155,34 +158,43 @@ helpdlg(help('GSBatchProcessing'))
 % Create a project folder on your cluster. For high throughput analysis, it
 % is a good idea to create a separate project folder for each run. In
 % general, we like to name our folders with the following convention:
-% 200X_XX_XX_ProjectName. Within this folder, we usually create an "images"
+% 200X_MM_DD_ProjectName. Within this folder, we usually create an "images"
 % folder and an "output" folder. We then transfer all of our images to the
 % images folder. The output folder is where all of your data will be
-% stored. THESE FOLDERS MUST BE CONNECTED TO THE CLUSTER COMPUTERS NETWORK
-% AND THE OUTPUT FOLDER MUST BE WRITEABLE BY EVERYONE. The output folder
-% must be writeable by everyone (or at least your cluster) because each of
-% the separate cluster computers will write an output file in this folder.
-% If you don't know what this means, ask your IT department for help.
+% stored. These folders must be connected to the cluster computers network
+% and the output folder must be writeable by everyone (or at least your
+% cluster) because each of the separate cluster computers will write output
+% files in this folder. If you don't know what this means, ask your IT
+% department for help. Within the CellProfiler window, set the appropriate
+% project folders to be the default image and output folders.
 % 
-% Step 2: Create a pipeline for your image set. In this process, you must
-% be careful to consider the worst case scenario in your images. For
-% instance, some images may contain no cells. If this happens, the
-% automatic thresholding algorithms will incorrectly choose a very low
-% threshold, and therefore create many objects which don't exist. This can
-% be overcome by setting a "minimum" threshold in IdentifyPrimAutomatic
-% module.
+% Step 2: Create a pipeline for your image set, testing it on a few example
+% images from your image set. In this process, you must be careful to
+% consider the worst case scenarios in your images. For instance, some
+% images may contain no cells. If this happens, the automatic thresholding
+% algorithms will incorrectly choose a very low threshold, and therefore
+% 'find' objects which don't exist. This can be overcome by setting a
+% 'minimum' threshold in IdentifyPrimAutomatic module.
 % 
-% Step 3: Add the module CreateBatchFiles to your pipeline. Please refer to
-% the help for this module to choose the correct settings. If you are
-% processing large batches of images, you may also consider adding
-% ExportToDatabase to your pipeline, before the CreateBatchFiles module.
-% This module will export your data into comma separated values (CSV), and
-% also create a script to import your data into Oracle or MySQL databases.
+% Step 3: Add the module CreateBatchFiles to the end of your pipeline.
+% Please refer to the help for this module to choose the correct settings.
+% If you are processing large batches of images, you may also consider
+% adding ExportToDatabase to your pipeline, before the CreateBatchFiles
+% module. This module will export your data into comma separated values
+% format (CSV), and also create a script to import your data into Oracle or
+% MySQL databases.
 % 
-% Step 4: Analyze the first image set. After you add the CreateBatchFiles
-% module, the analysis will stop after the first image set. The
-% CreateBatchFiles will have exported the correct files to the output
-% folder you created in Step 1. You are now ready to submit to the cluster.
+% Step 4: Click the Analyze images button. The analysis will begin locally
+% processing the first image set. Do not be surprised if processing the
+% first image set takes much longer than usual. The first step is to check
+% all the images that are present in the images folder - they are not
+% opened or loaded, but just checking the presence of all the files takes a
+% while. Due to the CreateBatchFiles module, local processing stops after
+% the first image set. CreateBatchFiles will have created the proper batch
+% files and saved them in the default output folder (Step 1). It will also
+% save the necessary data file, which is called XXX_data.mat. You are now
+% ready to submit these batch files to the cluster to run each of the
+% batches of images on different computers on the cluster.
 % 
 % Step 5: Log on to your cluster, and navigate to the directory where you
 % have saved the batchrun.sh file (See "Setting Up Cluster For
@@ -190,9 +202,10 @@ helpdlg(help('GSBatchProcessing'))
 % 
 % ./batchrun.sh M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType
 % 
-% where M_fileDir is the location of the files exported by CreateBatchFiles
-% in step 4, BatchTxtOutputDir is where you want to store the txt files
-% which have the output of MatLab during the analysis, mat_fileDir is the
+% where M_fileDir is the location of the batch files created by
+% CreateBatchFiles in step 4, BatchTxtOutputDir is where you want to store
+% the txt files which have the output of MATLAB during the analysis
+% (includes information like errors and run times), mat_fileDir is the
 % folder where XXX_data.mat is located (this file is created in Step 4),
 % BatchFilePrefix is the prefix named in CreateBatchFiles (usually Batch_),
 % and QueueType is the queue for your cluster. Usually, the first three
@@ -203,14 +216,19 @@ helpdlg(help('GSBatchProcessing'))
 % /Some_Path/200X_XX_XX_ProjectName/output Batch_ normal
 % 
 % In this case, the output folder contains the script files, the
-% XXX_data.mat file, and will also store the txt files with the MatLab
-% output. The prefix is Batch_ so XXX_data.mat is actually Batch_data.mat.
-% The queue type is normal, but this is specific to your cluster. Ask your
-% IT department what queue's are available for your use.
+% XXX_data.mat file, and is the folder where we want the txt files with the
+% MATLAB output to be written. The prefix is Batch_ so XXX_data.mat is
+% actually Batch_data.mat. The queue type is normal, but this is specific
+% to your cluster. Ask your IT department what queues are available for
+% your use.
 % 
 % Once all the jobs are submitted, the cluster will run each script
-% individually and produce a separate output file in the output directory.
-% Then you can decide how to view your data. In general, large analysis
-% will be loaded into a database. Please refer to ExportToDatabase for
-% information on how to do this.
+% individually and produce a separate output file containing the data for
+% that batch of images in the output directory. Then you can decide how to
+% access your data. In general, data from large analyses will be loaded
+% into a database. Please refer to the ExportToDatabase module for
+% information on how to do this. If you have made a very small number of
+% measurements, you might be able to use the MergeBatchOutput module, see
+% its instructions for further details.
+%
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************

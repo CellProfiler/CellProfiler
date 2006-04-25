@@ -119,23 +119,23 @@ im = tex_center(tex_image('CPScreenshot.png', '1.0\textwidth'));
 fwrite(fid,tex_page([heading body im]));
 
 % 4. Extract 'help' lines from CPInstallGuide.m.
-body = [tex_label(['Installation']) tex_preformatted(help('HelpCPInstallGuide.m'))];
+body = [tex_label(['Installation']) tex_preformatted(help('GSCPInstallGuide.m'))];
 heading = tex_center(tex_huge(['Installation \\']));
 fwrite(fid, tex_page([heading body]))
 
 % 4.5 Extract 'help' lines from HelpGettingStarted.m.
-body = [tex_label(['GettingStartedwithCellProfiler']) tex_preformatted(help('HelpGettingStarted.m'))];
+body = [tex_label(['GettingStartedwithCellProfiler']) tex_preformatted(help('GSGettingStarted.m'))];
 heading = tex_center(tex_huge(['Getting Started with CellProfiler \\']));
 fwrite(fid, tex_page([heading body]));
 
 % 5. Extract 'help' lines from anything in the help folder starting
 % with 'Help' (the order is not critical here).
 path(fullfile(pwd,'Help'), path);
-filelist = dir('Help/Help*.m');
+filelist = dir('Help/*.m');
 FirstSection = 0;
 for i=1:length(filelist),
     base = basename(filelist(i).name);
-    if (strcmp(base, 'HelpCPInstallGuide') == 1) || (strcmp(base, 'HelpGettingStarted')),
+    if (strcmp(base, 'GSCPInstallGuide') == 1) || (strcmp(base, 'GSGettingStarted')),
         continue;
     end
     if FirstSection == 0

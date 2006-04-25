@@ -8,51 +8,61 @@ function handles = ExportToDatabase(handles)
 % with column names.
 % *************************************************************************
 %
-% This module exports measurements to a SQL compatible format. It creates a
-% MySQL or Oracle script and associated data files. This module must be run
-% at the end of a pipeline, or second to last if you are using the
-% CreateBatchFiles module.
+% This module exports measurements to a SQL compatible format. It creates
+% MySQL or Oracle scripts and associated data files which will create a
+% database and import the data into it. This module must be run at the end
+% of a pipeline, or second to last if you are using the CreateBatchFiles
+% module. If you forget this module, you can also run the ExportDatabase
+% data tool after processing is complete; its function is the same.
 %
 % The database is set up with two primary tables. These tables are the
-% Per_Image table and the Per_Object table. The Per_Image table consists of
-% all the Image measurements and the Mean and Standard Deviation of the
-% object measurements. There is one Per_Image row for every image. The
-% Per_Object table contains all the measurements for individual objects.
-% There is one row of object measurements per object identified. The two
-% tables are connected with the primary key column ImageNumber. The
-% Per_Object tables has another primary key called ObjectNumber, which is
-% unqiue per image.
+% Per_Image table and the Per_Object table (which may have a prefix if you
+% specify). The Per_Image table consists of all the Image measurements and
+% the Mean and Standard Deviation of the object measurements. There is one
+% Per_Image row for every image. The Per_Object table contains all the
+% measurements for individual objects. There is one row of object
+% measurements per object identified. The two tables are connected with the
+% primary key column ImageNumber. The Per_Object tables has another primary
+% key called ObjectNumber, which is unique per image.
 %
 % The Oracle database has an extra table called Column_Names. This table is
-% necessary because Oracle has the unfortunate setback of not being able to
-% handle column names longer than 32 characters. Since we must distinguish
-% many different objects and measurements, our column names are very long.
-% This required us to create a separate table which contains a short name
-% and corresponding long name. The short name is simply "col" with an
-% attached number, such as "col1" "col2" "col3" etc. The short name has a
-% corresponding long name such as "Nuclei_AreaShape_Area". Each of the
-% Per_Image and Per_Object columnnames are loaded as their "short name" but
-% the long name can be determined from the Column_Names table.
+% necessary because Oracle has the unfortunate limitation of not being able
+% to handle column names longer than 32 characters. Since we must
+% distinguish many different objects and measurements, our column names are
+% very long. This required us to create a separate table which contains a
+% short name and corresponding long name. The short name is simply "col"
+% with an attached number, such as "col1" "col2" "col3" etc. The short name
+% has a corresponding long name such as "Nuclei_AreaShape_Area". Each of
+% the Per_Image and Per_Object columnnames are loaded as their "short name"
+% but the long name can be determined from the Column_Names table.
 %
 % Settings:
-% Database Type: The user can choose to export MySQL or Oracle database
-% scripts. The exported data is the same for each type, but the setup files
-% for MySQL and Oracle are different.
+% Database Type: 
+% You can choose to export MySQL or Oracle database scripts. The exported
+% data is the same for each type, but the setup files for MySQL and Oracle
+% are different.
 %
-% Database Name: In MySQL, you can choose to create a database and import
-% the data or use an existing database. If the database already exists, the
-% user must edit the _SETUP.SQL file, and remove the first line:
+% Database Name: 
+%   In MySQL, you can enter the name of a database to create or the name of
+% an existing database. If the database already exists, the database
+% creation step will be skipped so the existing database will not be
+% overwritten but new tables will be added. Do be careful, however, in
+% choosing the Table Prefix. If you use an existing table name, we are not
+% certain whether existing data will be overwritten by the new data.
+%   In Oracle, when you log in they must choose a database to work with, so
+% there is no need to specify the database name in this module. This also
+% means it is impossible to create/destroy a database with these
+% CellProfiler scripts.
 %
-% CREATE DATABASE "Your DBname"
-%
-% In Oracle, when the user logs in they must choose a Database to work
-% with, so it is impossible to create/destroy a Database with our scripts.
-%
-% Table Prefix: Here the user can choose what to append the table names
-% Per_Image and Per_Object. If the user leaves "/", the tables will not be
-% altered. This makes the most sense when using MySQL, since it is easy to
-% create and delete Databases. When in Oracle, a user should always choose
-% a table prefix.
+% Table Prefix: 
+% Here you can choose what to append to the table names Per_Image and
+% Per_Object. If you choose "/", no prefix will be appended. This makes the
+% most sense when using MySQL, since it is easy to create and delete
+% Databases. When in Oracle, you should always choose a table prefix. 
+%  MIKE WHERE DOES THIS GO? In MySQL, be
+% careful when choosing the Table Prefix. If you use an existing table
+% name, we are not certain whether existing data will be overwritten by the
+% new data. 
 %
 % SQL File Prefix: All the CSV files will start with this prefix.
 %
@@ -124,7 +134,7 @@ drawnow
 DatabaseType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What is the name of the database to use?
+%textVAR02 = For MySQL only, what is the name of the database to use?
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -139,7 +149,7 @@ FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %pathnametextVAR05 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

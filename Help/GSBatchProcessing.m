@@ -189,12 +189,13 @@ helpdlg(help('GSBatchProcessing'))
 % first image set takes much longer than usual. The first step is to check
 % all the images that are present in the images folder - they are not
 % opened or loaded, but just checking the presence of all the files takes a
-% while. Due to the CreateBatchFiles module, local processing stops after
-% the first image set. CreateBatchFiles will have created the proper batch
-% files and saved them in the default output folder (Step 1). It will also
-% save the necessary data file, which is called XXX_data.mat. You are now
-% ready to submit these batch files to the cluster to run each of the
-% batches of images on different computers on the cluster.
+% while. At the end of processing the first cycle locally, the
+% CreateBatchFiles module causes local processing to stop and it then
+% creates the proper batch files and saves them in the default output
+% folder (Step 1). It will also save the necessary data file, which is
+% called XXX_data.mat. You are now ready to submit these batch files to the
+% cluster to run each of the batches of images on different computers on
+% the cluster.
 % 
 % Step 5: Log on to your cluster, and navigate to the directory where you
 % have saved the batchrun.sh file (See "Setting Up Cluster For
@@ -228,7 +229,13 @@ helpdlg(help('GSBatchProcessing'))
 % access your data. In general, data from large analyses will be loaded
 % into a database. Please refer to the ExportToDatabase module for
 % information on how to do this. If you have made a very small number of
-% measurements, you might be able to use the MergeBatchOutput DataTool, see
+% measurements, you might be able to use the MergeOutputFiles DataTool, see
 % its instructions for further details.
 %
+% If the batch processing fails for some reason, the handles structure in
+% the output file will have a field BatchError, and the error will also be
+% written to standard out.  Check the output from the batch processes to
+% make sure all batches complete.  Batches that fail for transient reasons
+% can be resubmitted.
+% 
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************

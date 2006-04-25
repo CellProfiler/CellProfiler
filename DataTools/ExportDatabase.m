@@ -7,10 +7,15 @@ function ExportDatabase(handles)
 % Exports measurements in database format.
 % *************************************************************************
 %
+% NOTE:   
+% This tool is not functional right now - use the ExportToDatabase module
+% within your pipeline instead. Sorry for the inconvenience!!
+%
 % This tool exports measurements from one or several CellProfiler output
 % files to delimited text files. It also creates a SQL script that puts the
 % measurements into an SQL database. This tool calls the CPconvertsql
-% function to do the actual exporting, which is same as WriteSQL module.
+% function to do the actual exporting, which is same function as called by
+% the ExportToDatabase module.
 %
 % Current known limitations and things to consider:
 %
@@ -18,7 +23,8 @@ function ExportDatabase(handles)
 %   were produced with the same pipeline of modules.
 %
 % - The tool only works with standard CellProfiler output files, not
-%   batch output files.
+%   batch output files. Use the ConvertBatchFiles data tool to convert if
+%   necessary.
 %
 % - Image sets are numbered according to the order they are written by
 %   this tool. This numbering may not be consistent with the order they
@@ -47,7 +53,7 @@ function ExportDatabase(handles)
 %
 % $Revision$
 
-% This function is not called from WriteSQLFiles ModuleCall but from the Data tool menu
+% This function is not called from ExportToDatabase ModuleCall but from the Data tool menu
 ModuleCall = 0;
 
 %%% Let the user select one output file to indicate the directory and how the

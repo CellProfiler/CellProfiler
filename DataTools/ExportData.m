@@ -5,13 +5,14 @@ function ExportData(handles)
 %
 % SHORT DESCRIPTION:
 % Exports measurements into a tab-delimited text file which can be opened
-% in Excel.
+% in Excel or other spreadsheet programs.
 % *************************************************************************
 %
-% Once image analysis is complete, use this tool to select the
+% Once image analysis is complete, use this data tool to select the
 % output file to extract the measurements and other information about
 % the analysis.  The data will be converted to a tab-delimited text file
-% which can be read by for example Excel or in a text editor.
+% which can be read by Excel, another spreadsheet program, or a text
+% editor.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

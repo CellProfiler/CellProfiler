@@ -4,35 +4,37 @@ function handles = CreateBatchFiles(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Produces script files (these are files of plain text) or mat files
-% (MatLab files) which allow individual batches of images to be processed
-% separately on a cluster of computers.
+% Produces text files which allow individual batches of images to be
+% processed separately on a cluster of computers.
 % *************************************************************************
 %
-% This module creates a set of Matlab scripts (m-files) or mat-files that
-% can be submitted in parallel to a cluster for faster processing. This
-% module should be placed at the end of an image processing pipeline.
+% This module creates a set of files that can be submitted in parallel to a
+% cluster for faster processing. This module should be placed at the end of
+% an image processing pipeline.
 %
 % Before using this module, you should read Help -> Getting Started ->
-% Batch Processing. Here you will learn how to set up your cluster for
-% batch processing.
+% Batch Processing. That help file also will instruct you on how to
+% actually run the batch files that are created by this module.
 % 
 % Settings:
-% Scripts or Files: If your cluster has MatLab licenses for every node, you
-% can produce script files for each batch of images. If it does not, you
-% can produce mat-files which will be read by the compiled CPCluster
-% program. For more information, please read Help -> Getting Started ->
-% Batch Processing.
+% MATLAB or Compiled: If your cluster has MATLAB licenses for every node,
+% you can use either the full MATLAB source code (i.e. the Developer's
+% version) or the CPCluster MATLAB source code. If you do not have MATLAB
+% licenses for every node of your cluster, you can use the Compiled version
+% of CPCluster. These versions are available at www.cellprofiler.org For
+% more information, please read Help -> Getting Started -> Batch
+% Processing.
 %
 % Batch Size: This determines how many images will be analyzed in each set.
-% If you you do not want to split a job but want to send it to the cluster,
-% so it does not use a computer you might be using, you can set the batch
-% size to a very large number (more than the total number of cycles) and
-% this will create one large job which can be submitted to the cluster. In
-% general, you do not want your batch size to be too large. If one image
-% fails, the whole analysis will stop and you will have to start from the
-% beginning. If you have a smaller batch size, the job that failed will not
-% take as long to re-run.
+% Under normal use, you do not want your batch size to be too large. If one
+% image in the batch fails for transient reasons, the entire batch will
+% have to start from the beginning. If you have a smaller batch size, the
+% job that failed will not take as long to re-run. Note: If you you do not
+% want to split a job into batches but want to send it to the cluster to be
+% processed all in one batch and free up your local computer for other
+% work, you can set the batch size to a very large number (more than the
+% total number of cycles) and this will create one large job which can be
+% submitted to the cluster.
 %
 % Batch Prefix: This determines the prefix for all the batch files.
 %
@@ -41,7 +43,7 @@ function handles = CreateBatchFiles(handles)
 %
 % Other Paths: You can either specify the exact paths as seen by the
 % cluster computers, or you can leave a period (.) to use the default image
-% and output folders. The last two parameters allow you to use the default
+% and output folders. The last two settings allow you to use the default
 % image and output folders but switch the beginning path. For example, when
 % starting with a PC computer and going to a Linux machine, the path may be
 % the same except the first notation:
@@ -54,36 +56,20 @@ function handles = CreateBatchFiles(handles)
 % is hardcoded to always end in Linux and Macintosh format using forward
 % slashes (/).
 %
-% How it works: 
-% After the first cycle is processed on your local computer, batch files
-% are created and saved at the pathname you specify.  Each batch file is of
-% the form Batch_X_to_Y.m (The prefix can be changed from Batch_ by the
-% user), where X is the first cycle to be processed in the particular batch
-% file, and Y is the last.  There is also a Batch_data.mat file that each
-% script needs access to in order to initialize the processing.
-%
-% After the batch files are created, they can be submitted individually to
-% the remote machines. Note that the batch files and Batch_data.mat file
-% might have to be copied to the remote machines in order for them to have
-% access to the data. The output files will be written in the directory
-% where the batch files are running, which may or may not be the directory
-% where the batch scripts are located. Details of how remote jobs will be
-% started vary from location to location. Please consult your local cluster
-% experts.
-%
-% After batch processing is complete, the output files can be merged by the
-% Merge Batch Output module.  This is not recommended of course if your
-% output files are huge and will result in a file that is too large to be
-% opened on your computer. For the simplest behavior in merging, it is best
-% to save output files to a unique and initially empty directory.
-%
-% If the batch processing fails for some reason, the handles structure in
-% the output file will have a field BatchError, and the error will also be
-% written to standard out.  Check the output from the batch processes to
-% make sure all batches complete.  Batches that fail for transient reasons
-% can be resubmitted.
+% Note:
+% * This module produces a Batch_data.mat file (the prefix Batch_ can be
+% changed by the user). This contains the first image set's measurements
+% plus information about the processing that each batch file needs access
+% to in order to initialize the processing.
+% * In addition, this module produces one or more batch files of the form
+% Batch_X_to_Y.m or Batch_X_to_Y.mat
+% - The prefix can be changed from Batch_ by the user.
+% - .m is used for the MATLAB version of CPCluster while .mat is used for
+% the Compiled version of CPCluster).
+% - X is the first cycle to be processed in the particular batch file,
+% and Y is the last.  
 % 
-% See also MergeBatchOutput, GSBatchProcessing.
+% See also MergeOutputFiles, GSBatchProcessing.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -114,9 +100,9 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Do you want to create scripts (requires MatLab licenses) or mat-files (refer to help for more detail)?
-%choiceVAR01 = Scripts
-%choiceVAR01 = Files
+%textVAR01 = Is your cluster using the MATLAB version or the compiled version of CPCluster?
+%choiceVAR01 = MATLAB
+%choiceVAR01 = Compiled
 FileChoice = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -128,23 +114,23 @@ BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2})
 %defaultVAR03 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%pathnametextVAR04 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (only necessary for Scripts option)
+%pathnametextVAR04 = If you chose the MATLAB option, what is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module folder.
 %defaultVAR04 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%pathnametextVAR05 = What is the path to the image directory on the cluster machines? Leave a period (.) to use the default image directory.
+%pathnametextVAR05 = What is the path to the image folder on the cluster machines? Leave a period (.) to use the default image folder.
 %defaultVAR05 = .
 BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,5);
 
-%pathnametextVAR06 = What is the path to the directory where batch output should be written on the cluster machines? Leave a period (.) to use the default output directory.
+%pathnametextVAR06 = What is the path to the folder where batch output should be written on the cluster machines? Leave a period (.) to use the default output folder.
 %defaultVAR06 = .
 BatchOutputPath = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%pathnametextVAR07 = What is the path to the directory where you want to save the batch files? Leave a period (.) to use the default output directory.
+%pathnametextVAR07 = What is the path to the folder where you want to save the batch files? Leave a period (.) to use the default output directory.
 %defaultVAR07 = .
 BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%pathnametextVAR08 = What is the path to the directory where the batch data file will be saved on the cluster machines? Leave a period (.) to use the default output directory.
+%pathnametextVAR08 = What is the path to the folder where the batch data file will be saved on the cluster machines? Leave a period (.) to use the default output folder.
 %defaultVAR08 = .
 BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -269,7 +255,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
     BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
-    if strcmpi(FileChoice,'Scripts')
+    if strcmpi(FileChoice,'MATLAB')
         BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
         fprintf(BatchFile, 'addpath(genpath(''%s''));\n', BatchCellProfilerPath);
         fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
@@ -301,7 +287,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
         fprintf(BatchFile, 'handles.Pipeline = [];');
         fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
         fclose(BatchFile);
-    elseif strcmpi(FileChoice,'Files')
+    elseif strcmpi(FileChoice,'Compiled')
         cluster.StartImage = StartImage;
         cluster.EndImage = EndImage;
         cluster.BatchFilePrefix = BatchFilePrefix;
@@ -310,7 +296,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     end
 end
 
-CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the invidual .m scripts for processing on your cluster.', 'BatchFilesDialog');
+CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the batch files for processing on your cluster. See Help > Getting Started > BatchProcessing for more information.', 'BatchFilesDialog');
 
 %%% This is the first cycle, so this is the first time seeing this
 %%% module.  It should cause a cancel so no further processing is done

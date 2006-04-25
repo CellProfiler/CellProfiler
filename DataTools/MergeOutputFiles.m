@@ -1,21 +1,21 @@
-function MergeBatch(handles)
+function MergeOutputFiles(handles)
 
-% Help for the Merge Batch Output module:
+% Help for the Merge Output Files data tool:
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Merges together output files produced by the Create Batch Scripts module
+% Merges together output files produced by the Create Batch Files module
 % into one regular CellProfiler output file.
 % *************************************************************************
 % Note: this module is beta-version and has not been thoroughly checked.
 %
-% After a batch run has completed (using scripts created by the Create
-% Batch Scripts module), the individual output files contain results from a
+% After a batch run has completed (using batch files created by the Create
+% Batch Files module), the individual output files contain results from a
 % subset of images and can be merged into a single output file. This module
 % assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
 % batch output file. The combined output is written to the output filename
-% as specified in the lower right box of CellProfiler's main window. Once
-% merged, this output file should be compatible with data tools.
+% you specify. Once merged, this output file should be compatible with data
+% tools.
 %
 % It does not make sense to run this module in conjunction with other
 % modules.  It should be the only module in the pipeline.

@@ -210,7 +210,7 @@ helpdlg(help('GSBatchProcessing'))
 % BatchFilePrefix is the prefix named in CreateBatchFiles (usually Batch_),
 % and QueueType is the queue for your cluster. Usually, the first three
 % arguments are all the same. Here is an example of how you would submit
-% all of your batch scripts to the cluster:
+% all of your batch files to the cluster:
 % 
 % ./batchrun.sh /Some_Path/200X_XX_XX_ProjectName/output /Some_Path/200X_XX_XX_ProjectName/output
 % /Some_Path/200X_XX_XX_ProjectName/output Batch_ normal
@@ -228,7 +228,7 @@ helpdlg(help('GSBatchProcessing'))
 % access your data. In general, data from large analyses will be loaded
 % into a database. Please refer to the ExportToDatabase module for
 % information on how to do this. If you have made a very small number of
-% measurements, you might be able to use the MergeBatchOutput module, see
+% measurements, you might be able to use the MergeBatchOutput DataTool, see
 % its instructions for further details.
 %
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************

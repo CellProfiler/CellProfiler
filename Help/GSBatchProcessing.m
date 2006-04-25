@@ -3,38 +3,46 @@ helpdlg(help('GSBatchProcessing'))
 
 % CellProfiler is designed to analyze images in a high-throughput manner.
 % Once a pipeline has been established for a set of images, CellProfiler
-% can export batches of images to be analyzed on a cluster. We have
-% successfully analyzed over 130,000 images for one analysis in this
+% can export batches of images to be analyzed on a cluster with the
+% pipeline. We often analyze 40,000-130,000 images for one analysis in this
 % manner. This is accomplished by breaking the entire set of images into
 % separate batches, and then submitting each of these batches as individual
 % jobs to a cluster. Each individual batch can be separately analyzed from
 % the rest.
 % 
 % There are two methods of processing these batches on a cluster. The first
-% is by producing small MatLab script files which specify the images to
-% analyze. For this method, each cluster computer must have a MatLab
-% license. The other method is by producing small MatLab .mat files which
-% specify the images to analyze. This method does NOT require any MatLab
-% licenses, but is more difficult to set up if the version on the website
-% does not work on your cluster.
+% requires a MATLAB license for every computing node of the cluster. This
+% method produces small MATLAB script files which specify the images to
+% analyze. The other method does not require MATLAB licenses for the entire
+% cluster, but does require a bit more effort to set up. This method
+% produces small MATLAB .mat files which specify the images to analyze. 
 % 
 % *************** SETTING UP CLUSTER WITH MATLAB **************************
 % Step 1: Create a folder on your cluster for CellProfiler (e.g.
-% /home/username/CellProfiler). THIS FOLDER MUST BE CONNECTED TO THE
-% CLUSTER COMPUTERS NETWORK AND READABLE BY ALL. If you don't know what
+% /home/username/CellProfiler). This folder must be connected to the
+% cluster computers' network and readable by all. If you don't know what
 % this means, please ask your IT department for help.
 % 
 % Step 2: Copy all CellProfiler source code files into this folder, keeping
-% the file structure intact. THIS VERSION OF CELLPROFILER MUST BE THE SAME
-% AS THE VERSION USED TO CREATE THE PIPELINE. SOMETIMES MODULES ARE CHANGED
-% BETWEEN VERSIONS AND THIS CAN CAUSE ERRORS.
+% the file structure intact. This version of CellProfiler must be the same
+% as the version used to create the pipeline. Sometimes modules are changed
+% between versions and this can cause errors.
 % 
-% Step 3: Create batchrun.sh file. This file is how jobs are submitted to
-% the cluster. THIS IS CURRENTLY DESIGNED TO WORK WITH OUR CLUSTER WHICH
-% RUNS LSF SOFTWARE. THERE ARE DIFFERENT CLUSTER SOFTWARE PROGRAMS AND THIS
-% FILE MUST BE EDITED TO WORK WITH YOUR SOFTWARE. PLEASE CONTACT IT FOR
-% HELP WITH THIS. Open any text editor and copy the following code:
-% 
+% Step 3: Create batchrun.sh file. This file will allow you to rapidly
+% submit jobs to your cluster, rather than you typing out commands one at a
+% time to submit jobs individually. There are different software programs
+% which control how jobs are submitted to a cluster. The example below is
+% for our cluster at the Whitehead Institute which uses LSF software.
+% Contact your IT department for help writing a similar file to work with
+% your own cluster.
+%
+% Example (LSF): Open any text editor and copy in the code below, then save
+% the file to any directory, usually your home directory is fine. Then
+% change the following lines to fit your cluster:
+% MATLAB=/SOME_PATH/MATLAB
+% LICENSE_SERVER="12345@yourservers.edu"
+% Also, you can specify your e-mail address after the bsub command.
+% ---
 % #!/bin/sh
 % if test $# -ne 5; then
 %   echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2 exit 1
@@ -66,29 +74,27 @@ helpdlg(help('GSBatchProcessing'))
 % #For example:
 % #./batchrun.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/ PROJECTFOLDER Batch_ normal
 % # END COPY
-% 
-% Save this file to any directory, usually your home directory is fine.
-% Then change the following lines to fit your cluster:
-% MATLAB=/SOME_PATH/MATLAB
-% LICENSE_SERVER="12345@yourservers.edu"
-% 
-% Also, you can specify your e-mail address after the bsub command.
-% 
+% ---
+%
 % Step 4: Change batchrun.sh to be executable. Open a terminal, navigate to
 % the folder where batchrun.sh is located, and type:
 % 
 % chmod a+x batchrun.sh
 % 
-% If you don't know what this means, please ask your IT department for
-% help.
+% If you don't know what this means, please ask your IT department.
 % 
+% Step 5: Submit files. See SUBMITTING FILES FOR BATCH PROCESSING below.
+%
 % *********** END OF SETTING UP CLUSTER WITH MATLAB ***********************
 % 
 % 
 % ************** SETTING UP CLUSTER WITHOUT MATLAB ************************
-% Step 1: Download and install correct version of CPCluster. If the generic
-% Linux version does not work, you may have to download the source code and
-% compile it on your cluster. This requires a single MatLab license.
+% Step 1: Download and install correct version of CPCluster from
+% www.cellprofiler.org. If the versions there do not work, it means your
+% cluster is running different versions of the operating systems, so you
+% will have to download the CPCluster source code and compile it
+% specifically for your cluster. This requires a single MatLab license. See
+% [XXXXXXXXXXXXXX] for instructions on how to do this.
 %
 % Step 2: Create batchrun.sh file. This file is how jobs are submitted to
 % the cluster. THIS IS CURRENTLY DESIGNED TO WORK WITH OUR CLUSTER WHICH
@@ -139,6 +145,8 @@ helpdlg(help('GSBatchProcessing'))
 % 
 % If you don't know what this means, please ask your IT department for
 % help.
+%
+% Step 5: Submit files. See SUBMITTING FILES FOR BATCH PROCESSING below.
 %
 % ********** END OF SETTING UP CLUSTER WITHOUT MATLAB *********************
 % 

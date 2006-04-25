@@ -17,7 +17,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % * If you are working with color images, they must first be converted to
 % grayscale using the Color To Gray module.
 %
-% Description of the overall strategy:
+% Overview of the strategy ('Settings' below has more details):
 %   Properly identifying primary objects (nuclei) that are well-dispersed,
 % non-confluent, and bright relative to the background is straightforward
 % by applying a simple threshold to the image. Many commercial software
@@ -25,15 +25,13 @@ function handles = IdentifyPrimAutomatic(handles)
 % when nuclei are touching. In CellProfiler, several automatic thresholding
 % methods are available, including global and adaptive, using Otsu’s (Otsu,
 % 1979) and our own version of a Mixture of Gaussians algorithm (O. Friman,
-% unpublished data). For most biological images, at least some nuclei are
+% unpublished). For most biological images, at least some nuclei are
 % touching, so CellProfiler contains a novel modular three-step strategy
 % based on previously published algorithms (Malpica et al., 1997; Meyer and
 % Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003; Wahlby et
 % al., 2004). Choosing different options for each of these three steps
 % allows CellProfiler to flexibly analyze a variety of different cell
-% types. While the user does not need to understand the underlying
-% algorithms in order to use the object identification modules, they are
-% briefly described here. 
+% types. Here are the three steps: 
 %   In step 1, CellProfiler determines whether an object is an individual
 % nucleus or two or more clumped nuclei. This determination can be
 % accomplished in two ways, depending on the cell type: When nuclei are
@@ -42,10 +40,13 @@ function handles = IdentifyPrimAutomatic(handles)
 % (Intensity option). When nuclei are quite round, identifying local maxima
 % in the distance-transformed thresholded image (where each pixel gets a
 % value equal to the distance to the nearest pixel below a certain
-% threshold) works well (Shape option).
+% threshold) works well (Shape option). For quick processing where cells
+% are well-dispersed, you can choose to make no attempt to separate clumped
+% objects.
 %   In step 2, the edges of nuclei are identified. For nuclei within the
-% image that do not touch, the edges are easily determined using
-% thresholding. There are two options for finding the edges of clumped
+% image that do not appear to touch, the edges are easily determined using
+% thresholding. For nuclei that do appear to touch, there are two options
+% for finding the edges of clumped
 % nuclei. Where the dividing lines tend to be dimmer than the remainder of
 % the nucleus (the most common case), the Intensity option works best
 % (already identified nuclear markers are starting points for a watershed
@@ -53,19 +54,23 @@ function handles = IdentifyPrimAutomatic(handles)
 % no dim dividing lines exist, the Distance option places the dividing line
 % at a point between the two nuclei determined by their shape (the
 % distance-transformed thresholded image is used for the watershed
-% algorithm).
-%   In step 3, some identified nuclei are discarded if the user chooses.
-% Incomplete nuclei touching the border of the image can be discarded.
-% Objects smaller than a user-specified size range, which are likely to be
-% fragments of real nuclei, can be discarded. Alternately, any of these
-% small objects that touch a valid nucleus can be merged together based on
-% a set of heuristic rules; for example similarity in intensity and
-% statistics of the two objects. A separate module, Filter By Object
+% algorithm). In other words, the dividing line is halfway between the
+% "centers" of the nuclei.
+%   In step 3, some identified nuclei are discarded or merged together if
+% the user chooses. Incomplete nuclei touching the border of the image can
+% be discarded. Objects smaller than a user-specified size range, which are
+% likely to be fragments of real nuclei, can be discarded. Alternately, any
+% of these small objects that touch a valid nucleus can be merged together
+% based on a set of heuristic rules; for example similarity in intensity
+% and statistics of the two objects. A separate module, Filter By Object
 % Measurement, further refines the identified nuclei, if desired, by
 % excluding objects that are a particular size, shape, intensity, or
 % texture. This refining step could eventually be extended to include other
 % quality-control filters, e.g. a second watershed on the distance
 % transformed image to break up remaining clusters (Wahlby et al., 2004).
+%
+% For more details, see the Settings section below and also the notation
+% within the code itself (Developer's version).
 %
 % Malpica, N., de Solorzano, C. O., Vaquero, J. J., Santos, A., Vallcorba,
 % I., Garcia-Sagredo, J. M., and del Pozo, F. (1997). Applying watershed
@@ -221,11 +226,11 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % Method to draw dividing lines between clumped objects:
 % * Intensity - works best where the dividing lines between clumped
-% objects are dim.
+% objects are dim. Technical description: watershed on the intensity image.
 % * Distance - Dividing lines between clumped objects are halfway
 % between the 'center' of each object.  The intensity patterns in the
 % original image are irrelevant - the cells need not be dimmer along
-% the lines between clumped objects.
+% the lines between clumped objects.  Technical description: Voronoi.
 % * None (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped objects.
 % Using the 'None' option, the thresholded image will be used to identify

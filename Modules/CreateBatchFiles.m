@@ -4,23 +4,55 @@ function handles = CreateBatchFiles(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Produces script files (these are files of plain text) which allow
-% individual batches of images to be processed separately on a cluster
-% of computers.
+% Produces script files (these are files of plain text) or mat files
+% (MatLab files) which allow individual batches of images to be processed
+% separately on a cluster of computers.
 % *************************************************************************
-% Note: this module is beta-version and has not been thoroughly checked.
 %
-% This module creates a set of Matlab scripts (m-files) that can be
-% submitted in parallel to a cluster for faster processing. This module
-% should be placed at the end of an image processing pipeline.
+% This module creates a set of Matlab scripts (m-files) or mat-files that
+% can be submitted in parallel to a cluster for faster processing. This
+% module should be placed at the end of an image processing pipeline.
+%
+% Before using this module, you should read Help -> Getting Started ->
+% Batch Processing. Here you will learn how to set up your cluster for
+% batch processing.
 % 
 % Settings:
-% Options include the size of each batch that the full set of images should
-% be split into, a prefix to prepend to the batch filenames, and several
-% pathnames describing where the batches will be processed.  For jobs that
-% you do not want to split into batches but simply want to run on a
-% separate computer, set the batch size to a very large number (more than
-% the total number of cycles), which will create one large job.
+% Scripts or Files: If your cluster has MatLab licenses for every node, you
+% can produce script files for each batch of images. If it does not, you
+% can produce mat-files which will be read by the compiled CPCluster
+% program. For more information, please read Help -> Getting Started ->
+% Batch Processing.
+%
+% Batch Size: This determines how many images will be analyzed in each set.
+% If you you do not want to split a job but want to send it to the cluster,
+% so it does not use a computer you might be using, you can set the batch
+% size to a very large number (more than the total number of cycles) and
+% this will create one large job which can be submitted to the cluster. In
+% general, you do not want your batch size to be too large. If one image
+% fails, the whole analysis will stop and you will have to start from the
+% beginning. If you have a smaller batch size, the job that failed will not
+% take as long to re-run.
+%
+% Batch Prefix: This determines the prefix for all the batch files.
+%
+% CellProfiler Path: Here you must specify the exact location of
+% CellProfiler files as seen by the cluster computers.
+%
+% Other Paths: You can either specify the exact paths as seen by the
+% cluster computers, or you can leave a period (.) to use the default image
+% and output folders. The last two parameters allow you to use the default
+% image and output folders but switch the beginning path. For example, when
+% starting with a PC computer and going to a Linux machine, the path may be
+% the same except the first notation:
+%
+% PC:    \\remoteserver1\cluster\project
+% Linux: /remoteserver2/cluster/project
+%
+% In this case, for the local machine you would type "\\remoteserver1" and
+% for the remote machine you would type "/remoteserver2". As of now, this
+% is hardcoded to always end in Linux and Macintosh format using forward
+% slashes (/).
 %
 % How it works: 
 % After the first cycle is processed on your local computer, batch files
@@ -96,7 +128,7 @@ BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2})
 %defaultVAR03 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%pathnametextVAR04 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory.
+%pathnametextVAR04 = What is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module directory. (only necessary for Scripts option)
 %defaultVAR04 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -116,11 +148,11 @@ BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = .
 BatchRemotePath = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%pathnametextVAR09 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)
+%pathnametextVAR09 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting trailing slashes. Otherwise, leave a period (.)
 %defaultVAR09 = .
 OldPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%pathnametextVAR10 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting leading and trailing slashes. Otherwise, leave a period (.)
+%pathnametextVAR10 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting trailing slashes. Otherwise, leave a period (.)
 %defaultVAR10 = .
 NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
@@ -203,6 +235,9 @@ if strcmp(OldPathname, '.') ~= 1
     handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
     NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+else
+    handles.Current.DefaultOutputDirectory = BatchImagePath;
+    handles.Current.DefaultImageDirectory = BatchOutputPath;
 end
 
 %%% Makes some changes to the handles structure that will be

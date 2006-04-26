@@ -661,7 +661,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); drawnow';
     else
-        Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
+        Button1Callback = 'FigureHandle = gcf; AxesHandles = findobj(''Parent'', FigureHandle, ''Type'', ''axes''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -687,7 +687,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button3Callback = 'FigureHandles = findobj(''Parent'', 0); AxesHandles = findobj(FigureHandles, ''Type'', ''axes''); axis(AxesHandles, ''manual''); drawnow';
     else
-        Button3Callback = 'FigureHandles = findobj(''Parent'', 0); AxesHandles = findobj(FigureHandles, ''Type'', ''axes''); axis(AxesHandles, ''manual''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end, drawnow';
+        Button3Callback = 'FigureHandles = findobj(''Parent'', 0); AxesHandles = findobj(FigureHandles, ''Type'', ''axes''); axis(AxesHandles, ''manual''); try, propedit(AxesHandles,''v6''), catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end, drawnow';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -701,7 +701,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button4Callback = 'FigureHandle = gcf; PatchHandles = findobj(FigureHandle, ''Type'', ''patch''); drawnow';
     else
-        Button4Callback = 'FigureHandle = gcf; PatchHandles = findobj(FigureHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
+        Button4Callback = 'FigureHandle = gcf; PatchHandles = findobj(FigureHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -715,7 +715,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button5Callback = 'AxisHandle = gca; PatchHandles = findobj(''Parent'', AxisHandle, ''Type'', ''patch''); drawnow';
     else
-        Button5Callback = 'AxisHandle = gca; PatchHandles = findobj(''Parent'', AxisHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
+        Button5Callback = 'AxisHandle = gca; PatchHandles = findobj(''Parent'', AxisHandle, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -729,7 +729,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
     if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1
         Button6Callback = 'FigureHandles = findobj(''Parent'', 0); PatchHandles = findobj(FigureHandles, ''Type'', ''patch''); drawnow';
     else
-        Button6Callback = 'FigureHandles = findobj(''Parent'', 0); PatchHandles = findobj(FigureHandles, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
+        Button6Callback = 'FigureHandles = findobj(''Parent'', 0); PatchHandles = findobj(FigureHandles, ''Type'', ''patch''); try, propedit(PatchHandles,''v6''), catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -808,7 +808,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'CallBack',Button12Callback, ...
         'Position',PointsPerPixel*[400 NewHeight-85 150 22], ...
         'Units','Normalized',...
-        'String','Export Data to Matlab', ...
+        'String','Export Data to MATLAB', ...
         'Style','pushbutton', ...
         'FontSize',FontSize);
     %%% This code sets the UserData for the figure

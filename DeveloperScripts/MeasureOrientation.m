@@ -33,7 +33,7 @@ function handles = MeasureOrientation(handles)
 % to binary and re-made into a label matrix image before feeding into this
 % module.
 %
-% The following measurements are extracted using the Matlab regionprops.m
+% The following measurements are extracted using the MATLAB regionprops.m
 % function:
 % *Area - Computed from the the actual number of pixels in the region.
 % *Eccentricity - Also known as elongation or elongatedness. For an ellipse

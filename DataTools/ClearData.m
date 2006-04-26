@@ -61,7 +61,7 @@ try
     clear handles;
     load(fullfile(Pathname, SelectedFiles{1}));
 catch
-    CPerrordlg([SelectedFiles{1},' is not a Matlab file'])
+    CPerrordlg([SelectedFiles{1},' is not a CellProfiler or MATLAB file (it does not have the extension .mat)'])
     return
 end
 
@@ -94,7 +94,7 @@ for FileNbr = 1:length(SelectedFiles)
         clear handles
         load(fullfile(Pathname, SelectedFiles{FileNbr}));
     catch
-        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a Matlab file'];
+        errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler or MATLAB file (it does not have the extension .mat)'];
         continue
     end
 

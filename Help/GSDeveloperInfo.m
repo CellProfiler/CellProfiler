@@ -7,13 +7,13 @@ helpdlg(help('GSDeveloperInfo'))
 %
 % You can write your own modules, image tools, and data tools for
 % CellProfiler - the easiest way is to modify an existing one. CellProfiler
-% is modular: every module, image tool, and data tool is a single Matlab
+% is modular: every module, image tool, and data tool is a single MATLAB
 % m-file (extension = .m). Upon startup, CellProfiler scans its Modules,
 % DataTools, and ImageTools folders looking for files. Simply put your new
 % file in the proper folder and it will appear in the proper place. They
 % are automatically categorized, their help extracted, etc.
 %
-% If you have never tried computer programming or have not used Matlab,
+% If you have never tried computer programming or have not used MATLAB,
 % please do give it a try. Many beginners find this language easy to learn
 % and the code for CellProfiler is heavily documented so that you can
 % understand what each line does. It was designed so that biologists
@@ -24,7 +24,7 @@ helpdlg(help('GSDeveloperInfo'))
 % The first unbroken block of lines will be extracted as help by
 % CellProfiler's 'Help for this analysis module' button, Help for image
 % tools and data tools (Help menu in the main CellProfiler window) as well
-% as Matlab's built in 'help' and 'doc' functions at the command line. It
+% as MATLAB's built in 'help' and 'doc' functions at the command line. It
 % will also be used to automatically generate a pdf manual page for the
 % module. An example image demonstrating the function of the module can
 % also be saved in tif format, using the same name as the module, and it
@@ -127,13 +127,13 @@ helpdlg(help('GSDeveloperInfo'))
 %
 % *** STORING AND RETRIEVING DATA: THE HANDLES STRUCTURE ***
 % 
-% In CellProfiler (and Matlab in general), each independent function
+% In CellProfiler (and MATLAB in general), each independent function
 % (module) has its own workspace and is not able to 'see' variables
 % produced by other modules. For data or images to be shared from one
 % module to the next, they must be saved to what is called the 'handles
 % structure'. This is a variable, whose class is 'structure', and whose
 % name is handles. The contents of the handles structure can be printed out
-% at the command line of Matlab using the Tech Diagnosis button and typing
+% at the command line of MATLAB using the Tech Diagnosis button and typing
 % "handles" (no quotes). The only variables present in the *main* handles
 % structure are handles to figures and GUI elements. Everything else should
 % be saved in one of the following substructures:
@@ -262,7 +262,7 @@ helpdlg(help('GSDeveloperInfo'))
 % handles.Settings, handles.Preferences, and handles.Current will be
 % retained from one analysis to the next. It is important to think about
 % which of these data should be deleted at the end of an analysis run
-% because of the way Matlab saves variables: For example, a user might
+% because of the way MATLAB saves variables: For example, a user might
 % process 12 image sets of nuclei which results in a set of 12 measurements
 % ("TotalStainedArea") stored in handles.Measurements.Image. In addition, a
 % processed image of nuclei from the last image set is left in
@@ -290,7 +290,7 @@ helpdlg(help('GSDeveloperInfo'))
 % the images for proper range, size, color/gray, etc using the
 % CPretrieveimage subfunction.
 %
-% We have used many Matlab functions from the image processing toolbox.
+% We have used many MATLAB functions from the image processing toolbox.
 % Currently, CellProfiler does not require any other toolboxes for
 % processing.
 %
@@ -369,11 +369,11 @@ helpdlg(help('GSDeveloperInfo'))
 %
 % *** DEBUGGING HINTS ***
 %
-% * Use breakpoints in Matlab to stop your code at certain points and
+% * Use breakpoints in MATLAB to stop your code at certain points and
 % examine the intermediate results. 
 %
 % * To temporarily show an image during debugging, add lines like this to
-% your code, or type them at the command line of Matlab:
+% your code, or type them at the command line of MATLAB:
 %       CPfigure
 %       CPimagesc(BlurredImage, [])
 %       title('BlurredImage')
@@ -404,9 +404,9 @@ helpdlg(help('GSDeveloperInfo'))
 %
 % For General help files:
 % We have one line of actual code in these files so that the help is
-% visible. We are not using CPhelpdlg because this allows the help to be
-% accessed from the command line of Matlab. The code of theis module
-% (helpdlg) is never run from inside CP anyway.
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.
 %
 % *** RUNNING CELLPROFILER WITHOUT THE GRAPHICAL USER INTERFACE ***
 %
@@ -432,4 +432,9 @@ helpdlg(help('GSDeveloperInfo'))
 % set correctly for each module in the pipeline since this is how the
 % variable values are called. In order to see what all of these variables 
 % look like, run a sample analysis and then go to File -> Tech Diagnosis.
-% This will let you manipulate the handles variable in MatLab.
+% This will let you manipulate the handles variable in MATLAB.
+
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

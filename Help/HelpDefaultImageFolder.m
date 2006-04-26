@@ -34,9 +34,10 @@ helpdlg(help('HelpDefaultImageFolder'))
 % extensions:
 %   DiscardsByExtension = regexpi(FileNamesNoDir, '\.(m|mat|m~|frk~|xls|
 %                                        doc|rtf|txt|csv)$', 'once');
-% Save the file.  You do not need to relaunch Matlab or CellProfiler for
+% Save the file.  You do not need to relaunch MATLAB or CellProfiler for
 % this change to take effect.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

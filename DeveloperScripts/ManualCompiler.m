@@ -1,11 +1,11 @@
 function ManualCompiler %#ok We want to ignore MLint error checking for this line.
 
-% This Matlab program allows a CellProfiler help manual to be compiled
+% This MATLAB program allows a CellProfiler help manual to be compiled
 % from the help contained within individual modules and tools.
 %
 %%% The Manual Compiler may be run from any directory; it will switch to
 %%% the main CellProfiler directory to perform its function. Just type:
-%%% ManualCompiler (with no arguments) at Matlab's command line to run the
+%%% ManualCompiler (with no arguments) at MATLAB's command line to run the
 %%% manual compiler.
 %%%
 %%% When it is finished, open the program TexShop.
@@ -173,7 +173,7 @@ end
 
 % 6. Open each module (alphabetically) and print its name in large
 % bold font at the top of the page. Extract the lines after "Help for
-% ...." and before the license begins, using the Matlab 'help'
+% ...." and before the license begins, using the MATLAB 'help'
 % function. Print this below the module name. Open the corresponding
 % image file (in the Promotional/ImagesForManual folder, these always have the exact
 % name as the algorithm), if it exists, and place this at the bottom

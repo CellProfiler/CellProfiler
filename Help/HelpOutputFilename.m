@@ -12,13 +12,14 @@ helpdlg(help('HelpOutputFilename'))
 % The program prevents you from entering a name which exists already (when
 % 'OUT.mat' is appended). This prevents overwriting an output data file by
 % accident, but is also disallowed for the following reason: when a file is
-% 'overwritten', instead of completely overwriting the output file, Matlab
-% just replaces some of the old data with the new data.  So, if you have an
-% output file with 12 measurements and the new set of data has only 4
-% measurements, saving the output file to the same name would produce a
-% file with 12 measurements: the new 4 followed by 8 old measurements.
-%
+% 'overwritten', instead of completely overwriting the output file,
+% MATLAB/CellProfiler just replaces some of the old data with the new data.
+% So, if you have an output file with 12 measurements and the new set of
+% data has only 4 measurements, saving the output file to the same name
+% would produce a file with 12 measurements: the new 4 followed by 8 old
+% measurements.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

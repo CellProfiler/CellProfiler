@@ -46,7 +46,7 @@ end
 try
     load(fullfile(Pathname, FileName));
 catch
-    CPerrordlg('Selected file is not a Matlab file.')
+    CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
     return
 end
 

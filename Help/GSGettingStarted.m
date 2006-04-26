@@ -99,6 +99,7 @@ helpdlg(help('GSGettingStarted'))
 % will load/save these: the image analysis modules, their settings, and the
 % pixel size. It will not save the default image or output folder.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of this module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

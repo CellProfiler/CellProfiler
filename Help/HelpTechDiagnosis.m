@@ -5,10 +5,11 @@ helpdlg(help('HelpTechDiagnosis'))
 %
 % This is only to be used in CellProfiler Developer's version.
 % It allows you to access the workspace of CellProfiler directly at the
-% command line of Matlab, including looking into the handles structure.
+% command line of MATLAB, including looking into the handles structure.
 %
-% Type "return" at the command line of Matlab to exit this mode.
+% Type "return" at the command line of MATLAB to exit this mode.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

@@ -9,7 +9,7 @@
 % brightly illuminated), you can calculate normalization factors to
 % correct your data using this button.  You will be prompted first to
 % copy the measurements to the clipboard.  This should be a single
-% column of data from a set of images. Then, use Matlab's import
+% column of data from a set of images. Then, use MATLAB's import
 % wizard to import your data and press 'Finish' before you click the
 % OK button in the tiny prompt window. You will then be asked about
 % the physical layout of the samples (rows and columns). The
@@ -43,4 +43,4 @@
 % original data is then placed on the clipboard so that, if desired,
 % you can paste it next to the original data (e.g. in Excel) just to
 % doublecheck that the proper numbers were used. Both sets of data are
-% also displayed in the Matlab command window to copy and paste.
+% also displayed in the MATLAB command window to copy and paste.

@@ -4,7 +4,7 @@ function FindImageSetNumberGivenImageNameForBatches(handles,fieldname, imagename
 %%% image name so you can re-run image analysis on a particular image.
 %%% It's not been thoroughly tested.
 
-%%% To use this, load the Matlab file 'Batch_data.mat' for the batch.
+%%% To use this, load the MATLAB file 'Batch_data.mat' for the batch.
 %%% Then find the fieldname in handles.Pipeline that corresponds to
 %%% the images of interest, like this:
 %%% Example fieldname:

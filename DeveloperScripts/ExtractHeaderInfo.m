@@ -207,7 +207,7 @@ for n = 1:2:5
         ErrorNumber(1) = {'first'};
         ErrorNumber(2) = {'second'};
         ErrorNumber(3) = {'third'};
-        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Extract Header Information module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
+        error(['An error occurred when trying to load the ', ErrorNumber{n}, ' set of images using the Extract Header Information module. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. MATLAB says the problem is: ', ErrorMessage])
     end % Goes with: catch
 end
 

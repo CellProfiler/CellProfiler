@@ -265,7 +265,7 @@ end
 Threshold = max(MinimumThreshold,Threshold);
 
 %%%  1. Threshold for edges
-%%% We cannot use the built in Matlab function
+%%% We cannot use the built in MATLAB function
 %%% im2bw(EnhancedInvertedImage,Threshold) to threshold the
 %%% EnhancedInvertedImage image, because it does not allow using a
 %%% threshold outside the range 0 to 1.  So we will use this instead:

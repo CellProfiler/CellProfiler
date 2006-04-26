@@ -35,7 +35,7 @@ function handles = ShowDataOnImage(handles)
 % change the font size with the 'Text Properties'. You can also change the
 % font style, color, and other properties with this button.
 %
-% The resulting figure can be saved in Matlab format (.fig) or exported in
+% The resulting figure can be saved in MATLAB format (.fig) or exported in
 % a traditional image file format.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -179,9 +179,9 @@ StdColor = get(0,'DefaultUIcontrolBackgroundColor');
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 VersionCheck = version;
 if strcmp(computer,'MAC') && str2num(VersionCheck(1:3)) < 7.1 %#ok Ignore MLint
-    DisplayButtonCallback1 = 'CPmsgbox(''A bug in Matlab is preventing this function from working on the Mac platform. Service Request #1-RR6M1''), drawnow';
+    DisplayButtonCallback1 = 'CPmsgbox(''A bug in MATLAB is preventing this function from working on the Mac platform. Service Request #1-RR6M1''), drawnow';
 else
-    DisplayButtonCallback1 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); try, propedit(CurrentTextHandles,''v6''); catch, CPmsgbox(''A bug in Matlab is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
+    DisplayButtonCallback1 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); try, propedit(CurrentTextHandles,''v6''); catch, CPmsgbox(''A bug in MATLAB is preventing this function from working. Service Request #1-RR6M1''), end; drawnow';
 end
 uicontrol('Parent',FigureHandle, ...
     'Unit',StdUnit, ...

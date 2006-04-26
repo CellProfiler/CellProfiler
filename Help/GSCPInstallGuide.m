@@ -47,18 +47,18 @@ helpdlg(help('GSCPInstallGuide'))
 % 
 % CellProfiler Installation Guide: Developer's version
 % 
-% 1. (Mac only) Set X11 setting... Close Matlab & X11. Open the Mac
+% 1. (Mac only) Set X11 setting... Close MATLAB & X11. Open the Mac
 % application called 'Terminal' (Applications > Utilities > Terminal) and
 % type the following to ensure that display windows behave properly:
 % defaults write com.apple.x11 wm_click_through -bool true
 % 
-% 2. Start Matlab and check licenses... Start Matlab and type into the main
+% 2. Start MATLAB and check licenses... Start MATLAB and type into the main
 % window (command line): license('test','image_toolbox') If the Image
 % Processing Toolbox is installed with a valid license you will see: ans =
 % 1, but if ans = 0, the toolbox and/or license is not installed.
-% CellProfiler was designed for Matlab Release 14, version 7.1, SP3
+% CellProfiler was designed for MATLAB Release 14, version 7.1, SP3
 % although it is possible that many functions will work on other versions.
-% We have noticed lots of Matlab crashing with Mac OS10.2 but OS10.3 is
+% We have noticed lots of MATLAB crashing with Mac OS10.2 but OS10.3 is
 % fine.
 % 
 % 3. Copy the CellProfiler files to your computer... Put them in a folder
@@ -69,8 +69,8 @@ helpdlg(help('GSCPInstallGuide'))
 % 
 % 4. Start CellProfiler... To start CellProfiler for the first time, you
 % must call it directly. After the first time, you may simply type
-% "CellProfiler" in the main Matlab window to start CellProfiler. To call
-% CellProfiler directly, type the following in the main Matlab window
+% "CellProfiler" in the main MATLAB window to start CellProfiler. To call
+% CellProfiler directly, type the following in the main MATLAB window
 % (LOCATION is where the CellProfiler folder is located): On Mac: run
 % '/LOCATION/CellProfiler/CellProfiler.m' For example: run
 % '/Applications/CellProfiler/CellProfiler.m'
@@ -83,6 +83,7 @@ helpdlg(help('GSCPInstallGuide'))
 % within CellProfiler. In CellProfiler, set some basic preferences in File
 % > Set preferences, which will make it easier to use CellProfiler.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

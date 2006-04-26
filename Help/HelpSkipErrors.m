@@ -10,6 +10,7 @@ helpdlg(help('HelpSkipErrors'))
 % ModuleError field for each module. If any of these values are above 0,
 % that means the module failed at some point in the analysis.
 
-%%% We are not using CPhelpdlg because this allows the help to be accessed
-%%% from the command line of Matlab. The code of theis module (helpdlg) is
-%%% never run from inside CP anyway.
+% We have one line of actual code in these files so that the help is
+% visible. We are not using CPhelpdlg because using helpdlg instead allows
+% the help to be accessed from the command line of MATLAB. The one line of
+% code in each help file (helpdlg) is never run from inside CP anyway.

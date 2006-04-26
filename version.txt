@@ -1,5 +1,6 @@
 Version 1.0.XXXX
- - 
+ - Added new help section "Getting Started"
+ - Added help on Batch Processing
 
 Version 1.0.3443
  - Added meander mode for tiling images

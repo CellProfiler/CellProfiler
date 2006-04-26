@@ -42,10 +42,15 @@ helpdlg(help('GSBatchProcessing'))
 % MATLAB=/SOME_PATH/MATLAB
 % LICENSE_SERVER="12345@yourservers.edu"
 % Also, you can specify your e-mail address after the bsub command.
+% --- 
+% Note that in the example script below, we had to wrap some lines (marked
+% with >>>>>: you should remove the >>> symbols and wrap the line with the
+% previous.
 % ---
 % #!/bin/sh
 % if test $# -ne 5; then
-%   echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2 exit 1
+%   echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix
+%>>>>>  QueueType" 1>&2 exit 1
 % fi
 % # start to process
 % BATCHDIR=$1
@@ -62,17 +67,23 @@ helpdlg(help('GSBatchProcessing'))
 %     if [ ! -e $BATCHMATOUTPUTDIR/${BATCHFILENAME}_OUT.mat ]; then
 %       echo Re-running $BATCHDIR/$BATCHFILENAME
 %       bsub -q $5 -o $BATCHTXTOUTPUTDIR/$BATCHFILENAME.txt -u
-%       username@wi.mit.edu -R 'rusage [img_kit=1:duration=1]' "$MATLAB/bin/matlab -nodisplay -nojvm -c $LICENSE_SERVER < $BATCHDIR/$BATCHFILENAME.m"
+%       username@wi.mit.edu -R 'rusage [img_kit=1:duration=1]' 
+%>>>>>"$MATLAB/bin/matlab -nodisplay -nojvm -c $LICENSE_SERVER < 
+%>>>>>$BATCHDIR/$BATCHFILENAME.m"
 %    fi
 % done
 % #INSTRUCTIONS
-% #From the command line, logged into your cluster submit the jobs using this script as follows:
-% #./batchrun.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO /FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
-% #Note that FOLDERWHEREMATFILESARE is usually the same as FOLDERWHEREMFILESARE. This is mainly
-% #if you are trying to re-run failed jobs - it only runs m files if there is no corresponding
-% #mat file located in the FOLDERWHEREMATFILESARE.
-% #For example:
-% #./batchrun.sh /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/ PROJECTFOLDER Batch_ normal
+% #From the command line, logged into your cluster submit the jobs using 
+% #this script as follows:
+% #./batchrun.sh /FOLDERWHEREMFILESARE /FOLDERWHERETEXTLOGSSHOULDGO 
+%>>>>>/FOLDERWHEREMATFILESARE BATCHPREFIXNAME QueueType
+% #Note that FOLDERWHEREMATFILESARE is usually the same as 
+% #FOLDERWHEREMFILESARE. This is mainly if you are trying to re-run failed
+% #jobs - it only runs m files if there is no corresponding mat file
+% #located in the FOLDERWHEREMATFILESARE.   For example:
+% #./batchrun.sh /nfs/sabatini2_ata/PROJECTFOLDER 
+%>>>>>/nfs/sabatini2_ata/PROJECTFOLDER /nfs/sabatini2_ata/ 
+%>>>>>PROJECTFOLDER Batch_ normal
 % # END COPY
 % ---
 %
@@ -113,7 +124,8 @@ helpdlg(help('GSBatchProcessing'))
 % ---
 % #!/bin/sh
 % if test $# -ne 5; then
-%     echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType" 1>&2
+%     echo "usage: $0 M_fileDir BatchTxtOutputDir mat_fileDir 
+%>>>>>BatchFilePrefix QueueType" 1>&2
 %     exit 1
 % fi
 % 
@@ -136,7 +148,9 @@ helpdlg(help('GSBatchProcessing'))
 %     if [ $BATCHFILENAME != ${BATCHFILEPREFIX}data ]; then 
 %         if [ ! -e $BATCHMATOUTPUTDIR/${BATCHFILENAME}_OUT.mat ]; then
 %             echo Running $BATCHDIR/$BATCHFILENAME
-%             qsub -S /bin/bash -o $BATCHTXTOUTPUTDIR/$BATCHFILENAME.txt -M username@wi.mit.edu $CPCluster/CPCluster.command $BATCHDIR/${BATCHFILEPREFIX}data.mat $BATCHDIR/$BATCHFILENAME.mat
+%             qsub -S /bin/bash -o $BATCHTXTOUTPUTDIR/$BATCHFILENAME.txt -M 
+%>>>>>username@wi.mit.edu $CPCluster/CPCluster.command 
+%>>>>>$BATCHDIR/${BATCHFILEPREFIX}data.mat $BATCHDIR/$BATCHFILENAME.mat
 %         fi
 %     fi
 % done
@@ -201,7 +215,8 @@ helpdlg(help('GSBatchProcessing'))
 % have saved the batchrun.sh file (See "Setting Up Cluster For
 % CellProfiler"). The usage of batchrun.sh is as follows:
 % 
-% ./batchrun.sh M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix QueueType
+% ./batchrun.sh M_fileDir BatchTxtOutputDir mat_fileDir BatchFilePrefix 
+%>>>>>QueueType
 % 
 % where M_fileDir is the location of the batch files created by
 % CreateBatchFiles in step 4, BatchTxtOutputDir is where you want to store
@@ -213,8 +228,9 @@ helpdlg(help('GSBatchProcessing'))
 % arguments are all the same. Here is an example of how you would submit
 % all of your batch files to the cluster:
 % 
-% ./batchrun.sh /Some_Path/200X_XX_XX_ProjectName/output /Some_Path/200X_XX_XX_ProjectName/output
-% /Some_Path/200X_XX_XX_ProjectName/output Batch_ normal
+% ./batchrun.sh /Some_Path/200X_XX_XX_ProjectName/output 
+%>>>>>/Some_Path/200X_XX_XX_ProjectName/output
+%>>>>>/Some_Path/200X_XX_XX_ProjectName/output Batch_ normal
 % 
 % In this case, the output folder contains the script files, the
 % XXX_data.mat file, and is the folder where we want the txt files with the

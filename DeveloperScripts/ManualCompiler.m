@@ -139,10 +139,19 @@ for i=1:length(filelist),
         continue;
     end
     if FirstSection == 0
-        fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));    
-        FirstSection = 1
+        if strcmpi(base(1:4),'Help')
+            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));
+            FirstSection = 1
+        else
+            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(3:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));
+            FirstSection = 1
+        end
     else
-        fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+        if strcmpi(base(1:4),'Help')
+            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+        else
+            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(3:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
+        end
     end
 end
 

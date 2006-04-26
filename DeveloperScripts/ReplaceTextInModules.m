@@ -93,6 +93,7 @@ function ExtractedText = retrievetextfromfile(PathAndFileName)
 %%% Opens the file and retrieves the TextToRemove.
 fid=fopen(PathAndFileName);
 ExtractedText = char(fread(fid,inf,'char')');
+ExtractedText(ExtractedText==13) = [];
 fclose(fid);
 
 function MFileNames = RetrieveMFilesFromDirectory(PathName)

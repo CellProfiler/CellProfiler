@@ -35,6 +35,24 @@ function ImageToolWindow(handles)
 % CPimagesc function which is used to display almost all images in
 % CellProfiler.
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%
+% Website: http://www.cellprofiler.org
+
 % This function itself is simply a menu item in the CellProfiler Image Tools
 % menu which informs the user that more tools can be accessed by clicking
 % on an individual image within a figure window. Its help is accessible via

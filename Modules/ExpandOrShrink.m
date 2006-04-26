@@ -49,7 +49,6 @@ function handles = ExpandOrShrink(handles)
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

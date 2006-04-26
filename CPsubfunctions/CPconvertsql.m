@@ -15,7 +15,6 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

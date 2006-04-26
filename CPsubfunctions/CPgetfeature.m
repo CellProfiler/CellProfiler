@@ -8,10 +8,10 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 %
 % The input variable 'suffix' is a cell array containing strings of
 % suffixes to look for. The currently used suffixes are 'Features' and
-% 'Text'. If ommitted, the default is to look for suffix 'Features'.
-%
-% CellProfiler is distributed under the GNU General Public License. See the
-% accompanying file LICENSE for details.
+% 'Text'. If omitted, the default is to look for suffix 'Features'.
+
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
@@ -25,7 +25,6 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

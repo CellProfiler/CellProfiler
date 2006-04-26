@@ -1,6 +1,24 @@
 function CPwritemeasurements(handles,ExportInfo,RawPathname)
 %%% This function exports full and summary measurement reports
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%
+% Website: http://www.cellprofiler.org
+
 %%% Get the handle to the waitbar and update the text in the waitbar
 waitbarhandle = CPwaitbar(0,'');
 CPwaitbar(0,waitbarhandle,'Export Status');

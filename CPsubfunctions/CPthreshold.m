@@ -15,7 +15,6 @@ function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThre
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

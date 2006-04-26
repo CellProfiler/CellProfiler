@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.30.4-2.2 (Web2C 7.5.5) (format=pdflatex 2005.12.4)  25 APR 2006 17:13
+This is pdfeTeX, Version 3.141592-1.30.4-2.2 (Web2C 7.5.5) (format=pdflatex 2005.12.4)  26 APR 2006 09:52
 entering extended mode
 \write18 enabled.
 **CellProfilerManual.tex
@@ -211,88 +211,61 @@ ForManual/ApplyThreshold.png (PNG copy)>] [37] [38] [39] [40]
 File: Promotional/ImagesForManual/ColorToGray.png Graphic file (type png)
 <use Promotional/ImagesForManual/ColorToGray.png> [41] [42 <./Promotional/Image
 sForManual/ColorToGray.png (PNG copy)>] [43] [44] [45] [46] [47] [48] [49]
-Missing character: There is no Ô in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
-
-[50]
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
- [51]
-Missing character: There is no Õ in font cmtt10!
- [52] [53]
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Ô in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
- [54]
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Ò in font cmtt10!
-Missing character: There is no Ó in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Ò in font cmtt10!
-Missing character: There is no Ó in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
-Missing character: There is no Ó in font cmtt10!
-Missing character: There is no Ó in font cmtt10!
-Missing character: There is no Ò in font cmtt10!
-Missing character: There is no Ó in font cmtt10!
-Missing character: There is no Õ in font cmtt10!
- [55] [56] [57]
-<Promotional/ImagesForManual/Crop.png, id=204, 497.35812pt x 318.43968pt>
+[50] <Promotional/ImagesForManual/Crop.png, id=182, 497.35812pt x 318.43968pt>
 File: Promotional/ImagesForManual/Crop.png Graphic file (type png)
 
-<use Promotional/ImagesForManual/Crop.png> [58] [59 <./Promotional/ImagesForMan
-ual/Crop.png (PNG copy)>] [60] [61] [62] [63] [64] [65] [66]
-<Promotional/ImagesForManual/ExpandOrShrink.png, id=233, 476.53032pt x 250.9375
+<use Promotional/ImagesForManual/Crop.png> [51] [52 <./Promotional/ImagesForMan
+ual/Crop.png (PNG copy)>] [53] [54] [55] [56] [57] [58] [59] [60]
+<Promotional/ImagesForManual/ExpandOrShrink.png, id=214, 476.53032pt x 250.9375
 pt>
 File: Promotional/ImagesForManual/ExpandOrShrink.png Graphic file (type png)
- <use Promotional/ImagesForManual/ExpandOrShrink.png> [67] [68 <./Promotional/I
-magesForManual/ExpandOrShrink.png (PNG copy)>] [69] [70] [71] [72] [73]
-<Promotional/ImagesForManual/GrayToColor.png, id=257, 511.15968pt x 291.21297pt
+ <use Promotional/ImagesForManual/ExpandOrShrink.png> [61] [62 <./Promotional/I
+magesForManual/ExpandOrShrink.png (PNG copy)>] [63] [64] [65] [66] [67]
+<Promotional/ImagesForManual/GrayToColor.png, id=238, 511.15968pt x 291.21297pt
 >
 File: Promotional/ImagesForManual/GrayToColor.png Graphic file (type png)
- <use Promotional/ImagesForManual/GrayToColor.png> [74 <./Promotional/ImagesFor
-Manual/GrayToColor.png (PNG copy)>] [75]
+ <use Promotional/ImagesForManual/GrayToColor.png> [68 <./Promotional/ImagesFor
+Manual/GrayToColor.png (PNG copy)>] [69]
 Missing character: There is no Õ in font cmtt10!
- [76] [77] [78] [79] [80] [81]
-[82] [83] [84]
-<Promotional/ImagesForManual/IdentifySecondary.png, id=292, 519.44063pt x 451.6
+ [70] [71] [72] [73] [74] [75]
+[76] [77] [78]
+<Promotional/ImagesForManual/IdentifySecondary.png, id=273, 519.44063pt x 451.6
 875pt>
 File: Promotional/ImagesForManual/IdentifySecondary.png Graphic file (type png)
 
- <use Promotional/ImagesForManual/IdentifySecondary.png> [85] [86 <./Promotiona
+ <use Promotional/ImagesForManual/IdentifySecondary.png> [79] [80 <./Promotiona
 l/ImagesForManual/IdentifySecondary.png (PNG copy)>]
-<Promotional/ImagesForManual/IdentifyTertiarySubregion.png, id=300, 501.875pt x
+<Promotional/ImagesForManual/IdentifyTertiarySubregion.png, id=281, 501.875pt x
  175.65625pt>
 File: Promotional/ImagesForManual/IdentifyTertiarySubregion.png Graphic file (t
 ype png)
  <use Promotional/ImagesForManual/IdentifyTertiarySubregion.png>
-[87 <./Promotional/ImagesForManual/IdentifyTertiarySubregion.png (PNG copy)>]
-<Promotional/ImagesForManual/InvertIntensity.png, id=304, 463.98344pt x 211.414
+[81 <./Promotional/ImagesForManual/IdentifyTertiarySubregion.png (PNG copy)>]
+<Promotional/ImagesForManual/InvertIntensity.png, id=285, 463.98344pt x 211.414
 84pt>
 File: Promotional/ImagesForManual/InvertIntensity.png Graphic file (type png)
- <use Promotional/ImagesForManual/InvertIntensity.png> [88 <./Promotional/Image
-sForManual/InvertIntensity.png (PNG copy)>] [89] [90] [91] [92] [93]
-[94] [95] [96] [97] [98] [99] [100] [101] [102] [103] [104] [105] [106]
-[107] [108] [109] [110] [111] [112] [113] [114] [115] [116] [117] [118]
-[119] [120] [121]
-<Promotional/ImagesForManual/Tile.png, id=413, 487.8225pt x 165.11688pt>
+ <use Promotional/ImagesForManual/InvertIntensity.png> [82 <./Promotional/Image
+sForManual/InvertIntensity.png (PNG copy)>] [83] [84] [85] [86] [87]
+[88] [89] [90] [91] [92] [93] [94] [95] [96] [97] [98] [99] [100] [101]
+[102] [103] [104] [105] [106] [107] [108] [109] [110] [111] [112] [113]
+[114] [115]
+<Promotional/ImagesForManual/Tile.png, id=394, 487.8225pt x 165.11688pt>
 File: Promotional/ImagesForManual/Tile.png Graphic file (type png)
 
-<use Promotional/ImagesForManual/Tile.png> [122 <./Promotional/ImagesForManual/
-Tile.png (PNG copy)>] [123] [124] [125] [126] [127] [128] [129] [130] [131]
-[132] [133] [134] [135] [136] [137] [138] [139] [140] [141] [142] [143]
+<use Promotional/ImagesForManual/Tile.png> [116 <./Promotional/ImagesForManual/
+Tile.png (PNG copy)>] [117] [118] [119] [120] [121] [122] [123] [124] [125]
+[126] [127] [128] [129] [130] [131] [132] [133] [134] [135] [136] [137]
 (./CellProfilerManual.aux) ) 
 Here is how much of TeX's memory you used:
  1034 strings out of 95137
- 15919 string characters out of 1183013
- 2073367 words of memory out of 4528202
+ 15910 string characters out of 1183013
+ 2073364 words of memory out of 4528199
  4221 multiletter control sequences out of 10000+50000
  5007 words of font info for 19 fonts, out of 2000000 for 2000
  58 hyphenation exceptions out of 5000
- 25i,4n,19p,6289b,239s stack positions out of 5000i,500n,6000p,200000b,40000s
+ 25i,4n,19p,6271b,239s stack positions out of 5000i,500n,6000p,200000b,40000s
 PDF statistics:
- 482 PDF objects out of 300000
+ 463 PDF objects out of 300000
  0 named destinations out of 131072
  71 words of extra memory for PDF output out of 10000
 </usr/local/teTeX/share/texmf.tetex/fonts/type1/blu
@@ -300,4 +273,4 @@ esky/cm/cmtt10.pfb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/c
 mss10.pfb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmssbx10.p
 fb></usr/local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmss17.pfb></usr/
 local/teTeX/share/texmf.tetex/fonts/type1/bluesky/cm/cmr10.pfb>
-Output written on CellProfilerManual.pdf (143 pages, 13717036 bytes).
+Output written on CellProfilerManual.pdf (137 pages, 13615396 bytes).

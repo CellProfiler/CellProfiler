@@ -18,7 +18,6 @@ function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SetBeingAnalyzed)
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

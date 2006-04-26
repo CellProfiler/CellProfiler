@@ -15,7 +15,6 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

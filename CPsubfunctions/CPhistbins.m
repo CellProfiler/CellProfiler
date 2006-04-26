@@ -19,7 +19,6 @@ function [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbin
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

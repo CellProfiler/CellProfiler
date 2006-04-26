@@ -20,7 +20,6 @@ function OutputImage = CPdilatebinaryobjects(InputImage, NumericalObjectDilation
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
-%   Susan Ma
 %
 % Website: http://www.cellprofiler.org
 %

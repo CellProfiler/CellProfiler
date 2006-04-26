@@ -16,7 +16,6 @@ function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

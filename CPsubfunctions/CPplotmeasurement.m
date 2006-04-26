@@ -16,7 +16,6 @@ function CPplotmeasurement(handles,FigHandle,PlotType,ModuleFlag,Object,Feature,
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

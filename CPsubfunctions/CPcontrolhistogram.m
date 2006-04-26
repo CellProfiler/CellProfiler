@@ -16,7 +16,6 @@ function CPcumhistogram(h_Parent,tempData)
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

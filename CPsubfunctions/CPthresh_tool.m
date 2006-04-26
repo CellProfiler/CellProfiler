@@ -58,7 +58,6 @@ function [level,bw] = thresh_tool(im,cmap,defaultLevel) %mainfunction
 %   Colin Clarke
 %   Mike Lamprecht
 %   Susan Ma
-%   Wyman Li
 %
 % Website: http://www.cellprofiler.org
 %

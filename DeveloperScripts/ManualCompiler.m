@@ -3,9 +3,10 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 % This Matlab program allows a CellProfiler help manual to be compiled
 % from the help contained within individual modules and tools.
 %
-%%% The Manual Compiler must be run from the main CellProfiler
-%%% directory. Just type: ManualCompiler (with no arguments) at
-%%% Matlab's command line to run the manual compiler.
+%%% The Manual Compiler may be run from any directory; it will switch to
+%%% the main CellProfiler directory to perform its function. Just type:
+%%% ManualCompiler (with no arguments) at Matlab's command line to run the
+%%% manual compiler.
 %%%
 %%% When it is finished, open the program TexShop.
 %%% File > Open CellProfilerManual.tex
@@ -15,6 +16,10 @@ function ManualCompiler %#ok We want to ignore MLint error checking for this lin
 %%% again, if it says something like  "references may have changed"
 %%% near the last page of output.
 %
+
+% Changes to the main CellProfiler directory.
+cd(fileparts(which('CellProfiler')))
+
 % For some reason, the program has trouble reading tif files, so we use png
 % files for all images.
 
@@ -46,8 +51,21 @@ s = ['Installation' '\dotfill \pageref{Installation}\\'];
 fwrite(fid,s);
 s = ['Getting Started with CellProfiler' '\dotfill \pageref{GettingStartedwithCellProfiler}\\'];
 fwrite(fid,s);
-s = ['Help' '\dotfill \pageref{Help}\\'];
-fwrite(fid,s);
+%s = ['Help' '\dotfill \pageref{Help}\\'];
+%fwrite(fid,s);
+
+path(fullfile(pwd,'Help'), path);
+Helpfilelist = dir('Help/*.m');
+fwrite(fid,tex_vertical_space('1em'));
+fwrite(fid,tex_bold(tex_large('Help:\\')));
+
+for i=1:length(Helpfilelist),
+    base = basename(Helpfilelist(i).name);
+    if (strcmp(base, 'GSCPInstallGuide') == 1) || (strcmp(base, 'GSGettingStarted')),
+        continue;
+    end
+    fwrite(fid,tex_toc_entryHelp(Helpfilelist(i).name));
+end
 
 fwrite(fid,tex_vertical_space('1em'));
 fwrite(fid,tex_bold(tex_large('File Processing modules:\\')));
@@ -89,6 +107,7 @@ for i=1:length(filelist),
   end
 end
 fwrite(fid,tex_vertical_space('1em'));
+fwrite(fid, tex_pagebreak());
 
 %%% Image tools.
 path(fullfile(pwd,'ImageTools'), path);
@@ -131,28 +150,25 @@ fwrite(fid, tex_page([heading body]));
 % 5. Extract 'help' lines from anything in the help folder starting
 % with 'Help' (the order is not critical here).
 path(fullfile(pwd,'Help'), path);
-filelist = dir('Help/*.m');
 FirstSection = 0;
-for i=1:length(filelist),
-    base = basename(filelist(i).name);
+for i=1:length(Helpfilelist),
+    base = basename(Helpfilelist(i).name);
     if (strcmp(base, 'GSCPInstallGuide') == 1) || (strcmp(base, 'GSGettingStarted')),
         continue;
     end
-    if FirstSection == 0
-        if strcmpi(base(1:4),'Help')
-            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));
-            FirstSection = 1
-        else
-            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(3:end) '\\'])) tex_label(['Help']) tex_preformatted(help(filelist(i).name))]));
-            FirstSection = 1
-        end
-    else
-        if strcmpi(base(1:4),'Help')
-            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(5:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
-        else
-            fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base(3:end) '\\'])) tex_preformatted(help(filelist(i).name))]));
-        end
+    %%% Removes "Help" or "GS" from the beginning of the name
+    if strcmpi(base(1:4),'Help')
+        NiceName = base(5:end);
+    elseif strcmpi(base(1:2),'GS')
+        NiceName = base(3:end);
     end
+
+    %    if FirstSection == 0
+    fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' NiceName '\\'])) tex_label(base) tex_preformatted(help(base))]));
+    %        FirstSection = 1
+    %   else
+    %      fwrite(fid,tex_page([tex_center(tex_huge(['CellProfiler Help: ' base '\\'])) tex_preformatted(help(Helpfilelist(i).name))]));
+    % end
 end
 
 % 6. Open each module (alphabetically) and print its name in large
@@ -226,6 +242,21 @@ sout = ['{\bfseries ' sin '}'];
 function s = tex_toc_entry(filename)
 b = basename(filename);
 s = [b '\dotfill \pageref{Module:' b '}\\'];
+
+function s = tex_toc_entryHelp(filename)
+b = basename(filename);
+% if strncmpi(b,'Help',4)
+%     b = b(5:end)
+% elseif strncmpi(b,'GS',2)
+%     b = b(3:end)
+% end
+    %%% Removes "Help" or "GS" from the beginning of the name
+    if strcmpi(b(1:4),'Help')
+        NiceName = b(5:end);
+    elseif strcmpi(b(1:2),'GS')
+        NiceName = b(3:end);
+    end
+s = [NiceName '\dotfill \pageref{' b '}\\'];
 
 function s = tex_toc_entryDataTools(filename)
 b = basename(filename);

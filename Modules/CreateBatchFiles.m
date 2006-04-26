@@ -65,7 +65,7 @@ function handles = CreateBatchFiles(handles)
 % Batch_X_to_Y.m or Batch_X_to_Y.mat
 % - The prefix can be changed from Batch_ by the user.
 % - .m is used for the MATLAB version of CPCluster while .mat is used for
-% the Compiled version of CPCluster).
+% the Compiled version of CPCluster.
 % - X is the first cycle to be processed in the particular batch file,
 % and Y is the last.  
 % 
@@ -142,7 +142,7 @@ NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Note: This module must be the last one in the analysis pipeline.
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

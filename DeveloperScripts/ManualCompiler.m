@@ -44,13 +44,19 @@ path(fullfile(pwd,'Modules'), path)
 filelist = dir('Modules/*.m');
 fwrite(fid,tex_twocolumn(tex_center(tex_huge('Table of Contents\\[2em]'))));
 
-fwrite(fid,tex_bold(tex_large('Introduction:\\')));
+fwrite(fid,tex_bold(tex_large('Getting Started:\\')));
 s = ['Introduction' '\dotfill \pageref{Introduction}\\'];
 fwrite(fid,s);
 s = ['Installation' '\dotfill \pageref{Installation}\\'];
 fwrite(fid,s);
 s = ['Getting Started with CellProfiler' '\dotfill \pageref{GettingStartedwithCellProfiler}\\'];
 fwrite(fid,s);
+s = ['Batch Processing' '\dotfill \pageref{GSBatchProcessing}\\'];
+fwrite(fid,s);
+s = ['Developer Information' '\dotfill \pageref{GSDeveloperInfo}\\'];
+fwrite(fid,s);
+
+
 %s = ['Help' '\dotfill \pageref{Help}\\'];
 %fwrite(fid,s);
 
@@ -61,7 +67,9 @@ fwrite(fid,tex_bold(tex_large('Help:\\')));
 
 for i=1:length(Helpfilelist),
     base = basename(Helpfilelist(i).name);
-    if (strcmp(base, 'GSCPInstallGuide') == 1) || (strcmp(base, 'GSGettingStarted')),
+    %%% Skips all the GS files and installation guide, which should be
+    %%% listed above.
+    if (strncmp(base, 'GS',2) == 1) || (strcmp(base, 'CPInstallGuide')),
         continue;
     end
     fwrite(fid,tex_toc_entryHelp(Helpfilelist(i).name));
@@ -147,13 +155,25 @@ body = [tex_label(['GettingStartedwithCellProfiler']) tex_preformatted(help('GSG
 heading = tex_center(tex_huge(['Getting Started with CellProfiler \\']));
 fwrite(fid, tex_page([heading body]));
 
+% 4.6 Extract 'help' lines from GSBatchProcessing.m.
+body = [tex_label(['GSBatchProcessing']) tex_preformatted(help('GSBatchProcessing.m'))];
+heading = tex_center(tex_huge(['Batch Processing \\']));
+fwrite(fid, tex_page([heading body]));
+
+% 4.7 Extract 'help' lines from GSDeveloperInfo.m.
+body = [tex_label(['GSDeveloperInfo']) tex_preformatted(help('GSDeveloperInfo.m'))];
+heading = tex_center(tex_huge(['Developer Information \\']));
+fwrite(fid, tex_page([heading body]));
+
 % 5. Extract 'help' lines from anything in the help folder starting
 % with 'Help' (the order is not critical here).
 path(fullfile(pwd,'Help'), path);
 FirstSection = 0;
 for i=1:length(Helpfilelist),
     base = basename(Helpfilelist(i).name);
-    if (strcmp(base, 'GSCPInstallGuide') == 1) || (strcmp(base, 'GSGettingStarted')),
+    %%% Skips all the GS files and installation guide, which should be
+    %%% listed above.
+    if (strncmp(base, 'GS',2) == 1) || (strcmp(base, 'CPInstallGuide')),
         continue;
     end
     %%% Removes "Help" or "GS" from the beginning of the name

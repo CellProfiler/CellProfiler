@@ -180,5 +180,5 @@ end
 %%% one. This makes the objects compatible with the Convert To Image
 %%% module.
 if ~strcmpi(ColoredNeighborsName,'Do not save')
-    handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ColoredImageOfNeighbors + 1;
+    handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ImageOfNeighbors + 1;
 end

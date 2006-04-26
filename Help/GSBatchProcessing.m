@@ -121,6 +121,10 @@ helpdlg(help('GSBatchProcessing'))
 % change the following lines to fit your cluster:
 % CPCluster=/Users/username/CPCluster
 % Also, you can specify your e-mail address after the qsub command.
+% --- 
+% Note that in the example script below, we had to wrap some lines (marked
+% with >>>>>: you should remove the >>> symbols and wrap the line with the
+% previous.
 % ---
 % #!/bin/sh
 % if test $# -ne 5; then
@@ -168,6 +172,11 @@ helpdlg(help('GSBatchProcessing'))
 % ********** END OF SETTING UP CLUSTER WITHOUT MATLAB *********************
 % 
 % ************ SUBMITTING FILES FOR BATCH PROCESSING **********************
+% --- 
+% Note that in several steps below, we had to wrap some lines (marked
+% with >>>>>: you should remove the >>> symbols and wrap the line with the
+% previous.
+% ---
 % Step 1:
 % Create a project folder on your cluster. For high throughput analysis, it
 % is a good idea to create a separate project folder for each run. In

@@ -47,22 +47,23 @@ function handles = ExportToDatabase(handles)
 % an existing database. If the database already exists, the database
 % creation step will be skipped so the existing database will not be
 % overwritten but new tables will be added. Do be careful, however, in
-% choosing the Table Prefix. If you use an existing table name, we are not
-% certain whether existing data will be overwritten by the new data.
-%   In Oracle, when you log in they must choose a database to work with, so
+% choosing the Table Prefix. If you use an existing table name, you might
+% unintentionally overwrite the data in that table.
+%   In Oracle, when you log in you must choose a database to work with, so
 % there is no need to specify the database name in this module. This also
 % means it is impossible to create/destroy a database with these
 % CellProfiler scripts.
 %
 % Table Prefix: 
 % Here you can choose what to append to the table names Per_Image and
-% Per_Object. If you choose "/", no prefix will be appended. This makes the
-% most sense when using MySQL, since it is easy to create and delete
-% Databases. When in Oracle, you should always choose a table prefix. 
-%  MIKE WHERE DOES THIS GO? In MySQL, be
-% careful when choosing the Table Prefix. If you use an existing table
-% name, we are not certain whether existing data will be overwritten by the
-% new data. 
+% Per_Object. If you choose "/", no prefix will be appended. If you choose
+% a prefix, the tables will become PREFIX_Per_Image and PREFIX_Per_Object
+% in the database. If you are using the same database for all of your
+% experiments, the table prefix is necessary and will be the only way to
+% distinguish different experiments. If you are creating a new database for
+% every experiment, then it may be easier to keep the generic Per_Image and
+% Per_Object table names. Be careful when choosing the table prefix, since
+% you may unintentionally overwrite existing tables.
 %
 % SQL File Prefix: All the CSV files will start with this prefix.
 %

@@ -23,7 +23,6 @@ function AddData(handles)
 % The information to be added must be in a separate text file with the
 % following syntax:
 %
-% IDENTIFIER <identifier>
 % DESCRIPTION <description>
 % <Text info for image cycle #1>
 % <Text info for image cycle #2>
@@ -31,13 +30,8 @@ function AddData(handles)
 %              .
 %              .
 %
-% <identifier> is used as field name when storing the text information in
-% the Matlab structure. It must be one word. <description> is a description
-% of the text information stored in the file. It can be a sentence.
-%
 % For example:
 %
-% IDENTIFIER GeneNames
 % DESCRIPTION Gene names
 % Gene X
 % Gene Y

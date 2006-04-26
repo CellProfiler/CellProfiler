@@ -25,15 +25,15 @@ if FileName == 0
 end
 TextToAddInItsPlace = retrievetextfromfile([PathName,FileName])
 
-Answer = questdlg('Do you want to choose a single folder, or choose all folders (DataTools, ImageTools, Modules)?','','Single folder','All folders','All folders');
+Answer = questdlg('Do you want to choose a single folder, or choose all folders (Modules, DataTools, ImageTools, CPsubfunctions, Help, plus the CellProfiler.m file)?','','Single folder','All folders','All folders');
 if strcmp(Answer,'All folders') == 1
     ModulesFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Modules'));
     DataToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'DataTools'));
     ImageToolsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'ImageTools'));
     CPsubfunctionsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'CPsubfunctions'));
     HelpFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Help'));
-    OutdatedFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Outdated'));
-    AlgorithmFileNames = horzcat(ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames, OutdatedFileNames);
+%    OutdatedFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Outdated'));
+    AlgorithmFileNames = horzcat('CellProfiler',ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames);
 else
     PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
     if PathName == 0

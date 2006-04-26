@@ -22,7 +22,7 @@ function handles = ExportToDatabase(handles)
 % Per_Image row for every image. The Per_Object table contains all the
 % measurements for individual objects. There is one row of object
 % measurements per object identified. The two tables are connected with the
-% primary key column ImageNumber. The Per_Object tables has another primary
+% primary key column ImageNumber. The Per_Object table has another primary
 % key called ObjectNumber, which is unique per image.
 %
 % The Oracle database has an extra table called Column_Names. This table is
@@ -44,11 +44,11 @@ function handles = ExportToDatabase(handles)
 %
 % Database Name: 
 %   In MySQL, you can enter the name of a database to create or the name of
-% an existing database. If the database already exists, the database
-% creation step will be skipped so the existing database will not be
-% overwritten but new tables will be added. Do be careful, however, in
-% choosing the Table Prefix. If you use an existing table name, you might
-% unintentionally overwrite the data in that table.
+% an existing database. When using the script, if the database already
+% exists, the database creation step will be skipped so the existing
+% database will not be overwritten but new tables will be added. Do be
+% careful, however, in choosing the Table Prefix. If you use an existing
+% table name, you might unintentionally overwrite the data in that table.
 %   In Oracle, when you log in you must choose a database to work with, so
 % there is no need to specify the database name in this module. This also
 % means it is impossible to create/destroy a database with these

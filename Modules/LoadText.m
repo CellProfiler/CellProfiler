@@ -28,9 +28,9 @@ function handles = LoadText(handles)
 % the following syntax:
 %
 % DESCRIPTION <description>
-% <Text info>
-% <Text info>
-% <Text info>
+% <Text info 1>
+% <Text info 2>
+% <Text info 3>
 %              .
 %              .
 %

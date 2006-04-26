@@ -20,7 +20,7 @@
 
 mex IdentifySecPropagateSubfunction.cpp
 
-%%% For a local computer, you don't need to use this CPcompilesubfunction m-file. Instead, open MatLab, change the current directory to CellProfiler/Modules, and type "mex filename.cpp"
+%%% For a local computer, you don't need to use this CPcompilesubfunction m-file. Instead, open MATLAB, change the current directory to CellProfiler/Modules, and type "mex filename.cpp"
 
 %%% For the cluster:
 %%% If necessary, change the subfunction name to be compiled in the first line of this file, and re-save this file (a copy of this fresh file must be saved on the cluster machine).

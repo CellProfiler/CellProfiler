@@ -275,9 +275,9 @@ handles.Current.CurrentHandles = findobj;
 % I have successfully used the following technique to convert a handle to
 % a string:  str_h =  sprintf('%d',8192*handle)
 % Then to retreive it:  handle = eval(str_h) / 8192
-% This works (at least under MatLab for Windows) because handles are always
+% This works (at least under MATLAB for Windows) because handles are always
 % multiples of 8192. I found that Duane's method is not reliable due to
-% accuracy problems with MatLab's decimal to binary conversion.
+% accuracy problems with MATLAB's decimal to binary conversion.
 %
 % Duane Hanselman (dua...@eece.maine.edu) wrote:
 % : In article <3l6dm0$...@hardy.ee.gatech.edu>, "Mark A. Yoder" <Mark.A.Yo...@Rose-Hulman.edu> says:

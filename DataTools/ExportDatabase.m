@@ -34,7 +34,7 @@ function ExportDatabase(handles)
 %   this tool. This numbering may not be consistent with the order they
 %   were processed, e.g. on the cluster. This can be fixed by adding an
 %   extra feature field in handles.Measurements.Image
-%
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

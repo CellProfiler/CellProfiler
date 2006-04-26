@@ -796,7 +796,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'String','Add Control Histogram', ...
         'Style','pushbutton', ...
         'FontSize',FontSize);
-    %%% Button for exporting data to MatLab
+    %%% Button for exporting data to MATLAB
     if strcmpi(LineOrBar,'bar') || strcmpi(LineOrBar,'area')
         Button12Callback = 'Bins = get(findobj(gcf,''type'',''patch''),''XData'');Data = get(findobj(gcf,''type'',''patch''),''YData'');';
     else

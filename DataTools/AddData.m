@@ -30,6 +30,9 @@ function AddData(handles)
 %              .
 %              .
 %
+% <description> is a description of the text information stored in the
+% file. It can contain spaces or unusual characters.
+%
 % For example:
 %
 % DESCRIPTION Gene names

@@ -16,8 +16,8 @@ function handles = CorrectIllumination_Calculate(handles)
 %
 % Illumination correction is challenging and we are writing a paper on it
 % which should help clarify (TR Jones, AE Carpenter, P Golland, in
-% preparation). In the meantime, be patient in trying to understand this
-% module... 
+% preparation). In the meantime, please be patient in trying to understand
+% this module... 
 %
 % Settings:
 %

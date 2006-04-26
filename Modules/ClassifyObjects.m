@@ -296,7 +296,7 @@ if any(findobj == ThisModuleFigureNumber)
     axis([xlimits ylim]);
     %%% Took this out: don't want to use misleading colors.
 %     handlescmap = handles.Preferences.LabelColorMap;
-%     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(64,NbrOfBins)));
+%     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NbrOfBins)));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

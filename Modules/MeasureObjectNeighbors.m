@@ -55,17 +55,17 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = 0
 NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What do you want to call the image of the objects with grayscale values corresponding to the number of neighbors, which is compatible for saving in .mat format using the Save Images module for further analysis in Matlab?
+%textVAR03 = What do you want to call the objects colored by number of neighbors, which are compatible for converting to a color image using the Convert To Image and Save Images modules?
 %defaultVAR03 = Do not save
-%infotypeVAR03 = imagegroup indep
-GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%infotypeVAR03 = objectgroup indep
+ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What do you want to call the objects colored by number of neighbors, which are compatible for converting to a color image using the Convert To Image and Save Images modules?
+%textVAR04 = What do you want to call the image of the objects with grayscale values corresponding to the number of neighbors, which is compatible for saving in .mat format using the Save Images module for further analysis in Matlab?
 %defaultVAR04 = Do not save
-%infotypeVAR04 = objectgroup indep
-ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%infotypeVAR04 = imagegroup indep
+GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -124,15 +124,6 @@ handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnaly
 %%% where 1 is the image number and 3 is the object number. This
 %%% yields a list of the objects who are neighbors with Cell object 3.
 
-%%% For some reason, this does not exactly match the results of the display
-%%% window. Not sure why.
-if sum(sum(ImageOfNeighbors)) >= 1
-    handlescmap = handles.Preferences.LabelColorMap;
-    cmap = feval(handlescmap,max(64,max(ImageOfNeighbors(:))));
-    ColoredImageOfNeighbors = ind2rgb(ImageOfNeighbors,[0 0 0;cmap]);
-else  ColoredImageOfNeighbors = ImageOfNeighbors;
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -154,6 +145,7 @@ if any(findobj == ThisModuleFigureNumber)
     title(ObjectName)
     subplot(2,1,2); 
     CPimagesc(ImageOfNeighbors,handles);
+    colormap(handles.Preferences.LabelColorMap)
     colorbar('SouthOutside')
     title([ObjectName,' colored by number of neighbors'])
 end
@@ -170,7 +162,7 @@ drawnow
 %%% incompatible with the Convert To Image module which expects a label
 %%% matrix starting at zero.
 if ~strcmpi(GrayscaleNeighborsName,'Do not save')
-    handles.Pipeline.(GrayscaleNeighborsName) = ColoredImageOfNeighbors;
+    handles.Pipeline.(GrayscaleNeighborsName) = ImageOfNeighbors;
 end
 
 %%% Saves the grayscale version of objects to the handles structure so

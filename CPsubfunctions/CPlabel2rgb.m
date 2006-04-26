@@ -24,7 +24,7 @@ function im=CPlabel2rgb(handles,im)
 %%% in the label matrix image, so there is an "if".
 
 if sum(sum(im)) >= 1
-    cmap = eval([handles.Preferences.LabelColorMap '(max(64,max(im(:))))']);
+    cmap = eval([handles.Preferences.LabelColorMap '(max(2,max(im(:))))']);
     im = label2rgb(im, cmap, 'k', 'shuffle');
 else
     im=im;

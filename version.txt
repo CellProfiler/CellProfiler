@@ -1,6 +1,12 @@
 Version 1.0.XXXX
  - Added new help section "Getting Started"
  - Added help on Batch Processing
+ - CreateBatchScripts is now CreateBatchFiles
+ - CreateBatchFiles can produce files for CPCluster, which allows users to do cluster analysis without MatLab licenses
+ - WriteSQLFiles is now ExportToDatabase
+ - ExportToDatabase can export SQL files for MySQL and Oracle
+ - ShowDataOnImage can now show text labels added with LoadText or AddData
+ - ClassifyObjects can now label bins, which can be seen with ShowDataOnImage
 
 Version 1.0.3443
  - Added meander mode for tiling images

@@ -68,7 +68,7 @@ load(fullfile(RawPathname,RawFileName));
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,1);
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0,{'Features' 'Description'});
 if isempty(ObjectTypename),return,end
 
 %%% Prompts the user to choose a sample number to be displayed.
@@ -142,29 +142,65 @@ catch
 end
 %%% Extracts the measurement values.
 
-tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
-if isempty(tmp) ,
-    CPerrordlg('Error: there is no object measurement in your file ')
-    return
+if strcmpi(ObjectTypename,'Image')
+    try
+        StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+    catch
+        try
+            StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType);
+        catch
+            CPerrordlg('These object names are not stored in the correct manner. Please contact mrl@wi.mit.edu with the exact error.');
+        end
+    end
+    ListOfMeasurements = StringListOfMeasurements;
+else
+    tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+    if isempty(tmp) ,
+        CPerrordlg('Error: there is no object measurement in your file ')
+        return
+    end
+    ListOfMeasurements = tmp(:,FeatureNo);
+    StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 end
-ListOfMeasurements = tmp(:,FeatureNo);
-StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
+
+LocationObjectTypename = ObjectTypename;
+
+if strcmpi(LocationObjectTypename,'Image')
+    MeasFieldnames = fieldnames(handles.Measurements);
+    for i=1:length(handles.Measurements)
+        if strcmp(MeasFieldnames{i},'Image')
+            MeasFieldnames(i) = [];
+        end
+    end
+    [Selection, ok] = listdlg('ListString',MeasFieldnames,'ListSize', [300 400],...
+        'Name','Select Object',...
+        'PromptString','Choose an object type',...
+        'CancelString','Cancel',...
+        'SelectionMode','single');
+
+    LocationObjectTypename = MeasFieldnames{Selection};
+end
 
 %%% Extracts the XY locations. This is temporarily hard-coded
-Xlocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,1);
-Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
+Xlocations = handles.Measurements.(LocationObjectTypename).Location{SampleNumber}(:,1);
+Ylocations = handles.Measurements.(LocationObjectTypename).Location{SampleNumber}(:,2);
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure(handles,'image');
 CPimagesc(ImageToDisplay,handles);
-FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+if strcmpi(ObjectTypename,'Image')
+    FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Description']){FeatureNo};
+else
+    FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
+end
 ImageDisp = ImageFileName{1};
 title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])
 
 %%% Overlays the values in the proper location in the image.
 TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
     'HorizontalAlignment','center', 'color', [1 0 0],'fontsize',handles.Preferences.FontSize);
+
 
 %%% Create structure and save it to the UserData property of the window
 Info = get(FigureHandle,'UserData');
@@ -193,27 +229,29 @@ uicontrol('Parent',FigureHandle, ...
     'Style','pushbutton', ...
     'FontSize',handles.Preferences.FontSize);
 
-DisplayButtonCallback2 = 'NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); NumberValues = getfield(get(gcbf,''Userdata''),''ListOfMeasurements''); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues,Command); CellNumberValues = cellstr(NewNumberValues); PropName(1) = {''string''}; set(CurrentTextHandles,PropName, CellNumberValues); drawnow';
-uicontrol('Parent',FigureHandle, ...
-    'Unit',StdUnit, ...
-    'BackgroundColor',StdColor, ...
-    'CallBack',DisplayButtonCallback2, ...
-    'Position',PointsPerPixel*[100 2 135 22], ...
-    'Units','Normalized',...
-    'String','Significant digits', ...
-    'Style','pushbutton', ...
-    'FontSize',handles.Preferences.FontSize);
+if ~strcmpi(ObjectTypename,'Image')
+    DisplayButtonCallback2 = 'NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); NumberValues = getfield(get(gcbf,''Userdata''),''ListOfMeasurements''); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues,Command); CellNumberValues = cellstr(NewNumberValues); PropName(1) = {''string''}; set(CurrentTextHandles,PropName, CellNumberValues); drawnow';
+    uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit, ...
+        'BackgroundColor',StdColor, ...
+        'CallBack',DisplayButtonCallback2, ...
+        'Position',PointsPerPixel*[100 2 135 22], ...
+        'Units','Normalized',...
+        'String','Significant digits', ...
+        'Style','pushbutton', ...
+        'FontSize',handles.Preferences.FontSize);
 
-DisplayButtonCallback3 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); ListOfMeasurements = getfield(get(gcbf,''Userdata''),''ListOfMeasurements''); StringListOfMeasurements = cellstr(num2str(ListOfMeasurements)); PropName(1) = {''string''}; set(CurrentTextHandles,PropName, StringListOfMeasurements);drawnow';
-uicontrol('Parent',FigureHandle, ...
-    'Unit',StdUnit, ...
-    'BackgroundColor',StdColor, ...
-    'CallBack',DisplayButtonCallback3, ...
-    'Position',PointsPerPixel*[240 2 135 22], ...
-    'Units','Normalized',...
-    'String','Restore labels', ...
-    'Style','pushbutton', ...
-    'FontSize',handles.Preferences.FontSize);
+    DisplayButtonCallback3 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); ListOfMeasurements = getfield(get(gcbf,''Userdata''),''ListOfMeasurements''); StringListOfMeasurements = cellstr(num2str(ListOfMeasurements)); PropName(1) = {''string''}; set(CurrentTextHandles,PropName, StringListOfMeasurements);drawnow';
+    uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit, ...
+        'BackgroundColor',StdColor, ...
+        'CallBack',DisplayButtonCallback3, ...
+        'Position',PointsPerPixel*[240 2 135 22], ...
+        'Units','Normalized',...
+        'String','Restore labels', ...
+        'Style','pushbutton', ...
+        'FontSize',handles.Preferences.FontSize);
+end
 
 DisplayButtonCallback4 = 'CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); set(CurrentTextHandles, ''visible'', ''off''); drawnow';
 uicontrol('Parent',FigureHandle, ...

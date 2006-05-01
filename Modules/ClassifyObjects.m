@@ -89,28 +89,32 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 3
 NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = To create evenly spaced bins, enter the lower limit for the lower bin
-%defaultVAR06 = 0
-LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+%textVAR06 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3), if the number of bins does not equal the number of labels, this step will be ignored. Leave "/" for no labels.
+%defaultVAR06 = /
+Labels = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = To create evenly spaced bins, enter the upper limit for the upper bin
-%defaultVAR07 = 100
-UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = To create evenly spaced bins, enter the lower limit for the lower bin
+%defaultVAR07 = 0
+LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = What do you want to call the resulting color-coded image?
-%choiceVAR08 = Do not save
-%choiceVAR08 = ColorClassifiedNuclei
-%inputtypeVAR08 = popupmenu custom
-%infotypeVAR08 = imagegroup indep
-SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = To create evenly spaced bins, enter the upper limit for the upper bin
+%defaultVAR08 = 100
+UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Do you want the absolute number of objects or percentage of object?
-%choiceVAR09 = Absolute
-%choiceVAR09 = Percentage
-%inputtypeVAR09 = popupmenu
-AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = What do you want to call the resulting color-coded image?
+%choiceVAR09 = Do not save
+%choiceVAR09 = ColorClassifiedNuclei
+%inputtypeVAR09 = popupmenu custom
+%infotypeVAR09 = imagegroup indep
+SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 5
+%textVAR10 = Do you want the absolute number of objects or percentage of object?
+%choiceVAR10 = Absolute
+%choiceVAR10 = Percentage
+%inputtypeVAR10 = popupmenu
+AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -193,10 +197,18 @@ end
 edges(1) = edges(1) - sqrt(eps);   % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
+RemainingLabels = Labels;
+ListOfLabels = {};
+EmptyIndex = 1:size(Measurements);
 for k = 1:NbrOfBins
     index = find(Measurements > edges(k) & Measurements <= edges(k+1));
     QuantizedMeasurements(index) = k;
     bins(k) = length(index);
+    if length(strfind(Labels,',')) == (NbrOfBins - 1)
+        [BinLabel,RemainingLabels]=strtok(RemainingLabels,',');
+        ListOfLabels(index)={BinLabel};
+        EmptyIndex(index) = 0;
+    end
 end
 
 NbrOfObjects = length(Measurements);
@@ -244,7 +256,7 @@ if any(findobj == ThisModuleFigureNumber)
     end
     AdjustedObjectName = strrep(ObjectName,'_','\_');
     AdjustedFeatureName = strrep(FeatureName,'_','\_');
-        AdjustedFeatureType = strrep(FeatureType,'_','\_');
+    AdjustedFeatureType = strrep(FeatureType,'_','\_');
 
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
@@ -295,8 +307,8 @@ if any(findobj == ThisModuleFigureNumber)
     xlimits(2) = max(UpperBinMax,edges(end));                          % so they can be used for the second histogram
     axis([xlimits ylim]);
     %%% Took this out: don't want to use misleading colors.
-%     handlescmap = handles.Preferences.LabelColorMap;
-%     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NbrOfBins)));
+    %     handlescmap = handles.Preferences.LabelColorMap;
+    %     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NbrOfBins)));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -319,6 +331,14 @@ end
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
 %%% We are truncating the ObjectName in case it's really long.
 MaxLengthOfFieldname = min(20,length(FeatureName));
+
+if length(strfind(Labels,',')) == (NbrOfBins - 1)
+    EmptyIndex(EmptyIndex==0)=[];
+    ListOfLabels(EmptyIndex)={' '};
+    handles.Measurements.Image.(['ClassifyObjects_LabelsDescription']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
+    handles.Measurements.Image.(['ClassifyObjects_Labels'])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
+end
+
 handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ClassifyFeatureNames;
 if strcmp(AbsoluteOrPercentage,'Percentage')
     handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};

@@ -613,6 +613,11 @@ end
 revisionConfirm = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames)
 
+    if strcmp('CreateBatchScripts',handles.Settings.ModuleNames(ModuleNum)) || strcmp('CreateClusterFiles',handles.Settings.ModuleNames(ModuleNum))
+        handles.Settings.ModuleNames(ModuleNum) = {'CreateBatchFiles'};
+    elseif strcmp('WriteSQLFiles',handles.Settings.ModuleNames(ModuleNum))
+        handles.Settings.ModuleNames(ModuleNum) = {'ExportToDatabase'};
+    end
     %%% Load the module's settings
     [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
 
@@ -3875,10 +3880,10 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
-    TextString = sprintf('CellProfiler version 1.0.3443\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.3544\n\nPlease choose specific help below:');
 elseif strcmp(ImageDataOrHelp,'Getting Started')
     set(ToolsHelpWindowHandle,'name','Getting Started');
-    TextString = sprintf('CellProfiler version 1.0.3443\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.3544\n\nPlease choose specific help below:');
 end
 
 FontSize = handles.Preferences.FontSize;

@@ -1,4 +1,4 @@
-Version 1.0.XXXX
+Version 1.0.3544
  - Added new help section "Getting Started"
  - Added help on Batch Processing
  - CreateBatchScripts is now CreateBatchFiles

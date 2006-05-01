@@ -118,7 +118,7 @@ BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,4}
 
 %pathnametextVAR05 = What is the path to the image folder on the cluster machines? Leave a period (.) to use the default image folder.
 %defaultVAR05 = .
-BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,5);
+BatchImagePath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %pathnametextVAR06 = What is the path to the folder where batch output should be written on the cluster machines? Leave a period (.) to use the default output folder.
 %defaultVAR06 = .

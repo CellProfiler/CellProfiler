@@ -4867,10 +4867,10 @@ h13 = uicontrol(...
 appdata = [];
 appdata.lastValidTag = 'PipelineText';
 
-if strcmp(computer,'GLNX86') || strcmp(computer,'GLNXA64')
-    h14height = 23.5;
-else
+if ispc
     h14height = 21.5;
+else
+    h14height = 23.5;
 end
 
 h14 = uicontrol(...

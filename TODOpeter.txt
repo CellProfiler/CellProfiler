@@ -1,0 +1,1 @@
+- (Anne 4/25/06) - The MergeOutputFiles and ConvertBatchFiles data tools do not seem to go to the default output folder when it asks you to select the first batch CP output file. Check through all the data tools to be sure they go to the right place.

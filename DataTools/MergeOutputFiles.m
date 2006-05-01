@@ -52,11 +52,8 @@ function MergeOutputFiles(handles)
 %
 % $Revision$
 
-%%% We want to load the handles from the batch process
-clear handles
-
 %%% Let the user select one output file to indicate the directory
-[BatchFile, BatchPath] = uigetfile('*.mat','Select the first batch CellProfiler output file, which ends in data.mat');
+[BatchFile, BatchPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the first batch CellProfiler output file, which ends in data.mat');
 if ~BatchPath
     return
 end
@@ -93,6 +90,9 @@ while valid == 0
 end
 OutputFileName = Answers{2};
 BatchFilePrefix = Answers{1};
+
+%%% We want to load the handles from the batch process
+clear handles
 
 %%% Load the data file and check that it contains handles
 load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));

@@ -3,8 +3,6 @@ February 14, 2006
 
 - (Anne 4/25/06) - See the "important" note in the help for ConvertBatchFiles data tool - we should make the appropriate change so that the first image cycle is removed (but be sure that whatever change you make does not disturb the first and second batch output files in a set (Batch_data.mat and Batch_2_to_XX.mat))
 
-- (Anne 4/25/06) - Fix the ExportDatabase data tool - we have not kept it current with the ExportToDatabase module. First, get it functional, and second, make it work for standard output files and also with batch output files (so you don't have to use the Convert BatchFiles data tool, as is currently stated in the help). Lastly, be sure to update the help so it is accurate. Also, try to address the other comments described in the limitations section of the help for this tool.
-
 - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
 
 - (Anne 4/25/06) - ViewData fails on batch-created output files (this error is expected), but the error occurs at the command line (see below) - we should catch the error and tell the user to use the data tool MergeOutputFiles or ConvertBatchFiles to put the batch output files in a format which can be analyzed properly with the data tools. In fact, once we fix this for ViewData, we should do the same for all data tools.

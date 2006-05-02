@@ -35,8 +35,6 @@ Error in ==> ViewData at 97
 
 - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 
-- (Requested by Anne 2-23-06) - Make Calculate Ratios Data Tool (in the Developer's drop box) into a real data tool (right now, you run it from the command line with all the variables hardcoded). Share code with the Calc Ratios module as much as possible.
-
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
 
 - (Requested by Anne 2-12-06) - Images with the ending 'tiff' do not show up in the main GUI window when they are in the default image directory, although 'tif' shows up fine.
@@ -64,9 +62,7 @@ Error in ==> CellProfiler at 60
 
 - (Requested by Anne 2-14-06)- This might be cool to implement: IEEE Trans Inf Technol Biomed. 2006 Jan;10(1):5-10. A new detection algorithm (NDA) based on fuzzy cellular neural networks for white blood cell detection.  Shitong W, Min W.
 
-
 - (Requested by Anne 12-16-05)- Design an informational brochure
-
 
 - (Requested by Anne 12-16-05)- Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example:
 handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}
@@ -74,11 +70,9 @@ for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray)
     handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2);
 end
 
-
 - (Requested by Anne 12-15-05)- When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
 
 - (Requested by Anne 12-15-05)- Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps.
-
 
 - (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
 
@@ -92,14 +86,11 @@ end
 
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable.
 
-
 - (Requested by Anne 12-09-05)-- Combine code for ExportData and ExportDatabase (CPconvertsql) and make ExportData a module
-
 
 - (Requested by Anne 12-09-05)-- See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
 
 - (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
-
 
 - (Periodically)
 
@@ -125,8 +116,6 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 ---------------------------------------------------
 
-
-
 - (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
 - (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters.
@@ -141,43 +130,23 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 - (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
 
-
-
 - (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
-
-
 
 - (Requested by Anne 11-21-05) - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
-
-
 - (Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
-
-
 
 - Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
 
-
-
 - Combine code for Histograms (ISN'T This done already?)
-
-
 
 - (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.
 
-
-
 - (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
-
-
 
 -(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
 
-
-
 -(Mike 11/14 This idea was shot down a long time ago because of all the issues with popup menus, maybe in the future, but definitely not before release) (Requested by Color 11-08-5) - It would be nice to be able to some variables in multiple groups for menus.  For instance, we could put images from load modules in both imagegroup and a new origimagegroup.  That way for the modules that require and original image (such as for the filenames in SaveImages) would only have the original images from load modules instead of everything.
-
-
 
 - (Requested by Anne 11-01-05) - There are many ways to measure the best focus of an image. Right now our MeasureSaturationBlur module has only one of these methods. Implement many of the focus methods in this paper, and have the 'best'/fastest one be the default: Sun, Duthaler, Nelson, Microscopy Research & Technique 2004 (Anne has the pdf of this).
 

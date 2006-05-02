@@ -84,11 +84,14 @@ end
 if ~ok,return,end
 CellProfilerDataFileNames = Files(selection);
 
-%%% Ask for database name and name of SQL script
-answer = inputdlg({'Database to use:','SQL script name:'},'Export SQL',1,{'Default','SQLScript_'});
+%%% Ask for database name and name of SQL script, should probably use some
+%%% sort of drop down menue for type of database
+answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix'},'Export SQL',1,{'Default','SQL_','MySQL','/'});
 if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
+DatabaseType = answer(3);
+TablePrefix = answer(4);
 if isempty(DatabaseName) | isempty(SQLScriptFileName)
     errordlg('A database name and an SQL script name must be specified!');
     return
@@ -148,7 +151,13 @@ for FileNo = 1:length(CellProfilerDataFileNames)
 
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
-    CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
+    
+   %was originally
+   %CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
+    CPconvertsql(handles, DataPath, SQLScriptFileName, DatabaseName,TablePrefix,FirstSet, LastSet, DatabaseType);
+   % from ExportToDataBase
+   %CPconvertsql(handles, DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
+
 end % End loop over data files
 
 %%% Done, let the user know if this function was called as a data tool and restore the handles structure

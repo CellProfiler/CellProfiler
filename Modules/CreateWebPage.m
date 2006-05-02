@@ -27,7 +27,7 @@ function handles = CreateWebPage(handles)
 % all of the cycles before generating the webpage, choose "After".
 %
 % What do you want to call the resulting webpage file (include .htm or
-% .html as the extenstion)?
+% .html as the extension)?
 % This file will be created in your default output directory. It can then
 % be copied to your web server.
 % 
@@ -260,8 +260,10 @@ if ((SetBeingAnalyzed == 1) && strcmp(CreateBA,'Before')) || ((SetBeingAnalyzed 
     Lines = strvcat(Lines,['<CENTER><TABLE BORDER=',TableBorderWidth, ' BORDERCOLOR=', AddQ(TableBorderColor), ' CELLPADDING=0',' CELLSPACING=',ThumbSpacing,'>']);
     %%% Creates the html to create a link to download the images as a
     %%% zipped archive.
+    TitleText = 'Click an image to see a higher-resolution version.  ';
+    Lines = strvcat(Lines,TitleText);
     if ~strcmp(ZipFileName,'Do not use')
-        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download all images as a zipped file</A></CENTER>']);
+        Lines = strvcat(Lines,['<CENTER><A HREF = ',AddQ([ZipFileName,'.zip']),'>Download all high-resolution images as a zipped file</A></CENTER>']);
     end
     while CurrentImage <= NumOrigImage
         Lines = strvcat(Lines,'<TR>');

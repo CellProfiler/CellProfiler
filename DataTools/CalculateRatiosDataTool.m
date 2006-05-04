@@ -42,11 +42,11 @@ while promptLoop == 0
         continue
     end
     
-    x = 1;
+    promptLoop = 1;
 end
 
 menuLoop=0;
-while v == 0
+while menuLoop == 0
     [Measure1Object,Measure1fieldname,Measure1featurenumber] = CPgetfeature(handles,1);
     if isempty(Measure2Object),return,end
     

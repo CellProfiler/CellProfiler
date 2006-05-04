@@ -52,8 +52,13 @@ CellArray = handles.Measurements.(ObjectTypename).(FeatureType);
 
 % Extract the selected feature and calculate the mean
 Measurements = zeros(length(CellArray),1);
-for k = 1:length(CellArray)
-    Measurements(k) = mean(CellArray{k}(:,FeatureNo));
+try
+    for k = 1:length(CellArray)
+        Measurements(k) = mean(CellArray{k}(:,FeatureNo));
+    end
+catch
+     CPerrordlg('use the data tool MergeOutputFiles or ConvertBatchFiles to convert the data first');
+     return;
 end
 
 % Ask for the dimensions of the image

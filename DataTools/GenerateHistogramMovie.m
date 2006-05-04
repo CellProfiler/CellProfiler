@@ -61,7 +61,7 @@ titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){Fea
 %%% from 1 to the number of measurements to be displayed, and Y is
 %%% the measurement of interest.
 
-for l = 1:length(MeasurementMean)
+for l = 1:length(MeasurementsMean)
 
     FigureHandle = CPfigure('Position',[1 500 792 813],'visible','off');
 

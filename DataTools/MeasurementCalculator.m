@@ -64,10 +64,15 @@ Measurements2 = handles.Measurements.(UserInput.ObjectTypename2).(UserInput.Feat
 NewMeasurement = cell(1,length(Measurements1));
 for ImageSetNbr = 1:length(Measurements1)
 
-    % Get the measurement for this image set in two temporary variables
-    tmp1 = Measurements1{ImageSetNbr}(:,UserInput.FeatureNo1);
-    tmp2 = Measurements2{ImageSetNbr}(:,UserInput.FeatureNo2);
-
+    try
+        % Get the measurement for this image set in two temporary variables
+        tmp1 = Measurements1{ImageSetNbr}(:,UserInput.FeatureNo1);
+        tmp2 = Measurements2{ImageSetNbr}(:,UserInput.FeatureNo2);
+    catch
+        CPerrordlg('use the data tool MergeOutputFiles or ConvertBatchFiles to convert the data first');
+        return
+    end
+   
     % If Operation2 indicates mean, replace all entries in tmp2 with
     % the image average, and proceed by doing "objectwise" multiplication/division
     if strcmp(UserInput.Operation2,'mean')

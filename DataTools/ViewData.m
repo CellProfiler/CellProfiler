@@ -73,7 +73,7 @@ while FinalOK == 0
     
     if strcmp(Suffix{SuffixNbr},'Description')
         if NbrOfImageSets > length(handles.Measurements.Image.FileNames)
-            error('There are more text descriptions than image files. This has not yet been supported.');
+            CPerrordlg('There are more text descriptions than image files. This has not yet been supported.');
         end
     end
     
@@ -92,10 +92,15 @@ while FinalOK == 0
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet};
         end
 
-        TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
-            ImageSet,...
-            handles.Measurements.Image.FileNames{ImageSet}{1},...
-            info);
+        try
+            TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
+                ImageSet,...
+                handles.Measurements.Image.FileNames{ImageSet}{1},...
+                info);
+        catch
+            CPerrordlg('Use the data tool MergeOutputFiles or ConvertBatchFiles to convert the data first');
+            return;
+        end
     end
 
     %%% Produce an infostring that explains what is displayed

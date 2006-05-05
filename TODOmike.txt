@@ -1,5 +1,7 @@
 Mike's TODO list
 
+-(Anne 5-5-06) I will need to analyze Fly200 data soon, which means consolidating the tables somehow in the database. Can you make this happen? I'm not sure the details of what needs to happen to let me look at individual slides grouped together, but In Han knows.
+
 -(Anne 5-2-06) For the website, add this link to "Press > CellProfiler in the news":
 http://www.nature.com/nmeth/journal/v2/n7/full/nmeth0705-547.html
 

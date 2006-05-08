@@ -38,7 +38,7 @@ end
 
 if exist('FinalParentList','var')
     if max(ChildLabelMatrix(:)) ~= size(FinalParentList,1)
-        error('Image processing was canceled in CPrelateobjects because secondary objects cannot have two parents, something is wrong.');
+        error('Image processing was canceled in CPrelateobjects because objects cannot have two parents, something is wrong.');
     end
     handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,FinalParentList);
 end

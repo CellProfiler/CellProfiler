@@ -138,12 +138,12 @@ if exist('FinalParentList','var')
         error(['Image processing was canceled in the ', ModuleName, ' module because a subobject cannot have two parents, something is wrong.']);
     end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
-        if handles.Current.SetBeingAnalyzed == 1
+        OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+        if handles.Current.SetBeingAnalyzed == 1 || isempty(OldColumn)
             NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
             handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {SecondaryObjectName};
             handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
         else
-            OldColumn = strmatch(SecondaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
                 error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end
@@ -176,12 +176,12 @@ if exist('FinalParentList','var')
         error(['Image processing was canceled in the ', ModuleName, ' module because a subobject cannot have two parents, something is wrong.']);
     end
     if isfield(handles.Measurements.(SubregionObjectName),'ParentFeatures')
-        if handles.Current.SetBeingAnalyzed == 1
+        OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
+        if handles.Current.SetBeingAnalyzed == 1 || isempty(OldColumn)
             NewColumn = length(handles.Measurements.(SubregionObjectName).ParentFeatures) + 1;
             handles.Measurements.(SubregionObjectName).ParentFeatures(NewColumn) = {PrimaryObjectName};
             handles.Measurements.(SubregionObjectName).Parent{handles.Current.SetBeingAnalyzed}(:,NewColumn) = FinalParentList;
         else
-            OldColumn = strmatch(PrimaryObjectName,handles.Measurements.(SubregionObjectName).ParentFeatures);
             if length(OldColumn) ~= 1
                 error(['Image processing was canceled in the ', ModuleName, ' module because you are attempting to create the same children, please remove redundant module.']);
             end

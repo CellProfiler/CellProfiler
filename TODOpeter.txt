@@ -9,3 +9,12 @@
 Error in ==> ViewData at 97
         TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
 ??? Error while evaluating uimenu Callback.
+
+
+- (Requested By Colin 1-13-06) - In the ShowDataOnImage data tool, there is an error when you close out of the window that pops up after clicking on the NumberOfDecimals button.
+
+- (Anne 4/25/06) - ViewData fails on batch-created output files (this error is expected), but the error occurs at the command line (see below) - we should catch the error and tell the user to use the data tool MergeOutputFiles or ConvertBatchFiles to put the batch output files in a format which can be analyzed properly with the data tools. In fact, once we fix this for ViewData, we should do the same for all data tools.
+??? Cell contents reference from a non-cell array object.
+Error in ==> ViewData at 97
+        TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
+??? Error while evaluating uimenu Callback.

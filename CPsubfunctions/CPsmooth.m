@@ -37,14 +37,28 @@ elseif strcmpi(SmoothingMethod,'P') == 1
     Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
     drawnow
     SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
-else try ArtifactWidth = str2num(SmoothingMethod);
-        ArtifactRadiusPre = 0.5*ArtifactWidth;
-        ArtifactRadius = floor(ArtifactRadiusPre);
-        if (SetBeingAnalyzed == 1) && (ArtifactRadiusPre ~= ArtifactRadius)
-            CPmsgbox('The number you entered was odd and has been rounded down to an even number.');
+else try SizeOfSmoothingFilter = str2num(SmoothingMethod);
+        sigma = SizeOfSmoothingFilter/2.35;   % Convert between Full Width at Half Maximum (FWHM) to sigma
+        if SizeOfSmoothingFilter == 0
+            %%% No blurring is done.
+            SmoothedImage = OrigImage;
+        else
+            FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
+            [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+            f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+            %%% The original image is blurred. Prior to this blurring, the
+            %%% image is padded with values at the edges so that the values
+            %%% around the edge of the image are not artificially low.  After
+            %%% blurring, these extra padded rows and columns are removed.
+            SmoothedImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
+            SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+
+
+            %DIAGNOSTIC
+            %figure, imagesc(f), title('within CPsmooth')
+
         end
-        StructuringElementLogical = getnhood(strel('disk', ArtifactRadius));
-        SmoothedImage = ordfilt2(OrigImage, floor(sum(sum(StructuringElementLogical))/2), StructuringElementLogical, 'symmetric');
+
     catch
         error(['The text you entered for the smoothing method is not valid for some reason. You must enter N, P, or a positive, even number. Your entry was ',SmoothingMethod])
     end

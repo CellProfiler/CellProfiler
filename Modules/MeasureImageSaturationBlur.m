@@ -26,7 +26,7 @@ function handles = MeasureImageSaturationBlur(handles)
 % [m,n] = size(Image);
 % MeanImageValue = mean(Image(:));
 % SquaredNormalizedImage = (Image-MeanImageValue).^2;
-% BlurScore{ImageNumber} = ...
+% FocusScore{ImageNumber} = ...
 %    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 %
 % Example Output:
@@ -150,9 +150,9 @@ for ImageNumber = 1:length(NameImageToCheck);
         %         LeftImage = ImageToCheck{ImageNumber}(:,1:end-1);
         %         MeanImageValue = mean(ImageToCheck{ImageNumber}(:));
         %         if MeanImageValue == 0
-        %             BlurScore{ImageNumber} = 0;
+        %             FocusScore{ImageNumber} = 0;
         %         else
-        %             BlurScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
+        %             FocusScore{ImageNumber} = std(RightImage(:) - LeftImage(:)) / MeanImageValue;
         %         end
         Image = ImageToCheck{ImageNumber};
         if ~strcmp(class(Image),'double')
@@ -162,13 +162,13 @@ for ImageNumber = 1:length(NameImageToCheck);
         MeanImageValue = mean(Image(:));
         SquaredNormalizedImage = (Image-MeanImageValue).^2;
         if MeanImageValue == 0
-            BlurScore{ImageNumber} = 0;  %#ok Ignore MLint
+            FocusScore{ImageNumber} = 0;  %#ok Ignore MLint
         else
-            BlurScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
+            FocusScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
         end
-        Featurenames = {'BlurScore','PercentSaturated'};
+        Featurenames = {'FocusScore','PercentSaturated'};
         handles.Measurements.Image.(Featurefieldname) = Featurenames;
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = BlurScore{ImageNumber};
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = FocusScore{ImageNumber};
         handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = PercentSaturation{ImageNumber};
     else
         Featurenames = {'PercentSaturated'};
@@ -206,10 +206,10 @@ if any(findobj == ThisModuleFigureNumber)
     end
     DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
     if strcmp(upper(BlurCheck), 'N') ~= 1
-        for ImageNumber = 1:length(BlurScore)
-            if ~isempty(BlurScore{ImageNumber})
+        for ImageNumber = 1:length(FocusScore)
+            if ~isempty(FocusScore{ImageNumber})
                 try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
-                        [NameImageToCheck{ImageNumber}, ':    ', num2str(BlurScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
+                        [NameImageToCheck{ImageNumber}, ':    ', num2str(FocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
                 end
             end
         end

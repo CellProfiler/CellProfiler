@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 5/9) (Anne 5-2-06) For the website, add this link to "Press > CellProfiler in the news":
+http://www.nature.com/nmeth/journal/v2/n7/full/nmeth0705-547.html
+
+-(Mike 5/9) (Anne 5-2-06) Add this article to Papers > Review articles mentioning CellProfiler (need to write out the full citation, but instead of linking to a PDF we should just link to pubmed: 
+http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=16607398&query_hl=8&itool=pubmed_docsum
+
 -(Mike 5/8) (Anne 5-5-06) I will need to analyze Fly200 data soon, which means consolidating the tables somehow in the database. Can you make this happen? I'm not sure the details of what needs to happen to let me look at individual slides grouped together, but In Han knows.
 
 -(Mike 4/25)

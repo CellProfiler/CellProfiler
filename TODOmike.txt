@@ -1,11 +1,5 @@
 Mike's TODO list
 
--(Anne 5-2-06) For the website, add this link to "Press > CellProfiler in the news":
-http://www.nature.com/nmeth/journal/v2/n7/full/nmeth0705-547.html
-
--(Anne 5-2-06) Add this article to Papers > Review articles mentioning CellProfiler (need to write out the full citation, but instead of linking to a PDF we should just link to pubmed: 
-http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=16607398&query_hl=8&itool=pubmed_docsum
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.

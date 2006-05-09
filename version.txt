@@ -1,3 +1,7 @@
+Version 1.0.XXXX
+ - Changed smoothing method to use gaussian filter instead of binary
+ - MeasureTexture now uses ScaleOfTexture for objects
+
 Version 1.0.3544
  - Added new help section "Getting Started"
  - Added help on Batch Processing

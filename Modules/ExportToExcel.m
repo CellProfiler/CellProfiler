@@ -37,7 +37,7 @@ function handles = ExportToExcel(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);%#ok Ignore MLint
 
 %textVAR01 = Which objects do you want to export?
 %infotypeVAR01 = objectgroup

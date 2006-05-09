@@ -1,16 +1,10 @@
 Mike's TODO list
 
--(Anne 5-5-06) I will need to analyze Fly200 data soon, which means consolidating the tables somehow in the database. Can you make this happen? I'm not sure the details of what needs to happen to let me look at individual slides grouped together, but In Han knows.
-
 -(Anne 5-2-06) For the website, add this link to "Press > CellProfiler in the news":
 http://www.nature.com/nmeth/journal/v2/n7/full/nmeth0705-547.html
 
 -(Anne 5-2-06) Add this article to Papers > Review articles mentioning CellProfiler (need to write out the full citation, but instead of linking to a PDF we should just link to pubmed: 
 http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=16607398&query_hl=8&itool=pubmed_docsum
-
--(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
-
--(Anne 3-15-06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames. ObjectCount.ObjectCount_Cells should have the underscore removed: ObjectCountCells, and Form_Factor, too.
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

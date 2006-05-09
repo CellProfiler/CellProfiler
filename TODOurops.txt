@@ -1,1 +1,9 @@
+-Stacked tifs
+
+-Have ident modules record what real threshold would have been
+
 -(Mike 5/7/06) Make IdentifyTertiary and IdentifySecondary use CPrelateobjects and make sure CPrelateobjects can handle if the first image set does not have objects. So where we have if handles.current.setbeinganalyzed == 1 there should be a check also if it is not image set 1 to be able to add the new set of data
+
+-(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
+
+-(Anne 3-15-06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames. ObjectCount.ObjectCount_Cells should have the underscore removed: ObjectCountCells, and Form_Factor, too.

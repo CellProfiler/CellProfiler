@@ -355,7 +355,7 @@ for i = 1:6
                 BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
                 Greyim = OrigImage(rmin:rmax,cmin:cmax);
                 %%% Get Haralick features
-                Haralick(Object,:) = CalculateHaralick(Greyim,BWim,0);
+                Haralick(Object,:) = CalculateHaralick(Greyim,BWim,ScaleOfTexture);
             end
         end
     end
@@ -491,6 +491,10 @@ m1 = mask(:,1:end-ScaleOfTexture); m1 = m1(:);
 m2 = mask(:,ScaleOfTexture+1:end); m2 = m2(:);
 
 index = (sum([m1 m2],2) == 2);
+if isempty(index)
+    H = [0 0 0 0 0 0 0 0 0 0 0 0 0];
+    return
+end
 im1 = im1(index);
 im2 = im2(index);
 
@@ -583,6 +587,7 @@ warning on MATLAB:DivideByZero
 % H14 = sqrt(max(0,lambda(end-1)));
 
 H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
+H(find(isnan(H)))=0;
 
 % % This function calculates Gabor features in a different way
 % % It may be better but it's also considerably slower.

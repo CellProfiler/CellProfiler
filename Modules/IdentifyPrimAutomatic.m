@@ -46,16 +46,15 @@ function handles = IdentifyPrimAutomatic(handles)
 %   In step 2, the edges of nuclei are identified. For nuclei within the
 % image that do not appear to touch, the edges are easily determined using
 % thresholding. For nuclei that do appear to touch, there are two options
-% for finding the edges of clumped
-% nuclei. Where the dividing lines tend to be dimmer than the remainder of
-% the nucleus (the most common case), the Intensity option works best
-% (already identified nuclear markers are starting points for a watershed
-% algorithm (Vincent and Soille, 1991) applied to the original image). When
-% no dim dividing lines exist, the Distance option places the dividing line
-% at a point between the two nuclei determined by their shape (the
-% distance-transformed thresholded image is used for the watershed
-% algorithm). In other words, the dividing line is halfway between the
-% "centers" of the nuclei.
+% for finding the edges of clumped nuclei. Where the dividing lines tend to
+% be dimmer than the remainder of the nucleus (the most common case), the
+% Intensity option works best (already identified nuclear markers are
+% starting points for a watershed algorithm (Vincent and Soille, 1991)
+% applied to the original image). When no dim dividing lines exist, the
+% Distance option places the dividing line at a point between the two
+% nuclei determined by their shape (the distance-transformed thresholded
+% image is used for the watershed algorithm). In other words, the dividing
+% line is halfway between the "centers" of the nuclei.
 %   In step 3, some identified nuclei are discarded or merged together if
 % the user chooses. Incomplete nuclei touching the border of the image can
 % be discarded. Objects smaller than a user-specified size range, which are
@@ -676,7 +675,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 elseif strcmp(WatershedTransformImageType,'Distance')
                     %%% Overlays the object markers (maxima) on the inverted DistanceTransformedImage so
                     %%% there are black dots on top of each dark object on a white background.
-                    %%% We may have to calculate the distance transform:
+                    %%% We may have to calculate the distance transform if not already done:
                     if ~exist('DistanceTransformedImage','var')
                         DistanceTransformedImage = bwdist(~Objects);
                     end

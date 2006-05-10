@@ -1791,7 +1791,11 @@ if (length(ModuleHighlighted) > 0)
         set(findobj('Parent',handles.variablepanel,'Visible','On'),'Visible','Off');
         set(handles.VariableDescription{ModuleNumber},'Visible','On');
 
-        set(handles.VariableBox{ModuleNumber}(~strcmp(get(handles.VariableBox{ModuleNumber},'string'),'n/a')),'Visible','On'); %only makes the boxes without n/a as the string visible
+        if length(handles.VariableBox) == 1
+            set(handles.VariableBox{ModuleNumber}(~strcmp({get(handles.VariableBox{ModuleNumber},'string')},'n/a')),'Visible','On'); %only makes the boxes without n/a as the string visible
+        else
+            set(handles.VariableBox{ModuleNumber}(~strcmp(get(handles.VariableBox{ModuleNumber},'string'),'n/a')),'Visible','On'); %only makes the boxes without n/a as the string visible
+        end
         try
             set(handles.BrowseButton{ModuleNumber},'Visible','On')
         end

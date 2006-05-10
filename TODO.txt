@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
-February 14, 2006
+May 10, 2006
+
+- (Anne 5/10/06) - IMPORTANT The propagate algorithm works very nicely in our IdSec module. We should add this as an option for the IdPrimAutomatic module (It would be a new method for finding the dividing lines between clumped objects, along with Intensity and Distance.)
+
+- (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996).
 
 - (Anne 4/25/06) - See the "important" note in the help for ConvertBatchFiles data tool - we should make the appropriate change so that the first image cycle is removed (but be sure that whatever change you make does not disturb the first and second batch output files in a set (Batch_data.mat and Batch_2_to_XX.mat))
 
@@ -214,8 +218,6 @@ Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the
        the gradient image rather than the original. 
 
 
-
-     - Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996).
 
 
 

@@ -1,7 +1,8 @@
 function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SetBeingAnalyzed)
 
 % This subfunction is used for several modules, including SMOOTH, AVERAGE,
-% CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE
+% CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE,
+% IDENTIFYPRIMAUTOMATIC
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -24,6 +25,8 @@ function SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SetBeingAnalyzed)
 % $Revision$
 
 
+SmoothedImage = OrigImage;
+
 if strcmpi(SmoothingMethod,'N') == 1
 elseif strcmpi(SmoothingMethod,'P') == 1
     %%% The following is used to fit a low-dimensional polynomial to the original image.
@@ -41,7 +44,6 @@ else try SizeOfSmoothingFilter = str2num(SmoothingMethod);
         sigma = SizeOfSmoothingFilter/2.35;   % Convert between Full Width at Half Maximum (FWHM) to sigma
         if SizeOfSmoothingFilter == 0
             %%% No blurring is done.
-            SmoothedImage = OrigImage;
         else
             FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
             [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
@@ -53,13 +55,11 @@ else try SizeOfSmoothingFilter = str2num(SmoothingMethod);
             SmoothedImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
             SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
 
-
             %DIAGNOSTIC
             %figure, imagesc(f), title('within CPsmooth')
 
         end
-
     catch
-        error(['The text you entered for the smoothing method is not valid for some reason. You must enter N, P, or a positive, even number. Your entry was ',SmoothingMethod])
+        error(['The text you entered for the smoothing method is not valid for some reason. You must enter N, P, or a positive, even number. Your entry was ', SmoothingMethod])
     end
 end

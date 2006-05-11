@@ -54,7 +54,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % Distance option places the dividing line at a point between the two
 % nuclei determined by their shape (the distance-transformed thresholded
 % image is used for the watershed algorithm). In other words, the dividing
-% line is halfway between the "centers" of the nuclei.
+% line is usually placed where indentations occur along the edge of the
+% clumped nuclei.
 %   In step 3, some identified nuclei are discarded or merged together if
 % the user chooses. Incomplete nuclei touching the border of the image can
 % be discarded. Objects smaller than a user-specified size range, which are
@@ -226,10 +227,13 @@ function handles = IdentifyPrimAutomatic(handles)
 % Method to draw dividing lines between clumped objects:
 % * Intensity - works best where the dividing lines between clumped
 % objects are dim. Technical description: watershed on the intensity image.
-% * Distance - Dividing lines between clumped objects are halfway
-% between the 'center' of each object.  The intensity patterns in the
-% original image are irrelevant - the cells need not be dimmer along
-% the lines between clumped objects.  Technical description: Voronoi.
+% * Distance - Dividing lines between clumped objects are based on the
+% shape of the clump. For example, when a clump contains two objects, the
+% dividing line will be placed where indentations occur between the two
+% nuclei. The intensity patterns in the original image are irrelevant - the
+% cells need not be dimmer along the lines between clumped objects.
+% Technical description: watershed on the distance-transformed thresholded
+% image.
 % * None (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped objects.
 % Using the 'None' option, the thresholded image will be used to identify
@@ -680,6 +684,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         DistanceTransformedImage = bwdist(~Objects);
                     end
                     Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
+                    figure, imagesc(Overlaid), title('overlaid')
+                                        figure, imagesc(-DistanceTransformedImage), title('-DistanceTransformedImage')
+
                 end
 
                 %%% Calculate the watershed transform and cut objects along the boundaries

@@ -552,7 +552,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% No blurring is done.
                 BlurredImage = OrigImage;
             else        sigma = 1;
-                 BlurredImage = CPsmooth(OrigImage, sigma, handles.Current.SetBeingAnalyzed);
                 FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
                 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
                 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel

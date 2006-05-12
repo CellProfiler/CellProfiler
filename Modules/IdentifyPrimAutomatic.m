@@ -451,6 +451,10 @@ drawnow
 %%% "OrigImage".
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
+if strcmp(class(OrigImage),'logical')
+    error(['Image processing was canceled in the ', ModuleName, ' module because the input image is binary (black/white). The input image must be grayscale.']);
+end
+
 %%% Checks that the Laplace parameters have valid values
 if ~strcmp(LaplaceValues,'/')
     index = strfind(LaplaceValues,',');
@@ -548,6 +552,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% No blurring is done.
                 BlurredImage = OrigImage;
             else        sigma = 1;
+                 BlurredImage = CPsmooth(OrigImage, sigma, handles.Current.SetBeingAnalyzed);
                 FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
                 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
                 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
@@ -569,22 +574,24 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 %%% Smooth images for maxima suppression
                 if strcmpi(SizeOfSmoothingFilter,'Automatic')
-                    sigma = MinDiameter/3.5;                                          % Translate between minimum diameter of objects to sigma. Empirically derived formula.
+                    sigma = MinDiameter/3.5;                                            % Translate between minimum diameter of objects to sigma. Empirically derived formula.
+                    SizeOfSmoothingFilter = num2str(MinDiameter/3.5*2.35);
                 else
-                    sigma = SizeOfSmoothingFilter/2.35;                               % Convert between Full Width at Half Maximum (FWHM) to sigma
+                    sigma = SizeOfSmoothingFilter/2.35;                                 % Convert between Full Width at Half Maximum (FWHM) to sigma
                 end
                 if SizeOfSmoothingFilter == 0
                     %%% No blurring is done.
                 else
-                    FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
-                    [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-                    f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-                    %%% The original image is blurred. Prior to this blurring, the
-                    %%% image is padded with values at the edges so that the values
-                    %%% around the edge of the image are not artificially low.  After
-                    %%% blurring, these extra padded rows and columns are removed.
-                    BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
-                    BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+                      BlurredImage = CPsmooth(OrigImage, SizeOfSmoothingFilter, handles.Current.SetBeingAnalyzed);
+%                     FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
+%                     [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
+%                     f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+%                     %%% The original image is blurred. Prior to this blurring, the
+%                     %%% image is padded with values at the edges so that the values
+%                     %%% around the edge of the image are not artificially low.  After
+%                     %%% blurring, these extra padded rows and columns are removed.
+%                     BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
+%                     BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
                 end
                 %%% Get local maxima, where the definition of local depends on the
                 %%% user-provided object size. This will (usually) be done in a

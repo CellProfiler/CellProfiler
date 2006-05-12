@@ -1,13 +1,15 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
+- (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}
+
 - (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module: for each object, what is the distance to the nearest two neighboring objects? and what are the vectors to the nearest two neighbors? What are the indices (ObjectNumbers) of the two nearest neighbors? Might take a long time to compute? If so, make this optional. Also, for each object, how many of its border pixels are bordering other objects?  Talk to Ray - he has ideas for how to do this (e.g. dilate the objects by one pixel and count how many pixels overlap - actually count the inverse which is how many pixels border the background).
 
 - (Anne 5/10/06) - When analyzing images in CellProfiler, after every cycle should we check to see what images are used downstream (checking all the imagegroup members) and strip the rest out?
 
 - (Anne 5/10/06) - IMPORTANT The propagate algorithm works very nicely in our IdSec module. We should add this as an option for the IdPrimAutomatic module (It would be a new method for finding the dividing lines between clumped objects, along with Intensity and Distance.)
 
-- (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996).
+- (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996). See this article (anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} 
 
 -(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
 

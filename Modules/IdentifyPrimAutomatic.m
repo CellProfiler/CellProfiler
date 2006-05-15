@@ -508,6 +508,7 @@ if ~strcmpi(SizeOfSmoothingFilter,'Automatic')
     if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
     end
+    SizeOfSmoothingFilter = num2str(SizeOfSmoothingFilter);
 end
 
 %%% Check the maxima suppression size parameter
@@ -576,7 +577,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     sigma = MinDiameter/3.5;                                            % Translate between minimum diameter of objects to sigma. Empirically derived formula.
                     SizeOfSmoothingFilter = num2str(MinDiameter/3.5*2.35);
                 else
-                    sigma = SizeOfSmoothingFilter/2.35;                                 % Convert between Full Width at Half Maximum (FWHM) to sigma
+                    % sigma = SizeOfSmoothingFilter/2.35;                                 % Convert between Full Width at Half Maximum (FWHM) to sigma
                 end
                 if SizeOfSmoothingFilter == 0
                     %%% No blurring is done.

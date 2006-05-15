@@ -37,10 +37,12 @@ May 10, 2006
 
 - (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.
 
+
 - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
 
+- (Requested by Anne 2-12-06) - Images with the ending 'tiff' do not show up in the main GUI window when they are in the default image directory, although 'tif' shows up fine.
 
 - (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
 ??? Error using ==> uigetdir

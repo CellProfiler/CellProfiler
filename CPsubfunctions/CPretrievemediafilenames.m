@@ -51,7 +51,12 @@ else
     DiscardsByExtension = zeros(size(FileNamesNoDir));
     for i = 1:length(DiscardsByExtension)
         if ~isempty(strfind(FileNamesNoDir{i},'.'))
-            DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
+            %fails on four-letter extensions
+            %DiscardsByExtension(i) = ~any(strcmpi(FileNamesNoDir{i}(end-2:end),MediaExtensions));
+            
+            [pathstr, name, ext] = fileparts([Pathname FileNamesNoDir{i}]);
+            ext = strrep(ext, '.', '');
+            DiscardsByExtension(i) = ~any(strcmpi(ext,MediaExtensions));
         end
     end
    

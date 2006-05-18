@@ -274,20 +274,25 @@ for i = 1:length(ObjectNameList)
                 rmin = max(xcord)-diameter+1;
                 if rmin < 1
                     rmin = 1;
-                    rmax = diameter;
+                    rmax = min(diameter,size(LabelMatrixImage,1));
                 end
 
                 cmax = max(ycord);
                 cmin = max(ycord)-diameter+1;
                 if cmin < 1
                     cmin = 1;
-                    cmax = diameter;
+                    cmax = min(diameter,size(LabelMatrixImage,2));
                 end
 
                 BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-
+                
                 % Apply Zernike functions
-                Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
+                try
+                    Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
+                catch
+                    Zernike(Object,:) = 0;
+                    display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
+                end
             end
         end
         % Form factor

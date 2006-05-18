@@ -120,8 +120,8 @@ if handles.Current.SetBeingAnalyzed == 1
     Text = [];
     while 1
         s = fgetl(fid);
+        if ~ischar(s), break, end               % order reversed, checks the string before it tries to replace things
         s = strrep(s,sprintf('\t'),' ');
-        if ~ischar(s), break, end
         if ~isempty(s)
             Text{end+1} = s;
         end

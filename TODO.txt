@@ -42,8 +42,6 @@ May 10, 2006
 
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
 
-- (Requested by Anne 2-12-06) - Images with the ending 'tiff' do not show up in the main GUI window when they are in the default image directory, although 'tif' shows up fine.
-
 - (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
 ??? Error using ==> uigetdir
 STARTPATH argument must be a string.

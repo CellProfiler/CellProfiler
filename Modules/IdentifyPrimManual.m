@@ -64,14 +64,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter the maximum image height or width (in pixels) to display for the manual identification. Very large images will be resized to this maximum dimension for the manual identification step. Enter "Do not resize" to display the unaltered image.
-%defaultVAR03 = Do not resize
-MaxResolution = char(handles.Settings.VariableValues{CurrentModuleNum,3}); %#ok
+%textVAR03 = How many of these objects will you be outlining?
+%defaultVAR03 = 1
+NumberOfObjectsToBeOutlined = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR04 = Do not save
-%infotypeVAR04 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = Enter the maximum image height or width (in pixels) to display for the manual identification. Very large images will be resized to this maximum dimension for the manual identification step. Enter "Do not resize" to display the unaltered image.
+%defaultVAR04 = Do not resize
+MaxResolution = char(handles.Settings.VariableValues{CurrentModuleNum,4}); %#ok
+
+%textVAR05 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR05 = Do not save
+%infotypeVAR05 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
 
 %%%VariableRevisionNumber = 2
 
@@ -103,6 +108,11 @@ else
     LowResOrigImage = OrigImage;
 end
 
+if isnan(NumberOfObjectsToBeOutlined) || (NumberOfObjectsToBeOutlined <= 0)
+    CPerrordlg(['In the ', ModuleName, ' module, you have picked an invalid number of objects to outline.  Your selection was ', num2str(NumberOfObjectsToBeOutlined)]);
+    return;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
@@ -125,16 +135,28 @@ title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecu
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
 
-%%% Manual outline of the object, see local function 'getpoints' below.
-%%% Continue until user has drawn a valid shape
-[x,y] = getpoints(AxisHandle);
-close(FigureHandle)
-[nrows,ncols] = size(LowResOrigImage);
-[X,Y] = meshgrid(1:ncols,1:nrows);
-LowResInterior = inpolygon(X,Y, x,y);
-FinalLabelMatrixImage = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
+NewImage = zeros(size(LowResOrigImage));
 
-FinalOutline = bwperim(FinalLabelMatrixImage > 0);
+for i = 1:NumberOfObjectsToBeOutlined
+    %%% Manual outline of the object, see local function 'getpoints' below.
+    %%% Continue until user has drawn a valid shape
+    [x,y] = getpoints(AxisHandle);
+    [nrows,ncols] = size(LowResOrigImage);
+    [X,Y] = meshgrid(1:ncols,1:nrows);
+    LowResInterior = inpolygon(X,Y, x,y);
+    %FinalLabelMatrixImage{i} = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
+    FinalOutline{i} = bwperim(FinalLabelMatrixImage{i} > 0);
+    NewImage(find(LowResInterior==1))=i;
+end
+close(FigureHandle)
+
+% combine the matrices
+for i = 1:NumberOfObjectsToBeOutlined
+    FinalOutline{i} = FinalOutline{1} | FinalOutline{i};
+end
+
+FinalOutline = FinalOutline{1};
+FinalLabelMatrixImage = NewImage;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -186,12 +208,12 @@ column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountF
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
+end                                                                                                           
+handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage{1}(:));
 
 %%% Saves the location of each segmented object
 handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
-tmp = regionprops(FinalLabelMatrixImage,'Centroid');
+tmp = regionprops(FinalLabelMatrixImage{1},'Centroid');
 Centroid = cat(1,tmp.Centroid);
 handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
@@ -199,7 +221,7 @@ handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {
 %%% drive, if the user requested.
 try
     if ~strcmpi(SaveOutlines,'Do not save')
-        handles.Pipeline.(SaveOutlines) = FinalOutline;
+        handles.Pipeline.(SaveOutlines) = FinalOutline{1};
     end
 catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
 end

@@ -304,7 +304,7 @@ The iterations can be performed on a low-resolution version of the original imag
 
 
 
-+++ (Requested by Anne) - Reproduce the major 'big pharma' screening assays:
++++ (Requested by Anne) - Reproduce the major 'big pharma' screening assays: (from Bowen and Wylie, Assay & DrugDvpmnt Tech 2006)
 
 cell adhesion
 
@@ -315,6 +315,8 @@ micronucleus formation
 protein translocation
 
 cell cycle analysis
+
+cell colony formation
 
 cell differentiation
 
@@ -350,7 +352,7 @@ gap junction formation
 
 p-glycoprotein activity
 
-
+angiogenesis
 
 - Neurite tracing algorithm: see potentially useful references: J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.  Also, two articles: Weaver_NeuralComput_2004.pdf
 Weaver_JNeuroMeth_2003.pdf. See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.

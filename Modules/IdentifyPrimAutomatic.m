@@ -691,8 +691,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         DistanceTransformedImage = bwdist(~Objects);
                     end
                     Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
-                    figure, imagesc(Overlaid), title('overlaid')
-                                        figure, imagesc(-DistanceTransformedImage), title('-DistanceTransformedImage')
+                    % figure, imagesc(Overlaid), title('overlaid');
+                    % figure, imagesc(-DistanceTransformedImage), title('-DistanceTransformedImage');
 
                 end
 

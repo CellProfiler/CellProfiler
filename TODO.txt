@@ -1,7 +1,7 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
-- (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  
+- (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.
 
 - (Anne 5/20/06) - Is it possible to have our shape/texture measures match up with those used my Robert Murphy's lab at Carnegie Mellon? I think already our Haralick texture features are nicely categorized using his nomenclature but it's worth checking our other measures to be sure that they are proper categories with the proper SLF numbers.
 

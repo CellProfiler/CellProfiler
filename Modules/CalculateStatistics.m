@@ -65,86 +65,85 @@ DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-try
-    if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
-        %%% Get all fieldnames in Measurements
-        ObjectFields = fieldnames(handles.Measurements);
+    %%% Get all fieldnames in Measurements
+    ObjectFields = fieldnames(handles.Measurements);
 
-        GroupingStrings = handles.Measurements.Image.(DataName);
-        %%% Need column vector
-        GroupingValues = str2num(char(GroupingStrings'));
+    GroupingStrings = handles.Measurements.Image.(DataName);
+    %%% Need column vector
+    GroupingValues = str2num(char(GroupingStrings'));
 
-        for i = 1:length(ObjectFields)
+    for i = 1:length(ObjectFields)
 
-            ObjectName = char(ObjectFields(i));
+        ObjectName = char(ObjectFields(i));
 
-            if strcmp(ObjectName,'Results')
-                test=eps;
+        if strcmp(ObjectName,'Results')
+            test=eps;
+        end
+        %%% Filter out Experiment and Image fields
+        if ~strcmp(ObjectName,'Experiment')
+
+            try
+                %%% Get all fieldnames in Measurements.(ObjectName)
+                MeasureFields = fieldnames(handles.Measurements.(ObjectName));
+            catch %%% Must have been text field and ObjectName is class 'cell'
+                continue
             end
-            %%% Filter out Experiment and Image fields
-            if ~strcmp(ObjectName,'Experiment')
 
-                try
-                    %%% Get all fieldnames in Measurements.(ObjectName)
-                    MeasureFields = fieldnames(handles.Measurements.(ObjectName));
-                catch %%% Must have been text field and ObjectName is class 'cell'
-                    continue
-                end
+            for j = 1:length(MeasureFields)
 
-                for j = 1:length(MeasureFields)
+                MeasureFeatureName = char(MeasureFields(j));
 
-                    MeasureFeatureName = char(MeasureFields(j));
+                if length(MeasureFeatureName) > 7
+                    if strcmp(MeasureFeatureName(end-7:end),'Features')
 
-                    if length(MeasureFeatureName) > 7
-                        if strcmp(MeasureFeatureName(end-7:end),'Features')
+                        %%% Not placed with above if statement since
+                        %%% MeasureFeatureName may not be 8 characters long
+                        if ~strcmp(MeasureFeatureName(1:8),'Location')
 
-                            %%% Not placed with above if statement since
-                            %%% MeasureFeatureName may not be 8 characters long
-                            if ~strcmp(MeasureFeatureName(1:8),'Location')
+                            if strcmp(MeasureFeatureName,'ModuleErrorFeatures')
+                                continue;
+                            end
 
-                                if strcmp(MeasureFeatureName,'ModuleErrorFeatures')
-                                    continue;
+
+                            %%% Get Features
+                            MeasureFeatures = handles.Measurements.(ObjectName).(MeasureFeatureName);
+
+                            %%% Get Measure name
+                            MeasureName = MeasureFeatureName(1:end-8);
+                            %%% Check for measurements
+                            if ~isfield(handles.Measurements.(ObjectName),MeasureName)
+                                error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the measurements you specified.']);
+                            end
+
+                            Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
+                            for k = 1:handles.Current.NumberOfImageSets
+                                for l = 1:length(MeasureFeatures)
+                                    Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
                                 end
+                            end
 
-
-                                %%% Get Features
-                                MeasureFeatures = handles.Measurements.(ObjectName).(MeasureFeatureName);
-
-                                %%% Get Measure name
-                                MeasureName = MeasureFeatureName(1:end-8);
-                                %%% Check for measurements
-                                if ~isfield(handles.Measurements.(ObjectName),MeasureName)
-                                    error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the measurements you specified.']);
-                                end
-
-                                Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
-                                for k = 1:handles.Current.NumberOfImageSets
-                                    for l = 1:length(MeasureFeatures)
-                                        Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
-                                    end
-                                end
-
+                            [GroupingValueRows,n] = size(GroupingValues);
+                            [YmatrixRows, n] = size(Ymatrix);
+                            if GroupingValueRows ~= YmatrixRows
+                                CPwarndlg('There was an error in the Calculate Statistics module involving the number of elements loaded for it.  CellProfiler will proceed anyways.');
+                                display 'There was an error in the Calculate Statistics module involving the number of elements loaded for it.  CellProfiler will proceed anyways.';
+                                return;
+                            else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);
-
-                                measurefield = [ObjectName,'Statistics'];
-                                featuresfield = [ObjectName,'StatisticsFeatures'];
-                                if isfield(handles.Measurements,'Experiment')
-                                    if isfield(handles.Measurements.Experiment,measurefield)
-                                        OldEnd = length(handles.Measurements.Experiment.(featuresfield));
-                                        for a = 1:length(z)
-                                            handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+a) = z(a);
-                                            handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+length(z)+a) = v(a);
-                                            handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureFeatures{a}];
-                                            handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
-                                        end
-                                    else
-                                        for a = 1:length(z)
-                                            handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
-                                            handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
-                                            handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
-                                            handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
-                                        end
+                            end    
+                                
+                            measurefield = [ObjectName,'Statistics'];
+                            featuresfield = [ObjectName,'StatisticsFeatures'];
+                            if isfield(handles.Measurements,'Experiment')
+                                if isfield(handles.Measurements.Experiment,measurefield)
+                                    OldEnd = length(handles.Measurements.Experiment.(featuresfield));
+                                    for a = 1:length(z)
+                                        handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+a) = z(a);
+                                        handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+length(z)+a) = v(a);
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
                                     end
                                 else
                                     for a = 1:length(z)
@@ -154,6 +153,13 @@ try
                                         handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
                                     end
                                 end
+                            else
+                                for a = 1:length(z)
+                                    handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
+                                    handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
+                                    handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
+                                    handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                end
                             end
                         end
                     end
@@ -161,8 +167,6 @@ try
             end
         end
     end
-catch   % no catches in the other subfunctions; this is a broad, untargeted solution that seems to work
-    CPwarndlg('There was an error in the Calculate Statistics module involving the number or type of elements loaded for it.  CellProfiler will proceed anyways.');
 end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

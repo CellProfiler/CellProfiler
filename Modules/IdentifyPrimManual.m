@@ -128,10 +128,12 @@ title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecu
 
 NewImage = zeros(size(LowResOrigImage));
 
-loopControl = 1;
+loopControl = 1; 
 i = 1;
+%%%% For some reason, the button is unable to change the value of
+%%%% loopControl that the while loop sees.
 % DoneButton = uicontrol('Style', 'pushbutton', 'String', 'Done',...
-%     'Position', [10 10 60 20], 'Callback', 'loopControl = 0');
+%     'Position', [10 10 60 20], 'Callback', 'ButtonName=questdlg(''Continue outlining objects?'', ''IdentifyPrimManual'',''Yes'', ''No'', ''Yes'');if(strcmp(ButtonName, ''No''))loopControl = 0;end');
 % uicontrol(DoneButton);
 
 while loopControl == 1
@@ -149,12 +151,12 @@ while loopControl == 1
         FinalOutline{1} = FinalOutline{1} | FinalOutline{i};
     end
     i = i+1;
-    ButtonName=questdlg('Continue?', ...
-                       'Prompt', ...
+    ButtonName=questdlg('Continue outlining objects?', ...
+                       'IdentifyPrimManual', ...
                        'Yes', 'No', 'Yes');
     if(strcmp(ButtonName, 'No'))
         loopControl = 0;
-    end            
+    end
 end
 close(FigureHandle)
 

@@ -41,35 +41,38 @@ SubMeasurementFieldnames = fieldnames(handles.Measurements)';
 for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
     %%%SubFieldname is the first fieldname in SubMeasurementFieldnames.
     SubFieldname = RemainingSubMeasurementFieldnames{1};
+    if strcmp(SubFieldname,'Experiment')
+        continue
+    end
     substruct = handles.Measurements.(SubFieldname);
     substructfields = fieldnames(substruct)';
     for ssfc = substructfields
         ssf = ssfc{1};
 
         if strfind(ssf, 'Features')
-            continue;
+            continue
         end
 
         if strfind(ssf, 'PathnameOrig')
-            continue;
+            continue
         end
 
-        if strfind(ssf, 'Text'),
+        if strfind(ssf, 'Text')
             if (strfind(ssf, 'Text') + 3) == length(ssf)
-                continue;
+                continue
             end
         end
 
+        if strfind(ssf, 'Description')
+            continue
+        end
+
         if strfind(ssf, 'ModuleError')
-            continue;
+            continue
         end
 
         if strfind(ssf, 'TimeElapsed')
-            continue;
-        end
-
-        if strfind(ssf, 'Description')
-            continue;
+            continue
         end
 
         if isfield(substruct, [ssf 'Features']),
@@ -108,7 +111,7 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
     end %end of substrucfield
 end %end of remainfield
 
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
 
     if strcmp(SQLchoice,'MySQL')
 
@@ -351,6 +354,9 @@ for img_idx = FirstSet:LastSet
     maxnumobj=0;
     for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         SubFieldname = RemainingSubMeasurementFieldnames{1};
+        if strcmp(SubFieldname,'Experiment')
+            continue
+        end
         substruct = handles.Measurements.(SubFieldname);
         substructfields = fieldnames(substruct)';
         for ssfc = substructfields,
@@ -364,14 +370,6 @@ for img_idx = FirstSet:LastSet
                 continue;
             end
 
-            if strfind(ssf, 'ModuleError'),
-                continue;
-            end
-
-            if strfind(ssf, 'TimeElapsed'),
-                continue;
-            end
-
             if strfind(ssf,'Text'),
                 if (strfind(ssf,'Text') + 3) == length(ssf),
                     continue;
@@ -379,6 +377,14 @@ for img_idx = FirstSet:LastSet
             end
 
             if strfind(ssf,'Description'),
+                continue;
+            end
+
+            if strfind(ssf, 'ModuleError'),
+                continue;
+            end
+
+            if strfind(ssf, 'TimeElapsed'),
                 continue;
             end
 

@@ -120,7 +120,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
                             for k = 1:handles.Current.NumberOfImageSets
                                 for l = 1:length(MeasureFeatures)
-                                    Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
+                                    if isempty(handles.Measurements.(ObjectName).(MeasureName){k})
+                                        Ymatrix(k,l) = 0;
+                                    else
+                                        Ymatrix(k,l) = mean(handles.Measurements.(ObjectName).(MeasureName){k}(:,l));
+                                    end
                                 end
                             end
 
@@ -132,8 +136,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 return;
                             else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);
-                            end    
-                                
+                            end
+
                             measurefield = [ObjectName,'Statistics'];
                             featuresfield = [ObjectName,'StatisticsFeatures'];
                             if isfield(handles.Measurements,'Experiment')

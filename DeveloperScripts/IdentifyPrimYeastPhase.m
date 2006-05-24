@@ -255,14 +255,14 @@ end
 %%% Determines the threshold to be used, if the user has left the Threshold
 %%% variable set to 0.
 if strcmp(Threshold,'Automatic')
-    [handles,Threshold] = CPthreshold(handles,'Otsu Global','01',0,1,1,EnhancedInvertedImage,ImageName,ModuleName);
+    [handles,Threshold] = CPthreshold(handles,'Otsu Global','01',num2str(MinimumThreshold),'1',1,EnhancedInvertedImage,ImageName,ModuleName);
     %%% Replaced the following line to accomodate calculating the
     %%% threshold for images that have been masked.
     Threshold = Threshold*ThresholdAdjustmentFactor;
 else
     Threshold=str2double(Threshold);
+    Threshold = max(MinimumThreshold,Threshold);
 end
-Threshold = max(MinimumThreshold,Threshold);
 
 %%%  1. Threshold for edges
 %%% We cannot use the built in MATLAB function
@@ -327,7 +327,7 @@ end
 %%% Removes objects that are touching the edge of the image, since they
 %%% won't be measured properly.
 if strncmpi(IncludeEdge,'N',1)
-    PrelimLabelMatrixImage4 = CPclearborder(PrelimLabelMatrixImage3,8);
+    PrelimLabelMatrixImage4 = CPclearborder(PrelimLabelMatrixImage3);
 else PrelimLabelMatrixImage4 = PrelimLabelMatrixImage3;
 end
 %%% The PrelimLabelMatrixImage4 is converted to binary.

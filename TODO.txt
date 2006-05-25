@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
+- (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
+
 - (Anne 5/22/06) - When we run large image sets, we usually run an illumination correction pipeline. It would be nice if this pipeline would calculate a suggested 'minimum allowable threshold', to be used in the IdentifyPrim and IdentifySec modules. Right now, we choose it empirically.
 
 - (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22.

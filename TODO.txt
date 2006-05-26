@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
+-*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module: for each object, what is the distance to the nearest two neighboring objects? and what are the vectors to the nearest two neighbors? What are the indices (ObjectNumbers) of the two nearest neighbors? Might take a long time to compute? If so, make this optional. Also, for each object, how many of its border pixels are bordering other objects?  Talk to Ray - he has ideas for how to do this (e.g. dilate the objects by one pixel and count how many pixels overlap - actually count the inverse which is how many pixels border the background).
+
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
@@ -31,8 +33,6 @@ estimate ranges for those measurements, rather than just a single
 estimate with no indication of its accuracy. - Ray
 
 - (Anne 5/20/06) - Is it possible to have our shape/texture measures match up with those used my Robert Murphy's lab at Carnegie Mellon? I think already our Haralick texture features are nicely categorized using his nomenclature but it's worth checking our other measures to be sure that they are proper categories with the proper SLF numbers.
-
-- (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module: for each object, what is the distance to the nearest two neighboring objects? and what are the vectors to the nearest two neighbors? What are the indices (ObjectNumbers) of the two nearest neighbors? Might take a long time to compute? If so, make this optional. Also, for each object, how many of its border pixels are bordering other objects?  Talk to Ray - he has ideas for how to do this (e.g. dilate the objects by one pixel and count how many pixels overlap - actually count the inverse which is how many pixels border the background).
 
 - (Anne 5/10/06) - When analyzing images in CellProfiler, after every cycle should we check to see what images are used downstream (checking all the imagegroup members) and strip the rest out?
 

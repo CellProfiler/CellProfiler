@@ -6,6 +6,27 @@ May 10, 2006
 - (Anne 5/22/06) - When we run large image sets, we usually run an illumination correction pipeline. It would be nice if this pipeline would calculate a suggested 'minimum allowable threshold', to be used in the IdentifyPrim and IdentifySec modules. Right now, we choose it empirically.
 
 - (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22.
+See also comments from Ray:
+Hi Ray,
+I just heard a talk about measuring shape in images, and the speaker
+compared three inputs: the binary object, a polygon (explicit curve)
+and an implicit curve (something about modeling it as a 3D curve that
+crosses a plane at a certain level). THey found that the binary, due to
+quantization, was particularly bad at capturing shape properties. - this
+may be what jeff price was talking about when he thought that we might
+be seeing a correlation of some zernikes with size. Is this an area we
+ought to improve?
+-a
+Actually, I doubt Matlab does much more than the usual quantization
+approach, but we can check.  It's probably slower to do anything with
+curves or implicit curves, which would probably need to loop over
+objects.  The binary masks can use the faster matrix/vector
+operations. What might make sense for the Zernike and other shape measures is to
+do some experiments with large shapes and progressively smaller
+versions created by downsampling.  Then we can get an idea how much
+those shapes vary as the resolution drops, and we might be able to
+estimate ranges for those measurements, rather than just a single
+estimate with no indication of its accuracy. - Ray
 
 - (Anne 5/20/06) - Is it possible to have our shape/texture measures match up with those used my Robert Murphy's lab at Carnegie Mellon? I think already our Haralick texture features are nicely categorized using his nomenclature but it's worth checking our other measures to be sure that they are proper categories with the proper SLF numbers.
 

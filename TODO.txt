@@ -1,11 +1,13 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
+- (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example?
+
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
 
 - (Anne 5/22/06) - When we run large image sets, we usually run an illumination correction pipeline. It would be nice if this pipeline would calculate a suggested 'minimum allowable threshold', to be used in the IdentifyPrim and IdentifySec modules. Right now, we choose it empirically.
 
-- (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22.
+- (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22. How about Fourier measures of shape? Is that a good idea?
 See also comments from Ray:
 Hi Ray,
 I just heard a talk about measuring shape in images, and the speaker
@@ -36,7 +38,7 @@ estimate with no indication of its accuracy. - Ray
 
 - (Anne 5/10/06) - IMPORTANT The propagate algorithm works very nicely in our IdSec module. We should add this as an option for the IdPrimAutomatic module (It would be a new method for finding the dividing lines between clumped objects, along with Intensity and Distance.)
 
-- (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996). See this article (anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
+- (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996), although we need to mark with a disclaimer that it's for academic purposes only because for commercial use, it's patented, and also Jeff says it does not deal with clumpy objects, so I guess it's for thresholding only, it is not a complete segmentation solution. See this article (anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
 
 -(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
 

@@ -1,7 +1,7 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
-- (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example?
+- (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
 

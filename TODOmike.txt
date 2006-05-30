@@ -1,6 +1,10 @@
 Mike's TODO list
 
--*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module: for each object, what is the distance to the nearest two neighboring objects? and what are the vectors to the nearest two neighbors? What are the indices (ObjectNumbers) of the two nearest neighbors? Might take a long time to compute? If so, make this optional. Also, for each object, how many of its border pixels are bordering other objects?  Talk to Ray - he has ideas for how to do this (e.g. dilate the objects by one pixel and count how many pixels overlap - actually count the inverse which is how many pixels border the background).
+-*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module:
+What is the distance to the nearest two neighboring objects?
+what are the vectors to the nearest two neighbors?
+What are the indices (ObjectNumbers) of the two nearest neighbors? 
+How many of its border pixels are bordering other objects? DONE
 
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 

@@ -51,7 +51,7 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Objects are considered neighbors if they are within this distance, in pixels. Or, enter 0 (zero) to expand objects until touching and then count their neighbors:
+%textVAR02 = Objects are considered neighbors if they are within this distance, in pixels. If you want your objects to be touching before you count neighbors (for instance, in an image of tissue), use the ExpandOrShrink module to expand your objects:
 %defaultVAR02 = 0
 NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -65,7 +65,13 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3})
 %infotypeVAR04 = imagegroup indep
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%%%VariableRevisionNumber = 4
+%textVAR05 = Do you want to calculate the extra measures?
+%choiceVAR05 = No
+%choiceVAR05 = Yes
+%inputtypeVAR05 = popupmenu
+ExtraMeasures = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -88,6 +94,9 @@ ImageOfNeighbors = -ones(sr,sc);
 NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
 IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);
+if strcmp(ExtraMeasures,'Yes')
+    ese = strel('disk',2,0);
+end
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 for k = 1:max(IncomingLabelMatrixImage(:))
     % Cut patch
@@ -100,6 +109,27 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     % Extend cell boundary
     pextended = imdilate(p==k,se,'same');
     overlap = p.*pextended;
+    if strcmp(ExtraMeasures,'Yes')
+        ep = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
+        % Extend cell boundary
+        epextended = imdilate(ep,ese,'same');
+        x=bwperim(bwlabel(ep==k));
+        State = warning;
+        warning off Matlab:DivideByZero
+        y=(imdilate(ep~=k & ep~=0,ese,'same')+(ep==k))./(imdilate(ep~=k & ep~=0,ese,'same')+(ep==k));
+        warning(State);
+        y(find(isnan(y)))=0;
+        z1=[zeros(1,size(y,2));y(1:end-1,:)];
+        z2=[y(2:end,:);zeros(1,size(y,2))];
+        z3=[zeros(size(y,1),1),y(:,1:end-1)];
+        z4=[y(:,2:end),zeros(size(y,1),1)];
+        Combined1=z1-x;
+        Combined2=z2-x;
+        Combined3=z3-x;
+        Combined4=z4-x;
+        EdgePixels=find(Combined1==-1 | Combined2==-1 | Combined3==-1 | Combined4==-1);
+        PercentTouching(k) = ((sum(sum(x))-length(EdgePixels))/sum(sum(x)))*100;
+    end
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
@@ -111,8 +141,8 @@ end
 drawnow
 
 %%% Saves neighbor measurements to handles structure.
-handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {NumberOfNeighbors};
-handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors'};
+handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching']};
+handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching'};
 
 % This field is different from the usual measurements. To avoid problems with export modules etc we don't
 % add a IdentityOfNeighborsFeatures field. It will then be "invisible" to
@@ -140,10 +170,10 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(IncomingLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
-    subplot(2,1,1); 
-    CPimagesc(ColoredIncomingObjectsImage,handles); 
+    subplot(2,1,1);
+    CPimagesc(ColoredIncomingObjectsImage,handles);
     title(ObjectName)
-    subplot(2,1,2); 
+    subplot(2,1,2);
     CPimagesc(ImageOfNeighbors,handles);
     colormap(handles.Preferences.LabelColorMap)
     colorbar('SouthOutside')

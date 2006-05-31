@@ -189,6 +189,21 @@ else
 end
 %%% Correct the threshold using the correction factor given by the user
 %%% and make sure that the threshold is not larger than the minimum threshold
+
+if isfield(handles.Measurements.Image,'OrigThreshold')
+    OldColumn=strmatch(ImageName,handles.Measurements.Image.OrigThresholdFeatures);
+    if isempty(OldColumn)
+        NewColumn=length(handles.Measurements.Image.OrigThresholdFeatures)+1;
+        handles.Measurements.Image.OrigThresholdFeatures(NewColumn)={ImageName};
+        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,NewColumn)=Threshold;
+    else
+        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,OldColumn)=Threshold;
+    end
+else
+    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=Threshold;
+    handles.Measurements.Image.OrigThresholdFeatures={ImageName};
+end
+
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);

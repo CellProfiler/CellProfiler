@@ -96,6 +96,8 @@ IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);
 if strcmp(ExtraMeasures,'Yes')
     ese = strel('disk',2,0);
+    XLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,1);
+    YLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,2);
 end
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 for k = 1:max(IncomingLabelMatrixImage(:))
@@ -110,13 +112,12 @@ for k = 1:max(IncomingLabelMatrixImage(:))
     pextended = imdilate(p==k,se,'same');
     overlap = p.*pextended;
     if strcmp(ExtraMeasures,'Yes')
-        ep = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
-        % Extend cell boundary
-        epextended = imdilate(ep,ese,'same');
-        x=bwperim(bwlabel(ep==k));
+        %%% PERCENT TOUCHING %%%
+        epextended = imdilate(p,ese,'same');
+        x=bwperim(bwlabel(p==k));
         State = warning;
         warning off Matlab:DivideByZero
-        y=(imdilate(ep~=k & ep~=0,ese,'same')+(ep==k))./(imdilate(ep~=k & ep~=0,ese,'same')+(ep==k));
+        y=(imdilate(p~=k & p~=0,ese,'same')+(p==k))./(imdilate(p~=k & p~=0,ese,'same')+(p==k));
         warning(State);
         y(find(isnan(y)))=0;
         z1=[zeros(1,size(y,2));y(1:end-1,:)];
@@ -129,6 +130,26 @@ for k = 1:max(IncomingLabelMatrixImage(:))
         Combined4=z4-x;
         EdgePixels=find(Combined1==-1 | Combined2==-1 | Combined3==-1 | Combined4==-1);
         PercentTouching(k) = ((sum(sum(x))-length(EdgePixels))/sum(sum(x)))*100;
+
+        %%% CLOSEST NEIGHBORS %%%
+        CurrentX=XLocations(k);
+        CurrentY=YLocations(k);
+        XLocationsMinusCurrent=XLocations;
+        XLocationsMinusCurrent(k)=[];
+        YLocationsMinusCurrent=YLocations;
+        YLocationsMinusCurrent(k)=[];
+        FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
+        XLocationsMinusFirstClosest=XLocationsMinusCurrent;
+        XLocationsMinusFirstClosest(FirstClosest)=[];
+        YLocationsMinusFirstClosest=YLocationsMinusCurrent;
+        YLocationsMinusFirstClosest(FirstClosest)=[];
+        SecondClosest = dsearch(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest,delaunay(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest),CurrentX,CurrentY);
+        FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
+        FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
+        FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
+        SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
+        SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
+        SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
     end
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
@@ -140,9 +161,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves neighbor measurements to handles structure.
-handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching']};
-handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching'};
+if strcmp(ExtraMeasures,'Yes')
+    %%% Saves neighbor measurements to handles structure.
+    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector']};
+    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching' 'First Closest Object Number' 'First Closest X Vector' 'First Closest Y Vector' 'Second Object Number' 'Second Closest X Vector' 'Second Closest Y Vector'};
+else
+    %%% Saves neighbor measurements to handles structure.
+    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};
+    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors'};
+end
 
 % This field is different from the usual measurements. To avoid problems with export modules etc we don't
 % add a IdentityOfNeighborsFeatures field. It will then be "invisible" to

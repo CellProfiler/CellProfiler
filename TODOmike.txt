@@ -1,11 +1,5 @@
 Mike's TODO list
 
--*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module:
-What is the distance to the nearest two neighboring objects?
-what are the vectors to the nearest two neighbors?
-What are the indices (ObjectNumbers) of the two nearest neighbors? 
-How many of its border pixels are bordering other objects? DONE
-
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.

@@ -1,10 +1,14 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module:
+What is the distance to the nearest two neighboring objects? DECIDED NOT TO DO
+what are the vectors to the nearest two neighbors? DONE COVERS "DISTANCE"
+What are the indices (ObjectNumbers) of the two nearest neighbors? DONE
+How many of its border pixels are bordering other objects? DONE
+
 - (Peter Swire, 5/18) (Requested by Anne 2-24-06) - In Calculate Statistics, if the number of image sets does not equal the number of imported text data (dose data), I think it generates an error at the subfunction (which is called VZfactors or something like that). Because this processing only occurs at the end of  the set (and it's really annoying to have the run not be complete just because of an error in this module), this error should be caught, a warning box produced, and processing should continue. 
 
-
 - (Peter Swire, 5/17) (Requested by Anne 2-12-06) - Images with the ending 'tiff' do not show up in the main GUI window when they are in the default image directory, although 'tif' shows up fine.
-
 
 - (Peter Swire) (Requested By Colin 1-13-06) - In the ShowDataOnImage data tool, there is an error when you close out of the window that pops up after clicking on the NumberOfDecimals button.
 
@@ -14,9 +18,7 @@ Error in ==> ViewData at 97
         TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
 ??? Error while evaluating uimenu Callback.
 
-
 - (Peter Swire) (Requested by Anne 2-23-06) - Make Calculate Ratios Data Tool (in the Developer's drop box) into a real data tool (right now, you run it from the command line with all the variables hardcoded). Share code with the Calc Ratios module as much as possible.
-
 
 -(Mike 5/9) (Anne 5-2-06) For the website, add this link to "Press > CellProfiler in the news":
 http://www.nature.com/nmeth/journal/v2/n7/full/nmeth0705-547.html

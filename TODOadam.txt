@@ -5,7 +5,9 @@
 \deftab720
 \pard\pardeftab720\ql\qnatural
 
-\f0\fs24 \cf0 - Learn CellVisualizer code from In Han, take over programming by the end of the summer, possibly supervise undergrads working on the project in the fall (or maybe summer, if some current undergrads want to do it and it seems feasible to have them help).\
+\f0\fs24 \cf0 - Set up an SVN repository for CellVisualizer, as we have done for CellProfiler already, and write some instructions on the Wiki. Figure out how to remove users from the SVN repository and explain to Anne, and update Wiki.\
+\
+- Learn CellVisualizer code from In Han, take over programming by the end of the summer, possibly supervise undergrads working on the project in the fall (or maybe summer, if some current undergrads want to do it and it seems feasible to have them help).\
 \
 - Learn from Mike how to process image sets using the cluster and how to import data into the database. Ideally, have him update the Wiki/help in CellProfiler and see whether you can manage it from those instructions (and if not, improve the instructions!)\
 \

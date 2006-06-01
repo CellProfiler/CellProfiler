@@ -1,6 +1,6 @@
 -Stacked tifs
 
--Have ident modules record what real threshold would have been
+-Use polyfit in correlation module to get the slope of Image vs. Image per pixel
 
 -(Mike 5/7/06) Make IdentifyTertiary and IdentifySecondary use CPrelateobjects and make sure CPrelateobjects can handle if the first image set does not have objects. So where we have if handles.current.setbeinganalyzed == 1 there should be a check also if it is not image set 1 to be able to add the new set of data
 

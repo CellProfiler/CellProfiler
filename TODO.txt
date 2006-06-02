@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 May 10, 2006
 
+- (Anne 6/2/06) - When you change the size of smooth filter in IdPrimAuto so that it's not automatic, the number it displays in the window is not the number you entered. Check also the Max Suppression Size.
+
 - (Anne 5/31/06) - When you analyze images and the output filename you entered already exists, it automatically changes the name and asks if it's ok. The code isn't too smart right now, though, because a dialog box flashes momentarily and then is replaced by the window asking 'is it ok to change the filename?' We should prevent the initial window from coming up if possible.
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.

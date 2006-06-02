@@ -72,6 +72,32 @@ drawnow
 
 [handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix);
 
+handles.Measurements.(SubObjectName).SubObjectFlag=1;
+
+MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
+NewObjectName=['Mean',SubObjectName];
+Parents=handles.Measurements.Specks.Parent{handles.Current.SetBeingAnalyzed};
+for RemainingMeasurementFieldnames = MeasurementFieldnames
+    if isempty(strfind(char(RemainingMeasurementFieldnames),'Features')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Parent')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Children'))
+        continue
+    else
+        FieldName=char(RemainingMeasurementFieldnames);
+        MeasurementFeatures=handles.Measurements.(SubObjectName).(FieldName);
+        handles.Measurements.(NewObjectName).(FieldName)=MeasurementFeatures;
+        Measurements=handles.Measurements.(SubObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed};
+        for i=1:length(MeasurementFeatures)
+            for j=1:max(max(ParentObjectLabelMatrix))
+                index=find(Parents==j);
+                if isempty(index)
+                    handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
+                else
+                    handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
+                end
+            end
+        end
+    end
+end
+
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to
 %%% their parents values. This does not get saved and is only for display.

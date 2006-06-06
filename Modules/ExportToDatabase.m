@@ -150,6 +150,7 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %pathnametextVAR05 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
+%defaultVAR05 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 4

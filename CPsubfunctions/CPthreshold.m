@@ -195,12 +195,12 @@ if isfield(handles.Measurements.Image,'OrigThreshold')
     if isempty(OldColumn)
         NewColumn=length(handles.Measurements.Image.OrigThresholdFeatures)+1;
         handles.Measurements.Image.OrigThresholdFeatures(NewColumn)={ImageName};
-        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,NewColumn)=Threshold;
+        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,NewColumn)=mean(mean(Threshold));
     else
-        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,OldColumn)=Threshold;
+        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,OldColumn)=mean(mean(Threshold));
     end
 else
-    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=Threshold;
+    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=mean(mean(Threshold));
     handles.Measurements.Image.OrigThresholdFeatures={ImageName};
 end
 

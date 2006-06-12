@@ -100,7 +100,8 @@ if strcmp(ExtraMeasures,'Yes')
     YLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,2);
 end
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
-for k = 1:max(IncomingLabelMatrixImage(:))
+NumberOfObjects=max(IncomingLabelMatrixImage(:));
+for k = 1:NumberOfObjects
     % Cut patch
     [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
     rmax = min(sr,max(r) + (d+1));
@@ -131,25 +132,34 @@ for k = 1:max(IncomingLabelMatrixImage(:))
         EdgePixels=find(Combined1==-1 | Combined2==-1 | Combined3==-1 | Combined4==-1);
         PercentTouching(k) = ((sum(sum(x))-length(EdgePixels))/sum(sum(x)))*100;
 
-        %%% CLOSEST NEIGHBORS %%%
-        CurrentX=XLocations(k);
-        CurrentY=YLocations(k);
-        XLocationsMinusCurrent=XLocations;
-        XLocationsMinusCurrent(k)=[];
-        YLocationsMinusCurrent=YLocations;
-        YLocationsMinusCurrent(k)=[];
-        FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
-        XLocationsMinusFirstClosest=XLocationsMinusCurrent;
-        XLocationsMinusFirstClosest(FirstClosest)=[];
-        YLocationsMinusFirstClosest=YLocationsMinusCurrent;
-        YLocationsMinusFirstClosest(FirstClosest)=[];
-        SecondClosest = dsearch(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest,delaunay(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest),CurrentX,CurrentY);
-        FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
-        FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
-        FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
-        SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
-        SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
-        SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
+        if NumberOfObjects >= 3
+            %%% CLOSEST NEIGHBORS %%%
+            CurrentX=XLocations(k);
+            CurrentY=YLocations(k);
+            XLocationsMinusCurrent=XLocations;
+            XLocationsMinusCurrent(k)=[];
+            YLocationsMinusCurrent=YLocations;
+            YLocationsMinusCurrent(k)=[];
+            FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
+            XLocationsMinusFirstClosest=XLocationsMinusCurrent;
+            XLocationsMinusFirstClosest(FirstClosest)=[];
+            YLocationsMinusFirstClosest=YLocationsMinusCurrent;
+            YLocationsMinusFirstClosest(FirstClosest)=[];
+            SecondClosest = dsearch(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest,delaunay(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest),CurrentX,CurrentY);
+            FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
+            FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
+            FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
+            SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
+            SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
+            SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
+        else
+            FirstObjectNumber(k)=0;
+            FirstXVector(k)=0;
+            FirstYVector(k)=0;
+            SecondObjectNumber(k)=0;
+            SecondXVector(k)=0;
+            SecondYVector(k)=0;
+        end
     end
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});

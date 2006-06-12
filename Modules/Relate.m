@@ -76,7 +76,7 @@ handles.Measurements.(SubObjectName).SubObjectFlag=1;
 
 MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
 NewObjectName=['Mean',SubObjectName];
-Parents=handles.Measurements.Specks.Parent{handles.Current.SetBeingAnalyzed};
+Parents=handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed};
 for RemainingMeasurementFieldnames = MeasurementFieldnames
     if isempty(strfind(char(RemainingMeasurementFieldnames),'Features')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Parent')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Children'))
         continue

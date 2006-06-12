@@ -451,7 +451,7 @@ drawnow
 %%% "OrigImage".
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
-if strcmp(class(OrigImage),'logical')
+if islogical(OrigImage)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image is binary (black/white). The input image must be grayscale.']);
 end
 

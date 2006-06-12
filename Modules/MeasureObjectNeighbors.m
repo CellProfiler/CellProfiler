@@ -152,6 +152,7 @@ for k = 1:NumberOfObjects
             SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
             SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
             SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
+            AngleBetweenTwoClosestNeighbors(k)=acosd(dot([FirstXVector FirstYVector],[SecondXVector SecondYVector]));
         else
             FirstObjectNumber(k)=0;
             FirstXVector(k)=0;
@@ -159,6 +160,7 @@ for k = 1:NumberOfObjects
             SecondObjectNumber(k)=0;
             SecondXVector(k)=0;
             SecondYVector(k)=0;
+            AngleBetweenTwoClosestNeighbors(k)=0;
         end
     end
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
@@ -173,8 +175,8 @@ drawnow
 
 if strcmp(ExtraMeasures,'Yes')
     %%% Saves neighbor measurements to handles structure.
-    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector']};
-    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching' 'First Closest Object Number' 'First Closest X Vector' 'First Closest Y Vector' 'Second Object Number' 'Second Closest X Vector' 'Second Closest Y Vector'};
+    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector' AngleBetweenTwoClosestNeighbors']};
+    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching' 'First Closest Object Number' 'First Closest X Vector' 'First Closest Y Vector' 'Second Object Number' 'Second Closest X Vector' 'Second Closest Y Vector' 'Angle Between Closest Neighbors'};
 else
     %%% Saves neighbor measurements to handles structure.
     handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};

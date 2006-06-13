@@ -4,3 +4,7 @@ Mike's TODO list
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.
 EDIT: INSTEAD, TRY LIMITING THE NUMBER OF ENTRIES FOR HANDLES, THEN AT END OF IMAGE ANALYSIS COMBINE SEPERATE VARIABLES
+
+- Tell people at lab meeting about our storage closet downstairs. I think most people don't know.
+
+- As we discovered, Plate fix in the Crop module works to force the coordinates to be used each time freshly (when doing rectangle, coordinates). Can you describe in the help why/how this works? I guess in my case none of the rows/columns were 50% empty, so the real purpose of Plate fix was thwarted, while the cute side benefit of repeating use of the coordinates was used?

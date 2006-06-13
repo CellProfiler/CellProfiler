@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 
-- Add option to change colormap to image tool window
+- (Anne 6/12/06) - IdentifyPrimAutomatic: the lower left image inthe display window has a title that does not match the upper right - it should say Outlined XXX, where XXX is the same name as is in the upper right title (Identified XXX).
+
+- Mike - Add option to change colormap to image tool window
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
 

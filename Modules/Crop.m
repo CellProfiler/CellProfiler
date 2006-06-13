@@ -484,7 +484,7 @@ catch
     end
 end
 
-if size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1))
+if any(size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1)))
     error(['Image processing was canceled in the ', ModuleName, ' module because an image you wanted to crop is not the same size as the cropping mask.  The pixel dimensions must be identical between the image that you are currently cropping and the image where you made the cropping mask.'])
 end
 %%% Sets pixels in the original image to zero if those pixels are zero in

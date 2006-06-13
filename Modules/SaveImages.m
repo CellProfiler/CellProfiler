@@ -91,7 +91,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the images you want to save (If you would like to save a figure, enter the module number here)?
+%textVAR01 = What did you call the images you want to save? If you would like to save an entire figure, enter the module number here
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom

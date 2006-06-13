@@ -153,6 +153,22 @@ for k = 1:NumberOfObjects
             SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
             SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
             AngleBetweenTwoClosestNeighbors(k)=acosd(dot([FirstXVector FirstYVector],[SecondXVector SecondYVector]));
+        elseif NumberOfObjects == 2
+            %%% CLOSEST NEIGHBORS %%%
+            CurrentX=XLocations(k);
+            CurrentY=YLocations(k);
+            XLocationsMinusCurrent=XLocations;
+            XLocationsMinusCurrent(k)=[];
+            YLocationsMinusCurrent=YLocations;
+            YLocationsMinusCurrent(k)=[];
+            FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
+            FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
+            FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
+            FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
+            SecondObjectNumber(k)=0;
+            SecondXVector(k)=0;
+            SecondYVector(k)=0;
+            AngleBetweenTwoClosestNeighbors(k)=0;
         else
             FirstObjectNumber(k)=0;
             FirstXVector(k)=0;

@@ -82,6 +82,13 @@ AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
+%textVAR08 = Should this module use Mutual Information or Normalized Cross Correlation to align the images?  If using normalized cross correlation, the second image should be the template and smaller than the first.
+%choiceVAR08 = Mutual Information
+%choiceVAR08 = Normalized Cross Correlation
+AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
+
+
 %%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -107,13 +114,13 @@ drawnow
 %%% Aligns three input images.
 if ~strcmp(Image3Name,'Do not use')
     %%% Aligns 1 and 2 (see subfunctions at the end of the module).
-    [sx, sy] = autoalign(Image1, Image2);
+    [sx, sy] = autoalign(Image1, Image2, AlignMethod);
     Temp1 = subim(Image1, sx, sy);
     Temp2 = subim(Image2, -sx, -sy);
     %%% Assumes 3 is stuck to 2.
     Temp3 = subim(Image3, -sx, -sy);
     %%% Aligns 2 and 3.
-    [sx2, sy2] = autoalign(Temp2, Temp3);
+    [sx2, sy2] = autoalign(Temp2, Temp3, AlignMethod);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy), ...
         ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
     if strcmp(AdjustImage,'Yes') == 1
@@ -123,7 +130,7 @@ if ~strcmp(Image3Name,'Do not use')
         AlignedImage1 = subim(Temp1, sx2, sy2);
     end
 else %%% Aligns two input images.
-    [sx, sy] = autoalign(Image1, Image2);
+    [sx, sy] = autoalign(Image1, Image2, AlignMethod);
     Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy),')'];
     if strcmp(AdjustImage,'Yes') == 1
         AlignedImage1 = subim(Image1, sx, sy);
@@ -141,20 +148,24 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     if strcmp(AdjustImage,'Yes')
         %%% For three input images.
-        if ~strcmp(Image3Name,'Do not use')
+        if (~strcmp(Image3Name,'Do not use') && all(size(Image1) == size(Image2)) && all(size(Image1) == size(Image3))),
             OriginalRGB(:,:,1) = Image3;
             OriginalRGB(:,:,2) = Image2;
             OriginalRGB(:,:,3) = Image1;
             AlignedRGB(:,:,1) = AlignedImage3;
             AlignedRGB(:,:,2) = AlignedImage2;
             AlignedRGB(:,:,3) = AlignedImage1;
-        else %%% For two input images.
+        %%% For two input images.
+        elseif all(size(Image1) == size(Image2)),
             OriginalRGB(:,:,1) = zeros(size(Image1));
             OriginalRGB(:,:,2) = Image2;
             OriginalRGB(:,:,3) = Image1;
             AlignedRGB(:,:,1) = zeros(size(AlignedImage1));
             AlignedRGB(:,:,2) = AlignedImage2;
             AlignedRGB(:,:,3) = AlignedImage1;
+        else
+            OriginalRGB = Image1;
+            AlignedRGB = AlignedImage1;
         end
     end
     %%% Activates the appropriate figure window.
@@ -225,7 +236,21 @@ end
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
 
-function [shiftx, shifty] = autoalign(in1, in2)
+function [shiftx, shifty] = autoalign(in1, in2, method)
+if (strcmp(method, 'Mutual Information')==1),
+    [shiftx, shifty] = autoalign_mutualinf(in1, in2);
+else
+    [shiftx, shifty] = autoalign_ncc(in1, in2);
+end
+
+function [shiftx, shifty] = autoalign_ncc(in1, in2)
+%%% XXX - should check dimensions
+ncc = normxcorr2(in2, in1);
+[i, j] = find(ncc == max(ncc(:)));
+shiftx = j(1) - size(in2, 2);
+shifty = i(1) - size(in2, 1);
+
+function [shiftx, shifty] = autoalign_mutualinf(in1, in2)
 %%% Aligns two images using mutual-information and hill-climbing.
 best = mutualinf(in1, in2);
 bestx = 0;

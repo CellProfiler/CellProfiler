@@ -604,7 +604,7 @@ else
     else
         %%% If the module.m file is not on the path, it won't be
         %%% found, so ask the user where the modules are.
-        Pathname = uigetdir('','Please select directory where modules are located');
+        Pathname = uigetdir(pwd,['The module ',ModuleNamedotm,' cannot be found. Please select directory where this module is located']);
         pause(.1);
         figure(handles.figure1);
     end

@@ -1,5 +1,12 @@
 CellProfiler cell image analysis software development 
-May 10, 2006
+
+- (Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
+
+- (Anne 6/12/06) - It would be so great, when you have tons of windows open, to have under "Windows" on the main menu bar a listing of all open windows in CellProfiler so that you can make any open window you want come to the front. It should list the same info that is in the title bar of the window, including Figure XX: IdentifyPrimAutomatic, for example.
+
+- (Anne 6/12/06) - Should the Timer be renamed "Status"?
+
+- (Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up.
 
 - (Anne 6/2/06) - When you change the size of smooth filter in IdPrimAuto so that it's not automatic, the number it displays in the window is not the number you entered. Check also the Max Suppression Size.
 

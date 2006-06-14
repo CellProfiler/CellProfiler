@@ -5,3 +5,13 @@
 -(Anne 3-2-06) Take all the empty boxes you can find down to our storage closet.
 
 -(Anne 3-15-06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames. ObjectCount.ObjectCount_Cells should have the underscore removed: ObjectCountCells, and Form_Factor, too.
+
+- Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
+
+- (Anne 6/12/06) - IdentifyPrimAutomatic: the lower left image inthe display window has a title that does not match the upper right - it should say Outlined XXX, where XXX is the same name as is in the upper right title (Identified XXX). Also the ConvertToImage window should call the objects by their name rather than saying "Objects"
+
+- (Anne 6/12/06) - I think 'New Pipeline' should actually be called 'Clear Pipeline'
+
+- (Anne 5/31/06) - When you analyze images and the output filename you entered already exists, it automatically changes the name and asks if it's ok. The code isn't too smart right now, though, because a dialog box flashes momentarily and then is replaced by the window asking 'is it ok to change the filename?' We should prevent the initial window from coming up if possible.
+
+- (Anne 4/25/06) - See the "important" note in the help for ConvertBatchFiles data tool - we should make the appropriate change so that the first image cycle is removed (but be sure that whatever change you make does not disturb the first and second batch output files in a set (Batch_data.mat and Batch_2_to_XX.mat))

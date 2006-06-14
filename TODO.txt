@@ -4,8 +4,6 @@ CellProfiler cell image analysis software development
 
 - (Anne 6/12/06) - LoadSingleImage seems to spit its text display into other windows, depending on what you have open and are looking at. Maybe this a fluke, transient thing but perhaps we can make it put its text in the proper window more consistently? If we fix it for this module, make sure LoadImages is also working similarly.
 
-- (Anne 6/12/06) - IdentifyPrimAutomatic: the lower left image inthe display window has a title that does not match the upper right - it should say Outlined XXX, where XXX is the same name as is in the upper right title (Identified XXX). Also the ConvertToImage window should call the objects by their name rather than saying "Objects"
-
 - Mike - Add option to change colormap to image tool window
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
@@ -19,13 +17,9 @@ Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir),
 
 - (Anne 6/12/06) - Should the Timer be renamed "Status"?
 
-- (Anne 6/12/06) - I think 'New Pipeline' should actually be called 'Clear Pipeline'
-
 - (Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up.
 
 - (Anne 6/2/06) - When you change the size of smooth filter in IdPrimAuto so that it's not automatic, the number it displays in the window is not the number you entered. Check also the Max Suppression Size.
-
-- (Anne 5/31/06) - When you analyze images and the output filename you entered already exists, it automatically changes the name and asks if it's ok. The code isn't too smart right now, though, because a dialog box flashes momentarily and then is replaced by the window asking 'is it ok to change the filename?' We should prevent the initial window from coming up if possible.
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
@@ -65,8 +59,6 @@ estimate with no indication of its accuracy. - Ray
 - (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996), although we need to mark with a disclaimer that it's for academic purposes only because for commercial use, it's patented, and also Jeff says it does not deal with clumpy objects, so I guess it's for thresholding only, it is not a complete segmentation solution. See this article (anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
 
 -(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
-
-- (Anne 4/25/06) - See the "important" note in the help for ConvertBatchFiles data tool - we should make the appropriate change so that the first image cycle is removed (but be sure that whatever change you make does not disturb the first and second batch output files in a set (Batch_data.mat and Batch_2_to_XX.mat))
 
 - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
 

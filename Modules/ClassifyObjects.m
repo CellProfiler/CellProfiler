@@ -229,11 +229,10 @@ if ~strcmpi(FeatureType,'Ratio')
         handlescmap = handles.Preferences.LabelColorMap;
         cmap = [0 0 0;feval(handlescmap,length(bins))];
         QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
-        FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
     else
         QuantizedRGBimage = NonQuantizedImage;
-        FeatureName = ObjectName;
     end
+    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
     FeatureName = ObjectName;
 end

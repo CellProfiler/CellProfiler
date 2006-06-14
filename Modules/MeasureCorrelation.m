@@ -157,7 +157,7 @@ for ObjectNameNbr = 1:6
     end
 end
 %%% Get rid of 'Do not use' in the ObjectName cell array so we don't have to care about them later.
-ObjectName = tmpObjectName; 
+ObjectName = tmpObjectName;
 
 %%% Check so that at least one object type have been entered
 if ObjectNameCount < 1
@@ -171,11 +171,14 @@ drawnow
 
 %%% Produce feature names for all pairwise image combinations
 CorrelationFeatures = {};
+SlopeFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
         CorrelationFeatures{end+1} = ['Correlation ',ImageName{i},' and ',ImageName{j}];
     end
 end
+
+imageerr = 0; % Initialize image error status for error check
 
 %%% For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
@@ -193,18 +196,40 @@ for ObjectNameNbr = 1:ObjectNameCount
                     else
                         c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
                         CorrelationForCurrentObject = c(1,2);
+                        xsize = size(Image{i}); 
+                        ysize = size(Image{j});
+                        if (strcmp(ObjectName{ObjectNameNbr},'Image')) & (xsize == ysize)
+                            SlopeFeatures{end+1} = ['Slope for ',ImageName{i},' and ',ImageName{j}];
+                            x = Image{i}(:);
+                            y = Image{j}(:);
+                            p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope
+                            SlopeForCurrentObject = p(1);
+                            Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
+                        else
+                            imageerr = 1; % Error is detected
+                            SlopeForCurrentObject = 0;
+                            Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
+                        end
                     end
                     Correlation(ObjectNbr,FeatureNbr) = CorrelationForCurrentObject; % Store the correlation
                     FeatureNbr = FeatureNbr + 1;
-                catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
+                catch
+                    if (imageerr == 1)
+                        error('File is not an image or images are not the same size');
+                    else error(['Image processing was cancelled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
+                    end       
                 end
-
             end
         end
     end
-    %%% Store the correlation measurements
-    handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
-    handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+    %%% Store the correlation and slope measurements
+     if strcmp (ObjectName{ObjectNameNbr},'Image')
+         handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = [CorrelationFeatures SlopeFeatures];
+         handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {[Correlation Slope]};
+     else
+         handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
+         handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

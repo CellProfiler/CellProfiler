@@ -208,13 +208,13 @@ for Object = 1:length(ExportInfo.ObjectNames)
                         Measurements{imageset} = cat(2,Measurements{imageset},CPnanstd(tmpMeasurements{imageset},1));
                     else
                         if strcmp(ExportInfo.DataParameter,'mean')
-                            Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));                      
+                            Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
                         else
                             if strcmp(ExportInfo.DataParameter,'median')
                                 Measurements{imageset} = cat(2,Measurements{imageset},CPnanmedian(tmpMeasurements{imageset},1));
-                            end;
-                        end;
-                    end;                            
+                            end
+                        end
+                    end
                 end
             else
                 for imageset = 1:length(Measurements)
@@ -226,9 +226,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
                         else
                             if strcmp(ExportInfo.DataParameter,'median')
                                 Measurements{imageset} = cat(2,Measurements{imageset},median(tmpMeasurements{imageset},1));
-                            end;
-                        end;
-                    end;
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -281,16 +281,21 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 % Write text
                 strText = {};
                 if ~isempty(TextNames)
-                    strText = cell(2*length(TextNames),1);
-                    strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                    tmp = Text{imageset}(row,:);               % Get the right row in the right image set
-                    index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
-                    for k = 1:length(index)
-                        for l = 1:length(index{k})
-                            tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
+                    if strcmp(ObjectName,'Image')
+                        strText = cell(2*length(TextNames),1);
+                        strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
+                        tmp = Text{imageset}(row,:);               % Get the right row in the right image set
+                        index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
+                        for k = 1:length(index)
+                            for l = 1:length(index{k})
+                                tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
+                            end
                         end
+                        strText(2:2:end) = tmp;                    % Interleave with tabs
+                    else
+                        %%% ADD CODE TO EXPORT TEXT LABELS HERE
+                        test=eps;
                     end
-                    strText(2:2:end) = tmp;                    % Interleave with tabs
                 end
                 % Write measurements
                 strMeasurement = {};
@@ -326,21 +331,26 @@ for Object = 1:length(ExportInfo.ObjectNames)
         %%% Start by writing text
         %%% Loop over rows, writing one image set's text features at the time
         for row = 1:length(TextNames)
-            fprintf(fid,'%s',TextNames{row});
-            for imageset = 1:length(Text)
-                strText = cell(2*size(Text{imageset},1),1);
-                strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                tmp = Text{imageset}(:,row)';              % Get the right row in the right image set
-                index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
-                for k = 1:length(index)
-                    for l = 1:length(index{k})
-                        tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
+            if strcmp(ObjectName,'Image')
+                fprintf(fid,'%s',TextNames{row});
+                for imageset = 1:length(Text)
+                    strText = cell(2*size(Text{imageset},1),1);
+                    strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
+                    tmp = Text{imageset}(:,row)';              % Get the right row in the right image set
+                    index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
+                    for k = 1:length(index)
+                        for l = 1:length(index{k})
+                            tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
+                        end
                     end
+                    strText(2:2:end) = tmp;                    % Interleave with tabs
+                    fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
                 end
-                strText(2:2:end) = tmp;                    % Interleave with tabs
-                fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
+                fprintf(fid,'\n');
+            else
+                %%% ADD CODE TO EXPORT TEXT LABELS HERE
+                test=eps;
             end
-            fprintf(fid,'\n');
         end
 
         %%% Next, write numerical measurements

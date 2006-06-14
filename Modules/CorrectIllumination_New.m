@@ -149,7 +149,7 @@ for j = 1:length(start)
     IB(:,j) = ib;
 end
 
-[params, fX, iters] = minimize(start, 'sampleBaseEntropy', 50, X, Y, D(:,idx), IB)
+[params, fX, iters] = minimize(start, 'sampleBaseEntropy', 50, D(:,idx), IB)
 
 function B = illumBases(idx, X, Y)
 
@@ -340,7 +340,7 @@ while i < abs(length)                                      % while not finished
 end
 fprintf('\n');
 
-function [F, DF] = sampleBaseEntropy(params, X, Y, data, IB)
+function [F, DF] = sampleBaseEntropy(params, data, IB)
 fitfun = IB * params;
 
 if (any(fitfun <= 0.0))
@@ -353,11 +353,6 @@ ndata = data ./ fitfun;
 norm = ndata(end-100)-ndata(100);
 ndata = log(norm * ndata);
 
-for i = 1:length(params),
-    Dlogndata(:,i) = -IB(:,i) ./ fitfun;
-end
-Dlogndata = Dlogndata(reidx, :);
-
 N = length(ndata);
 
 % This should be a user-set parameter, but it should be much less than N
@@ -365,5 +360,6 @@ M = 100;
 
 F = sum(log((N/M)*(ndata(101:end) - ndata(1:end-100)))) / N;
 
-DF = sum((Dlogndata(101:end,:) - Dlogndata(1:end-100,:)) ./ repmat(ndata(101:end) - ndata(1:end-100), 1, length(params))) / N;
-DF = DF';
+DFsub = sample_sub(fitfun, IB, uint32(reidx), ndata) / N;
+
+DF = DFsub';

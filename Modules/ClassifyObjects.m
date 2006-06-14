@@ -335,8 +335,8 @@ MaxLengthOfFieldname = min(20,length(FeatureName));
 if length(strfind(Labels,',')) == (NbrOfBins - 1)
     EmptyIndex(EmptyIndex==0)=[];
     ListOfLabels(EmptyIndex)={' '};
-    handles.Measurements.Image.(['ClassifyObjects_LabelsDescription']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
-    handles.Measurements.Image.(['ClassifyObjects_Labels'])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
+    handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname),'Description']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
+    handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
 end
 
 handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ClassifyFeatureNames;

@@ -41,7 +41,7 @@ SubMeasurementFieldnames = fieldnames(handles.Measurements)';
 for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
     %%%SubFieldname is the first fieldname in SubMeasurementFieldnames.
     SubFieldname = RemainingSubMeasurementFieldnames{1};
-    if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldName),'SubObjectFlag')
+    if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldname),'SubObjectFlag')
         continue
     end
     substruct = handles.Measurements.(SubFieldname);
@@ -354,7 +354,7 @@ for img_idx = FirstSet:LastSet
     maxnumobj=0;
     for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         SubFieldname = RemainingSubMeasurementFieldnames{1};
-        if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldName),'SubObjectFlag')
+        if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldname),'SubObjectFlag')
             continue
         end
         substruct = handles.Measurements.(SubFieldname);

@@ -152,7 +152,7 @@ for k = 1:NumberOfObjects
             SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
             SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
             SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
-            AngleBetweenTwoClosestNeighbors(k)=real(acosd(dot([FirstXVector FirstYVector],[SecondXVector SecondYVector])/(sqrt(FirstXVector^2+FirstYVector^2)*sqrt(SecondXVector^2+SecondYVector^2))));
+            AngleBetweenTwoClosestNeighbors(k)=real(acosd(dot([FirstXVector(k) FirstYVector(k)],[SecondXVector(k) SecondYVector(k)])/(sqrt(FirstXVector(k)^2+FirstYVector(k)^2)*sqrt(SecondXVector(k)^2+SecondYVector(k)^2))));
         elseif NumberOfObjects == 2
             %%% CLOSEST NEIGHBORS %%%
             CurrentX=XLocations(k);

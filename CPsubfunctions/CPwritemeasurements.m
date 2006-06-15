@@ -30,6 +30,9 @@ SuperFeatureNames = cell(length(ExportInfo.ObjectNames),1);
 for Object = 1:length(ExportInfo.ObjectNames)
     ObjectName = ExportInfo.ObjectNames{Object};
 
+    if strcmp(ObjectName,'Neighbors')
+        continue
+    end
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
 
@@ -132,6 +135,10 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     ObjectName = ExportInfo.ObjectNames{Object};
 
+    if strcmp(ObjectName,'Neighbors')
+        continue
+    end
+
     %%% Update waitbar
     CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
@@ -163,7 +170,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             AllMeasurementNames = {};
             AllMeasurements = {};
             AllObjectName = AllFields{i};
-            if ~strcmpi(AllObjectName,'Image') && ~strcmpi(AllObjectName,'Experiment')
+            if ~strcmpi(AllObjectName,'Image') && ~strcmpi(AllObjectName,'Experiment') && ~strcmpi(AllObjectName,'Neighbors')
                 ObjectNumber = ObjectNumber + 1;
                 fields = fieldnames(handles.Measurements.(AllObjectName));
                 for k = 1:length(fields)

@@ -72,8 +72,9 @@ Difference(double *image,
   int delta_i, delta_j;
   double pixel_diff = 0.0;
 
-  for (delta_j = -4; delta_j < 5; delta_j++) {
-    for (delta_i = -4; delta_i < 5; delta_i++) {
+  /* At some point, the width over which differences are calculated should probably be user controlled. */
+  for (delta_j = -1; delta_j <= 1; delta_j++) {
+    for (delta_i = -1; delta_i <= 1; delta_i++) {
       pixel_diff += fabs(clamped_fetch(image, i1 + delta_i, j1 + delta_j, m, n) - 
                          clamped_fetch(image, i2 + delta_i, j2 + delta_j, m, n));
     }

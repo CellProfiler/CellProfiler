@@ -55,9 +55,9 @@ clamped_fetch(double *image,
               int m, int n)
 {
   if (i < 0) i = 0;
-  if (i == m) i = m-1;
+  if (i >= m) i = m-1;
   if (j < 0) j = 0;
-  if (j == n) j = n-1;
+  if (j >= n) j = n-1;
 
   return (image[IJ(i,j)]);
 }

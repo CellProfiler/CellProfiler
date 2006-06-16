@@ -1,6 +1,6 @@
 CellProfiler cell image analysis software development 
 
-- (Anne 6/14/06) - is there any way to save outlines of objects by themselves using the SaveImages module? Outlines are in a special group (outlinegroup) and they are binary images. I think we just need to allow the user to choose outlinegroup things AND image things directly in SaveImages. I don't think it would be necessary to make/use a module like ConvertToImage to convert the outlines to something else first.
+- (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 
 - (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
 

@@ -97,6 +97,8 @@ handles.Pipeline.(['Sampled',ImageName]) = [handles.Pipeline.(['Sampled',ImageNa
 
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     data = handles.Pipeline.(['Sampled',ImageName]);
+    handles.Measurements.(['Sampled',ImageName]).DataFeatures={'I' 'J' 'Data'};
+    handles.Measurements.(['Sampled',ImageName]).Data=data;
     p = ones(100,1);
     for i = [20 10 5 4 3 2 1]
         p = fitIllum(data(1:i:end,:), 3, p, SZ);

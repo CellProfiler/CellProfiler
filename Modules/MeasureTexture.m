@@ -34,7 +34,7 @@ function handles = MeasureTexture(handles)
 % differences in intensity are seen between two images or objects, the
 % differences in texture cannot be trusted as being completely independent
 % of the intensity difference.
-% 
+%
 % Measurement:             Feature Number:
 % AngularSecondMoment     |       1
 % Contrast                |       2
@@ -81,7 +81,7 @@ function handles = MeasureTexture(handles)
 % H13. Information Measure of Correlation 2
 % H14. Max correlation coefficient *H14 is disabled because it is
 % computationally demanding.
-% 
+%
 % Gabor "wavelet" features:
 % These features are similar to wavelet features, and they are obtained by
 % applying so-called Gabor filters to the image. The Gabor filters measure
@@ -358,6 +358,9 @@ for i = 1:6
                 Haralick(Object,:) = CalculateHaralick(Greyim,BWim,ScaleOfTexture);
             end
         end
+    else
+        Haralick = zeros(1,13);
+        Gabor = zeros(1,2);
     end
     %%% Save measurements
     handles.Measurements.(ObjectName).(['Texture_',num2str(ScaleOfTexture),'_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);

@@ -94,7 +94,7 @@ ImageOfNeighbors = -ones(sr,sc);
 NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
 IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);
-if strcmp(ExtraMeasures,'Yes')
+if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
     ese = strel('disk',2,0);
     XLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,1);
     YLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,2);
@@ -132,7 +132,7 @@ for k = 1:NumberOfObjects
         EdgePixels=find(Combined1==-1 | Combined2==-1 | Combined3==-1 | Combined4==-1);
         PercentTouching(k) = ((sum(sum(x))-length(EdgePixels))/sum(sum(x)))*100;
 
-        if NumberOfObjects >= 3
+        if NumberOfObjects > 4
             %%% CLOSEST NEIGHBORS %%%
             CurrentX=XLocations(k);
             CurrentY=YLocations(k);
@@ -153,7 +153,7 @@ for k = 1:NumberOfObjects
             SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
             SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
             AngleBetweenTwoClosestNeighbors(k)=real(acosd(dot([FirstXVector(k) FirstYVector(k)],[SecondXVector(k) SecondYVector(k)])/(sqrt(FirstXVector(k)^2+FirstYVector(k)^2)*sqrt(SecondXVector(k)^2+SecondYVector(k)^2))));
-        elseif NumberOfObjects == 2
+        elseif NumberOfObjects > 3
             %%% CLOSEST NEIGHBORS %%%
             CurrentX=XLocations(k);
             CurrentY=YLocations(k);
@@ -182,6 +182,18 @@ for k = 1:NumberOfObjects
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+end
+
+if NumberOfObjects == 0
+    NumberOfNeighbors=0;
+    PercentTouching=0;
+    FirstObjectNumber=0;
+    FirstXVector=0;
+    FirstYVector=0;
+    SecondObjectNumber=0;
+    SecondXVector=0;
+    SecondYVector=0;
+    AngleBetweenTwoClosestNeighbors=0;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

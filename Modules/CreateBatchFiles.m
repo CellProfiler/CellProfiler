@@ -220,8 +220,8 @@ if strcmp(OldPathname, '.') ~= 1
     NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
 else
-    handles.Current.DefaultOutputDirectory = BatchImagePath;
-    handles.Current.DefaultImageDirectory = BatchOutputPath;
+    handles.Current.DefaultOutputDirectory = BatchOutputPath;
+    handles.Current.DefaultImageDirectory = BatchImagePath;
 end
 
 %%% Makes some changes to the handles structure that will be

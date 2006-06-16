@@ -137,6 +137,10 @@ FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
     FinalMeasurements = log10(FinalMeasurements);
 end
+if isnan(FinalMeasurements)
+    FinalMeasurements=0;
+end
+
 handles = CPaddmeasurements(handles,NumObjectName,'Ratio',NewFieldName,FinalMeasurements);
 
 %%%%%%%%%%%%%%%%%%%%%%%

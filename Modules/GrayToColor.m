@@ -51,19 +51,19 @@ drawnow
 %choiceVAR01 = Leave this black
 %infotypeVAR01 = imagegroup
 RedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
+%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = What did you call the image to be colored green?
 %choiceVAR02 = Leave this black
 %infotypeVAR02 = imagegroup
 GreenImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = What did you call the image to be colored blue?
 %choiceVAR03 = Leave this black
 %infotypeVAR03 = imagegroup
 BlueImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu
+%inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = What do you want to call the resulting image?
 %defaultVAR04 = ColorImage

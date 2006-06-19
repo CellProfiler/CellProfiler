@@ -1,0 +1,11 @@
+- (Anne 6/12/06) - It would be so great, when you have tons of windows open, to have under "Windows" on the main menu bar a listing of all open windows in CellProfiler so that you can make any open window you want come to the front. It should list the same info that is in the title bar of the window, including Figure XX: IdentifyPrimAutomatic, for example.
+
+- (Anne 6/12/06) - Should the Timer be renamed "Status"?
+
+- (Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?  Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
+
+- (Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up.
+
+- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray.
+
+- (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.

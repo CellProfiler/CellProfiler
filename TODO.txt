@@ -21,14 +21,6 @@ Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir),
 
 - (Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
 
-- (Anne 6/12/06) - It would be so great, when you have tons of windows open, to have under "Windows" on the main menu bar a listing of all open windows in CellProfiler so that you can make any open window you want come to the front. It should list the same info that is in the title bar of the window, including Figure XX: IdentifyPrimAutomatic, for example.
-
-- (Anne 6/12/06) - Should the Timer be renamed "Status"?
-
-- (Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up.
-
-- (Anne 6/2/06) - When you change the size of smooth filter in IdPrimAuto so that it's not automatic, the number it displays in the window is not the number you entered. Check also the Max Suppression Size.
-
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
@@ -80,8 +72,6 @@ estimate with no indication of its accuracy. - Ray
 
 - (Anne 4-19-06) - I fixed a bug in SaveImages module so that a proper error message appears if you specify an image file name for the base name that is not in the handles structure already. But we should doublecheck that SaveImages still works for the cases when the base name is (1) N for sequential numbers (2) type in one file name for all the images (=DesiredFilename), then appending sequential numbers using the following variable set to N, and (3) type in one file name for all the images (=DesiredFilename) for the case where you want to save an avi movie.
 
-- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray. Also, when you enter custom info for one of the settings for a module (e.g. in the Smooth module, Enter the width of artifacts), the window is gray.
-
 - (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?
 
 - (Requested by Colin 3/20) - I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype.
@@ -89,7 +79,6 @@ estimate with no indication of its accuracy. - Ray
 - (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
 
 - (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.
-
 
 - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 

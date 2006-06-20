@@ -1,11 +1,10 @@
 function handles = Combine(handles)
 
-% Help for the Gray To Color module:
+% Help for the Combine module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 images and assigns them to colors in a final red, green,
-% blue (RGB) image. Each color's brightness can be adjusted independently.
+% Takes 1 to 3 images and combines the images. Each color's brightness can be adjusted independently.
 % *************************************************************************
 %
 % Settings:
@@ -18,7 +17,7 @@ function handles = Combine(handles)
 % it.  Setting the adjustment factor to zero will cause that color to
 % be entirely blank.
 %
-% See also ColorToGray.
+% See also GrayToColor.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -199,7 +198,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(CombinedImage,handles);
     title(['Merged Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display Image 1.
-    counter = 2
+    counter = 2;
     if Image1Exists
         subplot(2,2,counter); 
         CPimagesc(Image1,handles); 

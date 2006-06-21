@@ -203,14 +203,14 @@ if any(findobj == ThisModuleFigureNumber)
         subplot(2,2,counter); 
         CPimagesc(Image1,handles); 
         title('Image 1');
-        counter=counter+1
+        counter=counter+1;
     end
     %%% A subplot of the figure window is set to display the Image 2.
     if Image2Exists
         subplot(2,2,counter); 
         CPimagesc(Image2,handles); 
         title('Image 2');
-        counter=counter+1
+        counter=counter+1;
     end
     %%% A subplot of the figure window is set to display the Image 3.
     if Image3Exists

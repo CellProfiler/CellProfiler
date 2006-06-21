@@ -1,1 +1,3 @@
- 
+- (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
+
+(6/21/06-...) 

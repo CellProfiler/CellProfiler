@@ -1,5 +1,7 @@
 Mike's TODO list
 
+New 6-21-06: Don't forget to have the UROPs do code review, where they each go through each module and look for inefficiencies and make sure there are good error messages, and most importantly check that the help is complete and understandable, etc. I guess we should wait until they have been here a month or so.
+
 - New, 6-15-06. - add the pipeline to the figure for each application (like we did for Figure 1a).
 
 - Combine Five Biotechniques figures into three by combining Figures 3-5 all together - maybe rotate the lungs in figure 3 90 degrees to give you enough room to put the pipeline at the left. Here is the legend for the new mega-figure:

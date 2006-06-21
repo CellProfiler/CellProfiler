@@ -128,24 +128,24 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
             elseif  strfind(i{1}, 'Path'),
                 fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
             else
-                fprintf(fmain, ',\n%s FLOAT', i{1});
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
             end
         end
 
         %add columns for mean and stddev for per_object_names
         for j=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT', ['Mean_', j{1}]);
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', ['Mean_', j{1}]);
         end
 
         for k=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT', ['StDev_', k{1}]);
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', ['StDev_', k{1}]);
         end
 
         fprintf(fmain, ');\n\n');
 
         fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
         for i = per_object_names
-            fprintf(fmain, ',\n%s FLOAT', i{1});
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
         end
 
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');

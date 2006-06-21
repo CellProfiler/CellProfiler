@@ -107,7 +107,48 @@ ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR09 =
+%choiceVAR09 = Do not use
+%infotypeVAR09 = imagegroup
+ImageNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR10 =
+%choiceVAR10 = Do not use
+%infotypeVAR10 = imagegroup
+ImageNameList{8} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
+%textVAR11 =
+%choiceVAR11 = Do not use
+%infotypeVAR11 = imagegroup
+ImageNameList{9} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 =
+%choiceVAR12 = Do not use
+%infotypeVAR12 = imagegroup
+ImageNameList{10} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
+
+%textVAR13 =
+%choiceVAR13 = Do not use
+%infotypeVAR13 = imagegroup
+ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+%textVAR14 =
+%choiceVAR14 = Do not use
+%infotypeVAR14 = imagegroup
+ImageNameList{12} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
+
+%textVAR15 =
+%choiceVAR1515 = imagegroup
+ImageNameList{13} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 if strcmpi(ClearMemory,'Yes')
     ListOfFields = fieldnames(handles.Pipeline);

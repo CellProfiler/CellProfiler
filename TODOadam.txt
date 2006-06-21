@@ -15,4 +15,6 @@
 \
 - Try clustering (Arcady\'d5s and standard) on Fly200 data and on NIRHT data.\
 \
+- NEW - Try clustering individual cells based on their measured phenotypes, and create some montages of the most distinct/unusual cell 'families' that are found, so we can see whether this might be a good approach.\
+\
 - Do ribosomal components cluster into classes, or are they really all the same?}

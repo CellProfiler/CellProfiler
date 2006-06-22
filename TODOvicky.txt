@@ -1,3 +1,9 @@
+
+- (Anne 4/21/06) Re-design the Export Data window
+
+(6/22/06-  )
+DONE
+
 - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
 
-(6/21/06-...) 
+(6/21/06-6/22/06)  - All revisions are marked by surrounding rows of '%'s

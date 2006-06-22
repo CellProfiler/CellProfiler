@@ -239,8 +239,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 end
             end
         end
-    else %%% If not the 'Image' field, add a Object Nbr feature instead
-        MeasurementNames = cat(2,{'Object Nbr'},MeasurementNames);
     end
 
 
@@ -258,7 +256,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
         strText = cell(2*length(TextNames),1);
         strText(1:2:end) = {'\t'};
         strText(2:2:end) = TextNames;
-        fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
+        if strcmp(ObjectName,'Image')
+            fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
+        else
+            fprintf(fid,sprintf('%s%s%s\n','\tObject Nbr',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
+        end
 
         % Loop over the images sets
         for imageset = 1:max(length(Measurements),length(Text))
@@ -281,10 +283,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
             end
 
             for row = 1:NbrOfRows    % Loop over the rows
-                % If not the 'Image' field, write an object number
-                if ~strcmp(ObjectName,'Image')
-                    fprintf(fid,'\t%d',row);
-                end
                 % Write text
                 strText = {};
                 if ~isempty(TextNames)
@@ -300,9 +298,16 @@ for Object = 1:length(ExportInfo.ObjectNames)
                         end
                         strText(2:2:end) = tmp;                    % Interleave with tabs
                     else
-                        %%% ADD CODE TO EXPORT TEXT LABELS HERE
-                        test=eps;
+                        strText = cell(2*length(TextNames),1);
+                        strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
+                        for i = 1:length(TextNames)
+                            strText(2*i) = Text{imageset}{i}(row);
+                        end
                     end
+                end
+                % If not the 'Image' field, write an object number
+                if ~strcmp(ObjectName,'Image')
+                    fprintf(fid,'\t%d',row);
                 end
                 % Write measurements
                 strMeasurement = {};
@@ -328,11 +333,18 @@ for Object = 1:length(ExportInfo.ObjectNames)
         fprintf(fid,'\n');
 
         %%% If the current object type isn't 'Image'
-        %%% add the 'Object count' to the Measurement matrix
+        %%% print the 'Object Number'
         if ~strcmp(ObjectName,'Image')
+            fprintf(fid,'%s','Object Nbr');
             for imageset = 1:length(Measurements)
-                Measurements{imageset} = cat(2,[1:size(Measurements{imageset},1)]',Measurements{imageset});
+                Nums=[1:size(Measurements{imageset},1)]';
+                tmp = cellstr(num2str(Nums,'%g'));
+                strMeasurement = cell(2*size(Measurements{imageset},1),1);
+                strMeasurement(1:2:end) = {'\t'};
+                strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
+                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));
             end
+            fprintf(fid,'\n');
         end
 
         %%% Start by writing text
@@ -355,8 +367,15 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 end
                 fprintf(fid,'\n');
             else
-                %%% ADD CODE TO EXPORT TEXT LABELS HERE
-                test=eps;
+                fprintf(fid,'%s',TextNames{row});
+                for imageset = 1:length(Text)
+                    strText = cell(2*size(Text{imageset}{row},2),1);
+                    strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
+                    tmp = Text{imageset}{row};
+                    strText(2:2:end) = tmp;                    % Interleave with tabs
+                    fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
+                end
+                fprintf(fid,'\n');
             end
         end
 

@@ -14,8 +14,6 @@ CellProfiler cell image analysis software development
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
 
-- (Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
-
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.

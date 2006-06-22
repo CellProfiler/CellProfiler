@@ -68,7 +68,7 @@ load(fullfile(RawPathname,RawFileName));
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,0,{'Features' 'Description'});
+[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,1,{'Features' 'Description'});
 if isempty(ObjectTypename),return,end
 
 %%% Prompts the user to choose a sample number to be displayed.
@@ -140,56 +140,33 @@ catch
     CPerrordlg(['Error opening image ', FileName, ' in folder ', Pathname])
     return
 end
-%%% Extracts the measurement values.
 
-if strcmpi(ObjectTypename,'Image')
-    try
-        StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
-    catch
-        try
-            StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType);
-        catch
-            CPerrordlg('These object names are not stored in the correct manner. Please contact mrl@wi.mit.edu with the exact error.');
-        end
-    end
+%%% Extracts the measurement values.
+tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+if isempty(tmp)
+    CPerrordlg('Error: there are no object measurements in your file');
+    return
+end
+
+TextFlag = 0;
+if iscell(tmp)
+    StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
     ListOfMeasurements = StringListOfMeasurements;
+    TextFlag = 1;
 else
-    tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
-    if isempty(tmp) ,
-        CPerrordlg('Error: there is no object measurement in your file ')
-        return
-    end
     ListOfMeasurements = tmp(:,FeatureNo);
     StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 end
 
-LocationObjectTypename = ObjectTypename;
-
-if strcmpi(LocationObjectTypename,'Image')
-    MeasFieldnames = fieldnames(handles.Measurements);
-    for i=1:length(handles.Measurements)
-        if strcmp(MeasFieldnames{i},'Image')
-            MeasFieldnames(i) = [];
-        end
-    end
-    [Selection, ok] = listdlg('ListString',MeasFieldnames,'ListSize', [300 400],...
-        'Name','Select Object',...
-        'PromptString','Choose an object type',...
-        'CancelString','Cancel',...
-        'SelectionMode','single');
-
-    LocationObjectTypename = MeasFieldnames{Selection};
-end
-
 %%% Extracts the XY locations. This is temporarily hard-coded
-Xlocations = handles.Measurements.(LocationObjectTypename).Location{SampleNumber}(:,1);
-Ylocations = handles.Measurements.(LocationObjectTypename).Location{SampleNumber}(:,2);
+Xlocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,1);
+Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
 
 %%% Create window
 ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure(handles,'image');
 CPimagesc(ImageToDisplay,handles);
-if strcmpi(ObjectTypename,'Image')
+if TextFlag
     FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Description']){FeatureNo};
 else
     FeatureDisp = handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo};
@@ -229,7 +206,7 @@ uicontrol('Parent',FigureHandle, ...
     'Style','pushbutton', ...
     'FontSize',handles.Preferences.FontSize);
 
-if ~strcmpi(ObjectTypename,'Image')
+if ~TextFlag
     DisplayButtonCallback2 = 'NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); CurrentTextHandles = getfield(get(gcbf,''Userdata''),''TextHandles''); NumberValues = getfield(get(gcbf,''Userdata''),''ListOfMeasurements''); if(isempty(NumberOfDecimals)) return; end; Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues,Command); CellNumberValues = cellstr(NewNumberValues); PropName(1) = {''string''}; set(CurrentTextHandles,PropName, CellNumberValues); drawnow';
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...

@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 6/20) New, 6-15-06. - add the pipeline to the figure for each application (like we did for Figure 1a).
+
+-(Mike 6/20) Combine Five Biotechniques figures into three by combining Figures 3-5 all together - maybe rotate the lungs in figure 3 90 degrees to give you enough room to put the pipeline at the left. Here is the legend for the new mega-figure:
+Figure 3: Identification and measurement of GFP-labeled tumors in mouse lungs, the wound healing assay, and Drosophila tissue topology.  (A) The pipeline of modules used for the analysis shown in B-D. (B) Original image. (C) Image with tumors outlined by CellProfiler. (D) Tumors in a set of 20 images were counted by CellProfiler and by two researchers. The manual tumor count for each image (vertical axis) is plotted versus the CellProfiler count (horizontal axis), revealing strong concordance (R2 value is shown). (E) The pipeline of modules used for the analysis shown in F-G. (F) At timepoint zero, the wound visible in the original image (top) is large and the cells present at the edges of the image cover a small percentage of the area of the image, as quantified by CellProfiler (bottom). (G) After 24 hours, the wound has recovered due to cells migrating from the edges (top) and now is much smaller in measured size (bottom). (H) The pipeline of modules used for the analysis shown in I-J. (I) Original image of Drosophila epithelial cells growing in a sheet. Box indicates the region shown enlarged below. (J) Image showing cells identified and color-coded by CellProfiler based on how many neighbors they have.
+
 -*Really, Really, Ridiculously, Important* (Anne 5/10/06) - Is it possible to add the following measurement to the MeasureObjectNeighbors module:
 What is the distance to the nearest two neighboring objects? DECIDED NOT TO DO
 what are the vectors to the nearest two neighbors? DONE COVERS "DISTANCE"

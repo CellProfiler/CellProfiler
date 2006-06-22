@@ -55,13 +55,9 @@ estimate with no indication of its accuracy. - Ray
 
 -(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
 
-- (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
-
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?)
 
 - (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
-
-- (Anne 4/21/06) Re-design the Export Data window
 
 - (Anne 4-21-06) Get the code from Shen, Nelson, Kennedy et al: Automatic tracking of biological cells and compartments using particle filters and active contours, Chemometrics and Intelligent Laboratory Systems, in press. At least try implementing the object-identification algorithm into IdentifyPrimAutomatic, but perhaps do the kinetic (time-lapse) part too.
 

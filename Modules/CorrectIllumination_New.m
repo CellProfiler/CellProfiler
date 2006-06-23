@@ -104,13 +104,15 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         p = fitIllum(data(1:i:end,:), 3, p, SZ);
     end
 
-    [X, Y] = meshgrid(1:SZ(2), 1:SZ(1));
+    [J, I] = meshgrid(1:SZ(2), 1:SZ(1));
     fitfun = zeros(SZ);
     for j = 1:length(p)
-        basis = illumBases(j, X/SZ(1), Y/SZ(2));
+        basis = illumBases(j, I/SZ(1), J/SZ(2));
         fitfun = fitfun + p(j)*basis;
     end
 
+    fitfun = fitfun';
+    fitfun = fitfun/min(min(fitfun));
     handles.Pipeline.(IlluminationImageName)=fitfun;
 else
     fitfun = OrigImage;

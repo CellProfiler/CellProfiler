@@ -556,7 +556,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
                 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
                 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-%                BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
+                %                BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
                 %%% This adjustment prevents the outer borders of the image from being
                 %%% darker (due to padding with zeros), which causes some objects on the
                 %%% edge of the image to not  be identified all the way to the edge of the
@@ -564,6 +564,13 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 BlurredImage = conv2(OrigImage,f,'same') ./ conv2(ones(size(OrigImage)),f,'same');
             end
             Objects = BlurredImage > Threshold;                                   % Threshold image
+            fieldname = ['CropMask', ImageName];
+            if isfield(handles.Pipeline,fieldname)
+                %%% Retrieves previously selected cropping mask from handles
+                %%% structure.
+                BinaryCropImage = handles.Pipeline.(fieldname);
+                Objects = Objects & BinaryCropImage;
+            end
             Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
             Objects = imfill(double(Objects),'holes');                            % Fill holes
             drawnow

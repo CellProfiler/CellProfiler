@@ -120,8 +120,6 @@ end
 
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable.
 
-- (Requested by Anne 12-09-05)-- Combine code for ExportData and ExportDatabase (CPconvertsql) and make ExportData a module
-
 - (Requested by Anne 12-09-05)-- See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
 
 - (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.

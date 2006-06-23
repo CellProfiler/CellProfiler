@@ -55,7 +55,9 @@ ImageToMask = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
 
-ObjectLabelMatrix = handles.Pipeline.(ObjectName);
+ObjectLabelMatrix = handles.Pipeline.(['Segmented',ObjectName]);
+
+ObjectLabelMatrix(ObjectLabelMatrix>0)=1;
 
 handles.Pipeline.(['CropMask',ImageToMask])=ObjectLabelMatrix;
 

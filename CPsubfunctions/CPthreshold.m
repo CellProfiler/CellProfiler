@@ -351,6 +351,13 @@ else
         %%% Retrieves previously selected cropping mask from handles
         %%% structure.
         BinaryCropImage = handles.Pipeline.(fieldname);
+        
+        %%% Handle the case where there are no pixels on in the mask
+        if (~ any(BinaryCropImage)),
+            level = max(im(:)+1.0);
+            return;
+        end
+
         if numel(im) == numel(BinaryCropImage)
             %%% Masks the image and I think turns it into a linear
             %%% matrix.

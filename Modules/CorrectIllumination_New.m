@@ -146,15 +146,18 @@ end
 %%%%%%%%%%%%%%%%%%%%
 
 function params = fitIllum(D, idx, start, SZ)
-X = D(:,1);
-Y = D(:,2);
+I = D(:,1);
+J = D(:,2);
 for j = 1:length(start)
-    ib = illumBases(j, X/SZ(1), Y/SZ(2));
+    ib = illumBases(j, I/SZ(1), J/SZ(2));
     IB(:,j) = ib;
 end
 
 [params, fX, iters] = minimize(start, 'sampleBaseEntropy', 50, D(:,idx), IB)
 
+
+%%% Although the arguments are called "X, Y" they actually correspond to "I, J" when called above.  
+%%% It doesn't really affect things, as long as all values for X,Y are in [0,1]
 function B = illumBases(idx, X, Y)
 
 % this turns idx into the order for X and Y (assuming the max order is 10)

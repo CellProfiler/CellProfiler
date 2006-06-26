@@ -1,7 +1,7 @@
 Version 1.0.XXXX
  - Changed smoothing method to use gaussian filter instead of binary
  - MeasureTexture now uses ScaleOfTexture for objects
- - MeasureObjectNeighbors now records closest 2 objects and their vectors
+ - MeasureObjectNeighbors now records closest 2 objects and their vectors and percent of neighbors touching each object
 
 Version 1.0.3544
  - Added new help section "Getting Started"

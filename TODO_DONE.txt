@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 6/23) - Add code to CPwritemeasurements so that ExportData can export text measurements (such as when classifyobjects adds text labels)
+
 -(Mike 6/20) New, 6-15-06. - add the pipeline to the figure for each application (like we did for Figure 1a).
 
 -(Mike 6/20) Combine Five Biotechniques figures into three by combining Figures 3-5 all together - maybe rotate the lungs in figure 3 90 degrees to give you enough room to put the pipeline at the left. Here is the legend for the new mega-figure:

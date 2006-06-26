@@ -14,8 +14,6 @@ CellProfiler cell image analysis software development
 
 - (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
 
-- Mike - Add code to CPwritemeasurements so that ExportData can export text measurements (such as when classifyobjects adds text labels)
-
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.

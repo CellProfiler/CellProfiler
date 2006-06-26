@@ -1,8 +1,17 @@
+- Create the option to select certain windows to open
+
+- (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
+
+DONE
 
 - (Anne 4/21/06) Re-design the Export Data window
 
-(6/22/06-  )
-DONE
+(6/22/06-6/23) - All revisions are marked by surrounding rows of '%'s along with comments.  
+		Revisions
+		-Y position gets stored by variable 'ypos'
+		-Fields are arranged in 2 column form
+		-Height of the window is calculated differently
+		-Position of all fields have been changed
 
 - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
 

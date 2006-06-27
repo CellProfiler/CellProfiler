@@ -1,5 +1,16 @@
 Mike's TODO list
 
+J Biology paper:
+- Find new shape weirdo from NIRHT using CellVisualizer, preferably a Zernike one (medium order might work best) if you can find one. Take care to find an example where it's not the area that is the real difference, because a lot of shape measures correlate to area. Add to figure 3.
+
+- Move Fig 3A and C to a supplemental figure, and label the x axes with numbers.
+
+- Make x axis marks more visible for figure 2A/B. Figure out if it's log base 2 or 10 and label appropriately?
+
+- Compile and release fresh version of CellProfiler.
+--------------
+
+
 New 6-21-06: Don't forget to have the UROPs do code review, where they each go through each module and look for inefficiencies and make sure there are good error messages, and most importantly check that the help is complete and understandable, etc. I guess we should wait until they have been here a month or so.
 
 - Check that all the pipelines posted on the web are up to date with the code that is on the web (UROPs can do?) - I was worried about Neighbors, but I guess we haven't posted a new version of code so maybe it is not a problem. In the meantime, the UROPs could test all pipe's with the current code and update things so they are ready for the next release?

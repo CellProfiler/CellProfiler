@@ -1,6 +1,8 @@
 Mike's TODO list
 
 J Biology paper:
+- VIcky is working on adding arrows and gridlines to Fig 6, FYI.
+
 - Find new shape weirdo from NIRHT using CellVisualizer, preferably a Zernike one (medium order might work best) if you can find one. Take care to find an example where it's not the area that is the real difference, because a lot of shape measures correlate to area. Add to figure 3.
 
 - Move Fig 3A and C to a supplemental figure, and label the x axes with numbers.

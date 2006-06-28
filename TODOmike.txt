@@ -7,6 +7,8 @@ J Biology paper:
 
 - Make x axis marks more visible for figure 2A/B. Figure out if it's log base 2 or 10 and label appropriately?
 
+- In Jason's 06_14 NIRHT re-analysis, it appears that the Neighbors module is putting a bunch of underscores in the feature names. There should only be underscores when separating things that should be in pulldown menus, so surrounding "and" with underscores gives you a silly pulldown menu where you have to choose "and". Fixing the correlation module to remove "and" would be good too, as long as you are preparing a new release.
+
 - Compile and release fresh version of CellProfiler.
 --------------
 

@@ -41,6 +41,8 @@ if exist('FinalParentList','var')
         error('Image processing was canceled in CPrelateobjects because objects cannot have two parents, something is wrong.');
     end
     handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,FinalParentList);
+else
+    handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,0);
 end
 
 for i = 1:max(ParentList)
@@ -54,9 +56,10 @@ end
 if exist('ChildList','var')
     handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,' Count'],ChildList);
 else
-    ChildList = [];
+    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,' Count'],0);
+    ChildList = 0;
 end
 
 if ~exist('FinalParentList','var')
-    FinalParentList = [];
+    FinalParentList = 0;
 end

@@ -156,18 +156,24 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
                 errordlg('STOP!');
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
+            fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
+            fprintf(fmain, 'SHOW WARNINGS;\n');
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
                 StartImage = n;
                 EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
                 ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
                 ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',ImageSQLFileName,TablePrefix);
+                fprintf(fmain, 'SHOW WARNINGS;\n');
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',ObjectSQLFileName,TablePrefix);
+                fprintf(fmain, 'SHOW WARNINGS;\n');
             end
         else
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+            fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+            fprintf(fmain, 'SHOW WARNINGS;\n');
         end
         fclose(fmain);
     elseif strcmp(SQLchoice,'Oracle')

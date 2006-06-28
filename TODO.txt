@@ -1,9 +1,5 @@
 CellProfiler cell image analysis software development 
 
-- Anne 6-22-06: There is some strangeness relating to the image tool help. In any of the figures produced during processing, there is "CellProfiler Image Tools" in the menu bar and there is an option "Show Toolbox help". What it really should be called is "ShowHelpForThisMenu". Also, if you choose that option then choose "Show Toolbox help", a bunch of stuff is displayed - make this help file display like the other menu items.
-
-- Anne 6-22-06: In any of the figures produced during processing, there is a problem with "OpenNewImageFile" under the "CellProfiler Image Tools" in the menu bar. If you choose an image, an error results and the image is not displayed. If you make changes to the underlying subfunction, be sure that other features using that subfunction still work.
-
 - Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we could add an option to the LoadImages and LoadSingleImages modules to use memory mapping.
 
 - Anne 6-21-06: We would like to run some tests to try to improve CellProfiler's speed: 

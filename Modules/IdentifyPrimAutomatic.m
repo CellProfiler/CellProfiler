@@ -732,8 +732,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 Objects = MergeObjects(Objects,OrigImage,[MinDiameter MaxDiameter]);
                 NumberOfObjectsAfterMerge = max(Objects(:));
                 NumberOfMergedObjects = NumberOfObjectsBeforeMerge-NumberOfObjectsAfterMerge;
-                fieldname = [ObjectName,'_NumberOfMergedObjects'];
-                handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = NumberOfMergedObjects;
             end
 
             %%% Will be stored to the handles structure
@@ -923,7 +921,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
-                    title('Outlined Nuclei/Cells');
+                    title('Outlined Objects');
 
                     %%% Report numbers
                     posx = get(hx,'Position');
@@ -941,7 +939,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Preferences.FontSize);
                     if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',2.35*sigma),'FontSize',handles.Preferences.FontSize);
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',str2num(SizeOfSmoothingFilter)),'FontSize',handles.Preferences.FontSize);
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Preferences.FontSize);
                     end
@@ -1024,6 +1022,21 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 end
             end
 
+            if strcmp(MergeChoice,'Yes')
+                %%% Saves the NumberOfMergedObjects to the handles structure.
+                %%% See comments for the Threshold saving below
+                if ~isfield(handles.Measurements.Image,'NumberOfMergedObjectsFeatures')
+                    handles.Measurements.Image.NumberOfMergedObjectsFeatures = {};
+                    handles.Measurements.Image.NumberOfMergedObjects = {};
+                end
+                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.NumberOfMergedObjectsFeatures,ObjectName)));
+                if isempty(column)
+                    handles.Measurements.Image.NumberOfMergedObjectsFeatures(end+1) = {ObjectName};
+                    column = length(handles.Measurements.Image.NumberOfMergedObjectsFeatures);
+                end
+                handles.Measurements.Image.NumberOfMergedObjects{handles.Current.SetBeingAnalyzed}(1,column) = NumberOfMergedObjects;
+            end
+
             %%% Saves the Threshold value to the handles structure.
             %%% Storing the threshold is a little more complicated than storing other measurements
             %%% because several different modules will write to the handles.Measurements.Image.Threshold
@@ -1039,7 +1052,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             % typically happen for the first cycle. Append the feature name in the
             % handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
-                handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' ObjectName]};
+                handles.Measurements.Image.ThresholdFeatures(end+1) = {ObjectName};
                 column = length(handles.Measurements.Image.ThresholdFeatures);
             end
             handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
@@ -1052,7 +1065,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             end
             column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
             if isempty(column)
-                handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
+                handles.Measurements.Image.ObjectCountFeatures(end+1) = {ObjectName};
                 column = length(handles.Measurements.Image.ObjectCountFeatures);
             end
             handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
@@ -1082,7 +1095,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
                     CPfigure('Tag','OutlinedFigure');
-                    uicontrol('style','text','units','normalized','string','Outlined Nuclei/Cells: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                    uicontrol('style','text','units','normalized','string','Outlined Objects: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
                 else
                     CPfigure(OutlinedFigures(1));
                 end

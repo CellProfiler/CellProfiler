@@ -1,5 +1,23 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo, Jun, 6/28) (Requested by Mike 5/7/06) - Make IdentifyTertiary and IdentifySecondary use CPrelateobjects and make sure CPrelateobjects can handle if the first image set does not have objects. So where we have if handles.current.setbeinganalyzed == 1 there should be a check also if it is not image set 1 to be able to add the new set of data
+
+- (Rodrigo, Jun, 6/20) (Requested by Anne 6/2/06) - When you change the size of smooth filter in IdPrimAuto so that it's not automatic, the number it displays in the window is not the number you entered. Check also the Max Suppression Size.
+
+- (Rodrigo, Jun, 6/19) (Requested by Anne 4/25/06) - See the "important" note in the help for ConvertBatchFiles data tool - we should make the appropriate change so that the first image cycle is removed (but be sure that whatever change you make does not disturb the first and second batch output files in a set (Batch_data.mat and Batch_2_to_XX.mat))
+
+- (Rodrigo, Jun, 6/19) (Requested by Anne 6/19/06) - Bug in MeasureCorrelation module when measuring correlation in Nuclei before Image
+
+- (UROPs, 6/16) (Requested by Anne 3/15/06) - Some of our modules are putting out data in an inconsistent format. I think the per-cell measures are usually pretty good, but per-image measures are sometimes a little strange when I access them from the database. For example, the identifyPrim module puts something in Image Nuclei NumberOfMergedObjects Nuclei NumberOfMergedObjects (yes, it seems duplicated) relating to how many small objects were merged and that field has strange naming. Also, the measure total intensity of the whole image seemed strange. The critical thing is how subfields are made: whenever we use an underscore, CellVisualizer interprets it as a new subcategory, so we want to avoid underscores in our fieldnames. ObjectCount.ObjectCount_Cells should have the underscore removed: ObjectCountCells, and Form_Factor, too.
+
+- (UROPs, 6/14) (Requested by Anne 5/31/06) - When you analyze images and the output filename you entered already exists, it automatically changes the name and asks if it's ok. The code isn't too smart right now, though, because a dialog box flashes momentarily and then is replaced by the window asking 'is it ok to change the filename?' We should prevent the initial window from coming up if possible.
+
+- (UROPs, 6/14) (Requested by Anne 6/12/06) - IdentifyPrimAutomatic: the lower left image inthe display window has a title that does not match the upper right - it should say Outlined XXX, where XXX is the same name as is in the upper right title (Identified XXX). Also the ConvertToImage window should call the objects by their name rather than saying "Objects"
+
+- (UROPs, 6/14) (Requested by Anne 6/12/06) - I think 'New Pipeline' should actually be called 'Clear Pipeline'
+
+- (UROPs, 6/14) (Requested by Mike) - Use polyfit in correlation module to get the slope of Image vs. Image per pixel
+
 -(Mike 6/23) - Add code to CPwritemeasurements so that ExportData can export text measurements (such as when classifyobjects adds text labels)
 
 -(Mike 6/20) New, 6-15-06. - add the pipeline to the figure for each application (like we did for Figure 1a).

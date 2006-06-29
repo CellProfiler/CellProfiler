@@ -190,7 +190,7 @@ end
 %%% Correct the threshold using the correction factor given by the user
 %%% and make sure that the threshold is not larger than the minimum threshold
 
-if isfield(handles.Measurements.Image,'OrigThreshold')
+if isfield(handles.Measurements.Image,'OrigThresholdFeatures')
     OldColumn=strmatch(ImageName,handles.Measurements.Image.OrigThresholdFeatures);
     if isempty(OldColumn)
         NewColumn=length(handles.Measurements.Image.OrigThresholdFeatures)+1;
@@ -200,8 +200,8 @@ if isfield(handles.Measurements.Image,'OrigThreshold')
         handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,OldColumn)=mean(mean(Threshold));
     end
 else
-    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=mean(mean(Threshold));
     handles.Measurements.Image.OrigThresholdFeatures={ImageName};
+    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=mean(mean(Threshold));
 end
 
 Threshold = ThresholdCorrection*Threshold;

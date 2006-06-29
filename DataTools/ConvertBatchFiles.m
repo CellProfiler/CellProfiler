@@ -88,6 +88,15 @@ for fileno = 1:length(files)
                     index(1) = 0;          % First set is a dummy set
                     handles.Measurements.(firstfields{i}).(secondfields{j}) = ...
                         handles.Measurements.(firstfields{i}).(secondfields{j})(index);
+                    %%% Remove first image cycle data from the first batch
+                    %%% file.
+                elseif handles.Current.BatchInfo.Start == 2
+                    if ~(~isempty(strfind(secondfields{j},'Features')) || ~isempty(strfind(secondfields{j},'Text')) || ...
+                            ~isempty(strfind(secondfields{j},'ModuleError')))
+                        index(1) = 0;
+                        handles.Measurements.(firstfields{i}).(secondfields{j}) = ...
+                            handles.Measurements.(firstfields{i}).(secondfields{j})(index);
+                    end
                 end
             end
         end

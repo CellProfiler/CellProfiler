@@ -171,14 +171,11 @@ drawnow
 
 %%% Produce feature names for all pairwise image combinations
 CorrelationFeatures = {};
-SlopeFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
         CorrelationFeatures{end+1} = [ImageName{i},'_',ImageName{j}];
     end
 end
-
-imageerr = 0; % Initialize image error status for error check
 
 %%% For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
@@ -196,40 +193,48 @@ for ObjectNameNbr = 1:ObjectNameCount
                     else
                         c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
                         CorrelationForCurrentObject = c(1,2);
-                        xsize = size(Image{i}); 
-                        ysize = size(Image{j});
-                        if (strcmp(ObjectName{ObjectNameNbr},'Image')) & (xsize == ysize)
+
+                        %%% Gets slope measurement if objects are images
+                        if (strcmp(ObjectName{ObjectNameNbr},'Image'))
+                            if ~exist('SlopeFeatures')
+                                SlopeFeatures = {};
+                            end
+                            xsize = size(Image{i});
+                            ysize = size(Image{j});
+                            if ~(xsize == ysize)        % Images must be the same size for the slope measurement to make sense
+                                sizeerr = 1;
+                                error;
+                            else
                             SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
                             x = Image{i}(:);
                             y = Image{j}(:);
                             p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope
                             SlopeForCurrentObject = p(1);
                             Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
-                        else
-                            imageerr = 1; % Error is detected
-                            SlopeForCurrentObject = 0;
-                            Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
+                            sizeerr = 0;
+                            end
                         end
                     end
                     Correlation(ObjectNbr,FeatureNbr) = CorrelationForCurrentObject; % Store the correlation
                     FeatureNbr = FeatureNbr + 1;
                 catch
-                    if (imageerr == 1)
-                        error('File is not an image or images are not the same size');
-                    else error(['Image processing was cancelled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
-                    end       
+                    if sizeerr
+                        error(['Images ', ImageName{i}, ' and ', ImageName{j}, ' are not the same size.'])
+                    else
+                        error(['Image processing was cancelled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
+                    end
                 end
             end
         end
     end
     %%% Store the correlation and slope measurements
-     if strcmp (ObjectName{ObjectNameNbr},'Image')
-         handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = [CorrelationFeatures SlopeFeatures];
-         handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {[Correlation Slope]};
-     else
-         handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
-         handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
-     end
+    if strcmp (ObjectName{ObjectNameNbr},'Image')
+        handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = [CorrelationFeatures SlopeFeatures];
+        handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {[Correlation Slope]};
+    else
+        handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
+        handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

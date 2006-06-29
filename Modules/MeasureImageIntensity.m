@@ -148,5 +148,5 @@ drawnow
 %%% Saves measurements to the handles structure.
 featurefieldname = ['Intensity_',ImageName,'Features'];
 fieldname = ['Intensity_',ImageName];
-handles.Measurements.Image.(featurefieldname) = {'Total intensity','Mean intensity','Total area'};
+handles.Measurements.Image.(featurefieldname) = {'TotalIntensity','MeanIntensity','TotalArea'};
 handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};

@@ -18,9 +18,9 @@ function handles = MeasureObjectAreaShape(handles)
 % Eccentricity            |       2
 % Solidity                |       3
 % Extent                  |       4
-% Euler Number            |       5
+% EulerNumber             |       5
 % Perimeter               |       6
-% Form factor             |       7
+% FormFactor              |       7
 % MajorAxisLength         |       8
 % MinorAxisLength         |       9
 % Orientation             |      10
@@ -84,7 +84,7 @@ function handles = MeasureObjectAreaShape(handles)
 % convex hull that are also in the object. Computed as Area/ConvexArea.
 % *Extent - The proportion of the pixels in the bounding box that are also
 % in the region. Computed as the Area divided by the area of the bounding box.
-% *Euler number - Equal to the number of objects in the image minus the
+% *EulerNumber - Equal to the number of objects in the image minus the
 % number of holes in those objects. For modules built to date, the number
 % of objects in the image is always 1.
 % *MajorAxisLength - The length (in pixels) of the major axis of the
@@ -97,7 +97,8 @@ function handles = MeasureObjectAreaShape(handles)
 % region in the image.
 %
 % In addition, the following  feature is calculated:
-% Form factor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
+%
+% FormFactor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -214,9 +215,9 @@ for i = 1:length(ObjectNameList)
         'Eccentricity',...
         'Solidity',...
         'Extent',...
-        'Euler number',...
+        'EulerNumber',...
         'Perimeter',...
-        'Form factor',...
+        'FormFactor',...
         'MajorAxisLength',...
         'MinorAxisLength'...
         'Orientation'};
@@ -295,7 +296,7 @@ for i = 1:length(ObjectNameList)
                 end
             end
         end
-        % Form factor
+        % FormFactor
         FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
         % Save basic shape features

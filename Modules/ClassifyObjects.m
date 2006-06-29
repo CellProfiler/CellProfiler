@@ -325,7 +325,7 @@ end
 
 ClassifyFeatureNames = cell(1,NbrOfBins);
 for k = 1:NbrOfBins
-    ClassifyFeatureNames{k} = ['Bin ',num2str(k)];
+    ClassifyFeatureNames{k} = ['Bin', num2str(k)];
 end
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
 %%% We are truncating the ObjectName in case it's really long.

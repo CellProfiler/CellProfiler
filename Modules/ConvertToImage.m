@@ -131,7 +131,7 @@ if any(findobj == ThisModuleFigureNumber)
     end
     subplot(2,1,1);
     CPimagesc(ColoredLabelMatrixImage,handles);
-    title('Original Identified Objects');
+    title(['Original Identified ', ObjectName]);
     subplot(2,1,2);
     CPimagesc(Image,handles);
     title('New Image');

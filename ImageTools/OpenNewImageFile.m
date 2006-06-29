@@ -59,6 +59,9 @@ else
     end
     %%% Opens a new figure window.
     FigureHandle = figure;
+    if ~isfield(handles,'Pipeline')
+        handles.Pipeline = [];
+    end
     CPfigure(handles,'Image',FigureHandle);
     CPimagesc(Image,handles);
     FileName = strrep(FileName,'_','\_');

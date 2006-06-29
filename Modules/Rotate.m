@@ -195,7 +195,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
     end
 else
-    column = find(strcmp(handles.Measurements.Image.RotationFeatures,['Rotation ' ImageName]));
+    column = find(strcmp(handles.Measurements.Image.RotationFeatures,ImageName));
     AngleToRotateDegrees = handles.Measurements.Image.Rotation{1}(column);
 end
 
@@ -204,10 +204,10 @@ if ~isfield(handles.Measurements.Image,'RotationFeatures')
     handles.Measurements.Image.Rotation = {};
 end
 
-column = find(strcmp(handles.Measurements.Image.RotationFeatures,['Rotation ' ImageName]));
+column = find(strcmp(handles.Measurements.Image.RotationFeatures,ImageName));
 
 if isempty(column)
-    handles.Measurements.Image.RotationFeatures(end+1) = {['Rotation ' ImageName]};
+    handles.Measurements.Image.RotationFeatures(end+1) = {ImageName};
     column = length(handles.Measurements.Image.RotationFeatures);
 end
 handles.Measurements.Image.Rotation{handles.Current.SetBeingAnalyzed}(1,column) = AngleToRotateDegrees;

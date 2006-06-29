@@ -641,8 +641,8 @@ FileNamesText = cell(1,length(ImageName));
 PathNamesText = cell(1,length(ImageName));
 for n = 1:length(ImageName)
     PathNames{n} = Pathname;
-    FileNamesText{n} = ['Filename ', ImageName{n}];
-    PathNamesText{n} = ['Path ', ImageName{n}];
+    FileNamesText{n} = [ImageName{n}];
+    PathNamesText{n} = [ImageName{n}];
 end
 
 %%% Since there may be several load/save modules in the pipeline which all
@@ -987,7 +987,7 @@ switch (tifftypecode)
     otherwise
         error('tiff type not supported')
 end
-return;
+return
 
 
 function  entry = readIFDentry(TIF)

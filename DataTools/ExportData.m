@@ -131,13 +131,11 @@ end
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window','Color',[.7 .7 .9],'CloseRequestFcn','set(gcf,''UserData'',0);uiresume()');
-
 % Some variables controling the sizes of uicontrols
 uiheight = 0.3;
-
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
-Height = 2.5+length(fields)*uiheight + 0.5;
+Height = 2.5+ceil(length(fields)/2)*uiheight+1;
 Width  = 4.2;
 set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
@@ -147,38 +145,40 @@ if ~isempty(fields)
         'HorizontalAlignment','left','units','inches','position',[0.2 Height-0.25 4 0.2],'BackgroundColor',get(ETh,'color'))
 
     % Radio buttons for extracted measurements
-    h = [];
+    h = [];    
+    ypos = Height - 0.3;
+    %Arrange fields in a two column display, keep track of the y position
+    %of the last object created
+    ypos = Height - 0.3;
     for k = 1:length(fields)
-        uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-            'units','inches','position',[0.6 Height-0.3-uiheight*k 3 0.18],'BackgroundColor',get(ETh,'color'))
-        h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[0.2 Height-0.35-uiheight*k uiheight uiheight],...
-            'BackgroundColor',get(ETh,'color'),'Value',1);
+        if rem(k,2) == 1 %when index is odd
+            ypos=ypos-uiheight;
+        end   %index is even
+        if rem(k,2) == 1
+            uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
+                'units','inches','position',[0.6 ypos 3 0.18],'BackgroundColor',get(ETh,'color'))
+            h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[0.2 ypos-.05 uiheight uiheight],...
+                'BackgroundColor',get(ETh,'color'),'Value',1);
+        else
+            uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
+                'units','inches','position',[2.8 ypos 3 0.18],'BackgroundColor',get(ETh,'color'))
+            h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[2.4 ypos-.05 uiheight uiheight],...
+                'BackgroundColor',get(ETh,'color'),'Value',1);
+        end
     end
 
     % Filename, remove 'OUT' and '.mat' extension from filename
-    basey = 1.5;
     ProposedFilename = RawFileName;
     indexOUT = strfind(ProposedFilename,'OUT');
     if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
     indexMAT = strfind(ProposedFilename,'mat');
     if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
     ProposedFilename = [ProposedFilename,'_Export'];
-    uicontrol(ETh,'style','text','String','Base file name for exported files:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.2 2.3 uiheight],'BackgroundColor',get(ETh,'color'))
-    EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 basey 2.5 uiheight],...
-        'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
-    uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
-        'HorizontalAlignment','left','units','inches','position',[2.9 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
-    EditMeasurementExtension = uicontrol(ETh,'Style','edit','units','inches','position',[2.9 basey 0.7 uiheight],...
-        'backgroundcolor',[1 1 1],'String','.xls','FontSize',FontSize);
 
 else  % No measurements found
     uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
         'units','inches','position',[0 Height-0.5 6 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
-
-%%% Process info
-basey = 0.65;
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
 ProposedFilename = RawFileName;
 indexOUT = strfind(ProposedFilename,'OUT');
@@ -186,33 +186,46 @@ if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) Prop
 indexMAT = strfind(ProposedFilename,'mat');
 if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
 ProposedFilename = [ProposedFilename,'_ProcessInfo'];
-uicontrol(ETh,'style','text','String','Export pipeline settings?','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 basey+0.23 1.6 uiheight],'BackgroundColor',get(ETh,'color'));
-ExportProcessInfo = uicontrol(ETh,'style','popupmenu','String',{'No','Yes'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2 basey+0.33 0.7 uiheight],'BackgroundColor',[1 1 1]);
-uicontrol(ETh,'style','text','String','Each feature is a:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2.7 basey+1.6 1.8 uiheight],'BackgroundColor',get(ETh,'color'));
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Ignore NaN''s?','FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
+    'units','inches','position',[0.6 ypos 3 0.18],'BackgroundColor',get(ETh,'color'))
+IgnoreNaN = uicontrol(ETh,'Style','checkbox','units','inches','position',[0.2 ypos-.05 uiheight uiheight],...
+    'BackgroundColor',get(ETh,'color'),'Value',1);
+ypos=ypos-uiheight*2;
+uicontrol(ETh,'style','text','String','Export parameter for Images:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 1.8 uiheight*1.5],'BackgroundColor',get(ETh,'color'));
+DataExportParameter = uicontrol(ETh,'style','popupmenu','String',{'Mean','Median','Standard Deviation'},'FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[2.4 ypos+.075 1.8 uiheight],'BackgroundColor',[1 1 1]);
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Arrange each feature in:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.3 uiheight],'BackgroundColor',get(ETh,'color'));
 SwapRowsColumnInfo = uicontrol(ETh,'style','popupmenu','String',{'Column','Row'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2.6 basey+1.4 1 uiheight],'BackgroundColor',[1 1 1]);
-EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 basey 2.5 uiheight],...
+    'HorizontalAlignment','left','units','inches','position',[2.4 ypos+.05 1.8 uiheight],'BackgroundColor',[1 1 1]);
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Base file name for exported files:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.3 uiheight],'BackgroundColor',get(ETh,'color'))
+EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 ypos-0.2 2.5 uiheight],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
 uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[2.9 basey+0.2 1.2 uiheight],'BackgroundColor',get(ETh,'color'),'FontSize',FontSize)
-EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[2.9 basey 0.7 uiheight],...
+    'HorizontalAlignment','left','units','inches','position',[2.9 ypos 1.2 uiheight],'BackgroundColor',get(ETh,'color'))
+EditMeasurementExtension = uicontrol(ETh,'Style','edit','units','inches','position',[2.9 ypos-0.2 0.7 uiheight],...
+    'backgroundcolor',[1 1 1],'String','.xls','FontSize',FontSize);
+ypos=ypos-uiheight*2;
+uicontrol(ETh,'style','text','String','Export pipeline settings?','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.5 uiheight],'BackgroundColor',get(ETh,'color'));
+ExportProcessInfo = uicontrol(ETh,'style','popupmenu','String',{'No','Yes'},'FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[2.9 ypos+.05 0.7 uiheight],'BackgroundColor',[1 1 1]);
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Proposed filename:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.3 uiheight],'BackgroundColor',get(ETh,'color'))
+EditProcessInfoFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 ypos-0.2 2.5 uiheight],...
+    'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
+uicontrol(ETh,'style','text','String','Choose extension:','FontName','Times','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[2.9 ypos 1.2 uiheight],'BackgroundColor',get(ETh,'color'),'FontSize',FontSize)
+EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[2.9 ypos-0.2 0.7 uiheight],...
     'backgroundcolor',[1 1 1],'String','.txt','FontSize',FontSize);
-uicontrol(ETh,'style','text','String','Ignore NaN''s?','FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-    'units','inches','position',[2.9 basey+2.35 1.8 uiheight],'BackgroundColor',get(ETh,'color'))
-IgnoreNaN = uicontrol(ETh,'Style','checkbox','units','inches','position',[3.4 basey+2.2 1.8 uiheight],...
-    'BackgroundColor',get(ETh,'color'),'Value',1);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-uicontrol(ETh,'style','text','String','Export parameter for Images:','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 basey+1.6 1.8 uiheight],'BackgroundColor',get(ETh,'color'));
-DataExportParameter = uicontrol(ETh,'style','popupmenu','String',{'Mean','Median','Standard Deviation'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[0.2 basey+1.4 1.8 uiheight],'BackgroundColor',[1 1 1]);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ypos=ypos-uiheight*1.7;    
 
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
@@ -245,7 +258,6 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
         ExportInfo.SwapRowsColumnInfo = 'Yes';
     end
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if get(DataExportParameter,'Value')==1
         ExportInfo.DataParameter = 'mean';
     else if get(DataExportParameter,'Value')==2
@@ -254,10 +266,7 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
                 ExportInfo.DataParameter = 'std';
             end;
         end;
-    end;
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
+    end;            
         
     % Get measurements to export
     if ~isempty(fields)

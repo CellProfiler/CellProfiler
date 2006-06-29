@@ -797,9 +797,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% typically happen for the first cycle. Append the feature name in the
             %%% handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
-                handles.Measurements.Image.ThresholdFeatures(end+1) = {['Threshold ' SecondaryObjectName]};
-%%%ChangedTo (6/15/06)%%%
-                % handles.Measurements.Image.ThresholdFeatures(end+1) = {SecondaryObjectName};
+                handles.Measurements.Image.ThresholdFeatures(end+1) = {SecondaryObjectName};
                 column = length(handles.Measurements.Image.ThresholdFeatures);
             end
             handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
@@ -812,9 +810,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         end
         column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));
         if isempty(column)
-            handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' SecondaryObjectName]};
-%%%ChangedTo (6/15/06)%%%
-            % handles.Measurements.Image.ObjectCountFeatures(end+1) = {SecondaryObjectName};
+            handles.Measurements.Image.ObjectCountFeatures(end+1) = {SecondaryObjectName};
             column = length(handles.Measurements.Image.ObjectCountFeatures);
         end
         handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));

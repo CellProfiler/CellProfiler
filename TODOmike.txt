@@ -1,11 +1,8 @@
 Mike's TODO list
 
 J Biology paper:
-- VIcky is working on adding arrows and gridlines to Fig 6, FYI.
 
 - Find new shape weirdo from NIRHT using CellVisualizer, preferably a Zernike one (medium order might work best) if you can find one. Take care to find an example where it's not the area that is the real difference, because a lot of shape measures correlate to area. Add to figure 3.
-
-- Move Fig 3A and C to a supplemental figure, and label the x axes with numbers.
 
 - In Jason's 06_14 NIRHT re-analysis, it appears that the Neighbors module is putting a bunch of underscores in the feature names. There should only be underscores when separating things that should be in pulldown menus, so surrounding "and" with underscores gives you a silly pulldown menu where you have to choose "and". Fixing the correlation module to remove "and" would be good too, as long as you are preparing a new release.
 
@@ -13,6 +10,8 @@ J Biology paper:
 
 DONE:
 - Make x axis marks more visible for figure 2A/B. Figure out if it's log base 2 or 10 and label appropriately?
+
+- Move Fig 3A and C to a supplemental figure, and label the x axes with numbers.
 
 
 --------------

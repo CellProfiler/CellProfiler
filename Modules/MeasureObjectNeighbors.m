@@ -204,11 +204,11 @@ drawnow
 if strcmp(ExtraMeasures,'Yes')
     %%% Saves neighbor measurements to handles structure.
     handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector' AngleBetweenTwoClosestNeighbors']};
-    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors' 'Percent Touching' 'First Closest Object Number' 'First Closest X Vector' 'First Closest Y Vector' 'Second Object Number' 'Second Closest X Vector' 'Second Closest Y Vector' 'Angle Between Closest Neighbors'};
+    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'NumberOfNeighbors' 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'};
 else
     %%% Saves neighbor measurements to handles structure.
     handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};
-    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'Number of neighbors'};
+    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'NumberOfNeighbors'};
 end
 
 % This field is different from the usual measurements. To avoid problems with export modules etc we don't

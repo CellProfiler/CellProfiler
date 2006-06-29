@@ -174,7 +174,7 @@ CorrelationFeatures = {};
 SlopeFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
-        CorrelationFeatures{end+1} = ['Correlation ',ImageName{i},' and ',ImageName{j}];
+        CorrelationFeatures{end+1} = [ImageName{i},'_',ImageName{j}];
     end
 end
 
@@ -199,7 +199,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                         xsize = size(Image{i}); 
                         ysize = size(Image{j});
                         if (strcmp(ObjectName{ObjectNameNbr},'Image')) & (xsize == ysize)
-                            SlopeFeatures{end+1} = ['Slope for ',ImageName{i},' and ',ImageName{j}];
+                            SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
                             x = Image{i}(:);
                             y = Image{j}(:);
                             p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope

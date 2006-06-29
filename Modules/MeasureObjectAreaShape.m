@@ -26,36 +26,36 @@ function handles = MeasureObjectAreaShape(handles)
 % Orientation             |      10
 %
 % Zernike shape features:
-%     'Zernike0_0'        |      11
-%     'Zernike1_1'        |      12
-%     'Zernike2_0'        |      13
-%     'Zernike2_2'        |      14
-%     'Zernike3_1'        |      15
-%     'Zernike3_3'        |      16
-%     'Zernike4_0'        |      17
-%     'Zernike4_2'        |      18
-%     'Zernike4_4'        |      19
-%     'Zernike5_1'        |      20
-%     'Zernike5_3'        |      21
-%     'Zernike5_5'        |      22
-%     'Zernike6_0'        |      23
-%     'Zernike6_2'        |      24
-%     'Zernike6_4'        |      25
-%     'Zernike6_6'        |      26
-%     'Zernike7_1'        |      27
-%     'Zernike7_3'        |      28
-%     'Zernike7_5'        |      29
-%     'Zernike7_7'        |      30
-%     'Zernike8_0'        |      31
-%     'Zernike8_2'        |      32
-%     'Zernike8_4'        |      33
-%     'Zernike8_6'        |      34
-%     'Zernike8_8'        |      35
-%     'Zernike9_1'        |      36
-%     'Zernike9_3'        |      37
-%     'Zernike9_5'        |      38
-%     'Zernike9_7'        |      39
-%     'Zernike9_9'        |      40
+%     'Zernike_0_0'       |      11
+%     'Zernike_1_1'       |      12
+%     'Zernike_2_0'       |      13
+%     'Zernike_2_2'       |      14
+%     'Zernike_3_1'       |      15
+%     'Zernike_3_3'       |      16
+%     'Zernike_4_0'       |      17
+%     'Zernike_4_2'       |      18
+%     'Zernike_4_4'       |      19
+%     'Zernike_5_1'       |      20
+%     'Zernike_5_3'       |      21
+%     'Zernike_5_5'       |      22
+%     'Zernike_6_0'       |      23
+%     'Zernike_6_2'       |      24
+%     'Zernike_6_4'       |      25
+%     'Zernike_6_6'       |      26
+%     'Zernike_7_1'       |      27
+%     'Zernike_7_3'       |      28
+%     'Zernike_7_5'       |      29
+%     'Zernike_7_7'       |      30
+%     'Zernike_8_0'       |      31
+%     'Zernike_8_2'       |      32
+%     'Zernike_8_4'       |      33
+%     'Zernike_8_6'       |      34
+%     'Zernike_8_8'       |      35
+%     'Zernike_9_1'       |      36
+%     'Zernike_9_3'       |      37
+%     'Zernike_9_5'       |      38
+%     'Zernike_9_7'       |      39
+%     'Zernike_9_9'       |      40
 %
 % Zernike shape features measure shape by describing a binary object (or
 % more precisely, a patch with background and an object in the center) in a
@@ -230,7 +230,7 @@ for i = 1:length(ObjectNameList)
             for m = 0:n
                 if rem(n-m,2) == 0
                     Zernikeindex = [Zernikeindex;n m];
-                    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike%d_%d',n,m)});
+                    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike_%d_%d',n,m)});
                 end
             end
         end

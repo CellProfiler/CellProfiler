@@ -134,8 +134,6 @@ try
     end
 end
 
-
-
 if ~isdeployed
     %%% If the Default Module Directory has not yet been successfully
     %%% identified (i.e., it is not present in the loaded preferences or
@@ -199,9 +197,9 @@ catch
 end
 
 try
-    handles.Preferences.DisplayModeValue = LoadedPreferences.DisplayModeValue;
+    handles.Preferences.NoDisplay = LoadedPreferences.NoDisplay;
 catch
-    handles.Preferences.DisplayModeValue = 0;
+    handles.Preferences.NoDisplay = 'No';
 end
 
 %%% Now that handles.Preferences.(4 different variables) has been filled
@@ -325,53 +323,7 @@ handles.CPlogoImage = image(Logo,...
 set(handles.CPlogoAxes,'visible','off')
 
 %%% Finds all available tools, which are .m files residing in the
-%%% Modules folder.
-Pathname = fullfile(handles.Current.CellProfilerPathname,'Modules');
-ListOfTools{1} = 'Modules: none loaded';
-try addpath(Pathname)
-    %%% Lists all the contents of that path into a structure which includes the
-    %%% name of each object as well as whether the object is a file or
-    %%% directory.
-    FilesAndDirsStructure = dir(Pathname);
-    %%% Puts the names of each object into a list.
-    FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
-    %%% Puts the logical value of whether each object is a directory into a list.
-    LogicalIsDirectory = [FilesAndDirsStructure.isdir];
-    %%% Eliminates directories from the list of file names.
-    FileNamesNoDir = FileAndDirNames(~LogicalIsDirectory);
-    %%% I don't think we really want to display this text for each tools'
-    %%% help. This info is already provided at the stage where the user
-    %%% chooses which tool; it's confusing to show it again.
-    %    ToolHelpInfo = 'Help information from individual modules files, which are Matlab m-files located within the Modules directory:';
-    ToolHelpInfo = '';
-    if ~isempty(FileNamesNoDir)
-        %%% Looks for .m files.
-        for i = 1:length(FileNamesNoDir),
-            if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
-                if ~strcmp(FileNamesNoDir{i},'ShowHelpForThisMenu.m')
-                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
-                else
-                    helpnum = i;
-                end
-            end
-        end
-        if exist('helpnum')
-            ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{helpnum}(1:end-2)};
-            ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{helpnum}(1:end-2)));
-        end
-        if length(ListOfTools) > 1
-            ListOfTools(1) = {'Modules'};
-        else ToolHelp = 'No modules were loaded upon starting up CellProfiler. Modules are Matlab m-files ending in ''.m'', and should be located in a folder called Modules within the folder containing CellProfiler.m';
-        end
-    end
-end
-handles.Current.ModulesFilenames = ListOfTools;
-handles.Current.ModulesHelp = ToolHelp;
-
-%%% Finds all available tools, which are .m files residing in the
 %%% ImageTools folder.
-ListOfTools = {};
 Pathname = fullfile(handles.Current.CellProfilerPathname,'ImageTools');
 ListOfTools{1} = 'Image tools: none loaded';
 try addpath(Pathname)
@@ -502,11 +454,35 @@ guidata(hObject, handles);
 
 FileMenu=uimenu('Label','File');
 DataToolsMenu=uimenu('Label','Data Tools');
-WindowsMenu=uimenu('Label','Windows');
+WindowsMenu=uimenu('Label','Windows','Tag','WindowsMenu','Callback',[...
+    'WindowsMenu = findobj(''Tag'',''WindowsMenu'');',...
+    'children = allchild(WindowsMenu);',...
+    'for i=1:length(children),',...
+    'if isempty(get(children(i), ''Tag'')),',...
+    'delete(children(i));',...
+    'end;',...
+    'end;',...
+    'OpenWindows = findobj(''NumberTitle'',''on'',''-and'',''-property'',''UserData'');',...
+    'OpenWindows = sort(OpenWindows);',...
+    'for k = 1:length(OpenWindows),',...
+    'if ishandle(OpenWindows(k)),',...
+    'userData = get(OpenWindows(k),''UserData'');',...
+    'name = get(OpenWindows(k),''Name'');',...
+    'if (~isempty(userData) && isfield(userData,''Application'') && ',...
+    'isstr(userData.Application) && strcmp(userData.Application,''CellProfiler'') && ',...
+    '~isempty(strfind(name,''Display, cycle #''))),',...
+    'h = uimenu(WindowsMenu,''Label'', [''Figure '' num2str(userData.MyHandles.Current.([''FigureNumberForModule'' userData.MyHandles.Current.CurrentModuleNumber])) '': '' name],''UserData'',OpenWindows(k),''Callback'',''figure(get(gcbo,''''UserData''''))'');',...
+    'if k==1,',...
+    'set(h,''Separator'',''on'');',...
+    'end;',...
+    'end;',...
+    'end;',...
+    'end;',...
+    'clear WindowsMenu OpenWindows children i k h userData name;']);
 HelpMenu=uimenu('Label','Help');
 
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','New Pipeline','Callback','CellProfiler(''NewPipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Clear Pipeline','Callback','CellProfiler(''ClearPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
@@ -519,14 +495,13 @@ uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
 ListOfDataTools=handles.Current.DataToolsFilenames;
 for j=2:length(ListOfDataTools)
-    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j)) '(guidata(gcbo));clear ans']);
+    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));clear ans']);
 end
 
-uimenu(WindowsMenu,'Label','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(WindowsMenu,'Label','Close All','Tag','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
 
 uimenu(HelpMenu,'Label','Getting Started','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''GS'',guidata(gcbo))');
 uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''Help'',guidata(gcbo))');
-uimenu(HelpMenu,'Label','Modules Help','Callback','CellProfiler(''ModulesHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Image Tools Help','Callback','CellProfiler(''ImageToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHelp_Callback'',gcbo,[],guidata(gcbo))');
 %uimenu(HelpMenu,'Label','Report Bugs','Callback','CellProfiler(''ReportBugs_Callback'',gcbo,[],guidata(gcbo));');
@@ -542,11 +517,11 @@ function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% NEW PIPELINE BUTTON %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CLEAR PIPELINE BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function NewPipeline_Callback(hObject, eventdata, handles)
+function ClearPipeline_Callback(hObject, eventdata, handles)
 
 if isempty(eventdata)
     Answer = CPquestdlg('Are you sure you want to clear the existing pipeline?','Confirm','Yes','No','Yes');
@@ -598,7 +573,7 @@ end
 %%% If the user presses "Cancel", the SettingsFileName.m will = 0 and
 %%% nothing will happen.
 if SettingsFileName == 0
-    return;
+    return
 end
 set(handles.ModulePipelineListBox,'Value',1);
 set(handles.ModulePipelineListBox,'String','Loading...');
@@ -613,9 +588,9 @@ end
 if ~(isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     CPerrordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
     eventdata = 1;
-    NewPipeline_Callback(hObject, eventdata, handles)
+    ClearPipeline_Callback(hObject, eventdata, handles)
     errFlg = 1;
-    return;
+    return
 end
 %%% Figures out whether we loaded a Settings or Output file, and puts
 %%% the correct values into Settings. Splices the subset of variables
@@ -633,12 +608,12 @@ try
     if (size(Settings.ModuleNames,2) ~= NumberOfModules)||(size(Settings.NumbersOfVariables,2) ~= NumberOfModules);
         CPerrordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']);
         errFlg = 1;
-        return;
+        return
     end
 catch
     CPerrordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']);
     errFlg = 1;
-    return;
+    return
 end
 
 handles.Settings.ModuleNames = Settings.ModuleNames;
@@ -966,7 +941,7 @@ function SavePipeline_Callback(hObject, eventdata, handles) %#ok We want to igno
 
 if handles.Current.NumberOfModules == 0
     warndlg('Pipeline saving was canceled because there are no modules in the current pipeline.','Warning')
-    return;
+    return
 end
 
 if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.ModuleNames)
@@ -999,13 +974,13 @@ if FileName ~= 0
         elseif strcmp(AutoName,'No')
             CPhelpdlg('The pipeline file has been saved.');
         elseif strcmp(AutoName,'Cancel')
-            return;
+            return
         end
     end
     %%% Allows user to save pipeline setting as a readable text file (.txt)
     SaveText = CPquestdlg('Do you want to save the pipeline as a text file also?','Save as text?','No');
     if strcmp(SaveText,'Cancel')
-        return;
+        return
     end
     %%% Checks if a field is present, and if it is, the value is stored in the
     %%% structure 'Settings' with the same name.
@@ -1067,12 +1042,12 @@ function AddModule_Callback(hObject,eventdata,handles) %#ok We want to ignore ML
 obj=findobj('Tag','AddModuleWindow');
 if(~isempty(obj))  %Window already exists
     figure(obj);
-    return;
+    return
 end
 
 if handles.Current.NumberOfModules == 99
     CPerrordlg('CellProfiler in its current state can only handle 99 modules. You have just attempted to load the 100th module. It should be fairly straightforward to modify the code in CellProfiler.m to expand its capabilities.');
-    return;
+    return
 end
 
 %%% 1. Opens a user interface to retrieve the .m file you want to use.
@@ -1114,7 +1089,7 @@ if ModuleNamedotm ~= 0,
             %%% If the module's .m file is not found on the search path, the result
             %%% of exist is zero, and the user is warned.
             CPerrordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
-            return;
+            return
         elseif length(differentPaths) > 1
             CPwarndlg(['More than one file with this same module name exists in the Matlab search path.  The pathname from ' char(differentPaths{1}) ' will likely be used, but this is unpredictable.  Modules should have unique names that are not the same as already existing Matlab functions to avoid confusion.'],ModuleNamedotm,'modal');
         end
@@ -1531,7 +1506,7 @@ if ModuleNamedotm ~= 0,
 
     if lastVariableCheck == 0
         CPerrordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
-        return;
+        return
     end
 
     try Contents = handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber));
@@ -1602,11 +1577,11 @@ if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the module.
     Answer = CPquestdlg('Are you sure you want to clear this analysis module and its settings?','Confirm','Yes','No','Yes');
     if strcmp(Answer,'No')
-        return;
+        return
     end
 end
 if isempty(handles.Settings.ModuleNames);
-    return;
+    return
 end
 %%% 1. Sets all VariableBox edit boxes and all VariableDescriptions to be invisible.
 
@@ -2252,7 +2227,7 @@ ModuleNumber = ModuleHighlighted(1);
 if isempty(handles.Settings.NumbersOfVariables)
     set(handles.slider1,'visible','off');
     guidata(handles.figure1,handles);
-    return;
+    return
 end
 % Note:  The yPosition is 0 + scrollPos because 0 is the original Y
 % Position of the variablePanel.  If the original location of the
@@ -2377,10 +2352,8 @@ ModuleDirEditBoxHandle = findobj('Tag','ModuleDirEditBox');
 IntensityColorMapHandle = findobj('Tag','IntensityColorMapEditBox');
 StripPipelineCheckboxHandle = findobj('Tag','StripPipelineCheckbox');
 SkipErrorsCheckboxHandle = findobj('Tag','SkipErrorCheckbox');
-SelectDisplayHandle = findobj('Tag','SelectDisplay');
+NoDisplayCheckboxHandle = findobj('Tag','NoDisplayCheckbox');
 LabelColorMapHandle = findobj('Tag','LabelColorMapEditBox');
-SelectDisplayModeHandle = findobj('Tag','SelectDisplay');
-
 PixelSize = get(PixelSizeEditBoxHandle,'string');
 PixelSize = PixelSize{1};
 FontSize = get(FontSizeEditBoxHandle,'string');
@@ -2399,10 +2372,12 @@ if get(SkipErrorsCheckboxHandle,'Value') == get(SkipErrorsCheckboxHandle,'Max')
 else
     SkipErrors = 'No';
 end
-DisplayModeValue = get(SelectDisplayModeHandle,'Value');
-
-EnteredPreferences.PixelSize = PixelSize; 
-EnteredPreferences.FontSize = FontSize;
+if get(NoDisplayCheckboxHandle,'Value') == get(NoDisplayCheckboxHandle,'Max')
+    NoDisplay = 'Yes';
+else
+    NoDisplay = 'No';
+end
+EnteredPreferences.PixelSize = PixelSize; EnteredPreferences.FontSize = FontSize;
 EnteredPreferences.DefaultImageDirectory = DefaultImageDirectory;
 EnteredPreferences.DefaultOutputDirectory = DefaultOutputDirectory;
 EnteredPreferences.DefaultModuleDirectory = DefaultModuleDirectory;
@@ -2410,7 +2385,7 @@ EnteredPreferences.IntensityColorMap = IntensityColorMap;
 EnteredPreferences.LabelColorMap = LabelColorMap;
 EnteredPreferences.StripPipeline = StripPipeline;
 EnteredPreferences.SkipErrors = SkipErrors;
-EnteredPreferences.DisplayModeValue = DisplayModeValue;
+EnteredPreferences.NoDisplay = NoDisplay;
 SavedPreferences = EnteredPreferences;
 CurrentDir = pwd;
 try
@@ -2481,6 +2456,7 @@ if ~isempty(Option)
 else
     StringForInfoText = 'See Help > General Help > Help Preferences for more information';
 end
+
 
 InfoText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2684,7 +2660,7 @@ SkipErrorCheckbox = uicontrol(...
     'Tag','SkipErrorCheckbox',...
     'Value',strcmp(handles.Preferences.SkipErrors,'Yes'));
 
-SelectDisplayModeText = uicontrol(...
+NoDisplayText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
     'Units','normalized',...
     'BackgroundColor',Color,...
@@ -2693,20 +2669,19 @@ SelectDisplayModeText = uicontrol(...
     'FontWeight','bold',...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.4 0.6 0.04],...
-    'String','Display Mode:',...
+    'String','Run with no display windows:',...
     'Style','text');
 
-SelectDisplayMode = uicontrol(...
+NoDisplayCheckbox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
-    'Style', 'popupmenu',...
-    'String',{'Display all windows', 'Do not display any windows', 'Specify windows to display'},...
     'Units','normalized',...
-    'FontName','Helvetica',...
-    'FontSize',handles.Preferences.FontSize,...
-    'FontWeight','bold',...
-    'Position',[0.5 0.4 0.4 0.05],...
-    'Tag','SelectDisplay',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color,...
+    'Min',0,...
+    'Max',1,...
+    'Position',[.7 .4 .04 .04],...
+    'Style','checkbox',...
+    'Tag','NoDisplayCheckbox',...
+    'Value',strcmp(handles.Preferences.NoDisplay,'Yes'));
 
 ImageDirTextBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -3025,7 +3000,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
     String = get(handles.FilenamesListBox,'string');
     %%% Check if there are images
     if strcmpi(String,'No image files recognized')
-        return;
+        return
     end
     FileName = char(String(Val));
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
@@ -3111,7 +3086,7 @@ for k=1:length(GraphicsHandles)
     end
 end
 %%% Finds and closes timer windows, which have HandleVisibility off.
-TimerHandles = findall(findobj, 'Name', 'Timer');
+TimerHandles = findall(findobj, 'Name', 'Status');
 try
     delete(TimerHandles);
     delete(timerfind);
@@ -3158,7 +3133,6 @@ if ~isempty(UserEntry)
             outputnumber = max(numbers) + 1;
         end
         set(handles.OutputFileNameEditBox,'string',sprintf('%s__%d.mat',UserEntry,outputnumber))
-        Handle = CPmsgbox('The output file already exists. A new file name has been generated.','Output file name has changed');
     else
         set(handles.OutputFileNameEditBox,'string',[UserEntry '.mat'])
     end
@@ -3185,15 +3159,10 @@ else
     tmp = get(handles.OutputFileNameEditBox,'string');
     OutputFileNameEditBox_Callback(hObject, eventdata, handles)
     if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
-        %%% Finds and closes the message box produced by the
-        %%% OutputFileNameEditBox_Callback so that an alternate
-        %%% warning can appear.
-        HandleOfMsgBoxToDelete = findobj('name','Output file name has changed');
-        close(HandleOfMsgBoxToDelete)
-        Answer = CPquestdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes');
+        Answer = CPquestdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes'); %When closing this dialog box, it assumes 'Yes' was chosen
         if strcmp(Answer,'Cancel')
             set(handles.OutputFileNameEditBox,'string',tmp)
-            return;
+            return
         end
     end
 
@@ -3209,72 +3178,6 @@ else
         if ~exist(handles.Current.DefaultImageDirectory, 'dir')
             CPerrordlg('The default image folder does not exist');
         else
-            try
-                rmfield(handles.Preferences,'DisplayWindows');
-            end
-            if handles.Preferences.DisplayModeValue == 2
-                handles.Preferences.DisplayWindows = zeros(handles.Current.NumberOfModules,1);
-            elseif handles.Preferences.DisplayModeValue == 3
-                try
-                    ModuleNames = handles.Settings.ModuleNames;
-
-                    % Create Select Display window
-                    SelectDisplay = figure;
-
-                    set(SelectDisplay,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Select Display Window','Color',[.7 .7 .9],'CloseRequestFcn','set(gcf,''UserData'',0);uiresume()');
-                    % Some variables controling the sizes of uicontrols
-                    uiheight = 0.3;
-                    % Set window size in inches, depends on the number of objects
-                    pos = get(SelectDisplay,'position');
-                    Height = handles.Current.NumberOfModules*uiheight+1;
-                    Width  = 4.2;
-                    set(SelectDisplay,'position',[pos(1)+1 pos(2) Width Height]);
-                    FontSize = 11;
-
-                    uicontrol(SelectDisplay,'style','text','String','Select which module windows to display: ','FontName','Times','FontSize',FontSize,...
-                        'HorizontalAlignment','left','units','inches','position',[0.2 Height-0.25 4 0.2],'BackgroundColor',get(SelectDisplay,'color'))
-
-                    h = [];    
-                    ypos = Height - 0.3 - uiheight;
-
-                    %Shows the Modules and checkboxes 
-                    for k = 1:handles.Current.NumberOfModules
-                        uicontrol(SelectDisplay,'style','text','String',ModuleNames{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-                            'units','inches','position',[0.6 ypos 3 0.18],'BackgroundColor',get(SelectDisplay,'color'))
-                        h(k) = uicontrol(SelectDisplay,'Style','checkbox','units','inches','position',[0.2 ypos-.05 uiheight uiheight],...
-                            'BackgroundColor',get(SelectDisplay,'color'),'Value',1);
-                        ypos=ypos-uiheight;
-                    end
-
-                    % Ok and Cancel pushbuttons
-                    posx = (Width - 1.7)/2;               % Centers buttons horizontally
-                    okbutton = uicontrol(SelectDisplay,'style','pushbutton','String','ok','FontName','Times','FontSize',FontSize,'units','inches',...
-                        'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
-                    cancelbutton = uicontrol(SelectDisplay,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
-                        'position',[posx+0.95 0.1 0.75 0.3],'Callback','delete(gcf)','BackgroundColor',[.7 .7 .9]);
-
-                    uiwait(SelectDisplay) 
-
-                    try 
-                        if get(SelectDisplay,'Userdata') == 1
-
-                            buttonchoice = get(h,'Value');
-                            if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
-                                handles.Preferences.DisplayWindows = cat(1,buttonchoice{:});
-                                delete(SelectDisplay);
-                            end
-
-                        end
-                    end
-
-                catch
-                    CPhelpdlg('Error: All windows will be displayed.');
-                    handles.Preferences.DisplayWindows = ones(handles.Current.NumberOfModules,1)
-                end
-            else
-                 handles.Preferences.DisplayWindows= ones(handles.Current.NumberOfModules,1);
-            end
-            
             %%% Retrieves the list of image file names from the
             %%% chosen directory, stores them in the handles
             %%% structure, and displays them in the filenameslistbox, by
@@ -3301,7 +3204,6 @@ else
             set(handles.OutputFileNameEditBox,'enable','inactive','foregroundcolor',[0.7,0.7,0.7])
             set(handles.AnalyzeImagesButton,'enable','off')
             set(cat(2,handles.VariableBox{:}),'enable','inactive','foregroundcolor',[0.7,0.7,0.7]);
-         
             %%% In the following code, the Timer window and
             %%% timer_text is created.  Each time around the loop,
             %%% the text will be updated using the string property.
@@ -3321,7 +3223,7 @@ else
             %%% Label we attach to figures (as UserData) so we know they are ours
             userData.Application = 'CellProfiler';
             userData.MyHandles = handles;
-            timerFig = figure('name','Timer','position',[0 BottomOfTimer 350 120],...
+            timerFig = figure('name','Status','position',[0 BottomOfTimer 350 120],...
                 'menubar','none','NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
                 'color',[0.7,0.7,0.9],'UserData',userData,'Resize','off');
             TimerData.timerFig = timerFig;
@@ -3407,15 +3309,12 @@ else
             uicontrol('Style', 'pushbutton', ...
                 'String', '?', 'Position', [280 90 15 25], 'FontName','Helvetica','FontSize', handles.Preferences.FontSize,...
                 'Callback', HelpButtonFunction, 'parent',timerFig, 'BackgroundColor',[0.7,0.7,0.9]);
-
             DetailButton=uicontrol('Style','pushbutton','String','Details','Position',[280 30 60 25],'FontName','Helvetica','FontSize',handles.Preferences.FontSize,...
                 'parent',timerFig,'Tag','DetailButton','BackgroundColor',[.7 .7 .9],'Callback',[...
                 'Timers = timerfind(''Tag'',''CellProfilerTimer'');',...
                 'TimerFcn = get(Timers(1),''TimerFcn'');',...
                 'set(Timers(1),''TimerFcn'','''');',...
                 'TimerData = get(Timers(1),''UserData'');',...
-                'TimerStr = {sprintf(''Time(sec) for:\t1st cycle\tAvg others'') ''''};',...
-                'for i=[1:size(TimerData.TimerTime,1)],',...
                 'DetWin = findobj(''tag'',''DetailWindow'');',...
                 'if isempty(DetWin),',...
                 'DetWin = CPfigure(''tag'',''DetailWindow'',''Name'',''Status Details'',''NumberTitle'',''off'',''position'',[400 100 250 13*(TimerData.NumberOfModules+6)+50]);',...
@@ -3462,15 +3361,12 @@ else
                 'total=total+TimerData.TimerTime(i,j);',...
                 'end;',...
                 'end;',...
-                'if count==0,',...
-                'TimerStr{end+1}=sprintf(''Module %2.0f:\t\t%12.1f\t\tN/A'',i,TimerData.TimerTime(i,1));',...
+                'if count~=0,',...
+                'TimeAvgOthersStr{end+1} = sprintf(''%1.1f'',total/count);',...
                 'else,',...
-                'TimerStr{end+1}=sprintf(''Module %2.0f:\t\t%12.1f\t%12.1f'',i,TimerData.TimerTime(i,1),total/count);',...
+                'TimeAvgOthersStr{end+1} = ''N/A'';',...
                 'end;',...
                 'end;',...
-                'TimerStr{end+1} = '''';',...
-                'if TimerData.SetBeingAnalyzed~=1,'...
-                'TimerStr{end+1} = sprintf(''Avg Totals:\t\t%12.1f\t%12.1f'',sum(TimerData.TimerTime(:,1)),sum(sum(TimerData.TimerTime(:,2:end)))/(TimerData.SetBeingAnalyzed-1));',...
                 'end;',...
                 'for m = 1:(TimerData.NumberOfModules+1 - length(Time1stCycleStr)),',...
                 'Time1stCycleStr{end+1} = '''';',...
@@ -3482,26 +3378,32 @@ else
                 'if TimerData.SetBeingAnalyzed == 1 | TimerData.NumberOfImageSets==1,',...
                 'TimeAvgOthersStr{end+1} = ''N/A'';',...
                 'else,',...
-                'TimerStr{end+1} = sprintf(''Avg Totals:\t\t%12.1f\t\tN/A'',sum(TimerData.TimerTime(:,1)));',...
-                'end;',...
-                'TimerStr{end+1} = '''';',...
-                'TimerStr{end+1} = '''';',...
-                'TimerStr{end+1} = sprintf(''TOTAL TIME: %12.1f'',sum(sum(TimerData.TimerTime(:))));',...
-                'DetWin = findobj(''tag'',''DetailWindow'');',...
-                'if isempty(DetWin),',...
-                'DetWin = CPfigure(''tag'',''DetailWindow'',''position'',[400 100 300 TimerData.NumberOfModules*20+50]);',...
-                'uicontrol(''tag'',''DetailWindowText'',''Style'',''text'',''Units'',''normalized'',''Position'',[0 0 1 1],''BackgroundColor'',[.7 .7 .9],''FontSize'',TimerData.FontSize,''HorizontalAlignment'',''Left'',',...
-                '''Parent'',DetWin,''String'',TimerStr);'...
-                'else,'...
-                'try,',...
-                'set(findobj(DetWin,''Tag'',''DetailWindowText''),''String'',TimerStr);',...
-                'catch,',...
-                'uicontrol(''tag'',''DetailWindowText'',''Style'',''text'',''Units'',''normalized'',''Position'',[0 0 1 1],''BackgroundColor'',[.7 .7 .9],''FontSize'',TimerData.FontSize,''HorizontalAlignment'',''Left'',',...
-                '''Parent'',DetWin,''String'',TimerStr);'...
+                'TotalAvgOthers = 0;',...
+                'for n = 1:(length(TimeAvgOthersStr)-1),',...
+                'if ~(str2num(TimeAvgOthersStr{n})==0 | TimeAvgOthersStr{n}(1) == ''N''),',...
+                'TotalAvgOthers = TotalAvgOthers + str2num(TimeAvgOthersStr{n});',...
                 'end;',...
                 'end;',...
+                'TimeAvgOthersStr{end+1} = sprintf(''%1.1f'',TotalAvgOthers);',...
+                'end;',...
+                'Time1stCycle = findobj(DetWin,''Tag'',''Time1stCycle'');',...
+                'if ~isempty(Time1stCycle),',...
+                'set(Time1stCycle, ''String'', Time1stCycleStr);',...
+                'else,',...
+                'uicontrol(DetWin, ''Tag'', ''Time1stCycle'', ''Style'', ''text'', ''Position'', [100 DetWinheight-30-13*(TimerData.NumberOfModules+6) 51 13*(TimerData.NumberOfModules+6)],', ...
+                    '''HorizontalAlignment'', ''center'', ''BackgroundColor'', [0.7 0.7 0.9], ''FontSize'', TimerData.FontSize,', ...
+                    '''String'', Time1stCycleStr);',...
+                'end;',...
+                'TimeAvgOthers = findobj(DetWin,''Tag'',''TimeAvgOthers'');',...
+                'if ~isempty(TimeAvgOthers),',...
+                'set(TimeAvgOthers, ''String'', TimeAvgOthersStr);',...
+                'else,',...
+                'uicontrol(DetWin, ''Tag'', ''TimeAvgOthers'', ''Style'', ''text'', ''Position'', [160 DetWinheight-30-13*(TimerData.NumberOfModules+6) 63 13*(TimerData.NumberOfModules+6)],', ...
+                    '''HorizontalAlignment'', ''center'', ''BackgroundColor'', [0.7 0.7 0.9], ''FontSize'', TimerData.FontSize,', ...
+                    '''String'', TimeAvgOthersStr);',...
+                'end;',...                
                 'set(Timers(1),''TimerFcn'',TimerFcn);',...
-                'clear Timer TimerData TimerStr DetWin i TimerFcn j total count pos;']);
+                'clear DetWin DetWinheight ModuleStr Time1stCycle Time1stCycleStr TimeAvgOthers TimeAvgOthersStr TimerData TimerFcn Timers TotalAvgOthers count i j k m n pos total;']);
 
             %%% The timertext string is read by the analyze all images button's callback
             %%% at the end of each time around the loop (i.e. at the end of each image
@@ -3562,7 +3464,6 @@ else
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 a=clock;
                 begin_set=a(5:6);
-                NumberofWindows = 0;
                 for SlotNumber = 1:handles.Current.NumberOfModules
                     %%% If a module is not chosen in this slot, continue on to the next.
                     ModuleNumberAsString = TwoDigitString(SlotNumber);
@@ -3576,15 +3477,12 @@ else
                         %%% analysis loop, and completes the refreshing
                         %%% process.
                         try
-
-                               
                             if handles.Current.SetBeingAnalyzed == 1
-                                if handles.Preferences.DisplayWindows(SlotNumber) == 0
+                                if strcmp(handles.Preferences.NoDisplay,'Yes')
                                     handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]) = ceil(max(findobj))+1;
                                 else
-                                    NumberofWindows = NumberofWindows+1;
                                     if iscellstr(handles.Settings.ModuleNames(SlotNumber))
-                                        LeftPos = (ScreenWidth*((NumberofWindows-1)/12));
+                                        LeftPos = (ScreenWidth*((SlotNumber-1)/12));
                                         if LeftPos >= ScreenWidth
                                             LeftPos = LeftPos - ScreenWidth;
                                         end
@@ -3711,8 +3609,8 @@ else
                     if ~isempty(findobj('Tag','DetailWindow'))
                         eval(get(DetailButton,'callback'));
                     end
+                end %%% ends loop over slot number
 
-                end %%% en
                 %%% Completes the breakout to the image loop.
                 if (setbeinganalyzed < startingImageSet)
                     continue;
@@ -3986,10 +3884,6 @@ else
     end
 end
 
-function ModulesHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-ListOfTools = handles.Current.ModulesFilenames;
-ToolsHelpSubfunction(handles, 'Modules', ListOfTools)
-
 function ImageToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ListOfTools = handles.Current.ImageToolsFilenames;
 ToolsHelpSubfunction(handles, 'Image Tools', ListOfTools)
@@ -4055,10 +3949,7 @@ ToolsHelpWindowHandle = figure(...
     'Tag','ToolsHelpWindow',...
     'UserData',userData);
 
-if strcmp(ImageDataOrHelp,'Modules')
-    set(ToolsHelpWindowHandle,'name','Modules Help');
-    TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
-elseif strcmp(ImageDataOrHelp,'Image Tools')
+if strcmp(ImageDataOrHelp,'Image Tools')
     set(ToolsHelpWindowHandle,'name','Image Tools Help');
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Data Tools')
@@ -4121,10 +4012,7 @@ toolsChoice = 0; %%% Makes sure toolsChoice indicates no selection
 uiwait(ToolsHelpWindowHandle);
 
 if(toolsChoice ~= 0)
-    if strcmp(ImageDataOrHelp,'Modules')
-        HelpText = handles.Current.ModulesHelp{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Modules Help']);
-    elseif strcmp(ImageDataOrHelp,'Image Tools')
+    if strcmp(ImageDataOrHelp,'Image Tools')
         HelpText = handles.Current.ImageToolHelp{toolsChoice};
         CPtextdisplaybox(HelpText,['CellProfiler Image Tools Help']);
     elseif strcmp(ImageDataOrHelp,'Data Tools')
@@ -4341,7 +4229,7 @@ function LoadPreferences_Callback(hObject,eventdata,handles)
 [SettingsFileName, SettingsPathname] = uigetfile(fullfile(matlabroot,'.','*.mat'),'Choose a preferences file');
 if isequal(SettingsFileName,0) || isequal(SettingsPathname,0)
     CPwarndlg('You did not specify a preferences file.');
-    return;
+    return
 else
     try
         load(fullfile(SettingsPathname,SettingsFileName));
@@ -4349,7 +4237,7 @@ else
         clear SavedPreferences
     catch
         CPwarndlg('The file chosen does not exist');
-        return;
+        return
     end
 end
 LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
@@ -4360,7 +4248,6 @@ if exist('EnteredPreferences','var')
     if ~isempty(EnteredPreferences)
         %%% Retrieves the data that the user entered and saves it to the
         %%% handles structure.
-        handles.Preferences.DisplayModeValue = EnteredPreferences.DisplayModeValue;
         handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
         handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
         handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
@@ -4370,12 +4257,10 @@ if exist('EnteredPreferences','var')
         handles.Preferences.LabelColorMap = EnteredPreferences.LabelColorMap;
         handles.Preferences.StripPipeline = EnteredPreferences.StripPipeline;
         handles.Preferences.SkipErrors = EnteredPreferences.SkipErrors;
-            
-            
         try
-            handles.Preferences.DisplayModeValue = EnteredPreferences.DisplayModeValue;
+            handles.Preferences.NoDisplay = EnteredPreferences.NoDisplay;
         catch
-            handles.Preferences.DisplayModeValue = 0;
+            handles.Preferences.NoDisplay = 'No';
         end
         clear global EnteredPreferences
 

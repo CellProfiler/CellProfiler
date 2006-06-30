@@ -218,6 +218,31 @@ if strcmpi(ColorMap,'Default') == 1
     ColorMap = handles.Preferences.IntensityColorMap;
 end
 
+
+% Processing will continue when a user has selected to save the tiled image 
+% on "First cycle" or "Every cycle". Instead of an error occurring, 
+% the program will behave as if the user entered "Last cycle" 
+% by not saving the image until the last cycle. At the end of the last cycle, 
+% the user will get a help dialog popup window.
+
+
+TileModuleNum = strmatch('Tile',handles.Settings.ModuleNames,'exact');
+             
+if ~isempty(TileModuleNum)      %if Tile Module is loaded
+    for tilecount = 1: length(TileModuleNum)    %loop through all tiled images
+        if strcmp(handles.Settings.VariableValues{TileModuleNum(tilecount), 3}, ImageName) %if saving one of the tiled images
+            if ~strcmp(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
+                SaveWhen='Last cycle';  
+                if SetBeingAnalyzed == handles.Current.NumberOfImageSets    %if current cycle is last cycle
+                    warndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
+                end
+            end
+            
+        end
+    end
+end
+
+
 if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
@@ -274,12 +299,11 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
     end
 
-    if ~strcmp(FileFormat,'fig')
-        if ~isfield(handles.Pipeline, ImageName)
-            error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the input image.  It was supposed to be named ', ImageName, ' but that does not exist.'])
+    if ~strcmp(FileFormat,'fig')        
+        if ~isfield(handles.Pipeline, ImageName) 
+            error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module.'])
         end
         Image = handles.Pipeline.(ImageName);
-
         if max(Image(:)) > 1 || min(Image(:)) < 0
             CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
         end

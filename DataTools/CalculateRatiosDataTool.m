@@ -1,5 +1,49 @@
 function CalculateRatiosDataTool2(handles)
 
+% Help for the Calculate Ratios data tool:
+% Category: Data Tools
+%
+% SHORT DESCRIPTION:
+% Calculates the ratio between any measurements already measured (e.g.
+% Intensity of green staining in cytoplasm/Area of cells)
+% *************************************************************************
+%
+% This module can take any measurements produced by previous modules and
+% calculate a ratio. Resulting ratios can also be used to calculate other
+% ratios and be used in Classify Objects.
+%
+% This module currently works on an object-by-object basis (it calculates
+% the ratio for each object) but can also calculate ratios for measurements
+% made for entire images (but only for measurements produced by the
+% Correlation module).
+%
+% Feature Number:
+% The feature number specifies which features from the Measure module(s)
+% will be used for the ratio. See each Measure module's help for the
+% numbered list of the features measured by that module.
+%
+% See also all Measure modules.
+
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 3534 $
+
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [FileName, Pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
 else

@@ -2,8 +2,6 @@ CellProfiler cell image analysis software development
 
 - Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we could add an option to the LoadImages and LoadSingleImages modules to use memory mapping.
 
-- (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
-
 - (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
@@ -61,22 +59,7 @@ estimate with no indication of its accuracy. - Ray
 
 - (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
 
-- (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.
-
-- (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
-
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
-
-- (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
-??? Error using ==> uigetdir
-STARTPATH argument must be a string.
-Error in ==> CellProfiler>LoadPipeline_Callback at 593
-        Pathname = uigetdir('','Please select directory where modules are located');
-Error in ==> CellProfiler>gui_mainfcn at 5204
-        feval(varargin{:});
-Error in ==> CellProfiler at 60
-    gui_mainfcn(gui_State, varargin{:});
-??? Error while evaluating uimenu Callback.
 
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
 * When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.

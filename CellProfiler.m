@@ -2440,7 +2440,7 @@ try
     save(FullFileName,'SavedPreferences')
     clear SavedPreferences
     if DefaultVal == 1;
-        CPhelpdlg('Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the Matlab root directory.')
+        CPhelpdlg(['Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the directory ', pwd])
     else
         CPhelpdlg('Your CellProfiler preferences were successfully set.')
     end

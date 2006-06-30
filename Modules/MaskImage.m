@@ -4,12 +4,10 @@ function handles = MaskImage(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Beta
+% Sorry, this module has not yet been documented
 % *************************************************************************
 %
-% Beta
-%
-% See also all Measure modules.
+% See also 
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."
+
 - Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we could add an option to the LoadImages and LoadSingleImages modules to use memory mapping.
 
 - (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.

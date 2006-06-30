@@ -1,13 +1,12 @@
 function handles = CalculateMath(handles)
 
-% Help for the Calculate Ratios module:
+% Help for the Calculate Math module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Calculates the ratio between any measurements already measured (e.g.
-% Intensity of green staining in cytoplasm/Area of cells)
+% Sorry, this module has not yet been documented.
 % *************************************************************************
-%
+% THIS IS NOT ENTIRELY APPLICABLE HELP>>>
 % This module can take any measurements produced by previous modules and
 % calculate a ratio. Resulting ratios can also be used to calculate other
 % ratios and be used in Classify Objects.

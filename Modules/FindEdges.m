@@ -1,10 +1,10 @@
 function handles = FindEdges(handles)
 
-% Help for the Flip module:
+% Help for the Find Edges module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Flips an image from top to bottom, left to right, or both.
+% Sorry, this module is not yet documented.
 % *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.

@@ -179,6 +179,7 @@ Prompts{14} = 'Do you want the histograms to be displayed? (Impractical when exp
 Prompts{15} = 'Do you want the histograms bins to contain the actual numbers of objects in the bin (N) or the percentage of objects in the bin (P)?';
 Prompts{16} = 'Do you want a line, area, or bar graph?';
 Prompts{17} = 'Do you want the axis to be log scale?';
+Prompts{18} = 'Do you want to flip the x and y axes?';
 
 AcceptableAnswers = 0;
 global Answers
@@ -200,6 +201,9 @@ while AcceptableAnswers == 0
     Defaults{15} = 'N';
     Defaults{16} = 'bar';
     Defaults{17} = 'no';
+    Defaults{18} = 'no';    
+    
+    
     %%% Loads the Defaults from the global workspace (i.e. from the
     %%% previous time the user ran this tool) if possible.
     for i = 1: length(Prompts)
@@ -212,13 +216,15 @@ while AcceptableAnswers == 0
     % Workaround because input dialog box is too tall. Break questions up
     % into two sets. We could create a custom version of inputdlg with a
     % vertical slider, but that would be more complicated.
-    Answers1 = inputdlg(Prompts(1:8),'Choose histogram settings - page 1',1,Defaults(1:8),'on');
+    
+    Answers1 = inputdlg(Prompts(1:9),'Choose histogram settings - page 1',1,Defaults(1:9),'on');
 
     %%% If user clicks cancel button Answers1 will be empty.
     if isempty(Answers1)
         return
     end
-    Answers2 = inputdlg(Prompts(9:17),'Choose histogram settings - page 2',1,Defaults(9:17),'on');
+    
+    Answers2 = inputdlg(Prompts(10:18),'Choose histogram settings - page 2',1,Defaults(10:18),'on');
 
     %%% If user clicks cancel button Answers2 will be empty.
     if isempty(Answers2)
@@ -371,6 +377,15 @@ while AcceptableAnswers == 0
         uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{17}, '.']));
         continue
     end
+    
+    
+    %%% Error checking for the flip axes question.
+    FlipAxes = Answers{18};
+    if strncmpi(FlipAxes,'Y',1) ~= 1 && strncmpi(FlipAxes,'N',1) ~= 1
+        uiwait(CPerrordlg(['You must enter "yes" or "no" in answer to the question: ', Prompts{18}, '.']));
+        continue
+    end
+    
 
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
@@ -556,36 +571,59 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         Increment = Increment + 1;
         h = subplot(NumberDisplayRows,NumberDisplayColumns,Increment);
         if strcmpi(LineOrBar,'bar')
-            if ~isempty(FinalHistogramData)
-                k=bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
+            if ~isempty(FinalHistogramData) & strncmpi(FlipAxes,'Y',1)
+                k=barh('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber), 1);
+            elseif ~isempty(FinalHistogramData) & strncmpi(FlipAxes,'N',1)
+                k=bar('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber), 1);
             end
             set(k,'FaceColor',GraphColor);
         elseif strcmpi(LineOrBar,'area')
-            if ~isempty(FinalHistogramData)
+            if ~isempty(FinalHistogramData) %Since there is no function to flip axes of area plot, will display normal graph regardless of whether user chooses to flip axes
                 k=area('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber));
             end
             set(k,'FaceColor',GraphColor);
         else
-            if ~isempty(FinalHistogramData)
+            if ~isempty(FinalHistogramData) & strncmpi(FlipAxes,'Y',1)
+                plot('v6',FinalHistogramData(:,ImageNumber),PlotBinLocations,'LineWidth',2,'color',GraphColor);
+            elseif ~isempty(FinalHistogramData) & strncmpi(FlipAxes,'N',1)
                 plot('v6',PlotBinLocations,FinalHistogramData(:,ImageNumber),'LineWidth',2,'color',GraphColor);
             end
         end
-        set(get(h,'XLabel'),'String',cat(2,MeasurementToExtract,AdditionalInfoForTitle))
-        set(h,'XTickLabel',XTickLabels)
-        set(h,'XTick',PlotBinLocations)
-        set(gca,'Tag','BarTag','ActivePositionProperty','Position')
-        % Fix underscores in HistogramTitles
-        AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
-        title(AdjustedHistogramTitle)
-        if Increment == 1
-            if strncmpi(NumberOrPercent,'N',1)
-                set(get(h,'YLabel'),'String','Number of objects')
-            else
-                set(get(h,'YLabel'),'String','Percentage of objects')
+        if strncmpi(FlipAxes,'Y',1) & ~strcmpi(LineOrBar,'area')
+            if Increment == 1
+                set(get(h,'YLabel'),'String',cat(2,MeasurementToExtract,AdditionalInfoForTitle))
             end
+            set(h,'YTickLabel',XTickLabels)     
+            set(h,'YTick',PlotBinLocations)
+            set(gca,'Tag','BarTag','ActivePositionProperty','Position')
+            % Fix underscores in HistogramTitles
+            AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
+            title(AdjustedHistogramTitle)
+            if strncmpi(NumberOrPercent,'N',1)
+                set(get(h,'XLabel'),'String','Number of objects')
+            else
+                set(get(h,'XLabel'),'String','Percentage of objects')
+            end
+            axis tight
+        else
+            set(get(h,'XLabel'),'String',cat(2,MeasurementToExtract,AdditionalInfoForTitle))
+            set(h,'XTickLabel',XTickLabels)
+            set(h,'XTick',PlotBinLocations)
+            set(gca,'Tag','BarTag','ActivePositionProperty','Position')
+            % Fix underscores in HistogramTitles
+            AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
+            title(AdjustedHistogramTitle)
+            if Increment == 1
+                if strncmpi(NumberOrPercent,'N',1)
+                    set(get(h,'YLabel'),'String','Number of objects')
+                else
+                    set(get(h,'YLabel'),'String','Percentage of objects')
+                end
+            end
+            axis tight
         end
-        axis tight
     end
+    
     %%% Sets the Y axis scale to be absolute or relative.
     AxesHandles = findobj('Parent', FigureHandle,'Type','axes');
     set(AxesHandles,'UserData',FigureSettings)
@@ -652,7 +690,7 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Unit',StdUnit, ...
         'Position',PointsPerPixel*[445 NewHeight-30 85 22], ...
         'Units','Normalized',...
-        'String','X axis labels:', ...
+        'String','Measurement axis labels:', ...
         'Style','text', ...
         'FontSize',FontSize);
     %%% These callbacks control what happens when display
@@ -749,9 +787,13 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Units','Normalized',...
         'String','?', ...
         'Style','pushbutton', ...
-        'FontSize',FontSize);
+        'FontSize',FontSize);    
     %%% Hide every other label button.
-    Button8Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    if strncmpi(FlipAxes,'Y',1) & ~strcmpi(LineOrBar,'area')
+        Button8Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''YTick'');XTickLabels = get(AxesHandles(1),''YTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''YTick'',PlotBinLocations2(1,:));set(AxesHandles,''YTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    else
+        Button8Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    end
     Button8 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -762,8 +804,12 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Style','pushbutton',...
         'UserData',0,...
         'FontSize',FontSize);
-    %%% Decimal places X axis labels.
-    Button9Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
+    %%% Decimal places Measurement axis labels.
+    if strncmpi(FlipAxes,'Y',1) & ~strcmpi(LineOrBar,'area')
+        Button9Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''YTickLabel'',XTickLabels2);set(AxesHandles,''YTick'',PlotBinLocations);else,set(AxesHandles,''YTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''YTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
+    else
+        Button9Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow';
+    end
     Button9 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit,...
         'BackgroundColor',[.7 .7 .9], ...
@@ -775,7 +821,11 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'UserData',0,...
         'FontSize',FontSize);
     %%% Restore original X axis labels.
-    Button10Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+    if strncmpi(FlipAxes,'Y',1) & ~strcmpi(LineOrBar,'area')
+        Button10Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''YTick'',PlotBinLocations); set(AxesHandles,''YTickLabel'',XTickLabels); clear';
+    else
+        Button10Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+    end
     Button10 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...
@@ -795,12 +845,12 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Units','Normalized',...
         'String','Add Control Histogram', ...
         'Style','pushbutton', ...
-        'FontSize',FontSize);
+        'FontSize',FontSize); 
     %%% Button for exporting data to MATLAB
     if strcmpi(LineOrBar,'bar') || strcmpi(LineOrBar,'area')
-        Button12Callback = 'Bins = get(findobj(gcf,''type'',''patch''),''XData'');Data = get(findobj(gcf,''type'',''patch''),''YData'');';
+        Button12Callback = 'Bins = get(findobj(gcf,''type'',''patch''),''XData'');Data = get(findobj(gcf,''type'',''patch''),''YData''); msgbox(''The data is now saved as the variables Bins and Data in the Matlab workspace.'')';
     else
-        Button12Callback = 'Bins = get(findobj(gcf,''type'',''line''),''XData'');Data = get(findobj(gcf,''type'',''line''),''YData'');';
+        Button12Callback = 'Bins = get(findobj(gcf,''type'',''line''),''XData'');Data = get(findobj(gcf,''type'',''line''),''YData''); msgbox(''The data is now saved as the variables Bins and Data in the Matlab workspace.'')';
     end
     uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
@@ -888,6 +938,12 @@ elseif strcmp(CompressedHistogram,'yes') == 1 && strncmpi(ShowDisplay,'Y',1) == 
     ylabel(gca,'Histogram bins','fontname','Helvetica','fontsize',FontSize+2)
     title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2)
 end
+
+%displays warning if flip axes of area graph
+if strncmpi(FlipAxes,'Y',1) & strcmpi(LineOrBar,'area')
+    warndlg('There is no function that can flip the axes of an area graph. The normal graph is displayed.','Warning')
+end
+
 
 function WriteHistToExcel(FileName, FirstImage, LastImage, XTickLabels,...
     FinalHistogramData, MeasurementToExtract, AdditionalInfoForTitle,...

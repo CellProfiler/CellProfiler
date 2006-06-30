@@ -4,7 +4,7 @@
 =>Jun: working
 
 - (Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
-=>Jun: Changes made 6/30/06. CellProfiler.m not yet committed.
+=>Jun: Changes made 6/30/06. CellProfiler.m committed on 6/30/06.
 
 (Anne 6/27/06): Need to add option to Histogram menu to flip x and y axes when plotting graphs.
 =>Jun: Changes made 6/27/06-6/30/06. DataTools/Histogram.m committed on 6/30/06.

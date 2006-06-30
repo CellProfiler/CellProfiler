@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun, 6/30/06) (Requested by Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
+=>Jun: Changes made to CellProfiler.m.
 
 - (Jun, 6/30/06) (Requested by Anne 6/27/06): Need to add option to Histogram menu to flip x and y axes when plotting histogram.
 =>Jun: Changes made to Histogram.m.

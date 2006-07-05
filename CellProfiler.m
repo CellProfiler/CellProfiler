@@ -325,7 +325,6 @@ set(handles.CPlogoAxes,'visible','off')
 %%% Finds all available tools, which are .m files residing in the
 %%% Modules folder.
 
-
 Pathname = fullfile(handles.Current.CellProfilerPathname,'Modules');
 ListOfTools{1} = 'Modules: none loaded';
 try addpath(Pathname)
@@ -2722,14 +2721,14 @@ SelectDisplayModeText = uicontrol(...
 SelectDisplayMode = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
     'Style', 'popupmenu',...
+    'BackgroundColor',[1 1 1],...
     'String',{'Display all windows', 'Do not display any windows', 'Specify windows to display'},...
     'Units','normalized',...
     'FontName','Helvetica',...
     'FontSize',handles.Preferences.FontSize,...
     'FontWeight','bold',...
     'Position',[0.5 0.4 0.4 0.05],...
-    'Tag','SelectDisplay',...
-    'BackgroundColor',Color);
+    'Tag','SelectDisplay');
 
 ImageDirTextBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -3968,14 +3967,14 @@ else
         %%% This is the function that actually reads the module's help
         %%% data.
         if isdeployed
-            for i = 1:length(handles.Current.ModuleFilenames)
-                if strmatch(ModuleName,handles.Current.ModuleFilenames{i},'exact')
+            for i = 1:length(handles.Current.ModulesFilenames)
+                if strmatch(ModuleName,handles.Current.ModulesFilenames{i},'exact')
                     Option = i;
                     break
                 end
             end
             if ~isempty(Option)
-                HelpText = handles.Current.ModuleHelp{Option};
+                HelpText = handles.Current.ModulesHelp{Option};
             end
         else
             HelpText = [help(char(ModuleName))];
@@ -4491,14 +4490,14 @@ filename = file_list{index_selected};
 
 if isdeployed
     handles = guidata(findobj('tag','figure1'));
-    for i = 1:length(handles.Current.ModuleFilenames)
-        if strmatch(filename,handles.Current.ModuleFilenames{i},'exact')
+    for i = 1:length(handles.Current.ModulesFilenames)
+        if strmatch(filename,handles.Current.ModulesFilenames{i},'exact')
             Option = i;
             break
         end
     end
     if ~isempty(Option)
-        CPtextdisplaybox(handles.Current.ModuleHelp{Option},'CellProfiler image analysis module help');
+        CPtextdisplaybox(handles.Current.ModulesHelp{Option},'CellProfiler image analysis module help');
     end
 else
     CPtextdisplaybox(help(filename),'CellProfiler image analysis module help');

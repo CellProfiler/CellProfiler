@@ -90,8 +90,8 @@ for i=1:length(Modulesfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.ModuleFilenames = {',ToolList,'};\n']);
-fprintf(fid,'handles.Current.ModuleHelp = ToolHelp;\n\n');
+fprintf(fid,['handles.Current.ModulesFilenames = {',ToolList,'};\n']);
+fprintf(fid,'handles.Current.ModulesHelp = ToolHelp;\n\n');
 
 clear ToolList
 

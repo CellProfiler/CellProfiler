@@ -1,21 +1,32 @@
-CURRENTLY WORKING ON: (CellProfiler.m)
-
-
-
-
-OTHER TODO'S:
-
-- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray.
-
-- (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
-
-- Mike - Add option to change colormap to image tool window
+CURRENTLY WORKING ON:
 
 - (Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?  Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
 Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir), lots of bad things happen.
 
+- (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
+??? Error using ==> uigetdir
+STARTPATH argument must be a string.
+Error in ==> CellProfiler>LoadPipeline_Callback at 593
+        Pathname = uigetdir('','Please select directory where modules are located');
+Error in ==> CellProfiler>gui_mainfcn at 5204
+        feval(varargin{:});
+Error in ==> CellProfiler at 60
+    gui_mainfcn(gui_State, varargin{:});
+??? Error while evaluating uimenu Callback.
 
-DONE:
+OTHER TODO'S:
+
+- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray.
+*can I make an entirely new subfunction?
+
+- (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
+*where are the programming notes?
+
+
+
+
+
+DONE (committed):
 
 - (Anne 6/12/06) - Should the Timer be renamed "Status"?
 
@@ -28,14 +39,18 @@ DONE:
 - Anne 6-22-06: In any of the figures produced during processing, there is a problem with "OpenNewImageFile" under the "CellProfiler Image Tools" in the menu bar. If you choose an image, an error results and the image is not displayed. If you make changes to the underlying subfunction, be sure that other features using that subfunction still work.
 
 
-POSSIBLE TODO'S:
+DONE (not yet committed):
 
-- (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
+7/5 - (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
 
-- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+7/5 - (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
 
-- (Requested by Anne 12-09-05)-- See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
+7/5 - (Requested by Rodrigo 7/05/06) - After using the InteractiveZoom, clicking on any image that wasn't the last one to use the interactivezoom doesn't pop up the Image Tools window as it should, but creates an error instead. The same happens for any axis clicked.
 
-- (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
+7/6 - (Requested by Anne 12-15-05) - When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
+Also fixed other bugs: The window that would pop up would display all Module Displays instead of only its own; the figure number sometimes didn't agree with the one saved in the handles structure.
 
-- (Requested by Anne 12-15-05)- When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
+7/6 - (Requested by Anne 7-5-06) - In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
+Note: We (UROPs) had done this, but apparently forgot to commit it or something. Sorry about that.
+
+7/6 - (Requested by Anne 7-5-06) - When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)

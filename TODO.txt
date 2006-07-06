@@ -2,10 +2,6 @@ CellProfiler cell image analysis software development
 
 - Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
 
-- Anne 7-5-06: In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
-
-- Anne 7-5-06: When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)
-
 - Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."
 
 - Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we should have "run in memory mapping mode for large images?" as a preference in Set Preferences, and then we would adjust the CPretrieveimage subfunction (or whatever it's called) to check whether we are in memory mapping mode or not in order to decide how to retrieve images. It's unclear to me whether this would involve a ridiculous amount of change - for example, would we have to change every module that stores an image in the handles to store it in a particular special way?
@@ -15,7 +11,6 @@ CellProfiler cell image analysis software development
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
-
 
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
 
@@ -83,12 +78,6 @@ estimate with no indication of its accuracy. - Ray
 - (Requested by Anne 2-14-06)- This might be cool to implement: IEEE Trans Inf Technol Biomed. 2006 Jan;10(1):5-10. A new detection algorithm (NDA) based on fuzzy cellular neural networks for white blood cell detection.  Shitong W, Min W.
 
 - (Requested by Anne 12-16-05)- Design an informational brochure
-
-- (Requested by Anne 12-16-05)- Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example:
-handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}
-for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray)
-    handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2);
-end
 
 - (Requested by Anne 12-15-05)- Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps.
 

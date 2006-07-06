@@ -10,6 +10,7 @@ CellProfiler cell image analysis software development
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
 
+
 - (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
 
 - (Anne 5/22/06) - When we run large image sets, we usually run an illumination correction pipeline. It would be nice if this pipeline would calculate a suggested 'minimum allowable threshold', to be used in the IdentifyPrim and IdentifySec modules. Right now, we choose it empirically.
@@ -93,6 +94,8 @@ end
 
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable.
 
+- (Requested by Anne 12-09-05)-- Combine code for ExportData and ExportDatabase (CPconvertsql) and make ExportData a module
+
 - (Periodically)
 
 - Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities
@@ -120,8 +123,6 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 - (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
 - (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters.
-
-- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
 
 - (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 

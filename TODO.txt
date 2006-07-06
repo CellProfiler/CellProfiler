@@ -54,8 +54,6 @@ estimate with no indication of its accuracy. - Ray
 
 - (Anne 5/10/06) - IMPORTANT Improve automatic thresholding, i.e. background/cell edge finding - threshold vs. adaptive threshold vs. watershed. Implement Ray's belief propagation idea?  Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996), although we need to mark with a disclaimer that it's for academic purposes only because for commercial use, it's patented, and also Jeff says it does not deal with clumpy objects, so I guess it's for thresholding only, it is not a complete segmentation solution. See this article (anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
 
--(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
-
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?)
 
 - (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.

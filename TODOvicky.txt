@@ -1,12 +1,17 @@
 TODO
 
--(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
+
+- Anne 7-5-06: When running in 'choose which windows to display mode', the "ok" button should be uppercase. Also, have OK be the default behavior, so the user can just press enter.
 
 - (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 
 DONE
+
+-(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
+
+(7/6/06-7/6/06)- done
 
 (6/29/06-6/29/06) - Update DataTools/Image Tools decription for report
 

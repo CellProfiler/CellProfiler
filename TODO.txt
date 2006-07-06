@@ -4,8 +4,6 @@ CellProfiler cell image analysis software development
 
 - Anne 7-5-06: In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
 
-- Anne 7-5-06: When running in 'choose which windows to display mode', the "ok" button should be uppercase. Also, have OK be the default behavior, so the user can just press enter.
-
 - Anne 7-5-06: When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)
 
 - Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."

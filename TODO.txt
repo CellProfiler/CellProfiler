@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
+
 - Anne 7-5-06: In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
 
 - Anne 7-5-06: When running in 'choose which windows to display mode', the "ok" button should be uppercase. Also, have OK be the default behavior, so the user can just press enter.

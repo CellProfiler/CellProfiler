@@ -1,8 +1,18 @@
-- Create the option to select certain windows to open
+TODO
+
+- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 
 DONE
+
+(6/29/06-6/29/06) - Update DataTools/Image Tools decription for report
+
+(6/28-6/28) Report edits in Illustrator
+
+- Create the option to select certain display windows to open
+
+(6/26-6/29) Added a SelectDisplayMode option in the Set Preferences window.  Display Modes are: No windows, All windows, Specify windows.  Specify windows creates a user prompt asking for which module windows to display.
 
 - (Anne 4/21/06) Re-design the Export Data window
 
@@ -16,3 +26,10 @@ DONE
 - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
 
 (6/21/06-6/22/06)  - All revisions are marked by surrounding rows of '%'s
+
+- (6/19-6/21) - Pipeline to make a tiled tiff
+
+- (6/15/06-6/19/06) Combine Module - Combines up to 3 images
+
+
+

@@ -1,5 +1,8 @@
 CellProfiler cell image analysis software development 
 
+- FAIRLY URGENT Anne 7-7-06: It would be great if CellProfiler could read ZVI format images. Someone has already written an open-source java-based ZVI reader:
+http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program would help figure out the format so we can alter CPimread to handle this image type. Notice how we handle DIB format images in CPimread for an example. I put example ZVI images in the DeveloperDropBox (two files named SNAP...)
+
 - Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
 
 - Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."

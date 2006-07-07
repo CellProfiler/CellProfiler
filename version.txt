@@ -1,10 +1,11 @@
-Version 1.0.XXXX
+Version 1.0.3775
  - Windows menu now shows all CellProfiler windows
  - Added module MaskImage
  - Changed smoothing method to use gaussian filter instead of binary
- - MeasureTexture now uses ScaleOfTexture for objects
- - MeasureObjectNeighbors now records closest 2 objects and their vectors and percent of neighbors touching each object
- - ExportToDatabase now creates MySQL tables with FLOAT NOT NULL to improve speed
+ - MeasureTexture uses ScaleOfTexture for objects
+ - MeasureObjectNeighbors records closest 2 objects and their vectors and percent of neighbors touching each object
+ - ExportToDatabase creates MySQL tables with FLOAT NOT NULL to improve speed
+ - ExportData can export labels created by ClassifyObjects
  - Added help menu for Modules
  - Various bug fixes
 

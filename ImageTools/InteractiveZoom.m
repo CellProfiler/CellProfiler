@@ -106,8 +106,8 @@ zoomparams.refax = copyobj(zoomparams.currax,FigureHandle);
 % store it in the object (since the object covers the axis). For other objects (like lines), storing in the object forces
 % a click directly on the line/point, but storing in the axis only means a click on the line does not trigger the callback.
 warning off; %I turn this off because of the annoying (but erroneous)"Unrecognized OpenGL" message.
-set(zoomparams.currax,'buttondownfcn','feval(getappdata(gcf,''bdfcnhandle''));','busyaction','queue');
-set(images,'buttondownfcn','feval(getappdata(gcf,''bdfcnhandle''));','busyaction','queue');
+set(zoomparams.currax,'buttondownfcn','feval(getappdata(gcf,''bdfcnhandle''),gcf);','busyaction','queue');
+set(images,'buttondownfcn','feval(getappdata(gcf,''bdfcnhandle''),gcf);','busyaction','queue');
 
 set(findobj(zoomparams.refax,'type','children'),'handlevisibility','on');
 set(zoomparams.refax,'visible','off');
@@ -136,7 +136,7 @@ setappdata(gcf, 'bdfcnhandle',@bdfcn);
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 FigurePosition = get(gcf, 'Position');
 
-set(FigureHandle,'doublebuffer','on','windowbuttonmotionfcn','feval(getappdata(gcf,''zoomfcnhandle''));');
+set(FigureHandle,'doublebuffer','on','windowbuttonmotionfcn','feval(getappdata(gcbo,''zoomfcnhandle''),gcbo);');
 endbutton = uicontrol('tag','endzoombutton','style','pushbutton','string','X',...
     'foregroundcolor',[0.7 0.7 0.7],'backgroundcolor','k',...
     'Position',PointsPerPixel*[FigurePosition(3)-180 0 20 28],...
@@ -144,6 +144,8 @@ endbutton = uicontrol('tag','endzoombutton','style','pushbutton','string','X',..
     ['zoomparams = getappdata(gcf,''zoomparams'');set(gcf,''windowbuttonmotionfcn'','''');',...
     'set(zoomparams.currax,''units'',zoomparams.oldaxunits,''xlim'',zoomparams.oldxlim,''ylim'',zoomparams.oldylim);',...
     'set(get(zoomparams.currax,''children''),''buttondownfcn'',''CPimagetool'');',...
+    'set(findobj(gcf,''type'',''image''),''buttondownfcn'',''CPimagetool'');',...
+    'set(findobj(gcf,''type'',''axes''),''buttondownfcn'','''');',...
     'set(gcf,''pointer'',zoomparams.oldpointer,''doublebuffer'',zoomparams.dbold);',...
     'delete(zoomparams.dispbox1);delete(zoomparams.dispbox2);delete(findobj(gcf,''tag'',''endzoombutton''));delete(findobj(gcf,''Type'',''axes'',''Visible'',''off''));clear zoomparams;']);
 zoomparams.dispbox1 = uicontrol('style','frame',...
@@ -159,8 +161,8 @@ zoomparams.dispbox2 = uicontrol('style','text',...
 setappdata(gcf,'zoomparams',zoomparams);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function zoomfcn
-zoomparams = getappdata(gcf,'zoomparams');
+function zoomfcn(FigHandle)
+zoomparams = getappdata(FigHandle,'zoomparams');
 children = findobj(zoomparams.currax,'type','image');
 if isempty(children)
     return;
@@ -195,8 +197,8 @@ end
 return
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function bdfcn
-zoomparams = getappdata(gcf,'zoomparams');
+function bdfcn(FigHandle)
+zoomparams = getappdata(FigHandle,'zoomparams');
 % SelectionType
 % normal: Click left mouse button
 % extend: Shift - click left mouse button or click both left and right mouse buttons
@@ -217,15 +219,15 @@ if zoomparams.currax~=tempax
     zoomparams.zdist = zoomparams.pct*zoomparams.zrange;
     zoomparams.pct = .5;
     delete(zoomparams.refax);
-    zoomparams.refax = copyobj(zoomparams.currax,gcf);
+    zoomparams.refax = copyobj(zoomparams.currax,FigHandle);
     set(findobj(zoomparams.refax,'type','children'),'handlevisibility','on');
     set(zoomparams.refax,'visible','off');
     axes(zoomparams.refax);
     cla;
-    setappdata(gcf,'zoomparams',zoomparams);
+    setappdata(FigHandle,'zoomparams',zoomparams);
 end
 
-switch get(gcf,'selectiontype')
+switch get(FigHandle,'selectiontype')
 case 'normal'
 	zoomparams.pct = max(0.01,zoomparams.pct*0.9);
 case 'alt'
@@ -241,9 +243,9 @@ zoomparams.ydist = zoomparams.pct*zoomparams.yrange;
 zoomparams.zdist = zoomparams.pct*zoomparams.zrange;
 
 
-if ~strcmp(get(gcf,'selectiontype'),'extend')
-    setappdata(gcf,'zoomparams',zoomparams);
-    feval(getappdata(gcf,'zoomfcnhandle'));
+if ~strcmp(get(FigHandle,'selectiontype'),'extend')
+    setappdata(FigHandle,'zoomparams',zoomparams);
+    feval(getappdata(FigHandle,'zoomfcnhandle'),FigHandle);
 end
 return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,5 +1,25 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+- (Rodrigo 7/10/06) - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
+
+- (Rodrigo, 7/10/06) - (Requested by Rodrigo 7/6/06) - The window that asks to change the output name when the user specified name is already taken asummed 'Yes' was selected when the window was closed. I changed it so that when you close it, it assumes 'Cancel' was selected.
+
+- (Rodrigo, 7/10/06) - (Requested by Anne 7-5-06) - When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)
+Note: I added a question dialog first, so that the Add Module window doesn't pop up due to random careless clicks.
+
+- (Rodrigo, 7/10/06) (Requested by Anne 7-5-06) - In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
+
+- (Rodrigo, 7/10/06) (Requested by Rodrigo 07/05/06) - After using the InteractiveZoom, clicking on any image that wasn't the last one to use the interactivezoom doesn't pop up the Image Tools window as it should, but creates an error instead. The same happens for any axis clicked.
+Note: I couldnt fix another error that occurs when you double-click, but move the pointer fast enough such that one click lands on one image and the other lands in another. This will almost never happen when used though.
+
+- (Rodrigo, 7/10/06) (Requested by Anne 12-15-05) - When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
+Also fixed other bugs: The window that would pop up would display all Module Displays instead of only its own; the figure number sometimes didn't agree with the one saved in the handles structure.
+
+- (Rodrigo, 7/10/06) (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
+
+- (Rodrigo, 7/10/06) (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
+
 - (Jun, 7/10/06) (Requested by Anne 6-21-06) - We would like to run some tests to try to improve CellProfiler's speed: 
 * Change CPimread to put the images in single format rather than double. We hypothesize that subsequent processing in single format will be faster. We are pretty certain that we won't lose any precision, because we are using 12-bit and occasionally 16-bit images, whereas single precision already has more than 20-bit data storage capability; therefore we think double precision is overkill. However, we don't know whether all of the matlab functions will work on single format numbers, so we should run a long test pipeline to see if any errors result. It's also possible that many MATLAB functions may process single precision numbers by converting to double and back again, which would make single precision numbers be slower! Run comparisons of how long processing takes in double and in single format to help us decide whether it's worth it to switch to single.
 * What are the most time-consuming steps of IdentifyPrimAutomatic? Use the "Profiler" tool within MATLAB to determine this.

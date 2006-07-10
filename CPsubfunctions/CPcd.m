@@ -27,14 +27,14 @@ if nargin == 0
     if isdir(cd)
         CurrentDir = cd;
     else
-        CPwarndlg('This directory no longer exist! This function will default to the Matlab root directory.');
+        CPwarndlg('This directory no longer exists! This function will default to the Matlab root directory.');
         CurrentDir = matlabroot;
     end
 elseif nargin == 1
     if isdir(NewDir)
         CurrentDir = cd(NewDir);
     else
-        CPwarndlg('This directory no longer exist! This function will default to the Matlab root directory.');
+        CPwarndlg('This directory no longer exists! This function will default to the Matlab root directory.');
         CurrentDir = matlabroot;
     end
 end

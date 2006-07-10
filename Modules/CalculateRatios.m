@@ -148,11 +148,45 @@ handles = CPaddmeasurements(handles,NumObjectName,'Ratio',NewFieldName,FinalMeas
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The figure window display is unnecessary for this module, so it is
-%%% closed during the starting image cycle.
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    if any(findobj == ThisModuleFigureNumber)
-        close(ThisModuleFigureNumber)
+FontSize = handles.Preferences.FontSize;
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule', CurrentModule]);
+if any(findobj == ThisModuleFigureNumber)
+
+    % Activates display window
+    CPfigure(handles,'Text',ThisModuleFigureNumber);
+
+    % Title
+    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
+        'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+        'fontsize',FontSize,'fontweight','bold','string',sprintf('Average ratio features, cycle #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
+    
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        
+        % Text for Name of measurement
+        DisplayName = [NumObjectName ' ' handles.Measurements.(NumObjectName).([NumMeasure 'Features']){NumFeatureNumber} ' in ' NumImage ...
+            ' divided by ' DenomObjectName ' ' handles.Measurements.(DenomObjectName).([DenomMeasure 'Features']){DenomFeatureNumber} ' in ' DenomImage];
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.9 1 0.04],...
+            'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+            'fontsize',FontSize,'fontweight','bold','string',DisplayName,'UserData',handles.Current.SetBeingAnalyzed);
+
+        % Text for Number of objects
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
+            'HorizontalAlignment','left','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+            'fontsize',FontSize,'fontweight','bold','string','Number of objects:','UserData',handles.Current.SetBeingAnalyzed);
+
+        % Text for Average Ratio
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.75 0.25 0.03],...
+            'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+            'fontsize',FontSize,'fontweight','bold','string','Average Ratio:','UserData',handles.Current.SetBeingAnalyzed);
     end
+    
+    % Number of objects
+    uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.8 0.1 0.03],...
+        'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...
+        'fontsize',FontSize,'string',num2str(length(FinalMeasurements)),'UserData', handles.Current.SetBeingAnalyzed);
+
+    % Average Ratio
+    uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.75 0.1 0.03],...
+        'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...
+        'fontsize',FontSize,'string',sprintf('%0.4f',mean(FinalMeasurements)),'UserData', handles.Current.SetBeingAnalyzed);
 end

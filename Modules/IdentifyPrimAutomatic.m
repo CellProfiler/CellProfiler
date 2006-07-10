@@ -921,7 +921,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     hy = subplot(2,2,3);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
-                    title('Outlined Objects');
+                    title(['Outlined ', ObjectName]);
 
                     %%% Report numbers
                     posx = get(hx,'Position');

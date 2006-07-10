@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun, 7/10/06) (Requested by Anne 6-21-06) - We would like to run some tests to try to improve CellProfiler's speed: 
+* Change CPimread to put the images in single format rather than double. We hypothesize that subsequent processing in single format will be faster. We are pretty certain that we won't lose any precision, because we are using 12-bit and occasionally 16-bit images, whereas single precision already has more than 20-bit data storage capability; therefore we think double precision is overkill. However, we don't know whether all of the matlab functions will work on single format numbers, so we should run a long test pipeline to see if any errors result. It's also possible that many MATLAB functions may process single precision numbers by converting to double and back again, which would make single precision numbers be slower! Run comparisons of how long processing takes in double and in single format to help us decide whether it's worth it to switch to single.
+* What are the most time-consuming steps of IdentifyPrimAutomatic? Use the "Profiler" tool within MATLAB to determine this.
+=>Jun: Testing done 7/3/06-7/10/06, documented in word file. It seems that it's not worth it to switch to single format. In some cases, double is faster and in other cases single is faster, but the difference is usually only 10% or less. There are also a few errors associated with switching to single.
+
 - (Jun, 6/30/06) (Requested by Anne 6/12/06) - After you save preferences, it tells you that they are saved in the matlab root directory, which is not true for the non-developer's version of CellProfiler (see the Set Preferences window for a description of what really happens; i think it is up to date).
 =>Jun: Changes made to CellProfiler.m.
 

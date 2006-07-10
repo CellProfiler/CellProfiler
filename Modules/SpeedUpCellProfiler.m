@@ -71,53 +71,47 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ClearMemory = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = If yes, which images would you like to remain in memory?
-%choiceVAR03 = Do not use
-%infotypeVAR03 = imagegroup
-ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Do you want to pack the memory?
+%choiceVAR03 = Yes
+%choiceVAR03 = No
+PackMemory = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 =
+%textVAR04 = If yes, which images would you like to remain in memory?
 %choiceVAR04 = Do not use
 %infotypeVAR04 = imagegroup
-ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 =
 %choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
-ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 =
 %choiceVAR06 = Do not use
 %infotypeVAR06 = imagegroup
-ImageNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 =
 %choiceVAR07 = Do not use
 %infotypeVAR07 = imagegroup
-ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+ImageNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 =
 %choiceVAR08 = Do not use
 %infotypeVAR08 = imagegroup
-ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 =
 %choiceVAR09 = Do not use
 %infotypeVAR09 = imagegroup
-ImageNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
-
-%textVAR10 =
-%choiceVAR10 = Do not use
-%infotypeVAR10 = imagegroup
-ImageNameList{8} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
 
 %textVAR11 =
 %choiceVAR11 = Do not use
@@ -144,11 +138,16 @@ ImageNameList{12} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu
 
 %textVAR15 =
-%choiceVAR1515 = imagegroup
+%choiceVAR15 = Do not use
+%infotypeVAR15 = imagegroup
 ImageNameList{13} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if strcmpi(ClearMemory,'Yes')
     ListOfFields = fieldnames(handles.Pipeline);
@@ -160,6 +159,11 @@ if strcmpi(ClearMemory,'Yes')
     end
     handles.Pipeline = tempPipe;
 end
+
+if strcmpi(PackMemory,'Yes')
+    pack;
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

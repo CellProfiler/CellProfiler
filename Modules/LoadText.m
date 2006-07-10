@@ -44,6 +44,9 @@ function handles = LoadText(handles)
 % Gene Y
 % Gene Z
 % 
+% Be sure that the file is saved in plain text format (.txt), not Rich Text
+% Format (.rtf).
+%
 % While not thoroughly tested, most likely you can load numerical data too.
 %
 % See also DisplayGridInfo, and the AddData data tool.
@@ -111,7 +114,7 @@ if handles.Current.SetBeingAnalyzed == 1
     % Get description
     s = fgets(fid,11);
     if ~strcmp(s,'DESCRIPTION')
-        error(['Image processing was canceled in the ', ModuleName, ' module because the first line in the text information file must start with DESCRIPTION.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because the first line in the text information file is ', s, '. The first line of the file must start with DESCRIPTION.'])
     end
     Description = fgetl(fid);
     Description = Description(2:end);       % Remove space

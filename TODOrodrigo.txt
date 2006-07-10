@@ -1,18 +1,20 @@
 CURRENTLY WORKING ON:
 
+
+- Mike - Add option to change colormap to image tool window
+*like, with the predetermined ones that come with matlab? yes
+
 - (Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?  Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
 Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir), lots of bad things happen.
 
-- (Requested by Anne 2-6-06) - I got this error when trying to load an old pipeline which contained a module that no longer exists. (you can make a test PIPE just by changing the name of a module). I don't get it - uigetdir ought to work fine with an empty string there, according to Matlab help.
-??? Error using ==> uigetdir
-STARTPATH argument must be a string.
-Error in ==> CellProfiler>LoadPipeline_Callback at 593
-        Pathname = uigetdir('','Please select directory where modules are located');
-Error in ==> CellProfiler>gui_mainfcn at 5204
-        feval(varargin{:});
-Error in ==> CellProfiler at 60
-    gui_mainfcn(gui_State, varargin{:});
-??? Error while evaluating uimenu Callback.
+Only when first module is different does uigetdir appears. (687, under Callback)
+When its some other module, first error occurs at 900, under Helper, called by Callback at 702.
+Then, another error occurs at 1139, under PutModuleInListBox, called by Callback at 782.
+Then, real error occurs on next module, while at PutModuleInListBox.
+I think there is a programming error by in the loop over all the modules that happens in the Callback, just after calling Helper.
+Also, it might be good to make the error check at line 687 to happen through all the modules and not just the first one.
+
+
 
 OTHER TODO'S:
 
@@ -20,37 +22,45 @@ OTHER TODO'S:
 *can I make an entirely new subfunction?
 
 - (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
-*where are the programming notes?
-
-
 
 
 
 DONE (committed):
 
-- (Anne 6/12/06) - Should the Timer be renamed "Status"?
 
-- (Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up. (Bugs remain)
+- (Rodrigo 7/10/06) - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 
-- (Anne 6/12/06) - It would be so great, when you have tons of windows open, to have under "Windows" on the main menu bar a listing of all open windows in CellProfiler so that you can make any open window you want come to the front. It should list the same info that is in the title bar of the window, including Figure XX: IdentifyPrimAutomatic, for example.
+- (Rodrigo, 7/10/06) - (Requested by Rodrigo 7/6/06) - The window that asks to change the output name when the user specified name is already taken asummed 'Yes' was selected when the window was closed. I changed it so that when you close it, it assumes 'Cancel' was selected.
 
-- Anne 6-22-06: There is some strangeness relating to the image tool help. In any of the figures produced during processing, there is "CellProfiler Image Tools" in the menu bar and there is an option "Show Toolbox help". What it really should be called is "ShowHelpForThisMenu". Also, if you choose that option then choose "Show Toolbox help", a bunch of stuff is displayed - make this help file display like the other menu items.
+- (Rodrigo, 7/10/06) - (Requested by Anne 7-5-06) - When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)
+Note: I added a question dialog first, so that the Add Module window doesn't pop up due to random careless clicks.
 
-- Anne 6-22-06: In any of the figures produced during processing, there is a problem with "OpenNewImageFile" under the "CellProfiler Image Tools" in the menu bar. If you choose an image, an error results and the image is not displayed. If you make changes to the underlying subfunction, be sure that other features using that subfunction still work.
+- (Rodrigo, 7/10/06) (Requested by Anne 7-5-06) - In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
+
+- (Rodrigo, 7/10/06) (Requested by Rodrigo 07/05/06) - After using the InteractiveZoom, clicking on any image that wasn't the last one to use the interactivezoom doesn't pop up the Image Tools window as it should, but creates an error instead. The same happens for any axis clicked.
+Note: I couldnt fix another error that occurs when you double-click, but move the pointer fast enough such that one click lands on one image and the other lands in another. This will almost never happen when used though.
+
+- (Rodrigo, 7/10/06) (Requested by Anne 12-15-05) - When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
+Also fixed other bugs: The window that would pop up would display all Module Displays instead of only its own; the figure number sometimes didn't agree with the one saved in the handles structure.
+
+- (Rodrigo, 7/10/06) (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
+
+- (Rodrigo, 7/10/06) (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
+
+- (Rodrigo, 6/29) (Requested by Anne 6/12/06) - It would be so great, when you have tons of windows open, to have under "Windows" on the main menu bar a listing of all open windows in CellProfiler so that you can make any open window you want come to the front. It should list the same info that is in the title bar of the window, including Figure XX: IdentifyPrimAutomatic, for example.
+Note: I made it such that it only shows the module display windows and not others.
+
+- (Rodrigo, 6/29) (Requested by Anne 6/12/06) - The window that opens when you click Details in the Timer window needs a title in its title bar (I guess "Timer Details" or "Status Details"), and it needs to look decent! Right now none of the columns line up.
+Note: Most bugs were fixed, along with format, but these still remain: 1. If the window is left open and another run is made, the old info doesn't clear before showing the new one; 2. The window size might not be big enough if ran in linux due to font size; 3. Figure # X gets taken by this window when opened while processing.
+
+- (Rodrigo, 6/29) (Requested by Anne 6/22/06) - There is some strangeness relating to the image tool help. In any of the figures produced during processing, there is "CellProfiler Image Tools" in the menu bar and there is an option "Show Toolbox help". What it really should be called is "ShowHelpForThisMenu". Also, if you choose that option then choose "Show Toolbox help", a bunch of stuff is displayed - make this help file display like the other menu items.
+
+- (Rodrigo, 6/29) (Requested by Anne 6-22-06) - In any of the figures produced during processing, there is a problem with "OpenNewImageFile" under the "CellProfiler Image Tools" in the menu bar. If you choose an image, an error results and the image is not displayed. If you make changes to the underlying subfunction, be sure that other features using that subfunction still work.
+
+- (Rodrigo, 6/29) (Requested by Anne 6/12/06) - Should the Timer be renamed "Status"? Yes
 
 
 DONE (not yet committed):
 
-7/5 - (Requested by Anne 11-30-05) - Measure Ratios currently does not display anything in the figure window. It might be nice to display the average ratios, as is done for many of the MeasureObject modules.
 
-7/5 - (Requested by Colin 1-13-06) - The InteractiveZoom creates an error when the mouse is going over the image, but a different figure it on top.
-
-7/5 - (Requested by Rodrigo 7/05/06) - After using the InteractiveZoom, clicking on any image that wasn't the last one to use the interactivezoom doesn't pop up the Image Tools window as it should, but creates an error instead. The same happens for any axis clicked.
-
-7/6 - (Requested by Anne 12-15-05) - When you click Open Figure (during processing), the figure pops up with a really high figure number. Seems a little strange.
-Also fixed other bugs: The window that would pop up would display all Module Displays instead of only its own; the figure number sometimes didn't agree with the one saved in the handles structure.
-
-7/6 - (Requested by Anne 7-5-06) - In the IdentifyPrimAutomatic window, the bottom left window says "Outlined Objects" rather than "Outlined Nuclei" or whatever the ObjectName is. I think I put this on the TODO a while ago, so maybe it's on someone's personal TODO list. Check to see if it's fixed before working on it.
-Note: We (UROPs) had done this, but apparently forgot to commit it or something. Sorry about that.
-
-7/6 - (Requested by Anne 7-5-06) - When you start up CellProfiler, then doubleclick "No Modules Loaded" in the pipeline window, it produces a dialog that says "No modules are loaded". Instead, it should open the Add module window (the same window you would get if clicking the + button.)
+- Nothing

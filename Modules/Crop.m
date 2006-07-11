@@ -304,7 +304,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap(handles.Preferences.IntensityColorMap);
             impixelinfo
-            title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
+            title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             [a b c] = size(ImageToBeCropped);
             if any(Pre_x < 1) || any(Pre_y < 1) || any(Pre_x > b) || any(Pre_y > a)
@@ -415,7 +415,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap(handles.Preferences.IntensityColorMap);
-            title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'})
+            title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [x,y] = getpts(CroppingFigureHandle);
             close(CroppingFigureHandle);
 

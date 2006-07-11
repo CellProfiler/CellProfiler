@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: -Stacked tifs
+
+THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
+
 - FAIRLY URGENT Anne 7-7-06: It would be great if CellProfiler could read ZVI format images. Someone has already written an open-source java-based ZVI reader:
 http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program would help figure out the format so we can alter CPimread to handle this image type. Notice how we handle DIB format images in CPimread for an example. I put example ZVI images in the DeveloperDropBox (two files named SNAP...)
 

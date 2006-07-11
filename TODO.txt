@@ -7,6 +7,8 @@ http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program wou
 
 - Anne 7-11-06: The Crop module, when in rectangle mode, gives an error if you click outside the image (in mouse mode) or enter a pixel value outside the range of the image (in coordinates mode). Instead, as we have already adjusted in the ellipse option, it should do something like this (and inform the user that this is what has been done): CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
 
+- Anne 7-11-06: The Crop module, in mouse/ellipse mode, does not visibly mark the points that you have clicked. It's kind of strange because I think at one point it did this successfully, and the mouse/rectangle mode works just fine, creating little star marks wherever you have clicked.
+
 - Anne 7-11-06: In the Rotate module, at this line:
         if length(x) < 2
             error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])

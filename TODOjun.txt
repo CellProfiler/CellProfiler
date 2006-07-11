@@ -1,3 +1,10 @@
+- Anne 7-11-06: In the Rotate module, at this line:
+        if length(x) < 2
+            error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
+        end
+Instead of producing an error and canceling out, the module should ask the user to start over again - that is, getpts should be repeated from scratch. I imagine this would use the "while" function.
+=>Jun: Working 7/11/06-
+
 - Anne 7-7-06: the histogram flipping looks great and hopefully will make the reviewers of our paper happy! I only noticed one small problem, when you plot something with the axes flipped and then add a control histogram, the control histogram is not flipped but is in the normal orientation instead. It would be a reasonable solution to just disable/remove the button when in flipped mode, because I don't think people will use that combination very often. But if it's easy to fix, go ahead. Also, the button Export Data To MATLAB should be non visible when running the compiled version. I don't know how we normally disable functions in the compiled version, but Mike can tell you.
 =>Jun: Working 7/10/06-
 

@@ -112,7 +112,7 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 - update the colormaps available.
 
-- For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code.
+- For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code. This would require saving a copy of the old matlab code to do side by side comparison (actually, could use 'file comparison' tool in matlab, I think, or at least in microsoft word).
 
 ---------------------------------------------------
 

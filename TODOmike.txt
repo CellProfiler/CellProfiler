@@ -1,4 +1,10 @@
 Mike's TODO list
+Here are your ongoing projects we talked about - you don't have to leave them here on your list if you don't want:
+- Mouse arrays
+- Cell size - Fly200 (do not trust alignment) and NIRHT (don’t trust spreading/crowding). Should we at least look at the controls for cell size?  Let's discuss at imaging subgroup.
+- Help Robert pick out cell cycle, cell count, cell size, phospho-S6, synthetic hits & give to lab members for biological follow up. (probably Adam will help here too, with normalization, etc.)
+- Follow-up Human funky phenotype hits: (1) RNA level/phenotype correlation for original shRNAs, (2) order more shRNAs and repeat, (3) interpret the lists of genes and design  specific biological follow up experiments.
+- Merck screens (image acquisition and analysis only)
 
 New 6-21-06: Don't forget to have the UROPs do code review, where they each go through each module and look for inefficiencies and make sure there are good error messages, and most importantly check that the help is complete and understandable, etc. I guess we should wait until they have been here a month or so.
 

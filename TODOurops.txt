@@ -1,3 +1,0 @@
--Stacked tifs
-
-- Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)

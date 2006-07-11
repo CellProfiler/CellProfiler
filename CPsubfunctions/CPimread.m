@@ -22,7 +22,7 @@ function [LoadedImage, handles] = CPimread(varargin)
 
 if nargin == 0 %returns the vaild image extensions
     formats = imformats;
-    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'}]; %LoadedImage is not a image here, but rather a set
+    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 2,
     CurrentFileName = varargin{1};
@@ -73,6 +73,15 @@ elseif nargin == 2,
         else
             error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
         end
+    elseif strcmp('.ZVI',upper(ext))  
+        try
+            %%% Read (open) the image you want to analyze and assign it to a variable,
+            %%% "LoadedImage".
+            %%% Opens Matlab-readable file formats.
+            LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
+        catch
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+        end
     else
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,
@@ -118,6 +127,15 @@ else
             LoadedImage = Image;
         else
             error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
+        end
+    elseif strcmp('.ZVI',upper(ext))  
+        try
+            %%% Read (open) the image you want to analyze and assign it to a variable,
+            %%% "LoadedImage".
+            %%% Opens Matlab-readable file formats.
+            LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
+        catch
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
         end
     else
         try

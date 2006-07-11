@@ -1,5 +1,4 @@
 function HelpSkipErrors
-helpdlg(help('HelpSkipErrors'))
 
 % Skip errors mode can be set in File > Set preferences.
 %
@@ -9,6 +8,8 @@ helpdlg(help('HelpSkipErrors'))
 % the Image data. In the resulting Image file, there will be one
 % ModuleError field for each module. If any of these values are above 0,
 % that means the module failed at some point in the analysis.
+
+helpdlg(help('HelpSkipErrors'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

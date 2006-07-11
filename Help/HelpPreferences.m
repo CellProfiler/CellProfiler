@@ -1,5 +1,4 @@
 function HelpPreferences
-helpdlg(help('HelpPreferences'))
 
 % File > Set Preferences: The default preferences file (CellProfilerPreferences.mat) is 
 % loaded upon starting up CellProfiler and is located in the folder where the software is
@@ -11,6 +10,8 @@ helpdlg(help('HelpPreferences'))
 
 %%% NOTE: THE TEXT IS VERY WIDE HERE SO THAT IT FITS INTO THE SET
 %%% PREFERENCES WINDOW.
+
+helpdlg(help('HelpPreferences'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

@@ -1,5 +1,4 @@
 function GSGettingStarted
-helpdlg(help('GSGettingStarted'))
 
 % The best way to learn how to use CellProfiler is to load an example
 % pipeline (from www.cellprofiler.org) and try it out. Or, you can build a
@@ -98,6 +97,8 @@ helpdlg(help('GSGettingStarted'))
 % pipeline even if it's not ready to run yet. Loading/Saving Pipeline files
 % will load/save these: the image analysis modules, their settings, and the
 % pixel size. It will not save the default image or output folder.
+
+helpdlg(help('GSGettingStarted'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

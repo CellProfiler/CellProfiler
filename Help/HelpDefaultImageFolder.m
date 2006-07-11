@@ -1,5 +1,4 @@
 function HelpDefaultImageFolder
-helpdlg(help('HelpDefaultImageFolder'))
 
 % Help for the default image folder, in the main CellProfiler window:
 % Select the main folder containing the images you want to analyze.  Use
@@ -36,6 +35,8 @@ helpdlg(help('HelpDefaultImageFolder'))
 %                                        doc|rtf|txt|csv)$', 'once');
 % Save the file.  You do not need to relaunch MATLAB or CellProfiler for
 % this change to take effect.
+
+helpdlg(help('HelpDefaultImageFolder'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

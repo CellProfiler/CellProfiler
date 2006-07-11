@@ -1,5 +1,4 @@
 function HelpTechDiagnosis
-helpdlg(help('HelpTechDiagnosis'))
 
 % Technical diagnosis mode is available using File > Tech Diagnosis.
 %
@@ -8,6 +7,8 @@ helpdlg(help('HelpTechDiagnosis'))
 % command line of MATLAB, including looking into the handles structure.
 %
 % Type "return" at the command line of MATLAB to exit this mode.
+
+helpdlg(help('HelpTechDiagnosis'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

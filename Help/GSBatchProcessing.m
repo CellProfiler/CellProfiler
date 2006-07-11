@@ -1,5 +1,4 @@
 function GSBatchProcessing
-helpdlg(help('GSBatchProcessing'))
 
 % CellProfiler is designed to analyze images in a high-throughput manner.
 % Once a pipeline has been established for a set of images, CellProfiler
@@ -264,6 +263,8 @@ helpdlg(help('GSBatchProcessing'))
 % can be resubmitted.
 % 
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************
+
+helpdlg(help('GSBatchProcessing'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

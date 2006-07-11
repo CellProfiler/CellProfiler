@@ -1,5 +1,4 @@
 function GSDeveloperInfo
-helpdlg(help('GSDeveloperInfo'))
 
 % Programming Notes for CellProfiler Developer's version
 %
@@ -433,6 +432,8 @@ helpdlg(help('GSDeveloperInfo'))
 % variable values are called. In order to see what all of these variables 
 % look like, run a sample analysis and then go to File -> Tech Diagnosis.
 % This will let you manipulate the handles variable in MATLAB.
+
+helpdlg(help('GSDeveloperInfo'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

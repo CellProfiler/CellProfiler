@@ -1,5 +1,4 @@
 function HelpPixelSize
-helpdlg(help('HelpPixelSize'))
 
 % The pixel size is the number of micrometers per pixel. This is based on
 % the resolution and binning of the camera and the magnification of the
@@ -17,6 +16,8 @@ helpdlg(help('HelpPixelSize'))
 % CellProfiler.  This value is stored in the settings if you File > Save
 % Pipeline or if you create an output file and later File > Load Pipeline
 % from that output file.
+
+helpdlg(help('HelpPixelSize'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

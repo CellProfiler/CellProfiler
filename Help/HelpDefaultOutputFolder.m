@@ -1,5 +1,4 @@
 function HelpDefaultOutputFolder
-helpdlg(help('HelpDefaultOutputFolder'))
 
 % Help for the default output folder, in the main CellProfiler window:
 % Select the main folder where you want CellProfiler's output to be saved.
@@ -12,6 +11,8 @@ helpdlg(help('HelpDefaultOutputFolder'))
 % 'Name the output file' box, and many modules (like Save Images) allow you
 % to override the default output folder by entering the pathname in the
 % settings.
+
+helpdlg(help('HelpDefaultOutputFolder'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

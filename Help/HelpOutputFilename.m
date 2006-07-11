@@ -1,5 +1,4 @@
 function HelpOutputFilename
-helpdlg(help('HelpOutputFilename'))
 
 % Naming the output file:
 % Type in the text you want to use to name the output file, which is where
@@ -18,6 +17,8 @@ helpdlg(help('HelpOutputFilename'))
 % data has only 4 measurements, saving the output file to the same name
 % would produce a file with 12 measurements: the new 4 followed by 8 old
 % measurements.
+
+helpdlg(help('HelpOutputFilename'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

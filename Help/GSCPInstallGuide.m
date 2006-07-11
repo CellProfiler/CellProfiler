@@ -1,5 +1,4 @@
 function GSCPInstallGuide
-helpdlg(help('GSCPInstallGuide'))
 
 % Get the latest code from www.cellprofiler.org
 %
@@ -82,6 +81,8 @@ helpdlg(help('GSCPInstallGuide'))
 % pipelines on our Examples page, and check out Help > HelpGettingStarted
 % within CellProfiler. In CellProfiler, set some basic preferences in File
 % > Set preferences, which will make it easier to use CellProfiler.
+
+helpdlg(help('GSCPInstallGuide'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

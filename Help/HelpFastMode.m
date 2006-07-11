@@ -1,5 +1,4 @@
 function HelpFastMode
-helpdlg(help('HelpFastMode'))
 
 % Fast mode can be set in File > Set preferences.
 %
@@ -10,6 +9,8 @@ helpdlg(help('HelpFastMode'))
 % mode, producing smaller output files.
 %
 % See also the SpeedUpCellProfiler module.
+
+helpdlg(help('HelpFastMode'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

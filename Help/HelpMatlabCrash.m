@@ -1,5 +1,4 @@
 function HelpMatlabCrash
-helpdlg(help('HelpMatlabCrash'))
 
 % Troubleshooting frequent crashes using CellProfiler Developer's version
 % on the Mac:
@@ -9,6 +8,8 @@ helpdlg(help('HelpMatlabCrash'))
 % upgrade MATLAB to Service Pack 3(R14SP3). For more information about
 % this, please visit the Mathworks website at: 
 % http://www.mathworks.com/support
+
+helpdlg(help('HelpMatlabCrash'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

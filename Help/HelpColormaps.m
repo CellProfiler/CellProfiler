@@ -1,5 +1,4 @@
 function HelpColormaps
-helpdlg(help('HelpColormaps'))
 
 % Default colormaps can be set in File > Set preferences.
 %
@@ -14,6 +13,8 @@ helpdlg(help('HelpColormaps'))
 % Choose from these colormaps:
 % autumn bone colorcube cool copper flag gray hot hsv jet lines pink
 % prism spring summer white winter
+
+helpdlg(help('HelpColormaps'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

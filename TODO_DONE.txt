@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo, 7/11/06) - (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.
+
 - (Jun, 7/11/06) (Requested by Anne 7-7-06) - the histogram flipping looks great and hopefully will make the reviewers of our paper happy! I only noticed one small problem, when you plot something with the axes flipped and then add a control histogram, the control histogram is not flipped but is in the normal orientation instead. It would be a reasonable solution to just disable/remove the button when in flipped mode, because I don't think people will use that combination very often. But if it's easy to fix, go ahead. Also, the button Export Data To MATLAB should be non visible when running the compiled version. I don't know how we normally disable functions in the compiled version, but Mike can tell you.
 =>Jun: Changes made to Histogram.m and CPcontrolhistogram.m. "Add a Control Histogram" button was fixed.
 

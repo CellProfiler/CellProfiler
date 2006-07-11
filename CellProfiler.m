@@ -4803,7 +4803,7 @@ function h1 = CellProfiler_LayoutFcn(policy)
 % policy - create a new figure or use a singleton. 'new' or 'reuse'.
 
 persistent hsingleton;
-if strcmpi(policy, 'reuse') && ishandle(hsingleton)
+if strcmpi(policy, 'reuse') & ishandle(hsingleton)
     h1 = hsingleton;
     return;
 end

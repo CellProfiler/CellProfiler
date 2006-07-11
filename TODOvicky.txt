@@ -10,6 +10,9 @@ TODO
 
 DONE
 
+- FAIRLY URGENT Anne 7-7-06: It would be great if CellProfiler could read ZVI format images. Someone has already written an open-source java-based ZVI reader:
+http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program would help figure out the format so we can alter CPimread to handle this image type. Notice how we handle DIB format images in CPimread for an example. I put example ZVI images in the DeveloperDropBox (two files named SNAP...)
+
 -(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
 
 (7/6/06-7/6/06)- done

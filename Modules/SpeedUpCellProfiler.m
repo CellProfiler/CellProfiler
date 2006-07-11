@@ -113,37 +113,37 @@ ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
+%textVAR10 =
+%choiceVAR10 = Do not use
+%infotypeVAR10 = imagegroup
+ImageNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
 %textVAR11 =
 %choiceVAR11 = Do not use
 %infotypeVAR11 = imagegroup
-ImageNameList{9} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+ImageNameList{8} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
 %textVAR12 =
 %choiceVAR12 = Do not use
 %infotypeVAR12 = imagegroup
-ImageNameList{10} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+ImageNameList{9} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
 %textVAR13 =
 %choiceVAR13 = Do not use
 %infotypeVAR13 = imagegroup
-ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+ImageNameList{10} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
 %textVAR14 =
 %choiceVAR14 = Do not use
 %infotypeVAR14 = imagegroup
-ImageNameList{12} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu
 
-%textVAR15 =
-%choiceVAR15 = Do not use
-%infotypeVAR15 = imagegroup
-ImageNameList{13} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-%inputtypeVAR15 = popupmenu
-
-%%%VariableRevisionNumber = 4
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

@@ -1,5 +1,18 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+--------------
+(Mike) J Biology paper:
+
+- Find new shape weirdo from NIRHT using CellVisualizer, preferably a Zernike one (medium order might work best) if you can find one. Take care to find an example where it's not the area that is the real difference, because a lot of shape measures correlate to area. Add to figure 3.
+
+- Compile and release fresh version of CellProfiler. (Wait till updates)
+
+- Make x axis marks more visible for figure 2A/B. Figure out if it's log base 2 or 10 and label appropriately?
+
+- Move Fig 3A and C to a supplemental figure, and label the x axes with numbers.
+
+- In Jason's 06_14 NIRHT re-analysis, it appears that the Neighbors module is putting a bunch of underscores in the feature names. There should only be underscores when separating things that should be in pulldown menus, so surrounding "and" with underscores gives you a silly pulldown menu where you have to choose "and". Fixing the correlation module to remove "and" would be good too, as long as you are preparing a new release.
+--------------
 
 - (Rodrigo 7/10/06) - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 

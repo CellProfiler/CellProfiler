@@ -5,6 +5,8 @@ http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program wou
 
 - Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
 
+- Anne 7-11-06: It doesn't make sense (I am pretty sure) to allow the user to choose "FileNamesText" when deciding how to label the histograms in the histograms data tool. So we should remove FileNamesText from the choices. We should leave FileNames as selectable. The reason the user is given the choice is because if you had used the Add Data tool you might have entered your own text data (like gene names) and so you might want to choose those instead of FileNames.
+
 - Anne 7-11-06: There is something weird in the ColorToGray module; it puts the word Split into the object group!
 
 - Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."

@@ -1906,10 +1906,17 @@ if (length(ModuleHighlighted) > 0)
         end
         slider1_Callback(handles.slider1,0,handles);
     else
-        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
-        if strcmp(Answer,'Yes')
+% Anne 7/11/06 Nice idea to have a confirmation, but I commented out the
+% dialog, because I think almost always
+% the user will have clicked intentionally, and the consequences of opening
+% up the Add module window are pretty minimal (that is, it is an easily
+% reversible choice). Also, because this can only happen right when the
+% user starts up CellProfiler, the chances for random clicking are fairly
+% minimal as well.
+%        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
+ %       if strcmp(Answer,'Yes')
             AddModule_Callback(findobj('tag','AddModule'),[],handles);
-        end
+  %      end
     end
 else
     CPhelpdlg('No module highlighted.');

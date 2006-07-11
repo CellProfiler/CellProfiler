@@ -1,5 +1,6 @@
 TODO
 
+- Anne 7-11-06: Now that you are the expert on hacking image file formats!, could you see whether it is easy to extract certain information from the DIB image file header? Right now, in CPimread we have to stop processing and ask the user a few questions: pixel height and width, number of channels, bit depth, etc., but I am pretty sure this info must be stored in the image header somewhere. I guess google probably won't help much here, but possibly you (and Ray) can figure it out?
 
 - Anne 7-5-06: When running in 'choose which windows to display mode', the "ok" button should be uppercase. Also, have OK be the default behavior, so the user can just press enter.
 

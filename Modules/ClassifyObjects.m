@@ -206,8 +206,10 @@ for k = 1:NbrOfBins
     bins(k) = length(index);
     if length(strfind(Labels,',')) == (NbrOfBins - 1)
         [BinLabel,RemainingLabels]=strtok(RemainingLabels,',');
-        ListOfLabels(index)={BinLabel};
+        ListOfLabels(k)={BinLabel};
         EmptyIndex(index) = 0;
+    else
+        ListOflabel(k) = ['Bin', num2str(k)];
     end
 end
 
@@ -324,6 +326,7 @@ if ~strcmpi(FeatureType,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
 end
 
 ClassifyFeatureNames = cell(1,NbrOfBins);
+
 for k = 1:NbrOfBins
     ClassifyFeatureNames{k} = ['Bin', num2str(k)];
 end
@@ -333,12 +336,11 @@ MaxLengthOfFieldname = min(20,length(FeatureName));
 
 if length(strfind(Labels,',')) == (NbrOfBins - 1)
     EmptyIndex(EmptyIndex==0)=[];
-    ListOfLabels(EmptyIndex)={' '};
     handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname),'Description']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
     handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
 end
 
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ClassifyFeatureNames;
+handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ListOfLabels;
 if strcmp(AbsoluteOrPercentage,'Percentage')
     handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
 else

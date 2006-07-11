@@ -198,6 +198,8 @@ catch
     handles.Preferences.DisplayModeValue = 0;
 end
 
+handles.Preferences.DisplayWindows =[];
+
 %%% Now that handles.Preferences.(4 different variables) has been filled
 %%% in, the handles.Current values and edit box displays are set.
 handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
@@ -3253,7 +3255,7 @@ else
                     end
                     % Ok and Cancel pushbuttons
                     posx = (Width - 1.7)/2;               % Centers buttons horizontally
-                    okbutton = uicontrol(SelectDisplay,'style','pushbutton','String','ok','FontName','Times','FontSize',FontSize,'units','inches',...
+                    okbutton = uicontrol(SelectDisplay,'style','pushbutton','String','Ok', 'FontName','Times','FontSize',FontSize,'units','inches',...
                         'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
                     cancelbutton = uicontrol(SelectDisplay,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'units','inches',...
                         'position',[posx+0.95 0.1 0.75 0.3],'Callback','delete(gcf)','BackgroundColor',[.7 .7 .9]);
@@ -3265,8 +3267,10 @@ else
                                 handles.Preferences.DisplayWindows = cat(1,buttonchoice{:});
                                 delete(SelectDisplay);
                             end
-
                         end
+                    catch
+                        handles.Preferences.DisplayWindows = ones(handles.Current.NumberOfModules, 1);
+                        CPhelpdlg('All windows will be displayed.');
                     end
 
                 catch
@@ -3314,7 +3318,7 @@ else
             ScreenHeight = ScreenSize(4);
 
             %%% Determines where to place the timer window: We want it below the image
-            %%% windows, which means at about 800 pixels from the top of the screen,
+            %%% windows, which means at about 800 pixels from thokbuttone top of the screen,
             %%% but in case the screen doesn't have that many pixels, we don't want it
             %%% to be below zero.
             PotentialBottom = [0, (ScreenHeight-800)];

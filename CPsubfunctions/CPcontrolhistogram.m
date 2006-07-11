@@ -1,4 +1,4 @@
-function CPcumhistogram(h_Parent,tempData)
+function CPcumhistogram(h_Parent,tempData,Flip)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -135,11 +135,20 @@ for i = 1:length(AxesHandles)
     if strcmp(get(get(AxesHandles(i),'children'),'type'),'line')
         hold on
         h2 = AxesHandles(i);
-        plot(h2,PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        if strcmp(Flip,'AxesFlipped')
+            plot(h2,FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2,'tag',LineColor);
+        else
+            plot(h2,PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        end
+        
         hold off
     else
         h2 = axes('Position',get(AxesHandles(i),'Position'));
-        plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        if strcmp(Flip,'AxesFlipped')
+            plot(FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2,'tag',LineColor);
+        else
+            plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
+        end
         set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
         set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top','YLim',get(AxesHandles(i),'YLim'));
     end

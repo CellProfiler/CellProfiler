@@ -1,22 +1,21 @@
 Mike's TODO list
-Here are your ongoing projects we talked about - you don't have to leave them here on your list if you don't want:
-- Mouse arrays
-- Cell size - Fly200 (do not trust alignment) and NIRHT (don’t trust spreading/crowding). Should we at least look at the controls for cell size?  Let's discuss at imaging subgroup.
+
+- Cell size - Fly200 (do not trust alignment) and NIRHT (dont trust spreading/crowding). Should we at least look at the controls for cell size?  Let's discuss at imaging subgroup.
+
 - Help Robert pick out cell cycle, cell count, cell size, phospho-S6, synthetic hits & give to lab members for biological follow up. (probably Adam will help here too, with normalization, etc.)
+
 - Follow-up Human funky phenotype hits: (1) RNA level/phenotype correlation for original shRNAs, (2) order more shRNAs and repeat, (3) interpret the lists of genes and design  specific biological follow up experiments.
+
 - Merck screens (image acquisition and analysis only)
 
 New 6-21-06: Don't forget to have the UROPs do code review, where they each go through each module and look for inefficiencies and make sure there are good error messages, and most importantly check that the help is complete and understandable, etc. I guess we should wait until they have been here a month or so.
 
 Anne 7-11-06: In the process of that, we should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle!
 
-- Check that all the pipelines posted on the web are up to date with the code that is on the web (UROPs can do?) - I was worried about Neighbors, but I guess we haven't posted a new version of code so maybe it is not a problem. In the meantime, the UROPs could test all pipe's with the current code and update things so they are ready for the next release?
 --------------
 - Don't forget to put instructions for printing posters onto the wiki - the protocol there is pretty old.
 
 - RUN TEST PRE-ALLOCATING HANDLES.MEASUREMENTS.OBJECT.INTENSITY{1:NUMBEROFIMAGESETS} TO SEE IF THERE IS SIGNFICANT TIME REDUCTION.
 EDIT: INSTEAD, TRY LIMITING THE NUMBER OF ENTRIES FOR HANDLES, THEN AT END OF IMAGE ANALYSIS COMBINE SEPERATE VARIABLES
-
-- Tell people at lab meeting about our storage closet downstairs. I think most people don't know.
 
 - As we discovered, Plate fix in the Crop module works to force the coordinates to be used each time freshly (when doing rectangle, coordinates). Can you describe in the help why/how this works? I guess in my case none of the rows/columns were 50% empty, so the real purpose of Plate fix was thwarted, while the cute side benefit of repeating use of the coordinates was used?

@@ -54,6 +54,10 @@ if strfind(Threshold,'Global')
         Threshold = CPgraythresh(OrigImage,handles,ImageName);
     elseif strfind(Threshold,'MoG')
         Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
+    elseif strfind(Threshold,'Background')
+        Threshold = BackgroundThreshold(OrigImage,handles,ImageName);
+    else
+        error(['The method chosen for thresholding in the ',ModuleName,' module was not recognized.']) 
     end
 elseif strfind(Threshold,'Adaptive')
 
@@ -88,7 +92,7 @@ elseif strfind(Threshold,'Adaptive')
     %%% Calculates the threshold for each block in the image, and a global threshold used
     %%% to constrain the adaptive threshholds.
     if strfind(Threshold,'Otsu')
-        GlobalThreshold = CPgraythresh(OrigImage);
+        GlobalThreshold = CPgraythresh(OrigImage,handles,ImageName);
         Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@CPgraythresh);
     elseif strfind(Threshold,'MoG')
         GlobalThreshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
@@ -384,4 +388,40 @@ else
     maxval = max (im);
     im = (im - minval) / (maxval - minval);
     level = exp(minval + (maxval - minval) * graythresh(im));
+end
+
+function level = BackgroundThreshold(im,handles,ImageName)
+%%% If the image was produced using a cropping mask, we do not
+%%% want to include the Masked part in the calculation of the
+%%% proper threshold, because there will be many zeros in the
+%%% image.  So, we check to see whether there is a field in the
+%%% handles structure that goes along with the image of interest.
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname)
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    BinaryCropImage = handles.Pipeline.(fieldname);
+
+    %%% Handle the case where there are no pixels on in the mask
+    if (~ any(BinaryCropImage)),
+        level = max(im(:)+1.0);
+        return;
+    end
+
+    if numel(im) == numel(BinaryCropImage)
+        %%% Masks the image and I think turns it into a linear
+        %%% matrix.
+        im = im(logical(BinaryCropImage));
+    end
+end
+%%% The threshold is calculated by calculating the mode and multiplying by
+%%% 2 (an arbitrary empirical factor). The user will presumably adjust the
+%%% multiplication factor as needed.
+
+im = double(im(:));
+
+if max(im) == min(im),
+    level = im(1);
+else
+    level = 2*mode(im(:));
 end

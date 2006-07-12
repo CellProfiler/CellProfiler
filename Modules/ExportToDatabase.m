@@ -182,8 +182,8 @@ if strncmp(DataPath, '.',1)
     end
 end
 
-%% Two possibilities: we're at the end of the pipeline in an
-%% interactive session, or we're in the middle of batch processing.
+% Two possibilities: we're at the end of the pipeline in an
+% interactive session, or we're in the middle of batch processing.
 
 if isfield(handles.Current, 'BatchInfo'),
     FirstSet = handles.Current.BatchInfo.Start;

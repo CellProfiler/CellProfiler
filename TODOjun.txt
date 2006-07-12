@@ -4,14 +4,14 @@
 =>Jun: Working 7/12/06-
 
 - Anne 7-11-06: The Crop module, in mouse/ellipse mode, does not visibly mark the points that you have clicked. It's kind of strange because I think at one point it did this successfully, and the mouse/rectangle mode works just fine, creating little star marks wherever you have clicked.
-=>Jun: Changes made 7/12/06. Also added check for correct number of mouse clicks, allowing user to try again. Crop.m not yet committed.
+=>Jun: Changes made 7/12/06. Also added check for correct number of mouse clicks, allowing user to try again. Crop.m in Modules committed on 7/12/06.
 
 - Anne 7-11-06: In the Rotate module, at this line:
         if length(x) < 2
             error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
         end
 Instead of producing an error and canceling out, the module should ask the user to start over again - that is, getpts should be repeated from scratch. I imagine this would use the "while" function.
-=>Jun: Changes made 7/11/06-7/12/06.  Rotate.m in Modules not yet committed.
+=>Jun: Changes made 7/11/06-7/12/06.  Rotate.m in Modules committed on 7/12/06.
 
 - Anne 7-7-06: the histogram flipping looks great and hopefully will make the reviewers of our paper happy! I only noticed one small problem, when you plot something with the axes flipped and then add a control histogram, the control histogram is not flipped but is in the normal orientation instead. It would be a reasonable solution to just disable/remove the button when in flipped mode, because I don't think people will use that combination very often. But if it's easy to fix, go ahead. Also, the button Export Data To MATLAB should be non visible when running the compiled version. I don't know how we normally disable functions in the compiled version, but Mike can tell you.
 =>Jun: Changes made 7/10/06-7/11/06. "Add a Control Histogram" button was fixed. Histogram.m in DataTools and CPcontrolhistogram.m in CPsubfunctions committed on 7/11/06.

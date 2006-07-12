@@ -15,7 +15,7 @@ function handles = Crop(handles)
 % For example, identifying objects in a cropped image and then trying to
 % measure their intensity in the *original* image will not work because the
 % two images are not the same size.
-% 
+%
 % Settings:
 %
 % Shape:
@@ -282,10 +282,13 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         else
             CropFromObjectFlag = 1;
             try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
+                handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
             catch
                 try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
+                    handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
                 catch
                     try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
+                        handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
                     catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end

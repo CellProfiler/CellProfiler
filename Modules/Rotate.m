@@ -124,8 +124,9 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         displaytext = 'Click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points. Use Edit > Colormap to adjust the contrast of the image if needed.';
         set(displaytexthandle,'string',displaytext)
         [x,y] = getpts(FigureHandle);
-        if length(x) < 2
-            error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
+        while length(x) < 2    
+            CPwarndlg(['In the ', ModuleName, ' module while in Mouse rotation method, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+            [x,y] = getpts(FigureHandle);
         end
         delete(displaytexthandle);
         LowerLeftX = x(end-1);

@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Mike 7-11-06: If using a cropped image, Identify modules use the crop mask when it calls CPthreshold to throw out things that have been cropped out. For instance, if you crop out a circle, you don't want to include anything outside of the circle since this will give a bad threshold. However, this fails when you want to do Adaptive Thresholding since the image is broken in to blocks before it produces a threshold, and the crop mask is the size of the original image. We want CPthreshold to be smart about adaptive thresholding, and if there is a cropmask in the handles, it should pad that image the same way the original image is padded and then sent to CPgraythresh.
+
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: -Stacked tifs
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)

@@ -1,14 +1,17 @@
+- Anne 7-12-06: The ExportData window needs a bit of redesign. The question Ignore NaN's should be a pulldown menu yes/no (just like the other questions) rather than a checkbox, because depending on how many objects you have (On my computer, this happens when i only have Image + Nuclei), it looks like "Ignore NaN's" is one of the measurements you can choose to export. Also, the pulldown menus have funny-colored corners rather than purple corners. Overall it seems kind of random and messy, so more ideas on how to make it easier to understand would be great. Keep in mind the window size changes depending on how many types of objects you have in the output file.
+
 - Anne 7-11-06: It doesn't make sense (I am pretty sure) to allow the user to choose "FileNamesText" when deciding how to label the histograms in the histograms data tool. So we should remove FileNamesText from the choices. We should leave FileNames as selectable. The reason the user is given the choice is because if you had used the Add Data tool you might have entered your own text data (like gene names) and so you might want to choose those instead of FileNames.
+=>Jun: Working 7/12/06-
 
 - Anne 7-11-06: The Crop module, in mouse/ellipse mode, does not visibly mark the points that you have clicked. It's kind of strange because I think at one point it did this successfully, and the mouse/rectangle mode works just fine, creating little star marks wherever you have clicked.
-=>Jun: Working 7/11/06-
+=>Jun: Changes made 7/12/06. Also added check for correct number of mouse clicks, allowing user to try again. Crop.m not yet committed.
 
 - Anne 7-11-06: In the Rotate module, at this line:
         if length(x) < 2
             error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
         end
 Instead of producing an error and canceling out, the module should ask the user to start over again - that is, getpts should be repeated from scratch. I imagine this would use the "while" function.
-=>Jun: Working 7/11/06-   Rotate.m in Modules.
+=>Jun: Changes made 7/11/06-7/12/06.  Rotate.m in Modules not yet committed.
 
 - Anne 7-7-06: the histogram flipping looks great and hopefully will make the reviewers of our paper happy! I only noticed one small problem, when you plot something with the axes flipped and then add a control histogram, the control histogram is not flipped but is in the normal orientation instead. It would be a reasonable solution to just disable/remove the button when in flipped mode, because I don't think people will use that combination very often. But if it's easy to fix, go ahead. Also, the button Export Data To MATLAB should be non visible when running the compiled version. I don't know how we normally disable functions in the compiled version, but Mike can tell you.
 =>Jun: Changes made 7/10/06-7/11/06. "Add a Control Histogram" button was fixed. Histogram.m in DataTools and CPcontrolhistogram.m in CPsubfunctions committed on 7/11/06.

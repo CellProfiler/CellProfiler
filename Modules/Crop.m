@@ -306,9 +306,13 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);
             colormap(handles.Preferences.IntensityColorMap);
-            impixelinfo
+            %impixelinfo    %%Using this makes mouse click markers invisible. Probably not necessary because corresponding line nonexistent in Rectangle and Mouse condition below
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
+            while length(Pre_x) < 5
+                CPwarndlg(['In the ', ModuleName, ' module while in Ellipse shape and Mouse mode, you must click on at least five points in the image and then press enter. Please try again.'], 'Warning');
+                [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
+            end 
             [a b c] = size(ImageToBeCropped);
             if any(Pre_x < 1) || any(Pre_y < 1) || any(Pre_x > b) || any(Pre_y > a)
                 Pre_x(Pre_x<1) = 1;
@@ -420,8 +424,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             colormap(handles.Preferences.IntensityColorMap);
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [x,y] = getpts(CroppingFigureHandle);
+            while length(x) < 2
+                CPwarndlg(['In the ', ModuleName, ' module while in Rectangle shape and Mouse mode, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+                [x, y] = getpts(CroppingFigureHandle);
+            end 
             close(CroppingFigureHandle);
-
             [a b c] = size(ImageToBeCropped);
             if any(x < 1) || any(y < 1) || any(x > b) || any(y > a)
                 x(x<1) = 1;

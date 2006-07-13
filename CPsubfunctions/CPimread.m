@@ -133,7 +133,7 @@ else
             %%% Read (open) the image you want to analyze and assign it to a variable,
             %%% "LoadedImage".
             %%% Opens Matlab-readable file formats.
-            LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
+            LoadedImage = im2double(imreadZVI(char(CurrentFileName)));
         catch
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
         end
@@ -148,3 +148,80 @@ else
         end
     end
 end
+
+
+function ImageArray = imreadZVI(CurrentFileName)
+
+    % Open .zvi file
+    fid = fopen(char(CurrentFileName), 'r');
+    if (fid == -1),
+        error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in ZVI file format.']);
+    end
+    
+    %read and store data
+    [A, Count] = fread(fid, inf, 'uint8'  , 0, 'l');
+
+    fclose(fid);
+
+    %find first header block and returns the position of the header
+    indices = find(A == 65);
+    counter = 0;
+    for i = 1:length(indices)
+        if A(indices(i)+1) == 0 && A(indices(i)+2) == 16
+            counter = counter+1;
+            block1(counter) = indices(i);
+        end
+    end
+
+    %checks that file is in the proper format and finds another block,
+    %returns the positioni of where to read image information
+   for i = 1:length(block1)
+        pos = block1(3)+22;
+        if (A(pos) == 65 && A(pos+1) == 0 && A(pos+2) == 128) & A(pos+3:pos+13) == zeros(11,1)
+            pos = pos+133;
+            for i = pos:length(A)
+                if A(i) == 32 && A(i+1) == 0 && A(i+2) == 16
+                    newpos = i+3;
+                    break;
+                end
+            end
+            if exist('newpos')
+                break;
+            end
+        end
+   end
+    
+    %stores information in byte arrays
+    Width = A(newpos: newpos+3);
+    Height = A(newpos+4: newpos + 7);
+    BytesPixel = A(newpos+12:newpos+15);
+    PixelType = A(newpos+16:newpos+19);
+    newpos = newpos+24;
+
+    %Get decimal values of the width and height
+    Width = toDec(Width);
+    Height = toDec(Height);
+    BytesPixel = toDec(BytesPixel);
+    
+    %Finds and stores the data vector
+    NumPixels = Width*Height*BytesPixel;        
+    ImageData = A(newpos:newpos+NumPixels-1);
+    
+%     %Might be useful to add on as needed.....
+%     if PixelType == 1|8
+%         %this is a grayscaled image
+%     elseif PixelType == 3 | 4
+%         %this is a color image
+%     end
+    
+    %Stores and returns Image Array
+    ImageArray=reshape(ImageData, Width, Height)';  
+    
+%converts byte array information to decimal values
+function Dec = toDec(ByteArray)
+    for i=1:4
+        Hex(i) = {dec2hex(ByteArray(i))};
+    end
+
+    HexString = [Hex{4}, Hex{3}, Hex{2}, Hex{1}];
+    Dec = hex2dec(HexString);

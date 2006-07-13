@@ -1,6 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
--(Rodrigo, 7/13/06) (Requested by Mike) - Add option to change colormap to image tool window.
+- (Rodrigo, 7/13/06) (Requested by Rodrigo) - Some corrections needed in the image tool window: 1. If the Image Tool window is opened and then the figure that had the image is closed, clicking on any button does nothing. 2. If the title of the image is too long, it can't be seen properly. 3. The title adds a '\' before any '_' in the image title. 4. When you open the image in a new window, the new figure has no name (title). 5. When you open the image in a new window, the colormap is not conserved, but is set to 'gray' instead.
+
+- (Rodrigo, 7/13/06) (Requested by Mike) - Add option to change colormap to image tool window.
 Note: The tool allows the user to change the colormap of the current figure or all display figures, and can choose among any predetermined colormap, the default ones set by the user, or open the editor to create a personalized one if running on developer's version.
 
 - (Jun, 7/12/06) (Requested by Anne 7-11-06) - The Crop module, in mouse/ellipse mode, does not visibly mark the points that you have clicked. It's kind of strange because I think at one point it did this successfully, and the mouse/rectangle mode works just fine, creating little star marks wherever you have clicked.

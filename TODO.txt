@@ -12,7 +12,6 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: -Stacked tifs
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
 
-
 - Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
 
 - Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented."
@@ -75,8 +74,6 @@ estimate with no indication of its accuracy. - Ray
 - (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
 
 - (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
-
-- (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 
 
 - (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
 

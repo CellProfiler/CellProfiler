@@ -1913,6 +1913,9 @@ if (length(ModuleHighlighted) > 0)
 % reversible choice). Also, because this can only happen right when the
 % user starts up CellProfiler, the chances for random clicking are fairly
 % minimal as well.
+% Rodrigo 7/13/06 - Maybe we can check the selection type, and open the Add
+% module window only if the user double-clicked. Nothing will happen
+% otherwise. What do you prefer?
 %        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
  %       if strcmp(Answer,'Yes')
             AddModule_Callback(findobj('tag','AddModule'),[],handles);

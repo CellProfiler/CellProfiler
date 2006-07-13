@@ -28,12 +28,13 @@ function ImageToolWindow(handles)
 % colormap. Note that the colormap selected will apply to all non-RGB
 % images in the entire figure, and not only to the image selected. The
 % Apply To All button will change the colormap in all module display
-% windows. If you are running the developer's version of CellProfiler, you
-% can also open a colormap editor, which enables you to create personalized
-% colormaps. It will modify the colormap of the last active figure, so be
-% careful if you open it, click another figure and go back to it, because
-% you might be changing the colormap of a figure you did not intend to
-% change. See also Help > General Help > Colormaps.
+% windows and any other windows that contain images. If you are running the
+% developer's version of CellProfiler, you can also open a colormap editor,
+% which enables you to create personalized colormaps. It will modify the
+% colormap of the last active figure, so be careful if you open it, click
+% another figure and go back to it, because you might be changing the
+% colormap of a figure you did not intend to change. See also Help >
+% General Help > Colormaps.
 %
 % Save to Matlab workspace - If you are using Matlab Developer's version,
 % this tool saves the image to the Matlab workspace with the variable name

@@ -6,7 +6,8 @@ function ImageToolWindow(handles)
 % SHORT DESCRIPTION:
 % The Image Tool Window opens when you click on any image and allows
 % opening the image in a new window, displaying a pixel intensity
-% histogram, measuring length in the image, and saving the image. 
+% histogram, measuring length in the image, changing the figure colormap,
+% and saving the image.
 % *************************************************************************
 %
 % The Image Tool Window contains these functions:
@@ -20,6 +21,19 @@ function ImageToolWindow(handles)
 % the line reveals several options, including deleting the line. You can
 % place multiple length-measuring lines on an image. Note that sometimes
 % this line may interfere when saving the underlying image.
+%
+% Change Colormap - Opens a window that allows you to change the colormap
+% of the selected figure. You can select the default colormap (which you
+% can set under File > Set Preferences) or any other predetermined
+% colormap. Note that the colormap selected will apply to all non-RGB
+% images in the entire figure, and not only to the image selected. The
+% Apply To All button will change the colormap in all module display
+% windows. If you are running the developer's version of CellProfiler, you
+% can also open a colormap editor, which enables you to create personalized
+% colormaps. It will modify the colormap of the last active figure, so be
+% careful if you open it, click another figure and go back to it, because
+% you might be changing the colormap of a figure you did not intend to
+% change. See also Help > General Help > Colormaps.
 %
 % Save to Matlab workspace - If you are using Matlab Developer's version,
 % this tool saves the image to the Matlab workspace with the variable name

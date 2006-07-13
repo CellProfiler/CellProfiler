@@ -1,5 +1,6 @@
 CellProfiler cell image analysis software development 
 
+
 - Anne 7-12-06 (GOES WITH Mike 7-11-06): I added a new thresholding method to CPthreshold sbufunction, called Background. I have adjusted the help in IdentifyPrimAutomatic to describe this new method, and I have added Background Global to this list of choices selectable within IdentifyPrimAutomatic. There are several things to be done, though:
 (1) I got it working only for the one combination I was using, which did not require any cropping. Make sure that using the Background Global option does the correct thing if you previously crop the image in a circle shape. When determining a threshold, CPthreshold should ignore parts of the image that have been cropped away, which have the value zero. This is why CPthreshold goes looking in the handles for an image called CropMaskBlabla. Right now, we are pretty sure CPthreshold is a bit of a mess in this regard. Some combinations of options work fine but others don't. So (see Mike's 7-11 request) this whole process needs some overhauling.
 (2) Right now Background method only works in global mode, because if you choose Background adaptive, it is not sure how to deal with a cropmask (due to the block processing).
@@ -11,8 +12,6 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: -Stacked tifs
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
 
-- FAIRLY URGENT Anne 7-7-06: It would be great if CellProfiler could read ZVI format images. Someone has already written an open-source java-based ZVI reader:
-http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program would help figure out the format so we can alter CPimread to handle this image type. Notice how we handle DIB format images in CPimread for an example. I put example ZVI images in the DeveloperDropBox (two files named SNAP...)
 
 - Ray 7-6-06: We should perhaps write a module that can do tracking, perhaps something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary.
 

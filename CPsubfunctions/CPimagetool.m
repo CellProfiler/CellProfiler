@@ -39,13 +39,20 @@ if ~isempty(varargin)
         ImageHandle = FigHandles.ImageToolWindowHandle;
         switch action
             case {'NewWindow'}        % Show image in a new window
-                %%% Retrieves the image data.
+                %%% Retrieves the image data and colormap
                 data = get(ImageHandle,'Cdata');
-                %%% Opens a new figure window.
+                FigHandle = get(get(ImageHandle,'Parent'),'Parent');
+                figure(FigHandle);
+                cmap = colormap;
+                %%% Opens a new figure window and sets image, colormap and title.
                 FigureHandle = figure;
                 CPfigure(handles,'Image',FigureHandle);
                 CPimagesc(data,handles);
-                title(get(get(get(ImageHandle,'parent'),'title'),'string'));
+                colormap(cmap);
+                Title = get(get(get(ImageHandle,'parent'),'title'),'string');
+                title(Title);
+                Title = strrep(Title,'\_','_');
+                set(FigureHandle,'Name',Title);
             case {'Histogram'}                                % Produce histogram (only for scalar images)
                 CPfigure(handles);
                 data = get(ImageHandle,'Cdata');
@@ -575,7 +582,16 @@ else
         th = findobj(get(ImageToolWindowHandle,'children'),'style','text');            % Get handle to text object
 
         Title = get(get(get(handle,'Parent'),'Title'),'String');      % Get title of image
+        Title = strrep(Title,'\_','_');
         set(th,'string',Title);                                       % Put new text
+
+        if length(Title)>36                                           % Adjust position
+            width = 0.06*length(Title);
+        else
+            width = 2;
+        end
+        pos = get(ImageToolWindowHandle,'position');
+        set(ImageToolWindowHandle,'position',[pos(1) pos(2) width pos(4)]);
 
         % Enable histogram function if 2D image
         if ndims(get(handle,'Cdata')) == 2
@@ -591,15 +607,19 @@ else
         userData = get(ImageToolWindowHandle,'UserData');
         userData.ImageToolWindowHandle = handle;
         set(ImageToolWindowHandle,'UserData',userData);
-        pos = get(ImageToolWindowHandle,'position');
-        set(ImageToolWindowHandle,'position',[pos(1) pos(2) 2 3.4]);
-
         % Get title of image
         Title = get(get(get(handle,'Parent'),'Title'),'String');
-
+        Title = strrep(Title,'\_','_');
+        % Adjust position
+        if length(Title)>36
+            width = 0.06*length(Title);
+        else
+            width = 2;
+        end
+        pos = get(ImageToolWindowHandle,'position');
+        set(ImageToolWindowHandle,'position',[pos(1) pos(2) width 3.4]);
         % Create buttons
-        Text = uicontrol(ImageToolWindowHandle,'style','text','units','normalized','position',[.03 .85 .95 .12],'string',Title,'FontSize',FontSize);
-        set(Text,'Backgroundcolor',get(ImageToolWindowHandle,'Color')) %%% why do we need this? Since CPfigure created it, shouldn't it always be [.7 .7 .9]??
+        Text = uicontrol(ImageToolWindowHandle,'style','text','units','normalized','position',[.03 .85 .95 .12],'string',Title,'BackgroundColor',[.7 .7 .9],'FontSize',FontSize);
         NewWindow =      uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .78 .9 .1],'string','Open in new window','BackgroundColor',[.7 .7 .9],'FontSize',FontSize);
         Histogram =      uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .66 .9 .1],'string','Show intensity histogram','Tag','Histogram','BackgroundColor',[.7 .7 .9],'FontSize',FontSize);
         MeasureLength =  uicontrol(ImageToolWindowHandle,'style','pushbutton','units','normalized','position',[.05 .54 .9 .1],'string','Measure Length','Tag','MeasureLength','BackgroundColor',[.7 .7 .9],'FontSize',FontSize);

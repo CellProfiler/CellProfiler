@@ -133,6 +133,10 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 - (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
+- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
+
+- (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
+
 - (Requested by Anne 12-01-05) - Make compiled CellProfiler work on cluster
 
 - (Requested by Anne 12-01-05) - Tile used to allow us to show text information loaded using LoadText. DisplayGridInfo does something similar, but would it be very hard to add this back to the Tile module? It's nice to have it in the same window because you can show/hide that text info in addition to show/hide the file names, etc.

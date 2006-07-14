@@ -31,31 +31,16 @@ elseif nargin == 2,
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
     if strcmp('.DIB', upper(ext)),
         %%% Opens this non-Matlab readable file format.
-        try
-            Width = handles.Pipeline.DIBwidth;
-            Height = handles.Pipeline.DIBheight;
-            Channels = handles.Pipeline.DIBchannels;
-            BitDepth = handles.Pipeline.DIBbitdepth;
-        catch
-            Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-            try
-                handles.Pipeline.DIBwidth = str2double(Answers{1});
-                Width=handles.Pipeline.DIBwidth;
-                handles.Pipeline.DIBheight = str2double(Answers{2});
-                Height=handles.Pipeline.DIBheight;
-                handles.Pipeline.DIBbitdepth = str2double(Answers{3});
-                BitDepth=handles.Pipeline.DIBbitdepth;
-                handles.Pipeline.DIBchannels = str2double(Answers{4});
-                Channels=handles.Pipeline.DIBchannels;
-            catch
-                return %If the user cancels or closes the window.
-            end
-        end
         fid = fopen(char(CurrentFileName), 'r');
         if (fid == -1),
             error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
         fread(fid, 52, 'uchar');
+        Width = toDec2(A(5:8));
+        Height = toDec2(A(9:12));
+        Scale = toDec2(A(15:16));
+        Channels = toDec2(A(13:14));
+        
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,
             [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
@@ -97,28 +82,24 @@ else
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
     if strcmp('.DIB', upper(ext)),
         %%% Opens this non-Matlab readable file format.
-        Answers = inputdlg({'Enter the width of the images in pixels','Enter the height of the images in pixels','Enter the bit depth of the camera','Enter the number of channels'},'Enter DIB file information',1,{'512','512','12','1'});
-        try
-            Width = str2double(Answers{1});
-            Height = str2double(Answers{2});
-            BitDepth = str2double(Answers{3});
-            Channels = str2double(Answers{4});
-        catch
-            return %If the user cancels or closes the window.
-        end
         fid = fopen(char(CurrentFileName), 'r');
         if (fid == -1),
             error(['The file ', FileName, ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
-        fread(fid, 52, 'uchar');
+        A = fread(fid, 52, 'uchar');
+        Width = toDec2(A(5:8));
+        Height = toDec2(A(9:12));
+        Scale = toDec2(A(15:16));
+        Channels = toDec2(A(13:14));
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,
-            [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+            [Data, Count] = fread(fid, inf, 'uint16', 0, 'l');
+            Data = Data(1:Width * Height);
             if Count < (Width * Height),
                 fclose(fid);
                 error(['End-of-file encountered while reading ', FileName, '. Have you entered the proper size and number of channels for these images?']);
             end
-            LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+            LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^Scale - 1);
         end
         fclose(fid);
     elseif strcmp('.MAT',upper(ext))
@@ -225,3 +206,19 @@ function Dec = toDec(ByteArray)
 
     HexString = [Hex{4}, Hex{3}, Hex{2}, Hex{1}];
     Dec = hex2dec(HexString);
+    
+function Dec = toDec2(ByteArray)
+numBytes = size(ByteArray);
+if numBytes(1) == 2
+    for i=1:2
+        Hex(i) = {dec2hex(ByteArray(i))};
+    end
+    HexString = [Hex{2}, Hex{1}];
+    Dec = hex2dec(HexString);
+else
+    for i=1:4
+        Hex(i) = {dec2hex(ByteArray(i))};
+    end
+    HexString = [Hex{1}, Hex{2}, Hex{3}, Hex{4}];
+    Dec = hex2dec(HexString);
+end

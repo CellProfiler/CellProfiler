@@ -36,6 +36,7 @@ elseif nargin == 2,
             error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
         fread(fid, 52, 'uchar');
+        
         Width = toDec2(A(5:8));
         Height = toDec2(A(9:12));
         Scale = toDec2(A(15:16));

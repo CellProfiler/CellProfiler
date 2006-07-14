@@ -195,7 +195,7 @@ end
 try
     handles.Preferences.DisplayModeValue = LoadedPreferences.DisplayModeValue;
 catch
-    handles.Preferences.DisplayModeValue = 0;
+    handles.Preferences.DisplayModeValue = 1;
 end
 
 handles.Preferences.DisplayWindows =[];
@@ -233,8 +233,8 @@ end
 %%% but it is overridden if the user has set a default font size.
 %%% The fontsize is also saved in the main window's (i.e. "0") UserData property so that
 %%% it can be used for setting the fontsize in dialog boxes.
-if exist('LoadedPreferences') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2num(LoadedPreferences.FontSize))
-    handles.Preferences.FontSize = str2num(LoadedPreferences.FontSize);
+if exist('LoadedPreferences','var') && isfield(LoadedPreferences,'FontSize') && ~isempty(str2double(LoadedPreferences.FontSize))
+    handles.Preferences.FontSize = str2double(LoadedPreferences.FontSize);
 else
     ScreenResolution = get(0,'ScreenPixelsPerInch');
     handles.Preferences.FontSize = (220 - ScreenResolution)/13;       % 90 pix/inch => 10pts, 116 pix/inch => 8pts
@@ -347,13 +347,13 @@ try addpath(Pathname)
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
                 if ~strcmp(FileNamesNoDir{i},'ShowHelpForThisMenu.m')
                     ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2))); %#ok Ignore MLint
                 else
                     helpnum = i;
                 end
             end
         end
-        if exist('helpnum')
+        if exist('helpnum','var')
             ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{helpnum}(1:end-2)};
             ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{helpnum}(1:end-2)));
         end
@@ -399,7 +399,7 @@ try addpath(Pathname)
                 end
             end
         end
-        if exist('helpnum')
+        if exist('helpnum','var')
             ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{helpnum}(1:end-2)};
             ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{helpnum}(1:end-2)));
         end
@@ -470,7 +470,7 @@ try addpath(Pathname)
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
                 if strncmp(FileNamesNoDir{i}(1:2),'GS',2)
                     GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2))); %#ok Ignore MLint
                 else
                     ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
                     ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
@@ -650,7 +650,7 @@ else
 end
 
 try
-    [NumberOfModules, MaxNumberVariables] = size(Settings.VariableValues);
+    [NumberOfModules, MaxNumberVariables] = size(Settings.VariableValues); %#ok Ignore MLint
     if (size(Settings.ModuleNames,2) ~= NumberOfModules)||(size(Settings.NumbersOfVariables,2) ~= NumberOfModules);
         CPerrordlg(['The file ' SettingsPathname SettingsFileName ' is not a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.']);
         errFlg = 1;
@@ -678,7 +678,7 @@ else
     %%% Checks to make sure that the modules have not changed
     if exist(ModuleNamedotm,'file')
         FullPathname = which(ModuleNamedotm);
-        [Pathname, filename, ext, versn] = fileparts(FullPathname);
+        Pathname = fileparts(FullPathname);
     else
         %%% If the module.m file is not on the path, it won't be
         %%% found, so ask the user where the modules are.
@@ -726,7 +726,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
             for k = 1:handles.Settings.NumbersOfVariables(ModuleNum)
                 if strcmp(defVariableValues(k),'Pipeline Value')
                     handles.Settings.VariableValues(ModuleNum,k) = {''};
-                    if exist('FixList')
+                    if exist('FixList','var')
                         FixList(end+1,1) = ModuleNum;
                         FixList(end,2) = k;
                     else
@@ -784,7 +784,7 @@ else
         CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
     end
 
-    if exist('FixList')
+    if exist('FixList','var')
         for k = 1:size(FixList,1)
             PipeList = get(handles.VariableBox{FixList(k,1)}(FixList(k,2)),'string');
             FirstValue = PipeList(1);
@@ -843,49 +843,49 @@ try
         if strncmp(output,'%defaultVAR',11)
             displayval = output(17:end);
             istr = output(12:13);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableValues(i) = {displayval};
         elseif strncmp(output,'%choiceVAR',10)
             if ~iscellstr(VariableValues(i))
                 displayval = output(16:end);
                 istr = output(11:12);
-                i = str2num(istr);
+                i = str2double(istr);
                 VariableValues(i) = {displayval};
             end
         elseif strncmp(output,'%textVAR',8)
             displayval = output(13:end);
             istr = output(9:10);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
         elseif strncmp(output,'%pathnametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
         elseif strncmp(output,'%filenametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableDescriptions(i) = {displayval};
             VariableValues(i) = {[]};
             NumbersOfVariables = i;
         elseif strncmp(output,'%infotypeVAR',12)
             displayval = output(18:end);
             istr = output(13:14);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableInfoTypes(i) = {displayval};
             if ~strcmp(output((length(output)-4):end),'indep') && isempty(VariableValues{i})
                 VariableValues(i) = {'Pipeline Value'};
             end
         elseif strncmp(output,'%%%VariableRevisionNumber',25)
             try
-                VarRevNum = str2num(output(29:30));
+                VarRevNum = str2double(output(29:30));
             catch
-                VarRevNum = str2num(output(29:29));
+                VarRevNum = str2double(output(29:29));
             end
         end
     end
@@ -938,7 +938,7 @@ informtext = uicontrol(...
     'FontName','helvetica',...
     'HorizontalAlignment','left',...
     'FontSize',handles.Preferences.FontSize,...
-    'Tag','informtext');
+    'Tag','informtext'); %#ok Ignore MLint
 
 savedbox = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
@@ -950,7 +950,7 @@ savedbox = uicontrol(...
     'Value',1,...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
-    'Tag','savedbox');
+    'Tag','savedbox'); %#ok Ignore MLint
 
 descriptionbox = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
@@ -962,7 +962,7 @@ descriptionbox = uicontrol(...
     'Value',1,...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
-    'Tag','descriptionbox');
+    'Tag','descriptionbox'); %#ok Ignore MLint
 
 descriptiontext = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
@@ -973,7 +973,7 @@ descriptiontext = uicontrol(...
     'Style','text',...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
-    'Tag','descriptiontext');
+    'Tag','descriptiontext'); %#ok Ignore MLint
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE PIPELINE BUTTON %%%
@@ -999,7 +999,7 @@ else
 end
 %%% Allows canceling.
 if FileName ~= 0
-    [Temp,FileNom,FileExt,Temp2] = fileparts(FileName);
+    [Temp,FileNom,FileExt] = fileparts(FileName); %#ok Ignore MLint
     %%% search for 'pipe' in the filename
     LocatePipe = strfind(FileName,'pipe');
     if isempty(LocatePipe)
@@ -1127,7 +1127,7 @@ if ModuleNamedotm ~= 0,
     if ~isdeployed
         addpath(Pathname);
         differentPaths = which(ModuleNamedotm, '-all');
-        if length(differentPaths) == 0
+        if isempty(differentPaths)
             %%% If the module's .m file is not found on the search path, the result
             %%% of exist is zero, and the user is warned.
             CPerrordlg(['Something is wrong; The .m file ', ModuleNamedotm, ' was not initially found by Matlab, so the folder containing it was added to the Matlab search path. But, Matlab still cannot find the .m file for the analysis module you selected. The module will not be added to the image analysis pipeline.'],'Error');
@@ -1430,7 +1430,7 @@ if ModuleNamedotm ~= 0,
             set(handles.BrowseButton{ModuleNums}(lastVariableCheck), 'Position', [501 varYPos 63 20]);
 
         elseif strncmp(output,'%choiceVAR',10)
-            if ~(exist('StrSet'))
+            if ~(exist('StrSet','var'))
                 StrSet = cell(1);
                 StrSet{1} = output(16:end);
             else
@@ -1459,10 +1459,10 @@ if ModuleNamedotm ~= 0,
             lastVariableCheck = str2double(output(14:15));
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'style', output(19:27));
             VersionCheck = version;
-            if strcmp(output(19:27),'popupmenu') && ~ispc && str2num(VersionCheck(1:3)) >= 7.1
+            if strcmp(output(19:27),'popupmenu') && ~ispc && str2double(VersionCheck(1:3)) >= 7.1
                 set(handles.VariableBox{ModuleNums}(lastVariableCheck),'BackgroundColor',[.7 .7 .9]);
             end
-            if ~(exist('StrSet'))
+            if ~(exist('StrSet','var'))
                 StrSet = cell(1);
                 Count = 1;
             else
@@ -1472,7 +1472,7 @@ if ModuleNamedotm ~= 0,
                 for j=1:size(handles.Settings.VariableInfoTypes,2)
                     if size(handles.Settings.VariableInfoTypes,1) >= i
                         if ~strcmp(get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),'undefined') && strcmp(handles.Settings.VariableInfoTypes{i,j},[get(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData'),' indep'])
-                            if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
+                            if  (~isempty(handles.Settings.VariableValues{i,j})) && ( Count == 1 || (ischar(handles.Settings.VariableValues{i,j}) && isempty(strmatch(handles.Settings.VariableValues{i,j}, StrSet, 'exact')))) && ~strcmp(handles.Settings.VariableValues{i,j},'/') && ~strcmp(handles.Settings.VariableValues{i,j},'Do not save') && ~strcmp(handles.Settings.VariableValues{i,j},'n/a')
                                 TestStr = 0;
                                 for m=1:length(StrSet)
                                     if strcmp(StrSet(m),handles.Settings.VariableValues(i,j))
@@ -1490,7 +1490,7 @@ if ModuleNamedotm ~= 0,
             end
 
             if strcmp(output(29:end),'custom')
-                if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (isstr(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
+                if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (ischar(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
                     StrSet(Count) = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
                     Count = Count + 1;
                 end
@@ -1509,9 +1509,9 @@ if ModuleNamedotm ~= 0,
             clear StrSet
         elseif strncmp(output,'%%%VariableRevisionNumber',25)
             try
-                handles.Settings.VariableRevisionNumbers(ModuleNums) = str2num(output(29:30));
+                handles.Settings.VariableRevisionNumbers(ModuleNums) = str2double(output(29:30));
             catch
-                handles.Settings.VariableRevisionNumbers(ModuleNums) = str2num(output(29:29));
+                handles.Settings.VariableRevisionNumbers(ModuleNums) = str2double(output(29:29));
             end
             break;
         end
@@ -1879,7 +1879,7 @@ if (length(ModuleHighlighted) > 0)
         %%% position values here as well.
         set(handles.variablepanel, 'position', [238 0 563 346]);
         MatlabVersion = version;
-        MatlabVersion = str2num(MatlabVersion(1:3));
+        MatlabVersion = str2double(MatlabVersion(1:3));
         if ispc || (MatlabVersion >= 7.1)
             set(handles.slider1,'value',get(handles.slider1,'max'));
         else
@@ -1888,8 +1888,8 @@ if (length(ModuleHighlighted) > 0)
 
         set(handles.slider1,'visible','off');
         %%% 2.5 Checks whether a module is loaded in this slot.
-        contents = get(handles.ModulePipelineListBox,'String');
-        ModuleName = contents{ModuleNumber};
+        % contents = get(handles.ModulePipelineListBox,'String');
+        % ModuleName = contents{ModuleNumber};
 
         %%% 5.  Sets the slider
         MaxInfo = get(handles.slider1,'UserData');
@@ -1957,7 +1957,7 @@ for i = 1:length(handles.VariableBox{ModuleNumber})
                 PrevList = get(ModList(m),'string');
                 VarVal = get(ModList(m),'value');
                 BoxTag = get(ModList(m),'tag');
-                BoxNum = str2num(BoxTag((length(BoxTag)-1):end));
+                BoxNum = str2double(BoxTag((length(BoxTag)-1):end));
                 ModNum = [];
                 for j = 1:length(handles.VariableBox)
                     if length(handles.VariableBox{j}) >= BoxNum
@@ -2003,31 +2003,31 @@ function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
 
-InfoType = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'UserData');
-StrSet = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'string');
-type = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'Style');
+InfoType = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'UserData');
+StrSet = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'string');
+% Type = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'Style');
 
 if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     PrevValue = handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber));
     ModList = findobj('UserData',InfoType(1:end-6));
     %Filter out objects that are over this one
     ModList2 = findobj('UserData',InfoType(1:end));
-    ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2num(VariableNumber)));
+    ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2double(VariableNumber)));
     %ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
     for i = 1:length(ModList2)
         Values = get(ModList2(i),'value');
         PrevStrSet = get(ModList2(i),'string');
         if Values == 0
             if strcmp(PrevStrSet,PrevValue)
-                if exist('ModList3')
-                    ModList3(end+1) = ModList2(i);
+                if exist('ModList3','var')
+                    ModList3(end+1) = ModList2(i); %#ok Ignore MLint
                 else
                     ModList3 = ModList2(i);
                 end
             end
         else
             if strcmp(PrevStrSet(Values),PrevValue)
-                if exist('ModList3')
+                if exist('ModList3','var')
                     ModList3(end+1) = ModList2(i);
                 else
                     ModList3 = ModList2(i);
@@ -2042,15 +2042,15 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 PrevStrSet = get(ModList2(i),'string');
                 if Values == 0
                     if strcmp(PrevStrSet,StrSet)
-                        if exist('ModList4')
-                            ModList4(end+1) = ModList2(i);
+                        if exist('ModList4','var')
+                            ModList4(end+1) = ModList2(i); %#ok Ignore MLint
                         else
                             ModList4 = ModList2(i);
                         end
                     end
                 else
                     if strcmp(PrevStrSet(Values),StrSet)
-                        if exist('ModList4')
+                        if exist('ModList4','var')
                             ModList4(end+1) = ModList2(i);
                         else
                             ModList4 = ModList2(i);
@@ -2059,13 +2059,13 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 end
             end
         else
-            OrigValues = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
+            OrigValues = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'value');
             for i = 1:length(ModList2)
                 Values = get(ModList2(i),'value');
                 PrevStrSet = get(ModList2(i),'string');
                 if Values == 0
                     if strcmp(PrevStrSet,StrSet(OrigValues))
-                        if exist('ModList4')
+                        if exist('ModList4','var')
                             ModList4(end+1) = ModList2(i);
                         else
                             ModList4 = ModList2(i);
@@ -2073,7 +2073,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                     end
                 else
                     if strcmp(PrevStrSet(Values),StrSet(OrigValues))
-                        if exist('ModList4')
+                        if exist('ModList4','var')
                             ModList4(end+1) = ModList2(i);
                         else
                             ModList4 = ModList2(i);
@@ -2088,7 +2088,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             PrevStrSet = get(ModList2(i),'string');
             if Values == 0
                 if strcmp(PrevStrSet,StrSet(UserEntry))
-                    if exist('ModList4')
+                    if exist('ModList4','var')
                         ModList4(end+1) = ModList2(i);
                     else
                         ModList4 = ModList2(i);
@@ -2096,7 +2096,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 end
             else
                 if strcmp(PrevStrSet(Values),StrSet(UserEntry))
-                    if exist('ModList4')
+                    if exist('ModList4','var')
                         ModList4(end+1) = ModList2(i);
                     else
                         ModList4 = ModList2(i);
@@ -2106,16 +2106,16 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
         end
     end
 
-    if ~exist('ModList4')
+    if ~exist('ModList4','var')
         ModList4 = [];
     end
-    if ~exist('ModList3')
+    if ~exist('ModList3','var')
         ModList3 = [];
     end
 
     for i=1:numel(ModList)
         BoxTag = get(ModList(i),'tag');
-        BoxNum = str2num(BoxTag((length(BoxTag)-1):end));
+        BoxNum = str2double(BoxTag((length(BoxTag)-1):end));
         ModNum = [];
         for m = 1:handles.Current.NumberOfModules
             if length(handles.VariableBox{m}) >= BoxNum
@@ -2182,8 +2182,10 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
         elseif isempty(ModList4)
             if numel(CurrentString) == 0
                 CurrentString = {UserEntry};
+                set(ModList(i),'String',CurrentString);
             elseif ~iscell(CurrentString)
                 CurrentString = {CurrentString};
+                set(ModList(i),'String',CurrentString);
             else
                 if ischar(UserEntry)
                     if size(StrSet,1) == 1
@@ -2192,7 +2194,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                         end
                         set(ModList(i),'String',CurrentString);
                     else
-                        OrigValues = get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'value');
+                        OrigValues = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'value');
                         if ~strcmp(StrSet{OrigValues},'n/a') && ~strcmp(StrSet{OrigValues},'/')
                             CurrentString(numel(CurrentString)+1) = {StrSet{OrigValues}};
                         end
@@ -2209,7 +2211,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     end
 end
 
-if strcmp(get(handles.VariableBox{ModuleNumber}(str2num(VariableNumber)),'style'),'edit')
+if strcmp(get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'style'),'edit')
     handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
 else
     if ischar(UserEntry)
@@ -2233,7 +2235,6 @@ function VariableBox_Callback(hObject, eventdata, handles) %#ok We want to ignor
 VariableName = get(hObject,'tag');
 VariableNumberStr = VariableName(12:13);
 ModuleNumber = whichactive(handles);
-VarNum = str2num(VariableNumberStr);
 InputType = get(hObject,'style');
 
 if strcmp(InputType, 'edit')
@@ -2255,7 +2256,7 @@ end
 
 if isempty(UserEntry)
     CPerrordlg('Variable boxes must not be left blank');
-    set(handles.VariableBox{ModuleNumber}(str2num(VariableNumberStr)),'string','Fill in');
+    set(handles.VariableBox{ModuleNumber}(str2double(VariableNumberStr)),'string','Fill in');
     storevariable(ModuleNumber,VariableNumberStr, 'Fill in',handles);
 else
     if ModuleNumber == 0,
@@ -2270,7 +2271,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)
+function slider1_Callback(hObject, eventdata, handles) %#ok Ignore MLint
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range
 %        of slider
@@ -2289,7 +2290,7 @@ end
 % variablePanel gets changed, then the constant offset must be changed as
 % well.
 MatlabVersion = version;
-MatlabVersion = str2num(MatlabVersion(1:3));
+MatlabVersion = str2double(MatlabVersion(1:3));
 if ispc || (MatlabVersion >= 7.1)
     Ypos = get(handles.slider1,'max') - get(handles.slider1,'Value');
     set(handles.variablepanel, 'position', [variablepanelPos(1) Ypos variablepanelPos(3) variablepanelPos(4)]);
@@ -2374,7 +2375,7 @@ end
 %%% SET PREFERENCES BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function SaveButton_Callback (hObject, eventdata, handles)
+function SaveButton_Callback (hObject, eventdata, handles)  %#ok Ignore MLint
 
 Answer = CPquestdlg('Do you want to save these as the default preferences? If not, you will be asked to name your preferences file, which can be loaded by File -> Load Preferences.','Save as default?','Yes','No','Yes');
 if strcmp(Answer, 'No')
@@ -2382,6 +2383,8 @@ if strcmp(Answer, 'No')
     if isequal(FileName,0) || isequal(Pathname,0)
         Pathname = matlabroot;
         FileName = 'CellProfilerPreferences.mat';
+        FullFileName = fullfile(Pathname,FileName);
+        DefaultVal = 1;
         CPwarndlg('Since you did not specify a file name, the file was saved as CellProfilerPreferences.mat in the matlab root folder.');
     else
         FullFileName = fullfile(Pathname,FileName);
@@ -2407,7 +2410,6 @@ ModuleDirEditBoxHandle = findobj('Tag','ModuleDirEditBox');
 IntensityColorMapHandle = findobj('Tag','IntensityColorMapEditBox');
 StripPipelineCheckboxHandle = findobj('Tag','StripPipelineCheckbox');
 SkipErrorsCheckboxHandle = findobj('Tag','SkipErrorCheckbox');
-SelectDisplayHandle = findobj('Tag','SelectDisplay');
 LabelColorMapHandle = findobj('Tag','LabelColorMapEditBox');
 SelectDisplayModeHandle = findobj('Tag','SelectDisplay');
 PixelSize = get(PixelSizeEditBoxHandle,'string');
@@ -2418,6 +2420,7 @@ DefaultOutputDirectory = get(OutputDirEditBoxHandle,'string');
 DefaultModuleDirectory = get(ModuleDirEditBoxHandle,'string');
 IntensityColorMap = get(IntensityColorMapHandle,'string');
 LabelColorMap = get(LabelColorMapHandle,'string');
+DisplayModeValue = get(SelectDisplayModeHandle,'value');
 if get(StripPipelineCheckboxHandle,'Value') == get(StripPipelineCheckboxHandle,'Max')
     StripPipeline = 'Yes';
 else
@@ -2429,7 +2432,6 @@ else
     SkipErrors = 'No';
 end
 
-DisplayModeValue = get(SelectDisplayModeHandle,'Value');
 EnteredPreferences.PixelSize = PixelSize;
 EnteredPreferences.FontSize = FontSize;
 EnteredPreferences.DefaultImageDirectory = DefaultImageDirectory;
@@ -2440,7 +2442,7 @@ EnteredPreferences.LabelColorMap = LabelColorMap;
 EnteredPreferences.StripPipeline = StripPipeline;
 EnteredPreferences.SkipErrors = SkipErrors;
 EnteredPreferences.DisplayModeValue = DisplayModeValue;
-SavedPreferences = EnteredPreferences;
+SavedPreferences = EnteredPreferences; %#ok ignore MLint
 CurrentDir = pwd;
 try
     save(FullFileName,'SavedPreferences')
@@ -2461,7 +2463,6 @@ catch
 end
 clear PixelSize* *Dir* , close(SetPreferencesWindowHandle);
 clear SetPreferencesWindowHandle FontSize FontSizeEditBoxHandle;
-
 
 function SetPreferences_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -2521,7 +2522,7 @@ InfoText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.025 0.63 0.95 0.35],...
     'String',StringForInfoText,...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 IntensityColorMapText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2533,7 +2534,7 @@ IntensityColorMapText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[.2 .7 .6 .04],...
     'String','Enter the default colormap for intensity images',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 IntensityColorMapEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2546,7 +2547,7 @@ IntensityColorMapEditBox = uicontrol(...
     'Position',[0.7 0.7 0.1 0.04],...
     'String',handles.Preferences.IntensityColorMap,...
     'Style','edit',...
-    'Tag','IntensityColorMapEditBox');
+    'Tag','IntensityColorMapEditBox'); %#ok Ignore MLint
 
 LabelColorMapText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2558,7 +2559,7 @@ LabelColorMapText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[.2 .65 .6 .04],...
     'String','Enter the default colormap for objects',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 LabelColorMapEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2571,7 +2572,7 @@ LabelColorMapEditBox = uicontrol(...
     'Position',[0.7 0.65 0.1 0.04],...
     'String',handles.Preferences.LabelColorMap,...
     'Style','edit',...
-    'Tag','LabelColorMapEditBox');
+    'Tag','LabelColorMapEditBox'); %#ok Ignore MLint
 
 ColorMapHelp = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2582,7 +2583,7 @@ ColorMapHelp = uicontrol(...
     'Position',[0.18 0.71 0.02 0.04],...
     'String','?',...
     'Tag','ColorMapHelp',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 PixelSizeHelp = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2593,7 +2594,7 @@ PixelSizeHelp = uicontrol(...
     'Position',[0.18 0.61 0.02 0.04],...
     'String','?',...
     'Tag','PixelSizeHelp',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 PixelSizeText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2605,7 +2606,7 @@ PixelSizeText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.6 0.6 0.04],...
     'String','Enter the default pixel size (in micrometers)',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 PixelSizeEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2618,7 +2619,7 @@ PixelSizeEditBox = uicontrol(...
     'Position',[0.7 0.6 0.1 0.04],...
     'String',handles.Preferences.PixelSize,...
     'Style','edit',...
-    'Tag','PixelSizeEditBox');
+    'Tag','PixelSizeEditBox'); %#ok Ignore MLint
 
 FontSizeText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2630,7 +2631,7 @@ FontSizeText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.55 0.6 0.04],...
     'String','Enter the default font size',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 FontSizeEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2643,7 +2644,7 @@ FontSizeEditBox = uicontrol(...
     'Position',[0.7 0.55 0.1 0.04],...
     'String',num2str(round(handles.Preferences.FontSize)),...
     'Style','edit',...
-    'Tag','FontSizeEditBox');
+    'Tag','FontSizeEditBox'); %#ok Ignore MLint
 
 FastModeText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2655,7 +2656,7 @@ FastModeText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.5 0.6 0.04],...
     'String','Run in fast mode:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 FastModeHelp = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2666,7 +2667,7 @@ FastModeHelp = uicontrol(...
     'Position',[0.18 0.51 0.02 0.04],...
     'String','?',...
     'Tag','FastModeHelp',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 FastModeCheckbox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2677,7 +2678,7 @@ FastModeCheckbox = uicontrol(...
     'Position',[.7 .5 .04 .04],...
     'Style','checkbox',...
     'Tag','StripPipelineCheckbox',...
-    'Value',strcmp(handles.Preferences.StripPipeline,'Yes'));
+    'Value',strcmp(handles.Preferences.StripPipeline,'Yes')); %#ok Ignore MLint
 
 SkipErrorText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2689,7 +2690,7 @@ SkipErrorText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.45 0.6 0.04],...
     'String','Skip modules which fail:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 SkipErrorHelp = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2700,7 +2701,7 @@ SkipErrorHelp = uicontrol(...
     'Position',[0.18 0.46 0.02 0.04],...
     'String','?',...
     'Tag','SkipErrorHelp',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 SkipErrorCheckbox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2711,7 +2712,7 @@ SkipErrorCheckbox = uicontrol(...
     'Position',[.7 .45 .04 .04],...
     'Style','checkbox',...
     'Tag','SkipErrorCheckbox',...
-    'Value',strcmp(handles.Preferences.SkipErrors,'Yes'));
+    'Value',strcmp(handles.Preferences.SkipErrors,'Yes')); %#ok Ignore MLint
 
 SelectDisplayModeText = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2723,7 +2724,7 @@ SelectDisplayModeText = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.2 0.4 0.6 0.04],...
     'String','Display Mode:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 SelectDisplayMode = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2735,7 +2736,8 @@ SelectDisplayMode = uicontrol(...
     'FontSize',handles.Preferences.FontSize,...
     'FontWeight','bold',...
     'Position',[0.5 0.4 0.4 0.05],...
-    'Tag','SelectDisplay');
+    'Tag','SelectDisplay',...
+    'value',handles.Preferences.DisplayModeValue); %#ok Ignore MLint
 
 ImageDirTextBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2747,7 +2749,7 @@ ImageDirTextBox = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.025 0.35 0.6 0.04],...
     'String','Select the default image folder:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 ImageDirBrowseButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2759,7 +2761,7 @@ ImageDirBrowseButton = uicontrol(...
     'Position',[0.85 0.31 0.12 0.05],...
     'String','Browse...',...
     'Tag','ImageDirBrowseButton',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color); %#ok Ignore MLint
 
 ImageDirEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2772,7 +2774,7 @@ ImageDirEditBox = uicontrol(...
     'Position',[0.025 0.31 0.8 0.05],...
     'String',handles.Preferences.DefaultImageDirectory,...
     'Style','edit',...
-    'Tag','ImageDirEditBox');
+    'Tag','ImageDirEditBox'); %#ok Ignore MLint
 
 OutputDirTextBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2784,7 +2786,7 @@ OutputDirTextBox = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.025 0.25 0.6 0.04],...
     'String','Select the default output folder:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 OutputDirBrowseButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2796,7 +2798,7 @@ OutputDirBrowseButton = uicontrol(...
     'Position',[0.85 0.21 0.12 0.05],...
     'String','Browse...',...
     'Tag','OutputDirBrowseButton',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color); %#ok Ignore MLint
 
 OutputDirEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2809,7 +2811,7 @@ OutputDirEditBox = uicontrol(...
     'Position',[0.025 0.21 0.8 0.05],...
     'String',handles.Preferences.DefaultOutputDirectory,...
     'Style','edit',...
-    'Tag','OutputDirEditBox');
+    'Tag','OutputDirEditBox'); %#ok Ignore MLint
 
 ModuleDirTextBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2821,7 +2823,7 @@ ModuleDirTextBox = uicontrol(...
     'HorizontalAlignment','left',...
     'Position',[0.025 0.15 0.6 0.04],...
     'String','Select the folder where CellProfiler modules are stored:',...
-    'Style','text');
+    'Style','text'); %#ok Ignore MLint
 
 ModuleDirBrowseButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2833,7 +2835,7 @@ ModuleDirBrowseButton = uicontrol(...
     'Position',[0.85 0.11 0.12 0.05],...
     'String','Browse...',...
     'Tag','ModuleDirBrowseButton',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color); %#ok Ignore MLint
 
 ModuleDirEditBox = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2846,7 +2848,7 @@ ModuleDirEditBox = uicontrol(...
     'Position',[0.025 0.11 0.8 0.05],...
     'String',handles.Preferences.DefaultModuleDirectory,...
     'Style','edit',...
-    'Tag','ModuleDirEditBox');
+    'Tag','ModuleDirEditBox'); %#ok Ignore MLint
 
 SaveButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2858,7 +2860,7 @@ SaveButton = uicontrol(...
     'Position',[0.2 0.02 0.2 0.06],...
     'String','Save preferences',...
     'Tag','SaveButton',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color); %#ok Ignore MLint
 
 CancelButton = uicontrol(...
     'Parent',SetPreferencesWindowHandle,...
@@ -2870,7 +2872,7 @@ CancelButton = uicontrol(...
     'Position',[0.6 0.02 0.2 0.06],...
     'String','Cancel',...
     'Tag','CancelButton',...
-    'BackgroundColor',Color);
+    'BackgroundColor',Color); %#ok Ignore MLint
 
 %%% Waits for the user to respond to the window.
 uiwait(SetPreferencesWindowHandle)
@@ -3021,7 +3023,7 @@ end
 %%% DEFAULT OUTPUT DIRECTORY EDIT BOX %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function DefaultOutputDirectoryEditBox_Callback(hObject, eventdata, handles)
+function DefaultOutputDirectoryEditBox_Callback(hObject, eventdata, handles) %#ok Ignore MLint
 %%% Retrieves the text that was typed in.
 pathname = get(handles.DefaultOutputDirectoryEditBox,'string');
 %%% Checks whether a directory with that name exists.
@@ -3071,7 +3073,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
             try
                 %%% Reads the image.
                 Image = CPimread(fullfile(PathName, FileName));
-                FigureHandle = CPfigure(handles,'image','name',FileName);
+                CPfigure(handles,'image','name',FileName);
                 CPimagesc(Image,handles);
                 colormap(gray);
                 FileName = strrep(FileName,'_','\_');
@@ -3090,7 +3092,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
         try
             %%% Reads the image.
             Image = CPimread(fullfile(PathName, FileName));
-            FigureHandle = CPfigure(handles,'image','name',FileName);
+            CPfigure(handles,'image','name',FileName);
             CPimagesc(Image,handles);
             colormap(gray);
             FileName = strrep(FileName,'_','\_');
@@ -3117,7 +3119,7 @@ end
 % --- CloseWindows_Helper function was called because it is called from two
 % separate places...from the close windows button and when the user quits
 % CellProfiler
-function CloseWindows_Helper(hObject, eventdata, handles)
+function CloseWindows_Helper(hObject, eventdata, handles) %#ok Ignore MLint
 %%% All CellProfiler windows are now marked with
 %%%      UserData.Application = 'CellProfiler'
 %%% so they can be found and deleted. This will get rid both windows
@@ -3128,7 +3130,7 @@ for k=1:length(GraphicsHandles)
     if (ishandle(GraphicsHandles(k)))
         userData = get(GraphicsHandles(k),'UserData');
         if (isfield(userData,'Application') && ...
-                isstr(userData.Application) && ...
+                ischar(userData.Application) && ...
                 strcmp(userData.Application, 'CellProfiler'))
             %%% Closes the figure windows.
             try
@@ -3178,7 +3180,7 @@ if ~isempty(UserEntry)
         for k = 1:length(d);
             index = findstr(d(k).name,[UserEntry '__']);
             if ~isempty(index)
-                numbers = [numbers str2num(d(k).name(index(end)+length(UserEntry)+2:end-4))];
+                numbers = [numbers str2double(d(k).name(index(end)+length(UserEntry)+2:end-4))];
             end
         end
         if isempty(numbers)
@@ -3283,7 +3285,7 @@ else
                         'units','inches',...
                         'position',[posx+0.95 0.1 0.75 0.3],...
                         'Callback','delete(gcf)',...
-                        'BackgroundColor',[.7 .7 .9]);
+                        'BackgroundColor',[.7 .7 .9]); %#ok Ignore MLint
                     
                     uicontrol(okbutton)
                     uiwait(SelectDisplay)
@@ -3623,7 +3625,7 @@ else
                                             'Position',[LeftPos (ScreenHeight-522) 560 442]);
                                     end
                                     TempFigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
-                                    if exist('FigHandleList')
+                                    if exist('FigHandleList','var')
                                         if any(TempFigHandle == FigHandleList)
                                             for z = 1:length(FigHandleList)
                                                 if TempFigHandle == FigHandleList(z)
@@ -3638,7 +3640,7 @@ else
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
-                            handles.Measurements.Image.ModuleErrorFeatures(str2num(TwoDigitString(SlotNumber))) = {ModuleName};
+                            handles.Measurements.Image.ModuleErrorFeatures(str2double(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
                             guidata(handles.figure1,handles);
                             try
@@ -3655,9 +3657,9 @@ else
                                 NewNum = handles.Current.SetBeingAnalyzed;
                                 set(FigHandle,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
                             end
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 0;
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2double(ModuleNumberAsString)) = 0;
                         catch
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2num(ModuleNumberAsString)) = 1;
+                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2double(ModuleNumberAsString)) = 1;
                             if strcmp(handles.Preferences.SkipErrors,'No')
                                 if isdeployed
                                     errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
@@ -3845,7 +3847,7 @@ else
                 if isempty(ImportedFieldnames) == 0
                     for i = 1:length(ImportedFieldnames);
                         fieldname = char(ImportedFieldnames{i});
-                        Lengths(i) = length(handles.Measurements.Image.(fieldname));
+                        Lengths(i) = length(handles.Measurements.Image.(fieldname)); %#ok Ignore MLint
                     end
                     %%% Create a logical array that indicates which headings do not have the
                     %%% same number of entries as the number of cycles analyzed.
@@ -4026,7 +4028,7 @@ function DataToolsHelp_Callback(hObject, eventdata, handles) %#ok We want to ign
 ListOfTools = handles.Current.DataToolsFilenames;
 ToolsHelpSubfunction(handles, 'Data Tools', ListOfTools)
 
-function HelpFiles_Callback(hObject,eventdata, handles)
+function HelpFiles_Callback(hObject,eventdata, handles) %#ok Ignore MLint
 if strcmp(eventdata,'GS');
     ListOfHelp = handles.Current.GSFilenames;
     for i=1:length(ListOfHelp)
@@ -4400,7 +4402,7 @@ if exist('EnteredPreferences','var')
         try
             handles.Preferences.DisplayModeValue = EnteredPreferences.DisplayModeValue;
         catch
-            handles.Preferences.DisplayModeValue = 0;
+            handles.Preferences.DisplayModeValue = 1;
         end
         clear global EnteredPreferences
 

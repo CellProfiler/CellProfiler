@@ -5,7 +5,9 @@
 \deftab720
 \pard\pardeftab720\ql\qnatural
 
-\f0\fs24 \cf0 - Set up an SVN repository for CellVisualizer, as we have done for CellProfiler already, and write some instructions on the Wiki. Figure out how to remove users from the SVN repository and explain to Anne, and update Wiki.\
+\f0\fs24 \cf0 - Use CellVisualizer to poke around for samples with unusual measurement values, to find new phenotypes to train classifiers and identify genes in the human NIRHT data. \
+\
+- Set up an SVN repository for CellVisualizer, as we have done for CellProfiler already, and write some instructions on the Wiki. Figure out how to remove users from the SVN repository and explain to Anne, and update Wiki.\
 \
 - Learn CellVisualizer code from In Han, take over programming by the end of the summer, possibly supervise undergrads working on the project in the fall (or maybe summer, if some current undergrads want to do it and it seems feasible to have them help).\
 \

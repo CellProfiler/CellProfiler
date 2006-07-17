@@ -51,7 +51,7 @@ TotalNumberImageSets = length(tmp);
 TextTotalNumberImageSets = num2str(TotalNumberImageSets);
 %%% Ask the user to specify histogram settings.
 Prompts{1} = 'Enter the first image set to use for Histogram';
-Prompts{2} = ['Enter the last last image set to use for Histogram (the total number of image sets with data in the file is ',TextTotalNumberImageSets,').'];
+Prompts{2} = ['Enter the last image set to use for Histogram (the total number of image sets with data in the file is ',TextTotalNumberImageSets,').'];
 Prompts{3} = 'What color do you want this histogram to be?';
 Defaults{1} = '1';
 Defaults{2} = TextTotalNumberImageSets;
@@ -132,25 +132,13 @@ PlotBinLocations = FigureSettings{1};
 
 AxesHandles = findobj(h_Parent,'Tag','BarTag');
 for i = 1:length(AxesHandles)
-    if strcmp(get(get(AxesHandles(i),'children'),'type'),'line')
-        hold on
-        h2 = AxesHandles(i);
-        if strcmp(Flip,'AxesFlipped')
-            plot(h2,FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2,'tag',LineColor);
-        else
-            plot(h2,PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
-        end
-        
-        hold off
+    h2 = axes('Position',get(AxesHandles(i),'Position'));
+    if strcmp(Flip,'AxesFlipped')
+        plot(FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2,'tag',LineColor);
     else
-        h2 = axes('Position',get(AxesHandles(i),'Position'));
-        if strcmp(Flip,'AxesFlipped')
-            plot(FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2,'tag',LineColor);
-        else
-            plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
-        end
-        set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
-        set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top','YLim',get(AxesHandles(i),'YLim'));
+        plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2,'tag',LineColor);
     end
+    set(h2,'YAxisLocation','right','Color','none','ActivePositionProperty','Position','XTickLabel',[],'XTick',[],'YTickLabel',[],'YTick',[]);
+    set(h2,'XLim',get(AxesHandles(i),'XLim'),'Layer','top','YLim',get(AxesHandles(i),'YLim'));
     set(findobj(findobj('tag',LineColor),'type','line'),'color',LineColor);
 end

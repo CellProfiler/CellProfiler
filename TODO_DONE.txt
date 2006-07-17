@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun, 7/17/06) (Requested by Anne 7-11-06) - It doesn't make sense (I am pretty sure) to allow the user to choose "FileNamesText" when deciding how to label the histograms in the histograms data tool. So we should remove FileNamesText from the choices. We should leave FileNames as selectable. The reason the user is given the choice is because if you had used the Add Data tool you might have entered your own text data (like gene names) and so you might want to choose those instead of FileNames.
+=>Jun: Changes made to Histogram.m and CPcontrolhistogram.m. Also fixed problems with showing imported filenames when creating histogram and displaying titles and axes labels in "Add Control Histogram" button. 
+
 - (Rodrigo, 7/13/06) (Requested by Rodrigo) - Some corrections needed in the image tool window: 1. If the Image Tool window is opened and then the figure that had the image is closed, clicking on any button does nothing. 2. If the title of the image is too long, it can't be seen properly. 3. The title adds a '\' before any '_' in the image title. 4. When you open the image in a new window, the new figure has no name (title). 5. When you open the image in a new window, the colormap is not conserved, but is set to 'gray' instead.
 
 - (Rodrigo, 7/13/06) (Requested by Mike) - Add option to change colormap to image tool window.

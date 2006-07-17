@@ -1,5 +1,8 @@
 TODO
 
+
+- (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
+
 - (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
 DONE
@@ -8,7 +11,7 @@ DONE
 
 - (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 
 
-(7/11-7/14) - Accomplished
+(7/11-7/14) - Finished
 
 - Anne 7-11-06: Now that you are the expert on hacking image file formats!, could you see whether it is easy to extract certain information from the DIB image file header? Right now, in CPimread we have to stop processing and ask the user a few questions: pixel height and width, number of channels, bit depth, etc., but I am pretty sure this info must be stored in the image header somewhere. I guess google probably won't help much here, but possibly you (and Ray) can figure it out?
 

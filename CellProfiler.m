@@ -762,6 +762,8 @@ if Failed == 1
 else
     try
         handles.Settings.PixelSize = Settings.PixelSize;
+        handles.Preferences.PixelSize = Settings.PixelSize;
+        set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
     end
 
     handles.Current.NumberOfModules = 0;
@@ -2369,6 +2371,7 @@ else
     %%% Gets the user entry and stores it in the handles structure.
     UserEntry = get(handles.PixelSizeEditBox,'string');
     handles.Settings.PixelSize = UserEntry;
+    handles.Preferences.PixelSize = UserEntry;
     guidata(gcbo, handles);
 end
 

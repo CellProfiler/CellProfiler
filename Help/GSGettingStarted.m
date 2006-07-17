@@ -4,7 +4,10 @@ function GSGettingStarted
 % pipeline (from www.cellprofiler.org) and try it out. Or, you can build a
 % pipeline from scratch. A pipeline is a sequential set of individual image
 % analysis modules. See also Help (main menu of CellProfiler) and "?"
-% buttons in the main window.
+% buttons in the main window. 
+% To learn how to program in CellProfiler, see Help > DeveloperInfo.
+% To learn how to use a cluster of computers to process large batches 
+% of images, see Help > BatchProcessing.
 %
 % ************************   LOADING A PIPELINE   ************************
 %

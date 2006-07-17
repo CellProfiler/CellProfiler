@@ -136,11 +136,61 @@ for k = 1:ImageSets
         Measurements{k} = tmp{k}(:,FeatureNo);
     end
 end
+        
 
 %%% Determines whether any sample info has been loaded.  If sample
 %%% info is present, the fieldnames for those are extracted.
 ImportedFieldnames = fieldnames(handles.Measurements.Image);
-ImportedFieldnames = ImportedFieldnames(strncmpi(ImportedFieldnames,'Imported',8) == 1 | strncmpi(ImportedFieldnames,'Filename',8) == 1);
+
+%%% Finds fields in ImportedFieldnames that contain the string 'Description' 
+%%% which serves as a tag (created by LoadText.m) that the file was imported 
+%%% using the LoadText module or the AddData data tool. For each field containing
+%%% 'Description' (e.g. 'filenameDescription'), the substring preceding 'Description' 
+%%% is the actual file name (e.g. 'filename'). This file name is also itself 
+%%% a separate field in ImportedFieldnames. testmat is populated with these 
+%%% imported file names.
+testmat=[];
+for index=1:length(ImportedFieldnames)
+    str=ImportedFieldnames{index};
+    indexD=strfind(str, 'Description');
+    if ~isempty(indexD)
+        strtest=str(1:indexD-1);
+        equalstr=strtest;
+        %%% The testmat matrix cannot be populated unless all strings are
+        %%% the same length. All strings added are made to be 50 char long
+        %%% by appending trailing spaces to the original file name string.
+        for strind=1:50-length(strtest)
+            equalstr=[equalstr, ' '];   
+        end
+        testmat=[testmat;equalstr];
+    end
+end
+ 
+%%% testmat is converted to a cell array of strings to be the same format 
+%%% as ImportedFieldnames, removing all trailing spaces in each string
+if ~isempty(testmat)
+    testmat=cellstr(testmat);
+end
+
+%%% Creates a boolean matrix Importedmat in which the 1's mark the location
+%%% in ImportedFieldnames where an imported file name exists.
+Importedmat=[];
+for index1=1:length(ImportedFieldnames)
+    fieldmatch=0;
+    for index2=1:length(testmat)
+        if strcmp(ImportedFieldnames{index1},testmat{index2})
+            fieldmatch=1;
+        end
+    end
+    if fieldmatch
+        Importedmat=[Importedmat;1];
+    else
+        Importedmat=[Importedmat;0];
+    end
+end
+            
+        
+ImportedFieldnames = ImportedFieldnames(Importedmat == 1 | strcmp(ImportedFieldnames,'FileNames') == 1);
 if ~isempty(ImportedFieldnames)
     %%% Allows the user to select a heading from the list.
     [Selection, ok] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 400],...
@@ -150,6 +200,14 @@ if ~isempty(ImportedFieldnames)
     if ok ~= 0
         HeadingName = char(ImportedFieldnames(Selection));
         try SampleNames = handles.Measurements.Image.(HeadingName);
+            if iscell(SampleNames{1})    
+                CellArray=SampleNames;
+                %%% prevents displaying entire cell on histogram title, 
+                %%% only displays first entry in each cell
+                for count=1:length(CellArray)
+                    SampleNames{count}=CellArray{count}{1};
+                end
+            end
         catch SampleNames = handles.Pipeline.(HeadingName);
         end
     else

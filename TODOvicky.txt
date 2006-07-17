@@ -1,9 +1,12 @@
 TODO
 
-- (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 
-
+- (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
 DONE
+
+(7/17-7/17) Finished
+
+- (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 
 
 (7/11-7/14) - Accomplished
 

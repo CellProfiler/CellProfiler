@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo, 7/17/06) - In every module that loads files, if you browse... and then cancel, the pathname becomes 0. Also, the default directory in which the pick file/pathname window opens should be the last selected one.
+
+- (Rodrigo, 7/17/06) - Added keypressfcn to Add Modules window, such that it closes when user presses Esc.
+
 - (Jun, 7/17/06) (Requested by Anne 7-11-06) - It doesn't make sense (I am pretty sure) to allow the user to choose "FileNamesText" when deciding how to label the histograms in the histograms data tool. So we should remove FileNamesText from the choices. We should leave FileNames as selectable. The reason the user is given the choice is because if you had used the Add Data tool you might have entered your own text data (like gene names) and so you might want to choose those instead of FileNames.
 =>Jun: Changes made to Histogram.m and CPcontrolhistogram.m. Also fixed problems with showing imported filenames when creating histogram and displaying titles and axes labels in "Add Control Histogram" button. 
 

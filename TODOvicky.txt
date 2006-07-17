@@ -1,11 +1,10 @@
 TODO
 
-
-- (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
-
 - (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
 DONE
+
+- (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
 
 (7/17-7/17) Finished
 

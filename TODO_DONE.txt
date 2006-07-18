@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo, 7/18/06) (Requested by Anne 12-16-05) - Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example: handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}; for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray), handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2); end.
+Note: also made many other changes to the module, including the way data is retrieved, used, and stored, and improved error handling.
+
 - (Jun, 7/18/06) - Modify outdated error messages about not finding images or objects in the pipeline.
 =>Jun: Changes made to CPaverageimages.m, CPretrieveimage.m, SaveImages.m, and DefineGrid.m.
 

@@ -180,7 +180,7 @@ if strcmp(AutoOrManual,'Automatic')
 %%% For automatic mode, the previously identified objects are
 %%% retrieved from the handles structure.
     try OrigImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
-    catch error(['Image processing was canceled in the ', ModuleName, ' module because you specified automatic mode using the objects you called ', ObjectName, ' and these objects were not found by CellProfiler. Perhaps there is a typo.'])
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because you specified automatic mode using the objects you called "', ObjectName, '" and these objects were not found by CellProfiler. Please adjust your pipeline to produce the objects "', ObjectName, '" prior to this ', ModuleName, ' module.'])
     end
 elseif strcmp(AutoOrManual,'Manual')
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName);

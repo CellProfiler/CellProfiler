@@ -1,3 +1,18 @@
+Project (pending):
++ Major enhancements/restructuring of some data tools:
+- Combine code for Histograms (ISN'T This done already?)
+- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
+- (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
+- Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
+- (Requested by Anne 1-17-06) - Histogram data tool requests:
+* When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
+* I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+* Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
+* When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
+
+=================
+
+
 - Anne 7-12-06: The ExportData window needs a bit of redesign. The question Ignore NaN's should be a pulldown menu yes/no (just like the other questions) rather than a checkbox, because depending on how many objects you have (On my computer, this happens when i only have Image + Nuclei), it looks like "Ignore NaN's" is one of the measurements you can choose to export. Also, the pulldown menus have funny-colored corners rather than purple corners. Overall it seems kind of random and messy, so more ideas on how to make it easier to understand would be great. Keep in mind the window size changes depending on how many types of objects you have in the output file.
 =>Jun: Working 7/18/06-
 

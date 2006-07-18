@@ -56,17 +56,6 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 
 - (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
-Jun is pretty familiar with Histograms, so these might be projects she would like:
-- Combine code for Histograms (ISN'T This done already?)
-- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
-- (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
-- Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
-- (Requested by Anne 1-17-06) - Histogram data tool requests:
-* When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
-* I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
-* Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
-* When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
-
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 
 - (Requested by Anne 12-01-05) - Tile used to allow us to show text information loaded using LoadText. DisplayGridInfo does something similar, but would it be very hard to add this back to the Tile module? It's nice to have it in the same window because you can show/hide that text info in addition to show/hide the file names, etc.
@@ -102,6 +91,17 @@ PROJECTS, MOSTLY VISION/IMAGE ANALYSIS-RELATED:
 ++ (Requested by Anne 1-17-06) - We should make a new module to calculate the KS statistic for every image set. It would require notifying the software which images are controls (they can load this information using LoadText, as is done for the CalculateStatistics module), because this statistic compares the distribution of individual cell measures from each image to the distribution of individual cell measures from the control image(s). Once finished, we should see whether the calculated KS statistic produces a better Z' score than the 'percent above threshold' method for the BioImage cyto-nuc translocation assay. References: Chakravart LaR: Handbook of methods of applied statistics. Vol 1New york: John wiley, 1967:392-394; also Giuliano, Chen, Taylor, J Biomol Screening 2004; 9:557-568. See also Wilson, Si, Thompson, Smellie, Ashwell et al, J Biomol Screen 2005 or 2006 "Identification of a small molecule that induces mitotic arrest using s simplified high-content screening assay and data analysis method." because this has an example where KS statistics are calculated between several control images and this value is subtracted from the KS values for each image. Also, Smellie J Chem Inf Model 2005 or 2006.
 
 ++ (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
+
++ Major enhancements/restructuring of some data tools:
+- Combine code for Histograms (ISN'T This done already?)
+- (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
+- (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
+- Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
+- (Requested by Anne 1-17-06) - Histogram data tool requests:
+* When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
+* I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+* Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
+* When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
 
 + (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22. How about Fourier measures of shape? Is that a good idea?
 See also comments from Ray:

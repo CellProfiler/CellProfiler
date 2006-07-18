@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun, 7/18/06) - Modify outdated error messages about not finding images or objects in the pipeline.
+=>Jun: Changes made to CPaverageimages.m, CPretrieveimage.m, SaveImages.m, and DefineGrid.m.
+
+- (Jun, 7/18/06) (Requested by Anne 7-13-06) - We no longer allow the user to import data permanently into the handles structure so this part [in CellProfiler.m] is no longer ever applicable. Besides, the LoadText module and AddData data tool use the word "Description" to denote this user-added data rather than the word "Imported". So we think it is safe to remove this code permanently.
+=>Jun: Changes made to CellProfiler.m. Removed code and tested for problems. 
+
 - (Rodrigo, 7/17/06) - In every module that loads files, if you browse... and then cancel, the pathname becomes 0. Also, the default directory in which the pick file/pathname window opens should be the last selected one.
 
 - (Rodrigo, 7/17/06) - Added keypressfcn to Add Modules window, such that it closes when user presses Esc.

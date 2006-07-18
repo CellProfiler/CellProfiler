@@ -1,8 +1,9 @@
 CURRENTLY WORKING ON:
 
+- (Requested by Anne 12-09-05) - Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
 
-- Mike - Add option to change colormap to image tool window
-*like, with the predetermined ones that come with matlab? yes
+
+OTHER TODO'S:
 
 - (Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?  Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
 Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir), lots of bad things happen.
@@ -14,19 +15,23 @@ Then, real error occurs on next module, while at PutModuleInListBox.
 I think there is a programming error by in the loop over all the modules that happens in the Callback, just after calling Helper.
 Also, it might be good to make the error check at line 687 to happen through all the modules and not just the first one.
 
-
-
-OTHER TODO'S:
-
-- (Anne 3-21-06) - When DIB images are loaded, the popup window asking you about the size, etc of the images is gray.
-*can I make an entirely new subfunction?
-
-- (Requested by Anne 12-09-05)-- Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
-
+- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
 
 
 DONE (committed):
 
+- (Rodrigo, 7/18/06) (Requested by Anne 12-16-05) - Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example: handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}; for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray), handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2); end.
+
+- (Rodrigo, 7/17/06) (Requested by Rodrigo) - In every module that loads files, if you browse... and then cancel, the pathname becomes 0. Also, the default directory in which the pick file/pathname window opens should be the last selected one.
+
+- (Rodrigo, 7/17/06) (Requested by Rodrigo) - Added keypressfcn to Add Modules window, such that it closes when user presses Esc.
+
+- (Rodrigo, 7/13/06) (Requested by Rodrigo) - Some corrections needed in the image tool window: 1. If the Image Tool window is opened and then the figure that had the image is closed, clicking on any button does nothing. 2. If the title of the image is too long, it can't be seen properly. 3. The title adds a '\' before any '_' in the image title. 4. When you open the image in a new window, the new figure has no name (title). 5. When you open the image in a new window, the colormap is not conserved, but is set to 'gray' instead.
+
+- (Rodrigo, 7/13/06) (Requested by Mike) - Add option to change colormap to image tool window.
+Note: The tool allows the user to change the colormap of the current figure or all display figures, and can choose among any predetermined colormap, the default ones set by the user, or open the editor to create a personalized one if running on developer's version.
+
+- (Rodrigo, 7/11/06) - (Requested by Anne 2-24-06) - In LoadImages, provide more instruction in the help on how to use regular expressions. For example, if you had files named like xxx01xxx, except 01 is anywhere from 01 to 99, how would you choose just files 01-12? Also, I guess .* is a wild card of any length. Maybe we can find nice instructions online somewhere.
 
 - (Rodrigo 7/10/06) - (Requested by Anne 2-23-06) - In Load Single Image, when you browse to choose the image file, it does not seem to go to the default image folder, though i think when it's running it assumes that this is the folder where the image is located.
 
@@ -62,5 +67,21 @@ Note: Most bugs were fixed, along with format, but these still remain: 1. If the
 
 DONE (not yet committed):
 
-
 - Nothing
+
+NOTICED BUGS AND NEW IDEAS:
+
+IdentifySecondary Display: the word 'objects' on the bottom is not displayed correctly.
+MeasureIntensityImage Display: information appears over one of the displayed images. Also, RGB bad.
+MeasureObjectAreaShape Display: "Cytoplasm" isnt displayed entirely. Also, not correct columns.
+MeasureObjectIntensity Display: Same as above
+MeasureTexture Display: format is not consistent
+OverlayOutlines Display: cannot see a button or axes. RGB bad.
+Crop Display: RGB bad.
+CPcd help error
+Why does CPimread have 2 parts of code that are basically the same?
+SelectDisplayWindow - Cancel is bad. Select All, Deselect All, Invert Selection options!
+prevent CellProfiler to run while its open
+
+Said - InteractiveZoom - when you double click different images it gives an error.
+Said - Set Preferences doesnt remember current settings

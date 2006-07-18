@@ -1,20 +1,29 @@
 - Anne 7-12-06: The ExportData window needs a bit of redesign. The question Ignore NaN's should be a pulldown menu yes/no (just like the other questions) rather than a checkbox, because depending on how many objects you have (On my computer, this happens when i only have Image + Nuclei), it looks like "Ignore NaN's" is one of the measurements you can choose to export. Also, the pulldown menus have funny-colored corners rather than purple corners. Overall it seems kind of random and messy, so more ideas on how to make it easier to understand would be great. Keep in mind the window size changes depending on how many types of objects you have in the output file.
+=>Jun: Working 7/18/06-
+
+Jun 7/18/06: Modify outdated error messages about not finding images or objects in the pipeline.
+=>Jun: Changes made 7/18/06. CPaverageimages.m, CPretrieveimage.m, SaveImages.m, and DefineGrid.m committed on 7/18/06.
+
+- Anne 7-13-06: We no longer allow the user to import data permanently
+into the handles structure so this part [in CellProfiler.m] is no longer ever applicable. Besides, the LoadText module and AddData data tool use the word "Description" to denote this user-added data rather than the word
+"Imported". So we think it is safe to remove this code permanently.
+=>Jun: Changes made 7/17/06-7/18/06. Removed code and tested for problems. CellProfiler.m committed on 7/18/06.
 
 - Anne 7-11-06: It doesn't make sense (I am pretty sure) to allow the user to choose "FileNamesText" when deciding how to label the histograms in the histograms data tool. So we should remove FileNamesText from the choices. We should leave FileNames as selectable. The reason the user is given the choice is because if you had used the Add Data tool you might have entered your own text data (like gene names) and so you might want to choose those instead of FileNames.
-=>Jun: Changes made 7/12/06-7/17/06. Also fixed problems with showing imported filenames when creating histogram and displaying titles and axes labels in "Add Control Histogram" button. Histogram.m in DataTools and CPcontrolhistogram.m in CPsubfunctions committed on 7/17/06.
+=>Jun: Changes made 7/12/06-7/17/06. Also fixed problems with showing imported filenames when creating histogram and displaying titles and axes labels in "Add Control Histogram" button. Histogram.m and CPcontrolhistogram.m committed on 7/17/06.
 
 - Anne 7-11-06: The Crop module, in mouse/ellipse mode, does not visibly mark the points that you have clicked. It's kind of strange because I think at one point it did this successfully, and the mouse/rectangle mode works just fine, creating little star marks wherever you have clicked.
-=>Jun: Changes made 7/12/06. Also added check for correct number of mouse clicks, allowing user to try again. Crop.m in Modules committed on 7/12/06.
+=>Jun: Changes made 7/12/06. Also added check for correct number of mouse clicks, allowing user to try again. Crop.m committed on 7/12/06.
 
 - Anne 7-11-06: In the Rotate module, at this line:
         if length(x) < 2
             error(['Image processing was canceled in the ', ModuleName, ' module because you must click on at least two points then press enter.'])
         end
 Instead of producing an error and canceling out, the module should ask the user to start over again - that is, getpts should be repeated from scratch. I imagine this would use the "while" function.
-=>Jun: Changes made 7/11/06-7/12/06.  Rotate.m in Modules committed on 7/12/06.
+=>Jun: Changes made 7/11/06-7/12/06.  Rotate.m committed on 7/12/06.
 
 - Anne 7-7-06: the histogram flipping looks great and hopefully will make the reviewers of our paper happy! I only noticed one small problem, when you plot something with the axes flipped and then add a control histogram, the control histogram is not flipped but is in the normal orientation instead. It would be a reasonable solution to just disable/remove the button when in flipped mode, because I don't think people will use that combination very often. But if it's easy to fix, go ahead. Also, the button Export Data To MATLAB should be non visible when running the compiled version. I don't know how we normally disable functions in the compiled version, but Mike can tell you.
-=>Jun: Changes made 7/10/06-7/11/06. "Add a Control Histogram" button was fixed. Histogram.m in DataTools and CPcontrolhistogram.m in CPsubfunctions committed on 7/11/06.
+=>Jun: Changes made 7/10/06-7/11/06. "Add a Control Histogram" button was fixed. Histogram.m and CPcontrolhistogram.m committed on 7/11/06.
 
 - Anne 6-21-06: We would like to run some tests to try to improve CellProfiler's speed: 
 * Change CPimread to put the images in single format rather than double. We hypothesize that subsequent processing in single format will be faster. We are pretty certain that we won't lose any precision, because we are using 12-bit and occasionally 16-bit images, whereas single precision already has more than 20-bit data storage capability; therefore we think double precision is overkill. However, we don't know whether all of the matlab functions will work on single format numbers, so we should run a long test pipeline to see if any errors result. It's also possible that many MATLAB functions may process single precision numbers by converting to double and back again, which would make single precision numbers be slower! Run comparisons of how long processing takes in double and in single format to help us decide whether it's worth it to switch to single.
@@ -25,12 +34,12 @@ Instead of producing an error and canceling out, the module should ask the user 
 =>Jun: Changes made 6/30/06. CellProfiler.m committed on 6/30/06.
 
 (Anne 6/27/06): Need to add option to Histogram menu to flip x and y axes when plotting graphs.
-=>Jun: Changes made 6/27/06-6/30/06. Histogram.m in DataTools committed on 6/30/06.
+=>Jun: Changes made 6/27/06-6/30/06. Histogram.m committed on 6/30/06.
 
 - Anne 6-20-06: Let's make a more informative error window that tells the user possible reasons why the image might not be found:
 Question:"I have been trying to persuade CellProfiler to save images generated by tiled, but every time SaveImages complains about not being able to find the input image. I set this to be the output image of Tiled. I am running cellprofiler on MacOS 10.4.6. Am I missing something or is this a known bug ... "
 Answer: "The full tiled image is only made on the final cycle, so you must set the SaveImages module to save on "Last Cycle" instead of All. That should take care of your problem!"
-=> Jun: Changes made 6/23/06-6/27/06. Processing will continue when user saves tiled image(s) on cycles other than the last. Instead of an error, user gets warning. Error still occurs for images not existent in pipeline. SaveImages.m and Tile.m in Modules committed on 6/30/06.
+=> Jun: Changes made 6/23/06-6/27/06. Processing will continue when user saves tiled image(s) on cycles other than the last. Instead of an error, user gets warning. Error still occurs for images not existent in pipeline. SaveImages.m and Tile.m committed on 6/30/06.
 
 - (Anne 6/12/06) - LoadSingleImage seems to spit its text display into other windows, depending on what you have open and are looking at. Maybe this a fluke, transient thing but perhaps we can make it put its text in the proper window more consistently? If we fix it for this module, make sure LoadImages is also working similarly.
-=> Jun: Changes made 6/22/06. LoadImages.m and LoadSingleImage.m in Modules committed on 6/30/06.
+=> Jun: Changes made 6/22/06. LoadImages.m and LoadSingleImage.m committed on 6/30/06.

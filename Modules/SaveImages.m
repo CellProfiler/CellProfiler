@@ -234,7 +234,7 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
             if ~strcmp(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
                 SaveWhen='Last cycle';  
                 if SetBeingAnalyzed == handles.Current.NumberOfImageSets    %if current cycle is last cycle
-                    warndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
+                    CPwarndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
                 end
             end
             

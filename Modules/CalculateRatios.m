@@ -12,10 +12,18 @@ function handles = CalculateRatios(handles)
 % calculate a ratio. Resulting ratios can also be used to calculate other
 % ratios and be used in Classify Objects.
 %
-% This module currently works on an object-by-object basis (it calculates
-% the ratio for each object) but can also calculate ratios for measurements
-% made for entire images (but only for measurements produced by the
-% Correlation module).
+% This module can work on an object-by-object basis (calculating the ratio
+% for each object), on an image-by-image basis, or it can also calculate
+% ratios for object measurements by whole image measurements (to allow
+% normalization). Be careful with your denominator data. Any 0's found in
+% it will be changed to the average of the rest of the data. If all
+% denominator data is 0, all ratios will be set to 0 too.
+%
+% The ratios will be stored under the numerator object data. If the
+% numerator is an object, data will be under the name Ratio. If the
+% numerator is an image, data will be under the name SingleRatio or
+% MultipleRatio depending on whether the denominator is another image or an
+% object, respectively.
 %
 % Feature Number:
 % The feature number specifies which features from the Measure module(s)
@@ -51,11 +59,11 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use for the numerator (The option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which object would you like to use for the numerator?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
-NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
@@ -64,22 +72,22 @@ NumObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
 %inputtypeVAR02 = popupmenu custom
-NumMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+Measure{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
-NumFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
+FeatureNumber{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-NumImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Which object would you like to use for the denominator (The option IMAGE currently only works with Correlation measurements)?
+%textVAR05 = Which object would you like to use for the denominator?
 %choiceVAR05 = Image
 %infotypeVAR05 = objectgroup
 %inputtypeVAR05 = popupmenu
-DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which category of measurements would you like to use?
 %choiceVAR06 = AreaShape
@@ -88,16 +96,16 @@ DenomObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %choiceVAR06 = Neighbors
 %choiceVAR06 = Texture
 %inputtypeVAR06 = popupmenu custom
-DenomMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+Measure{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR07 = 1
-DenomFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
+FeatureNumber{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR08 = imagegroup
 %inputtypeVAR08 = popupmenu
-DenomImage = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = Do you want the log (base 10) of the ratio?
 %choiceVAR09 = No
@@ -114,34 +122,102 @@ drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-if strcmp(NumMeasure,'Intensity') || strcmp(NumMeasure,'Texture')
-    NumMeasure = [NumMeasure, '_', NumImage];
-end
-
-if strcmp(DenomMeasure,'Intensity') || strcmp(DenomMeasure,'Texture')
-    DenomMeasure = [DenomMeasure, '_', DenomImage];
+% Get the correct fieldname where measurements are located
+OrigMeasure = Measure;
+for i=1:2
+    CurrentMeasure = Measure{i};
+    CurrentObjectName = ObjectName{i};
+    CurrentImage = Image{i};
+    switch CurrentMeasure
+        case 'AreaShape'
+            if strcmp(CurrentObjectName,'Image')
+                CurrentMeasure = '^AreaOccupied_.*Features$';
+                Fields = fieldnames(handles.Measurements.Image);
+                TextComp = regexp(Fields,CurrentMeasure);
+                A = [];
+                for k = 1:length(TextComp)
+                    if isempty(TextComp{k})
+                        A(end+1) = 0;
+                    else
+                        A(end+1) = 1;
+                    end
+                end
+                try
+                    CurrentMeasure = Fields{find(A==1)+1};
+                catch
+                    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure{i}, ', was not available for ', ObjectName{i}]);
+                end
+            end
+        case 'Intensity'
+            CurrentMeasure = ['Intensity_' CurrentImage];
+        case 'Neighbors'
+            CurrentMeasure = 'NumberNeighbors';
+        case 'Texture'
+            CurrentMeasure = ['Texture_[0-9]*[_]?' CurrentImage '$'];
+            Fields = fieldnames(getfield(getfield(handles,'Measurements'),CurrentObjectName));
+            TextComp = regexp(Fields,CurrentMeasure);
+            A = [];
+            for k = 1:length(TextComp)
+                if isempty(TextComp{k})
+                    A(end+1) = 0;
+                else
+                    A(end+1) = 1;
+                end
+            end
+            try
+                CurrentMeasure = Fields{find(A==1)};
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure{i}, ', was not available for ', ObjectName{i}]);
+            end
+    end
+    Measure{i} = CurrentMeasure;
 end
 
 % Get measurements
-NumeratorMeasurements = handles.Measurements.(NumObjectName).(NumMeasure){SetBeingAnalyzed};
-NumeratorMeasurements = NumeratorMeasurements(:,NumFeatureNumber);
-DenominatorMeasurements = handles.Measurements.(DenomObjectName).(DenomMeasure){SetBeingAnalyzed};
-DenominatorMeasurements = DenominatorMeasurements(:,DenomFeatureNumber);
-
-if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
-    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',NumObjectName,' and ',DenomObjectName,' do not have the same object count.']);
+try
+    NumeratorMeasurements = handles.Measurements.(ObjectName{1}).(Measure{1}){SetBeingAnalyzed};
+    NumeratorMeasurements = NumeratorMeasurements(:,FeatureNumber{1});
+catch
+    error(['Image processing was canceled in the ', ModuleName, ' module because an error ocurred when retrieving the numerator data. Either the category of measurement you chose, ', Measure{1},', was not available for ', ObjectName{1},', or the feature number, ', num2str(FeatureNumber{1}), ', exceeded the amount of measurements.']);
+end
+try
+    DenominatorMeasurements = handles.Measurements.(ObjectName{2}).(Measure{2}){SetBeingAnalyzed};
+    DenominatorMeasurements = DenominatorMeasurements(:,FeatureNumber{2});
+catch
+    error(['Image processing was canceled in the ', ModuleName, ' module because an error ocurred when retrieving the denominator data. Either the category of measurement you chose, ', Measure{2},', was not available for ', ObjectName{2},', or the feature number, ', num2str(FeatureNumber{2}), ', exceeded the amount of measurements.']);
 end
 
-NewFieldName = [NumObjectName,'_',NumMeasure(1),'_',num2str(NumFeatureNumber),'_dividedby_',DenomObjectName,'_',DenomMeasure(1),'_',num2str(DenomFeatureNumber)];
+% Check size of data
+if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
+    if strcmp(ObjectName{1},'Image')
+        NumeratorMeasurements = NumeratorMeasurements*ones(size(DenominatorMeasurements));
+    elseif strcmp(ObjectName{2},'Image')
+        DenominatorMeasurements = DenominatorMeasurements*ones(size(NumeratorMeasurements));
+    else
+    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',ObjectName{1},' and ',ObjectName{2},' do not have the same object count.']);
+    end
+end
+
+% Make measurements and store in handle structure
+DenominatorMeasurements(find(DenominatorMeasurements==0)) = NaN;
+DenominatorMeasurements(find(isnan(DenominatorMeasurements))) = nanmean(DenominatorMeasurements);
 FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
     FinalMeasurements = log10(FinalMeasurements);
 end
 if isnan(FinalMeasurements)
-    FinalMeasurements=0;
+    FinalMeasurements(:)=0;
 end
-
-handles = CPaddmeasurements(handles,NumObjectName,'Ratio',NewFieldName,FinalMeasurements);
+NewFieldName = [ObjectName{1},'_',Measure{1}(1),'_',num2str(FeatureNumber{1}),'_dividedby_',ObjectName{2},'_',Measure{2}(1),'_',num2str(FeatureNumber{2})];
+if strcmp(ObjectName{1},'Image')
+    if length(FinalMeasurements)==1
+        handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',NewFieldName,FinalMeasurements);
+    else
+        handles = CPaddmeasurements(handles,ObjectName{1},'MultipleRatio',NewFieldName,FinalMeasurements);
+    end
+else
+    handles = CPaddmeasurements(handles,ObjectName{1},'Ratio',NewFieldName,FinalMeasurements);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -158,35 +234,43 @@ if any(findobj == ThisModuleFigureNumber)
     % Title
     uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
         'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
-        'fontsize',FontSize,'fontweight','bold','string',sprintf('Average ratio features, cycle #%d',handles.Current.SetBeingAnalyzed),'UserData',handles.Current.SetBeingAnalyzed);
+        'fontsize',FontSize,'fontweight','bold','string',sprintf('Average ratio features, cycle #%d',SetBeingAnalyzed),'UserData',SetBeingAnalyzed);
     
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == handles.Current.StartingImageSet
         
         % Text for Name of measurement
-        DisplayName = [NumObjectName ' ' handles.Measurements.(NumObjectName).([NumMeasure 'Features']){NumFeatureNumber} ' in ' NumImage ...
-            ' divided by ' DenomObjectName ' ' handles.Measurements.(DenomObjectName).([DenomMeasure 'Features']){DenomFeatureNumber} ' in ' DenomImage];
+        if strcmp(OrigMeasure{1},'Intensity') || strcmp(OrigMeasure{1},'Texture')
+            DisplayName1 = [ObjectName{1} ' ' handles.Measurements.(ObjectName{1}).([Measure{1} 'Features']){FeatureNumber{1}} ' in ' Image{1}];
+        else
+            DisplayName1 = [ObjectName{1} ' ' handles.Measurements.(ObjectName{1}).([Measure{1} 'Features']){FeatureNumber{1}}];
+        end
+        if strcmp(OrigMeasure{2},'Intensity') || strcmp(OrigMeasure{2},'Texture')
+            DisplayName2 = [ObjectName{2} ' ' handles.Measurements.(ObjectName{2}).([Measure{2} 'Features']){FeatureNumber{2}} ' in ' Image{2}];
+        else
+            DisplayName2 = [ObjectName{2} ' ' handles.Measurements.(ObjectName{2}).([Measure{2} 'Features']){FeatureNumber{2}}];
+        end
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.9 1 0.04],...
             'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
-            'fontsize',FontSize,'fontweight','bold','string',DisplayName,'UserData',handles.Current.SetBeingAnalyzed);
+            'fontsize',FontSize,'fontweight','bold','string',[DisplayName1 ' divided by ' DisplayName2],'UserData',SetBeingAnalyzed);
 
         % Text for Number of objects
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
             'HorizontalAlignment','left','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
-            'fontsize',FontSize,'fontweight','bold','string','Number of objects:','UserData',handles.Current.SetBeingAnalyzed);
+            'fontsize',FontSize,'fontweight','bold','string','Number of objects:','UserData',SetBeingAnalyzed);
 
         % Text for Average Ratio
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.75 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-            'fontsize',FontSize,'fontweight','bold','string','Average Ratio:','UserData',handles.Current.SetBeingAnalyzed);
+            'fontsize',FontSize,'fontweight','bold','string','Average Ratio:','UserData',SetBeingAnalyzed);
     end
     
     % Number of objects
     uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.8 0.1 0.03],...
         'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...
-        'fontsize',FontSize,'string',num2str(length(FinalMeasurements)),'UserData', handles.Current.SetBeingAnalyzed);
+        'fontsize',FontSize,'string',num2str(length(FinalMeasurements)),'UserData',SetBeingAnalyzed);
 
     % Average Ratio
     uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.75 0.1 0.03],...
         'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...
-        'fontsize',FontSize,'string',sprintf('%0.4f',mean(FinalMeasurements)),'UserData', handles.Current.SetBeingAnalyzed);
+        'fontsize',FontSize,'string',sprintf('%4.2f',mean(FinalMeasurements)),'UserData',SetBeingAnalyzed);
 end

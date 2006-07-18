@@ -35,7 +35,7 @@ if strcmpi(Mode,'DoNow') == 1
     fieldname = ['FileList', ImageName];
     try FileList = handles.Pipeline.(fieldname);
     catch
-        error(['Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+        error(['Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) could not find the input image. CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the CPaverageimages subfunction.'])
     end
     %%% Calculates the mean image. Initializes the variable.
     TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
@@ -105,7 +105,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
             %%% that an error was produced because of its try/catch
             %%% loop and breaks out of the image analysis loop without
             %%% attempting further modules.
-            error(['Image processing was canceled because the average function (which is used by the Average and Correct Illumination modules) could not find the input image.  It was supposed to be named ', ImageName, ' but an image with that name does not exist.  Perhaps there is a typo in the name.'])
+            error(['Image processing was canceled because the average function (which is used by the Average and Correct Illumination modules) could not find the input image.  CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the average function.'])
         end
         %%% Retrieves the current image.
         OrigImage = handles.Pipeline.(fieldname);

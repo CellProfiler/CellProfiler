@@ -116,7 +116,7 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 - (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
-- (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters.
+- (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters and talk to Adam. We will probably put this tool in CellVisualizer instead.
 
 - (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
@@ -144,94 +144,51 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 -(Mike 11/14 This idea was shot down a long time ago because of all the issues with popup menus, maybe in the future, but definitely not before release) (Requested by Color 11-08-5) - It would be nice to be able to some variables in multiple groups for menus.  For instance, we could put images from load modules in both imagegroup and a new origimagegroup.  That way for the modules that require and original image (such as for the filenames in SaveImages) would only have the original images from load modules instead of everything.
 
-- (Requested by Anne 11-01-05) - There are many ways to measure the best focus of an image. Right now our MeasureSaturationBlur module has only one of these methods. Implement many of the focus methods in this paper, and have the 'best'/fastest one be the default: Sun, Duthaler, Nelson, Microscopy Research & Technique 2004 (Anne has the pdf of this).
 
 
-
-- (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
 - (Requested by Colin) NOT SURE IF THIS IS PRACTICAL - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
 
 
 
-- (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ can be run in CellProfiler??  No idea how complicated this would be.
-
->>> See practice ImageJ integration ideas below (two of them). Build a wrapping function that is a CP module which allows using ImageJ as a back end.
 
 
+PROJECTS, MOSTLY VISION/IMAGE ANALYSIS-RELATED:
+-----------------------------------------------
++++ (Requested by Anne WOULD BE REALLY HELPFUL FOR OUR WORM PROJECTS, WHICH START IN AUGUST!) - Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5
 
-- (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
+++ (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
++++ (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
++++ (Requested by Anne 11-02-05) - The paper Malladi & Sethian PNAS 1995 has what looks like a really nice filter that makes objects more obvious in images with lots of noise.   It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
-- (Requested by Anne 11-02-05) - The paper Malladi & Sethian PNAS 1995 has what looks like a really nice filter that makes objects more obvious in images with lots of noise.   It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
++++ (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
 
++++ (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.
 
++++ Write algorithms to compare hand-traced results to CellProfiler results quantitatively, then apply them to our hand-traced data sets. [2 parts: 1) segment manual images.  2) match object to object, 3) signed distance transfer]
 
-- (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
++++ Allow batches of different settings to be run and their results compared 
 
++++ Allow automatic selection of settings based on hand-traced images
 
++++ Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original. 
 
-- (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.
-
-
-
-- (Requested by Anne 10-31-05) - Add a nice alignment (image registration) algorithm for ImageJ that can be found at: http://bigwww.epfl.ch/algorithms.html
-Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the same as the algorithm we already have in Align.m!
-
-  - Write algorithms to compare hand-traced results to CellProfiler
-
-       results quantitatively, then apply them to our hand-traced data
-
-       sets. [2 parts: 1) segment manual images.  2) match object to object, 
-
-	 3) signed distance transfer]
-
-
-
-     - Allow batches of different settings to be run and their results
-
-       compared 
-
-
-
-     - Allow automatic selection of settings based on hand-traced images
-
-
-
-     - Get someone to Hand-outline a second set of images to compare
-
-       to Chris' set. 
-
-
-
-     - Make separate Identify Secondary modules: one for bright lines
-
-       and one for dark lines between objects.  Also try watershedding
-
-       the gradient image rather than the original. 
-
-
-
-
-
-- (Requested by Anne 10-13-05) - There is a fairly simple routine in Janssens, et al., Dev Genes Evol 2005 (215:374-381) for drosophila cells in embryos. It might be fun to implement this routine into a CP pipeline.
-
-
-- (Requested by Anne 11-03-05) - There is a paper: Kam, Bioimaging 1998 on line integration and deconvolution of DIC images which would be a cool filter to implement that might allow people to analyze DIC images.
-
++ (Requested by Anne 10-13-05) - There is a fairly simple routine in Janssens, et al., Dev Genes Evol 2005 (215:374-381) for drosophila cells in embryos. It might be fun to implement this routine into a CP pipeline.
 
 +++ (Requested by Anne 8-23-05) - Try to get yeast identification working for phase contrast images - we set up something for SErge Pelet, but haven't really gone at this application in a systematic way - a lot of people want this and I think it's doable but we just haven't put in the effort. IdentifyPrimYeastPhase was one attempt, but it's very empirical and not very adjustable for other images. In fact, it doesn't even work well at the moment for the original images, from Ben 03_25_2005.  Check into the literature for better methods or try to get that method working. Not sure if these references are for fluorescence or phase images: SCMD: Saccharomyces cerevisiae Morphological Database. Nucleic Acids Res. 2004 Jan 1;32 Database issue:D319-22. PMID: 14681423. Perhaps more promising is the paper Coelho, M, Ferreira et al, Applied Microbial and Cell Physiol, 2004, where they mention having Matlab code to accomplish yeast cell segmentation (Anne has this paper).
-
-+++ (Requested by Anne WOULD BE REALLY HELPFUL FOR OUR WORM PROJECTS, WHICH START IN AUGUST!) - Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5
 
 +++  (Requested by Anne) -Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
 +++  (Requested by Anne) -Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
 
-+++  (Requested by Anne) -Implement the algorithm for identifying objects based on granulometry from Prodanov, Heeroma, and Marani, J Neuroscience Methods 2005. The code may be available from the authors directly, or supplemental journal data, or from ImageJ. This might be a good practice to build an interface which allows ImageJ routines to be run within CellProfiler.
++++ (Requested by Anne 9-28-05) - Build some kind of module that allows interfacing with ImageJ so that routines built for ImageJ (open-source, written in Java) can be run in CellProfiler??  In other words, CellProfiler would use ImageJ as a backend. No idea how complicated this would be. See practice ImageJ integration ideas below (two of them):
+* Simplest: Add a nice alignment (image registration) algorithm from ImageJ that can be found at: http://bigwww.epfl.ch/algorithms.html, which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the same as the algorithm we already have in Align.m!
+* Implement the algorithm for identifying objects based on granulometry from Prodanov, Heeroma, and Marani, J Neuroscience Methods 2005. The code may be available from the authors directly, or supplemental journal data, or from ImageJ.
+* If we want to extend CP to analyze 3D images, there is a good example available here: Gue, Messaoudi, Sun, Boudier Cytometry 2005 on Smart 3D-FISH. It's available as an imageJ plug in.
 
-+++ (Requested by Anne) - Make modules to identify objects in transmitted light/DIC images. Potentially useful references: Heise, Sonnleitner, Klement, Microsc Research & Technique 66:312-320 (2005).  This paper looks like it has a few options for ways to pre-process DIC images to end up with images that look more like fluorescence images which can then be processed using our normal Identify algorithms.
++++ (Requested by Anne) - Make modules to identify objects in transmitted light/DIC images. Potentially useful references: Heise, Sonnleitner, Klement, Microsc Research & Technique 66:312-320 (2005).  This paper looks like it has a few options for ways to pre-process DIC images to end up with images that look more like fluorescence images which can then be processed using our normal Identify algorithms. This one might also help: Kam, Bioimaging 1998 on line integration and deconvolution of DIC images which would be a cool filter to implement that might allow people to analyze DIC images.
 
 ++ (Requested by Anne) - Align/resize a stack of images (like yeast plates). See Matlab demo on image registration.
 
@@ -248,11 +205,11 @@ Which is referenced in Sage IEEE 2005 as one of the best. Make sure it isn't the
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
 
-+++ (Requested by Anne) - If we want to extend CP to analyze 3D images, there is a good example available here: Gue, Messaoudi, Sun, Boudier Cytometry 2005 on Smart 3D-FISH. It's available as an imageJ plug in so it might be good as a practice to integrate ImageJ and CP.
-
 ++ (Requested by Anne) - Implement the cubic B-spline illumination correction method in Wahlby, Anal Cell Pathol 2002 p. 101. Its use is described in Xiong Cytometry 2006 (Anne has these articles in pdf format), and their source code (in C++) is available upon request. This seems like it would fit very nicely as another method (the variable where we normally choose Fit polynomial, or smooth by a particular artifact width).
 
 +++ (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
+
+++ (Requested by Anne 11-01-05) - There are many ways to measure the best focus of an image. Right now our MeasureSaturationBlur module has only one of these methods. Implement many of the focus methods in this paper, and have the 'best'/fastest one be the default: Sun, Duthaler, Nelson, Microscopy Research & Technique 2004 (Anne has the pdf of this).
 
 +++ (Requested by Anne) - RAY PROBABLY HAS ALREADY ACCOMPLISHED THIS WITH BELIEF PROPAGATION: Improve foreground/background determination for the IdentifySecPropagate module. Ask Ray for advice. Here is one idea:
 Make the background correction based on Each image (rather than All images) a little more sophisticated as follows: Cell segmentation and llumination correction can be made simultaneously for best result.  The usual procedure is as follows (the technique is called Expectation Maximization segmentation):

@@ -1,5 +1,25 @@
 TODO
 
+- Anne 7-12-06 (GOES WITH Mike 7-11-06): I added a new thresholding method to CPthreshold sbufunction, called Background. I have adjusted the help in IdentifyPrimAutomatic to describe this new method, and I have added Background Global to this list of choices selectable within IdentifyPrimAutomatic. There are several things to be done, though:
+(1) I got it working only for the one combination I was using, which did not require any cropping. Make sure that using the Background Global option does the correct thing if you previously crop the image in a circle shape. When determining a threshold, CPthreshold should ignore parts of the image that have been cropped away, which have the value zero. This is why CPthreshold goes looking in the handles for an image called CropMaskBlabla. Right now, we are pretty sure CPthreshold is a bit of a mess in this regard. Some combinations of options work fine but others don't. So (see Mike's 7-11 request) this whole process needs some overhauling.
+(2) Right now Background method only works in global mode, because if you choose Background adaptive, it is not sure how to deal with a cropmask (due to the block processing).
+(3) Every module that uses thresholding will need to have this option added to its choiceVAR's and also have the help updated to include the description of this new option.
+
+- Mike 7-11-06 (GOES WITH Anne 7-12-06): If using a cropped image, Identify modules use the crop mask when it calls CPthreshold to throw out things that have been cropped out. For instance, if you crop out a circle, you don't want to include anything outside of the circle since this will give a bad threshold. However, this fails when you want to do Adaptive Thresholding since the image is broken in to blocks before it produces a threshold, and the crop mask is the size of the original image. We want CPthreshold to be smart about adaptive thresholding, and if there is a cropmask in the handles, it should pad that image the same way the original image is padded and then sent to CPgraythresh.
+
+OUTLINE OF ISSUES
+-Circle Cropped Images
+	- CPthreshold
+		-throw out anything outside of the circle
+		ALSO CONSIDER...
+			-Adaptive thresholding (image is broken into blocks)
+				-if there is a cropmask in handles, pad image the way the orig is, 					and send to CPgraythresh.
+			-Background Global
+				-make sure it works for circle cropped images
+				-look in handles for cropmaskblablah
+			-Background Adaptive
+				-doesnt knwo what to do
+			 
 - (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
 DONE

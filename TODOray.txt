@@ -1,3 +1,5 @@
+- (Anne 7/18/06) - When we run large image sets, we usually run an illumination correction pipeline. It would be nice if this pipeline would calculate a suggested 'minimum allowable threshold', to be used in the IdentifyPrim and IdentifySec modules. Right now, we choose it empirically. Actually, displaying/saving a histogram of pixel intensity values across the entire image set would be useful too. Perhaps this will be built into the CorrectIllumCalc_New by Ray, rather than requiring a separate module.
+
 - decide on what normalization is appropriate and build a tool in CellVisualizer to do it so we can feed normalized data into the database.  Note: we have usually been smoothing the pattern across the slide overall. We should also talk to  Robert to figure out the pattern of the printhead and then look at non-smoothed data in relation to printhead position to see whether there are any consistent patterns there.
 
 - Investigate non-parametric population-comparison stats: Kolmogorov-Smirnov vs Kullback-Leibler. Have CellVisualizer calculate them for us and deposit into the database?

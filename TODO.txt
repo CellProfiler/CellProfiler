@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 
-- Anne 7-20-06 - Does anyone have experience making animations? I'd like someone to animate a slide for a presentation
+- Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
+
+- Anne 7-20-06: Does anyone have experience making animations? I'd like someone to animate a slide for a presentation
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stacked tifs
 

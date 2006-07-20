@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 7-20-06 - Does anyone have experience making animations? I'd like someone to animate a slide for a presentation
+
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stacked tifs
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)

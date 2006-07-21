@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun 7/21/06) - In the "Change Colormap" window of Image Tool, some of the text is cut off. Also, pop up menus in many places have a white box around them. Need to fix background color of these pop up menus.
+=>Jun: Changes made to CPimagetool.m.
+
 - (Rodrigo, 7/18/06) (Requested by Anne 12-16-05) - Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example: handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}; for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray), handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2); end.
 Note: also made many other changes to the module, including the way data is retrieved, used, and stored, and improved error handling.
 

@@ -1,5 +1,8 @@
 TODO
 
+- (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
+
+DONE
 - Anne 7-12-06 (GOES WITH Mike 7-11-06): I added a new thresholding method to CPthreshold sbufunction, called Background. I have adjusted the help in IdentifyPrimAutomatic to describe this new method, and I have added Background Global to this list of choices selectable within IdentifyPrimAutomatic. There are several things to be done, though:
 (1) I got it working only for the one combination I was using, which did not require any cropping. Make sure that using the Background Global option does the correct thing if you previously crop the image in a circle shape. When determining a threshold, CPthreshold should ignore parts of the image that have been cropped away, which have the value zero. This is why CPthreshold goes looking in the handles for an image called CropMaskBlabla. Right now, we are pretty sure CPthreshold is a bit of a mess in this regard. Some combinations of options work fine but others don't. So (see Mike's 7-11 request) this whole process needs some overhauling.
 (2) Right now Background method only works in global mode, because if you choose Background adaptive, it is not sure how to deal with a cropmask (due to the block processing).
@@ -19,10 +22,13 @@ OUTLINE OF ISSUES
 				-look in handles for cropmaskblablah
 			-Background Adaptive
 				-doesnt knwo what to do
-			 
-- (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
 
-DONE
+(DONE 7/17- 7/21/06)
+NOTES
+-Adaptive thresholding (OTSU) fails because when CPgraythresh is accessed by blkproc, it does not pass in handles
+-Added a subfunction that CPblkproc.  has same functions as matlab's blkproc.  The difference is that it takes three dimensional blocks.  the padded crop mask and the padded image is stored into a 3 dimensional array.  when CPblkproc evaluates the block, it will take information from both arrays.  
+			 
+(7/20)- Montage Pipeline
 
 - (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
 

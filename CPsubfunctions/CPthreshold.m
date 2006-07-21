@@ -89,15 +89,29 @@ elseif strfind(Threshold,'Adaptive')
     PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
     PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
 
+    fieldname = ['CropMask', ImageName];
+    if isfield(handles.Pipeline,fieldname)
+        CropMask = handles.Pipeline.(fieldname);
+        PaddedCropMask = padarray(CropMask,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
+        PaddedCropMask = padarray(PaddedCropMask,[RowsToAddPost ColumnsToAddPost],'replicate','post');
+        PaddedImageandCropMask(:,:,2) = PaddedCropMask;    
+    end
+    
+        PaddedImageandCropMask(:,:,1) = PaddedImage;
+     
     %%% Calculates the threshold for each block in the image, and a global threshold used
     %%% to constrain the adaptive threshholds.
     if strfind(Threshold,'Otsu')
         GlobalThreshold = CPgraythresh(OrigImage,handles,ImageName);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@CPgraythresh);
+        Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@CPgraythresh,handles,ImageName);
     elseif strfind(Threshold,'MoG')
         GlobalThreshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
-        Threshold = blkproc(PaddedImage,[BestBlockSize BestBlockSize],@MixtureOfGaussians,handles,pObject,ImageName);
+        Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@MixtureOfGaussians,handles,pObject,ImageName);
+    elseif strfind(Threshold,'Background')
+         GlobalThreshold = BackgroundThreshold(OrigImage,handles,ImageName);
+        Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@BackgroundThreshold,handles,ImageName);
     end
+    
     %%% Resizes the block-produced image to be the size of the padded image.
     %%% Bilinear prevents dipping below zero. The crop the image
     %%% get rid of the padding, to make the result the same size as the original image.
@@ -212,9 +226,9 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
 
-function Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName)
+function Threshold = MixtureOfGaussians(block,handles,pObject,ImageName)
 %%% This function finds a suitable threshold for the input image
-%%% OrigImage. It assumes that the pixels in the image belong to either
+%%% Block. It assumes that the pixels in the image belong to either
 %%% a background class or an object class. 'pObject' is an initial guess
 %%% of the prior probability of an object pixel, or equivalently, the fraction
 %%% of the image that is covered by objects. Essentially, there are two steps.
@@ -237,13 +251,32 @@ fieldname = ['CropMask', ImageName];
 if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
-    BinaryCropImage = handles.Pipeline.(fieldname);
+    if length(size(block)) == 2
+        OrigImage = block;
+        BinaryCropImage = handles.Pipeline.(fieldname);
+    else
+        %%%Extracts the block of the original Image and the corresponding
+        %%%block of the Crop Mask
+        OrigImage = block(:,:,1);
+        BinaryCropImage = block(:,:,2);     
+    end
+
+    %%% Handle the case where there are no pixels on in the mask
+    if (~ any(BinaryCropImage)),
+        Threshold = max(OrigImage(:)+1.0);
+        return;
+    end
+          
     if numel(OrigImage) == numel(BinaryCropImage)
         %%% Masks the image and I think turns it into a linear
         %%% matrix.
         OrigImage = OrigImage(logical(BinaryCropImage));
     end
+else
+    OrigImage = block;
 end
+
+
 
 %%% The number of classes is set to 3
 NumberOfClasses = 3;
@@ -269,7 +302,7 @@ pBackground = 1 - pObject;
 %%% in case there are any quantization effects that have resulted in unaturally many
 %%% 0:s or 1:s in the image.
 Intensities = sort(Intensities);
-Intensities = Intensities(round(length(Intensities)*0.01):round(length(Intensities)*0.99));
+Intensities = Intensities(ceil(length(Intensities)*0.01):round(length(Intensities)*0.99));
 ClassMean(1) = Intensities(round(length(Intensities)*pBackground/2));                      %%% Initialize background class
 ClassMean(3) = Intensities(round(length(Intensities)*(1 - pObject/2)));                    %%% Initialize object class
 ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
@@ -342,19 +375,24 @@ function level = CPgraythresh(varargin)
 if nargin == 1
     im = varargin{1};
 else
-    im = varargin{1};
+    block = varargin{1};
     handles = varargin{2};
     ImageName = varargin{3};
-    %%% If the image was produced using a cropping mask, we do not
-    %%% want to include the Masked part in the calculation of the
-    %%% proper threshold, because there will be many zeros in the
-    %%% image.  So, we check to see whether there is a field in the
-    %%% handles structure that goes along with the image of interest.
+    
+    %if cropped, calculate threshold without the 0's that are present 
+    
     fieldname = ['CropMask', ImageName];
+
     if isfield(handles.Pipeline,fieldname)
         %%% Retrieves previously selected cropping mask from handles
         %%% structure.
-        BinaryCropImage = handles.Pipeline.(fieldname);
+        if length(size(block)) == 2
+            im = block;
+            BinaryCropImage = handles.Pipeline.(fieldname);
+        else
+            im = block(:,:,1);
+            BinaryCropImage = block(:,:,2);     
+        end
         
         %%% Handle the case where there are no pixels on in the mask
         if (~ any(BinaryCropImage)),
@@ -367,7 +405,10 @@ else
             %%% matrix.
             im = im(logical(BinaryCropImage));
         end
+    else
+        im = block;
     end
+    
 end
 
 %%% The threshold is calculated using the matlab function graythresh
@@ -390,7 +431,7 @@ else
     level = exp(minval + (maxval - minval) * graythresh(im));
 end
 
-function level = BackgroundThreshold(im,handles,ImageName)
+function level = BackgroundThreshold(block,handles,ImageName)
 %%% If the image was produced using a cropping mask, we do not
 %%% want to include the Masked part in the calculation of the
 %%% proper threshold, because there will be many zeros in the
@@ -400,7 +441,13 @@ fieldname = ['CropMask', ImageName];
 if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
-    BinaryCropImage = handles.Pipeline.(fieldname);
+    if length(size(block)) == 2
+        im = block;
+        BinaryCropImage = handles.Pipeline.(fieldname);
+    else
+        im = block(:,:,1);
+        BinaryCropImage = block(:,:,2);     
+    end
 
     %%% Handle the case where there are no pixels on in the mask
     if (~ any(BinaryCropImage)),
@@ -413,6 +460,8 @@ if isfield(handles.Pipeline,fieldname)
         %%% matrix.
         im = im(logical(BinaryCropImage));
     end
+else
+    im = block;
 end
 %%% The threshold is calculated by calculating the mode and multiplying by
 %%% 2 (an arbitrary empirical factor). The user will presumably adjust the

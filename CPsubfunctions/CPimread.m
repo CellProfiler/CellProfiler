@@ -90,7 +90,8 @@ else
         A = fread(fid, 52, 'uchar');
         Width = toDec2(A(5:8));
         Height = toDec2(A(9:12));
-        BitDepth = toDec2(A(15:16));
+%        BitDepth = toDec2(A(15:16));
+BitDepth = 12;
         Channels = toDec2(A(13:14));
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,

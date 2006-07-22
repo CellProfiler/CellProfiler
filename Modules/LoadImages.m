@@ -462,9 +462,7 @@ if SetBeingAnalyzed == 1
                 msgbox(ErrorText)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.'])
             end
-IamHere = 2
 NumberOfImageSets = str2double(UniqueNumbers{1});
-IamHere = 3
             %%% Checks whether another load images module has already recorded a
             %%% number of cycles.  If it has, it will not be set at the default
             %%% of 1.  Then, it checks whether the number already stored as the
@@ -575,9 +573,7 @@ IamHere = 3
             CPmsgbox(ErrorText)
             error(['Image processing was canceled in the ', ModuleName, ' module because the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.'])
         end
-IamHere = 4
 NumberOfImageSets = str2double(UniqueNumbers{1});
-IamHere = 5
 %%% Checks whether another load images module has already recorded a
         %%% number of cycles.  If it has, it will not be set at the default
         %%% of 1.  Then, it checks whether the number already stored as the

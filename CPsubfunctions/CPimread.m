@@ -36,13 +36,11 @@ elseif nargin == 2,
             error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
         A = fread(fid, 52, 'uchar');
-IamHere = 1        
         Width = toDec2(A(5:8));
         Height = toDec2(A(9:12));
 %        BitDepth = toDec2(A(15:16));
 BitDepth = 12;
         Channels = toDec2(A(13:14));
- IamHere = 6       
        
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,
@@ -54,7 +52,6 @@ BitDepth = 12;
             LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
         end
         fclose(fid);
-IamHere = 7       
     elseif strcmp('.MAT',upper(ext))
         load(CurrentFileName);
         if exist('Image')

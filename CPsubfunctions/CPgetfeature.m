@@ -30,7 +30,6 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 %
 % $Revision$
 
-
 if nargin < 2
     ImageCheck = 0;
 end
@@ -41,9 +40,7 @@ end
 
 %%% Quick check if it seems to be a CellProfiler file or not
 if ~isfield(handles,'Measurements')
-    CPerrordlg('The selected file does not contain any measurements.')
-    ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
-    return
+    error('The selected file does not contain any measurements.')
 end
 
 %%% Extract the fieldnames of measurements from the handles structure.
@@ -58,9 +55,7 @@ end
 
 %%% Error detection.
 if isempty(MeasFieldnames)
-    CPerrordlg('No measurements were found.')
-    ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
-    return
+    error('No measurements were found in the selected file.')
 end
 
 dlgno = 1;                            % This variable keeps track of which list dialog is shown
@@ -93,6 +88,13 @@ while dlgno < 4
                 end
             end
             FeatureTypes = tmp;
+            if isempty(FeatureTypes)
+                SuffixStr = Suffix{1};
+                for i = 2:length(Suffix)
+                    SuffixStr = [SuffixStr ''' or ''' Suffix{i}];
+                end
+                error(['There are no feature types with suffix ''',SuffixStr,''' in the object type ',ObjectTypename])
+            end
             dlgno = 2;                      % Indicates that the next dialog box is to be shown next
         case 2
             [Selection, ok] = listdlg('ListString',FeatureTypes, 'ListSize', [300 400],...

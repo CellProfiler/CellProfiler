@@ -1,24 +1,30 @@
 CURRENTLY WORKING ON:
 
-- (Requested by Anne 12-09-05) - Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
+- The SelectDisplayWindow feature has some bugs: 1. When a lot of modules are in the pipeline, the window is too big and doesn't show completely. 2. An error occurs when using the Restart module. 3. Add some cool stuff like select all, deselect all, and/or invert selection options. 4. Theres a problem with cancel (fixed?)
 
 
 OTHER TODO'S:
 
-- (Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?  Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
-Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir), lots of bad things happen.
-
-Only when first module is different does uigetdir appears. (687, under Callback)
-When its some other module, first error occurs at 900, under Helper, called by Callback at 702.
-Then, another error occurs at 1139, under PutModuleInListBox, called by Callback at 782.
-Then, real error occurs on next module, while at PutModuleInListBox.
-I think there is a programming error by in the loop over all the modules that happens in the Callback, just after calling Helper.
-Also, it might be good to make the error check at line 687 to happen through all the modules and not just the first one.
-
 - (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+
+- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
+*??
+
+- (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 
 
 DONE (committed):
+
+
+- (Rodrigo, 7/24/06) - (Requested by Anne 7-11-06): There is something weird in the ColorToGray module; it puts the word Split into the object group!
+Note: I couldn't figure out how to cause the error; it might be something else or a weird mix of factors
+
+- (Rodrigo, 7/24/06) - (Requested by Anne 6/12/06) - Load Pipeline fails if a module no longer exists. The code should be modified around line 600 or so. If the module is not found on the matlab path (or in the modules folder on the compiled version), it asks the user to choose a directory where modules are stored, but it does not really consider the possibility that the module just does not exist anymore. So I think there should first be a warning dialog stating that the module can't be found and give the user the choice to choose the module directory (if they do this, the user should also be given a message to be sure to change the default module directory in Set Preferences, I think?) or to abort. I assume there is no graceful way to recover from a missing module? It would be nice to load the remainder of the pipeline to show the user what was there, even though it can't be run or salvaged, as long as the user is apologized to and warned that salvaging is not possible?
+Maybe the user could be given the option to choose an alternate module, which would then be loaded with its default settings? A way to practice with fixing this is to go in manually and change one of the module names to something that does not exist.
+Also, if you press 'cancel' right now, when it asks for the Pathname (uigetdir), lots of bad things happen.
+Note: Now when a module is not found, the user can abort, find the module, skip it, or pick another one. In the latter 2 cases, the user can also see the module's saved settings. If another one is picked, it will be loaded with its default settings.
+
+- (Rodrigo, 7/24/06) - (Requested by Anne 12-09-05) - Make the error handling consistent for CPsubfunctions. See programming notes - right now many CPsubfunctions use error('') and others use CPErrordlg + return, and we want them to all use error('') which means whichever modules call them need to be changed to handle errors.
 
 - (Rodrigo, 7/18/06) (Requested by Anne 12-16-05) - Allow calculate Ratios to divide individual object measurements by a whole-image measurement (this allows normalization). for example: handles.Measurements.Nuclei.AnneFeatures = {'AnneRatio'}; for i = 1:length(handles.Measurements.Nuclei.Intensity_OrigGray), handles.Measurements.Nuclei.Anne{i} = handles.Measurements.Nuclei.Intensity_OrigGray{i}(:,1)/handles.Measurements.Image.Intensity_OrigGray{i}(:,2); end.
 
@@ -69,6 +75,7 @@ DONE (not yet committed):
 
 - Nothing
 
+
 NOTICED BUGS AND NEW IDEAS:
 
 IdentifySecondary Display: the word 'objects' on the bottom is not displayed correctly.
@@ -80,8 +87,8 @@ OverlayOutlines Display: cannot see a button or axes. RGB bad.
 Crop Display: RGB bad.
 CPcd help error
 Why does CPimread have 2 parts of code that are basically the same?
-SelectDisplayWindow - Cancel is bad. Select All, Deselect All, Invert Selection options!
-prevent CellProfiler to run while its open
+Error in Save Preferences: I think it just says it saved it somewhere else, but it really saves it in the same place.
+Can we have the option to change preferences without saving them, whether it be in CellProfilerPreferences or in a user-specified .mat file.
 
 Said - InteractiveZoom - when you double click different images it gives an error.
 Said - Set Preferences doesnt remember current settings

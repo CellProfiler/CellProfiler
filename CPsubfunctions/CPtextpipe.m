@@ -31,8 +31,12 @@ ModuleNames = handles.Settings.ModuleNames;
 ModuleNamedotm = [char(ModuleNames(1)) '.m'];
 %%% Check for location of m-files
 if exist(ModuleNamedotm,'file')
-    FullPathname = which(ModuleNamedotm);
-    [PathnameModules, filename, ext, versn] = fileparts(FullPathname);
+    if ~isdeployed
+        FullPathname = which(ModuleNamedotm);
+        [PathnameModules, filename, ext, versn] = fileparts(FullPathname); % Why is filename, ext, and versn taken out? They aren't used later on...
+    else
+        PathnameModules = handles.Preferences.DefaultModuleDirectory;
+    end
 else
     %%% If the module.m file is not on the path, it won't be
     %%% found, so ask the user where the modules are.

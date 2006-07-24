@@ -50,21 +50,40 @@ if isempty(PlotType), return,end
 FigHandle = CPfigure;
 
 if PlotType == 4
-    %%% Get the feature type 1
-    [Object,Feature,FeatureNo] = CPgetfeature(handles);
-    if isempty(Object),return,end
-    %%% Get the feature type 2
-    [Object2,Feature2,FeatureNo2] = CPgetfeature(handles);
-    if isempty(Object2)
+    %%% Get the feature types
+    try
+        [Object,Feature,FeatureNo] = CPgetfeature(handles);
+        [Object2,Feature2,FeatureNo2] = CPgetfeature(handles);
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(30:end)]);
         return
     end
-    CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+    if isempty(Object),return,end
+    if isempty(Object2),return,end
+    try
+        CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
+        return
+    end
 else
     %%% Get the feature type
-    [Object,Feature,FeatureNo] = CPgetfeature(handles);
-    if isempty(Object)
+    try
+        [Object,Feature,FeatureNo] = CPgetfeature(handles);
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(30:end)]);
         return
     end
-    CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo)
+    if isempty(Object),return,end
+    try
+        CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo)
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
+        return
+    end
 end
 set(FigHandle,'Numbertitle','off','name',['Plot Measurement: ',get(get(gca,'title'),'string')])

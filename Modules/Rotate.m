@@ -125,7 +125,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         set(displaytexthandle,'string',displaytext)
         [x,y] = getpts(FigureHandle);
         while length(x) < 2    
-            CPwarndlg(['In the ', ModuleName, ' module while in Mouse rotation method, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+            warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Mouse rotation method, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+            uiwait(warnfig);
             [x,y] = getpts(FigureHandle);
         end
         delete(displaytexthandle);

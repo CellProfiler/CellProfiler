@@ -308,17 +308,22 @@ function GSDeveloperInfo
 %               module because your entry ',ValueX,' was invalid.'])
 %       return
 % 
-% * In modules and I think also in CPsubfunctions (no need for "return"):
-% error('Your error message here.')
+% * In modules and CPsubfunctions (no need for "return"):
+%       error('Your error message here.')
 %
-% * In CPsubfunctions:
-% Depends whether the calling function has error handling. For functions
-% called from modules, error() is fine; for functions called from data
-% tools that nest the CPsubfunction in a try/catch with its own error
-% handling, error() is fine. For functions called from data tools that do
-% not have error handling, CPerrordlg(''), return is needed. In general, we
-% should have our goal be to use mostly error('') within CPsubfunctions and
-% have the calling function handle errors appropriately.
+% * Note:
+% Always try to make the subfunctions as less likely to have errors as
+% possible. Whenever you can, have error checks in the calling function
+% before the subfunction gets called. Since CPsubfunctions use
+% error('message'), you should try to nest any calls to them in a
+% try/catch. Plus, this allows you to add more specific information to the
+% error message (such as where in the calling function did the error
+% occur). To do this, you can just throw an error whose message has your
+% additional information together with lasterr (which retrieves the last
+% error message). In data tools and image tools CPerrordlg('message') and
+% return is needed because they are usually called independently, and using
+% error('message') would just stop execution, but would not prompt the user
+% with the corresponding error message.
 %
 % *** DISPLAYING RESULTS ***
 %

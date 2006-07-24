@@ -73,7 +73,13 @@ end
 
 %%% Let the user select which feature to delete
 Suffix = {'Features','Text','Description'};
-[ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
+try
+    [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
+catch
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the ClearData Data Tool. ' ErrorMessage(30:end)]);
+    return
+end
 
 %%% If Cancel button pressed
 if isempty(ObjectTypename),return,end

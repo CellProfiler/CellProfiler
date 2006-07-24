@@ -122,7 +122,13 @@ end
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+try
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+catch
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the Histogram Data Tool. ' ErrorMessage(30:end)]);
+    return
+end
 if isempty(ObjectTypename),return,end
 MeasurementToExtract = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
 
@@ -448,6 +454,12 @@ while AcceptableAnswers == 0
     %%% If the user selected A for all, the measurements are not thresholded on some other measurement.
     if ~strcmpi(GreaterOrLessThan,'A')
         [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+        % There's no need to nest the call to CPgetfeature again, because
+        % the only errors that can occur in CPgetfeature happen when
+        % handles is faulty, but CPgetfeature was called before and handles
+        % hasn't been modified. However, an empty check for ObjectTypename
+        % is needed. This would happen if the user clicked Cancel.
+        if isempty(ObjectTypename),return,end
         MeasurementToThresholdValueOnName = handles.Measurements.(ObjectTypename).([FeatureType,'Features'])(FeatureNo);
         tmp = handles.Measurements.(ObjectTypename).(FeatureType);
         MeasurementToThresholdValueOn = cell(length(tmp),1);
@@ -460,7 +472,14 @@ while AcceptableAnswers == 0
     SelectedMeasurementsCellArray = Measurements(FirstImage:LastImage);
     SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
 
-    [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbins(SelectedMeasurementsMatrix,NumberOfBins,MinHistogramValue,MaxHistogramValue,LogOrLinear,'Count');
+    try
+        [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(SelectedMeasurementsMatrix,NumberOfBins,MinHistogramValue,MaxHistogramValue,LogOrLinear,'Count');
+        ErrorFlag = 0;
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the Histogram Data Tool. ' ErrorMessage(28:end)])
+        ErrorFlag = 1;
+    end
     if ErrorFlag == 1
         continue;
     end
@@ -896,7 +915,14 @@ if strcmp(CompressedHistogram,'no') && strncmpi(ShowDisplay,'Y',1)
         'Style','pushbutton', ...
         'FontSize',FontSize);
     %%% Button for adding control graph
-    Button11Callback = 'CPcontrolhistogram(get(gcbo,''parent''),get(gcf,''UserData''),get(gcf,''Tag''));';
+    Button11Callback = [...
+        'try,',...
+        'CPcontrolhistogram(get(gcbo,''parent''),get(gcf,''UserData''),get(gcf,''Tag''));',...
+        'catch,',...
+        'ErrorMessage = lasterr;',...
+        'CPerrordlg([''An error occurred in the Histogram Data Tool. '' ErrorMessage(36:end)]);',...
+        'return;',...
+        'end;'];
     Button11 = uicontrol('Parent',FigureHandle, ...
         'Unit',StdUnit, ...
         'BackgroundColor',[.7 .7 .9], ...

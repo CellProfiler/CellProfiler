@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
+Note: no longer necessary because the info is now extracted from the DIB file itself
+
+- (Rodrigo, 7/24/06) - (Requested by Anne 7-11-06): There is something weird in the ColorToGray module; it puts the word Split into the object group!
+Note: I couldn't figure out how to cause the error; it might be something else or a weird mix of factors
+
 (Jun 7/24/06) - Need to wait for user input for warning dialogs and message boxes in Rotate and Crop modules. When a warning or message occurs in mouse mode while running the pipeline, other windows refresh and usually cover them. Warning dialogs and message boxes should be kept on top of all other windows until user closes them.
 =>Jun: Changes made to Rotate.m and Crop.m.
 

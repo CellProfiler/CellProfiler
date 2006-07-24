@@ -45,7 +45,14 @@ end
 load(fullfile(RawPathname, RawFileName));
 
 % Ask the user for the feature
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+try
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+catch
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the DataLayout Data Tool. ' ErrorMessage(30:end)]);
+    return
+end
+if isempty(ObjectTypename),return,end
 
 % Get the measurements cell array
 CellArray = handles.Measurements.(ObjectTypename).(FeatureType);

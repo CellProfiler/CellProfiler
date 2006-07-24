@@ -37,10 +37,16 @@ if RawFileName == 0
 end
 load(fullfile(RawPathname, RawFileName));
 
-%%% Call the function blabla(), which opens a series of list dialogs and
-%%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
-%%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+%%% Call the function CPgetfeature, which opens a series of list dialogs
+%%% and lets the user choose a feature. The feature can be identified via
+%%% 'ObjectTypename', 'FeatureType' and 'FeatureNo'.
+try
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+catch
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the GenerateHistogramMovie Data Tool. ' ErrorMessage(30:end)]);
+    return
+end
 if isempty(ObjectTypename),return,end
 
 %%% Extract the measurement and calculate mean and standard deviation

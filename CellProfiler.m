@@ -200,7 +200,7 @@ end
 
 handles.Preferences.DisplayWindows =[];
 
-%%% Now that handles.Preferences.(4 different variables) has been filled
+%%% Now that handles.Preferences.(10 different variables) has been filled
 %%% in, the handles.Current values and edit box displays are set.
 handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
 handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
@@ -590,7 +590,6 @@ if strcmp(Answer,'Yes')
     contents = {'No Modules Loaded'};
     set(handles.ModulePipelineListBox,'String',contents);
     guidata(hObject,handles);
-    ModulePipelineListBox_Callback(hObject, eventdata, handles);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -604,13 +603,11 @@ if isempty(eventdata)
     errFlg = 0;
     if exist(handles.Current.DefaultOutputDirectory, 'dir')
         [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
-        pause(.1);
-        figure(handles.figure1);
     else
         [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
-        pause(.1);
-        figure(handles.figure1);
     end
+    pause(.1);
+    figure(handles.figure1);
 else
     SettingsFileName = eventdata.SettingsFileName;
     SettingsPathname = eventdata.SettingsPathname;
@@ -621,8 +618,7 @@ end
 if SettingsFileName == 0
     return
 end
-set(handles.ModulePipelineListBox,'Value',1);
-set(handles.ModulePipelineListBox,'String','Loading...');
+
 drawnow
 %%% Loads the Settings file.
 try
@@ -633,8 +629,6 @@ end
 %%% Error Checking for valid settings file.
 if ~(isfield(LoadedSettings, 'Settings') || isfield(LoadedSettings, 'handles'))
     CPerrordlg(['The file ' SettingsPathname SettingsFileName ' does not appear to be a valid settings or output file. Settings can be extracted from an output file created when analyzing images with CellProfiler or from a small settings file saved using the "Save Settings" button.  Either way, this file must have the extension ".mat" and contain a variable named "Settings" or "handles".']);
-    eventdata = 1;
-    ClearPipeline_Callback(hObject, eventdata, handles)
     errFlg = 1;
     return
 end
@@ -662,167 +656,268 @@ catch
     return
 end
 
+%%% Hide stuff in the background, but keep old values in case of errors.
+OldValue = get(handles.ModulePipelineListBox,'Value');
+OldString = get(handles.ModulePipelineListBox,'String');
+set(handles.ModulePipelineListBox,'Value',1);
+set(handles.ModulePipelineListBox,'String','Loading...');
+set(get(handles.variablepanel,'children'),'visible','off');
+set(handles.slider1,'visible','off');
+
+%%% Check to make sure that the module files can be found and get paths
+ModuleNames = Settings.ModuleNames;
+NumberOfVariables = Settings.NumbersOfVariables;
+Skipped = 0;
+for k = 1:NumberOfModules
+    if ~isdeployed
+        CurrentModuleNamedotm = [char(ModuleNames{k}) '.m'];
+    else
+        CurrentModuleNamedotm = [char(ModuleNames{k}) '.txt.'];
+    end
+    if exist(CurrentModuleNamedotm,'file')
+        if ~isdeployed
+            Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm));
+        else
+            Pathnames{k-Skipped} = handles.Preferences.DefaultModuleDirectory;
+        end
+    else
+        %%% If the module.m file is not on the path, it won't be
+        %%% found, so ask the user where the modules are.
+        Choice = CPquestdlg(['The module ', CurrentModuleNamedotm, ' cannot be found. Either its name has changed or it was moved or deleted. What do you want to do? Note: You can also choose another module to replace ' CurrentModuleNamedotm ' if you select Search Module. It will be loaded with its default settings and you will also be able to see the saved settings of ' CurrentModuleNamedotm '.'],'Module not found','Skip Module','Search Module','Abort','Skip Module');
+        switch Choice
+            case 'Skip Module'
+                %%% Check if this was the only module in the pipeline or if
+                %%% all previous modules have been skipped too
+                if Skipped+1 == NumberOfModules
+                    CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.','Loading Pipeline Error')
+                    Abort = 1;
+                else
+                    %%% Remove module info from the settings
+                    View = CPquestdlg(['The pipeline will be loaded without ' CurrentModuleNamedotm ', but keep in mind that it might not work properly. Would you like to see the saved settings ' CurrentModuleNamedotm ' had?'], 'Module Skipped', 'Yes', 'No', 'Yes');
+                    if strcmp(View,'Yes')
+                        FailedModule(handles,Settings.VariableValues(k-Skipped,:),'Sorry, variable descriptions could not be retrieved from this file',CurrentModuleNamedotm,k-Skipped);
+                    end
+                    %%% Notice that if the skipped module is the one that
+                    %%% had the most variables, then the VariableValues
+                    %%% will have some empty columns at the end. I guess it
+                    %%% doesn't matter, but it could be fixed if necessary.
+                    Settings.VariableValues(k-Skipped,:) = [];
+                    Settings.VariableInfoTypes(k-Skipped,:) = [];
+                    Settings.ModuleNames(k-Skipped) = [];
+                    Settings.NumbersOfVariables(k-Skipped) = [];
+                    Settings.VariableRevisionNumbers(k-Skipped) = [];
+                    Skipped = Skipped+1;
+                    Abort = 0;
+                end
+            case 'Search Module'
+                if ~isdeployed
+                    [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.m'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
+                else
+                    [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.txt'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
+                end
+                pause(.1);
+                figure(handles.figure1);
+                if Filename == 0
+                    Abort = 1;
+                else
+                    Pathnames{k-Skipped} = Pathname;
+                    if ~isdeployed
+                        Settings.ModuleNames{k-Skipped} = Filename(1:end-2);
+                    else
+                        Settings.ModuleNames{k-Skipped} = Filename(1:end-4);
+                    end
+                    Abort = 0;
+                end
+            otherwise
+                Abort = 1;
+        end
+        if Abort
+            %%% Restore whatever the user had before attempting to load
+            set(handles.ModulePipelineListBox,'String',OldString);
+            set(handles.ModulePipelineListBox,'Value',OldValue);
+            ModulePipelineListBox_Callback(hObject,[],handles);
+            errFlg = 1;
+            return
+        end
+    end
+end
+
+%%% Save old settings in case of error
+OldValue = get(handles.ModulePipelineListBox,'Value');
+OldString = get(handles.ModulePipelineListBox,'String');
+OldSettings = handles.Settings;
+try
+    OldVariableBox = handles.VariableBox;
+    OldVariableDescription = handles.VariableDescription;
+catch
+    OldVariableBox = {};
+    OldVariableDescription = {};
+end
+
+%%% Update handles structure
 handles.Settings.ModuleNames = Settings.ModuleNames;
 handles.Settings.VariableValues = {};
 handles.Settings.VariableInfoTypes = {};
 handles.Settings.VariableRevisionNumbers = [];
 handles.Settings.NumbersOfVariables = [];
-delete(get(handles.variablepanel,'children'));
 handles.VariableBox = {};
 handles.VariableDescription = {};
 
-if isdeployed
-    Pathname = handles.Preferences.DefaultModuleDirectory;
-else
-    ModuleNamedotm = [char(Settings.ModuleNames{1}) '.m'];
-    %%% Checks to make sure that the modules have not changed
-    if exist(ModuleNamedotm,'file')
-        FullPathname = which(ModuleNamedotm);
-        Pathname = fileparts(FullPathname);
-    else
-        %%% If the module.m file is not on the path, it won't be
-        %%% found, so ask the user where the modules are.
-        Pathname = uigetdir(pwd,['The module ',ModuleNamedotm,' cannot be found. Please select directory where this module is located']);
-        pause(.1);
-        figure(handles.figure1);
-    end
-end
-
+%%% For each module, extract its settings and check if they seem alright
 revisionConfirm = 0;
+Skipped = 0;
 for ModuleNum=1:length(handles.Settings.ModuleNames)
-
-    if strcmp('CreateBatchScripts',handles.Settings.ModuleNames(ModuleNum)) || strcmp('CreateClusterFiles',handles.Settings.ModuleNames(ModuleNum))
-        handles.Settings.ModuleNames(ModuleNum) = {'CreateBatchFiles'};
-    elseif strcmp('WriteSQLFiles',handles.Settings.ModuleNames(ModuleNum))
-        handles.Settings.ModuleNames(ModuleNum) = {'ExportToDatabase'};
+    CurrentModuleName = handles.Settings.ModuleNames{ModuleNum-Skipped};
+    %%% Replace names of modules whose name changed
+    if strcmp('CreateBatchScripts',CurrentModuleName) || strcmp('CreateClusterFiles',CurrentModuleName)
+        handles.Settings.ModuleNames(ModuleNum-Skipped) = {'CreateBatchFiles'};
+    elseif strcmp('WriteSQLFiles',CurrentModuleName)
+        handles.Settings.ModuleNames(ModuleNum-Skipped) = {'ExportToDatabase'};
     end
     %%% Load the module's settings
-    [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum) DefVarRevNum Failed] = LoadSettings_Helper(Pathname, char(handles.Settings.ModuleNames(ModuleNum)));
-
-    if Failed == 0
+    try
+        %%% First load the module with it's default settings
+        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
+        %%% If no VariableRevisionNumber was extracted, default it to 0
         if isfield(Settings,'VariableRevisionNumbers')
-            SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum);
+            SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum-Skipped);
         else
             SavedVarRevNum = 0;
         end
-        if SavedVarRevNum == DefVarRevNum
-            if handles.Settings.NumbersOfVariables(ModuleNum) == Settings.NumbersOfVariables(ModuleNum)
-                handles.Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum)) = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-                handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-                varChoice = 3;
-            else
-                savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-                FailedModule(handles, savedVariableValues, defDescriptions, char(handles.Settings.ModuleNames(ModuleNum)),ModuleNum);
-                varChoice = 1;
-                revisionConfirm = 1;
-            end
+        %%% Using the VariableRevisionNumber and the number of variables,
+        %%% check if the loaded module and the module the user is trying to
+        %%% load is the same
+        if SavedVarRevNum == DefVarRevNum && handles.Settings.NumbersOfVariables(ModuleNum-Skipped) == Settings.NumbersOfVariables(ModuleNum-Skipped)
+            %%% If so, replace the default settings with the saved ones
+            handles.Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped)) = Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped));
+            handles.Settings.VariableRevisionNumbers(ModuleNum-Skipped) = DefVarRevNum;
         else
-            savedVariableValues = Settings.VariableValues(ModuleNum,1:Settings.NumbersOfVariables(ModuleNum));
-            FailedModule(handles, savedVariableValues, defDescriptions, char(handles.Settings.ModuleNames(ModuleNum)),ModuleNum);
-            varChoice = 1;
-            revisionConfirm = 1;
-        end
-        if varChoice == 1
-            for k = 1:handles.Settings.NumbersOfVariables(ModuleNum)
+            %%% If not, show the saved settings. Note: This will always
+            %%% appear if user selects another module when they search for
+            %%% the missing module, but the user is appropriately warned
+            savedVariableValues = Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped));
+            FailedModule(handles, savedVariableValues, defDescriptions, char(handles.Settings.ModuleNames(ModuleNum-Skipped)),ModuleNum-Skipped);
+            %%% Go over each variable
+            for k = 1:handles.Settings.NumbersOfVariables(ModuleNum-Skipped)
                 if strcmp(defVariableValues(k),'Pipeline Value')
-                    handles.Settings.VariableValues(ModuleNum,k) = {''};
+                    %%% Create FixList, which will later be used to replace
+                    %%% pipeline-dependent variable values in the loaded modules
+                    handles.Settings.VariableValues(ModuleNum-Skipped,k) = {''};
                     if exist('FixList','var')
-                        FixList(end+1,1) = ModuleNum;
+                        FixList(end+1,1) = ModuleNum-Skipped;
                         FixList(end,2) = k;
                     else
-                        FixList(1,1) = ModuleNum;
+                        FixList(1,1) = ModuleNum-Skipped;
                         FixList(1,2) = k;
                     end
                 else
-                    handles.Settings.VariableValues(ModuleNum,k) = defVariableValues(k);
+                    %%% If no need to change, save the default loaded variables
+                    handles.Settings.VariableValues(ModuleNum-Skipped,k) = defVariableValues(k);
                 end
             end
-            handles.Settings.VariableInfoTypes(ModuleNum,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
-            handles.Settings.VariableRevisionNumbers(ModuleNum) = DefVarRevNum;
-        elseif varChoice == 0
-            set(handles.ModulePipelineListBox,'String','No Modules Loaded');
-            break
+            %%% Save the infotypes and VariableRevisionNumber
+            handles.Settings.VariableInfoTypes(ModuleNum-Skipped,1:numel(defVariableInfoTypes)) = defVariableInfoTypes;
+            handles.Settings.VariableRevisionNumbers(ModuleNum-Skipped) = DefVarRevNum;
+            revisionConfirm = 1;
         end
         clear defVariableInfoTypes;
+    catch
+        %%% It is very unlikely to get here, because this means the
+        %%% pathname was incorrect, but we had checked this before
+        Choice = CPquestdlg(['The ' ModuleName ' module could not be found in the directory specified or an error occured while extracting its variable settings. This error is not common; the module might be corrupt or, if running on the non-developers version of CellProfiler, the module might not be located in the default Module folder. The module will be skipped and the rest of the pipeline will be loaded. Would you like to see the module''s saved settings?'],'Error','Yes','No','Abort','Yes');
+        switch Choice
+            case 'Yes'
+                FailedModule(handles,Settings.VariableValues(ModuleNum-Skipped,:),'Sorry, variable descriptions could not be retrieved from this file',ModuleName,ModuleNum-Skipped);
+                Abort = 0;
+            case 'No'
+                Abort = 0;
+            otherwise
+                Abort = 1;
+        end
+        if Skipped+1 == length(handles.Settings.ModuleNames)
+            CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.','Loading Pipeline Error')
+            Abort = 1;
+        else
+            %%% Remove module info from the settings and handles
+            handles.Settings.ModuleNames(ModuleNum-Skipped) = [];
+            Pathnames(ModuleNum-Skipped) = [];
+            Settings.VariableValues(ModuleNum-Skipped,:) = [];
+            Settings.VariableInfoTypes(ModuleNum-Skipped,:) = [];
+            Settings.ModuleNames(ModuleNum-Skipped) = [];
+            Settings.NumbersOfVariables(ModuleNum-Skipped) = [];
+            Settings.VariableRevisionNumbers(ModuleNum-Skipped) = [];
+            Skipped = Skipped+1;
+        end
+        if Abort
+            %%% Reset initial handles settings
+            handles.Settings = OldSettings;
+            handles.VariableBox = OldVariableBox;
+            handles.VariableDescription = OldVariableDescription;
+            set(handles.ModulePipelineListBox,'String',OldString);
+            set(handles.ModulePipelineListBox,'Value',OldValue);
+            guidata(hObject,handles);
+            ModulePipelineListBox_Callback(hObject,[],handles);
+            errFlg = 1;
+            return
+        end
     end
 end
 
-if Failed == 1
-    %%% Update handles structure.
-    handles.Settings.VariableValues = {[]};
-    handles.Settings.VariableInfoTypes = {[]};
-    handles.Settings.VariableRevisionNumbers = [];
-    delete(get(handles.variablepanel,'children'));
-    handles.VariableBox = {};
-    handles.VariableDescription = {};
-    guidata(hObject,handles);
-    ModulePipelineListBox_Callback(hObject, eventdata, handles);
-    handles.Settings.ModuleNames = {};
-    handles.Settings.NumbersOfVariables = [];
-else
-    try
-        handles.Settings.PixelSize = Settings.PixelSize;
-        handles.Preferences.PixelSize = Settings.PixelSize;
-        set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
+delete(get(handles.variablepanel,'children'));
+try
+    handles.Settings.PixelSize = Settings.PixelSize;
+    handles.Preferences.PixelSize = Settings.PixelSize;
+    set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
+end
+handles.Current.NumberOfModules = 0;
+contents = handles.Settings.ModuleNames;
+guidata(hObject,handles);
+
+WaitBarHandle = CPwaitbar(0,'Loading Pipeline...');
+for i=1:length(handles.Settings.ModuleNames)
+    if isdeployed
+        PutModuleInListBox([contents{i} '.txt'], Pathnames{i}, handles, 1);
+    else
+        PutModuleInListBox([contents{i} '.m'], Pathnames{i}, handles, 1);
     end
+    handles=guidata(handles.figure1);
+    handles.Current.NumberOfModules = i;
+    CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
+end
 
-    handles.Current.NumberOfModules = 0;
-
-    contents = handles.Settings.ModuleNames;
-
-    %%% Update handles structure.
-
-    guidata(hObject,handles);
-
-    WaitBarHandle = CPwaitbar(0,'Loading Pipeline...');
-    for i=1:length(handles.Settings.ModuleNames)
-        if isdeployed
-            PutModuleInListBox([contents{i} '.txt'], Pathname, handles, 1);
-        else
-            PutModuleInListBox([contents{i} '.m'], Pathname, handles, 1);
-        end
-        handles=guidata(handles.figure1);
-        handles.Current.NumberOfModules = i;
-        CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
+if exist('FixList','var')
+    for k = 1:size(FixList,1)
+        PipeList = get(handles.VariableBox{FixList(k,1)}(FixList(k,2)),'string');
+        FirstValue = PipeList(1);
+        handles.Settings.VariableValues(FixList(k,1),FixList(k,2)) = FirstValue;
     end
+end
 
-    if exist('FixList','var')
-        for k = 1:size(FixList,1)
-            PipeList = get(handles.VariableBox{FixList(k,1)}(FixList(k,2)),'string');
-            FirstValue = PipeList(1);
-            handles.Settings.VariableValues(FixList(k,1),FixList(k,2)) = FirstValue;
-        end
-    end
+guidata(hObject,handles);
+set(handles.ModulePipelineListBox,'String',contents);
+set(handles.ModulePipelineListBox,'Value',1);
+ModulePipelineListBox_Callback(hObject, eventdata, handles);
+close(WaitBarHandle);
 
-    guidata(hObject,handles);
-
-    set(handles.ModulePipelineListBox,'String',contents);
-
-    set(handles.ModulePipelineListBox,'Value',1);
-    ModulePipelineListBox_Callback(hObject, eventdata, handles);
-
-    close(WaitBarHandle);
-
-    %%% If the user loaded settings from an output file, prompt them to
-    %%% save it as a separate Settings file for future use.
-    if isfield(LoadedSettings, 'handles'),
-        Answer = CPquestdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
-        if strcmp(Answer, 'Yes') == 1
-            tempSettings = handles.Settings;
-            if(revisionConfirm == 1)
-                VersionAnswer = CPquestdlg('How should the settings file be saved?', 'Save Settings File', 'Exactly as found in output', 'As Loaded into CellProfiler window', 'Exactly as found in output');
-                if strcmp(VersionAnswer, 'Exactly as found in output')
-                    handles.Settings = Settings;
-                end
+%%% If the user loaded settings from an output file, prompt them to
+%%% save it as a separate Settings file for future use.
+if isfield(LoadedSettings, 'handles'),
+    Answer = CPquestdlg('The settings have been extracted from the output file you selected.  Would you also like to save these settings in a separate, smaller, settings-only file?','','Yes','No','Yes');
+    if strcmp(Answer, 'Yes') == 1
+        tempSettings = handles.Settings;
+        if(revisionConfirm == 1)
+            VersionAnswer = CPquestdlg('How should the settings file be saved?', 'Save Settings File', 'Exactly as found in output', 'As Loaded into CellProfiler window', 'Exactly as found in output');
+            if strcmp(VersionAnswer, 'Exactly as found in output')
+                handles.Settings = Settings;
             end
-            SavePipeline_Callback(hObject, eventdata, handles);
-            handles.Settings = tempSettings;
         end
+        SavePipeline_Callback(hObject, eventdata, handles);
+        handles.Settings = tempSettings;
     end
 end
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum Failed] = LoadSettings_Helper(Pathname, ModuleName)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum] = LoadSettings_Helper(Pathname, ModuleName)
 
 VariableValues = {[]};
 VariableInfoTypes = {[]};
@@ -830,80 +925,74 @@ VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
 Failed = 0;
-try
-    if isdeployed
-        ModuleNamedotm = [ModuleName '.txt'];
-    else
-        ModuleNamedotm = [ModuleName '.m'];
+if isdeployed
+    ModuleNamedotm = [ModuleName '.txt'];
+else
+    ModuleNamedotm = [ModuleName '.m'];
+end
+fid=fopen(fullfile(Pathname,ModuleNamedotm));
+while 1
+    output = fgetl(fid);
+    if ~ischar(output)
+        break
     end
-    fid=fopen(fullfile(Pathname,ModuleNamedotm));
-    while 1
-        output = fgetl(fid);
-        if ~ischar(output)
-            break
-        end
-        if strncmp(output,'%defaultVAR',11)
-            displayval = output(17:end);
-            istr = output(12:13);
+    if strncmp(output,'%defaultVAR',11)
+        displayval = output(17:end);
+        istr = output(12:13);
+        i = str2double(istr);
+        VariableValues(i) = {displayval};
+    elseif strncmp(output,'%choiceVAR',10)
+        if ~iscellstr(VariableValues(i))
+            displayval = output(16:end);
+            istr = output(11:12);
             i = str2double(istr);
             VariableValues(i) = {displayval};
-        elseif strncmp(output,'%choiceVAR',10)
-            if ~iscellstr(VariableValues(i))
-                displayval = output(16:end);
-                istr = output(11:12);
-                i = str2double(istr);
-                VariableValues(i) = {displayval};
-            end
-        elseif strncmp(output,'%textVAR',8)
-            displayval = output(13:end);
-            istr = output(9:10);
-            i = str2double(istr);
-            VariableDescriptions(i) = {displayval};
-            VariableValues(i) = {[]};
-            NumbersOfVariables = i;
-        elseif strncmp(output,'%pathnametextVAR',16)
-            displayval = output(21:end);
-            istr = output(17:18);
-            i = str2double(istr);
-            VariableDescriptions(i) = {displayval};
-            VariableValues(i) = {[]};
-            NumbersOfVariables = i;
-        elseif strncmp(output,'%filenametextVAR',16)
-            displayval = output(21:end);
-            istr = output(17:18);
-            i = str2double(istr);
-            VariableDescriptions(i) = {displayval};
-            VariableValues(i) = {[]};
-            NumbersOfVariables = i;
-        elseif strncmp(output,'%infotypeVAR',12)
-            displayval = output(18:end);
-            istr = output(13:14);
-            i = str2double(istr);
-            VariableInfoTypes(i) = {displayval};
-            if ~strcmp(output((length(output)-4):end),'indep') && isempty(VariableValues{i})
-                VariableValues(i) = {'Pipeline Value'};
-            end
-        elseif strncmp(output,'%%%VariableRevisionNumber',25)
-            try
-                VarRevNum = str2double(output(29:30));
-            catch
-                VarRevNum = str2double(output(29:29));
-            end
+        end
+    elseif strncmp(output,'%textVAR',8)
+        displayval = output(13:end);
+        istr = output(9:10);
+        i = str2double(istr);
+        VariableDescriptions(i) = {displayval};
+        VariableValues(i) = {[]};
+        NumbersOfVariables = i;
+    elseif strncmp(output,'%pathnametextVAR',16)
+        displayval = output(21:end);
+        istr = output(17:18);
+        i = str2double(istr);
+        VariableDescriptions(i) = {displayval};
+        VariableValues(i) = {[]};
+        NumbersOfVariables = i;
+    elseif strncmp(output,'%filenametextVAR',16)
+        displayval = output(21:end);
+        istr = output(17:18);
+        i = str2double(istr);
+        VariableDescriptions(i) = {displayval};
+        VariableValues(i) = {[]};
+        NumbersOfVariables = i;
+    elseif strncmp(output,'%infotypeVAR',12)
+        displayval = output(18:end);
+        istr = output(13:14);
+        i = str2double(istr);
+        VariableInfoTypes(i) = {displayval};
+        if ~strcmp(output((length(output)-4):end),'indep') && isempty(VariableValues{i})
+            VariableValues(i) = {'Pipeline Value'};
+        end
+    elseif strncmp(output,'%%%VariableRevisionNumber',25)
+        try
+            VarRevNum = str2double(output(29:30));
+        catch
+            VarRevNum = str2double(output(29:29));
         end
     end
-    fclose(fid);
-catch
-    uiwait(CPerrordlg(['The ' ModuleName ' module could not be found in the directory specified. You will be able to see the module''s saved settings, but it is suggested that CellProfiler be shut down since the stored settings are now corrupt.'],'Error'));
-    Failed = 1;
 end
+fclose(fid);
 
 %%% SUBFUNCTION %%%
 function FailedModule(handles, savedVariables, defaultDescriptions, ModuleName, ModuleNum)
 helpText = ['The settings contained within the selected file are based on an old version of the ',ModuleName,...
     ' module. As a result, it is possible that your old settings are no longer reasonable. '...
-    'Displayed below are the settings retrieved from your file. The default settings for the module '...
-    'have been loaded. You can use the saved settings and to attempt to set up the module again. Sorry '...
-    'for the inconvenience.'];
+    'Displayed below are the settings retrieved from your file. You can use the saved settings '...
+    'to attempt to set up the module again. Sorry for the inconvenience.'];
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
 MainWinPos = get(handles.figure1,'Position');
@@ -965,6 +1054,17 @@ descriptionbox = uicontrol(...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
     'Tag','descriptionbox'); %#ok Ignore MLint
+
+savedtext = uicontrol(...
+    'Parent',LoadSavedWindowHandle,...
+    'BackgroundColor',Color,...
+    'Units','normalized',...
+    'Position',[0.665 0.65 0.2 0.05],...
+    'String','Saved Variables:',...
+    'Style','text',...
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','descriptiontext'); %#ok Ignore MLint
 
 descriptiontext = uicontrol(...
     'Parent',LoadSavedWindowHandle,...
@@ -1312,7 +1412,7 @@ if ModuleNamedotm ~= 0,
                 'Parent',handles.variablepanel,...
                 'Units','pixels',...
                 'BackgroundColor',[.7 .7 .9],...
-                'Callback','handles = guidata(findobj(''tag'',''figure1'')); VariableBoxHandle = get(gco,''UserData''); CurrentChoice = get(VariableBoxHandle,''String''); if exist(CurrentChoice,''file''), Pathname = fileparts(which(CurrentChoice)); else, Pathname = handles.Current.DefaultImageDirectory; end; [Filename Pathname] = uigetfile(fullfile(Pathname,''*.*''),''Pick the file you want.''); pause(.1); figure(handles.figure1); if Pathname == 0, else, set(VariableBoxHandle,''String'',Filename); ModuleHighlighted = get(handles.ModulePipelineListBox,''Value''); ModuleNumber = ModuleHighlighted(1); VariableName = get(VariableBoxHandle,''Tag''); VariableNumberStr = VariableName(12:13); VarNum = str2num(VariableNumberStr); handles.Settings.VariableValues(ModuleNumber,VarNum) = {Filename}; guidata(handles.figure1,handles); end; clear handles VariableBoxHandle CurrentChoice Pathname Filename ModuleHighlighted ModuleNumber VariableName VariableNumberStr VarNum;',...
+                'Callback','handles = guidata(findobj(''tag'',''figure1'')); VariableBoxHandle = get(gco,''UserData''); CurrentChoice = get(VariableBoxHandle,''String''); if exist(CurrentChoice,''file''), if ~isdeployed, Pathname = fileparts(which(CurrentChoice)); end; else, Pathname = handles.Current.DefaultImageDirectory; end; [Filename Pathname] = uigetfile(fullfile(Pathname,''*.*''),''Pick the file you want.''); pause(.1); figure(handles.figure1); if Pathname == 0, else, set(VariableBoxHandle,''String'',Filename); ModuleHighlighted = get(handles.ModulePipelineListBox,''Value''); ModuleNumber = ModuleHighlighted(1); VariableName = get(VariableBoxHandle,''Tag''); VariableNumberStr = VariableName(12:13); VarNum = str2num(VariableNumberStr); handles.Settings.VariableValues(ModuleNumber,VarNum) = {Filename}; guidata(handles.figure1,handles); end; clear handles VariableBoxHandle CurrentChoice Pathname Filename ModuleHighlighted ModuleNumber VariableName VariableNumberStr VarNum;',...
                 'FontName','helvetica',...
                 'FontSize',handles.Preferences.FontSize,...
                 'FontWeight','bold',...
@@ -1919,10 +2019,25 @@ if (length(ModuleHighlighted) > 0)
 % Rodrigo 7/13/06 - Maybe we can check the selection type, and open the Add
 % module window only if the user double-clicked. Nothing will happen
 % otherwise. What do you prefer?
+% Rodrigo 7/20/06 - We may have another problem with this. When
+% ModulePipelineListBox_Callback gets called by ClearPipeline_Callback, it
+% opens the AddModule window because ClearPipeline sets
+% handles.Current.NumberOfModules to 0 right before making the call. I
+% removed the call from ClearPipeline, but the same happens when you use
+% RemoveModule when you only have 1 module in the listbox. Obviously I
+% can't remove the call from RemoveModule_Callback because it's necessary,
+% so we might need to add some kind of test here. I checked every other
+% call to ModulePipelineListBox_Callback and I think they're all ok.
+% Rodrigo 7/21/06 - I just added another call to this function. I needed to
+% call it in the LoadPipeline_Callback function to refresh the variable
+% panel if the loading was aborted. It also opens the AddModule window.
+
 %        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
- %       if strcmp(Answer,'Yes')
-            AddModule_Callback(findobj('tag','AddModule'),[],handles);
-  %      end
+%       if strcmp(Answer,'Yes')
+%%%%%  if strcmp(get(gcf,'SelectionType'),'open') %% these two lines should make it work
+     AddModule_Callback(findobj('tag','AddModule'),[],handles);
+%%%%%  end
+%      end
     end
 else
     CPhelpdlg('No module highlighted.');
@@ -3079,7 +3194,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
                 Image = CPimread(fullfile(PathName, FileName));
                 CPfigure(handles,'image','name',FileName);
                 CPimagesc(Image,handles);
-                colormap(gray);
+                colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
                 FileName = strrep(FileName,'_','\_');
                 title(FileName);
             catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
@@ -3098,7 +3213,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
             Image = CPimread(fullfile(PathName, FileName));
             CPfigure(handles,'image','name',FileName);
             CPimagesc(Image,handles);
-            colormap(gray);
+            colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
             FileName = strrep(FileName,'_','\_');
             title(FileName);
         catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
@@ -3890,7 +4005,7 @@ Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
 if strncmp(Error,'Error using ==> ',16)
-    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '.', Error];
+    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '. ', Error];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif ~isempty(strfind(Error,'bad magic'))
@@ -4095,6 +4210,7 @@ clear toolsChoice;
 
 %%% END OF HELP HELP HELP HELP HELP HELP BUTTONS %%%
 
+%%% This function is currently never called/used.
 function DownloadModules_Callback(hObject, eventdata, handles)
 
 Answer = CPquestdlg('Are you sure you want to over-write all your existing CellProfiler files?','Overwrite Files?','Yes','No','No');

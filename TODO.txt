@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Rodrigo 7/24/06: We should prevent CellProfiler from opening again if its already open. Some of it functions stop working when this happens. It seems this was corrected before (10/05), but for some reason it's not working.
+
 - Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
 
 - Anne 7-20-06: Does anyone have experience making animations? I'd like someone to animate a slide for a presentation

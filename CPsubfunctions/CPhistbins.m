@@ -1,4 +1,4 @@
-function [BinLocations,PlotBinLocations,XTickLabels,YData,ErrorFlag] = CPhistbins(Measurements,NumberOfBins,MinVal,MaxVal,PlotLog,CountOption)
+function [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(Measurements,NumberOfBins,MinVal,MaxVal,PlotLog,CountOption)
 
 % This function will calculate a histogram based on measurements, bin
 % numbers, minimum value, and maximum value. The x-axis can be in log
@@ -28,8 +28,6 @@ if nargin <= 5
     CountOption = 'Normal';
 end
 
-ErrorFlag = 0;
-
 %%% If measurements are in cell array, convert to matrix.
 if iscell(Measurements)
     SelectedMeasurementsMatrix = cell2mat(Measurements(:));
@@ -45,8 +43,7 @@ if isempty(str2num(MinVal)) %#ok
     if strcmp(MinVal,'automatic')
         MinHistogramValue = PotentialMinHistogramValue;
     else
-        CPerrordlg('The value entered for the minimum histogram value must be either a number or the word ''automatic''.');
-        ErrorFlag = 1;
+        error('The value entered for the minimum histogram value must be either a number or the word ''automatic''.');
     end
 else
     MinHistogramValue = str2num(MinVal); %#ok
@@ -56,8 +53,7 @@ if isempty(str2num(MaxVal)) %#ok
     if strcmp(MaxVal,'automatic')
         MaxHistogramValue = PotentialMaxHistogramValue;
     else
-        CPerrordlg('The value entered for the maximum histogram value must be either a number or the word ''automatic''.')
-        ErrorFlag = 1;
+        error('The value entered for the maximum histogram value must be either a number or the word ''automatic''.')
     end
 else
     MaxHistogramValue = str2num(MaxVal); %#ok
@@ -77,11 +73,9 @@ if strcmpi(PlotLog,'Yes')
     end
     HistogramRange = MaxLog - MinLog;
     if HistogramRange <= 0
-        CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
-        ErrorFlag = 1;
+        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
     elseif imag(HistogramRange) ~= 0
-        CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
-        ErrorFlag = 1;
+        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);
@@ -91,8 +85,7 @@ else
     %%% Determine plot bin locations.
     HistogramRange = MaxHistogramValue - MinHistogramValue;
     if HistogramRange <= 0
-        CPerrordlg('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
-        ErrorFlag = 1;
+        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);

@@ -39,9 +39,14 @@ try
 catch
     CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
 end
- CellProfilerPathname = fileparts(which('CellProfiler'));
- 
-Pathname = fullfile(CellProfilerPathname,'ImageTools');
+if ~isdeployed
+    CellProfilerPathname = fileparts(which('CellProfiler'));
+    Pathname = fullfile(CellProfilerPathname,'ImageTools');
+else
+    uigetdir(cd,'Choose the folder where the image tools are located');
+    pause(.1);
+    figure(gcf);
+end
 ListOfTools{1} = 'Image tools: none loaded';
 try addpath(Pathname)
     %%% Lists all the contents of that path into a structure which includes the
@@ -71,7 +76,7 @@ try addpath(Pathname)
                 end
             end
         end
-        if exist('helpnum')
+        if exist('helpnum','var')
             ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{helpnum}(1:end-2)};
             ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{helpnum}(1:end-2)));
         end

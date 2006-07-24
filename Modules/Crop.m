@@ -310,7 +310,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             title({'Click on 5 or more points to be used to create a cropping ellipse & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             while length(Pre_x) < 5
-                CPwarndlg(['In the ', ModuleName, ' module while in Ellipse shape and Mouse mode, you must click on at least five points in the image and then press enter. Please try again.'], 'Warning');
+                warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Ellipse shape and Mouse mode, you must click on at least five points in the image and then press enter. Please try again.'], 'Warning');
+                uiwait(warnfig);
                 [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
             end 
             [a b c] = size(ImageToBeCropped);
@@ -319,7 +320,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 Pre_x(Pre_x>b) = b-1;
                 Pre_y(Pre_y<1) = 1;
                 Pre_y(Pre_y>a) = a-1;
-                CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+                msgfig=CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+                uiwait(msgfig);
             end
             close(CroppingFigureHandle)
             x = Pre_y;
@@ -425,7 +427,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             title({'Click on at least two points that are inside the region to be retained'; '(e.g. top left and bottom right point) & then press Enter.'; 'Press delete to erase the most recently clicked point.'; 'Use Edit > Colormap to adjust the contrast of the image.'})
             [x,y] = getpts(CroppingFigureHandle);
             while length(x) < 2
-                CPwarndlg(['In the ', ModuleName, ' module while in Rectangle shape and Mouse mode, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+                warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Rectangle shape and Mouse mode, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
+                uiwait(warnfig);
                 [x, y] = getpts(CroppingFigureHandle);
             end 
             close(CroppingFigureHandle);
@@ -435,7 +438,8 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 x(x>b) = b-1;
                 y(y<1) = 1;
                 y(y>a) = a-1;
-                CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+                msgfig=CPmsgbox('You have chosen points outside of the range of the image. These points have been rounded to the closest compatible number.');
+                uiwait(msgfig);
             end
             BinaryCropImage = zeros(a,b);
             BinaryCropImage(round(min(y)):round(max(y)),round(min(x)):round(max(x))) = 1;

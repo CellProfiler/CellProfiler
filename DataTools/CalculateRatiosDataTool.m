@@ -91,11 +91,16 @@ end
 
 menuLoop=0;
 while menuLoop == 0
-    [Measure1Object,Measure1fieldname,Measure1featurenumber] = CPgetfeature(handles,1);
-    if isempty(Measure2Object),return,end
-    
-    [Measure2Object,Measure2fieldname,Measure2featurenumber] = CPgetfeature(handles,1);
+    try
+        [Measure1Object,Measure1fieldname,Measure1featurenumber] = CPgetfeature(handles,1);
+        [Measure2Object,Measure2fieldname,Measure2featurenumber] = CPgetfeature(handles,1);
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in CalculateRatiosDataTool. ' ErrorMessage(30:end)]);
+        return
+    end
     if isempty(Measure1Object),return,end
+    if isempty(Measure2Object),return,end
 
     menuLoop = 1;
 end
@@ -141,6 +146,7 @@ end
 %%% Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, FileName),'handles');
+    CPmsgbox(['Updated ',FileName,' successfully saved.'])
 catch
-    errors{FileName} = ['Could not save updated ',FileName,' file.'];
+    CPwarndlg = (['Could not save updated ',FileName,' file.']);
 end

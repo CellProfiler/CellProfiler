@@ -68,7 +68,13 @@ load(fullfile(RawPathname,RawFileName));
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
-[ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,1,{'Features' 'Description'});
+try
+    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles,1,{'Features' 'Description'});
+catch
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the ShowDataOnImage Data Tool. ' ErrorMessage(30:end)]);
+    return
+end
 if isempty(ObjectTypename),return,end
 
 %%% Prompts the user to choose a sample number to be displayed.

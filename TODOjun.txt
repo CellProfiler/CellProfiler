@@ -15,9 +15,10 @@ Project (pending):
 Jun 7/21/06: Need to wait for user input for certain message boxes in several files.
 
 Jun 7/19/06: Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
+=>Jun: Working 7/24/06-
 
 - Anne 7-12-06: The ExportData window needs a bit of redesign. The question Ignore NaN's should be a pulldown menu yes/no (just like the other questions) rather than a checkbox, because depending on how many objects you have (On my computer, this happens when i only have Image + Nuclei), it looks like "Ignore NaN's" is one of the measurements you can choose to export. Also, the pulldown menus have funny-colored corners rather than purple corners. Overall it seems kind of random and messy, so more ideas on how to make it easier to understand would be great. Keep in mind the window size changes depending on how many types of objects you have in the output file.
-=>Jun: Working 7/18/06- Changes made to ExportData.m
+=>Jun: Changes made 7/18/06-7/24/06. Pipeline settings will be saved under same base name as exported data. Added warning message if user does not select any data, and allows user to try again. Redesigned window to be more clear and organized. ExportData.m committed 7/24/06.
 
 Jun 7/19/06: In the "Change Colormap" window of Image Tool, some of the text is cut off. Also, pop up menus in many places have a white box around them. Need to fix background color of these pop up menus.
 =>Jun: Changes made 7/19/06-7/21/06.  CPimagetool.m committed on 7/21/06.

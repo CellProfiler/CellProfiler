@@ -38,8 +38,12 @@ elseif nargin == 2,
         A = fread(fid, 52, 'uchar');
         Width = toDec2(A(5:8));
         Height = toDec2(A(9:12));
+% The image file format is 16-bit, strictly speaking, so this is what will
+% be read out of the header. However, all instruments we know that use this
+% file format have 12-bit cameras, so it's best to hard-code 12-bits and
+% change it later if we ever encounter other depth DIB images.
 %        BitDepth = toDec2(A(15:16));
-BitDepth = 12;
+        BitDepth = 12;
         Channels = toDec2(A(13:14));
        
         LoadedImage = zeros(Height,Width,Channels);
@@ -90,8 +94,12 @@ else
         A = fread(fid, 52, 'uchar');
         Width = toDec2(A(5:8));
         Height = toDec2(A(9:12));
+% The image file format is 16-bit, strictly speaking, so this is what will
+% be read out of the header. However, all instruments we know that use this
+% file format have 12-bit cameras, so it's best to hard-code 12-bits and
+% change it later if we ever encounter other depth DIB images.
 %        BitDepth = toDec2(A(15:16));
-BitDepth = 12;
+        BitDepth = 12;
         Channels = toDec2(A(13:14));
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,

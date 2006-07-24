@@ -61,7 +61,13 @@ while FinalOK == 0
 
     %%% Let the user select which feature to view
     Suffix = {'Features','Text','Description'};
-    [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
+    try
+        [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in the ViewData Data Tool. ' ErrorMessage(30:end)]);
+        return
+    end
     if isempty(ObjectTypename),return,end
 
     %%% Get the description

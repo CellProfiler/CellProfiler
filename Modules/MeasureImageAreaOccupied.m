@@ -176,7 +176,8 @@ drawnow
 [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
 
 %%% Thresholds the original image.
-ThresholdedOrigImage = im2bw(OrigImage,Threshold);
+ThresholdedOrigImage = OrigImage > Threshold;   
+% ThresholdedOrigImage = im2bw(OrigImage,Threshold);
 AreaOccupiedPixels = sum(ThresholdedOrigImage(:));
 AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 
@@ -220,5 +221,5 @@ fieldname = ['AreaOccupied_',ObjectName,'Features'];
 handles.Measurements.Image.(fieldname) = FeatureNames;
 
 fieldname = ['AreaOccupied_',ObjectName];
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = Threshold;
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = {AreaOccupied};
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = {Threshold};

@@ -64,7 +64,6 @@ end
 
 if (errFlg ~= 0)
     error(['Image processing was canceled in the ', ModuleName, ' module because it could not initialize pipeline.']);
-    return;
 end
 
 try

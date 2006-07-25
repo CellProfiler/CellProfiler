@@ -14,6 +14,9 @@ Project (pending):
 
 Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pipeline. 
 
+- Anne 7/24/06: Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
+=>Jun: Changes made 7/25/06. ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m committed on 7/25/06.
+
 Jun 7/19/06: Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
 =>Jun: Changes made 7/24/06-7/25/06. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear. MeasurementCalculator.m committed on 7/25/06.
 

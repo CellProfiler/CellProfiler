@@ -4,15 +4,23 @@ function handles = ApplyThreshold(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Pixels below (or above) a certain threshold are set to zero. The
-% remaining pixels retain their original value or (optional) are shifted to
-% match the threshold used.
+% Pixel intensity below or above a certain threshold is set to zero. 
 % *************************************************************************
 %
 % Settings: 
-% If your answer was not 1, you can expand the thresholding around those
-% excluded bright pixels by entering the number of pixels to expand here:
-% This setting is useful to adjust when you are attempting to
+%
+% When a pixel is thresholded, its intensity value is set to zero so that
+% it appears black.
+%
+% If you wish to threshold dim pixels, change the value for which "Pixels 
+% below this value will be set to zero". In this case, the remaining pixels 
+% can retain their original intensity values or are shifted dimmer to 
+% match the threshold used. 
+%
+% If you wish to threshold bright pixels, change the value for which 
+% "Pixels above this value will be set to zero". In this case, you can 
+% expand the thresholding around them by entering the number of pixels to 
+% expand here: This setting is useful to adjust when you are attempting to
 % exclude bright artifactual objects: you can first set the threshold to
 % exclude these bright objects, but it may also be desirable to expand the
 % thresholded region around those bright objects by a certain distance so

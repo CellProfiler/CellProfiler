@@ -56,7 +56,7 @@ end
 if exist('ChildList','var')
     handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildList);
 else
-    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,' Count'],0);
+    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],0);
     ChildList = 0;
 end
 

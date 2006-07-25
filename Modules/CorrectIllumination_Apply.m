@@ -36,7 +36,7 @@ function handles = CorrectIllumination_Apply(handles)
 % Rescaling:
 % If subtracting the illumination function, any pixels that end up
 % negative are set to zero, so no rescaling of the corrected image is
-% necessary.  If dividing, the resulting corrected image may be in a
+% necessary. If dividing, the resulting corrected image may be in a
 % very different range of intensity values relative to the original,
 % depending on the values of the illumination function. If you are not
 % rescaling, you should confirm that the illumination function is in a
@@ -147,7 +147,7 @@ if strcmp(DivideOrSubtract,'Divide') == 1
 elseif strcmp(DivideOrSubtract,'Subtract') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by subtracting each pixel by the value in the IlluminationImage.
-    CorrectedImage = imsubtract(OrigImage, IllumCorrectFunctionImage);
+    CorrectedImage = imsubtract(OrigImage, single(IllumCorrectFunctionImage));
     %%% Converts negative values to zero.  I have essentially truncated the
     %%% data at zero rather than trying to rescale the data, because negative
     %%% values should be fairly rare (and minor), since the minimum is used to

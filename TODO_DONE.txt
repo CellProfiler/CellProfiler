@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun 7/25/06) (Requested by Anne 7/24/06) - Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
+=>Jun: Changes made to ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m.
+
 (Jun 7/25/06) - Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
 =>Jun: Changes made to MeasurementCalculator.m. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear.
 

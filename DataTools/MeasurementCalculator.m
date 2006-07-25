@@ -48,13 +48,20 @@ if ~exist('handles','var')
     return
 end
 
-%%% Opens a window that lets the user chose what to export
+
+%%% Opens a window that lets the user choose what to export
 %%% This function returns a UserInput structure with the
 %%% information required to carry of the calculations.
-UserInput = UserInputWindow(handles);
+try UserInput = UserInputWindow(handles);
+catch CPerrordlg(lasterr)
+    return
+end
 
 % If Cancel button pressed, return
-if isempty(UserInput),return,end
+if ~isfield(UserInput, 'SaveLocation')
+    return
+end
+
 
 % Get measurements
 Measurements1 = handles.Measurements.(UserInput.ObjectTypename1).(UserInput.FeatureType1);
@@ -97,7 +104,7 @@ end
 
 
 % Add the new measurement to the handles structure. If the 'UserDefined'
-% field doesn't exist this is easy. If it already exists we have append
+% field doesn't exist this is easy. If it already exists we have to append
 % for each image set.
 if ~isfield(handles.Measurements.(UserInput.SaveLocation),'UserDefined')
     handles.Measurements.(UserInput.SaveLocation).UserDefined = NewMeasurement;
@@ -109,7 +116,7 @@ else
     handles.Measurements.(UserInput.SaveLocation).UserDefinedFeatures(end+1) = {UserInput.FeatureDescription};
 end
 save(fullfile(RawPathname, RawFileName),'handles');
-CPmsgbox('Calculation complete!');
+CPmsgbox(['The calculation is complete. Your new measurement has been saved in the output file ', RawFileName, ' in the default directory ', RawPathname]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function UserInput = UserInputWindow(handles)
@@ -123,20 +130,25 @@ function UserInput = UserInputWindow(handles)
 
 % Create window
 Window = CPfigure;
-Width = 4.5;  % inches
-Height = 3.5; % inches
-uiheight = 0.2;
+Width = 4.7;  % inches
+Height = 4; % inches
+uiheight = 0.3;
+FontSize = handles.Preferences.FontSize;
+
 set(Window,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off',...
     'Name','Measurement Calculator','Color',[.7 .7 .9],'Position',[4 4 Width Height]);
 
-BaseY = 3.2;
+BaseY = 3.5;
 uicontrol(Window,'style','text','String','Calculate','Fontweight','bold',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0 BaseY Width uiheight],'backgroundcolor',[.7 .7 .9]);
+    'FontSize',FontSize,'units','inches','position',[0 BaseY Width uiheight],'backgroundcolor',[.7 .7 .9]);
 
 %%% FEATURE 1
-BaseY = 2.7;
-uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize,'units','inches',...
-    'position',[0.1 BaseY 0.7 uiheight],'Callback',...
+BaseY = BaseY - uiheight;
+uicontrol(Window,'style','text','String','A feature:','Fontweight','bold','horizontalalignment','left',...
+    'FontSize',FontSize,'units','inches','position',[0.1 BaseY 1 uiheight],'backgroundcolor',[.7 .7 .9]);
+BaseY = BaseY - uiheight;
+uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[.7 .7 .9],'FontSize',FontSize,'units','inches',...
+    'position',[0.1 BaseY 0.9 uiheight],'Callback',...
     ['[cobj,cfig] = gcbo;',...
     'UserData = get(cfig,''UserData'');',...
     'try,',...
@@ -159,22 +171,26 @@ uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[
     'end,',...
     'clear variables;']);
 
-uicontrol(Window,'style','text','String','Feature:','Fontweight','bold','horizontalalignment','left',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.1 BaseY+uiheight 1 uiheight],'backgroundcolor',[.7 .7 .9]);
+
 Feature1 = uicontrol(Window,'style','text','String','',...
-    'Fontsize',handles.Preferences.FontSize,'units','inches','position',[0.9 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
+    'Fontsize',FontSize,'units','inches','position',[1.1 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
 
 %%% OPERATION
-BaseY = 2.25;
-Operation1 = uicontrol(Window,'Style','popupmenu','String',{'multiplied','divided'},'FontSize',8,...
-    'backgroundcolor',[1 1 1],'units','inches','position',[0.1 BaseY 0.8 uiheight]);
+BaseY = BaseY - uiheight*1.5;
+uicontrol(Window,'style','text','String','will be:','Fontweight','bold','horizontalalignment','left',...
+    'FontSize',FontSize,'units','inches','position',[0.1 BaseY 1 uiheight],'backgroundcolor',[.7 .7 .9]);
+Operation1 = uicontrol(Window,'Style','popupmenu','String',{'multiplied','divided'},'FontSize',FontSize,...
+    'backgroundcolor',[.7 .7 .9],'units','inches','position',[1.1 BaseY 1.3 uiheight]);
 Operation2 = uicontrol(Window,'Style','popupmenu','String',{'objectwise by','by the image mean of','by the image median of'},...
-    'backgroundcolor',[1 1 1],'FontSize',8,'units','inches','position',[1 BaseY 1.4 uiheight]);
+    'backgroundcolor',[.7 .7 .9],'FontSize',FontSize,'units','inches','position',[2.5 BaseY 2.1 uiheight]);
 
 %%% FEATURE 2
-BaseY = 1.7;
-uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize,'units','inches',...
-    'position',[0.1 BaseY 0.7 uiheight],'Callback',...
+BaseY = BaseY - uiheight*1.5;
+uicontrol(Window,'style','text','String','another feature:','Fontweight','bold','horizontalalignment','left',...
+    'FontSize',FontSize,'units','inches','position',[0.1 BaseY 2 uiheight],'backgroundcolor',[.7 .7 .9]);
+BaseY = BaseY - uiheight;
+uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[.7 .7 .9],'FontSize',FontSize,'units','inches',...
+    'position',[0.1 BaseY 0.9 uiheight],'Callback',...
     ['[cobj,cfig] = gcbo;',...
     'UserData = get(cfig,''UserData'');',...
     'try,',...
@@ -197,30 +213,36 @@ uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[
     'end,',...
     'clear Variables;']);
 
-uicontrol(Window,'style','text','String','Feature:','Fontweight','bold','horizontalalignment','left',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.1 BaseY+uiheight 1 uiheight],'backgroundcolor',[.7 .7 .9]);
+
 Feature2 = uicontrol(Window,'style','text','String','',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.9 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
+    'FontSize',FontSize,'units','inches','position',[1.1 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
 
 %%% MEASUREMENT DESCRIPTION AND WHERE TO SAVE
-BaseY = 0.9;
-uicontrol(Window,'style','text','String','Enter description and where to save:','Fontweight','bold','horizontalalignment','left',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.1 BaseY+uiheight 3.5 uiheight],'backgroundcolor',[.7 .7 .9]);
-FeatureDescription = uicontrol(Window,'style','edit','string','Default measurement description','FontSize',handles.Preferences.FontSize,...
+BaseY = BaseY - uiheight*2.5;
+uicontrol(Window,'style','text','String','Name your new measurement:','Fontweight','bold','horizontalalignment','left',...
+    'FontSize',FontSize,'units','inches','position',[0.1 BaseY+uiheight 3.5 uiheight],'backgroundcolor',[.7 .7 .9]);
+FeatureDescription = uicontrol(Window,'style','edit','string','Default measurement description','FontSize',FontSize,...
     'backgroundcolor',[1 1 1],'units','inches','position',[0.1 BaseY+0.03 Width-0.2 uiheight]);
-uicontrol(Window,'style','text','String','handles.Measurements.','horizontalalignment','left',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[0.1 BaseY-uiheight-0.05 1.5 uiheight],'backgroundcolor',[.7 .7 .9]);
-SaveLocation = uicontrol(Window,'Style','popupmenu','string',{'',''},'FontSize',handles.Preferences.FontSize,...
-    'backgroundcolor',[1 1 1],'units','inches','position',[1.23 BaseY-uiheight 0.9 uiheight]);
-uicontrol(Window,'style','text','String','.UserDefined','horizontalalignment','left',...
-    'FontSize',handles.Preferences.FontSize,'units','inches','position',[2.15 BaseY-uiheight-0.05 1 uiheight],'backgroundcolor',[.7 .7 .9]);
+BaseY = BaseY - uiheight*1.5;
+uicontrol(Window,'style','text','String','Associate this measurement with:','Fontweight','bold','horizontalalignment','left',...
+    'FontSize',FontSize,'units','inches','position',[0.1 BaseY 2.5 uiheight],'backgroundcolor',[.7 .7 .9]);
+SaveLocation = uicontrol(Window,'Style','popupmenu','string',{'',''},'FontSize',FontSize,...
+    'backgroundcolor',[.7 .7 .9],'units','inches','position',[2.6 BaseY 1.8 uiheight]);
 
-%%% EXPORT AND CANCEL BUTTONS
+%HELP BUTTON
+Help_Callback = 'CPhelpdlg(''Depending on [your choice] in this drop down menu, the measurements will be saved in handles.Measurements.[your choice].UserDefined.'')';
+uicontrol(Window,'style','pushbutton','String','?','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[4.4 BaseY 0.2 uiheight],'BackgroundColor',[.7 .7 .9],'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+
+%%% CALCULATE AND CANCEL BUTTONS
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
-calculatebutton = uicontrol(Window,'style','pushbutton','String','Calculate','FontSize',handles.Preferences.FontSize,'units','inches',...
-    'position',[posx 0.1 0.75 0.3],'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear variables;','BackgroundColor',[.7 .7 .9]);
-uicontrol(Window,'style','pushbutton','String','Cancel','FontSize',handles.Preferences.FontSize,'units','inches',...
-    'position',[posx+0.95 0.1 0.75 0.3],'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear variables;','BackgroundColor',[.7 .7 .9]);
+calculatebutton = uicontrol(Window,'style','pushbutton','String','Calculate','Fontweight','bold','FontSize',FontSize,'units','inches',...
+    'position',[posx 0.1 0.75 0.3],'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear cobj cfig;','BackgroundColor',[.7 .7 .9]);
+cancelbutton = uicontrol(Window,'style','pushbutton','String','Cancel','Fontweight','bold','FontSize',FontSize,'units','inches',...
+    'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
+
 
 % Store some variables in the current figure's UserData propery
 UserData.handles = handles;
@@ -237,11 +259,12 @@ while 1
     uiwait(Window)
 
     % Action depending on the user input
-    if get(calculatebutton,'UserData') == 1                  % The Calculate button pressed
+    if ishandle(calculatebutton)                  % The Calculate button pressed
         UserInput = get(Window,'UserData');
         if ~isfield(UserInput,'FeatureNo1') || ~isfield(UserInput,'FeatureNo2')
-            CPerrordlg('Please choose two features!')          % Check that both feature fields are filled out...
-            set(calculatebutton,'UserData',0);               % Reset button press
+            warnfig=CPwarndlg('Please choose two features!');          % Check that both feature fields are filled out...
+            uiwait(warnfig);
+            set(calculatebutton,'UserData',[]);               % Reset button press
         else
             % If both features are selected we can continue
             UserInput = rmfield(UserInput,{'handles','Feature1','Feature2'});    % Remove some unnecessary fields and
@@ -265,12 +288,12 @@ while 1
                 UserInput.Operation2 = 'median';
             end
 
-            close(Window);
+            delete(Window);
             return
         end
     else                                                      % The user pressed the cancel button or closed the window.
         UserInput = [];
-        if ishandle(Window),close(Window);end
+        if ishandle(Window),delete(Window);end
         return
     end
 end

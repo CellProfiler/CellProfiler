@@ -21,7 +21,7 @@ function handles = CreateBatchFiles(handles)
 % you can use either the full MATLAB source code (i.e. the Developer's
 % version) or the CPCluster MATLAB source code. If you do not have MATLAB
 % licenses for every node of your cluster, you can use the Compiled version
-% of CPCluster. These versions are available at www.cellprofiler.org For
+% of CPCluster. These versions are available at www.cellprofiler.org. For
 % more information, please read Help -> Getting Started -> Batch
 % Processing.
 %

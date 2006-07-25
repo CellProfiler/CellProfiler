@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+(Jun 7/25/06) - Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
+=>Jun: Changes made to MeasurementCalculator.m. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear.
+
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
 Note: no longer necessary because the info is now extracted from the DIB file itself
 

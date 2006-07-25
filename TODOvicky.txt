@@ -1,12 +1,13 @@
 TODO
 
-- (Requested by Anne 2-22-06) - In ShowDataOnImage data tool, if you have produced an output file that uses LoadImages to access images in several different subdirectories, when it goes looking for the image automatically it cannot find it.  The image name is stored in the format SUBDIR/Imagename.tif or something like that, and even if SUBDIR exists and Imagename.tif is in that subfolder, it cannot open the image automatically for some reason - my guess is the construction of the path + filename is erroneous.
-
-
--(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
-
+- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
 DONE
+
+THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
+
+- (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
+
 - Anne 7-12-06 (GOES WITH Mike 7-11-06): I added a new thresholding method to CPthreshold sbufunction, called Background. I have adjusted the help in IdentifyPrimAutomatic to describe this new method, and I have added Background Global to this list of choices selectable within IdentifyPrimAutomatic. There are several things to be done, though:
 (1) I got it working only for the one combination I was using, which did not require any cropping. Make sure that using the Background Global option does the correct thing if you previously crop the image in a circle shape. When determining a threshold, CPthreshold should ignore parts of the image that have been cropped away, which have the value zero. This is why CPthreshold goes looking in the handles for an image called CropMaskBlabla. Right now, we are pretty sure CPthreshold is a bit of a mess in this regard. Some combinations of options work fine but others don't. So (see Mike's 7-11 request) this whole process needs some overhauling.
 (2) Right now Background method only works in global mode, because if you choose Background adaptive, it is not sure how to deal with a cropmask (due to the block processing).
@@ -83,4 +84,18 @@ http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program wou
 - (6/15/06-6/19/06) Combine Module - Combines up to 3 images
 
 
+PROJECT
+
++++ (Requested by Anne) - Particle tracking over time module. At the very least, (Ray 7-6-06), we should perhaps implement something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary. 
+Good references:
+1 - Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
+2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
+3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
+4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
+
+RESEARCH
+(Miura)
+
+
+PLAN
 

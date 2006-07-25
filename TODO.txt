@@ -36,8 +36,6 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stac
 
 - (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
 
-- (Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
-
 - (Requested by Anne 12-16-05)- Design an informational brochure
 
 - (Requested by Anne 12-15-05)- Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps.
@@ -59,8 +57,6 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 - (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
 - (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters and talk to Adam. We will probably put this tool in CellVisualizer instead.
-
-- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 

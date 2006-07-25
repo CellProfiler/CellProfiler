@@ -15,7 +15,7 @@ Project (pending):
 Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pipeline. 
 
 Jun 7/19/06: Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
-=>Jun: Working 7/24/06- Increased spacing and font. Also added help button and made instructions more clear.
+=>Jun: Changes made 7/24/06-7/25/06. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear. MeasurementCalculator.m committed on 7/25/06.
 
 Jun 7/21/06: Need to wait for user input for warning dialogs and message boxes in Rotate and Crop modules. When a warning or message occurs in mouse mode while running the pipeline, other windows refresh and usually cover them. Warning dialogs and message boxes should be kept on top of all other windows until user closes them.
 =>Jun: Changes made 7/24/06. Rotate.m and Crop.m committed on 7/24/06.

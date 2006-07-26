@@ -1,5 +1,17 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun 7/26/06) (Requested by Anne 12-09-05) - See 'Potential improvement' in the Histogram data tool.
+% Potential improvement: You might want to load names (using LoadText
+% module or AddData data tool) for each image so that each histogram you
+% make will be labeled with those names. We hope to someday improve the
+% module to allow this. If you choose to import sample names here, you will
+% need to select a text file that contains one name for every sample, even
+% if you only plan to view a subset of the image data as histograms.
+=>Jun (Project Task): Changes already made and Histogram.m committed on 7/17/06. See in TODO_DONE.txt: (Jun, 7/17/06) (Requested by Anne 7-11-06). 'Potential improvement' text removed from help in Histogram.m. Help also updated. New changes made to Histogram.m on 7/26/06.
+
+- (Jun 7/26/06) (Requested by Anne) - Combine code for Histograms (ISN'T This done already?)
+=>Jun (Project Task): Yes
+
 - (Jun 7/25/06) (Requested by Anne 7/24/06) - Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
 =>Jun: Changes made to ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m.
 

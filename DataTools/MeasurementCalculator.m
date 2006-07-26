@@ -121,11 +121,9 @@ CPmsgbox(['The calculation is complete. Your new measurement has been saved in t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function UserInput = UserInputWindow(handles)
 % This function displays a window so that lets the user choose which
-% measurements to export. If the return variable 'ObjectNames' is empty
+% measurements to export. If the return variable 'UserInput' is empty
 % it means that either no measurements were found or the user pressed
-% the Cancel button (or the window was closed). 'Summary' takes on the values'yes'
-% or 'no', depending if the user only wants a summary report (mean and std)
-% or a full report.
+% the Cancel button (or the window was closed). 
 
 
 % Create window

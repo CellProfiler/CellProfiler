@@ -216,7 +216,7 @@ OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
+%textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR05 = Otsu Global
 %choiceVAR05 = Otsu Adaptive
 %choiceVAR05 = MoG Global
@@ -290,6 +290,14 @@ PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented'
 %%% limits. Checks first to see whether the appropriate image exists.
 EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
+%%% Checks if a custom entry was selected for Threshold
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
+    GetThreshold = 0;
+    BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+else
+    GetThreshold = 1;
+end
+
 %%% Checks that the Min and Max threshold bounds have valid values
 index = strfind(ThresholdRange,',');
 if isempty(index)
@@ -306,13 +314,20 @@ drawnow
 
 %%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
-[handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+if GetThreshold
+    [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+else Threshold = 0; % should never be used
+end
 %%% ANNE REPLACED THIS LINE 11-06-05.
 %%% Thresholds the original image.
 % ThresholdedOrigImage = im2bw(OrigImage, Threshold);
 
 %%% Thresholds the original image.
-ThresholdedOrigImage = OrigImage > Threshold;
+if GetThreshold
+    ThresholdedOrigImage = OrigImage > Threshold;
+else
+    ThresholdedOrigImage = logical(BinaryInputImage);
+end
 Threshold = mean(Threshold(:));       % Use average threshold downstreams
 
 for IdentChoiceNumber = 1:length(IdentChoiceList)

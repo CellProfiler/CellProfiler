@@ -11,25 +11,25 @@ function Histogram(handles)
 % The object measurements can be displayed in histogram format using this
 % tool.  As prompted, select the output file containing the measurements,
 % then choose the measurement parameter to be displayed, and the sample
-% information label (not sure if this is functional right now). It may take
-% some time to then process the data.
+% information label. It may take some time to then process the data.
 %
 % Settings:
 %
 % * Which images' measurements to display or export - To display data from
 % only one image, enter that image's number as both the first and last
 % sample)
+% * The color that the inital plot should be
 % * The number of bins to be used
-% * The minimum and maximum values to be used for the histogram - on the X
-% axis
+% * The minimum and maximum values to be used for the histogram - on the 
+% measurement axis
 % * Whether you want all the objects' data to be displayed in a single
 % (cumulative) histogram or in separate histograms
 % * Whether you want to calculate histogram data only for objects meeting a
 % threshold in a measurement - you will be asked later which measurement to
 % use for this thresholding
-% * Whether you want the Y axis (number of cells) to be absolute (the same
-% for all histograms) or relative (scaled to fit the maximum value for that
-% sample)
+% * Whether you want the Y axis (number of objects) to be absolute (the 
+% same for all histograms) or relative (scaled to fit the maximum value for
+% that sample)
 % * Whether you want to display the results as a compressed histogram
 % (heatmap) rather than a conventional histogram
 % * Whether you want to export the data - tab-delimited format, which can
@@ -37,17 +37,27 @@ function Histogram(handles)
 % * Whether you want each row in the exported histogram to contain an image
 % or a bin
 % * Whether you want to display the histograms (Impractical when exporting
-% large amounts of data). 
+% large amounts of data).
+% * Whether you want te histogram bins to contain the actual numbers of 
+% objects in the bin or the percentage of objects in the bin
+% * Whether you want a line, area, or bar graph
+% * Whether you want the axis to be log scale
+% * Whether you want to flip the x and y axes. By flipping the axes, the 
+% measurement axis (e.g. Area of Nuclei), which will normally be on the x
+% axis, will now be on the y axis. Flipping is possible for both bar and
+% line graphs, but not area graphs because there is no function that will
+% work. If you attempt to flip an area graph, you will get a warning 
+% message, and the display will be a normal unflipped area graph.
 %
-% X axis labels for histograms: Typically, the X axis labels will be
-% too crowded.  This default state is shown because you might want to
-% know the exact values that were used for the histogram bins.  The
-% actual numbers can be viewed by clicking the 'This window' button
-% under 'Change plots' and looking at the numbers listed under
-% 'Labels'.  To change the X axis labels, you can click 'Fewer' in the
-% main histogram window, or you can click a button under 'Change
+% Measurement axis labels for histograms: Typically, the measurement axis 
+% labels will be too crowded.  This default state is shown because you 
+% might want to know the exact values that were used for the histogram 
+% bins.  The actual numbers can be viewed by clicking the 'This window' 
+% button under 'Change plots' and looking at the numbers listed under
+% 'Labels'.  To change the measurement axis labels, you can click 'Fewer' 
+% in the main histogram window, or you can click a button under 'Change
 % plots' and either change the font size on the 'Style' tab, or check
-% the boxes marked 'Auto' for 'Ticks' and 'Labels' on the 'X axis'
+% the boxes marked 'Auto' for 'Ticks' and 'Labels' on the 'X (or Y) axis'
 % tab. Be sure to check both boxes, or the labels will not be
 % accurate. To revert to the original labels, click 'Restore' in the
 % main histogram window, but beware that this function does not work
@@ -57,8 +67,8 @@ function Histogram(handles)
 % Change plots/change bars buttons: These buttons allow you to change
 % properties of the plots or the bars within the plots for either
 % every plot in the window ('This window'), the current plot only
-% ('Current'), or every plot inevery open window ('All windows').
-% This include colors, axis limits and other properties.
+% ('Current'), or every plot in every open window ('All windows').
+% This includes colors, axis limits and other properties.
 %
 % Other notes about histograms: (1) Data outside the range you
 % specified to calculate histogram bins are added together and
@@ -75,13 +85,7 @@ function Histogram(handles)
 % bound for that bin.  In other words, each bar includes data equal to
 % or greater than the label, but less than the label on the bar to its
 % right.
-%
-% Potential improvement: You might want to load names (using LoadText
-% module or AddData data tool) for each image so that each histogram you
-% make will be labeled with those names. We hope to someday improve the
-% module to allow this. If you choose to import sample names here, you will
-% need to select a text file that contains one name for every sample, even
-% if you only plan to view a subset of the image data as histograms.
+
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

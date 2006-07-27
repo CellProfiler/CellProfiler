@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- Sometime in early August we should assess whether we would like to invite Jun and Rodrigo to stay on during the fall semester.
+
 - Anne 7-20-06: Do you see any problem with renaming the measurement category "Neighbors" rather than NumberNeighbors? Many of the individual features have nothing to do with Number. Probably you should be the one to make the change when we are in between cluster projects so that we don't have batch jobs run with mixed naming.
 
 - Cell size - Fly200 (do not trust alignment) and NIRHT (dont trust spreading/crowding). Should we at least look at the controls for cell size?  Let's discuss at imaging subgroup.

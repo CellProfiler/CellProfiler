@@ -123,7 +123,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         fprintf(fmain, 'CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY',TablePrefix);
 
         for i = per_image_names,
-            if strfind(i{1}, 'Filename')
+            if strfind(i{1}, 'FileNames')
                 fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
             elseif  strfind(i{1}, 'Path'),
                 fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
@@ -438,14 +438,13 @@ for img_idx = FirstSet:LastSet
     %print mean, stdev for all measurements per image
 
     fprintf(fimage,',');
-    formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean, 2)-1)];
+    formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
     if size(perobjectvals_mean,1)==1
         fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
-        fprintf(fimage,',');
         for i= 1:size(perobjectvals_mean,2),
-            fprintf(fimage,',',''); %ignore NaN
+            fprintf(fimage,',0'); %ignore NaN
         end
-        fprintf(fimage, '\n');
+        fprintf(fimage,'\n');
     else
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
         fprintf(fimage,',');

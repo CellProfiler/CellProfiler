@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 7/27/06) - Modified code in Combine module so that the combined image results from taking the weighted average of the input images' intensities. Also added some error check and modified code for speed.
+
 - (Jun 7/26/06) (Requested by Anne 12-09-05) - See 'Potential improvement' in the Histogram data tool.
 % Potential improvement: You might want to load names (using LoadText
 % module or AddData data tool) for each image so that each histogram you

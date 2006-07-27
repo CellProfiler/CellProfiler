@@ -13,30 +13,39 @@ function handles = Average(handles)
 %
 % Settings:
 %
+% What did you call the images to be averaged (made into a projection)?:
+%
+% Choose an image from among those loaded by a module or created by the
+% pipeline, which will be averaged with the corresponding images of every
+% image set.
+%
+% What do you want to call the averaged image?:
+%
+% Give a name to the resulting image, which could be used in subsequent
+% modules. See the next setting for restrictions.
+%
 % Are the images you want to use to be loaded straight from a Load Images
 % module, or are they being produced by the pipeline?:
 %
 % If you choose Load Images Module, the module will calculate the single,
-% averaged image the first time through the pipeline (i.e. for
-% cycle 1) by loading every image of the type specified in the Load Images
-% module and averaging them together. It is then acceptable to use the
-% resulting image later in the pipeline. Subsequent runs through the
-% pipeline (i.e. for cycle 2 through the end) produce no new results. The
-% averaged image calculated during the first cycle is still available to
-% other modules during subsequent cycles.
+% averaged image the first time through the pipeline (i.e. for cycle 1) by
+% loading the image of the type specified above of every image set and
+% averaging them together. It is then acceptable to use the resulting image
+% later in the pipeline. Subsequent runs through the pipeline (i.e. for
+% cycle 2 through the end) produce no new results. The averaged image
+% calculated during the first cycle is still available to other modules
+% during subsequent cycles.
 %
 % If you choose Pipeline, the module will calculate the single, averaged
 % image during the last cycle of the pipeline. This is because it must wait
 % for preceding modules in the pipeline to produce their results before it
 % can calculate an averaged image. For example, you cannot calculate the
 % average of all Cropped images until after the last image cycle completes
-% and the last cropped image is produced. With this option, the module does
-% not need to follow a Load Images module; it is acceptable to make the
-% single, averaged image from images produced by other image processing
-% steps in the pipeline. Note that in this mode, the resulting averaged
-% image will not be available until the last cycle has been processed, so
-% the averaged image it produces cannot be used in subsequent modules
-% unless they are instructed to wait until the last cycle.
+% and the last cropped image is produced. Note that in this mode, the
+% resulting averaged image will not be available until the last cycle has
+% been processed, so the averaged image it produces cannot be used in
+% subsequent modules unless they are instructed to wait until the last
+% cycle.
 %
 % See also CorrectIllumination_Calculate.
 
@@ -77,7 +86,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 AveragedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.
+%textVAR03 = Are the images you want to use to be loaded straight from a Load Images module, or are they being produced by the pipeline?
 %choiceVAR03 = Load Images module
 %choiceVAR03 = Pipeline
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,3});

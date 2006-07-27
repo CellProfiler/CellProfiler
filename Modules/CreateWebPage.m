@@ -14,10 +14,10 @@ function handles = CreateWebPage(handles)
 % thumbnail images must be in the same directory as the original images.
 %
 % Settings:
-% Thumbnails: By default, the full-size images will be displayed on the webpage
-% itself. If you have made thumbnail (small versions) of the images, you
-% can have these displayed on the webpage itself, and the full-size images
-% will be displayed when the user clicks on the thumbnails.
+% Thumbnails: By default, the full-size images will be displayed on the
+% webpage itself. If you have made thumbnails (small versions of the
+% images), you can have these displayed on the webpage, and the full-size
+% images will be displayed when the user clicks on the thumbnails.
 %
 % Create webpage (HTML file) before or after processing all images?
 % If the full-size images and thumbnails (optional) already exist on the
@@ -29,7 +29,12 @@ function handles = CreateWebPage(handles)
 % What do you want to call the resulting webpage file (include .htm or
 % .html as the extension)?
 % This file will be created in your default output directory. It can then
-% be copied to your web server.
+% be copied to your web server. The primary difference between .htm and
+% .html is simply that .html can't be represented in a DOS/16 bit operating
+% system which uses the 8.3 file naming convention. Most servers (but not
+% all) that can handle 4 character file extensions can be set up to treat
+% .htm and .html files exactly the same, just as they can be set up to
+% treat .jpg and .jpeg files the same.
 % 
 % Will you have the webpage HTML file in the same folder or one level above
 % the images?

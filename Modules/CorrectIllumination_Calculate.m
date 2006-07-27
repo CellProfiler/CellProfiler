@@ -9,19 +9,19 @@ function handles = CorrectIllumination_Calculate(handles)
 % *************************************************************************
 %
 % This module calculates an illumination function which can be saved to the
-% hard drive for later use (you should save in .mat format using the
-% Save Images module), or it can be immediately applied to images later in
-% the pipeline (using the CorrectIllumination_Apply module). This will
-% correct for uneven illumination of each image.
+% hard drive for later use (you should save in .mat format using the Save
+% Images module), or it can be immediately applied to images later in the
+% pipeline (using the CorrectIllumination_Apply module). This will correct
+% for uneven illumination of each image.
 %
 % Illumination correction is challenging and we are writing a paper on it
 % which should help clarify (TR Jones, AE Carpenter, P Golland, in
 % preparation). In the meantime, please be patient in trying to understand
-% this module... 
+% this module.
 %
 % Settings:
 %
-% Regular or Background intensities:
+% Regular or Background intensities?
 %
 % Regular intensities:
 % If you have objects that are evenly dispersed across your image(s) and
@@ -47,7 +47,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % option in the CorrecIllumination_Apply module, you almost certainly do
 % NOT want to Rescale! See below!!
 % 
-% Each or All:
+% Each or All?
 % Enter Each to calculate an illumination function for each image
 % individually, or enter All to calculate the illumination function from
 % all images at each pixel location. All is more robust, but depends on the
@@ -57,25 +57,24 @@ function handles = CorrectIllumination_Calculate(handles)
 % image individually may make intensity measures not directly comparable
 % across different images.
 %
-% Pipeline or Load Images:
+% Pipeline or Load Images?
 % If you choose Load Images, the module will calculate the illumination
-% correction function the first time through the pipeline by loading
-% every image of the type specified in the Load Images module. It is
-% then acceptable to use the resulting image later in the pipeline. If
-% you choose Pipeline, the module will allow the pipeline to cycle through
-% all of the cycles.  With this option, the module does not need
-% to follow a Load Images module; it is acceptable to make the single,
-% averaged image from images resulting from other image
-% processing steps in the pipeline. However, the resulting average
-% image will not be available until the last cycle has been
-% processed, so it cannot be used in subsequent modules unless they
-% are instructed to wait until the last cycle.
+% correction function the first time through the pipeline by loading every
+% image of the type specified in the Load Images module. It is then
+% acceptable to use the resulting image later in the pipeline. If you
+% choose Pipeline, the module will allow the pipeline to cycle through all
+% of the cycles. With this option, the module does not need to follow a
+% Load Images module; it is acceptable to make the single, averaged image
+% from images resulting from other image processing steps in the pipeline.
+% However, the resulting average image will not be available until the last
+% cycle has been processed, so it cannot be used in subsequent modules
+% unless they are instructed to wait until the last cycle.
 %
 % Dilation:
-% For some applications, the incoming images are binary and each
-% object should be dilated with a gaussian filter in the final
-% averaged (projection) image. This is for a sophisticated method of
-% illumination correction where model objects are produced.
+% For some applications, the incoming images are binary and each object
+% should be dilated with a gaussian filter in the final averaged
+% (projection) image. This is for a sophisticated method of illumination
+% correction where model objects are produced.
 %
 % Smoothing Method:
 % If requested, the resulting image is smoothed. See the help for the

@@ -4,20 +4,33 @@ function handles = Combine(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 images and combines the images. Each color's brightness can be adjusted independently.
+% Takes 1 to 3 grayscale images and combines them into one. Each image's
+% intensity can be adjusted independently.
 % *************************************************************************
+%
+% This module takes grayscale images as inputs, and produces a new one
+% which results from the weighted average of the pixel intensities of the
+% input images. The average is taken by adding the product of each weight
+% by the intensity of its corresponding image, and then dividing that
+% result by the sum of the weights. By taking the weighted average of the
+% pixel intensities, the overall intensity of the resulting image will
+% remain the same as that of the inputs. If you want to change the overall
+% intensity, you should use the Rescale module.
 %
 % Settings:
 %
-% Adjustment factors: Leaving the adjustment factors set to 1 will
-% balance all three colors equally in the final image, and they will
-% use the same range of intensities as each individual incoming image.
-% Using factors less than 1 will decrease the intensity of that
-% color in the final image, and values greater than 1 will increase
-% it.  Setting the adjustment factor to zero will cause that color to
-% be entirely blank.
+% Choose the input images: You must select at least two images which you
+% would like to combine. They must all be the same size, since the average
+% will be taken pixel by pixel.
 %
-% See also GrayToColor.
+% Weights: The weights will determine how each input image will affect the
+% combined one. The higher the weight of an image, the more it will be
+% reflected in the combined image. Because of the way the average is taken,
+% it only matters how these weights relate to each other (e.g. entering
+% weights 0.27, 0.3, and 0.3 is the same as entering weights 0.9, 1, and
+% 1). Make sure all the weights have positive values.
+%
+% See also GrayToColor, ColorToGray.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -46,98 +59,77 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the image to be called Image 1?
-%choiceVAR01 = Leave this black
+%textVAR01 = What did you call the first image to be combined?
+%choiceVAR01 = Leave this blank
 %infotypeVAR01 = imagegroup
-Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+ImageNames{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = What did you call the image to be called Image 2?
-%choiceVAR02 = Leave this black
+%textVAR02 = What did you call the second image to be combined?
+%choiceVAR02 = Leave this blank
 %infotypeVAR02 = imagegroup
-Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ImageNames{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What did you call the image to be colored Image 3?
-%choiceVAR03 = Leave this black
+%textVAR03 = What did you call the third image to be combined?
+%choiceVAR03 = Leave this blank
 %infotypeVAR03 = imagegroup
-Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+ImageNames{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What do you want to call the resulting image?
+%textVAR04 = What do you want to call the combined image?
 %defaultVAR04 = CombinedImage
 %infotypeVAR04 = imagegroup indep
 CombinedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Enter the adjustment factor for Image 1
+%textVAR05 = Enter the weight you want to give the first image
 %defaultVAR05 = 1
-Image1AdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageWeights{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Enter the adjustment factor for Image 2
+%textVAR06 = Enter the weight you want to give the second image
 %defaultVAR06 = 1
-Image2AdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageWeights{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Enter the adjustment factor for Image 3
+%textVAR07 = Enter the weight you want to give the third image
 %defaultVAR07 = 1
-Image3AdjustmentFactor = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+ImageWeights{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines whether the user has specified an Image 3 to be loaded 
-if ~strcmp(Image3Name, 'Leave this black')
-    %%% Read (open) the images and assign them to variables.
-    Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'DontCheckColor','CheckScale');
-    Image3Exists = 1;
-else
-    Image3Exists = 0;
-end
+%%% Make the ImageWeights be numbers
+Weights = str2double(ImageWeights);
 
-%%% Repeat for 1 and 2.
-if ~strcmp(Image2Name, 'Leave this black')
-    Image2 = CPretrieveimage(handles,Image2Name,ModuleName,'DontCheckColor','CheckScale');
-    Image2Exists = 1;
-else Image2Exists = 0;
-end
-
-if ~strcmp(Image1Name, 'Leave this black')
-    Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'DontCheckColor','CheckScale');
-    Image1Exists = 1;
-else Image1Exists = 0;
+%%% If selected, load images and create existance flag matrix for them
+Images = {};
+for i = 1:3
+    if ~strcmp(ImageNames{i},'Leave this blank')
+        try
+            Images{end+1} = CPretrieveimage(handles,ImageNames{i},ModuleName,'DontCheckColor','CheckScale');
+        catch
+            error(['Image processing was canceled in the ' ModuleName 'module because an error occurred while trying to load the image ' ImageNames{i} '. Please make sure it is a valid input image. Perhaps you chose an image that will be created later in the pipeline, in which case you should relocate the Combine module or the other one.']);
+        end
+    else
+        Weights(i) = NaN;
+    end
 end
 drawnow
 
-%%% If any of the colors are to be left black, creates the appropriate
-%%% image.
-if ~Image3Exists && ~Image1Exists && ~Image2Exists
-    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged.'])
+%%% Do error check for number of images, size, and weights
+if length(Images)<2
+    error(['Image processing was canceled in the ' ModuleName ' module because you have not selected enough images to be combined.'])
 end
-if ((~Image3Exists && ~Image1Exists && Image2Exists)||(~Image3Exists && Image1Exists && ~Image2Exists)||(Image3Exists && ~Image1Exists && ~Image2Exists))
-    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected enough images to be merged.'])
+[Rows Columns] = cellfun(@size,Images);
+if any(Rows~=Rows(1)) || any(Columns~=Columns(1))
+    error(['Image processing was canceled in the ' ModuleName ' module because the images selected are not the same size. The pixel dimensions must be identical. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
 end
-if Image3Exists && Image1Exists && ~Image2Exists
-    Image2 = zeros(size(Image3));
-end
-if ~Image3Exists && Image1Exists && Image2Exists
-    Image3 = zeros(size(Image2));
-end
-if Image3Exists && ~Image1Exists && Image2Exists
-    Image1 = zeros(size(Image3));
-end
-
-%%% Checks whether the three images are the same size.
-try
-    if size(Image3) ~= size(Image2)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
-    end
-    if size(Image1) ~= size(Image2)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
-    end
-catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
+Weights = Weights(~isnan(Weights));
+if sum(Weights)<=0 || any(Weights<0)
+    error(['Image processing was canceled in the ' ModuleName ' module because the weights you entered were invalid. Please enter only positive values.']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -145,39 +137,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% If any of the images are binary/logical format, they must be
-%%% converted to a double first before immultiply.
-AdjustedImage1 = immultiply(double(Image1),str2double(Image1AdjustmentFactor));
-AdjustedImage2 = immultiply(double(Image2),str2double(Image2AdjustmentFactor));
-AdjustedImage3 = immultiply(double(Image3),str2double(Image3AdjustmentFactor));
+%%% Make the weights a cell array so we can apply cellfun
+ImageWeights = num2cell(Weights);
 
+%%% If any of the images are binary/logical format, they must be converted
+%%% to a double first before immultiply
+Images = cellfun(@double,Images,'UniformOutput',0);
+WeightedImages = cellfun(@immultiply,Images,ImageWeights,'UniformOutput',0);
 
-if ~Image3Exists && ~Image1Exists && ~Image2Exists
-    error(['Image processing was canceled in the ', ModuleName, ' module because you have not selected any images to be merged.'])
+AddedImages = zeros(size(WeightedImages{1}));
+for i = 1:length(WeightedImages)
+    AddedImages = WeightedImages{i}+AddedImages;
 end
-if ~Image3Exists && ~Image1Exists && Image2Exists
-    CombinedImage = AdjustedImage2;
-end
-if ~Image3Exists && Image1Exists && ~Image2Exists
-    CombinedImage = AdjustedImage1;
-end
-if Image3Exists && ~Image1Exists && ~Image2Exists
-    CombinedImage = AdjustedImage3;
-end
-if Image3Exists && Image1Exists && ~Image2Exists
-    CombinedImage = imadd(AdjustedImage1, AdjustedImage3)/2;
-end
-if ~Image3Exists && Image1Exists && Image2Exists
-    CombinedImage = imadd(AdjustedImage1, AdjustedImage2)/2;
-end
-if Image3Exists && ~Image1Exists && Image2Exists
-    CombinedImage = imadd(AdjustedImage2, AdjustedImage3)/2;
-end
-if Image3Exists && Image1Exists && Image2Exists
-    CombinedImage = imadd(AdjustedImage1, AdjustedImage2);
-    CombinedImage = imadd(CombinedImage, AdjustedImage3)/3;
-end
-
+CombinedImage = AddedImages./sum(Weights);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -196,27 +168,12 @@ if any(findobj == ThisModuleFigureNumber)
     %%% some of the pixels are saturated.
     subplot(2,2,1); 
     CPimagesc(CombinedImage,handles);
-    title(['Merged Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    title(['Combined Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display Image 1.
-    counter = 2;
-    if Image1Exists
-        subplot(2,2,counter); 
-        CPimagesc(Image1,handles); 
-        title('Image 1');
-        counter=counter+1;
-    end
-    %%% A subplot of the figure window is set to display the Image 2.
-    if Image2Exists
-        subplot(2,2,counter); 
-        CPimagesc(Image2,handles); 
-        title('Image 2');
-        counter=counter+1;
-    end
-    %%% A subplot of the figure window is set to display the Image 3.
-    if Image3Exists
-        subplot(2,2,counter);
-        CPimagesc(Image3,handles); 
-        title('Image 3');
+    for i = 1:length(Images)
+        subplot(2,2,i+1)
+        CPimagesc(Images{i},handles);
+        title(['Image ' num2str(i)]);
     end
 end
 

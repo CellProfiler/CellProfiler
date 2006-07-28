@@ -124,6 +124,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 % Get the correct fieldname where measurements are located
 OrigMeasure = Measure;
+CellFlg = 0;
 for i=1:2
     CurrentMeasure = Measure{i};
     CurrentObjectName = ObjectName{i};
@@ -134,19 +135,13 @@ for i=1:2
                 CurrentMeasure = '^AreaOccupied_.*Features$';
                 Fields = fieldnames(handles.Measurements.Image);
                 TextComp = regexp(Fields,CurrentMeasure);
-                A = [];
-                for k = 1:length(TextComp)
-                    if isempty(TextComp{k})
-                        A(end+1) = 0;
-                    else
-                        A(end+1) = 1;
-                    end
-                end
+                A = cellfun('isempty',TextComp);
                 try
-                    CurrentMeasure = Fields{find(A==1)+1};
+                    CurrentMeasure = Fields{find(A==0)+1};
                 catch
                     error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure{i}, ', was not available for ', ObjectName{i}]);
                 end
+                CellFlg = 1;
             end
         case 'Intensity'
             CurrentMeasure = ['Intensity_' CurrentImage];
@@ -154,18 +149,11 @@ for i=1:2
             CurrentMeasure = 'NumberNeighbors';
         case 'Texture'
             CurrentMeasure = ['Texture_[0-9]*[_]?' CurrentImage '$'];
-            Fields = fieldnames(getfield(getfield(handles,'Measurements'),CurrentObjectName));
+            Fields = fieldnames(handles.Measurements.(CurrentObjectName));
             TextComp = regexp(Fields,CurrentMeasure);
-            A = [];
-            for k = 1:length(TextComp)
-                if isempty(TextComp{k})
-                    A(end+1) = 0;
-                else
-                    A(end+1) = 1;
-                end
-            end
+            A = cellfun('isempty',TextComp);
             try
-                CurrentMeasure = Fields{find(A==1)};
+                CurrentMeasure = Fields{A==0};
             catch
                 error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure{i}, ', was not available for ', ObjectName{i}]);
             end
@@ -177,6 +165,9 @@ end
 try
     NumeratorMeasurements = handles.Measurements.(ObjectName{1}).(Measure{1}){SetBeingAnalyzed};
     NumeratorMeasurements = NumeratorMeasurements(:,FeatureNumber{1});
+    if CellFlg
+        NumeratorMeasurements = NumeratorMeasurements{1};
+    end
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because an error ocurred when retrieving the numerator data. Either the category of measurement you chose, ', Measure{1},', was not available for ', ObjectName{1},', or the feature number, ', num2str(FeatureNumber{1}), ', exceeded the amount of measurements.']);
 end
@@ -189,18 +180,22 @@ end
 
 % Check size of data
 if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
-    if strcmp(ObjectName{1},'Image')
-        NumeratorMeasurements = NumeratorMeasurements*ones(size(DenominatorMeasurements));
-    elseif strcmp(ObjectName{2},'Image')
-        DenominatorMeasurements = DenominatorMeasurements*ones(size(NumeratorMeasurements));
-    else
-    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',ObjectName{1},' and ',ObjectName{2},' do not have the same object count.']);
+    try
+        if strcmp(ObjectName{1},'Image')
+            NumeratorMeasurements = NumeratorMeasurements*ones(size(DenominatorMeasurements));
+        elseif strcmp(ObjectName{2},'Image')
+            DenominatorMeasurements = DenominatorMeasurements*ones(size(NumeratorMeasurements));
+        else
+            error('');
+        end
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',ObjectName{1},' and ',ObjectName{2},' do not have the same amount of measurements.']);
     end
 end
 
 % Make measurements and store in handle structure
-DenominatorMeasurements(find(DenominatorMeasurements==0)) = NaN;
-DenominatorMeasurements(find(isnan(DenominatorMeasurements))) = nanmean(DenominatorMeasurements);
+DenominatorMeasurements(DenominatorMeasurements==0) = NaN;
+DenominatorMeasurements(isnan(DenominatorMeasurements)) = nanmean(DenominatorMeasurements);
 FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
     FinalMeasurements = log10(FinalMeasurements);

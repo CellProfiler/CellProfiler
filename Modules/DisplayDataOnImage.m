@@ -45,7 +45,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use for the data, or if using a Ratio, what is the numerator object (the option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which object would you like to use for the data, or if using a Ratio, what is the numerator object?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -94,8 +94,46 @@ drawnow
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
-    Measure = [Measure, '_',Image];
+%%% Get the correct fieldname where measurements are located
+CellFlg = 0;
+switch Measure
+    case 'AreaShape'
+        if strcmp(ObjectName,'Image')
+            Measure = '^AreaOccupied_.*Features$';
+            Fields = fieldnames(handles.Measurements.Image);
+            TextComp = regexp(Fields,Measure);
+            A = cellfun('isempty',TextComp);
+            try
+                Measure = Fields{find(A==0)+1};
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+            end
+            CellFlg = 1;
+        end
+    case 'Intensity'
+        Measure = ['Intensity_' Image];
+    case 'Neighbors'
+        Measure = 'NumberNeighbors';
+    case 'Texture'
+        Measure = ['Texture_[0-9]*[_]?' Image '$'];
+        Fields = fieldnames(handles.Measurements.(ObjectName));
+        TextComp = regexp(Fields,Measure);
+        A = cellfun('isempty',TextComp);
+        try
+            Measure = Fields{A==0};
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+        end
+    case 'Ratio'
+        Measure = '.*Ratio$';
+        Fields = fieldnames(handles.Measurements.(ObjectName));
+        TextComp = regexp(Fields,Measure);
+        A = cellfun('isempty',TextComp);
+        try
+            Measure = Fields{A==0};
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+        end
 end
 
 %%% Reads the image.
@@ -121,11 +159,19 @@ if ErrorFlag
     CPwarndlg(['No objects were identified. This could mean that the measurements you have specified in the ',ModuleName,' are not being processed. Please verify that the Measure module precedes this module.']); 
 else
     ListOfMeasurements = tmp(:,FeatureNo);
+    if CellFlg
+        ListOfMeasurements = ListOfMeasurements{1};
+    end
     StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
     %%% Extracts the XY locations. This is temporarily hard-coded
-    Xlocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,1);
-    Ylocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,2);
+    if ~strcmp(ObjectName,'Image')
+        Xlocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,1);
+        Ylocations = handles.Measurements.(ObjectName).Location{SetBeingAnalyzed}(:,2);
+    else
+        Xlocations = size(OrigImage,2)/2;
+        Ylocations = size(OrigImage,1)/2;
+    end
 
     %%%%%%%%%%%%%%%
     %%% DISPLAY %%%
@@ -139,7 +185,9 @@ else
     CPimagesc(OrigImage,handles);
     colormap(gray);
     FeatureDisp = handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNo};
-    title([ObjectName,', ',FeatureDisp,' on ',Image])
+    Title = [ObjectName,', ',FeatureDisp,' on ',Image];
+    Title = strrep(Title,'_','\_');
+    title(Title);
 
     %%% Overlays the values in the proper location in the image.
     TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...

@@ -92,13 +92,13 @@ end
 
 %textVAR07 = Enter the range for frequency counts on the Y axis ('Min Max'):
 %defaultVAR07 = Automatic
-MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
 %textVAR08 = Do you want to use a logarithmic scale for the histogram?
 %choiceVAR08 = No
 %choiceVAR08 = Yes
-LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = Do you want to use absolute numbers of objects or percentage of total objects?

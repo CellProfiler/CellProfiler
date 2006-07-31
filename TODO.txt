@@ -22,8 +22,6 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stac
 
 - (Anne 5/10/06) - When analyzing images in CellProfiler, after every cycle should we check to see what images are used downstream (checking all the imagegroup members) and strip the rest out? This would save a lot of memory.
 
-- (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
-
 - (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
 
 - (Anne 4-19-06) - I fixed a bug in SaveImages module so that a proper error message appears if you specify an image file name for the base name that is not in the handles structure already. But we should doublecheck that SaveImages still works for the cases when the base name is (1) N for sequential numbers (2) type in one file name for all the images (=DesiredFilename), then appending sequential numbers using the following variable set to N, and (3) type in one file name for all the images (=DesiredFilename) for the case where you want to save an avi movie.

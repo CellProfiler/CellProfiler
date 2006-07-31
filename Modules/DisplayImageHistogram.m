@@ -7,7 +7,19 @@ function handles = DisplayImageHistogram(handles)
 % Produces a histogram of the intensity of pixels within an image.
 % *************************************************************************
 %
-% The resulting histograms can be saved using the Save Images module.
+% This module creates a histogram that shows the pixel intensity of the
+% input image. The histogram can then be saved using the SaveImages module.
+%
+% Settings:
+% 
+% How many histograms bins do you want?
+% Choose how many bins to use (i.e. in how many sets do you want the data
+% distributed).
+%
+% Enter the range for frequency counts on the Y axis:
+% Choose the minimum and maximum number of frequency counts you want to
+% have displayed (i.e. the range of the Y axis). The entry must be in the
+% format 'Min Max' (without the quotation marks).
 %
 % See also DisplayHistogram.
 
@@ -48,7 +60,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = How many histogram bins do you want?
+%textVAR03 = How many histogram bins would you like to use?
 %choiceVAR03 = Automatic
 %choiceVAR03 = 2
 %choiceVAR03 = 16
@@ -56,7 +68,7 @@ HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 NumBins = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Enter the range for frequency counts on the Y axis (Min,Max):
+%textVAR04 = Enter the range for frequency counts on the Y axis ('Min Max'):
 %choiceVAR04 = Automatic
 FreqRange = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu custom
@@ -78,9 +90,7 @@ OptionalCmds = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which cycle is being analyzed.
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-NumberOfImageSets = handles.Current.NumberOfImageSets;
+%%% Nothing really needed here
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% DATA ANALYSIS %%%
@@ -100,16 +110,26 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
 %%% Activates the appropriate figure window.
-HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-if strcmp(NumBins,'Automatic')
+if strcmpi(NumBins,'Automatic')
     imhist(OrigImage);
 else
     imhist(OrigImage, str2double(NumBins));
 end
 
-if ~strcmp(FreqRange,'Automatic')
-    YRange = strread(FreqRange);
+%%% Restore window settings that are lost in call to imhist
+HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+title([ImageName ' pixel intensity histogram'])
+set(ThisModuleFigureNumber,'Name',[ModuleName ' Display, cycle # '])
+drawnow
+
+if ~strcmpi(FreqRange,'Automatic')
+    try
+        YRange = strread(FreqRange);
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the range for frequency counts on the Y axis was invalid. Please follow the specified format.']);
+    end
     ylim(YRange);
 end
 
@@ -117,6 +137,6 @@ if ~strcmp(OptionalCmds, '.')
     eval(OptionalCmds);
 end
 
+%%% Store into handles structure
 OneFrame = getframe(HistHandle);
 handles.Pipeline.(HistImage)=OneFrame.cdata;
-close(ThisModuleFigureNumber);

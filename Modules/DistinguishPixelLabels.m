@@ -39,10 +39,10 @@ function handles = DistinguishPixelLabels(handles)
 %   advanced than distance from peaks to calculate probability
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
-% - getsub2ind can be optimized so that it only returns the MEM array,
-%   which is stored not as a persistent var in a subfxn but in the whole
-%   function, allowing no "persistent" calls to be made, no nasty "init"
-%   syntax for the subfxn, and (perhaps) slightly faster lookup of answers
+% - working on the automatic, per-image calculation of each type of 
+%   intensity peaks - display needs to be fixed, and why do no/very 
+%   few pixels get labeled as nuclei?
+
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -77,8 +77,9 @@ BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 %infotypeVAR05 = imagegroup indep
 
 %textVAR06 = Choose peak pixel intensity selection method:
-%choiceVAR06 = Numeric
-%choiceVAR06 = Mouse
+%choiceVAR06 = Automatic - Per Image
+%choiceVAR06 = Numeric - All
+%choiceVAR06 = Mouse - All
 PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
@@ -105,21 +106,21 @@ MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR12 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR12 = imagegroup
 LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%inputtypeVAR12 = popupmenu custom
 
-%textVAR13 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR13 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR13 = imagegroup
 LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
+%inputtypeVAR13 = popupmenu custom
 
 %textVAR14 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
 %defaultVAR14 = Do not save
 SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%%%VariableRevisionNumber = 0
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -132,20 +133,20 @@ drawnow
 %%% numeric, preset peak illumination values
 if handles.Current.SetBeingAnalyzed == 1
 
-    if strcmp(PeakSelectionMethod,'Numeric')
+    if strncmp(PeakSelectionMethod,'Numeric',7)
         
         %%% Parses user input for the three points
         NucleiPixel = str2num(NucleiPeakInputValues); %#ok ignore MLint
-        Nx = NucleiPixel(1);
-        Ny = NucleiPixel(2);
+        NxDNA = NucleiPixel(1);
+        NyActin = NucleiPixel(2);
         CellsPixel = str2num(CellsPeakInputValues); %#ok ignore MLint
-        Cx = CellsPixel(1);
-        Cy = CellsPixel(2);
+        CxDNA = CellsPixel(1);
+        CyActin = CellsPixel(2);
         BackgroundPixel = str2num(BackgroundPeakInputValues); %#ok ignore MLint
-        BGx = BackgroundPixel(1);
-        BGy = BackgroundPixel(2);
+        BGxDNA = BackgroundPixel(1);
+        BGyActin = BackgroundPixel(2);
         
-    elseif strcmp(PeakSelectionMethod,'Mouse')
+    elseif strncmp(PeakSelectionMethod,'Mouse',5)
         %%% The user will be interactively selecting the peak illumination
         %%% values by clicking on a histogram
         if strcmp(MouseInputMethod,'Histogram')
@@ -161,8 +162,14 @@ if handles.Current.SetBeingAnalyzed == 1
             
             %%% Reads (opens) the correction matrix files as specified in
             %%% LoadSingleImage before this module
-            NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
-            CellsCorrMat = CPretrieveimage(handles,LoadedCIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+            if (strcmpi(LoadedNIllumCorrName,'none') || strcmpi(LoadedNIllumCorrName,'Do not load'))...
+                    && (strcmpi(LoadedCIllumCorrName,'none') || strcmpi(LoadedCIllumCorrName,'Do not load'))
+                CorrectIllumination = 0;
+            else
+                NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+                CellsCorrMat = CPretrieveimage(handles,LoadedCIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+                CorrectIllumination = 1;
+            end
             
             %%% Retrieves the path where the images of each type are stored from
             %%% the handles structure, looking in fields set by LoadImages
@@ -182,10 +189,18 @@ if handles.Current.SetBeingAnalyzed == 1
             fieldname = ['FileList', CellsImageName];
             CellsFileList = handles.Pipeline.(fieldname);
             
+            
+            %%% DELETE THIS CODE - ONLY FOR TESTING PURPOSES!
+            DNAHist = zeros(1,100);
+            ActinHist = zeros(1,100);
+            DNAPerImageHists = zeros(length(NucleiFileList),100);
+            ActinPerImageHists = zeros(length(NucleiFileList),100);
+            
             %%% Initializes the sparse matrix representing the sum of all
             %%% intensity histograms
             SumHistogram = sparse(256,256);
-            handle2 = CPhelpdlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles skip this step and will run much more quickly.']);
+            handle1 = CPhelpdlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles skip this step and will run much more quickly.']);
+            StillOpen = 1;
             PrelimStartTime = toc;
             
             %%% Loops through all loaded images during this first cycle
@@ -194,13 +209,17 @@ if handles.Current.SetBeingAnalyzed == 1
             for i=1:length(NucleiFileList)
 
                 %%% Updates a help dialog with progress information every
-                %%% time 5% of images are preprocessed
-                if floor(mod(i-1,length(NucleiFileList)/20)) == 0 && i~= 1
+                %%% time 10% of images are preprocessed
+                if floor(mod(i-1,length(NucleiFileList)/10)) == 0 && i~= 1
+                    if StillOpen % first time this appears
+                        close(handle1);
+                        StillOpen = 0;
+                    end
                     PrelimElapsedTime = toc - PrelimStartTime;
                     EstRemaining = PrelimElapsedTime*((length(NucleiFileList)/(i-1))-1);
-                    handle1 = CPhelpdlg(['Loading image set number ', int2str(i), ' for preliminary histogram calculation (', int2str(100*(i-1)/length(NucleiFileList)), '% complete).  ',...
+                    handle1 = CPhelpdlg(['Loading image set #', int2str(i), ' for preliminary histogram calculation (', int2str(100*(i-1)/length(NucleiFileList)), '% complete).  ',...
                         'Estimated time remaining is ',num2str(EstRemaining/60), ' minutes.'],...
-                        ['Preliminary calculations for module ',ModuleName]);
+                        ['Preliminary calculations for ',ModuleName]);
                 end
                 drawnow
                 [LoadedNucleiImage, handles] = CPimread(fullfile(NucleiPathname,char(NucleiFileList(i))),handles);
@@ -211,8 +230,13 @@ if handles.Current.SetBeingAnalyzed == 1
                 JitteredNucleiImage = LoadedNucleiImage + rand(size(LoadedNucleiImage)) / 256;
                 JitteredCellsImage = LoadedCellsImage + rand(size(LoadedCellsImage)) / 256;
                 %%% Divides by the illumination correction factor matrices
-                CorrectedNucleiImage = JitteredNucleiImage ./ NucleiCorrMat;
-                CorrectedCellsImage = JitteredCellsImage ./ CellsCorrMat;
+                if CorrectIllumination
+                    CorrectedNucleiImage = JitteredNucleiImage ./ NucleiCorrMat;
+                    CorrectedCellsImage = JitteredCellsImage ./ CellsCorrMat;
+                else
+                    CorrectedNucleiImage = JitteredNucleiImage;
+                    CorrectedCellsImage = JitteredCellsImage;
+                end
                 %%% "Clamps" any pixels that remain below the minimum
                 %%% allowed pixel value, set based on the images' bit depth
                 MinimumPixVal = 1/256;
@@ -236,31 +260,50 @@ if handles.Current.SetBeingAnalyzed == 1
                 %%% all images.
                 ThisIterHistogram = sparse(BoxedNucleiImage,BoxedCellsImage,1,256,256);
                 SumHistogram = SumHistogram + ThisIterHistogram;
+                
+                
+                %%% DELETE THIS CODE LATER - FOR TESTING PURPOSES ONLY!
+                DNAPerImageHists(i,:) = hist(BoxedNucleiImage(:),100);
+                ActinPerImageHists(i,:) = hist(BoxedCellsImage(:),100);
+                DNAHist = DNAHist + DNAPerImageHists(i,:);
+                ActinHist = ActinHist + ActinPerImageHists(i,:);
+                
             end
-            close([handle1 handle2]);
+            close(handle1);
+            handles.Pipeline.HistogramToDisplay = SumHistogram;
+            
+
+            %%% DELETE THIS CODE LATER - FOR TESTING PURPOSES ONLY!
+            handles.Pipeline.SumDNAHistogram = DNAHist;
+            handles.Pipeline.SumActinHistogram = ActinHist;
+            handles.Pipeline.AllDNAHistograms = DNAPerImageHists;
+            handles.Pipeline.AllActinHistograms = ActinPerImageHists;
+            handles.Pipeline.TwoDHistogram = SumHistogram;
+            %save('allhistograms.mat','handles');
+            
         else
             error(['Image processing was canceled in the ',ModuleName,' module because, somehow, the method you selected for interactive selection of the pixel intensity peaks (',MouseInputMethod,') is invalid.']);
         end
+        
         %%% Displays the histogram in this module's figure and prompts for
         %%% the user to select the three "peaks" of intensity values, then
         %%% stores these values.
-        
         %%% Determines the figure number to display in.
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
-        %%% displays the histogram in the upper 2/3 of the figure, sets
+        %%% Displays the histogram in the upper 2/3 of the figure, sets
         %%% origin to lower left, uses the desired coloring system, and
         %%% labels the axes
         set(FigureHandle,'units','normalized');
         OldPos = get(FigureHandle,'position');
         set(FigureHandle,'position',[OldPos(1) OldPos(2)-(OldPos(4)*.5) OldPos(3) OldPos(4)*1.5]);
         subplot(3,2,[1 2 3 4]);
-        CPimagesc(SumHistogram,handles);
+        CPimagesc(SumHistogram',handles);
         axis xy;
         axis image;
         set(gcf,'colormap',colormap('jet'));
-        xlabel('Actin staining intensity');
-        ylabel('DNA staining intensity');
+        ylabel('Actin staining intensity');
+        xlabel('DNA staining intensity');
         
         %%% Prompts the user to identify 3 peaks in intensity (& checks
         %%% that input is only one point by looping through each try)
@@ -271,10 +314,10 @@ if handles.Current.SetBeingAnalyzed == 1
             displaytext = 'Select the peak in intensity that is closest to the lower left corner -- low in both DNA and actin stain intensity, it should represent the background pixels.  Click on a point and press Enter to confirm, or just double-click on it.  Press Delete or Backspace to undo your selection, and you can also use MATLAB''s zoom tools if necessary.';
             set(displaytexthandle,'string',[retrytext displaytext])
             drawnow
-            [BGx,BGy] = getpts(FigureHandle);
+            [BGxDNA,BGyActin] = getpts(FigureHandle);
             delete(displaytexthandle);
             drawnow
-            if isscalar(BGx); success=1;
+            if isscalar(BGxDNA); success=1;
             else retrytext = 'Please try again, but this time only select one point.  ';
             end
         end
@@ -282,13 +325,13 @@ if handles.Current.SetBeingAnalyzed == 1
         retrytext = '';
         while success==0 
             displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','position',[80 10 400 130],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+2);
-            displaytext = 'Now select the intensity peak toward the right, formed of the pixels representing cells.  If your images contain confluent cells, this is likely to be the highest (reddest) peak by a significant margin. Click on a point and press Enter to confirm, or just double-click on it.  If you need to undo your selection, press Backspace or Delete, and you can also use MATLAB''s zoom tools if necessary.';
+            displaytext = 'Now select the intensity peak still to the left but nearer to the top, formed of the pixels representing cells.  If your images contain confluent cells, this is likely to be the highest (reddest) peak by a significant margin. Click on a point and press Enter to confirm, or just double-click on it.  If you need to undo your selection, press Backspace or Delete, and you can also use MATLAB''s zoom tools if necessary.';
             set(displaytexthandle,'string',[retrytext displaytext])
             drawnow
-            [Cx,Cy] = getpts(FigureHandle);
+            [CxDNA,CyActin] = getpts(FigureHandle);
             delete(displaytexthandle);
             drawnow
-            if isscalar(Cx); success=1;
+            if isscalar(CxDNA); success=1;
             else retrytext = 'Please try again, but this time only select one point.  ';
             end
         end
@@ -296,33 +339,39 @@ if handles.Current.SetBeingAnalyzed == 1
         retrytext = '';
         while success==0 
             displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','position',[80 10 400 130],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+2);
-            displaytext = 'Finally, select the intensity peak nearest to the top, which represents the pixels that form nuclei.  This peak may be less distinct than the cell peak.  Click on a point and press Enter to confirm, or just double-click on it.  If you need to undo your selection, press Backspace or Delete, and you can also use MATLAB''s zoom tools if necessary.';
+            displaytext = 'Finally, select the intensity peak farthest to the right, which represents the pixels that form nuclei.  This peak may be less distinct than the cell peak.  Click on a point and press Enter to confirm, or just double-click on it.  If you need to undo your selection, press Backspace or Delete, and you can also use MATLAB''s zoom tools if necessary.';
             set(displaytexthandle,'string',[retrytext displaytext])
             drawnow
-            [Nx,Ny] = getpts(FigureHandle);
+            [NxDNA,NyActin] = getpts(FigureHandle);
             delete(displaytexthandle);
             drawnow
-            if isscalar(Nx); success=1;
+            if isscalar(NxDNA); success=1;
             else retrytext = 'Please try again, but this time only select one point.  ';
             end
         end
         subplot(1,1,1);
         set(FigureHandle,'position',OldPos);
         set(FigureHandle,'units','pixels');
-        
-    else 
+
+    elseif strncmp(PeakSelectionMethod,'Automatic',9)
+        %%% do per-image, automatic peak calculation in the IMAGE ANALYSIS
+        %%% step - and do nothing here
+    else
         error(['Image processing was canceled in the ',ModuleName,' module because, somehow, the method you selected for selecting the pixel intensity peaks (',PeakSelectionMethod,') is invalid.']);
     end
-    %%% Stores the found values (which should be only one pixel each) in
-    %%% the handles.Pipeline structure
-    handles.Pipeline.CellsPeak = [Cy;Cx];
-    handles.Pipeline.NucleiPeak = [Ny;Nx];
-    handles.Pipeline.BackgroundPeak = [BGy;BGx];
-    handles.Pipeline.PeakIntensityString = ...
-        sprintf('Peak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',Nx,Ny,Cx,Cy,BGx,BGy);
-
+    
+    if ~strncmp(PeakSelectionMethod,'Automatic',9)
+        %%% Stores the found values (which should be only one pixel each) in
+        %%% the handles.Pipeline structure
+        handles.Pipeline.CellsPeak = [CyActin;CxDNA];
+        handles.Pipeline.NucleiPeak = [NyActin;NxDNA];
+        handles.Pipeline.BackgroundPeak = [BGyActin;BGxDNA];
+        handles.Pipeline.PeakIntensityString = ...
+            sprintf('Peak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',NxDNA,NyActin,CxDNA,CyActin,BGxDNA,BGyActin);
+    end
     %%% Saves the preset psi function to handles structure
     handles.Pipeline.Psi = [.9004,.0203,0;.0996,.9396,.0186;0,.0400,.9814];
+    
     drawnow
 end
 
@@ -338,8 +387,47 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-
 drawnow
+
+if strncmp(PeakSelectionMethod,'Automatic',9)
+    %%% Jitters these images on the log scale
+    NucNonZeros = OrigNucleiImage(OrigNucleiImage >= 0);
+    CellNonZeros = OrigCellsImage(OrigCellsImage >= 0);
+    MinNucPixVal = min(NucNonZeros(:));
+    MinCellPixVal = min(CellNonZeros(:));
+    JNucImage = log(OrigNucleiImage) + rand(size(OrigNucleiImage)) .*...
+        (log(OrigNucleiImage + MinNucPixVal) - log(OrigNucleiImage));
+    JCellImage = log(OrigCellsImage) + rand(size(OrigCellsImage)) .*...
+        (log(OrigCellsImage + MinCellPixVal) - log(OrigCellsImage));
+    
+    JLNucImage = (JNucImage - log(MinNucPixVal)) / -log(MinNucPixVal);
+    JLCellImage = (JCellImage - log(MinCellPixVal)) / -log(MinCellPixVal);
+    
+    %%% Gets thresholds for each image, applies them to get a bw screen
+    NucThreshold = graythresh(JLNucImage);
+    CellThreshold = graythresh(JLCellImage);
+    NucBW = im2bw(OrigNucleiImage,NucThreshold);
+    CellBW = im2bw(OrigCellsImage,CellThreshold);
+    
+    %%% Gets the mean of each image for all the foreground and all the
+    %%% background pixels separately
+    NucleiFGMean = 256*mean(JLNucImage(NucBW));
+    NucleiBGMean = 256*mean(JLNucImage(~NucBW));
+    CellsFGMean = 256*mean(JLCellImage(CellBW));
+    CellsBGMean = 256*mean(JLCellImage(~CellBW));
+    %%% Save the interpolated peaks to the handles structure
+    handles.Pipeline.NucleiPeak = [CellsFGMean;NucleiFGMean];
+    handles.Pipeline.CellsPeak = [CellsFGMean;NucleiBGMean];
+    handles.Pipeline.BackgroundPeak = [CellsBGMean;NucleiBGMean];
+    handles.Pipeline.PeakIntensityString = ...
+        sprintf('Peak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',...
+        NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean);
+    
+    %%% Create the 2D histogram for display purposes
+    RoundNucImage = floor(255 * JLNucImage + 1);
+    RoundCellImage = floor(255 * JLCellImage + 1);
+    handles.Pipeline.HistogramToDisplay = sparse(RoundNucImage,RoundCellImage,1,256,256);
+end
 
 %%% Scales both input images to 0-256, loads them into 1 3D array with a
 %%% padded one-row/col border of zeros
@@ -350,19 +438,20 @@ PaddedCompositeImage(2:end-1,2:end-1,2) = 256*OrigCellsImage;
 LoggedPaddedImage = 32 * (log(PaddedCompositeImage+1)/log(2));
 
 %%% Creates 4 message-holders for the updating message vectors
-Messages.Right = ones(numel(PaddedCompositeImage),3);
-Messages.Left= ones(numel(PaddedCompositeImage),3);
-Messages.Up = ones(numel(PaddedCompositeImage),3);
-Messages.Down = ones(numel(PaddedCompositeImage),3);
+Messages.Right = ones(numel(LoggedPaddedImage),3);
+Messages.Left= ones(numel(LoggedPaddedImage),3);
+Messages.Up = ones(numel(LoggedPaddedImage),3);
+Messages.Down = ones(numel(LoggedPaddedImage),3);
 
 %%% Initializes the sub2ind storage
-getsub2ind('init',size(LoggedPaddedImage));
+%getsub2ind('init',size(LoggedPaddedImage));
+IndicesArray = initsub2ind(size(LoggedPaddedImage));
 AllPhiValues = phi(LoggedPaddedImage,handles);
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
 for i=1:5
-    Messages = Propagate(LoggedPaddedImage,handles,AllPhiValues,Messages);
+    Messages = Propagate(LoggedPaddedImage,handles,AllPhiValues,IndicesArray,Messages);
 end
 drawnow
 
@@ -374,10 +463,10 @@ AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
 x = 2:size(LoggedPaddedImage,2)-1;
 LPISize = size(LoggedPaddedImage);
 for yind = 2:LPISize(1)-1;
-    RawPixelBeliefs = Messages.Up(getsub2ind(LPISize,yind+1,x),:)' .*...
-        Messages.Down(getsub2ind(LPISize,yind-1,x),:)' .* ...
-        Messages.Left(getsub2ind(LPISize,yind,x+1),:)' .* ...
-        Messages.Right(getsub2ind(LPISize,yind,x-1),:)' .* ...
+    RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
+        Messages.Down(IndicesArray(yind-1,x),:)' .* ...
+        Messages.Left(IndicesArray(yind,x+1),:)' .* ...
+        Messages.Right(IndicesArray(yind,x-1),:)' .* ...
         permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
     NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
     [MaxValues, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
@@ -394,6 +483,9 @@ FinalBinaryCells = zeros(size(AllBeliefs));
 FinalBinaryCells(AllBeliefs==2) = 1;
 FinalBinaryBackground = zeros(size(AllBeliefs));
 FinalBinaryBackground(AllBeliefs==3) = 1;
+
+FinalBinaryCellsAndNuc = FinalBinaryCells | FinalBinaryNuclei;
+AdjustedAllBeliefs = (AllBeliefs-1)/2;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -428,10 +520,22 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,2);
     CPimagesc(TempAllBeliefs,handles);
     title('Output');
-    %%% A 'subplot' of the figure window is set to display the
-    %%% user-selected or input intensity peaks
-    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','units','normalized','position',[0.5 0 0.5 0.4],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+4);
-    set(displaytexthandle,'string',handles.Pipeline.PeakIntensityString);
+    
+    if isfield(handles.Pipeline,'HistogramToDisplay')
+        %%% A subplot of the figure window is set to display the histogram
+        %%% and the peaks for each label
+        subplot(2,2,4);
+        CPimagesc(handles.Pipeline.HistogramToDisplay,handles);
+        text(handles.Pipeline.NucleiPeak(2),handles.Pipeline.NucleiPeak(3),'\leftarrow Nuclei peak','HorizontalAlignment','left');
+        text(handles.Pipeline.CellsPeak(2),handles.Pipeline.CellsPeak(3),'\leftarrow Cells peak','HorizontalAlignment','left');
+        text(handles.Pipeline.BackgroundPeak(2),handles.Pipeline.BackgroundPeak(3),'\leftarrow Background peak','HorizontalAlignment','left');
+        title('Peak Intensity Values');
+    else
+        %%% A 'subplot' of the figure window is set to display the
+        %%% user-selected or input intensity peaks
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','units','normalized','position',[0.5 0 0.5 0.4],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+4);
+        set(displaytexthandle,'string',handles.Pipeline.PeakIntensityString);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -440,78 +544,52 @@ end
 drawnow
 
 handles.Pipeline.(NucleiOutputName) = FinalBinaryNuclei;
-handles.Pipeline.(CellsOutputName) = FinalBinaryCells;
+%handles.Pipeline.(CellsOutputName) = FinalBinaryCells;
+handles.Pipeline.(CellsOutputName) = FinalBinaryCellsAndNuc;
 handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
 
 
-if handles.Current.SetBeingAnalyzed == 1 && ~strcmpi(SaveHistogram,'Do not save')
+if handles.Current.SetBeingAnalyzed == 1 && strcmp(MouseInputMethod,'Correction Matrices') && ~strcmpi(SaveHistogram,'Do not save')
     handles.Pipeline.(SaveHistogram) = SumHistogram;
 end
 
 handles.Pipeline.BPAbsoluteBeliefMatrix = AllBeliefs;
 handles.Pipeline.BPProbableBeliefMatrix = AllNormalizedBeliefs;
+handles.Pipeline.BPAdjustedBeliefMatrix = AdjustedAllBeliefs;
 
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
 
-function inds = getsub2ind(varargin)
-%%% Returns the single-term indices for an array based on a vector and a
-%%% scalar of subscripts. 
-%%% Because sub2ind is always called on images of the same size, we can
-%%% optimize it by first initializing a MEM array of the same size with the
-%%% indices for each location; then, getting sub2ind later just involves
-%%% returning either a row, column, or single location from MEM
-persistent MEM
-%%% To initialize, call getsub2ind('init',size(padim))
-if ischar(varargin{1}) && strcmpi(varargin{1},'INIT') == 1
-    MEM = zeros(varargin{2});
-    xs = 1:size(MEM,2);
-    if ndims(MEM) == 3
-        z = size(MEM,3);
-    else z = 1;
-    end
-    for zind = 1:z
-        zs = zind*ones(size(xs));
-        for yind = 1:size(MEM,1)
-            ys = yind*ones(size(xs));
-            MEM(yind,xs,zind) = sub2ind(size(MEM),ys,xs,zs);
-        end
-    end
-else
-    %%% To get sub2ind data, call getsub2ind(size(padim),y,x[,z]) where one
-    %%% of y or x is a scalar and the other is a vector.  NOTE: calling
-    %%% sub2ind would require the scalar here to be in a vector of the same
-    %%% length as the other vector, repeated.  This is a waste of time, so
-    %%% I've removed that here.  Note that a line reading something like
-    %%% this will need to be added to the PassXX subfxns if you wish to
-    %%% stop using this and switch back to sub2ind:
-    %%%      y = yind*ones(size(x))
-    %%% and then sub2ind(size(padim),y,x[,z]) can be called.
-    y = varargin{2};
-    x = varargin{3};
-    if nargin>3
-        z = varargin{4};
-    else
-        z = 1;
-    end
-    inds = MEM(y,x,z);
-    if size(inds,1)>1
-        inds = inds';
+function arr = initsub2ind(inputsize)
+%%% Returns the array of all single-term indices for an array of size
+%%% inputsize, to be indexed instead of calling sub2ind over and over
+arr = zeros(inputsize);
+if size(inputsize,2) == 3
+    z = inputsize(3);
+else z = 1;
+end
+xs = 1:inputsize(2);
+for zind = 1:z
+    zs = zind*ones(size(xs));
+    for yind = 1:inputsize(1)
+        ys = yind*ones(size(xs));
+        arr(yind,xs,zind) = sub2ind(inputsize,ys,xs,zs);
     end
 end
+%%% to get the equivalent of sub2ind(y,x), get arr(yind,x) or arr(y,xind)'
 
-function Messages = Propagate(padim,handles,allphivals,Messages)
+function Messages = Propagate(padim,handles,allphivals,indsarr,Messages)
 %%% Bundles together the passing functions, propagating messages throughout
 %%% the image, simulating loopy propagation by treating the image at each
 %%% step as a tree (a directed graph with no cliques)
 psi = handles.Pipeline.Psi;
-Messages = PassLeft(padim,psi,allphivals,...
-    PassRight(padim,psi,allphivals,...
-    PassDown(padim,psi,allphivals,...
-    PassUp(padim,psi,allphivals,Messages))));
+Messages = PassLeft(padim,psi,allphivals,indsarr,...
+    PassRight(padim,psi,allphivals,indsarr,...
+    PassDown(padim,psi,allphivals,indsarr,...
+    PassUp(padim,psi,allphivals,indsarr,Messages))));
 
-function Messages = PassUp(padim,psi,allphivals,Messages)
+function Messages = PassUp(padim,psi,allphivals,indsarr,Messages)
 %%% For all pixels in a padded image, calculates the message to pass up
 %%% from that location and store it in Messages.Up
 %%% padim should be a NxMx2 image, where N and M are 2 larger than the
@@ -528,62 +606,58 @@ x = 2:size(padim,2)-1;
 %%% for each row, process the entire column (this is vectorized form that
 %%% takes sqrt as long as the original, nonvectorized nested loops)
 for yind = size(padim,1)-1:-1:2
-    from_indices = getsub2ind(size(padim),yind,x);
     %%% saves the messages coming into each pixel in (yind,x) - from the
     %%% pixels to the left going Right, from the right going Left, and from
     %%% below going Up
-    rmsgs = Messages.Right(getsub2ind(size(padim),yind,x-1),:)';
-    lmsgs = Messages.Left(getsub2ind(size(padim),yind,x+1),:)';
-    umsgs = Messages.Up(getsub2ind(size(padim),yind+1,x),:)';
+    rmsgs = Messages.Right(indsarr(yind,x-1),:)';
+    lmsgs = Messages.Left(indsarr(yind,x+1),:)';
+    umsgs = Messages.Up(indsarr(yind+1,x),:)';
     %%% gets the product of all incoming messages, multiplies this by the
     %%% phi values for these pixels, and passes the result through the psi
     %%% function, then normalizes so each column sums to 1
     prelimmessages = psi*(permute(allphivals(yind-1,x-1,:),[3 2 1]).*rmsgs.*lmsgs.*umsgs);
     messages = prelimmessages./repmat(sum(prelimmessages),3,1);
     %%% stores these messages in Messages.Up
-    Messages.Up(from_indices,:) = messages';
+    Messages.Up(indsarr(yind,x),:) = messages';
 end
 
-function Messages = PassDown(padim,psi,allphivals,Messages)
+function Messages = PassDown(padim,psi,allphivals,indsarr,Messages)
 %%% Updates the messages to pass down from each pixel -- see PassUp for
 %%% more complete documentation
 x = 2:size(padim,2)-1;
 for yind = 2:size(padim,1)-1
-    from_indices = getsub2ind(size(padim),yind,x);
-    rmsgs = Messages.Right(getsub2ind(size(padim),yind,x-1),:)';
-    lmsgs = Messages.Left(getsub2ind(size(padim),yind,x+1),:)';
-    dmsgs = Messages.Down(getsub2ind(size(padim),yind-1,x),:)';
+    rmsgs = Messages.Right(indsarr(yind,x-1),:)';
+    lmsgs = Messages.Left(indsarr(yind,x+1),:)';
+    dmsgs = Messages.Down(indsarr(yind-1,x),:)';
     prelimmessages = psi*(permute(allphivals(yind-1,x-1,:),[3 2 1]).*rmsgs.*lmsgs.*dmsgs);
     messages = prelimmessages./repmat(sum(prelimmessages),3,1);
-    Messages.Down(from_indices,:) = messages';
+    Messages.Down(indsarr(yind,x),:) = messages';
 end
 
-function Messages = PassLeft(padim,psi,allphivals,Messages)
+function Messages = PassLeft(padim,psi,allphivals,indsarr,Messages)
 %%% Updates the messages to pass left from each pixel -- see PassUp for
 %%% more complete documentation
 y = 2:size(padim,1)-1;
 for xind = size(padim,2)-1:-1:2
-    from_indices = getsub2ind(size(padim),y,xind);
-    lmsgs = Messages.Left(getsub2ind(size(padim),y,xind+1),:)';
-    umsgs = Messages.Up(getsub2ind(size(padim),y+1,xind),:)';
-    dmsgs = Messages.Down(getsub2ind(size(padim),y-1,xind),:)';
+    lmsgs = Messages.Left(indsarr(y,xind+1),:)';
+    umsgs = Messages.Up(indsarr(y+1,xind),:)';
+    dmsgs = Messages.Down(indsarr(y-1,xind),:)';
     prelimmessages = psi*(permute(allphivals(y-1,xind-1,:),[3 1 2]).*lmsgs.*dmsgs.*umsgs);
     messages = prelimmessages./repmat(sum(prelimmessages),3,1);
-    Messages.Left(from_indices,:) = messages';
+    Messages.Left(indsarr(y,xind),:) = messages';
 end
 
-function Messages = PassRight(padim,psi,allphivals,Messages)
+function Messages = PassRight(padim,psi,allphivals,indsarr,Messages)
 %%% Updates the messages to pass right from each pixel -- see PassUp for
 %%% more complete documentation
 y = 2:size(padim,1)-1;
 for xind = 2:size(padim,2)-1
-    from_indices = getsub2ind(size(padim),y,xind);
-    rmsgs = Messages.Right(getsub2ind(size(padim),y,xind-1),:)';
-    umsgs = Messages.Up(getsub2ind(size(padim),y+1,xind),:)';
-    dmsgs = Messages.Down(getsub2ind(size(padim),y-1,xind),:)';
+    rmsgs = Messages.Right(indsarr(y,xind-1),:)';
+    umsgs = Messages.Up(indsarr(y+1,xind),:)';
+    dmsgs = Messages.Down(indsarr(y-1,xind),:)';
     prelimmessages = psi*(permute(allphivals(y-1,xind-1,:),[3 1 2]).*rmsgs.*dmsgs.*umsgs);
     messages = prelimmessages./repmat(sum(prelimmessages),3,1);
-    Messages.Right(from_indices,:) = messages';
+    Messages.Right(indsarr(y,xind),:) = messages';
 end
 
 

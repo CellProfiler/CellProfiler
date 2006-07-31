@@ -45,7 +45,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which objects' measurements do you want to use for the histogram, or if using a Ratio, what is the numerator object (the option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which objects' measurements do you want to use for the histogram, or if using a Ratio, what is the numerator object?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -90,15 +90,16 @@ if isempty(NumberOfBins)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for number of histogram bins is not valid.']);
 end
 
-%textVAR07 = Do you want to use a logarithmic scale for the histogram?
-%choiceVAR07 = No
-%choiceVAR07 = Yes
-LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
-
-%textVAR08 = Enter the minimum and maximum values for the histogram (Min,Max) or automatic:
-%defaultVAR08 = automatic
+%textVAR07 = Enter the range for frequency counts on the Y axis ('Min Max'):
+%defaultVAR07 = Automatic
 MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR07 = popupmenu custom
+
+%textVAR08 = Do you want to use a logarithmic scale for the histogram?
+%choiceVAR08 = No
+%choiceVAR08 = Yes
+LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR08 = popupmenu
 
 %textVAR09 = Do you want to use absolute numbers of objects or percentage of total objects?
 %choiceVAR09 = Numbers
@@ -113,7 +114,7 @@ NumberOrPercent = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 LineOrBar = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -124,28 +125,66 @@ drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
-    Measure = [Measure, '_',Image];
+CellFlg = 0;
+switch Measure
+    case 'AreaShape'
+        if strcmp(ObjectName,'Image')
+            Measure = '^AreaOccupied_.*Features$';
+            Fields = fieldnames(handles.Measurements.Image);
+            TextComp = regexp(Fields,Measure);
+            A = cellfun('isempty',TextComp);
+            try
+                Measure = Fields{find(A==0)+1};
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+            end
+            CellFlg = 1;
+        end
+    case 'Intensity'
+        Measure = ['Intensity_' Image];
+    case 'Neighbors'
+        Measure = 'NumberNeighbors';
+    case 'Texture'
+        Measure = ['Texture_[0-9]*[_]?' Image '$'];
+        Fields = fieldnames(handles.Measurements.(ObjectName));
+        TextComp = regexp(Fields,Measure);
+        A = cellfun('isempty',TextComp);
+        try
+            Measure = Fields{A==0};
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+        end
+    case 'Ratio'
+        Measure = '.*Ratio$';
+        Fields = fieldnames(handles.Measurements.(ObjectName));
+        TextComp = regexp(Fields,Measure);
+        A = cellfun('isempty',TextComp);
+        try
+            Measure = Fields{A==0};
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+        end
 end
 
 %%% Checks that the Min and Max have valid values
-index = strfind(MinAndMax,',');
-if isempty(index)
-    if strcmpi(MinAndMax,'automatic')
-        MinHistogramValue = 'automatic';
-        MaxHistogramValue = 'automatic';
-    else
-        error(['Image processing was canceled in the ', ModuleName, ' module because the Min and Max size entry is invalid.'])
+if ~strcmpi(MinAndMax,'Automatic')
+    try
+        MinAndMax = strread(MinAndMax);
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the range for frequency counts on the Y axis was invalid. Please follow the specified format.']);
     end
+    MinHistogramValue = MinAndMax(1);
+    MaxHistogramValue = MinAndMax(2);
 else
-    MinHistogramValue = str2double(MinAndMax(1:index-1));
-    MaxHistogramValue = str2double(MinAndMax(index+1:end));
-    if isempty(MinHistogramValue) || isempty(MaxHistogramValue)
-        error(['Image processing was canceled in the ', ModuleName, ' module because you did not enter numbers for the min and max histogram values.']);
-    end
+    MinHistogramValue = 'automatic';
+    MaxHistogramValue = 'automatic';
 end
 
+%%% Get measurements
 try  Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
+    if CellFlg
+        Measurements = Measurements{1};
+    end
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the measurements could not be found. This module must be after a measure module or no objects were identified.']);
 end

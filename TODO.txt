@@ -44,7 +44,8 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stac
 
 - (Requested by Anne 12-09-05)-- We want the manual compiler to generate a page towards the beginning with all the short descriptions from each module and tool as a Quick Reference Guide.
 
-- (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS ALREADY, SUMMER 2006?
+- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
+
 
 - Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities, GUI Tools & examples, and Misc.
 

@@ -1,4 +1,4 @@
-function [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(Measurements,NumberOfBins,MinVal,MaxVal,PlotLog,CountOption)
+function [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(Measurements,NumBins,LeftBin,LeftVal,RightBin,RightVal,Log,CountOption)
 
 % This function will calculate a histogram based on measurements, bin
 % numbers, minimum value, and maximum value. The x-axis can be in log
@@ -38,28 +38,22 @@ end
 PotentialMaxHistogramValue = max(SelectedMeasurementsMatrix);
 PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
 
-%%% See whether the min and max histogram values were user-entered numbers or should be automatically calculated.
-if isempty(str2num(MinVal)) %#ok
-    if strcmp(MinVal,'automatic')
-        MinHistogramValue = PotentialMinHistogramValue;
-    else
-        error('The value entered for the minimum histogram value must be either a number or the word ''automatic''.');
-    end
+%%% See whether the min and max histogram values were user-entered numbers
+%%% or should be automatically calculated.
+if strcmp(LeftBin,'Min value found') == 1
+    MinHistogramValue = PotentialMinHistogramValue;
 else
-    MinHistogramValue = str2num(MinVal); %#ok
+    MinHistogramValue = LeftVal; %#ok
 end
 
-if isempty(str2num(MaxVal)) %#ok
-    if strcmp(MaxVal,'automatic')
-        MaxHistogramValue = PotentialMaxHistogramValue;
-    else
-        error('The value entered for the maximum histogram value must be either a number or the word ''automatic''.')
-    end
-else
-    MaxHistogramValue = str2num(MaxVal); %#ok
-end
 
-if strcmpi(PlotLog,'Yes')
+if strcmp(RightBin,'Max value found') == 1  %#ok
+    MaxHistogramValue = PotentialMaxHistogramValue;
+else
+    MaxHistogramValue = RightVal; %#ok
+end
+    
+if strcmp(Log,'Yes') == 1
     MaxLog = log10(MaxHistogramValue);
     if MinHistogramValue == 0
         if PotentialMaxHistogramValue > 1
@@ -73,12 +67,12 @@ if strcmpi(PlotLog,'Yes')
     end
     HistogramRange = MaxLog - MinLog;
     if HistogramRange <= 0
-        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
+        error('The numbers you entered for the leftmost or rightmost bin thresholds, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a leftmost bin threshold value that is greater than the rightmost bin threshold value which you asked to be automatically calculated.');
     elseif imag(HistogramRange) ~= 0
-        error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
+        error('The numbers you entered for the leftmost or rightmost bin thresholds, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
     end
-    BinWidth = HistogramRange/NumberOfBins;
-    for n = 1:(NumberOfBins+2);
+    BinWidth = HistogramRange/NumBins;
+    for n = 1:(NumBins+2);
         PlotBinLocations(n) = 10^(MinLog + BinWidth*(n-2));
     end
 else
@@ -87,8 +81,8 @@ else
     if HistogramRange <= 0
         error('The numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.');
     end
-    BinWidth = HistogramRange/NumberOfBins;
-    for n = 1:(NumberOfBins+2);
+    BinWidth = HistogramRange/NumBins;
+    for n = 1:(NumBins+2);
         PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2);
     end
 end
@@ -115,7 +109,7 @@ end
 XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
 XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
 
-if strcmpi(PlotLog,'Yes')
+if strcmp(Log,'Yes')
     for n = 1:length(PlotBinLocations);
         PlotBinLocations(n) = log10(PlotBinLocations(n));
     end

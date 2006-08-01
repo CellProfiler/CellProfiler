@@ -78,6 +78,10 @@ Measure{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 1
 FeatureNumber{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+if isempty(FeatureNumber{1}) || isnan(FeatureNumber{1})
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+end
+
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
@@ -101,6 +105,10 @@ Measure{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR07 = 1
 FeatureNumber{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
+
+if isempty(FeatureNumber{2}) || isnan(FeatureNumber{2})
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+end
 
 %textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR08 = imagegroup

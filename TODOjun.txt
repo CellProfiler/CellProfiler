@@ -1,3 +1,7 @@
+Jun: Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. Thanks.
+-Rodrigo
+
+
 Project:
 + Major enhancements/restructuring of some data tools:
 

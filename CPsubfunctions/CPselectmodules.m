@@ -1,4 +1,4 @@
-function Selection = CPselectmodules(ModuleNames,TestNum)
+function Selection = CPselectmodules(ModuleNames)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -20,6 +20,8 @@ function Selection = CPselectmodules(ModuleNames,TestNum)
 %
 % $Revision: 4010 $
 
+NumberOfModules = length(ModuleNames);
+
 %%% Create Select Display window
 SelectDisplay = CPfigure('Units','Inches','Resize','Off','Menubar','None','Toolbar','None','NumberTitle','Off','Name','Select Display Window','Color',[.7 .7 .9],'UserData',0);
 
@@ -33,7 +35,7 @@ set(0,'Units','pixels')
 ScreenHeight = ScreenSize(4);
 % Estimate window Height
 uiheight = 0.3;
-Height = (TestNum+4)*uiheight;
+Height = (NumberOfModules+4)*uiheight;
 % Determine if a slider is needed
 if Height > .75*ScreenHeight
     Height = .75*ScreenHeight;
@@ -62,7 +64,7 @@ if ReqSlid
     % Slider Stuff
     SliderData.Callback = @Slider_Callback;
     SliderData.Panel = SelectDisplayPanel;
-    SliderHandle = uicontrol(SelectDisplay,'style','slider','units','inches','position',[4 .8 .2 Height-4*uiheight],'userdata',SliderData,'Callback','SliderData = get(gco,''UserData''); feval(SliderData.Callback,gco,SliderData.Panel); clear SliderData','Max',Height-4*uiheight,'Min',Height-4*uiheight-((TestNum-Fits)*uiheight),'Value',Height-4*uiheight,'SliderStep',[1/(TestNum-Fits) 3/(TestNum-Fits)]);
+    SliderHandle = uicontrol(SelectDisplay,'style','slider','units','inches','position',[4 .8 .2 Height-4*uiheight],'userdata',SliderData,'Callback','SliderData = get(gco,''UserData''); feval(SliderData.Callback,gco,SliderData.Panel); clear SliderData','Max',Height-4*uiheight,'Min',Height-4*uiheight-((NumberOfModules-Fits)*uiheight),'Value',Height-4*uiheight,'SliderStep',[1/(NumberOfModules-Fits) 3/(NumberOfModules-Fits)]);
     % Height to be used when creating other uicontrols
     ypos = Height - 4*uiheight-0.2;
 else
@@ -72,7 +74,7 @@ end
 
 %%% Create module names and checkboxes
 h = [];
-for k = 1:TestNum
+for k = 1:NumberOfModules
     uicontrol(SelectDisplayPanel,'style','text','String',ModuleNames{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
         'units','inches','position',[0.6 ypos 3 .18],'BackgroundColor',[.7 .7 .9])
     h(k) = uicontrol(SelectDisplayPanel,'Style','checkbox','units','inches','position',[0.2 ypos .2 .18],...
@@ -87,9 +89,9 @@ end
 
 %%% Create special features
 uicontrol(SelectDisplay,'Style','Checkbox','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 .2 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
-uicontrol(SelectDisplay,'Style','Text','String','Select All/None','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[0.6 0.5 1 .2],'BackgroundColor',[.7 .7 .9]);
+uicontrol(SelectDisplay,'Style','Text','String','Select All/None','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[0.6 0.5 1.5 .2],'BackgroundColor',[.7 .7 .9]);
 uicontrol(SelectDisplay,'Style','Checkbox','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 .2 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
-uicontrol(SelectDisplay,'Style','Text','String','Invert Selection','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[2.4 0.5 1 .2],'BackgroundColor',[.7 .7 .9]);
+uicontrol(SelectDisplay,'Style','Text','String','Invert Selection','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[2.4 0.5 1.5 .2],'BackgroundColor',[.7 .7 .9]);
 
 %%% Create OK and Cancel buttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
@@ -122,11 +124,12 @@ if ishandle(SelectDisplay)
     if iscell(Choice)
         Selection = cat(1,Choice{:});
     else
-        Selection = ones(TestNum, 1);
+        Selection = ones(NumberOfModules,1);
     end
     delete(SelectDisplay);
 else
-    Selection = [];
+    uiwait(CPwarndlg('You have clicked Cancel or closed the window. All modules will be selected.','Warning'));
+    Selection = ones(NumberOfModules,1);
 end
 
 

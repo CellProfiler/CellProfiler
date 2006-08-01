@@ -1,6 +1,8 @@
 CURRENTLY WORKING ON:
 
-- The SelectDisplayWindow feature has some bugs: 1. When a lot of modules are in the pipeline, the window is too big and doesn't show completely. 2. An error occurs when using the Restart module. 3. Add some cool stuff like select all, deselect all, and/or invert selection options. 4. Theres a problem with cancel (fixed?)
+Error occurs when using the Restart module
+Update Help
+Project: apply better thresholding method
 
 
 OTHER TODO'S:
@@ -15,6 +17,16 @@ OTHER TODO'S:
 
 DONE (committed):
 
+- (Rodrigo 8/1/06) - In the SelectDisplayWindow: 1. When a lot of modules are in the pipeline, the window is too big and doesn't show completely (fixed). 2. Added some cool stuff like select all, deselect all, and invert selection options. 3. Theres a problem with cancel (fixed?)
+Note: I added CPselectmodules because it might be useful for other applications which require the user to select some modules from a list. it also makes code look more friendly.
+
+- (Rodrigo 8/1/06) - There was some confusion in the Save Preferences callback function: it told the user it had saved the preferences in the current directory but it really saved it somewhere else.
+
+- (Rodrigo 7/31/06) - Changed measurement retrieval code in DisplayHistogram; it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images. Changed variables for consistency with DisplayImageHistogram. In DisplayImageHistogram, fixed bugs in its display.
+
+- (Rodrigo 7/28/06) - Modified code in DisplayDataOnImage, because it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images and fix title bug.
+
+- (Rodrigo 7/27/06) - Modified code in Combine module so that the combined image results from taking the weighted average of the input images' intensities. Also added some error check and modified code for speed.
 
 - (Rodrigo, 7/24/06) - (Requested by Anne 7-11-06): There is something weird in the ColorToGray module; it puts the word Split into the object group!
 Note: I couldn't figure out how to cause the error; it might be something else or a weird mix of factors
@@ -75,20 +87,19 @@ DONE (not yet committed):
 
 - Nothing
 
-
 NOTICED BUGS AND NEW IDEAS:
 
 IdentifySecondary Display: the word 'objects' on the bottom is not displayed correctly.
 MeasureIntensityImage Display: information appears over one of the displayed images. Also, RGB bad.
 MeasureObjectAreaShape Display: "Cytoplasm" isnt displayed entirely. Also, not correct columns.
 MeasureObjectIntensity Display: Same as above
-MeasureTexture Display: format is not consistent
+MeasureTexture Display: format is not consistent - fucks up - speed
 OverlayOutlines Display: cannot see a button or axes. RGB bad.
 Crop Display: RGB bad.
 CPcd help error
 Why does CPimread have 2 parts of code that are basically the same?
-Error in Save Preferences: I think it just says it saved it somewhere else, but it really saves it in the same place.
 Can we have the option to change preferences without saving them, whether it be in CellProfilerPreferences or in a user-specified .mat file.
+DisplayHistogram, DisplayImageHistogram should be fixed.
 
 Said - InteractiveZoom - when you double click different images it gives an error.
 Said - Set Preferences doesnt remember current settings

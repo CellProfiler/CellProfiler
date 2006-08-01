@@ -14,12 +14,12 @@ function handles = IdentifyTertiarySubregion(handles)
 % the cells will leave just the cytoplasm, the properties of which can then
 % be measured by Measure modules. The larger objects should therefore be
 % equal in size or larger than the smaller objects and must completely
-% contain the second objects.  Both inputs should be objects produced by
+% contain the smaller objects.  Both inputs should be objects produced by
 % identify modules, not images.
 %
 % Note: creating subregions using this module can result in objects that
 % are not contiguous, which does not cause problems when running the
-% Measure Intensity and Texture module, but does cause problems when
+% Measure Intensity and Texture modules, but does cause problems when
 % running the Measure Area Shape module because calculations of the
 % perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 % objects.

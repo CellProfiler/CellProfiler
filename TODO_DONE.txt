@@ -17,7 +17,7 @@ Note: I added CPselectmodules because it might be useful for other applications 
 - (Jun 8-1-06) (Requested by ?) - Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
 =>Jun (Project Task): Changes made to Histogram.m, CPhistbins.m, and CPcontrolhistogram.m.  Completely redesigned menu to make it more robust and less error prone, now with mostly checkboxes and fewer text edit fields. Included more error checks for invalid text edit entries, as well as error checks for popup menus. Also fixed error in MatLab command line that occurred when clicking "Cancel" in the "Decimals" input dialog of the Histogram window. 
 
-- (Rodrigo 7/31/06) - Changed measurement retrieval code in DisplayHistogram; it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images. Changed variables for consistency with DisplayImageHistogram. In DisplayImageHistogram, fixed bugs in its display.
+- (Rodrigo 7/31/06) - Changed measurement retrieval code in DisplayHistogram, DisplayDataOnImage, FilterByObjectMeasurement; it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images. Changed variables in DisplayHistogram, DisplayDataOnImage, FilterByObjectMeasurement, and DisplayImageHistogram for consistency. In DisplayImageHistogram, fixed bugs in its display.
 
 - (Rodrigo 7/28/06) - Modified code in DisplayDataOnImage, because it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images and fix title bug.
 

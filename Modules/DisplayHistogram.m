@@ -14,6 +14,18 @@ function handles = DisplayHistogram(handles)
 % be used for the histogram. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
+% Frequency counts:
+% Frequency counts refers to the threshold for the leftmost and rightmost
+% bins. The minimum value is the threshold at which any measurements less
+% than this value will be combined into the leftmost bin. The maximum value
+% is the threshold at which any measurements greater than or equal to this
+% value will be combined into the rightmosot bin. 
+%
+% Absolute vs. Percentage
+% Choose "Numbers" if you want the histogram bins to contain the actual 
+% numbers of objects in the bin. Choose "Percents" if you want the 
+% histogram bins to contain the percentage of objects in the bin.
+%
 % See also DisplayImageHistogram, MeasureObjectAreaShape,
 % MeasureObjectIntensity, MeasureTexture, MeasureCorrelation,
 % MeasureObjectNeighbors, CalculateRatios.
@@ -90,7 +102,7 @@ if isempty(NumberOfBins)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for number of histogram bins is not valid.']);
 end
 
-%textVAR07 = Enter the range for frequency counts on the Y axis ('Min Max'):
+%textVAR07 = Enter the range on the X axis for frequency counts on the Y axis ('Min Max'):
 %defaultVAR07 = Automatic
 MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom

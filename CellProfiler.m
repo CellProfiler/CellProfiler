@@ -2567,7 +2567,7 @@ try
     save(FullFileName,'SavedPreferences')
     clear SavedPreferences
     if DefaultVal == 1;
-        CPhelpdlg(['Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the directory ', pwd])
+        CPhelpdlg(['Your CellProfiler preferences were successfully set.  They are contained in a file called CellProfilerPreferences.mat in the directory ', fileparts(FullFileName)])
     else
         CPhelpdlg('Your CellProfiler preferences were successfully set.')
     end
@@ -3360,69 +3360,9 @@ else
                 handles.Preferences.DisplayWindows = zeros(handles.Current.NumberOfModules,1);
             elseif handles.Preferences.DisplayModeValue == 3
                 try
-                    ModuleNames = handles.Settings.ModuleNames;
-                    % Create Select Display window
-                    SelectDisplay = figure;
-                    set(SelectDisplay,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Select Display Window','Color',[.7 .7 .9],'CloseRequestFcn','set(gcf,''UserData'',0);uiresume()');
-                    % Some variables controling the sizes of uicontrols
-                    uiheight = 0.3;
-                    % Set window size in inches, depends on the number of objects
-                    pos = get(SelectDisplay,'position');
-                    Height = handles.Current.NumberOfModules*uiheight+1;
-                    Width  = 4.2;
-                    set(SelectDisplay,'position',[pos(1)+1 pos(2) Width Height]);
-                    FontSize = 11;
-                    uicontrol(SelectDisplay,'style','text','String','Select which module windows to display: ','FontName','Times','FontSize',FontSize,...
-                        'HorizontalAlignment','left','units','inches','position',[0.2 Height-0.25 4 0.2],'BackgroundColor',get(SelectDisplay,'color'))
-                    h = [];
-                    ypos = Height - 0.3 - uiheight;
-                    %Shows the Modules and checkboxes
-                    for k = 1:handles.Current.NumberOfModules
-                        uicontrol(SelectDisplay,'style','text','String',ModuleNames{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-                            'units','inches','position',[0.6 ypos 3 0.18],'BackgroundColor',get(SelectDisplay,'color'))
-                        h(k) = uicontrol(SelectDisplay,'Style','checkbox','units','inches','position',[0.2 ypos-.05 uiheight uiheight],...
-                            'BackgroundColor',get(SelectDisplay,'color'),'Value',1);
-                        ypos=ypos-uiheight;
-                    end
-                    % Ok and Cancel pushbuttons
-                    posx = (Width - 1.7)/2;               % Centers buttons horizontally
-                    okbutton = uicontrol(SelectDisplay,...
-                        'style','pushbutton',...
-                        'String','OK',...
-                        'FontName','Times',...
-                        'FontSize',FontSize,...
-                        'units','inches',...
-                        'KeyPressFcn', @doFigureKeyPress,...  
-                        'position',[posx 0.1 0.75 0.3],...
-                        'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo',...
-                        'BackgroundColor',[.7 .7 .9]);
-                    cancelbutton = uicontrol(SelectDisplay,...
-                        'style','pushbutton',...
-                        'String','Cancel',...
-                        'FontName','Times',...
-                        'FontSize',FontSize,...
-                        'units','inches',...
-                        'position',[posx+0.95 0.1 0.75 0.3],...
-                        'Callback','delete(gcf)',...
-                        'BackgroundColor',[.7 .7 .9]); %#ok Ignore MLint
-                    
-                    uicontrol(okbutton)
-                    uiwait(SelectDisplay)
-                    try
-                        if get(SelectDisplay,'Userdata') == 1
-                            buttonchoice = get(h,'Value');
-                            if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
-                                handles.Preferences.DisplayWindows = cat(1,buttonchoice{:});
-                                delete(SelectDisplay);
-                            end
-                        end
-                    catch
-                        handles.Preferences.DisplayWindows = ones(handles.Current.NumberOfModules, 1);
-                        CPhelpdlg('All windows will be displayed.');
-                    end
-
+                    handles.Preferences.DisplayWindows = CPselectmodules(handles.Settings.ModuleNames);
                 catch
-                    CPhelpdlg('Error: All windows will be displayed.');
+                    CPerrordlg('An error occurred while selecting the modules you wanted to display. All modules will be displayed.');
                     handles.Preferences.DisplayWindows = ones(handles.Current.NumberOfModules,1);
                 end
             else
@@ -3466,7 +3406,7 @@ else
             ScreenHeight = ScreenSize(4);
 
             %%% Determines where to place the timer window: We want it below the image
-            %%% windows, which means at about 800 pixels from thokbuttone top of the screen,
+            %%% windows, which means at about 800 pixels from the top of the screen,
             %%% but in case the screen doesn't have that many pixels, we don't want it
             %%% to be below zero.
             PotentialBottom = [0, (ScreenHeight-800)];
@@ -5635,11 +5575,3 @@ else
 end
 iptsetpref('ImshowBorder','tight')
 imshow(logo);
-
-function doFigureKeyPress(obj, evd)
-switch(evd.Key)
-    case {'return','space'}
-        [foo,fig] = gcbo;set(fig,'UserData',1);uiresume(fig);clear fig foo;
-    case {'escape'}
-        delete(gcf);
-end

@@ -9,8 +9,8 @@ function handles = FilterByObjectMeasurement(handles)
 % *************************************************************************
 %
 % This module removes objects based on their measurements produced by
-% another module (e.g. Measure Object Area Shape, Measure Object Intensity,
-% Measure Texture). All objects outside of the specified parameters will be
+% another module (e.g. MeasureObjectAreaShape, MeasureObjectIntensity,
+% MeasureTexture). All objects outside of the specified parameters will be
 % discarded.
 %
 % Feature Number:
@@ -19,10 +19,10 @@ function handles = FilterByObjectMeasurement(handles)
 % list of the features measured by that module.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module Overlay Outlines and then
-% saved with the Save Images module. Objects themselves can be passed along
-% to the object processing module Convert To Image and then saved with the
-% Save Images module. This module produces several additional types of
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with the SaveImages module. Objects themselves can be passed along to the
+% object processing module Convert To Image and then saved with the
+% SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes
 % objects on the edge of the image and objects that are outside the size
@@ -62,7 +62,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the objects you want to filter?
+%textVAR01 = Which object would you like to filter by, or if using a Ratio, what is the numerator object?
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -72,7 +72,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = objectgroup indep
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which category of measurements do you want to filter by?  This module must be run after a Measure module.
+%textVAR03 = Which category of measurements would you want to filter by?
 %choiceVAR03 = AreaShape
 %choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
@@ -80,65 +80,71 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Ratio
 %choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu
-MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
-%infotypeVAR04 = imagegroup
-%inputtypeVAR04 = popupmenu
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = Which feature do you want to use? (Enter the feature number - see help for details)
+%defaultVAR04 = 1
+FeatureNum = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = For RATIO, which object was used to calculate the numerator?
-%infotypeVAR05 = objectgroup
+if isempty(FeatureNum) || isnan(FeatureNum)
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+end
+
+%textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
+%infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
-RatioNum = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Which feature number do you want to use as a filter? See help for details.
-%defaultVAR06 = 1
-FeatureNum = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-FeatureNum = str2num(FeatureNum);
+%textVAR06 = Minimum value required:
+%choiceVAR06 = No minimum
+%inputtypeVAR06 = popupmenu custom
+MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Minimum value required:
-%choiceVAR07 = No minimum
+%textVAR07 = Maximum value allowed:
+%choiceVAR07 = No maximum
 %inputtypeVAR07 = popupmenu custom
-MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Maximum value allowed:
-%choiceVAR08 = No maximum
-%inputtypeVAR08 = popupmenu custom
-MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR08 = Do not save
+%infotypeVAR08 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR09 = Do not save
-%infotypeVAR09 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(MeasureChoice,'Intensity') || strcmp(MeasureChoice,'Texture')
+if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 else
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
 end
 LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
-if strcmp(MeasureChoice,'Intensity')
-    fieldname = ['Intensity_',ImageName];
-    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
-elseif strcmp(MeasureChoice,'Texture')
-    fieldname = ['Texture_',ImageName];
-    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
-elseif strcmp(MeasureChoice,'Neighbors')
-    fieldname = 'NumberNeighbors';
-    MeasureInfo = handles.Measurements.(ObjectName).(fieldname){handles.Current.SetBeingAnalyzed}(:,1);
-elseif strcmp(MeasureChoice,'Ratio')
-    MeasureInfo = handles.Measurements.(RatioNum).(MeasureChoice){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+switch Measure
+    case 'Intensity'
+        Measure = ['Intensity_' ImageName];
+    case 'Neighbors'
+        Measure = 'NumberNeighbors';
+    case 'Texture'
+        Measure = ['Texture_[0-9]*[_]?' Image '$'];
+        Fields = fieldnames(handles.Measurements.(ObjectName));
+        TextComp = regexp(Fields,Measure);
+        A = cellfun('isempty',TextComp);
+        try
+            Measure = Fields{A==0};
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+        end
+end
+
+if strcmp(Measure,'NumberNeighbors')
+    MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,1);
 else
-    MeasureInfo = handles.Measurements.(ObjectName).(MeasureChoice){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+    MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 end
 
 if strcmpi(MinValue1, 'No minimum')

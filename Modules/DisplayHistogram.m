@@ -57,7 +57,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which objects' measurements do you want to use for the histogram, or if using a Ratio, what is the numerator object?
+%textVAR01 = Which object would you like to use for the histogram, or if using a Ratio, what is the numerator object?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -73,11 +73,11 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu custom
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which feature number do you want to use to make histograms? See help for details.
+%textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
 FeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-if isempty(FeatureNumber)
+if isempty(FeatureNumber) || isnan(FeatureNumber)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 

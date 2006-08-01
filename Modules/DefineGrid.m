@@ -23,7 +23,12 @@ function handles = DefineGrid(handles)
 %
 % Settings:
 % Most are self-explanatory.
-% For MANUAL mode, several questions relate to the control spot. For some
+% 
+% You can choose to define a grid for EACH CYCLE, or ONCE for all
+% images. The grid can be defined using AUTOMATIC or MANUAL modes. 
+%
+% For MANUAL mode, several questions relate to the control spot. This 
+% control spot can be specified by MOUSE or COORDINATES. For some
 % projects, you might have a control spot which is always present in every
 % image (e.g. the top left spot of the grid is always present). For
 % example, if the marker spot is within the grid itself at the top left

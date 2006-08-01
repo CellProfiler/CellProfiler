@@ -1,5 +1,12 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+- (Jun 8-1-06): Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
+=>Jun: Changes made to CPcontrolhistogram.m. Changed text edit fields to popup menus to reduce error. Added more options to color selection.
+
+- (Jun 8-1-06) (Requested by ?) - Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
+=>Jun (Project Task): Changes made to Histogram.m, CPhistbins.m, and CPcontrolhistogram.m.  Completely redesigned menu to make it more robust and less error prone, now with mostly checkboxes and fewer text edit fields. Included more error checks for invalid text edit entries, as well as error checks for popup menus. Also fixed error in MatLab command line that occurred when clicking "Cancel" in the "Decimals" input dialog of the Histogram window. 
+
 - (Rodrigo 7/27/06) - Modified code in Combine module so that the combined image results from taking the weighted average of the input images' intensities. Also added some error check and modified code for speed.
 
 - (Jun 7/26/06) (Requested by Anne 12-09-05) - See 'Potential improvement' in the Histogram data tool.

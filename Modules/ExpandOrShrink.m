@@ -19,10 +19,10 @@ function handles = ExpandOrShrink(handles)
 % implemented a partial fix.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module Overlay Outlines and then
-% saved with the Save Images module. Objects themselves can be passed along
-% to the object processing module Convert To Image and then saved with the
-% Save Images module. This module produces several additional types of
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with the SaveImages module. Objects themselves can be passed along to the
+% object processing module Convert To Image and then saved with the
+% SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes
 % objects on the edge of the image and objects that are outside the size
@@ -32,7 +32,7 @@ function handles = ExpandOrShrink(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also any identify primary or secondary module.
+% See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

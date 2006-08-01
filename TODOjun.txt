@@ -14,7 +14,10 @@ Project:
 =>Jun: Changes already made and Histogram.m committed on 7/17/06. See in TODO_DONE.txt: (Jun, 7/17/06) (Requested by Anne 7-11-06). 'Potential improvement' text removed from help in Histogram.m. Help also updated. Histogram.m committed with these new changes on 7/26/06.
 
 - (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
+
 - Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
+=>Jun: Changes made 7/26/07-8-1-06.  Completely redesigned menu to make it more robust and less error prone, now with mostly checkboxes and fewer text edit fields. Included more error checks for invalid text edit entries, as well as error checks for popup menus. Also fixed error in MatLab command line that occurred when clicking "Cancel" in the "Decimals" input dialog of the Histogram window. Changes made to Histogram.m, CPhistbins.m, and CPcontrolhistogram.m. 
+
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
 * When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
 * I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
@@ -23,7 +26,15 @@ Project:
 
 =================
 
+TODO's
+
 Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pipeline. 
+
+Jun 8-1-06: Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
+=>Jun: Changes made 8-1-06. Changed text edit fields to popup menus to reduce error. Added more options to color selection. CPcontrolhistogram.m committed on 8-1-06.
+
+- Anne 7/24/06: Check clarity of help for DefineGrid, DisplayHistogram, Exclude, and ExportToExcel modules and Histogram data tool.
+=>Jun: Changes made 8/1/06. DefineGrid.m, DisplayHistogram.m, Exclude.m, ExportToExcel.m, and Histogram.m committed on 8/1/06.
 
 - Anne 7/24/06: Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
 =>Jun: Changes made 7/25/06. ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m committed on 7/25/06.

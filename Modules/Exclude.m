@@ -37,7 +37,7 @@ function handles = Exclude(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
-% See also FilterByObjectMeasurement.
+% See also FilterByObjectMeasurement, OverlayOutlines, ConvertToImage.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

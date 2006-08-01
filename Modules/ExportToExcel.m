@@ -9,8 +9,12 @@ function handles = ExportToExcel(handles)
 % *************************************************************************
 % Note: this module is beta-version and has not been thoroughly checked.
 %
+% The data will be converted to a tab-delimited text file which can be read
+% by Excel, another spreadsheet program, or a text editor. The file is
+% stored in the default output folder.
+%
 % This module performs the same function as the data tool, Export Data.
-% Please refer to the help for the data tool.
+% Please refer to the help for ExportData.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

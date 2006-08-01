@@ -23,14 +23,14 @@ function handles = IdentifyPrimAutomatic(handles)
 % by applying a simple threshold to the image. Many commercial software
 % packages use a version of this method which is fast but usually fails
 % when nuclei are touching. In CellProfiler, several automatic thresholding
-% methods are available, including global and adaptive, using Otsu�s (Otsu,
-% 1979) and our own version of a Mixture of Gaussians algorithm (O. Friman,
-% unpublished). For most biological images, at least some nuclei are
-% touching, so CellProfiler contains a novel modular three-step strategy
-% based on previously published algorithms (Malpica et al., 1997; Meyer and
-% Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003; Wahlby et
-% al., 2004). Choosing different options for each of these three steps
-% allows CellProfiler to flexibly analyze a variety of different cell
+% methods are available, including global and adaptive, using Otsu�s 
+% (Otsu, 1979) and our own version of a Mixture of Gaussians algorithm (O. 
+% Friman, unpublished). For most biological images, at least some nuclei 
+% are touching, so CellProfiler contains a novel modular three-step 
+% strategy based on previously published algorithms (Malpica et al., 1997; 
+% Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003; 
+% Wahlby et al., 2004). Choosing different options for each of these three 
+% steps allows CellProfiler to flexibly analyze a variety of different cell
 % types. Here are the three steps: 
 %   In step 1, CellProfiler determines whether an object is an individual
 % nucleus or two or more clumped nuclei. This determination can be
@@ -122,15 +122,15 @@ function handles = IdentifyPrimAutomatic(handles)
 % other surrounding objects. This is helpful in cases when an object was
 % incorrectly split into two objects, one of which is actually just a tiny
 % piece of the larger object. However, this could be dangerous if you have
-% selected poor settings which produce lots of tiny objects - the module
-% will take a very long time and you won't realize that it is because the
-% tiny objects are being merged. It is therefore a good idea to run the
+% selected poor settings which produce many tiny objects - the module
+% will take a very long time and you will not realize that it is because 
+% the tiny objects are being merged. It is therefore a good idea to run the
 % module first without merging objects to make sure the settings are
 % reasonably effective.
 %
 % Discard objects touching the border of the image:
-% You can choose to discard objects that touch the corder of the image.
-% This is useful in cases where you do not want to make measurements of
+% You can choose to discard objects that touch the border of the image.
+% This is useful in cases when you do not want to make measurements of
 % objects that are not fully within the field of view (because, for
 % example, the area would not be accurate).
 %
@@ -163,16 +163,16 @@ function handles = IdentifyPrimAutomatic(handles)
 % image, or if the percent of the image covered by objects varies
 % substantially from image to image. But if you know the object coverage
 % percentage and it does not vary much from image to image, the MoG can be
-% better, especially if the coverage percentage is not near 50%. Note
-% however that the MoG function is experimental and has not been thoroughly
-% validated. The background function is very simple and is appropriate for
-% images where most of the image is background. It finds the mode of the
-% histogram of the image, which is assumed to be the background of the
-% image, and chooses a threshold at twice that value (which you can adjust
-% with a Threshold Correction Factor, see below). This can be very helpful,
-% for example, if your images vary in overall brightness but the objects of
-% interest are always twice (or actually, any constant) as bright as the
-% background of the image.
+% better, especially if the coverage percentage is not near 50%. Note,
+% however, that the MoG function is experimental and has not been 
+% thoroughly validated. The background function is very simple and is 
+% appropriate for images in which most of the image is background. It finds
+% the mode of the histogram of the image, which is assumed to be the 
+% background of the image, and chooses a threshold at twice that value 
+% (which you can adjust with a Threshold Correction Factor, see below). 
+% This can be very helpful, for example, if your images vary in overall 
+% brightness but the objects of interest are always twice (or actually, 
+% any constant) as bright as the background of the image.
 %    You can also choose between global and adaptive thresholding,
 % where global means that one threshold is used for the entire image and
 % adaptive means that the threshold varies across the image. Adaptive is
@@ -211,7 +211,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % option counts each intensity peak as a separate object. The objects can
 % be any shape, so they need not be round and uniform in size as would be
 % required for a distance-based module. The module is more successful when
-% then objects have a smooth texture. By default, the image is
+% the objects have a smooth texture. By default, the image is
 % automatically blurred to attempt to achieve appropriate smoothness (see
 % blur option), but overriding the default value can improve the outcome on
 % lumpy-textured objects. Technical description: Object centers are defined
@@ -251,7 +251,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % Size of smoothing filter, in pixel units:
 %    (Only used when distinguishing between clumped objects) This setting,
 % along with the suppress local maxima setting, affects whether objects
-% close by each other are considered a single object or multiple objects.
+% close to each other are considered a single object or multiple objects.
 % It does not affect the dividing lines between an object and the
 % background. If you see too many objects merged that ought to be separate,
 % the value should be lower. If you see too many objects split up that
@@ -268,7 +268,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % integer, in pixel units):
 %    (Only used when distinguishing between clumped objects) This setting,
 % along with the size of the smoothing filter, affects whether objects
-% close by each other are considered a single object or multiple objects.
+% close to each other are considered a single object or multiple objects.
 % It does not affect the dividing lines between an object and the
 % background. If you see too many objects merged that ought to be separate,
 % the value should be lower. If you see too many objects split up that
@@ -297,10 +297,10 @@ function handles = IdentifyPrimAutomatic(handles)
 % settings in this module.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module Overlay Outlines and then
-% saved with the Save Images module. Objects themselves can be passed along
-% to the object processing module Convert To Image and then saved with the
-% Save Images module. This module produces several additional types of
+% outlines can be passed along to the module OverlayOutlines and then
+% saved with the SaveImages module. Objects themselves can be passed along
+% to the object processing module ConvertToImage and then saved with the
+% SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes
 % objects on the edge of the image and objects that are outside the size

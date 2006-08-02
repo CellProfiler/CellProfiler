@@ -8,15 +8,24 @@ function handles = GrayToColor(handles)
 % blue (RGB) image. Each color's brightness can be adjusted independently.
 % *************************************************************************
 %
+% This module takes up to three grayscale images as inputs, and produces a
+% new color (RGB) image which results from assigning each of the input
+% images the colors red, green, and blue in the color image, respectively.
+% In addition, each color's intensity can be adjusted independently by
+% using adjustment factors (see below).
+%
 % Settings:
 %
-% Adjustment factors: Leaving the adjustment factors set to 1 will
-% balance all three colors equally in the final image, and they will
-% use the same range of intensities as each individual incoming image.
-% Using factors less than 1 will decrease the intensity of that
-% color in the final image, and values greater than 1 will increase
-% it.  Setting the adjustment factor to zero will cause that color to
-% be entirely blank.
+% Choose the input images: You must select at least one image which you
+% would like to use to create the color image. Also, all images must be the
+% same size, since they will combined pixel by pixel.
+%
+% Adjustment factors: Leaving the adjustment factors set to 1 will balance
+% all three colors equally in the final image, and they will use the same
+% range of intensities as each individual incoming image. Using factors
+% less than 1 will decrease the intensity of that color in the final image,
+% and values greater than 1 will increase it. Setting the adjustment factor
+% to zero will cause that color to be entirely blank.
 %
 % See also ColorToGray.
 
@@ -141,14 +150,8 @@ if BlueImageExists && ~RedImageExists && GreenImageExists
 end
 
 %%% Checks whether the three images are the same size.
-try
-    if size(BlueImage) ~= size(GreenImage)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
-    end
-    if size(RedImage) ~= size(GreenImage)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical.'])
-    end
-catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem with one of three images selected. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
+if any(size(BlueImage) ~= size(GreenImage)) || any(size(RedImage) ~= size(GreenImage))
+    error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

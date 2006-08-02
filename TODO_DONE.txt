@@ -1,5 +1,54 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+===============================================================
+- (Jun 8-2-06) - Emailed Mathworks about a popup menu resizing problem. The problem affects both Mac and PC platforms, and according to them there is no solution right now. The following is the correspondence.
+
+JUN WROTE:
+I have two issues: 
+1. Can you let me know if there is a way to change the height of a popup menu? Matlab seems incapable of changing the height of a popup menu past a certain point (as shown in the attached code). When I try to make the height larger, the popup menu only gets shifted vertically while maintaining the same height. 
+2. I am trying to do this because I believe that the popup menus produced by Matlab on the Mac platform are cut off on the top and bottom. How can this be fixed? Here is the situation: after I click on a popup menu twice and leave it highlighted, I only see the blue highlighted part on the left and right of the menu and nothing on the top and botttom. In general, it seems that the button is incomplete because its corners look like they should be round but instead they are cut off.
+
+Reproduction Steps: fig1=figure; 
+uicontrol(fig1,'style','popupmenu','String',{'bar','line','area','heatmap'},'FontSize',11,'HorizontalAlignment','left','units','inches','position',[3.6 1 1.8 .3],'BackgroundColor',get(fig1, 'color')); 
+fig2=figure; 
+uicontrol(fig2,'style','popupmenu','String',{'bar','line','area','heatmap'},'FontSize',11,'HorizontalAlignment','left','units','inches','position',[3.6 1 1.8 1],'BackgroundColor',get(fig2, 'color')); 
+
+Issue type: Graphics
+Renderer: None
+
+----
+
+RESPONSE:
+
+Jun,
+
+I am writing in reference to your Service Request # 1-2ZC1IN regarding 'Popup menu problem'. I was able to reproduce the issue on a windows machine too. I am not sure how the height can be mapped to a popup menu. The menu can only display the elements that it contains. I have put in an enhancement request for making sure that the height does not change the position of the popup menu. 
+
+I have also reported the issue with the color appearing on the top and bottom of the popup menu. Thank you for bringing this to our notice. I do not think you should face any issues while dealing with popups because of this bahavior.
+
+If you need further assistance regarding this issue, please reply to this email preserving the THREAD ID listed below. If you have a new technical support question, please submit a new request here:
+
+http://www.mathworks.com/contact_TS.html
+
+Sincerely,
+
+Sai Avula
+Application Support Engineer
+Technical Support Department
+The MathWorks, Inc.
+Phone: (508) 647-7000 option 5
+Email: support@mathworks.com
+
+Self-Service:
+http://www.mathworks.com/support
+
+File Exchange and Newsgroup Access: 
+http://www.mathworks.com/matlabcentral/
+
+[THREAD ID: 1-2ZC1IN]
+
+=========================================================
+
 - (Rodrigo 8/1/06) - In the SelectDisplayWindow: 1. When a lot of modules are in the pipeline, the window is too big and doesn't show completely (fixed). 2. Added some cool stuff like select all, deselect all, and invert selection options. 3. Theres a problem with cancel (fixed?)
 Note: I added CPselectmodules because it might be useful for other applications which require the user to select some modules from a list. it also makes code look more friendly.
 

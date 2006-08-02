@@ -8,9 +8,6 @@ Note: I added CPselectmodules because it might be useful for other applications 
 - (Jun 8-1-06) (Requested by Anne 7/24/06) - Check clarity of help for DefineGrid, DisplayHistogram, Exclude, ExportToExcel, Flip, IdentifyPrimAutomatic, IdentifyTertiarySubregion, and LoadSingleImage modules and Histogram data tool.
 =>Jun: Changes made to DefineGrid.m, DisplayHistogram.m, Exclude.m, ExportToExcel.m, IdentifyPrimAutomatic.m, IdentifyTertiarySubregion.m, LoadSingleImage.m, and Histogram.m.
 
-- (Jun 8-1-06) (Requested by Anne 7/24/06) - Check clarity of help for DefineGrid, DisplayHistogram, Exclude, ExportToExcel, Flip, IdentifyPrimAutomatic, IdentifyTertiarySubregion, and LoadSingleImage modules and Histogram data tool.
-=>Jun: Changes made to DefineGrid.m, DisplayHistogram.m, Exclude.m, ExportToExcel.m, IdentifyPrimAutomatic.m, IdentifyTertiarySubregion.m, LoadSingleImage.m, and Histogram.m.
-
 - (Jun 8-1-06): Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
 =>Jun: Changes made to CPcontrolhistogram.m. Changed text edit fields to popup menus to reduce error. Added more options to color selection.
 

@@ -20,7 +20,7 @@ function handles = Smooth(handles)
 % format to prevent degradation of the data.
 %
 % Technical note on the median filtering method: the artifact width is
-% divided by two to obtain the radius of a disk shaped structuring element
+% divided by two to obtain the radius of a disk-shaped structuring element
 % which is used for filtering. 
 %
 % See also CorrectIllumination_Apply, CorrectIllumination_Calculate.
@@ -71,8 +71,8 @@ end
 %inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
-%choiceVAR04 = Yes
 %choiceVAR04 = No
+%choiceVAR04 = Yes
 WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 WaitForFlag = WaitForFlag(1);
 %inputtypeVAR04 = popupmenu

@@ -4,7 +4,7 @@ function handles = Rotate(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Rotates images either automatically or based on the user clicking.
+% Rotates images either automatically or by user's mouse input.
 % *************************************************************************
 %
 % Settings:
@@ -12,7 +12,7 @@ function handles = Rotate(handles)
 % Rotation method:
 % *Coordinates - you can provide the X,Y pixel locations of two
 % points in the image which should be aligned horizontally or vertically.
-% *Mouse - you can click on two points in the image which should be aligned
+% *Mouse - you can click on points in the image which should be aligned
 % horizontally or vertically.
 % *Angle - you can provide the numerical angle by which the image should be
 % rotated.
@@ -23,7 +23,7 @@ function handles = Rotate(handles)
 % image. This cropping will produce an image that is not the exact same
 % size as the original, which may affect downstream modules.
 %
-% See also Flip.
+% See also Flip, Crop.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

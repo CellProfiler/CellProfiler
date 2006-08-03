@@ -134,7 +134,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % objects that are not fully within the field of view (because, for
 % example, the area would not be accurate).
 %
-% Select automatic thresholding method or enter an absolute threshold:
+% Select automatic thresholding method:
 %    The threshold affects the stringency of the lines between the
 % objects and the background. You can have the threshold automatically
 % calculated using several methods, or you can enter an absolute number
@@ -297,9 +297,9 @@ function handles = IdentifyPrimAutomatic(handles)
 % settings in this module.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module OverlayOutlines and then
-% saved with the SaveImages module. Objects themselves can be passed along
-% to the object processing module ConvertToImage and then saved with the
+% outlines can be passed along to the module OverlayOutlines and then saved
+% with the SaveImages module. Objects themselves can be passed along to the
+% object processing module ConvertToImage and then saved with the
 % SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes

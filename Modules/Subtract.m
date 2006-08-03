@@ -10,11 +10,11 @@ function handles = Subtract(handles)
 % Settings:
 % Subtracting may substantially change the range of pixel intensities in
 % the resulting image, so each image can be multiplied by a factor prior to
-% subtracting. This factor can be an positive number.
+% subtracting. This factor can be a positive number.
 %
 % Do you want negative values in the image to be set to zero?
-% Values outside the range of zero to 1 might not be handled well by other
-% modules. Here, you have the option of setting negative values to zero.
+% Values outside the range of 0 to 1 might not be handled well by other
+% modules. Here, you have the option of setting negative values to 0.
 % For other options (e.g. setting values over 1 to equal 1), see the
 % Rescale Intensity module.
 %

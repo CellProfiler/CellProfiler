@@ -21,12 +21,11 @@ function handles = ColorToGray(handles)
 % Takes a color image and converts it to grayscale by combining the three
 % channels (red, green, blue) together.
 %
-% Adjustment factors: Leaving the adjustment factors set to 1 will
-% balance all three colors equally in the final image, which will
-% use the same range of intensities as the incoming image.  To weight
-% colors relative to each other, the adjustment factor can be
-% increased (to increase the weighting) or decreased (to decrease the
-% weighting).
+% Adjustment factors: Leaving the adjustment factors set to 1 will balance
+% all three colors equally in the final image, which will use the same
+% range of intensities as the incoming image.  To weight colors relative to
+% each other, the adjustment factor can be increased (to increase the
+% weighting) or decreased (to decrease the weighting).
 %
 % See also GrayToColor.
 

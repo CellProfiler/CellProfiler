@@ -318,6 +318,7 @@ try
 catch
     ErrorMessage = lasterr;
     CPerrordlg(['An error occurred in the Histogram Data Tool. ' ErrorMessage(28:end)])
+    return
 end
 
 %% Saves this info in a variable, FigureSettings, which

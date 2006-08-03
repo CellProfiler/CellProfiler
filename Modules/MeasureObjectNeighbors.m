@@ -18,6 +18,27 @@ function handles = MeasureObjectNeighbors(handles)
 % Retrieves objects in label matrix format. The objects are expanded by the
 % number of pixels the user specifies, and then the module counts up how
 % many other objects the object is overlapping.
+%
+% Interpreting the module output:
+% In the color image output of the module, there is a color spectrum used
+% to determine which objects have neighbors, and how many. According to the
+% indices on the spectrum, the background is -1, objects with no neighbors
+% are 0, and objects with neighbors are greater than 0, with the increasing
+% index corresponding to more neighbors.
+%
+% Saving the objects:
+% * You can save the objects colored by number of neighbors to the handles 
+% structure to be used in other modules. Here, the scalar value 1 is added 
+% to every pixel so that the background is zero and the objects range from 
+% 1 up to the highest number of neighbors, plus one. This makes the objects
+% compatible with the Convert To Image module.
+%
+% Saving the image:
+% * You can save the grayscale image of objects to the handles structure so
+% it can be saved to the hard drive. Here, the background is -1, and the 
+% objects range from 0 (if it has no neighbors) up to the highest number of
+% neighbors. The -1 value makes it incompatible with the Convert To Image 
+% module which expects a label matrix starting at zero.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -252,7 +273,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the grayscale version of objects to the handles structure so
+%%% Saves the grayscale image of objects to the handles structure so
 %%% they can be saved to the hard drive, if the user requests. Here, the
 %%% background is -1, and the objects range from 0 (if it has no neighbors)
 %%% up to the highest number of neighbors. The -1 value makes it
@@ -262,12 +283,12 @@ if ~strcmpi(GrayscaleNeighborsName,'Do not save')
     handles.Pipeline.(GrayscaleNeighborsName) = ImageOfNeighbors;
 end
 
-%%% Saves the grayscale version of objects to the handles structure so
-%%% they can be saved to the hard drive, if the user requests. Here, the
-%%% scalar value 1 is added to every pixel so that the background is zero
-%%% and the objects are from 1 up to the highest number of neighbors, plus
-%%% one. This makes the objects compatible with the Convert To Image
-%%% module.
+%%% Saves the objects colored by number of neighbors to the handles 
+%%% structure to be used in other modules.
+%%% Here, the scalar value 1 is added to every pixel so that the background 
+%%% is zero and the objects are from 1 up to the highest number of 
+%%% neighbors, plus one. This makes the objects compatible with the Convert
+%%% To Image module.
 if ~strcmpi(ColoredNeighborsName,'Do not save')
     handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ImageOfNeighbors + 1;
 end

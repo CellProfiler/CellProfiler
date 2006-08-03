@@ -3,6 +3,9 @@ TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 -(Jun 8-3-06) (Requested by Rodrigo 8-1-06) - Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. 
 =>Jun: Changes made to DisplayImageHistogram and DisplayHistogram. For DisplayHistogram: added more bin options, color option, axes and title labels, and buttons to control X axis tick labels. For DisplayImageHistogram: labeled axes and title, and added more bin options. 
 
+- (Jun 8-3-06) (Requested by Anne 1-17-06) - Histogram data tool requests: When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
+=>Jun (Project Task): Changes made to Histogram.m.
+
 ===============================================================
 - (Jun 8-2-06) - Emailed Mathworks about a popup menu resizing problem. The problem affects both Mac and PC platforms, and according to them there is no solution right now. The following is the correspondence.
 

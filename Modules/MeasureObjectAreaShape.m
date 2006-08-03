@@ -96,10 +96,13 @@ function handles = MeasureObjectAreaShape(handles)
 % *Perimeter - the total number of pixels around the boundary of each
 % region in the image.
 %
-% In addition, the following  feature is calculated:
+% In addition, the following feature is calculated:
 %
 % FormFactor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
 % object
+%
+% See also MeasureImageAreaOccupied.
+
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

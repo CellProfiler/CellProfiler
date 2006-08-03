@@ -9,28 +9,30 @@ function handles = SaveImages(handles)
 %
 % Because CellProfiler usually performs many image analysis steps on many
 % groups of images, it does *not* save any of the resulting images to the
-% hard drive unless you use the Save Images module to do so. Any of the
+% hard drive unless you use the SaveImages module to do so. Any of the
 % processed images created by CellProfiler during the analysis can be
-% saved using Save Images.
+% saved using this module.
 %
-% The Save Images module can also be used as a file format converter
-% by loading files in their original format and then saving them in an
-% alternate format. 
+% You can choose from among 18 image formats to save your files in. This
+% allows you to use the module as a file format converter, by loading files
+% in their original format and then saving them in an alternate format.
 %
 % Please note that this module works for the cases we have tried, but it
 % has not been extensively tested, particularly for how it handles color
 % images, non-8 bit images, images coming from subdirectories, multiple
 % incoming movie files, or filenames made by numerical increments.
 %
+% Settings:
+%
 % Update file names within CellProfiler? 
-% This allows downstream modules (e.g. Create Web Page) to look up the
-% newly saved files on the hard drive. Normally, whatever files are present
-% on the hard drive when CellProfiler processing begins (and when the
+% This allows downstream modules (e.g. CreateWebPage) to look up the newly
+% saved files on the hard drive. Normally, whatever files are present on
+% the hard drive when CellProfiler processing begins (and when the
 % LoadImages module processes its first cycle) are the only files that are
 % accessible within CellProfiler. This setting allows the newly saved files
 % to be accessible to downstream modules. This setting might yield unusual
-% consequences if you are using the Save Images module to save an image
-% directly as loaded (e.g. using the Save Images module to convert file
+% consequences if you are using the SaveImages module to save an image
+% directly as loaded (e.g. using the SaveImages module to convert file
 % formats), because it will, in some places in the output file, overwrite
 % the file names of the loaded files with the file names of the the saved
 % files. Because this function is rarely needed and may introduce
@@ -46,7 +48,7 @@ function handles = SaveImages(handles)
 % with very large movies, you may also want to save the CellProfiler output
 % file every Nth cycle to save time, because the entire movie is stored in
 % the output file (this may only be the case if you are working in
-% diagnostic mode, see Set Preferences). See the Speed Up CellProfiler
+% diagnostic mode, see Set Preferences). See the SpeedUpCellProfiler
 % module. If you are processing multiple movies, especially movies in
 % subdirectories, you should save after every cycle (and also, be aware
 % that this module has not been thoroughly tested under those conditions).
@@ -56,8 +58,10 @@ function handles = SaveImages(handles)
 % Matlab was only capable of saving in uncompressed avi format (at least on
 % the UNIX platform), which is time and space-consuming. You should convert
 % the results to a compressed movie format, like .mov using third-party
-% software. For suggested third-party software, see the help for the Load
-% Images module.
+% software. For suggested third-party software, see the help for the
+% LoadImages module.
+%
+% See also LoadImages, SpeedUpCellProfiler.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

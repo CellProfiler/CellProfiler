@@ -92,8 +92,11 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = How many histogram bins would you like to use?
-%choiceVAR06 = 2
 %choiceVAR06 = 16
+%choiceVAR06 = 2
+%choiceVAR06 = 10
+%choiceVAR06 = 50
+%choiceVAR06 = 100
 %choiceVAR06 = 256
 NumberOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 %inputtypeVAR06 = popupmenu custom
@@ -107,7 +110,7 @@ end
 MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu custom
 
-%textVAR08 = Do you want to use a logarithmic scale for the histogram?
+%textVAR08 = Do you want the X axis to be log scale?
 %choiceVAR08 = No
 %choiceVAR08 = Yes
 LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,8});
@@ -119,12 +122,25 @@ LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 NumberOrPercent = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Do you want a line, bar, or area graph?
-%choiceVAR10 = Line
+%textVAR10 = Do you the style to be a line, bar, or area graph?
 %choiceVAR10 = Bar
+%choiceVAR10 = Line
 %choiceVAR10 = Area
 LineOrBar = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
+
+%textVAR11 = What color do you want the graph to be?
+%choiceVAR11 = Blue
+%choiceVAR11 = Red
+%choiceVAR11 = Green
+%choiceVAR11 = Yellow
+%choiceVAR11 = Magenta
+%choiceVAR11 = Cyan
+%choiceVAR11 = Black
+%choiceVAR11 = White
+%choiceVAR11 = CellProfiler background
+Color = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -286,24 +302,52 @@ StdUnit = 'point';
 StdColor = get(0,'DefaultUIcontrolBackgroundColor');
 PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 
+switch Color
+    case 'Blue'
+        HistColor='b';
+    case 'Red'
+        HistColor='r';
+    case 'Green'
+        HistColor='g';
+    case 'Yellow'
+        HistColor='y';
+    case 'Magenta'
+        HistColor='m';
+    case 'Cyan'
+        HistColor='c';
+    case 'Black'
+        HistColor='k';
+    case 'White'
+        HistColor='w';
+    otherwise
+        HistColor=[.7 .7 .9];
+end
+
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 %%% Activates the appropriate figure window.
 HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 h = subplot(1,1,1);
+pos=get(h, 'Position');
+set(h, 'Position', [pos(1) pos(2) pos(3) pos(4)-.1]);
 
 if strcmpi(LineOrBar,'bar')
-    bar('v6',PlotBinLocations,FinalHistogramData(:,1))
+    Graph=bar('v6',PlotBinLocations,FinalHistogramData(:,1));
+    set(Graph, 'FaceColor',HistColor);
 elseif strcmpi(LineOrBar,'area')
-    area('v6',PlotBinLocations,FinalHistogramData(:,1))
+    Graph=area('v6',PlotBinLocations,FinalHistogramData(:,1));
+    set(Graph, 'FaceColor',HistColor);
 else
-    plot('v6',PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2)
+    plot('v6',PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2, 'color', HistColor);
 end
 
+FeatureName=handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNumber};
 set(h,'XTickLabel',XTickLabels)
 set(h,'XTick',PlotBinLocations)
 set(gca,'Tag','BarTag','ActivePositionProperty','Position')
+set(get(h,'XLabel'),'String',[FeatureName,' of ',ObjectName])
+set(get(h,'Title'),'String',['Histogram for ', FeatureName,' of ',ObjectName])
 
 if strncmpi(NumberOrPercent,'N',1)
     set(get(h,'YLabel'),'String','Number of objects')
@@ -313,6 +357,68 @@ end
 %%% Using "axis tight" here is ok, I think, because we are displaying
 %%% data, not images.
 axis tight
+
+FontSize=handles.Preferences.FontSize;
+left=30;
+bottom=390;
+
+%%% Creates text
+uicontrol('Parent',HistHandle, ...
+    'BackgroundColor',[.7 .7 .9], ...
+    'Unit',StdUnit, ...
+    'Position',[left bottom 85 15], ...
+    'Units','Normalized',...
+    'String','X axis labels:', ...
+    'Style','text', ...
+    'FontSize',FontSize);
+%%% Hide every other label button.
+Button1Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+Button1 = uicontrol('Parent',HistHandle, ...
+    'Unit',StdUnit, ...
+    'BackgroundColor',[.7 .7 .9], ...
+    'CallBack',Button1Callback, ...
+    'Position',[left+100 bottom 50 22], ...
+    'Units','Normalized',...
+    'String','Fewer',...
+    'Style','pushbutton',...
+    'UserData',0,...
+    'FontSize',FontSize);
+%%% Decimal places Measurement axis labels.
+Button2Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); if ~isempty(NumberOfDecimals), NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow, end';
+Button2 = uicontrol('Parent',HistHandle, ...
+    'Unit',StdUnit,...
+    'BackgroundColor',[.7 .7 .9], ...
+    'CallBack',Button2Callback, ...
+    'Position',[left+160 bottom 50 22], ...
+    'Units','Normalized',...
+    'String','Decimals',...
+    'Style','pushbutton',...
+    'UserData',0,...
+    'FontSize',FontSize);
+%%% Restore original X axis labels.
+Button3Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+Button3 = uicontrol('Parent',HistHandle, ...
+    'Unit',StdUnit, ...
+    'BackgroundColor',[.7 .7 .9], ...
+    'CallBack',Button3Callback, ...
+    'Position',[left+220 bottom 50 22], ...
+    'Units','Normalized',...
+    'String','Restore', ...
+    'Style','pushbutton', ...
+    'FontSize',FontSize);
+
+% %Add buttons
+FigureSettings{1} = PlotBinLocations;
+FigureSettings{2} = XTickLabels;
+FigureSettings{3} = FinalHistogramData;
+tempData.HideOption = 0;
+tempData.HideHandle = Button1;
+tempData.DecimalHandle = Button2;
+tempData.FigureSettings = FigureSettings;
+tempData.handles = rmfield(handles,'Pipeline');
+tempData.Application = 'CellProfiler';
+set(HistHandle,'UserData',tempData);
+
 
 OneFrame = getframe(HistHandle);
 handles.Pipeline.(HistImage)=OneFrame.cdata;

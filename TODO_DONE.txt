@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 8/3/06) (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
+
 -(Jun 8-3-06) (Requested by Rodrigo 8-1-06) - Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. 
 =>Jun: Changes made to DisplayImageHistogram and DisplayHistogram. For DisplayHistogram: added more bin options, color option, axes and title labels, and buttons to control X axis tick labels. For DisplayImageHistogram: labeled axes and title, and added more bin options. 
 

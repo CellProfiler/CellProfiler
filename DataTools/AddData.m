@@ -75,28 +75,13 @@ if filename == 0 %User canceled
     return;
 end
 
-%%% Ask the user to choose the file from which to extract measurements.
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    Pathname = uigetdir(handles.Current.DefaultOutputDirectory,'Choose the folder that contains the output file(s) to add data to');
-else
-    Pathname = uigetdir('Choose the folder that contains the output file(s) to add data to');
-end
+%%% Get the pathname and let user select the files he wants
+[Pathname, SelectedFiles] = CPselectoutputfiles(handles);
+
 %%% Check if cancel button pressed
-if Pathname == 0
+if Pathname == 0 || SelectedFiles == 0
     return
 end
-
-%%% Get all files with .mat extension in the chosen directory that contains a 'OUT' in the filename
-AllFiles = dir(Pathname);                                                        % Get all file names in the chosen directory
-AllFiles = {AllFiles.name};                                                      % Cell array with file names
-SelectedFiles = AllFiles(~cellfun('isempty',strfind(AllFiles,'.mat')));          % Keep files that has a .mat extension
-SelectedFiles = SelectedFiles(~cellfun('isempty',strfind(SelectedFiles,'OUT'))); % Keep files with an 'OUT' in the name
-
-%%% Let the user select the files
-[selection,ok] = listdlg('liststring',SelectedFiles,'name','Select output files',...
-    'PromptString','Choose CellProfiler output files to add data to. Use Ctrl+Click or Shift+Click to choose multiple files.','listsize',[300 500]);
-if ~ok, return, end
-SelectedFiles = SelectedFiles(selection);
 
 FieldName = inputdlg('What name would you like to give this data (what heading)?');
 
@@ -147,6 +132,6 @@ if isempty(error_index)
 else
     %%% Show a warning dialog box for each error
     for k = 1:length(error_index)
-        CPmsgbox(errors{error_index(k)},'Add Data failure')
+        CPwarndlg(errors{error_index(k)},'Add Data failure')
     end
 end

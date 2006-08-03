@@ -8,8 +8,8 @@ function handles = PlaceAdjacent(handles)
 % vertically, to produce a single image.
 % *************************************************************************
 %
-% To place together many images, you can use several of this module in one
-% pipeline.
+% To place together many images, you can use this module multiple times in 
+% one pipeline.
 %
 % See also Tile.
 

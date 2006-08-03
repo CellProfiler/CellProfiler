@@ -18,7 +18,7 @@ function Selection = CPselectmodules(ModuleNames)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4010 $
+% $Revision: 4056 $
 
 NumberOfModules = length(ModuleNames);
 

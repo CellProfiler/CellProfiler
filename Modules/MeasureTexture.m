@@ -27,13 +27,13 @@ function handles = MeasureTexture(handles)
 % measurements should be the same for Image1 and Image2. However, if the
 % images are scaled differently, for example Image1 = 0.9*Image2, then this
 % will be reflected in the texture measurements, and they will be
-% different. This must be so. For example, in the extreme case of Image1 =
-% 0*Image2 it is obvious that the texture measurements must be different.
-% To make the measurements useful (both intensity, texture, etc.), it must
-% be ensured that the images are scaled similarly. In other words, if
-% differences in intensity are seen between two images or objects, the
-% differences in texture cannot be trusted as being completely independent
-% of the intensity difference.
+% different. For example, in the extreme case of Image1 = 0*Image2 it is
+% obvious that the texture measurements must be different. To make the
+% measurements useful (both intensity, texture, etc.), it must be ensured
+% that the images are scaled similarly. In other words, if differences in
+% intensity are seen between two images or objects, the differences in
+% texture cannot be trusted as being completely independent of the
+% intensity difference.
 %
 % Measurement:             Feature Number:
 % AngularSecondMoment     |       1
@@ -79,8 +79,9 @@ function handles = MeasureTexture(handles)
 % H11. Difference Entropy
 % H12. Information Measure of Correlation 1
 % H13. Information Measure of Correlation 2
-% H14. Max correlation coefficient *H14 is disabled because it is
-% computationally demanding.
+% H14. Max correlation coefficient
+%
+% *H14 is disabled because it is computationally demanding.
 %
 % Gabor "wavelet" features:
 % These features are similar to wavelet features, and they are obtained by
@@ -89,7 +90,7 @@ function handles = MeasureTexture(handles)
 % wavelets, and in the current context they work exactly as wavelets, but
 % they are not wavelets by a strict mathematical definition. As currently
 % implemented, the frequency content of the object is measured along the x-
-% and y-axis (i.e., in two different orientations). The original reference
+% and y-axis (i.e. in two different orientations). The original reference
 % is Gabor, D. (1946). "Theory of communication" Journal of the Institute
 % of Electrical Engineers, 93:429-441.
 %
@@ -590,7 +591,7 @@ warning on MATLAB:DivideByZero
 % H14 = sqrt(max(0,lambda(end-1)));
 
 H = [H1 H2 H3 H4 H5 H6 H7 H8 H9 H10 H11 H12 H13];
-H(find(isnan(H)))=0;
+H(isnan(H))=0;
 
 % % This function calculates Gabor features in a different way
 % % It may be better but it's also considerably slower.

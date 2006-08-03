@@ -12,9 +12,9 @@ function handles = MeasureImageAreaOccupied(handles)
 %
 % Settings:
 %
-% Select automatic thresholding method or enter an absolute threshold:
+% Select automatic thresholding method:
 %    The threshold affects the stringency of the lines between the
-% stain and the background. You can have the threshold automatically
+% objects and the background. You can have the threshold automatically
 % calculated using several methods, or you can enter an absolute number
 % between 0 and 1 for the threshold (to see the pixel intensities for your
 % images in the appropriate range of 0 to 1, use the CellProfiler Image
@@ -31,18 +31,26 @@ function handles = MeasureImageAreaOccupied(handles)
 % from one of your images, you might check whether the automatically
 % calculated threshold was unusually high or low compared to the
 % other images.
-%    There are two methods for finding thresholds automatically,
-% Otsu's method and the Mixture of Gaussian (MoG) method. The Otsu method
-% uses our version of the Matlab function graythresh (the code is in the
-% CellProfiler subfunction CPthreshold). Our modifications include taking
-% into account the max and min values in the image and log-transforming the
-% image prior to calculating the threshold. Otsu's method is probably
-% better if you don't know anything about the image, or if the percent of
-% the image covered by objects varies substantially from image to image.
-% But if you know the object coverage percentage and it does not vary much
-% from image to image, the MoG can be better, especially if the coverage
-% percentage is not near 50%. Note however that the MoG function is
-% experimental and has not been thoroughly validated.
+%    There are three methods for finding thresholds automatically,
+% Otsu's method, the Mixture of Gaussian (MoG) method, and the Background
+% method. The Otsu method uses our version of the Matlab function
+% graythresh (the code is in the CellProfiler subfunction CPthreshold). Our
+% modifications include taking into account the max and min values in the
+% image and log-transforming the image prior to calculating the threshold.
+% Otsu's method is probably better if you don't know anything about the
+% image, or if the percent of the image covered by objects varies
+% substantially from image to image. But if you know the object coverage
+% percentage and it does not vary much from image to image, the MoG can be
+% better, especially if the coverage percentage is not near 50%. Note,
+% however, that the MoG function is experimental and has not been 
+% thoroughly validated. The background function is very simple and is 
+% appropriate for images in which most of the image is background. It finds
+% the mode of the histogram of the image, which is assumed to be the 
+% background of the image, and chooses a threshold at twice that value 
+% (which you can adjust with a Threshold Correction Factor, see below). 
+% This can be very helpful, for example, if your images vary in overall 
+% brightness but the objects of interest are always twice (or actually, 
+% any constant) as bright as the background of the image.
 %    You can also choose between global and adaptive thresholding,
 % where global means that one threshold is used for the entire image and
 % adaptive means that the threshold varies across the image. Adaptive is
@@ -68,15 +76,19 @@ function handles = MeasureImageAreaOccupied(handles)
 % Approximate percentage of image covered by objects:
 % An estimate of how much of the image is covered with objects. This
 % information is currently only used in the MoG (Mixture of Gaussian)
-% thresholding but may be used for other thresholding methods in the future
-% (see below).
+% thresholding but may be used for other thresholding methods in the
+% future.
 %
 % How it works:
 % This module applies a threshold to the incoming image so that any pixels
 % brighter than the specified value are assigned the value 1 (white) and
 % the remaining pixels are assigned the value zero (black), producing a
-% binary image.  The number of white pixels are then counted.  This
-% provides a measurement of the area occupied by the staining.
+% binary image. The number of white pixels are then counted. This provides
+% a measurement of the area occupied by the staining.
+%
+% See also IdentifyPrimAutomatic, IdentifyPrimManual,
+% MeasureObjectAreaShape.
+
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -23,7 +23,6 @@ function handles = LoadText(handles)
 % run the AddData data tool after processing is complete; its function is
 % the same for this purpose.
 %
-%
 % The text information to be loaded must be in a separate text file with
 % the following syntax:
 %

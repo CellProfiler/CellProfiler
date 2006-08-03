@@ -417,7 +417,7 @@ for img_idx = FirstSet:LastSet
                 end
             else
                 if ~isa(vals,'numeric')
-                    error('Non-numeric data not currently supported in per-object SQL data.');
+                    error(['Non-numeric data not currently supported in per-object SQL data in field:' SubFieldname '.' ssf]);
                 end
                 numcols = size(vals,2);
                 numobj = size(vals,1);

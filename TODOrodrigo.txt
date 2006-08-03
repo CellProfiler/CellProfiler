@@ -17,12 +17,14 @@ OTHER TODO'S:
 
 DONE (committed):
 
+- (Rodrigo 8/3/06) (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
+
 - (Rodrigo 8/1/06) - In the SelectDisplayWindow: 1. When a lot of modules are in the pipeline, the window is too big and doesn't show completely (fixed). 2. Added some cool stuff like select all, deselect all, and invert selection options. 3. Theres a problem with cancel (fixed?)
 Note: I added CPselectmodules because it might be useful for other applications which require the user to select some modules from a list. it also makes code look more friendly.
 
 - (Rodrigo 8/1/06) - There was some confusion in the Save Preferences callback function: it told the user it had saved the preferences in the current directory but it really saved it somewhere else.
 
-- (Rodrigo 7/31/06) - Changed measurement retrieval code in DisplayHistogram; it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images. Changed variables for consistency with DisplayImageHistogram. In DisplayImageHistogram, fixed bugs in its display.
+- (Rodrigo 7/31/06) - Changed measurement retrieval code in DisplayHistogram, DisplayDataOnImage, FilterByObjectMeasurement; it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images. Changed variables in DisplayHistogram, DisplayDataOnImage, FilterByObjectMeasurement, and DisplayImageHistogram for consistency. In DisplayImageHistogram, fixed bugs in its display.
 
 - (Rodrigo 7/28/06) - Modified code in DisplayDataOnImage, because it gave errors when trying to retrieve Texture, neighbors, and ratio measurements. Also made it work with images and fix title bug.
 

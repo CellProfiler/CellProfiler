@@ -1,20 +1,5 @@
 CellProfiler cell image analysis software development 
 
-Anne 8-1-06: Update the 'boilerplate' author list to this (Use the Replace Text in modules Developer Script, and be sure that the replacement is made in EVERY module, tool, and CP.m - the ReplaceTextInModule script is kind of dangerous, so it's a good idea to svn commit everything and be up to date before you run it in case you need to check everything out fresh again):
-% Authors:
-%   Anne E. Carpenter
-%   Thouis Ray Jones
-%   In Han Kang
-%   Ola Friman
-%   Steve Lowe
-%   Joo Han Chang
-%   Colin Clarke
-%   Mike Lamprecht
-%   Peter Swire
-%   Rodrigo Ipince
-%   Vicky Lay
-%   Jun Liu
-%   Chris Gang
 
 Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle!
 
@@ -60,7 +45,6 @@ THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stac
 
 - (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
 
-
 - Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities, GUI Tools & examples, and Misc.
 
 - (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?
@@ -69,15 +53,11 @@ http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3
 - (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?
 http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 
-- (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
-
 - (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters and talk to Adam. We will probably put this tool in CellVisualizer instead.
 
 - (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
 
 - (Requested by Anne 11-21-05) - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
-
-- (Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
 
 - Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
 

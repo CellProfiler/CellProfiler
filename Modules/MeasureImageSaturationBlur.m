@@ -105,8 +105,8 @@ NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 =  Do you want to also check the above images for blur?
-%choiceVAR07 = Yes
 %choiceVAR07 = No
+%choiceVAR07 = Yes
 BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 BlurCheck = BlurCheck(1);
 %inputtypeVAR07 = popupmenu
@@ -204,8 +204,8 @@ if any(findobj == ThisModuleFigureNumber)
             end
         end
     end
-    DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
     if strcmp(upper(BlurCheck), 'N') ~= 1
+        DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
         for ImageNumber = 1:length(FocusScore)
             if ~isempty(FocusScore{ImageNumber})
                 try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.

@@ -62,8 +62,11 @@ HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = How many histogram bins would you like to use?
 %choiceVAR03 = Automatic
-%choiceVAR03 = 2
 %choiceVAR03 = 16
+%choiceVAR03 = 2
+%choiceVAR03 = 10
+%choiceVAR03 = 50
+%choiceVAR03 = 100
 %choiceVAR03 = 256
 NumBins = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
@@ -112,6 +115,8 @@ drawnow
 %%% Activates the appropriate figure window.
 CPfigure(handles,'Image',ThisModuleFigureNumber);
 
+h = subplot(1,1,1);
+
 if strcmpi(NumBins,'Automatic')
     imhist(OrigImage);
 else
@@ -120,7 +125,10 @@ end
 
 %%% Restore window settings that are lost in call to imhist
 HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
-title([ImageName ' pixel intensity histogram'])
+set(get(h,'Title'),'String',[ImageName ' pixel intensity histogram'])
+set(get(h,'XLabel'),'String','Pixel Intensities')
+set(get(h,'YLabel'),'String','Number of Pixels')
+
 set(ThisModuleFigureNumber,'Name',[ModuleName ' Display, cycle # '])
 drawnow
 

@@ -19,11 +19,11 @@ function handles = SpeedUpCellProfiler(handles)
 % output file is saved after every Nth cycle (and always after the first
 % and last cycles). For large output files, this can result in substantial
 % time savings. The only disadvantage is that if processing is canceled
-% prematurely, the output file will contain only data up to the last
-% multiple of N, even if several cycles have been processed since then.
-% Another hint: be sure you are not in Diagnostic mode (see File > Set
-% Preferences) to avoid saving very large output files with intermediate
-% images, because this slows down CellProfiler as well.
+% prematurely, the output file will contain only data up to the last cycle
+% that was a multiple of N, even if several cycles have been processed
+% since then. Another hint: be sure you are not in Diagnostic mode (see
+% File > Set Preferences) to avoid saving very large output files with
+% intermediate images, because this slows down CellProfiler as well.
 %
 % Do you want to clear the memory?
 % If yes, everything in temporary memory will be removed except for the
@@ -33,6 +33,11 @@ function handles = SpeedUpCellProfiler(handles)
 % option will remove everything in the memory, which may not be compatible
 % with some modules, which often store non-image information in memory to
 % be re-used during every cycle.
+%
+% Do you want to pack the memory?
+% If yes, CellProfiler will perform memory garbage collection. All needed
+% variables will be saved on the disk, the memory will be completely
+% cleared, and then the saved variables will be reloaded for use.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

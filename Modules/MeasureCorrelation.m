@@ -219,7 +219,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                     FeatureNbr = FeatureNbr + 1;
                 catch
                     if sizeerr
-                        error(['Images ', ImageName{i}, ' and ', ImageName{j}, ' are not the same size.'])
+                        error(['Image processing was cancelled in the ', ModuleName, 'module becase images ', ImageName{i}, ' and ', ImageName{j}, ' are not the same size.'])
                     else
                         error(['Image processing was cancelled in the ', ModuleName, ' module because there was a problem calculating the correlation.'])
                     end

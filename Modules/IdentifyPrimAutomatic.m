@@ -23,7 +23,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % by applying a simple threshold to the image. Many commercial software
 % packages use a version of this method which is fast but usually fails
 % when nuclei are touching. In CellProfiler, several automatic thresholding
-% methods are available, including global and adaptive, using Otsu�s 
+% methods are available, including global and adaptive, using Otsu's 
 % (Otsu, 1979) and our own version of a Mixture of Gaussians algorithm (O. 
 % Friman, unpublished). For most biological images, at least some nuclei 
 % are touching, so CellProfiler contains a novel modular three-step 

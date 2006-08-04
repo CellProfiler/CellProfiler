@@ -14,7 +14,10 @@ function AddData(handles)
 % exported with the measurements when you use the ExportData data tool,
 % helping you to keep track of your samples. You can also run the LoadText
 % module in your pipeline so this step happens automatically during
-% processing; its function is the same.
+% processing; its function is the same. Once the data is added to the
+% output file, you can view the text file within the output file by using 
+% the ViewData data tool and selecting "Image". To delete the text file
+% from the output file, use the ClearData data tool.
 %
 % Note that the number of text entries that you load with this module must
 % be identical to the number of cycles you are processing in order for
@@ -42,7 +45,7 @@ function AddData(handles)
 % 
 % While not thoroughly tested, most likely you can load numerical data too.
 %
-% See also the LoadText module.
+% See also the LoadText module, ViewData and ClearData data tools.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

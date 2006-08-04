@@ -5,7 +5,7 @@ function ConvertBatchFiles(handles)
 %
 % SHORT DESCRIPTION:
 % Converts output files produced by the Create Batch Files module into
-% regular CellProfiler output files.
+% typical CellProfiler output files.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
@@ -24,10 +24,9 @@ function ConvertBatchFiles(handles)
 % 2. For example, your batch output file 'Batch_102_to_201_OUT.mat' will be
 % converted to 'ConvertedBatch_102_to_201_OUT.mat', but when you access the
 % data within (e.g. using ViewData), image cycle #102 will now be image
-% cycle #2. Image cycle #1 will be the original image cycle #1. We will
-% probably change this module soon so that image cycle #1 (which is present
-% in all the batch files) is removed and the converted batch file will
-% contain only the remainder of the image cycles.
+% cycle #2. Image cycle #1 will be the original image cycle #1. Image cycle
+% #1 is present in all the batch files, and is removed so that the 
+% converted batch file will contain only the remainder of the image cycles.
 %
 % Technical details: this data tool removes empty entries in the
 % handles.Measurements structure of the output file(s) you specify.

@@ -1,5 +1,21 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 8/3/06) (Requested by Anne 8-1-06) - Update the 'boilerplate' author list to this (Use the Replace Text in modules Developer Script, and be sure that the replacement is made in EVERY module, tool, and CP.m - the ReplaceTextInModule script is kind of dangerous, so it's a good idea to svn commit everything and be up to date before you run it in case you need to check everything out fresh again):
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Peter Swire
+%   Rodrigo Ipince
+%   Vicky Lay
+%   Jun Liu
+%   Chris Gang
+
 - (Rodrigo 8/3/06) (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
 -(Jun 8-3-06) (Requested by Rodrigo 8-1-06) - Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. 

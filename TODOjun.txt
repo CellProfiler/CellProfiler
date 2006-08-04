@@ -1,12 +1,8 @@
-Jun: Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. Thanks.
--Rodrigo
-
-
 Project:
 + Major enhancements/restructuring of some data tools:
 
 - Combine code for Histograms (ISN'T This done already?)
-=>Jun 7/26/06: Yes
+=>Jun (Project Task) 7/26/06: Yes
 
 - (Requested by Anne 12-09-05)-- See 'Potential improvement' in the Histogram data tool.
 % Potential improvement: You might want to load names (using LoadText
@@ -15,24 +11,32 @@ Project:
 % module to allow this. If you choose to import sample names here, you will
 % need to select a text file that contains one name for every sample, even
 % if you only plan to view a subset of the image data as histograms.
-=>Jun: Changes already made and Histogram.m committed on 7/17/06. See in TODO_DONE.txt: (Jun, 7/17/06) (Requested by Anne 7-11-06). 'Potential improvement' text removed from help in Histogram.m. Help also updated. Histogram.m committed with these new changes on 7/26/06.
+=>Jun (Project Task): Changes already made and Histogram.m committed on 7/17/06. See in TODO_DONE.txt: (Jun, 7/17/06) (Requested by Anne 7-11-06). 'Potential improvement' text removed from help in Histogram.m. Help also updated. Histogram.m committed with these new changes on 7/26/06.
 
 - (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.
 
 - Make the histogram interface 'prettier' right now, the two pages of endless questions are kind of annoying. Making one nice interface, with checkboxes etc. to make it more user friendly would be great.
-=>Jun: Changes made 7/26/07-8-1-06.  Completely redesigned menu to make it more robust and less error prone, now with mostly checkboxes and fewer text edit fields. Included more error checks for invalid text edit entries, as well as error checks for popup menus. Also fixed error in MatLab command line that occurred when clicking "Cancel" in the "Decimals" input dialog of the Histogram window. Changes made to Histogram.m, CPhistbins.m, and CPcontrolhistogram.m. 
+=>Jun (Project Task): Changes made 7/26/07-8-1-06.  Completely redesigned menu to make it more robust and less error prone, now with mostly checkboxes and fewer text edit fields. Included more error checks for invalid text edit entries, as well as error checks for popup menus. Also fixed error in MatLab command line that occurred when clicking "Cancel" in the "Decimals" input dialog of the Histogram window. Changes made to Histogram.m, CPhistbins.m, and CPcontrolhistogram.m. 
 
 - (Requested by Anne 1-17-06) - Histogram data tool requests:
-* When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
-* I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
-* Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
-* When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
+- When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
+=>Jun (Project Task): Changes made 8-2-06. Histogram.m committed on 8-3-06.
+- I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+- Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
+=>Jun (Project Task): Changes made 8-3-06-
+- When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
+=>Jun (Project Task): Changes made 8-3-06-
 
 =================
 
 TODO's
 
 Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pipeline. 
+
+-(Jun 8/4/06) - Fixed error that occurs in AddData and ClearData when pressing either "OK" or "Cancel" in the select output file window.
+
+- (Requested by Rodrigo 8-1-06) - Given that you're really familiar with histograms, would you mind giving the modules DisplayImageHistogram and DisplayHistogram a look? Just in the display, stuff like axes or titles aren't there. I made some changes to DisplayImageHistogram but it would be nice if you could just make them both display what's needed and in a consistent manner. 
+=>Jun: Changes made 8/2/06-8/3/06. For DisplayHistogram: added more bin options, color option, axes and title labels, and buttons to control X axis tick labels. For DisplayImageHistogram: labeled axes and title, and added more bin options. DisplayImageHistogram and DisplayHistogram committed on 8/3/06.
 
 Jun 8-1-06: Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
 =>Jun: Changes made 8-1-06. Changed text edit fields to popup menus to reduce error. Added more options to color selection. CPcontrolhistogram.m committed on 8-1-06.

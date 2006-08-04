@@ -111,13 +111,15 @@ MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR12 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR12 = imagegroup
+%choicevarVAR12 = none
 LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 
-%textVAR13 = For MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR13 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR13 = imagegroup
+%choiceVAR13 = none
 LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
 
@@ -125,7 +127,7 @@ LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13}
 %defaultVAR14 = Do not save
 SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -354,7 +356,7 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Pipeline.NucleiPeak = [NyActin;NxDNA];
         handles.Pipeline.BackgroundPeak = [BGyActin;BGxDNA];
         handles.Pipeline.PeakIntensityString = ...
-            sprintf('Peak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',NxDNA,NyActin,CxDNA,CyActin,BGxDNA,BGyActin);
+            sprintf('Peak Intensity Values as (DNA-X,Actin-Y)\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',NxDNA,NyActin,CxDNA,CyActin,BGxDNA,BGyActin);
     end
     %%% Saves the preset psi function to handles structure
     handles.Pipeline.Psi = [.9004,.0203,0;.0996,.9396,.0186;0,.0400,.9814];
@@ -377,15 +379,28 @@ end
 drawnow
 
 if strncmp(PeakSelectionMethod,'Automatic',9)
+    
+    %%% Reads (opens) the correction matrix files as specified in
+    %%% LoadSingleImage before this module
+    if (strcmpi(LoadedNIllumCorrName,'none') || strcmpi(LoadedNIllumCorrName,'Do not load'))...
+            && (strcmpi(LoadedCIllumCorrName,'none') || strcmpi(LoadedCIllumCorrName,'Do not load'))
+        CNucImage = OrigNucleiImage;
+        CCellImage = OrigCellsImage;
+    else
+        NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+        CellsCorrMat = CPretrieveimage(handles,LoadedCIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+        CNucImage = OrigNucleiImage ./ NucleiCorrMat;
+        CCellImage = OrigCellsImage ./ CellsCorrMat;
+    end
+    
     %%% Jitters these images on the log scale
-    NucNonZeros = OrigNucleiImage(OrigNucleiImage >= 0);
-    CellNonZeros = OrigCellsImage(OrigCellsImage >= 0);
-    MinNucPixVal = min(NucNonZeros(:));
-    MinCellPixVal = min(CellNonZeros(:));
-    JNucImage = log(OrigNucleiImage) + rand(size(OrigNucleiImage)) .*...
-        (log(OrigNucleiImage + MinNucPixVal) - log(OrigNucleiImage));
-    JCellImage = log(OrigCellsImage) + rand(size(OrigCellsImage)) .*...
-        (log(OrigCellsImage + MinCellPixVal) - log(OrigCellsImage));
+    MinNucPixVal = 1/256;
+    MinCellPixVal = 1/256;
+    
+    JNucImage = log(CNucImage) + rand(size(CNucImage)) .*...
+        (log(CNucImage + MinNucPixVal) - log(CNucImage));
+    JCellImage = log(CCellImage) + rand(size(CCellImage)) .*...
+        (log(CCellImage + MinCellPixVal) - log(CCellImage));
     
     JLNucImage = (JNucImage - log(MinNucPixVal)) / -log(MinNucPixVal);
     JLCellImage = (JCellImage - log(MinCellPixVal)) / -log(MinCellPixVal);
@@ -402,13 +417,38 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     NucleiBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold));
     CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
     CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
+    
+    %%% TESTING NEW FEATURE
+    %%% if the peaks are too close to each other in any direction,
+    %%% artificially push them apart 10 pixels each!
+    AmountToModify = 10;
+    MinimumDistance = 60;
+    if (CellsFGMean - CellsBGMean < MinimumDistance) && (CellsFGMean > CellsBGMean)
+        CellsFGMean = CellsFGMean + AmountToModify;
+        CellsBGMean = CellsBGMean - AmountToModify;
+        handles.Pipeline.PeakIntensityString = ['TEST MODE: Cell means modified by ', num2str(2*AmountToModify)];
+    elseif (CellsBGMean - CellsFGMean < MinimumDistance) && (CellsBGMean > CellsFGMean)
+        CellsBGMean = CellsBGMean + AmountToModify;
+        CellsFGMean = CellsFGMean - AmountToModify;
+        handles.Pipeline.PeakIntensityString = ['TEST MODE: Cell means modified by ', num2str(2*AmountToModify)];
+    end
+    if (NucleiFGMean - NucleiBGMean < MinimumDistance) && (NucleiFGMean > NucleiBGMean)
+        NucleiFGMean = NucleiFGMean + AmountToModify;
+        NucleiBGMean = NucleiBGMean - AmountToModify;
+        handles.Pipeline.PeakIntensityString = ['TEST MODE: Nucleus means modified by ', num2str(2*AmountToModify)];
+    elseif (NucleiBGMean - NucleiFGMean < MinimumDistance) && (NucleiBGMean > NucleiFGMean)
+        NucleiBGMean = NucleiBGMean + AmountToModify;
+        NucleiFGMean = NucleiFGMean - AmountToModify;
+        handles.Pipeline.PeakIntensityString = ['TEST MODE: Nucleus means modified by ', num2str(2*AmountToModify)];
+    end
+    
     %%% Save the interpolated peaks to the handles structure
     handles.Pipeline.NucleiPeak = [CellsFGMean;NucleiFGMean];
     handles.Pipeline.CellsPeak = [CellsFGMean;NucleiBGMean];
     handles.Pipeline.BackgroundPeak = [CellsBGMean;NucleiBGMean];
-    handles.Pipeline.PeakIntensityString = ...
-        sprintf('Peak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',...
-        NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean);
+    handles.Pipeline.PeakIntensityString = [handles.Pipeline.PeakIntensityString ...
+        sprintf('\n\nPeak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',...
+        NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean)];
     
     %%% Create the 2D histogram for display purposes
     RoundNucImage = floor(255 * JLNucImage + 1);
@@ -428,7 +468,6 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     handles.Pipeline.(fieldname) = MargHistActin;
     
  %   save('autothresh.mat','JLNucImage','JLCellImage','NucThreshold','CellThreshold','AutoHistogram','MargHistDNA','MargHistActin');
- %   error('save me');
 end
 
 %%% Scales both input images to 0-256, loads them into 1 3D array with a

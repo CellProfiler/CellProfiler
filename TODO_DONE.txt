@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 8/4/06) (Requested by Anne 4-19-06) - I fixed a bug in SaveImages module so that a proper error message appears if you specify an image file name for the base name that is not in the handles structure already. But we should doublecheck that SaveImages still works for the cases when the base name is (1) N for sequential numbers (2) type in one file name for all the images (=DesiredFilename), then appending sequential numbers using the following variable set to N, and (3) type in one file name for all the images (=DesiredFilename) for the case where you want to save an avi movie.
+
 -(Jun 8/4/06) - Fixed error that occurs in AddData and ClearData when pressing either "OK" or "Cancel" in the select output file window.
 
 - (Rodrigo 8/3/06) (Requested by Anne 8-1-06) - Update the 'boilerplate' author list to this (Use the Replace Text in modules Developer Script, and be sure that the replacement is made in EVERY module, tool, and CP.m - the ReplaceTextInModule script is kind of dangerous, so it's a good idea to svn commit everything and be up to date before you run it in case you need to check everything out fresh again):

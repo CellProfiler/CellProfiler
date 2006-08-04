@@ -41,7 +41,7 @@ function handles = ClearData(handles)
 [Pathname, SelectedFiles] = CPselectoutputfiles(handles);
 
 %%% Check if cancel button pressed
-if Pathname == 0 || SelectedFiles == 0
+if ~iscellstr(SelectedFiles)
     return
 end
 

@@ -13,6 +13,8 @@ function PlotMeasurement(handles)
 % allow plotting one measuerement versus another. As prompted, select a
 % CellProfiler output file containing the measurements, choose the
 % measurement parameter to be displayed, and choose the display type.
+%
+% See also Histogram data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

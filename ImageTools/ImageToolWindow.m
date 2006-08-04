@@ -41,7 +41,9 @@ function ImageToolWindow(handles)
 % "Image". Be careful not to overwrite existing variables in your workspace
 % using this tool.
 %
-% Save Image As - See the help for the Save Images module.
+% Save to hard drive - Allows you to save the image to the hard drive. You 
+% can specify the file name, the directory where it will be saved, and a 
+% few other options. See the help for the Save Images module.
 %
 %
 % Technical details:

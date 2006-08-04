@@ -8,35 +8,41 @@ function handles = ShowDataOnImage(handles)
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
-% This allows you to extract measurements from an output file and overlay
-% any measurements that you have made on any image. For example, you could
-% look at the DNA content (e.g. IntegratedIntensityOrigBlue) of each cell
-% on an image of nuclei. Or, you could look at cell area on an image of
-% nuclei.
+% This tool allows you to extract measurements from an output file and
+% overlay any measurements that you have made on any image, very much like
+% the DisplayDataOnImage module. For example, you could look at the DNA
+% content (e.g. IntegratedIntensityOrigBlue) of each cell on an image of
+% nuclei. Or, you could look at cell area on an image of nuclei.
 %
 % First, you are asked to select the measurement you want to be displayed
-% on the image.  Next, you are asked to select the X and then the Y
-% locations where these measurements should be displayed. Typically, your
-% options are the XY locations of the nuclei, or the XY locations of the
-% cells, and these are usually named something like 'CenterXNuclei'.  If
-% your output file has measurements from many images, you then select which
-% sample number to view.
+% on the image. Next, if your output file has measurements from many
+% cycles, you are asked to select which sample/cycle number to view. Then,
+% you are asked to select an image to display the measurements over. You
+% can choose from among the list of images saved in the output file you
+% chose (which are generally the original images loaded by a LoadImages or
+% LoadSingleImage module), or you can browse for an image manually (e.g. a
+% cropped image that was created during the pipeline and saved on the disk
+% by a SaveImages module). You must try to select the image from which the
+% measurements were taken because the tool will try to display each
+% measurement over the corresponding object, so if the image is not the
+% right one, the data will make no sense. Once all these settings are
+% chosen, extraction ensues and eventually the image will be shown with the
+% measurements on top.
 %
-% Then, CellProfiler tries to guide you to find the image that corresponds
-% to this sample number.  First, it asks which file name would be most
-% helpful for you to find the image. CellProfiler uses whatever you enter
-% here to look up the exact file name you are looking for, so that you can
-% browse to find the image. Once the image is selected, extraction ensues
-% and eventually the image will be shown with the measurements on top.
-%
-% You can use the tools at the top to zoom in on this image. If the text is
-% overlapping and not easily visible, you can change the number of decimal
-% places shown with the 'Fewer significant digits' button, or you can
-% change the font size with the 'Text Properties'. You can also change the
-% font style, color, and other properties with this button.
+% You can then use the InteractiveZoom under the CellProfiler Image Tools
+% menu to zoom in on this image. If the text is overlapping and not easily
+% visible, you can change the number of decimal places shown with the
+% 'Significant digits' button, or you can change the font size with the
+% 'Text Properties'. You can also change the font style, color, and other
+% properties with this button. If you want to go back to the original label
+% settings, click the 'Restore labels' button. Alternatively, you can hide
+% and show the labels by clicking the 'Hide labels' and 'Show labels'
+% buttons, respectively.
 %
 % The resulting figure can be saved in MATLAB format (.fig) or exported in
 % a traditional image file format.
+%
+% See also DisplayDataOnImage.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -83,11 +89,15 @@ end
 if isempty(ObjectTypename),return,end
 
 %%% Prompts the user to choose a sample number to be displayed.
-Answer = inputdlg({'Which sample number do you want to display?'},'Choose sample number',1,{'1'});
+Answer = inputdlg({'Which sample/cycle number do you want to display?'},'Choose sample number',1,{'1'});
 if isempty(Answer)
     return
 end
 SampleNumber = str2double(Answer{1});
+if SampleNumber > length(handles.Measurements.(ObjectTypename).(FeatureType))
+    CPerrordlg(['Error: the sample number you entered, ' num2str(SampleNumber) ', exceeds the number of samples in the output file.']);
+    return
+end
 
 %%% Looks up the corresponding image file name.
 PotentialImageNames = handles.Measurements.Image.FileNamesText;
@@ -117,6 +127,7 @@ else
         PromptMessage = 'You have chosen to choose the image to display manually.';
         %%% Prompts the user with the image file name.
         h = CPmsgbox(PromptMessage);
+        uiwait(h);
 
         %%% Opens a user interface window which retrieves a file name and path
         %%% name for the image to be displayed.

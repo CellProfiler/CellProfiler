@@ -10,13 +10,15 @@ function ShowOrHidePixelData(handles)
 % This tool lets you observe the pixel intensity at each X,Y location as
 % you hover over points within an image, via a small box at the lower left
 % corner of the figure window. If the image is color (RGB), three intensity
-% values are shown: Red, Green, and Blue. 
+% values are shown: Red, Green, and Blue.
 %
 % Currently, it can also measure lengths if you click the mouse at a
 % starting point and hold the button down while dragging, although this
-% feature will be replaced by the Measure Length tool, accessible by
-% clicking on the image of interest and choosing Measure Length from the
-% resulting Image Tool window.
+% could also be done with the Measure Length tool, accessible by clicking
+% on the image of interest and choosing Measure Length from the resulting
+% Image Tool window.
+%
+% To exit the tool, click the 'x' in the pixel intensity information panel.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

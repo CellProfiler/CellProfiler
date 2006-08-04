@@ -7,8 +7,35 @@ function InteractiveZoom(handles)
 % Allows interactive zooming over the image.
 % *************************************************************************
 %
-% To exit interactive zooming, click the 'x' in the zooming pixel location
-% panel, or choose Interactive Zoom again from the menu (it will toggle
+% This tool allows you zoom into an image by moving the cursor over it. The
+% image will automatically be zoomed to the location of the cursor. You can
+% control the zoom percentage with mouse clicks, which by default will be
+% set to 50% of the image in the axis. The tool will also open a black text
+% box showing the current position of the mouse pointer.
+%
+% Mouse click commands:
+% * Left-clicking will zoom in further.
+% * Right-clicking will zoom out.
+% * Shift-clicking (or simultaneously clicking the left and right mouse
+%   buttons) at any point will display the original (un-zoomed) image, as
+%   will moving the cursor outside of the current axis. The zoom percentage
+%   is restored when the mouse is moved inside the axis.
+% * Double-clicking (either right or left button) zooms out to the original
+%   image, and resets the zoom percentage (i.e. it will not be restored as
+%   when shift-clicking).
+%
+% The InteractiveZoom will work with all images in a figure, but only one
+% at a time. If you want to zoom into an image while currently zooming into
+% another, you will have to click on it to activate it, and you will lose
+% the zoom you had in the first image.
+%
+% Note: there is a known bug that has no fix yet. When there are multiple
+% images in a figure, be careful not to double-click and move the pointer
+% fast enough such that one click lands on one image and the other lands in
+% another. This will create an error, although it will seldom happen.
+%
+% To exit the InteractiveZoom, click the 'x' in the zooming pixel location
+% panel, or click on InteractiveZoom again in the menu (it will toggle
 % on/off each time you select it).
 
 % zoom2cursor, without arguments, will activate the current axis, create a
@@ -17,26 +44,23 @@ function InteractiveZoom(handles)
 % as it is moved. The zoomed display dynamically scrolls with the motion of
 % the cursor.
 %
-% By default, the function zooms to 50% of the image in the axis.
-%
-% BUTTON CLICKS:
-% Left-clicking will zoom in further, and right-clicking will zoom out.
-% Shift-clicking (or simultaneously clicking the left and right mouse buttons) at any point
-% will display the original (un-zoomed) image, as will moving the
-% cursor outside of the current axis. The zoom percentage is restored when the mouse is moved.
-% Double-clicking zooms out to the original image, modifying the zoom percentage.
 %
 % Tested under R12.1 and R13.
 %
 % Written by Brett Shoelson, Ph.D. (shoelson@helix.nih.gov, shoelson@hotmail.com)
 % 12/26/02
-% 2/16/03; Rev 2: Program is more robust; fixes a bug when window is resized.
-%                 Incremental increase/decrease in zoom percent (on mouseclick) has been reduced.
-%                 Also: Now works with images, surfaces, lines (and thus
-%                 plots), and patches (rather than just images)
-% 6/27/05; Rev 3 (Colin Clarke): Fixed clash with normal zoom function, allows zoom for
-%                 multiple images in one figure, and made it go better with
-%                 CellProfiler.
+% 2/16/03; Rev 2: Program is more robust; fixes a bug when window is
+%                 resized. Incremental increase/decrease in zoom percent
+%                 (on mouseclick) has been reduced. Also: Now works with
+%                 images, surfaces, lines (and thus plots), and patches
+%                 (rather than just images).
+% 6/27/05; Rev 3: (Colin Clarke): Fixed clash with normal zoom function,
+%                 allows zoom for multiple images in one figure, and made
+%                 it go better with CellProfiler.
+% 7/10/06; Rev 4: (Rodrigo Ipince): Fixed a bug when the mouse is going
+%                 over the image, but there's a different figure on top.
+%                 Also, now restores callback to the ImageTools in the
+%                 images after being used (used to give errors).
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

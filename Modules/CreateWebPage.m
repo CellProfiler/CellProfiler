@@ -14,43 +14,43 @@ function handles = CreateWebPage(handles)
 % thumbnail images must be in the same directory as the original images.
 %
 % Settings:
-% Thumbnails: By default, the full-size images will be displayed on the
+% * Thumbnails: By default, the full-size images will be displayed on the
 % webpage itself. If you have made thumbnails (small versions of the
 % images), you can have these displayed on the webpage, and the full-size
 % images will be displayed when the user clicks on the thumbnails.
 %
-% Create webpage (HTML file) before or after processing all images?
+% * Create webpage (HTML file) before or after processing all images?
 % If the full-size images and thumbnails (optional) already exist on the
 % hard drive and you are loading them with the Load Images module, you can
 % answer "Before" to this question. If, however, you are producing either
 % of these images during the pipeline and you therefore need to complete
 % all of the cycles before generating the webpage, choose "After".
 %
-% What do you want to call the resulting webpage file (include .htm or
+% * What do you want to call the resulting webpage file (include .htm or
 % .html as the extension)?
 % This file will be created in your default output directory. It can then
 % be copied to your web server. The primary difference between .htm and
 % .html is simply that .html can't be represented in a DOS/16 bit operating
 % system which uses the 8.3 file naming convention. Most servers (but not
 % all) that can handle 4 character file extensions can be set up to treat
-% .htm and .html files exactly the same, just as they can be set up to
-% treat .jpg and .jpeg files the same.
+% .htm and .html files in exactly the same way, just as they can be set up 
+% to treat .jpg and .jpeg files the same way.
 % 
-% Will you have the webpage HTML file in the same folder or one level above
-% the images?
+% * Will you have the webpage HTML file in the same folder or one level 
+% above the images?
 % If the images are going to be in a subfolder, then the HTML file will be
 % one level above the images. If the HTML file and the images will all be
-% in the same folder, answer Same as the images.
+% in the same folder, answer "Same as the images".
 %
-% Table border: If desired, there will be lines around each image,
-% creating a table. The thickness and color of these lines can be selected.
+% * Table border: If desired, there will be lines around each image,
+% creating a table. The thickness and color of these lines can be specified.
 %
-% Spacing between images: If this is set to greater than zero, there will
+% * Spacing between images: If this is set to greater than zero, there will
 % be an additional frame, the same color as the table border, around each
-% image. The spacing is the space between the frames that surround each
+% image. The spacing is the space between the frames that surrounds each
 % image.
 %
-% Image border width: This is the distance between each image and its
+% * Image border width: This is the distance between each image and its
 % frame. If the spacing between images is zero, you will not see the frame
 % itself, but the image border width will still affect the spacing between
 % images.
@@ -104,7 +104,7 @@ ThumbImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 CreateBA = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What do you want to call the resulting webpage file (include .htm or .html as the extenstion)?
+%textVAR04 = What do you want to call the resulting webpage file (include .htm or .html as the extension)?
 FileName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR04 = images1.html
 

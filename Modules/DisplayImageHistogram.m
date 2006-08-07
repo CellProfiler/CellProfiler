@@ -12,16 +12,20 @@ function handles = DisplayImageHistogram(handles)
 %
 % Settings:
 % 
-% How many histograms bins do you want?
+% How many histograms bins would you like to use?
 % Choose how many bins to use (i.e. in how many sets do you want the data
 % distributed).
 %
-% Enter the range for frequency counts on the Y axis:
-% Choose the minimum and maximum number of frequency counts you want to
-% have displayed (i.e. the range of the Y axis). The entry must be in the
-% format 'Min Max' (without the quotation marks).
+% Frequency counts:
+% Frequency counts refers to the threshold for the leftmost and rightmost
+% bins. The minimum value is the threshold at which any measurements less
+% than this value will be combined into the leftmost bin. The maximum value
+% is the threshold at which any measurements greater than or equal to this
+% value will be combined into the rightmosot bin. 
 %
-% See also DisplayHistogram.
+% See also DisplayHistogram, MeasureObjectAreaShape,
+% MeasureObjectIntensity, MeasureTexture, MeasureCorrelation,
+% MeasureObjectNeighbors, and CalculateRatios modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

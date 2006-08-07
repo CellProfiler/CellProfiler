@@ -8,7 +8,7 @@ function handles = IdentifyPrimManual(handles)
 % *************************************************************************
 %
 % This module allows the user to identify objects by manually outlining
-% them. This is done by using the mouse to click at multiple points around
+% them. This is done by using the mouse to click multiple points around
 % the object. Multiple objects can be outlined using this module.
 %
 % Special note on saving images: Using the settings in this module, object

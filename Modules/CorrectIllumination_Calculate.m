@@ -15,13 +15,13 @@ function handles = CorrectIllumination_Calculate(handles)
 % for uneven illumination of each image.
 %
 % Illumination correction is challenging and we are writing a paper on it
-% which should help clarify (TR Jones, AE Carpenter, P Golland, in
+% which should help clarify it (TR Jones, AE Carpenter, P Golland, in
 % preparation). In the meantime, please be patient in trying to understand
 % this module.
 %
 % Settings:
 %
-% Regular or Background intensities?
+% * Regular or Background intensities?
 %
 % Regular intensities:
 % If you have objects that are evenly dispersed across your image(s) and
@@ -29,13 +29,14 @@ function handles = CorrectIllumination_Calculate(handles)
 % intensities makes the illumination function based on the intensity at
 % each pixel of the image (or group of images if you are in All mode) and
 % is most often rescaled (see below) and applied by division using
-% CorrecIllumination_Apply. Note that if you are in Each mode or using a
+% CorrectIllumination_Apply. Note that if you are in Each mode or using a
 % small set of images with few objects, there will be regions in the
 % average image that contain no objects and smoothing by median filtering
-% is unlikely to work well. Note: it does not make sense to choose (Regular
-% + no smoothing + Each) because the illumination function would be
-% identical to the original image and applying it will yield a blank image.
-% You either need to smooth each image or you need to use All images.
+% is unlikely to work well. 
+% Note: it does not make sense to choose (Regular + no smoothing + Each) 
+% because the illumination function would be identical to the original 
+% image and applying it will yield a blank image. You either need to smooth
+% each image or you need to use All images.
 %
 % Background intensities:
 % If you think that the background (dim points) between objects show the
@@ -43,11 +44,12 @@ function handles = CorrectIllumination_Calculate(handles)
 % Background intensities. Background intensities finds the minimum pixel
 % intensities in blocks across the image (or group of images if you are in
 % All mode) and is most often applied by subtraction using the 
-% CorrecIllumination_Apply module. Note: if you will be using the Subtract
-% option in the CorrecIllumination_Apply module, you almost certainly do
-% NOT want to Rescale! See below!!
+% CorrectIllumination_Apply module. 
+% Note: if you will be using the Subtract option in the 
+% CorrectIllumination_Apply module, you almost certainly do NOT want to 
+% Rescale! See below!!
 % 
-% Each or All?
+% * Each or All?
 % Enter Each to calculate an illumination function for each image
 % individually, or enter All to calculate the illumination function from
 % all images at each pixel location. All is more robust, but depends on the
@@ -57,7 +59,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % image individually may make intensity measures not directly comparable
 % across different images.
 %
-% Pipeline or Load Images?
+% * Pipeline or Load Images?
 % If you choose Load Images, the module will calculate the illumination
 % correction function the first time through the pipeline by loading every
 % image of the type specified in the Load Images module. It is then
@@ -76,7 +78,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % (projection) image. This is for a sophisticated method of illumination
 % correction where model objects are produced.
 %
-% Smoothing Method:
+% * Smoothing Method:
 % If requested, the resulting image is smoothed. See the help for the
 % Smooth module for more details. If you are using Each mode, this is
 % almost certainly necessary. If you have few objects in each image or a
@@ -99,7 +101,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % rescaling of each image might be dramatic, causing the corrected images
 % to be very dark.
 %
-% See also CorrectIllumination_Apply, Smooth
+% See also Average, CorrectIllumination_Apply, and Smooth modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -13,20 +13,28 @@ function handles = MeasureTexture(handles)
 % grayscale image. Measurements are recorded for each object. If "Image" is
 % chosen, the texture of the image overall is measured.
 %
+% How it works:
+% Retrieves objects in label matrix format and a corresponding original
+% grayscale image and makes measurements of the objects. The label matrix
+% image should be "compacted": that is, each number should correspond to an
+% object, with no numbers skipped. So, if some objects were discarded from
+% the label matrix image, the image should be converted to binary and
+% re-made into a label matrix image before feeding into this module.
+%
 % The scale of texture measured is chosen by the user, in pixel units. A
 % higher number for the scale of texture measures larger patterns of
 % texture whereas smaller numbers measure more localized patterns of
 % texture. It is best to measure texture on a scale smaller than your
 % objects sizes, so be sure that the value entered for scale of texture is
 % smaller than most of your objects. For very small objects (smaller than
-% the scale of texture you are measuring) the texture cannot be measured
-% and will result in a value of NaN in the output file (Not a Number).
+% the scale of texture you are measuring), the texture cannot be measured
+% and will result in a value of NaN (Not a Number) in the output file.
 %
-% Note that texture measures are affected by the overall intensity of the
-% object (or image). For example if Image1 = Image2 + 0.2, then the texture
-% measurements should be the same for Image1 and Image2. However, if the
-% images are scaled differently, for example Image1 = 0.9*Image2, then this
-% will be reflected in the texture measurements, and they will be
+% Note that texture measurements are affected by the overall intensity of 
+% the object (or image). For example, if Image1 = Image2 + 0.2, then the 
+% texture measurements should be the same for Image1 and Image2. However, 
+% if the images are scaled differently, for example Image1 = 0.9*Image2, 
+% then this will be reflected in the texture measurements, and they will be
 % different. For example, in the extreme case of Image1 = 0*Image2 it is
 % obvious that the texture measurements must be different. To make the
 % measurements useful (both intensity, texture, etc.), it must be ensured
@@ -55,15 +63,15 @@ function handles = MeasureTexture(handles)
 % Texture Measurement descriptions:
 %
 % Haralick Features:
-% Haralick texture features are derived from the co-occurence matrix, which
-% contains information about how image intensities in pixels with a certain
-% position in relation to each other occur together. For example, how often
-% does a pixel with intensity 0.12 have a neighbor 2 pixels to the right
-% with intensity 0.15? The current implementation in CellProfiler uses a
-% shift of 1 pixel to the right for calculating the co-occurence matrix. A
-% different set of measurements is obtained for larger shifts, measuring
-% texture on a larger scale. The original reference for the Haralick
-% features is Haralick et al. (1973) Textural Features for Image
+% Haralick texture features are derived from the co-occurrence matrix, 
+% which contains information about how image intensities in pixels with a 
+% certain position in relation to each other occur together. For example, 
+% how often does a pixel with intensity 0.12 have a neighbor 2 pixels to 
+% the right with intensity 0.15? The current implementation in CellProfiler
+% uses a shift of 1 pixel to the right for calculating the co-occurence 
+% matrix. A different set of measurements is obtained for larger shifts, 
+% measuring texture on a larger scale. The original reference for the 
+% Haralick features is Haralick et al. (1973) Textural Features for Image
 % Classification. IEEE Transaction on Systems Man, Cybernetics,
 % SMC-3(6):610-621, where 14 features are described:
 % H1. Angular Second Moment
@@ -93,14 +101,7 @@ function handles = MeasureTexture(handles)
 % and y-axis (i.e. in two different orientations). The original reference
 % is Gabor, D. (1946). "Theory of communication" Journal of the Institute
 % of Electrical Engineers, 93:429-441.
-%
-% How it works:
-% Retrieves objects in label matrix format and a corresponding original
-% grayscale image and makes measurements of the objects. The label matrix
-% image should be "compacted": that is, each number should correspond to an
-% object, with no numbers skipped. So, if some objects were discarded from
-% the label matrix image, the image should be converted to binary and
-% re-made into a label matrix image before feeding into this module.
+
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

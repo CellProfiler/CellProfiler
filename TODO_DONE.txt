@@ -1,5 +1,11 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Jun 8/7/06) (Requested by Anne 1-17-06) - Histogram data tool requests:  Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
+=>Jun (Project Task): Changes made to Histogram.m.
+
+- (Jun 8/7/06) (Requested by Anne 1-17-06) - Histogram data tool requests: When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc. 
+=>Jun (Project Task): Changes made to Histogram.m. Added buttons like those in histogram window to decrease and restore tick labels and change number of decimals. Also added button to invert colormap. 
+
 - (Rodrigo 8/4/06) (Requested by Anne 4-19-06) - I fixed a bug in SaveImages module so that a proper error message appears if you specify an image file name for the base name that is not in the handles structure already. But we should doublecheck that SaveImages still works for the cases when the base name is (1) N for sequential numbers (2) type in one file name for all the images (=DesiredFilename), then appending sequential numbers using the following variable set to N, and (3) type in one file name for all the images (=DesiredFilename) for the case where you want to save an avi movie.
 
 -(Jun 8/4/06) - Fixed error that occurs in AddData and ClearData when pressing either "OK" or "Cancel" in the select output file window.

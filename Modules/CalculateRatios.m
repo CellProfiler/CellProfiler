@@ -19,7 +19,7 @@ function handles = CalculateRatios(handles)
 % it will be changed to the average of the rest of the data. If all
 % denominator data is 0, all ratios will be set to 0 too.
 %
-% The ratios will be stored under the numerator object data. If the
+% The ratios will be stored under the numerator object's data. If the
 % numerator is an object, data will be under the name Ratio. If the
 % numerator is an image, data will be under the name SingleRatio or
 % MultipleRatio depending on whether the denominator is another image or an
@@ -30,7 +30,7 @@ function handles = CalculateRatios(handles)
 % will be used for the ratio. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% See also all Measure modules.
+% See also CalculateRatiosDataTool, all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

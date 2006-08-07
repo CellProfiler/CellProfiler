@@ -7,6 +7,14 @@ function MeasurementCalculator(handles)
 % Multiplies or divides measurements in output files.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
+%
+% This tool allows you to multiply or divide data taken from CellProfiler
+% output files. You can choose the two measurements you wish to use, and
+% choose whether to multiply or divide them either objectwise, by the image
+% mean, or by the image median. You can give a name to your new measurement
+% and save it for later use.
+%
+% See also CalculateRatiosDataTool, CalculateRatios.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -53,7 +61,6 @@ if ~exist('handles','var')
     return
 end
 
-
 %%% Opens a window that lets the user choose what to export
 %%% This function returns a UserInput structure with the
 %%% information required to carry of the calculations.
@@ -66,7 +73,6 @@ end
 if ~isfield(UserInput, 'SaveLocation')
     return
 end
-
 
 % Get measurements
 Measurements1 = handles.Measurements.(UserInput.ObjectTypename1).(UserInput.FeatureType1);
@@ -107,7 +113,6 @@ for ImageSetNbr = 1:length(Measurements1)
     end
 end
 
-
 % Add the new measurement to the handles structure. If the 'UserDefined'
 % field doesn't exist this is easy. If it already exists we have to append
 % for each image set.
@@ -130,7 +135,6 @@ function UserInput = UserInputWindow(handles)
 % it means that either no measurements were found or the user pressed
 % the Cancel button (or the window was closed). 
 
-
 % Create window
 Window = CPfigure;
 Width = 4.7;  % inches
@@ -139,7 +143,7 @@ uiheight = 0.3;
 FontSize = handles.Preferences.FontSize;
 
 set(Window,'units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off',...
-    'Name','Measurement Calculator','Color',[.7 .7 .9],'Position',[4 4 Width Height]);
+    'Name','Measurement Calculator','Color',[.7 .7 .9],'Position',[4 3 Width Height]);
 
 BaseY = 3.5;
 uicontrol(Window,'style','text','String','Calculate','Fontweight','bold',...
@@ -173,7 +177,6 @@ uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[
     '   set(UserData.SaveLocation,''string'',str);',...
     'end,',...
     'clear variables;']);
-
 
 Feature1 = uicontrol(Window,'style','text','String','',...
     'Fontsize',FontSize,'units','inches','position',[1.1 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
@@ -216,7 +219,6 @@ uicontrol(Window,'style','pushbutton','String','Get feature','BackGroundColor',[
     'end,',...
     'clear Variables;']);
 
-
 Feature2 = uicontrol(Window,'style','text','String','',...
     'FontSize',FontSize,'units','inches','position',[1.1 BaseY 3.5 uiheight],'backgroundcolor',[.8 .8 1]);
 
@@ -238,14 +240,12 @@ uicontrol(Window,'style','pushbutton','String','?','FontSize',FontSize,...
     'HorizontalAlignment','center','units','inches','position',[4.4 BaseY 0.2 uiheight],'BackgroundColor',[.7 .7 .9],'FontWeight', 'bold',...
     'Callback', Help_Callback);
 
-
 %%% CALCULATE AND CANCEL BUTTONS
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
 calculatebutton = uicontrol(Window,'style','pushbutton','String','Calculate','Fontweight','bold','FontSize',FontSize,'units','inches',...
     'position',[posx 0.1 0.75 0.3],'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear cobj cfig;','BackgroundColor',[.7 .7 .9]);
 cancelbutton = uicontrol(Window,'style','pushbutton','String','Cancel','Fontweight','bold','FontSize',FontSize,'units','inches',...
     'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
-
 
 % Store some variables in the current figure's UserData propery
 UserData.handles = handles;

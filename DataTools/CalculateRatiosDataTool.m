@@ -1,28 +1,30 @@
-function CalculateRatiosDataTool2(handles)
+function CalculateRatiosDataTool(handles)
 
 % Help for the Calculate Ratios data tool:
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Calculates the ratio between any measurements already measured (e.g.
-% Intensity of green staining in cytoplasm/Area of cells)
+% Calculates the product, ratio, sum, or difference between any
+% measurements already measured (e.g. Intensity of green staining in
+% cytoplasm/Area of cells)
 % *************************************************************************
 %
-% This module can take any measurements produced by previous modules and
-% calculate a ratio. Resulting ratios can also be used to calculate other
-% ratios and be used in Classify Objects.
+% This data tool can take any measurements in a CellProfiler output file
+% and multiply, divide, add, or subtract them. Resulting measurements can
+% also be saved and used to calculate other measurements.
 %
-% This module currently works on an object-by-object basis (it calculates
-% the ratio for each object) but can also calculate ratios for measurements
-% made for entire images (but only for measurements produced by the
-% Correlation module).
+% The data tool currently works on an object-by-object basis (it calculates
+% the ratio for each object). If you need to calculate image-by-image
+% ratios or ratios for object measurements by whole image measurements (to
+% allow normalization), use the CalculateRatios module until this data tool
+% is updated to handle that kind of calculations. Be careful with your
+% denominator data. Any 0's found in it may corrupt your output, especially
+% when dividing measurements.
 %
-% Feature Number:
-% The feature number specifies which features from the Measure module(s)
-% will be used for the ratio. See each Measure module's help for the
-% numbered list of the features measured by that module.
+% The new measurements will be stored under the first object's data, under
+% the name Ratio.
 %
-% See also all Measure modules.
+% See also CalculateRatios, all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -84,13 +86,12 @@ while promptLoop == 0
     elseif strcmpi(Log, 'no') || strcmpi(Log, 'n')
         Log = '/';
     end
-    
-    
-    if isempty(str2num(Power)) && ~strcmpi(Power,'/')
+
+    if isnan(str2double(Power)) && ~strcmpi(Power,'/')
         uiwait(CPerrordlg('Error: there was a problem with your choice for power'));
         continue
     end
-    
+
     promptLoop = 1;
 end
 
@@ -112,8 +113,11 @@ end
 
 Measure1 = handles.Measurements.(Measure1Object).(Measure1fieldname);
 Measure2 = handles.Measurements.(Measure2Object).(Measure2fieldname);
+if length(Measure1) ~= length(Measure2)
+    CPerrordlg(['Processing cannot continue because the specified object names ',Measure1Object,' and ',Measure2Object,' do not have the same amount of measurements.']);
+    return
+end
 %SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-
 
 for i = 1:length(Measure1)
        
@@ -139,7 +143,7 @@ for i = 1:length(Measure1)
     end
     
     if ~strcmp(Power,'/')
-    	FinalMeasurements = FinalMeasurements .^ str2num(Power);
+    	FinalMeasurements = FinalMeasurements .^ str2double(Power);
     end
     
     %%% Record the new measure in the handles structure.
@@ -153,5 +157,5 @@ try
     save(fullfile(Pathname, FileName),'handles');
     CPmsgbox(['Updated ',FileName,' successfully saved.'])
 catch
-    CPwarndlg = (['Could not save updated ',FileName,' file.']);
+    CPwarndlg(['Could not save updated ',FileName,' file.']);
 end

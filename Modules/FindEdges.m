@@ -4,7 +4,48 @@ function handles = FindEdges(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Sorry, this module is not yet documented.
+% The FindEdges module employs serveral methods to identify any edges in an
+% image.  Once the edges are found, a resulting binary image will be produced
+% where only the edges are shown in white while everything else will be black. 
+%
+% Settings:
+%   Method- There are several different methods that can be used to identify
+% edges.  In this module, the user is able to picke between Roberts, Sobel,
+% Prewitt, Log, and Canny.  These methods all implement different
+% techniques and algorithms which are suited towards different images.
+%       Sobel Method - finds edges using the Sobel approximation to the
+%                      derivative. It returns edges at those points where 
+%                      the gradient of which I is maximum. 
+%       Prewitt Method - finds edges using the Prewitt approximation to the
+%                      derivative. It returns edges at those points where
+%                      the gradient of I is maximum. 
+%       Roberts Method - finds edges using the Roberts approximation to the
+%                      derivative. It returns edges at those points where
+%                      the gradient of I is maximum. 
+%       Canny - The Canny method finds edges by looking for local maxima of
+%                      of the gradient of I. The gradient is calculated
+%                      using the derivative of a Gaussian filter. The
+%                      method uses two thresholds, to detect strong and
+%                      weak edges, and includes the weak edges in the
+%                      output only if they are connected to strong edges.
+%                      This method is therefore less likely than the others
+%                      to be fooled by noise, and more likely to detect
+%                      true weak edges.
+% To find the best method for an image, you can compare the results of each
+% by eye.
+%
+%   Threshold - Enter the desired threshold or have CellProfiler choose one
+% automatically.  A different process is used to determine the threshold for
+% each method.
+%   Edge Thinning - This setting only applies for the Roberts method.  
+%   Direction - This setting applies only for Sobel and Prewitt methods.  It
+% gives you the option of identifying either only horizontal or vertical
+% edges or both.     
+%   Threshold Factor- The Threshold factor specified by the user will be
+% multiplied with the threshold used for edge detection.
+%   Binary or GrayScale- This option allows the option of having the
+% resulting image to have varying degrees of Gray (Grayscale) or of the
+% resulting image being strictly black and white (Binary).
 % *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.

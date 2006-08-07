@@ -21,7 +21,7 @@ function handles = FilterByObjectMeasurement(handles)
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
 % with the SaveImages module. Objects themselves can be passed along to the
-% object processing module Convert To Image and then saved with the
+% object processing module ConvertToImage and then saved with the
 % SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes
@@ -33,7 +33,7 @@ function handles = FilterByObjectMeasurement(handles)
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture,
-% MeasureCorrelation, CalculateRatios, MeasureObjectNeighbors.
+% MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

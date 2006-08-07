@@ -10,7 +10,7 @@ function handles = Resize(handles)
 % Images are resized (smaller or larger) based on the user's inputs. You
 % can resize an image by applying a resizing factor or by specifying a
 % pixel size for the resized image. You can also select which interpolation
-% method to use. This module uses the Matlab built-in function imresize.
+% method to use. This module uses the MATLAB built-in function imresize.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

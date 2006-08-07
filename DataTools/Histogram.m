@@ -107,6 +107,9 @@ function Histogram(handles)
 % bound for that bin.  In other words, each bar includes data equal to
 % or greater than the label, but less than the label on the bar to its
 % right.
+%
+% See also PlotMeasurement data tool and DisplayHistogram and 
+% DisplayImageHistogram modules.
 
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -297,6 +300,7 @@ switch UserInput.Color
         GraphColor=[.7 .7 .9];
 end
 
+
 %%% If the user selected to threshold histogram data, the measurements are thresholded on some other measurement.
 if strcmp(UserInput.Logical,'None') ~= 1
     [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
@@ -458,9 +462,10 @@ if strcmp(UserInput.ExportHist,'Yes') == 1
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Displays histogram data for non-compressed histograms %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Displays histogram data for non-heatmap graphs %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 VersionCheck = version;
@@ -479,7 +484,7 @@ if ~strcmp(UserInput.Style,'Heatmap') && strcmp(UserInput.Display,'Yes')
     PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
     %%% Creates the display window.
     FigureHandle = CPfigure;
-    set(FigureHandle, 'Name',MeasurementToExtract);
+    set(FigureHandle, 'Name',[UserInput.Style,' graph for ',MeasurementToExtract]);
 
     Increment = 0;
     for ImageNumber = UserInput.FirstSample:UserInput.LastSample
@@ -804,72 +809,178 @@ if ~strcmp(UserInput.Style,'Heatmap') && strcmp(UserInput.Display,'Yes')
     set(FigureHandle,'toolbar','figure')
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% Displays histogram data for compressed histograms %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Displays histogram data for heatmaps %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(UserInput.Style,'Heatmap') == 1 && strcmp(UserInput.Display,'Yes') == 1
     FinalHistogramData = FinalHistogramData';
     FigureHandle = CPfigure;
-    set(FigureHandle,'Color',[1 1 1])
+    set(FigureHandle,'Name', [UserInput.Style,' for ',MeasurementToExtract],'Color',[.7 .7 .9])
+    heatmp=subplot(1,1,1);
+    pos=get(heatmp, 'Position');
+    set(heatmp, 'Position', [pos(1) pos(2) pos(3) pos(4)-.1]);
+    if  XTickLabels{end-1} - XTickLabels{2} > UserInput.NumBins
+        for n = 2:length(XTickLabels) - 1
+            XTickLabels{n} = XTickLabels{n};
+        end
+
+    end
+    
     if strcmp(UserInput.EachRow,'Image') == 1
-        CPimagesc(FinalHistogramData,handles);
-        AxisHandle = gca;
-        set(get(AxisHandle,'XLabel'),'String',MeasurementToExtract)
-        %%% TODO: Should make this more sophisticated so that it rounds decimal
-        %%% numbers to 2 significant digits. Or, maybe it would be better
-        %%% to have a button, like the histogram windows normally have,
-        %%% that lets the user choose fewer labels or fewer decimal places.
-        if  XTickLabels{end-1} - XTickLabels{2} > UserInput.NumBins
-            for n = 2:length(XTickLabels) - 1
-                XTickLabels{n} = round(XTickLabels{n});
-            end
-
-        end
-        set(AxisHandle,'XTickLabel',XTickLabels)
+        CPimagesc(FinalHistogramData,handles);     
+        set(heatmp,'XTickLabel',XTickLabels)
         NewPlotBinLocations = 1:length(FinalHistogramData');
-        set(AxisHandle,'XTick',NewPlotBinLocations)
-    elseif strcmp(UserInput.EachRow,'Bin') == 1
-        CPimagesc(flipud(FinalHistogramData'),handles),
-        AxisHandle = gca;
-        EveryNthLabel = 3;
-        XTickLabels = flipud(XTickLabels');
-        %%% Checks the spread of the data to decide whether to round
-        %%% it off.
-        %%% Also, note that it is setting the Y to be X, since we are in
-        %%% 'bin', not 'image' mode.
-        if XTickLabels{end-1} - XTickLabels{2} > UserInput.NumBins
-            YTickLabels{1} = XTickLabels{1};
-            YTickLabels{length(XTickLabels)} = XTickLabels{end};
-            for n = 2:length(XTickLabels) - 1
-                YTickLabels{n} = round(XTickLabels{n});
-            end
-        else YTickLabels = XTickLabels;
-        end
-        YTickLabels = YTickLabels(1:EveryNthLabel:length(YTickLabels));
-        set(AxisHandle,'YTickLabel',YTickLabels)
-        NewPlotBinLocations = 1:EveryNthLabel:length(flipud(XTickLabels'));
-        set(AxisHandle,'YTick',NewPlotBinLocations)
-        set(AxisHandle,'XTick',0:100:size(FinalHistogramData,1))
-    end
-    NewColormap = 1 - colormap(gray);
-    colormap(NewColormap),
-    ColorbarHandle = colorbar;
-    %%% Labels the colorbar's units.
-    if strcmp(UserInput.BinVar,'Percentages') == 1
-        ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image'])
-    else ylabel(ColorbarHandle, ['Number of ', ObjectTypename])
-    end
-    set(gca,'fontname','Helvetica','fontsize',FontSize)
-    set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2)
-    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
-    ylabel(gca,'Histogram bins','fontname','Helvetica','fontsize',FontSize+2)
-    title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2)
-end
+        set(heatmp,'XTick',NewPlotBinLocations)
 
-%displays warning if flip axes of area graph
-if strcmp(UserInput.Xaxis,'Number of objects in bin') & strcmp(UserInput.Style,'Area')
-    warnfig=CPwarndlg('There is no function that can flip the axes of an area graph. The normal graph is displayed.','Warning');
-    uiwait(warnfig);
+        NewColormap = 1 - colormap(pink);
+        colormap(NewColormap),
+        ColorbarHandle = colorbar;
+        %%% Labels the colorbar's units.
+        if strcmp(UserInput.BinVar,'Percentages') == 1
+            ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image'])
+        else ylabel(ColorbarHandle, ['Number of ', ObjectTypename])
+        end
+        set(gca,'fontname','Helvetica','fontsize',FontSize)
+        set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2)
+        xlabel(gca,'Histogram bins','Fontname','Helvetica','fontsize',FontSize+2)
+        ylabel(gca,'Image number','fontname','Helvetica','fontsize',FontSize+2)
+        title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2)
+    else
+        CPimagesc(flipud(FinalHistogramData'),handles);
+        XTickLabels=fliplr(XTickLabels);
+        set(heatmp,'YTickLabel',XTickLabels);
+        NewPlotBinLocations = 1:length(FinalHistogramData');
+        set(heatmp,'YTick',NewPlotBinLocations)
+        
+        NewColormap = 1 - colormap(pink);
+        colormap(NewColormap);
+        ColorbarHandle = colorbar;
+        %%% Labels the colorbar's units.
+        if strcmp(UserInput.BinVar,'Percentages') == 1
+            ylabel(ColorbarHandle, ['Percentage of ', ObjectTypename, ' in each image']);
+        else ylabel(ColorbarHandle, ['Number of ', ObjectTypename]);
+        end
+        set(gca,'fontname','Helvetica','fontsize',FontSize);
+        set(get(ColorbarHandle,'title'),'fontname','Helvetica','fontsize',FontSize+2);
+        xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2);
+        ylabel(gca,'Histogram bins','fontname','Helvetica','fontsize',FontSize+2);
+        title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2);
+    end
+    
+    set(gca,'Tag','BarTag','ActivePositionProperty','Position')
+
+    left=30;
+    bottom=370;
+    StdUnit = 'point';
+
+    %%% Creates text
+    uicontrol('Parent',FigureHandle, ...
+        'BackgroundColor',[.7 .7 .9], ...
+        'Unit',StdUnit, ...
+        'Position',[left bottom 60 25], ...
+        'Units','Normalized',...
+        'String','Histogram bins labels:', ...
+        'Style','text', ...
+        'FontSize',FontSize);
+    
+    left=left+70;
+
+    %%% Hide every other label button.
+    if strcmp(UserInput.EachRow,'Bin')
+        Button1Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''YTick'');XTickLabels = get(AxesHandles(1),''YTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''YTick'',PlotBinLocations2(1,:));set(AxesHandles,''YTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    else
+        Button1Callback = 'tempData = get(gcf,''UserData'');AxesHandles = findobj(gcf,''Tag'',''BarTag'');PlotBinLocations = get(AxesHandles(1),''XTick'');XTickLabels = get(AxesHandles(1),''XTickLabel'');if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];XTickLabels(length(XTickLabels)) = [];end;PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(XTickLabels,2,[]);set(AxesHandles,''XTick'',PlotBinLocations2(1,:));set(AxesHandles,''XTickLabel'',XTickLabels2(1,:));tempData.HideOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear';
+    end
+    Button1 = uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit, ...
+        'BackgroundColor',[.7 .7 .9], ...
+        'CallBack',Button1Callback, ...
+        'Position',[left bottom 55 22], ...
+        'Units','Normalized',...
+        'String','Fewer',...
+        'Style','pushbutton',...
+        'UserData',0,...
+        'FontSize',FontSize);
+    
+    left=left+60;
+
+    %%% Decimal places Measurement axis labels.
+    if strcmp(UserInput.EachRow,'Bin')
+        Button2Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); if ~isempty(NumberOfDecimals), NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''YTickLabel'',XTickLabels2);set(AxesHandles,''YTick'',PlotBinLocations);else,set(AxesHandles,''YTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''YTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow, end';
+    else
+        Button2Callback = 'tempData = get(gcf,''UserData'');HideOption = tempData.HideOption;FigureSettings = tempData.FigureSettings; PlotBinLocations = FigureSettings{1};PreXTickLabels = FigureSettings{2};XTickLabels = PreXTickLabels(2:end-1); AxesHandles = findobj(gcf,''Tag'',''BarTag''); NumberOfDecimals = inputdlg(''Enter the number of decimal places to display'',''Enter the number of decimal places'',1,{''0''}); if ~isempty(NumberOfDecimals), NumberValues = cell2mat(XTickLabels); Command = [''%.'',num2str(NumberOfDecimals{1}),''f'']; NewNumberValues = num2str(NumberValues'',Command); NewNumberValuesPlusFirstLast = [PreXTickLabels(1); cellstr(NewNumberValues); PreXTickLabels(end)];if HideOption,if ceil(length(PlotBinLocations)/2) ~= length(PlotBinLocations)/2,PlotBinLocations(length(PlotBinLocations)) = [];NewNumberValuesPlusFirstLast(length(NewNumberValuesPlusFirstLast)) = [];end,PlotBinLocations2 = reshape(PlotBinLocations,2,[]);XTickLabels2 = reshape(NewNumberValuesPlusFirstLast,2,[]);set(AxesHandles,''XTickLabel'',XTickLabels2);set(AxesHandles,''XTick'',PlotBinLocations);else,set(AxesHandles,''XTickLabel'',NewNumberValuesPlusFirstLast);set(AxesHandles,''XTick'',PlotBinLocations);end,tempData.DecimalOption = 1;set(tempData.HideHandle,''UserData'',tempData);set(tempData.DecimalHandle,''UserData'',tempData);clear, drawnow, end';
+    end
+    Button2 = uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit,...
+        'BackgroundColor',[.7 .7 .9], ...
+        'CallBack',Button2Callback, ...
+        'Position',[left bottom 55 22], ...
+        'Units','Normalized',...
+        'String','Decimals',...
+        'Style','pushbutton',...
+        'UserData',0,...
+        'FontSize',FontSize);
+    
+    left=left+60;
+
+    %%% Restore original X axis labels.
+    if strcmp(UserInput.EachRow,'Bin')
+        Button3Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''YTick'',PlotBinLocations); set(AxesHandles,''YTickLabel'',XTickLabels); clear';
+    else
+        Button3Callback = 'tempData = get(gcf,''UserData'');FigureSettings = tempData.FigureSettings;PlotBinLocations = FigureSettings{1}; XTickLabels = FigureSettings{2}; AxesHandles = findobj(gcf, ''Tag'', ''BarTag''); set(AxesHandles,''XTick'',PlotBinLocations); set(AxesHandles,''XTickLabel'',XTickLabels); clear';
+    end
+    Button3 = uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit, ...
+        'BackgroundColor',[.7 .7 .9], ...
+        'CallBack',Button3Callback, ...
+        'Position',[left bottom 55 22], ...
+        'Units','Normalized',...
+        'String','Restore', ...
+        'Style','pushbutton', ...
+        'FontSize',FontSize);
+    
+    left=left+160;
+
+    Button4Callback = 'cmap=colormap; colormap(1-colormap(cmap));';
+    
+    Button4 = uicontrol('Parent',FigureHandle, ...
+        'Unit',StdUnit, ...
+        'BackgroundColor',[.7 .7 .9], ...
+        'CallBack',Button4Callback, ...
+        'Position',[left bottom 90 22], ...
+        'Units','Normalized',...
+        'String','Invert colormap', ...
+        'Style','pushbutton', ...
+        'FontSize',FontSize);
+    
+    left=left+92;
+    
+    % Help button
+    Help_Callback = 'CPhelpdlg(''Inverting the colormap subtracts each intensity value of the colormap from 1. To change the colormap, click on the heatmap graph which will display the image tool.'')';
+    
+    uicontrol('Parent', FigureHandle, ...
+        'Unit', StdUnit, ...
+        'BackgroundColor', [.7 .7 .9], ...
+        'CallBack', Help_Callback, ...
+        'Position', [left bottom 15 22], ...
+        'Units', 'Normalized', ...
+        'String', '?', ...
+        'Style', 'pushbutton', ...
+        'FontSize', FontSize);
+    
+
+    %Add buttons
+    FigureSettings{1} = NewPlotBinLocations;
+    FigureSettings{2} = XTickLabels;
+    FigureSettings{3} = FinalHistogramData;
+    tempData.HideOption = 0;
+    tempData.HideHandle = Button1;
+    tempData.DecimalHandle = Button2;
+    tempData.FigureSettings = FigureSettings;
+    tempData.handles = rmfield(handles,'Pipeline');
+    tempData.Application = 'CellProfiler';
+    set(FigureHandle,'UserData',tempData);
+
 end
 
 
@@ -1330,8 +1441,6 @@ while 1
             OutputFileOverwrite = exist(SaveData,'file');
             if UserInput.ExportHist == 2 & OutputFileOverwrite ~= 0                             % File already exists
                 Answer=CPquestdlg('A file with that name already exists in the directory containing the raw measurements file. Do you wish to overwrite?','Confirm overwrite','Yes','No','No');
-                %Answer=CPmsgbox('hello');
-                %uiwait(Answer);
                 if strcmp(Answer,'No') == 1     
                     warnfig=CPwarndlg('You chose not to overwrite the file. Please enter another file name and try again.');
                     uiwait(warnfig);
@@ -1340,6 +1449,13 @@ while 1
                 end
             end
             
+            if UserInput.Xaxis == 2 & UserInput.Style == 3      % Check axes of area graph
+                Answer=CPquestdlg('You chose "Number of objects in bin" for the X axis of an Area graph, but there is no function that can produce a graph with these settings. If you choose these settings, the default area graph will be displayed with "Measurements" as the X axis. Do you wish to continue?','Confirm Area graph settings','Yes','No','No');
+                if strcmp(Answer, 'No') == 1
+                    set(okbutton,'UserData',[]);
+                    continue
+                end
+            end
            
             if UserInput.BinVar == 1                        % Assign string values
                 UserInput.BinVar='Actual numbers';

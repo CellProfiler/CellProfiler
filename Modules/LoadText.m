@@ -16,7 +16,7 @@ function handles = LoadText(handles)
 % must be identical to the number of grid locations.
 % 2. If the number of text entries that you load with this module is
 % identical to the number of cycles you are processing, the text
-% information you loaded will be placed in the output files alongside the
+% information you load will be placed in the output files alongside the
 % measurements that are made. Therefore, the information will be exported
 % with the measurements when you use the ExportData data tool, helping you
 % to keep track of your samples. If you forget this module, you can also
@@ -48,7 +48,7 @@ function handles = LoadText(handles)
 %
 % While not thoroughly tested, most likely you can load numerical data too.
 %
-% See also DisplayGridInfo, and the AddData data tool.
+% See also DisplayGridInfo module and AddData data tool.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

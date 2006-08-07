@@ -7,6 +7,14 @@ function handles = DisplayMeasurement(handles)
 % Plots measured data in several formats.
 % *************************************************************************
 %
+% The DisplayMeasurement module allows data generated from the previous
+% modules to be displayed on a plot.  In the Settings, the type of the plot
+% can be specified.  The data can be displayed in a bar, line, or scatter
+% plot.  The user must choose the category of the data set to plot or, the
+% user may choose to plot a ratio of two data sets.  The scatterplot
+% requires additional information about the second set of measurements
+% used.
+
 % The resulting plots can be saved using the Save Images module.
 %
 % Feature Number:

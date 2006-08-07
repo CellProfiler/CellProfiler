@@ -17,7 +17,7 @@ function handles = DisplayDataOnImage(handles)
 %
 % See also MeasureObjectAreaShape, MeasureImageAreaOccupied,
 % MeasureObjectIntensity, MeasureImageIntensity, MeasureTexture,
-% MeasureCorrelation, MeasureObjectNeighbors, CalculateRatios.
+% MeasureCorrelation, MeasureObjectNeighbors, and CalculateRatios modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

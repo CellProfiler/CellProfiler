@@ -55,7 +55,7 @@ function handles = SaveImages(handles)
 % Note also that the movie data is stored in the handles.Pipeline.Movie
 % structure of the output file, so you can retrieve the movie data there in
 % case image processing is aborted. At the time this module was written,
-% Matlab was only capable of saving in uncompressed avi format (at least on
+% MATLAB was only capable of saving in uncompressed avi format (at least on
 % the UNIX platform), which is time and space-consuming. You should convert
 % the results to a compressed movie format, like .mov using third-party
 % software. For suggested third-party software, see the help for the

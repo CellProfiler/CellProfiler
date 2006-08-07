@@ -13,21 +13,18 @@ function handles = Average(handles)
 %
 % Settings:
 %
-% What did you call the images to be averaged (made into a projection)?:
-%
-% Choose an image from among those loaded by a module or created by the
+% * What did you call the images to be averaged (made into a projection)?:
+%   Choose an image from among those loaded by a module or created by the
 % pipeline, which will be averaged with the corresponding images of every
 % image set.
 %
-% What do you want to call the averaged image?:
-%
-% Give a name to the resulting image, which could be used in subsequent
+% * What do you want to call the averaged image?:
+%   Give a name to the resulting image, which could be used in subsequent
 % modules. See the next setting for restrictions.
 %
-% Are the images you want to use to be loaded straight from a Load Images
+% * Are the images you want to use to be loaded straight from a Load Images
 % module, or are they being produced by the pipeline?:
-%
-% If you choose Load Images Module, the module will calculate the single,
+%   If you choose Load Images Module, the module will calculate the single,
 % averaged image the first time through the pipeline (i.e. for cycle 1) by
 % loading the image of the type specified above of every image set and
 % averaging them together. It is then acceptable to use the resulting image
@@ -35,8 +32,7 @@ function handles = Average(handles)
 % cycle 2 through the end) produce no new results. The averaged image
 % calculated during the first cycle is still available to other modules
 % during subsequent cycles.
-%
-% If you choose Pipeline, the module will calculate the single, averaged
+%   If you choose Pipeline, the module will calculate the single, averaged
 % image during the last cycle of the pipeline. This is because it must wait
 % for preceding modules in the pipeline to produce their results before it
 % can calculate an averaged image. For example, you cannot calculate the

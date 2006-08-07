@@ -12,6 +12,11 @@ function handles = RenameOrRenumberFiles(handles)
 % converts numbers within image file names to solve improper ordering of
 % files on Unix/Mac OSX systems.  
 %
+% The settings ask the user to indicate how many characters to retain at
+% the beginning and end of each filename.  These are the characters that
+% will remain unchanged.  The user may choose to add text or numbers
+% between the characters that are to be retained.
+%
 % Be very careful since you will be renaming (= overwriting) your files!!
 % You will have the opportunity to confirm the name change for the first
 % cycle only. The folder containing the files must not contain subfolders

@@ -10,9 +10,16 @@ function handles = MeasureImageAreaOccupied(handles)
 % This module simply measures the total area covered by stain in an
 % image, using a threshold to determine stain vs background.
 %
+% How it works:
+% This module applies a threshold to the incoming image so that any pixels
+% brighter than the specified value are assigned the value 1 (white) and
+% the remaining pixels are assigned the value zero (black), producing a
+% binary image. The number of white pixels are then counted. This provides
+% a measurement of the area occupied by the staining.
+%
 % Settings:
 %
-% Select automatic thresholding method:
+% * Select automatic thresholding method:
 %    The threshold affects the stringency of the lines between the
 % objects and the background. You can have the threshold automatically
 % calculated using several methods, or you can enter an absolute number
@@ -25,7 +32,7 @@ function handles = MeasureImageAreaOccupied(handles)
 % calculated threshold adapts to changes in lighting/staining
 % conditions between images and is usually more robust/accurate, but
 % it can occasionally produce a poor threshold for unusual/artifactual
-% images. It also takes a small amount of time to calculate.
+% images. It also takes a short time to calculate.
 %    The threshold which is used for each image is recorded as a
 % measurement in the output file, so if you find unusual measurements
 % from one of your images, you might check whether the automatically
@@ -33,7 +40,7 @@ function handles = MeasureImageAreaOccupied(handles)
 % other images.
 %    There are three methods for finding thresholds automatically,
 % Otsu's method, the Mixture of Gaussian (MoG) method, and the Background
-% method. The Otsu method uses our version of the Matlab function
+% method. The Otsu method uses our version of the MATLAB function
 % graythresh (the code is in the CellProfiler subfunction CPthreshold). Our
 % modifications include taking into account the max and min values in the
 % image and log-transforming the image prior to calculating the threshold.
@@ -56,7 +63,7 @@ function handles = MeasureImageAreaOccupied(handles)
 % adaptive means that the threshold varies across the image. Adaptive is
 % slower to calculate but provides more accurate edge determination.
 %
-% Threshold correction factor:
+% * Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be
 % too stringent or too lenient. You may need to enter an adjustment factor
 % which you empirically determine is suitable for your images. The number 1
@@ -67,27 +74,20 @@ function handles = MeasureImageAreaOccupied(handles)
 % Otsu method will give a slightly biased threshold that may have to be
 % corrected using a threshold correction factor.
 %
-% Lower and upper bounds on threshold:
+% * Lower and upper bounds on threshold:
 % Can be used as a safety precaution when the threshold is calculated
 % automatically. For example, if there are no objects in the field of view,
 % the automatic threshold will be unreasonably low. In such cases, the
 % lower bound you enter here will override the automatic threshold.
 %
-% Approximate percentage of image covered by objects:
+% * Approximate percentage of image covered by objects:
 % An estimate of how much of the image is covered with objects. This
 % information is currently only used in the MoG (Mixture of Gaussian)
 % thresholding but may be used for other thresholding methods in the
 % future.
 %
-% How it works:
-% This module applies a threshold to the incoming image so that any pixels
-% brighter than the specified value are assigned the value 1 (white) and
-% the remaining pixels are assigned the value zero (black), producing a
-% binary image. The number of white pixels are then counted. This provides
-% a measurement of the area occupied by the staining.
-%
-% See also IdentifyPrimAutomatic, IdentifyPrimManual,
-% MeasureObjectAreaShape.
+% See also IdentifyPrimAutomatic, IdentifyPrimManual, and
+% MeasureObjectAreaShape modules.
 
 
 % CellProfiler is distributed under the GNU General Public License.

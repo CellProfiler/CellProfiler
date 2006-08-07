@@ -4,10 +4,12 @@ function handles = MaskImage(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Sorry, this module has not yet been documented
+% Masks image and saves it for future use.
 % *************************************************************************
-%
-% See also 
+% This module masks an image and saves it in the handles structure for
+% future use.  The masked image is based on the original image and the
+% object selected.  No display will be shown.  
+% See also IdentifyPrimAutomatic, IdentifyPrimManual
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

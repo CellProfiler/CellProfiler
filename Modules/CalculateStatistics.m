@@ -11,10 +11,10 @@ function handles = CalculateStatistics(handles)
 % The V and Z' factors are statistical measures of assay quality and are
 % calculated for each measurement that you have made in the pipeline. This
 % allows you to choose which measures are most powerful for distinguishing
-% positive and negative control samples. You must tell the module which
-% samples are positive and negative controls, or the concentrations of
-% drugs, in a simple text file with one entry per cycle, loaded using
-% the Load Text module.
+% positive and negative control samples. You must load a simple text file
+% with one entry per cycle (using the Load Text module) that tells this
+% module either which samples are positive and negative controls, or the 
+% concentrations of drugs.
 %
 % The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A
 % simple statistical parameter for use in evaluation and validation of high

@@ -4,18 +4,18 @@ function handles = Combine(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 grayscale images and combines them into one. Each image's
+% Takes 1 to 3 grayscale images and combines them into 1. Each image's
 % intensity can be adjusted independently.
 % *************************************************************************
 %
 % This module takes grayscale images as inputs, and produces a new one
 % which results from the weighted average of the pixel intensities of the
-% input images. The average is taken by adding the product of each weight
-% by the intensity of its corresponding image, and then dividing that
-% result by the sum of the weights. By taking the weighted average of the
-% pixel intensities, the overall intensity of the resulting image will
-% remain the same as that of the inputs. If you want to change the overall
-% intensity, you should use the Rescale module.
+% input images. The average is found by taking the product of each weight
+% and the intensity of its corresponding image, adding the products, and 
+% then dividing the result by the sum of the weights. By taking the 
+% weighted average of the pixel intensities, the overall intensity of the 
+% resulting image will remain the same as that of the inputs. If you want 
+% to change the overall intensity, you should use the Rescale module.
 %
 % Settings:
 %
@@ -30,7 +30,7 @@ function handles = Combine(handles)
 % weights 0.27, 0.3, and 0.3 is the same as entering weights 0.9, 1, and
 % 1). Make sure all the weights have positive values.
 %
-% See also GrayToColor, ColorToGray.
+% See also GrayToColor, ColorToGray, and Rescale modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

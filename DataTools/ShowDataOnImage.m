@@ -33,10 +33,10 @@ function handles = ShowDataOnImage(handles)
 % menu to zoom in on this image. If the text is overlapping and not easily
 % visible, you can change the number of decimal places shown with the
 % 'Significant digits' button, or you can change the font size with the
-% 'Text Properties'. You can also change the font style, color, and other
-% properties with this button. If you want to go back to the original label
-% settings, click the 'Restore labels' button. Alternatively, you can hide
-% and show the labels by clicking the 'Hide labels' and 'Show labels'
+% 'Text Properties' button. You can also change the font style, color, and 
+% other properties with this button. If you want to go back to the original
+% label settings, click the 'Restore labels' button. Alternatively, you can
+% hide and show the labels by clicking the 'Hide labels' and 'Show labels'
 % buttons, respectively.
 %
 % The resulting figure can be saved in MATLAB format (.fig) or exported in

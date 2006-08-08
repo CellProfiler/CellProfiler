@@ -8,7 +8,7 @@ function DataLayout(handles)
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %
-% When images were collected in a particular spatial layout, it is
+% When images are collected in a particular spatial layout, it is
 % sometimes useful to view measurements collected from the images in the
 % same spatial layout to look for patterns (e.g. edge effects). The mean
 % measurement for each image is shown in the plot that is produced.

@@ -94,7 +94,7 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 3
 NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3), if the number of bins does not equal the number of labels, this step will be ignored. Leave "/" for no labels.
+%textVAR06 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3), if the number of bins does not equal the number of labels, this step will be ignored. Leave "/" for default labels.
 %defaultVAR06 = /
 Labels = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -214,7 +214,7 @@ for k = 1:NbrOfBins
         ListOfLabels(k)={BinLabel};
         EmptyIndex(index) = 0;
     else
-        ListOflabel(k) = ['Bin', num2str(k)];
+        ListOfLabels{k} = ['Bin', num2str(k)];
     end
 end
 

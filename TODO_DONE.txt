@@ -88,9 +88,6 @@ Note: I added CPselectmodules because it might be useful for other applications 
 
 - (Rodrigo 8/1/06) - There was some confusion in the Save Preferences callback function: it told the user it had saved the preferences in the current directory but it really saved it somewhere else.
 
-- (Jun 8-1-06) (Requested by Anne 7/24/06) - Check clarity of help for DefineGrid, DisplayHistogram, Exclude, ExportToExcel, Flip, IdentifyPrimAutomatic, IdentifyTertiarySubregion, and LoadSingleImage modules and Histogram data tool.
-=>Jun: Changes made to DefineGrid.m, DisplayHistogram.m, Exclude.m, ExportToExcel.m, IdentifyPrimAutomatic.m, IdentifyTertiarySubregion.m, LoadSingleImage.m, and Histogram.m.
-
 - (Jun 8-1-06): Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
 =>Jun: Changes made to CPcontrolhistogram.m. Changed text edit fields to popup menus to reduce error. Added more options to color selection.
 
@@ -114,9 +111,6 @@ Note: I added CPselectmodules because it might be useful for other applications 
 
 - (Jun 7/26/06) (Requested by Anne) - Combine code for Histograms (ISN'T This done already?)
 =>Jun (Project Task): Yes
-
-- (Jun 7/25/06) (Requested by Anne 7/24/06) - Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
-=>Jun: Changes made to ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m.
 
 (Jun 7/25/06) - Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
 =>Jun: Changes made to MeasurementCalculator.m. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear.

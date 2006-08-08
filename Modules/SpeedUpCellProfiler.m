@@ -12,7 +12,7 @@ function handles = SpeedUpCellProfiler(handles)
 %
 % Settings:
 %
-% Output files should be saved every Nth cycle?
+% * Output files should be saved every Nth cycle?
 % To save the output file after every cycle, as usual, leave this set to 1.
 % Entering a larger integer allows faster image processing by refraining
 % from saving the output file after every cycle is processed. Instead, the
@@ -25,16 +25,16 @@ function handles = SpeedUpCellProfiler(handles)
 % File > Set Preferences) to avoid saving very large output files with
 % intermediate images, because this slows down CellProfiler as well.
 %
-% Do you want to clear the memory?
+% * Do you want to clear the memory?
 % If yes, everything in temporary memory will be removed except for the
 % images you specify. Therefore, only the images you specify will be
 % accessible to modules downstream in the pipeline. This module can
-% therefore be used to clear space in the memory. Note: currently, this
-% option will remove everything in the memory, which may not be compatible
-% with some modules, which often store non-image information in memory to
-% be re-used during every cycle.
+% therefore be used to clear space in the memory. 
+% Note: currently, this option will remove everything in the memory, which 
+% may not be compatible with some modules, which often store non-image 
+% information in memory to be re-used during every cycle.
 %
-% Do you want to pack the memory?
+% * Do you want to pack the memory?
 % If yes, CellProfiler will perform memory garbage collection. All needed
 % variables will be saved on the disk, the memory will be completely
 % cleared, and then the saved variables will be reloaded for use.

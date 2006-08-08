@@ -60,7 +60,7 @@ end
     
 if strcmp(Log,'Yes') == 1
     MaxLog = log10(MaxHistogramValue);
-    if MinHistogramValue == 0
+    if MinHistogramValue <= 0
         if PotentialMaxHistogramValue > 1
             MinLog = 0;
         else
@@ -75,6 +75,9 @@ if strcmp(Log,'Yes') == 1
         error('The numbers you entered for the leftmost or rightmost bin thresholds, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a leftmost bin threshold value that is greater than the rightmost bin threshold value which you asked to be automatically calculated.');
     elseif imag(HistogramRange) ~= 0
         error('The numbers you entered for the leftmost or rightmost bin thresholds, or the number which was calculated automatically for one of these values, results in an imaginary number. This might happen if you chose log scale for negative numbers.');
+    elseif MinHistogramValue < 0
+        warnfig=CPwarndlg('The value you have entered for the the leftmost bin threshold is a negative number which would result in an imaginary number in this log scale mode. To prevent an error from occurring, CellProfiler has set this number to be 0 and will graph the histogram with this setting.');
+        uiwait(warnfig);
     end
     BinWidth = HistogramRange/NumBins;
     for n = 1:(NumBins+2);
@@ -97,6 +100,15 @@ end
 PlotBinLocations = PlotBinLocations';
 BinLocations = PlotBinLocations;
 
+if strcmp(Log,'Yes')
+    for n = 1:length(PlotBinLocations);
+        PlotBinLocations(n) = log10(PlotBinLocations(n));
+    end
+    for m = 1:length(BinLocations);
+        BinLocations(m) = log10(BinLocations(m));
+    end
+end
+
 if strcmp(upper(CountOption(1)),'C')
     BinLocations(1) = -inf;
     BinLocations(n+1) = +inf;
@@ -115,8 +127,8 @@ XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
 XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
 
 if strcmp(Log,'Yes')
-    for n = 1:length(PlotBinLocations);
-        PlotBinLocations(n) = log10(PlotBinLocations(n));
+    for m = 1:length(BinLocations);
+        BinLocations(m) = 10^BinLocations(m);
     end
 end
 
@@ -125,3 +137,4 @@ if strcmp(upper(CountOption(1)),'C')
 else
     YData = hist(SelectedMeasurementsMatrix,real(BinLocations));
 end
+

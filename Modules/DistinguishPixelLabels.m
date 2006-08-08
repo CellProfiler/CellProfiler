@@ -44,10 +44,6 @@ function handles = DistinguishPixelLabels(handles)
 %   advanced than distance from peaks to calculate probability
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
-% - working on the automatic, per-image calculation of each type of 
-%   intensity peaks - display needs to be fixed, and why do no/very 
-%   few pixels get labeled as nuclei?
-
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -88,46 +84,54 @@ BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = For NUMERIC, enter the coordinates for the peak in nucleus pixel intensity values as (NucleiX,NucleiY).
-%defaultVAR07 = 100,100
-NucleiPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = For AUTOMATIC, select a thresholding method.
+%choiceVAR07 = Otsu Global
+%choiceVAR07 = Otsu Adaptive
+%choiceVAR07 = MoG Global
+%choiceVAR07 = MoG Adaptive
+ThresholdingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
-%textVAR08 = For NUMERIC, enter the coordinates for the peak in cell pixel intensity values as (CellsX,CellsY).
-%defaultVAR08 = 150,150
-CellsPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = For NUMERIC, enter the coordinates for the peak in nucleus pixel intensity values as (NucleiX,NucleiY).
+%defaultVAR08 = 100,100
+NucleiPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = For NUMERIC, enter the coordinates for the peak in background pixel intensity values as (BGX,BGY).
-%defaultVAR09 = 200,200
-BackgroundPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = For NUMERIC, enter the coordinates for the peak in cell pixel intensity values as (CellsX,CellsY).
+%defaultVAR09 = 150,150
+CellsPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
-%choiceVAR10 = Histogram
-%choiceVAR10 = Correction Matrices
-MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%textVAR10 = For NUMERIC, enter the coordinates for the peak in background pixel intensity values as (BGX,BGY).
+%defaultVAR10 = 200,200
+BackgroundPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
-%infotypeVAR11 = imagegroup
-LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
+%choiceVAR11 = Histogram
+%choiceVAR11 = Correction Matrices
+MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR12 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR12 = imagegroup
-%choicevarVAR12 = none
-LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu custom
+LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
 
-%textVAR13 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR13 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR13 = imagegroup
 %choiceVAR13 = none
-LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
 
-%textVAR14 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
-%defaultVAR14 = Do not save
-SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%textVAR14 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%infotypeVAR14 = imagegroup
+%choiceVAR14 = none
+LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu custom
 
-%%%VariableRevisionNumber = 3
+%textVAR15 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
+%defaultVAR15 = Do not save
+SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -224,11 +228,6 @@ if handles.Current.SetBeingAnalyzed == 1
                 drawnow
                 [LoadedNucleiImage, handles] = CPimread(fullfile(NucleiPathname,char(NucleiFileList(i))),handles);
                 [LoadedCellsImage, handles] = CPimread(fullfile(CellsPathname,char(CellsFileList(i))),handles);
-                %%% Jitters each image (adding a random fraction based on
-                %%% the images' bit depth) so we can get the log without
-                %%% skewing data
-                %JitteredNucleiImage = LoadedNucleiImage + rand(size(LoadedNucleiImage)) / 256;
-                %JitteredCellsImage = LoadedCellsImage + rand(size(LoadedCellsImage)) / 256;
                 %%% Divides by the illumination correction factor matrices
                 if CorrectIllumination
                     CorrectedNucleiImage = LoadedNucleiImage ./ NucleiCorrMat;
@@ -352,9 +351,9 @@ if handles.Current.SetBeingAnalyzed == 1
     if ~strncmp(PeakSelectionMethod,'Automatic',9)
         %%% Stores the found values (which should be only one pixel each) in
         %%% the handles.Pipeline structure
-        handles.Pipeline.CellsPeak = [CyActin;CxDNA];
-        handles.Pipeline.NucleiPeak = [NyActin;NxDNA];
-        handles.Pipeline.BackgroundPeak = [BGyActin;BGxDNA];
+        handles.Pipeline.CellsPeak = [CxDNA;CyActin];
+        handles.Pipeline.NucleiPeak = [NxDNA;NyActin];
+        handles.Pipeline.BackgroundPeak = [BGxDNA;BGyActin];
         handles.Pipeline.PeakIntensityString = ...
             sprintf('Peak Intensity Values as (DNA-X,Actin-Y)\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',NxDNA,NyActin,CxDNA,CyActin,BGxDNA,BGyActin);
     end
@@ -393,24 +392,28 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
         CCellImage = OrigCellsImage ./ CellsCorrMat;
     end
     
-    %%% Jitters these images on the log scale
-    MinNucPixVal = 1/256;
-    MinCellPixVal = 1/256;
+    %%% Sets pixels below max/256 to max/256 so we have a valid dynamic
+    %%% scale of pixel values
+    MaxNucPixVal = max(CNucImage(:));
+    MaxCellPixVal = max(CCellImage(:));
+    MinNucPixVal = MaxNucPixVal/256;
+    MinCellPixVal = MaxCellPixVal/256;
+    CNucImage(CNucImage < MinNucPixVal) = MinNucPixVal;
+    CCellImage(CCellImage < MinCellPixVal) = MinCellPixVal;
     
+    %%% Jitters these images on the log scale
     JNucImage = log(CNucImage) + rand(size(CNucImage)) .*...
         (log(CNucImage + MinNucPixVal) - log(CNucImage));
     JCellImage = log(CCellImage) + rand(size(CCellImage)) .*...
         (log(CCellImage + MinCellPixVal) - log(CCellImage));
     
-    JLNucImage = (JNucImage - log(MinNucPixVal)) / -log(MinNucPixVal);
-    JLCellImage = (JCellImage - log(MinCellPixVal)) / -log(MinCellPixVal);
+    JLNucImage = (JNucImage - log(MinNucPixVal)) / (log(MaxNucPixVal) -log(MinNucPixVal));
+    JLCellImage = (JCellImage - log(MinCellPixVal)) / (log(MaxCellPixVal) -log(MinCellPixVal));
     
-    %%% Gets thresholds for each image, applies them to get a bw screen
-    [handles,NucThreshold] = CPthreshold(handles,'Global MoG','50%','Do not use','Do not use',1,JLNucImage,'placeholder',ModuleName);
-    [handles,CellThreshold] = CPthreshold(handles,'Global MoG','50%','Do not use','Do not use',1,JLCellImage,'placeholder',ModuleName);
-    %NucThreshold = graythresh(JLNucImage);
-    %CellThreshold = graythresh(JLCellImage);
-    
+    %%% Gets thresholds for each image
+    [handles,NucThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLNucImage,NucleiImageName,ModuleName);
+    [handles,CellThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLCellImage,CellsImageName,ModuleName);
+   
     %%% Gets the mean of each image for all the foreground and all the
     %%% background pixels separately
     NucleiFGMean = 256*mean(JLNucImage(JLNucImage > NucThreshold));
@@ -418,54 +421,28 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
     CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
     
-    %%% TESTING NEW FEATURE
-    %%% if the peaks are too close to each other in any direction,
-    %%% artificially push them apart 10 pixels each!
-    AmountToModify = 10;
-    MinimumDistance = 60;
-    if (CellsFGMean - CellsBGMean < MinimumDistance) && (CellsFGMean > CellsBGMean)
-        CellsFGMean = CellsFGMean + AmountToModify;
-        CellsBGMean = CellsBGMean - AmountToModify;
-        handles.Pipeline.PeakIntensityString = ['TEST MODE: Cell means modified by ', num2str(2*AmountToModify)];
-    elseif (CellsBGMean - CellsFGMean < MinimumDistance) && (CellsBGMean > CellsFGMean)
-        CellsBGMean = CellsBGMean + AmountToModify;
-        CellsFGMean = CellsFGMean - AmountToModify;
-        handles.Pipeline.PeakIntensityString = ['TEST MODE: Cell means modified by ', num2str(2*AmountToModify)];
-    end
-    if (NucleiFGMean - NucleiBGMean < MinimumDistance) && (NucleiFGMean > NucleiBGMean)
-        NucleiFGMean = NucleiFGMean + AmountToModify;
-        NucleiBGMean = NucleiBGMean - AmountToModify;
-        handles.Pipeline.PeakIntensityString = ['TEST MODE: Nucleus means modified by ', num2str(2*AmountToModify)];
-    elseif (NucleiBGMean - NucleiFGMean < MinimumDistance) && (NucleiBGMean > NucleiFGMean)
-        NucleiBGMean = NucleiBGMean + AmountToModify;
-        NucleiFGMean = NucleiFGMean - AmountToModify;
-        handles.Pipeline.PeakIntensityString = ['TEST MODE: Nucleus means modified by ', num2str(2*AmountToModify)];
-    end
-    
     %%% Save the interpolated peaks to the handles structure
-    handles.Pipeline.NucleiPeak = [CellsFGMean;NucleiFGMean];
-    handles.Pipeline.CellsPeak = [CellsFGMean;NucleiBGMean];
-    handles.Pipeline.BackgroundPeak = [CellsBGMean;NucleiBGMean];
-    handles.Pipeline.PeakIntensityString = [handles.Pipeline.PeakIntensityString ...
-        sprintf('\n\nPeak Intensity Values\n\nNuclei: (%.1f, %.1f)\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)',...
-        NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean)];
+    handles.Pipeline.NucleiPeak = [NucleiFGMean;CellsFGMean];%[CellsFGMean;NucleiFGMean];
+    handles.Pipeline.CellsPeak = [NucleiBGMean;CellsFGMean];%CellsFGMean;NucleiBGMean];
+    handles.Pipeline.BackgroundPeak = [NucleiBGMean;CellsBGMean];%[CellsBGMean;NucleiBGMean];
+    handles.Pipeline.PeakIntensityString = sprintf(['Peak Intensity Values\n\nNuclei: (%.1f, %.1f)',...
+        '\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)'],NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean);
     
     %%% Create the 2D histogram for display purposes
     RoundNucImage = floor(255 * JLNucImage + 1);
     RoundCellImage = floor(255 * JLCellImage + 1);
- %   save('presparse.mat','RoundNucImage','RoundCellImage');
     AutoHistogram = sparse(RoundNucImage,RoundCellImage,1,256,256);
-    MargHistDNA = hist(JLNucImage(:),100);
-    MargHistActin = hist(JLCellImage(:),100);
     handles.Pipeline.HistogramToDisplay = AutoHistogram;
     
     %%% Save 2d, & both marginal histograms to pipeline (comment this out!)
-    fieldname = ['Auto2DHistogramSet',int2str(handles.Current.SetBeingAnalyzed)];
-    handles.Pipeline.(fieldname) = AutoHistogram;
-    fieldname = ['AutoMarginalHistDNASet',int2str(handles.Current.SetBeingAnalyzed)];
-    handles.Pipeline.(fieldname) = MargHistDNA;
-    fieldname = ['AutoMarginalHistActinSet',int2str(handles.Current.SetBeingAnalyzed)];
-    handles.Pipeline.(fieldname) = MargHistActin;
+    %MargHistDNA = hist(JLNucImage(:),100);
+    %MargHistActin = hist(JLCellImage(:),100);
+    %fieldname = ['Auto2DHistogramSet',int2str(handles.Current.SetBeingAnalyzed)];
+    %handles.Pipeline.(fieldname) = AutoHistogram;
+    %fieldname = ['AutoMarginalHistDNASet',int2str(handles.Current.SetBeingAnalyzed)];
+    %handles.Pipeline.(fieldname) = MargHistDNA;
+    %fieldname = ['AutoMarginalHistActinSet',int2str(handles.Current.SetBeingAnalyzed)];
+    %handles.Pipeline.(fieldname) = MargHistActin;
     
  %   save('autothresh.mat','JLNucImage','JLCellImage','NucThreshold','CellThreshold','AutoHistogram','MargHistDNA','MargHistActin');
 end
@@ -491,8 +468,9 @@ AllPhiValues = phi(LoggedPaddedImage,handles);
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
+
 for i=1:5
-%    Messages = Propagate(LoggedPaddedImage,handles,AllPhiValues,IndicesArray,Messages);
+    Messages = Propagate(LoggedPaddedImage,handles,AllPhiValues,IndicesArray,Messages);
 end
 drawnow
 
@@ -560,23 +538,23 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(TempAllBeliefs,handles);
     title('Output');
     
-    if isfield(handles.Pipeline,'HistogramToDisplay')
-        %%% A subplot of the figure window is set to display the histogram
-        %%% and the peaks for each label
-        subplot(2,2,4);
-        CPimagesc(handles.Pipeline.HistogramToDisplay',handles);
-        axis xy;
-        text(handles.Pipeline.NucleiPeak(2),handles.Pipeline.NucleiPeak(1),'\leftarrow DNA peak','HorizontalAlignment','left','BackgroundColor','w','color','b');
-        text(handles.Pipeline.CellsPeak(2),handles.Pipeline.CellsPeak(1),'Actin peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
-        text(handles.Pipeline.BackgroundPeak(2),handles.Pipeline.BackgroundPeak(1),'BG peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
-        title('Peak Intensity Values');
-        CPhelpdlg(handles.Pipeline.PeakIntensityString);
-    else
+%     if isfield(handles.Pipeline,'HistogramToDisplay')
+%         %%% A subplot of the figure window is set to display the histogram
+%         %%% and the peaks for each label
+%         subplot(2,2,4);
+%         CPimagesc(handles.Pipeline.HistogramToDisplay',handles);
+%         axis xy;
+%         text(handles.Pipeline.NucleiPeak(2),handles.Pipeline.NucleiPeak(1),'\leftarrow DNA peak','HorizontalAlignment','left','BackgroundColor','w','color','b');
+%         text(handles.Pipeline.CellsPeak(2),handles.Pipeline.CellsPeak(1),'Actin peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
+%         text(handles.Pipeline.BackgroundPeak(2),handles.Pipeline.BackgroundPeak(1),'BG peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
+%         title('Peak Intensity Values');
+%         CPhelpdlg(handles.Pipeline.PeakIntensityString);
+%     else
         %%% A 'subplot' of the figure window is set to display the
         %%% user-selected or input intensity peaks
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','units','normalized','position',[0.5 0 0.5 0.4],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+4);
         set(displaytexthandle,'string',handles.Pipeline.PeakIntensityString);
-    end
+%     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -591,7 +569,8 @@ handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
 
 
 if handles.Current.SetBeingAnalyzed == 1 && strcmp(MouseInputMethod,'Correction Matrices') && ~strcmpi(SaveHistogram,'Do not save')
-    handles.Pipeline.(SaveHistogram) = SumHistogram;
+    Image = full(SumHistogram)./repmat(max(SumHistogram(:)),256,256);
+    handles.Pipeline.(SaveHistogram) = Image;
 end
 
 handles.Pipeline.BPAbsoluteBeliefMatrix = AllBeliefs;

@@ -17,14 +17,14 @@ function CalculateRatiosDataTool(handles)
 % the ratio for each object). If you need to calculate image-by-image
 % ratios or ratios for object measurements by whole image measurements (to
 % allow normalization), use the CalculateRatios module until this data tool
-% is updated to handle that kind of calculations. Be careful with your
-% denominator data. Any 0's found in it may corrupt your output, especially
-% when dividing measurements.
+% is updated to handle such calculations. Be careful with your denominator 
+% data. Any 0's found in it may corrupt your output, especially when 
+% dividing measurements.
 %
 % The new measurements will be stored under the first object's data, under
 % the name Ratio.
 %
-% See also CalculateRatios, all Measure modules.
+% See also CalculateRatios and all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

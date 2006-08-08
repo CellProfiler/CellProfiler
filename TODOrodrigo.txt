@@ -1,8 +1,7 @@
 CURRENTLY WORKING ON:
 
-Error occurs when using the Restart module
 Update Help
-Project: apply better thresholding method
+Project: apply better thresholding method (Ridler and Calvard method + add-on to Otsu's)
 
 
 OTHER TODO'S:
@@ -16,6 +15,31 @@ OTHER TODO'S:
 
 
 DONE (committed):
+
+- (Rodrigo 8/8/06) (Requested by Anne 8-7-06) - Using ExampleFly images, if you LoadImages to load the _D image, then CorrectIllumCalculate and Apply with the following settings, an error results ("Function imlincomb expected its array input arguments (A1, A2, ...) to have the same class"):
+Note: the error occurred because the IllumCorrection image was changed to single format before using imsubtract in CorrIllum_Apply. The code was changed recently to do that, so it may have a purpose, although it didn't say why. The person who changed it (Jun) should go over it and see if it's really necessary and make the appropriate change.
+
+- (Rodrigo 8/8/06) - Fixed error that occurred when trying to restart a pipeline using Restart module due to DisplayWindows feature.
+
+- (Rodrigo 8/8/06) (Requested by Mike 8/7/06) - Add module that allows user to classify objects with respect to two measurements, putting them into four bins: lowlow, lowhigh, highlow, highhigh.
+
+- (Rodrigo 8/4/06) (Requested by Anne 4-19-06) - I fixed a bug in SaveImages module so that a proper error message appears if you specify an image file name for the base name that is not in the handles structure already. But we should doublecheck that SaveImages still works for the cases when the base name is (1) N for sequential numbers (2) type in one file name for all the images (=DesiredFilename), then appending sequential numbers using the following variable set to N, and (3) type in one file name for all the images (=DesiredFilename) for the case where you want to save an avi movie.
+
+- (Rodrigo 8/3/06) (Requested by Anne 8-1-06) - Update the 'boilerplate' author list to this (Use the Replace Text in modules Developer Script, and be sure that the replacement is made in EVERY module, tool, and CP.m - the ReplaceTextInModule script is kind of dangerous, so it's a good idea to svn commit everything and be up to date before you run it in case you need to check everything out fresh again):
+% Authors:
+%   Anne E. Carpenter
+%   Thouis Ray Jones
+%   In Han Kang
+%   Ola Friman
+%   Steve Lowe
+%   Joo Han Chang
+%   Colin Clarke
+%   Mike Lamprecht
+%   Peter Swire
+%   Rodrigo Ipince
+%   Vicky Lay
+%   Jun Liu
+%   Chris Gang
 
 - (Rodrigo 8/3/06) (Requested by Anne 12-09-05)-- Make some subfunctions for redundant code in AddData, ClearData.
 
@@ -99,9 +123,11 @@ MeasureTexture Display: format is not consistent - fucks up - speed
 OverlayOutlines Display: cannot see a button or axes. RGB bad.
 Crop Display: RGB bad.
 CPcd help error
-Why does CPimread have 2 parts of code that are basically the same?
 Can we have the option to change preferences without saving them, whether it be in CellProfilerPreferences or in a user-specified .mat file.
 DisplayHistogram, DisplayImageHistogram should be fixed.
+bug in ReplaceTextInModules (creates CellProfiler.m in folder)
+Merge CalculateRatios and Calculate Ratios Data Tool
+
 
 Said - InteractiveZoom - when you double click different images it gives an error.
 Said - Set Preferences doesnt remember current settings

@@ -1,27 +1,5 @@
 CellProfiler cell image analysis software development 
 
-- (Anne 8-7-06) - Using ExampleFly images, if you LoadImages to load the _D image, then CorrectIllumCalculate and Apply with the following settings, an error results ("Function imlincomb expected its array input arguments (A1, A2, ...) to have the same class"):
-Module #2: CorrectIllumination_Calculate revision - 4
-     What did you call the images to be used to calculate the illumination function?    OrigBlue
-     What do you want to call the illumination function?    IllumBlue
-     Do you want to calculate using regular intensities or background intensities?    Background
-     Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.    Each
-     Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.    Pipeline
-     Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial, or choose no smoothing at all.    12
-     Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.    No
-     (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)    Do not save
-     What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)    Do not save
-     REGULAR INTENSITY OPTIONS    n/a
-     If the incoming images are binary and you want to dilate each object in the final averaged image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.    0
-     BACKGROUND INTENSITY OPTIONS    n/a
-     Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.    12
-
-Module #3: CorrectIllumination_Apply revision - 3
-     What did you call the image to be corrected?    OrigBlue
-     What do you want to call the corrected image?    CorrBlue
-     What did you call the illumination correction function image to be used to carry out the correction (produced by another module or loaded as a .mat format image using Load Single Image)?    IllumBlue
-     How do you want to apply the illumination correction function?    Subtract
-     If you chose division, Choose rescaling method.    No rescaling
 
 Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
 

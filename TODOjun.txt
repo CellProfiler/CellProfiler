@@ -22,16 +22,20 @@ Project:
 - When the Histogram function fails in CPhistbins (e.g. if you enter a min greater than your max), it yields errors at the command line - they are not caught properly.
 =>Jun (Project Task): Changes made 8-2-06. Histogram.m committed on 8-3-06.
 - I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+=>Jun:
 - Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
-=>Jun (Project Task): Changes made 8-3-06-
-- When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc.
-=>Jun (Project Task): Changes made 8-3-06-
+=>Jun (Project Task): Changes made 8/3/06-8/7/06. Histogram.m committed on 8/7/06.
+- When making compressed heat maps, it does not seem to round off the tick labels - there are tons of decimal places. Can we fix? It seems like the compressed heat maps should have the same options as the other types of histograms: fewer tick labels, change number of decimals (wait, maybe that's from the ShowDataOnImage tool), etc. 
+=>Jun (Project Task): Changes made 8-3-06-8/7/06. Added buttons like those in histogram window to decrease and restore tick labels and change number of decimals. Also added button to invert colormap. Histogram.m committed on 8/7/06.
 
 =================
 
 TODO's
 
 Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pipeline. 
+
+- Anne 7/24/06: Check clarity of help for modules, data tools, and image tools. 
+=>Jun: Changes made 7/25/06-8/8/06. See HelpCheckList.xls for task breakdown and dates when files were modified.
 
 -(Jun 8/4/06) - Fixed error that occurs in AddData and ClearData when pressing either "OK" or "Cancel" in the select output file window.
 
@@ -40,12 +44,6 @@ Jun 7/24/06: Window cuts off text in rotate module when not in first cycle of pi
 
 Jun 8-1-06: Need to redesign Add Control Histogram window. Also, an error occurs when you click "Cancel" in the  window. 
 =>Jun: Changes made 8-1-06. Changed text edit fields to popup menus to reduce error. Added more options to color selection. CPcontrolhistogram.m committed on 8-1-06.
-
-- Anne 7/24/06: Check clarity of help for DefineGrid, DisplayHistogram, Exclude, ExportToExcel, Flip, IdentifyPrimAutomatic, IdentifyTertiarySubregion, and LoadSingleImage modules and Histogram data tool.
-=>Jun: Changes made 8/1/06. DefineGrid.m, DisplayHistogram.m, Exclude.m, ExportToExcel.m, IdentifyPrimAutomatic.m, IdentifyTertiarySubregion.m, LoadSingleImage.m, and Histogram.m committed on 8/1/06.
-
-- Anne 7/24/06: Check clarity of help for ApplyThreshold, CalculateRatios, ColorToGray, CorrectIllumination_Apply, and CreateBatchFiles modules. 
-=>Jun: Changes made 7/25/06. ApplyThreshold.m, ColorToGray.m, CorrectIllumination_Apply.m, and CreateBatchFiles.m committed on 7/25/06.
 
 Jun 7/19/06: Redesign Measurement Calculator window. Font sizes are too small, there is unwanted text, pop up menus have white boxes around them, and general resizing needs to be done.
 =>Jun: Changes made 7/24/06-7/25/06. Fixed errors associated with repeated user input and with closing window. Modified confirmation message. Increased spacing and font. Also added help button and made instructions more clear. MeasurementCalculator.m committed on 7/25/06.

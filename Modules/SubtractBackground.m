@@ -27,9 +27,9 @@ function handles = SubtractBackground(handles)
 %
 % If images have already been quantified and you want to apply the concept
 % of this module without reprocessing your images, then multiply the
-% background threshold calculated by this module during first image cycle
-% by the number of pixels in the image to get the number that should be
-% subtracted from the intensity measurements.
+% background threshold calculated by this module during the first image 
+% cycle by the number of pixels in the image to get the number that should 
+% be subtracted from the intensity measurements.
 %
 % If you want to run this module only to calculate the proper threshold to
 % use, simply run the module as usual and use the button on the Status
@@ -37,14 +37,14 @@ function handles = SubtractBackground(handles)
 %
 % How it works:
 % Sort each image's pixel values and pick the 10th lowest pixel value as
-% the minimum. Our typical images have a million pixels. We are not
-% choosing the lowest pixel value, because it might be zero if it is a
-% stuck pixel. We are pretty sure there will not be 10 stuck pixels so this
-% should be safe. Then, take the minimum of these values from all the
-% images. This scalar value should be subtracted from every pixel in the
-% image. We are not calculating a different value for each pixel position
-% in the image because in a small image set, that position may always be
-% occupied by real staining.
+% the minimum. Typical images have a million pixels. The lowest pixel value
+% is chosen because it might be zero if it is a stuck pixel. It is quite
+% certain that there will not be 10 stuck pixels so this should be safe. 
+% Then, take the minimum of these values from all the images. This scalar 
+% value should be subtracted from every pixel in the image. CellProfiler is
+% not calculating a different value for each pixel position in the image 
+% because in a small image set, that position may always be occupied by 
+% real staining.
 %
 % See also ApplyThreshold.
 

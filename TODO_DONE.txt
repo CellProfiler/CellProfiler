@@ -1,6 +1,6 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
-- (Requested by Anne 1-17-06) - Histogram data tool requests: - I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
+- (Jun 8/8/06) (Requested by Anne 1-17-06) - Histogram data tool requests: - I put in an error catch for the case where you have a negative number for the min histogram bin value, but try to plot in log scale, because it fails. Can we make this work?
 =>Jun (Project Task): Changes made to CPhistbins.m. In log scale, as long as max bin value is acceptable, min bin value will be automatically set to 0 to avoid errors, and the graph will be plotted. Also fixed incorrect bin tick labels for log scale.
 
 - (Jun 8/8/06) (Requested by Anne 7/24/06) - Check clarity of help for modules, data tools, and image tools.

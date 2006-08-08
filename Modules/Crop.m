@@ -499,7 +499,7 @@ catch
     try
         BinaryCropImage = handles.Pipeline.(CroppedImageName);
     catch
-        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose rectangle, ellipse or the name of something from a previous module.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because you must choose rectangle, ellipse or the name of something from a previous module. If you are trying to rerun an imcomplete pipeline, this error might have occurred because the images you used were not saved for future use. See help for details.']);
     end
 end
 

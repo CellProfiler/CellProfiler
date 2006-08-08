@@ -1,5 +1,9 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+
+- (Jun 8/8/06) (Requested by Anne 7/24/06) - Check clarity of help for modules, data tools, and image tools.
+=>Jun: See HelpCheckList.xls for task breakdown and dates when files were modified.
+
 - (Jun 8/7/06) (Requested by Anne 1-17-06) - Histogram data tool requests:  Overall, the compressed heat maps section seems poorly designed - we kind of threw it together. (esp swapping the axes, 'image' vs 'bin' - the X and Y axis labels are swapped for one of the modes.) Need to go through and make it more logical, perhaps by adding subfunctions to consolidate the code.
 =>Jun (Project Task): Changes made to Histogram.m.
 

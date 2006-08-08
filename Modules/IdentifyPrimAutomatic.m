@@ -550,7 +550,7 @@ drawnow
 if GetThreshold
     [handles,OrigThreshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
 else
-    OrigThreshold = 0; %%% This should never be used, I can probably comment it out
+    OrigThreshold = 0;
 end
 
 %%% Sets up loop for test mode.

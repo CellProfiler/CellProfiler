@@ -82,7 +82,6 @@ ScreenSize = get(0,'ScreenSize');
 ScreenWidth = ScreenSize(3);
 ScreenHeight = ScreenSize(4);
 fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
-RestartFigColor = get(fig,'color');
 if ~isempty(fig)
     try
         close(fig); % Close the Restart figure
@@ -97,15 +96,16 @@ handles.VariableBox = updatedhandles.VariableBox;
 handles.VariableDescription = updatedhandles.VariableDescription;
 handles.Current.StartingImageSet = handles.Current.SetBeingAnalyzed + 1;
 handles.Current.CurrentModuleNumber = '01';
+handles.Preferences.DisplayWindows = importhandles.handles.Preferences.DisplayWindows;
 
 %%% Reassign figures handles and open figure windows
-userData.Application = 'CellProfiler';
 for i=1:handles.Current.NumberOfModules;
-    if iscellstr(handles.Settings.ModuleNames(i)) == 1
-        handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
-            figure('name',[char(handles.Settings.ModuleNames(i)), ' Display'],...
-            'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442],...
-            'color',RestartFigColor,'UserData',userData);
+    if iscellstr(handles.Settings.ModuleNames(i))
+        if handles.Preferences.DisplayWindows(i)
+            handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
+                CPfigure(handles,'','name',[char(handles.Settings.ModuleNames(i)), ' Display, cycle # '],...
+                'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442]);
+        end
     end
 end
 guidata(gcbo,handles);

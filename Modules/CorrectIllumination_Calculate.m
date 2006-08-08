@@ -331,7 +331,7 @@ if strcmp(EachOrAll,'All')
             error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either Load Images or Pipeline in answer to the question "Are the images you want to use to calculate the illumination correction function to be loaded straight from a Load Images module, or are they being produced by the pipeline".']);
         end
     catch [ErrorMessage, ErrorMessage2] = lasterr;
-error(['Image processing was canceled in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
+        error(['Image processing was canceled in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
 elseif strcmp(EachOrAll,'Each')
     if strcmp(IntensityChoice,'Regular')

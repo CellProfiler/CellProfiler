@@ -152,7 +152,7 @@ if strcmp(DivideOrSubtract,'Divide') == 1
 elseif strcmp(DivideOrSubtract,'Subtract') == 1
     %%% Corrects the original image based on the IlluminationImage,
     %%% by subtracting each pixel by the value in the IlluminationImage.
-    CorrectedImage = imsubtract(OrigImage, single(IllumCorrectFunctionImage));
+    CorrectedImage = imsubtract(OrigImage, double(IllumCorrectFunctionImage));
     %%% Converts negative values to zero.  I have essentially truncated the
     %%% data at zero rather than trying to rescale the data, because negative
     %%% values should be fairly rare (and minor), since the minimum is used to

@@ -678,7 +678,7 @@ for k = 1:NumberOfModules
     if ~isdeployed
         CurrentModuleNamedotm = [char(ModuleNames{k}) '.m'];
     else
-        CurrentModuleNamedotm = [char(ModuleNames{k}) '.txt.'];
+        CurrentModuleNamedotm = [char(ModuleNames{k}) '.txt'];
     end
     if exist(CurrentModuleNamedotm,'file')
         if ~isdeployed

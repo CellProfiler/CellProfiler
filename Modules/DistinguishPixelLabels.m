@@ -267,7 +267,6 @@ if handles.Current.SetBeingAnalyzed == 1
                 
             end
             close(handle1);
-            handles.Pipeline.HistogramToDisplay = SumHistogram;
             
         else
             error(['Image processing was canceled in the ',ModuleName,' module because, somehow, the method you selected for interactive selection of the pixel intensity peaks (',MouseInputMethod,') is invalid.']);
@@ -377,6 +376,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+NucImageScaleFactor = 1;
+CellImageScaleFactor = 1;
+
 if strncmp(PeakSelectionMethod,'Automatic',9)
     
     %%% Reads (opens) the correction matrix files as specified in
@@ -421,18 +423,27 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
     CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
     
+    %%% ==== TESTING NEW FEATURE ====
+    %%% Determines scaling factors to account for image-wide bias along one
+    %%% axis--as in, if the range of intensity for DNA-stained pixels is
+    %%% half that for actin-stained pixels, then the messages for nuclei
+    %%% will be half as strong, which skews results.  These factors are
+    %%% used later by phi.  NOTE: default is 1, set above.
+    NucleiMDiff = NucleiFGMean - NucleiBGMean;
+    CellsMDiff = CellsFGMean - CellsBGMean;
+    if NucleiMDiff > CellsMDiff
+        CellImageScaleFactor = NucleiMDiff / CellsMDiff;
+    else
+        NucImageScaleFactor = CellsMDiff / NucleiMDiff;
+    end
+    %%% === end new feature ===
+    
     %%% Save the interpolated peaks to the handles structure
     handles.Pipeline.NucleiPeak = [NucleiFGMean;CellsFGMean];%[CellsFGMean;NucleiFGMean];
     handles.Pipeline.CellsPeak = [NucleiBGMean;CellsFGMean];%CellsFGMean;NucleiBGMean];
     handles.Pipeline.BackgroundPeak = [NucleiBGMean;CellsBGMean];%[CellsBGMean;NucleiBGMean];
     handles.Pipeline.PeakIntensityString = sprintf(['Peak Intensity Values\n\nNuclei: (%.1f, %.1f)',...
         '\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)'],NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean);
-    
-    %%% Create the 2D histogram for display purposes
-    RoundNucImage = floor(255 * JLNucImage + 1);
-    RoundCellImage = floor(255 * JLCellImage + 1);
-    AutoHistogram = sparse(RoundNucImage,RoundCellImage,1,256,256);
-    handles.Pipeline.HistogramToDisplay = AutoHistogram;
     
     %%% Save 2d, & both marginal histograms to pipeline (comment this out!)
     %MargHistDNA = hist(JLNucImage(:),100);
@@ -444,7 +455,6 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     %fieldname = ['AutoMarginalHistActinSet',int2str(handles.Current.SetBeingAnalyzed)];
     %handles.Pipeline.(fieldname) = MargHistActin;
     
- %   save('autothresh.mat','JLNucImage','JLCellImage','NucThreshold','CellThreshold','AutoHistogram','MargHistDNA','MargHistActin');
 end
 
 %%% Scales both input images to 0-256, loads them into 1 3D array with a
@@ -463,12 +473,14 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 
 %%% Initializes the sub2ind storage
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles);
-%AllPhiValues = phi2(LoggedPaddedImage);
+AllPhiValues = phi(LoggedPaddedImage,handles,1,1);
+%AllPhiValues = phi(LoggedPaddedImage,handles,NucImageScaleFactor,CellImageScaleFactor);
+%CPhelpdlg(sprintf('Factors for scaling were %.2f (nuc) and %.2f (cell).',NucImageScaleFactor,CellImageScaleFactor));
+%figure, imagesc(AllPhiValues);
+
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
-
 for i=1:5
     Messages = Propagate(LoggedPaddedImage,handles,AllPhiValues,IndicesArray,Messages);
 end
@@ -503,9 +515,6 @@ FinalBinaryCells(AllBeliefs==2) = 1;
 FinalBinaryBackground = zeros(size(AllBeliefs));
 FinalBinaryBackground(AllBeliefs==3) = 1;
 
-FinalBinaryCellsAndNuc = FinalBinaryCells | FinalBinaryNuclei;
-AdjustedAllBeliefs = (AllBeliefs-1)/2;
-
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -537,24 +546,10 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,2);
     CPimagesc(TempAllBeliefs,handles);
     title('Output');
-    
-%     if isfield(handles.Pipeline,'HistogramToDisplay')
-%         %%% A subplot of the figure window is set to display the histogram
-%         %%% and the peaks for each label
-%         subplot(2,2,4);
-%         CPimagesc(handles.Pipeline.HistogramToDisplay',handles);
-%         axis xy;
-%         text(handles.Pipeline.NucleiPeak(2),handles.Pipeline.NucleiPeak(1),'\leftarrow DNA peak','HorizontalAlignment','left','BackgroundColor','w','color','b');
-%         text(handles.Pipeline.CellsPeak(2),handles.Pipeline.CellsPeak(1),'Actin peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
-%         text(handles.Pipeline.BackgroundPeak(2),handles.Pipeline.BackgroundPeak(1),'BG peak \rightarrow','HorizontalAlignment','right','BackgroundColor','w','color','b');
-%         title('Peak Intensity Values');
-%         CPhelpdlg(handles.Pipeline.PeakIntensityString);
-%     else
-        %%% A 'subplot' of the figure window is set to display the
-        %%% user-selected or input intensity peaks
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','units','normalized','position',[0.5 0 0.5 0.4],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+4);
-        set(displaytexthandle,'string',handles.Pipeline.PeakIntensityString);
-%     end
+    %%% A 'subplot' of the figure window is set to display the
+    %%% user-selected or input intensity peaks
+    displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','fontname','helvetica','units','normalized','position',[0.5 0 0.5 0.4],'backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize+4);
+    set(displaytexthandle,'string',handles.Pipeline.PeakIntensityString);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -564,7 +559,7 @@ drawnow
 
 handles.Pipeline.(NucleiOutputName) = FinalBinaryNuclei;
 %handles.Pipeline.(CellsOutputName) = FinalBinaryCells;
-handles.Pipeline.(CellsOutputName) = FinalBinaryCellsAndNuc;
+handles.Pipeline.(CellsOutputName) = FinalBinaryCells|FinalBinaryNuclei;
 handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
 
 
@@ -575,7 +570,7 @@ end
 
 handles.Pipeline.BPAbsoluteBeliefMatrix = AllBeliefs;
 handles.Pipeline.BPProbableBeliefMatrix = AllNormalizedBeliefs;
-handles.Pipeline.BPAdjustedBeliefMatrix = AdjustedAllBeliefs;
+handles.Pipeline.BPAdjustedBeliefMatrix = (AllBeliefs-1)/2;
 
 %save('results.mat','handles');
 
@@ -683,7 +678,7 @@ for xind = 2:size(padim,2)-1
 end
 
 
-function arr = phi(padim,handles)
+function arr = phi(padim,handles,nucfactor,cellfactor)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
 
@@ -708,10 +703,14 @@ for yind = 1:rows
     %%% distance, 2-pixel value-wise, that x is from each of these c, n, or
     %%% b expected values.  We then get the reciprocal of this so that
     %%% values are directly proportional to probability of a pixel being
-    %%% correctly labeled as such.
+    %%% correctly labeled as such. NOTE: the distances for cells and nuclei
+    %%% are multiplied by adjustment factors derived during automatic peak
+    %%% detection.  This serves to equalize the strength of these messsages
+    %%% to accommodate for image-wide differences in the ranges of actin and
+    %%% DNA stain intensity.
     disB=(1./phinorm(b-x));
-    disN=(1./phinorm(n-x));
-    disC=(1./phinorm(c-x));
+    disN=(1./(nucfactor*phinorm(n-x)));
+    disC=(1./(cellfactor*phinorm(c-x)));
     %%% sums these values and normalize so that they sum to 1, making them a
     %%% legitimate description of probability.
     z=disB+disC+disN;
@@ -729,136 +728,3 @@ function n=phinorm(x)
 %%% pythagorean theorem if its parameter is a difference between two
 %%% vectors
 n=sqrt(sum(x.*x));
-
-% function arr = phi2(padim,pObject)
-% %%% This function takes the padded image that includes the nuclei (:,:,1)
-% %%% and cell (:,:,2) staining images with a 1-pixel border of zeros, and an
-% %%% expected percentage to be covered with objects in each image, and
-% %%% returns an R-1xC-1x3 array (where input is RxCx2) containing the
-% %%% probabilities of each label for each pixel.
-% %%% For both cell and nucleus images, gets the background and object
-% %%% gaussian probability curves
-% if nargin == 1
-%     pObject = 0.5;
-% end
-% [NDistBG,NDistObj] = MixtureOfGaussians2(padim(2:end-1,2:end-1,1),pObject);
-% [CDistBG,CDistObj] = MixtureOfGaussians2(padim(2:end-1,2:end-1,2),pObject);
-% arr = NDistObj;
-% arr(:,:,2) = CDistObj;
-% arr(:,:,3) = (NDistBG+CDistBG)/2; %%% IS THIS RIGHT?
-% arr = arr./(repmat(sum(arr,3),[1 1 3]));
-% 
-% 
-% function [BackgroundDistribution,ObjectDistribution] = MixtureOfGaussians2(OrigImage,pObject)
-% %%% THIS VERSION RETURNS THE GAUSSIANS INSTEAD OF A THRESHOLD
-% %%% This function finds a suitable threshold for the input image
-% %%% Block. It assumes that the pixels in the image belong to either
-% %%% a background class or an object class. 'pObject' is an initial guess
-% %%% of the prior probability of an object pixel, or equivalently, the fraction
-% %%% of the image that is covered by objects. Essentially, there are two steps.
-% %%% First, a number of Gaussian distributions are estimated to match the
-% %%% distribution of pixel intensities in OrigImage. Currently 3 Gaussian
-% %%% distributions are fitted, one corresponding to a background class, one
-% %%% corresponding to an object class, and one distribution for an intermediate
-% %%% class. The distributions are fitted using the Expectation-Maximization (EM)
-% %%% algorithm, a procedure referred to as Mixture of Gaussians modeling. When
-% %%% the 3 Gaussian distributions have been fitted, it's decided whether the
-% %%% intermediate class models background pixels or object pixels based on the
-% %%% probability of an object pixel 'pObject' given by the user.
-% Intensities = OrigImage(:);
-% 
-% %%% The number of classes is set to 2
-% NumberOfClasses = 2;
-% 
-% %%% Transform the image into a vector. Also, if the image is (larger than 512x512),
-% %%% select a subset of 512^2 pixels for speed. This should be enough to capture the
-% %%% statistics in the image.
-% %Intensities = OrigImage(:);
-% %if length(Intensities) > 512^2
-% %    indexes = randperm(length(Intensities));
-% %    Intensities = Intensities(indexes(1:512^2));
-% %end
-% 
-% %%% Get the probability for a background pixel
-% pBackground = 1 - pObject;
-% 
-% %%% Initialize mean and standard deviations of the three Gaussian distributions
-% %%% by looking at the pixel intensities in the original image and by considering
-% %%% the percentage of the image that is covered by object pixels. Class 1 is the
-% %%% background class and Class 3 is the object class. Class 2 is an intermediate
-% %%% class and we will decide later if it encodes background or object pixels.
-% %%% Also, for robustness the we remove 1% of the smallest and highest intensities
-% %%% in case there are any quantization effects that have resulted in unaturally many
-% %%% 0:s or 1:s in the image.
-% Intensities = sort(Intensities);
-% Intensities = Intensities(ceil(length(Intensities)*0.01):round(length(Intensities)*0.99));
-% ClassMean(1) = Intensities(round(length(Intensities)*pBackground/2));                      %%% Initialize background class
-% ClassMean(2) = Intensities(round(length(Intensities)*(1 - pObject/2)));                    %%% Initialize object class
-% %ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
-% %%% Initialize standard deviations of the Gaussians. They should be the same to avoid problems.
-% ClassStd(1:2) = 0.15;
-% %%% Initialize prior probabilities of a pixel belonging to each class. The intermediate
-% %%% class is gets some probability from the background and object classes.
-% pClass(1) = 3/4*pBackground;
-% %pClass(2) = 1/4*pBackground + 1/4*pObject;
-% pClass(2) = 3/4*pObject;
-% 
-% %%% Apply transformation.  a < x < b, transform to log((x-a)/(b-x)).
-% %a = - 0.000001;
-% %b = 1.000001;
-% %Intensities = log((Intensities-a)./(b-Intensities));
-% %ClassMean = log((ClassMean-a)./(b - ClassMean))
-% %ClassStd(1:3) = [1 1 1];
-% 
-% %%% Expectation-Maximization algorithm for fitting the three Gaussian distributions/classes
-% %%% to the data. Note, the code below is general and works for any number of classes.
-% %%% Iterate until parameters don't change anymore.
-% delta = 1;
-% while delta > 0.001
-%     %%% Store old parameter values to monitor change
-%     oldClassMean = ClassMean;
-% 
-%     %%% Update probabilities of a pixel belonging to the background or object1 or object2
-%     for k = 1:NumberOfClasses
-%         pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(Intensities - ClassMean(k)).^2/(2*ClassStd(k)^2));
-%     end
-%     pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
-% 
-%     %%% Update parameters in Gaussian distributions
-%     for k = 1:NumberOfClasses
-%         pClass(k) = mean(pPixelClass(:,k));
-%         ClassMean(k) = sum(pPixelClass(:,k).*Intensities)/(length(Intensities)*pClass(k));
-%         ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(Intensities - ClassMean(k)).^2)/(length(Intensities)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
-%     end
-% 
-%     %%% Calculate change
-%     delta = sum(abs(ClassMean - oldClassMean));
-% end
-% 
-% %%% Now the Gaussian distributions are fitted and we can describe the histogram of the pixel
-% %%% intensities as the sum of these Gaussian distributions. To find a threshold we first have
-% %%% to decide if the intermediate class 2 encodes background or object pixels. This is done by
-% %%% choosing the combination of class probabilities 'pClass' that best matches the user input 'pObject'.
-% Threshold = linspace(ClassMean(1),ClassMean(2),10000);
-% Class1Gaussian = pClass(1) * 1/sqrt(2*pi*ClassStd(1)^2) * exp(-(Threshold - ClassMean(1)).^2/(2*ClassStd(1)^2));
-% Class2Gaussian = pClass(2) * 1/sqrt(2*pi*ClassStd(2)^2) * exp(-(Threshold - ClassMean(2)).^2/(2*ClassStd(2)^2));
-% %Class3Gaussian = pClass(3) * 1/sqrt(2*pi*ClassStd(3)^2) * exp(-(Threshold - ClassMean(3)).^2/(2*ClassStd(3)^2));
-% figure, plot(Class1Gaussian);
-% figure, plot(Class2Gaussian);
-% %figure, plot(Class3Gaussian);
-% %if abs(pClass(2) + pClass(3) - pObject) < abs(pClass(3) - pObject)
-% %    %%% Intermediate class 2 encodes object pixels
-% %    BackgroundDistribution = Class1Gaussian;
-% %    ObjectDistribution = Class2Gaussian + Class3Gaussian;
-% %else
-% %    %%% Intermediate class 2 encodes background pixels
-% %    BackgroundDistribution = Class1Gaussian + Class2Gaussian;
-% %    ObjectDistribution = Class3Gaussian;
-% %end
-% 
-% %%% Now, find the threshold at the intersection of the background distribution
-% %%% and the object distribution.
-% %[ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution)); %#ok Ignore MLint
-% %Threshold = Threshold(index);
-% BackgroundDistribution = Class1Gaussian;
-% ObjectDistribution = Class2Gaussian;

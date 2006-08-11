@@ -531,7 +531,7 @@ set(UserWindow,'units','inches','resize','on','menubar','none','toolbar','none',
 uiheight = 0.3;
 % Set window size in inches, depends on the number of prompts
 pos = get(UserWindow,'position');
-Height = uiheight*12;
+Height = uiheight*10;
 Width  = 5.8;
 set(UserWindow,'position',[pos(1)+1 pos(2) Width Height]);
 

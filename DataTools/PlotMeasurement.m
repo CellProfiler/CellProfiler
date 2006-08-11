@@ -10,7 +10,7 @@ function PlotMeasurement(handles)
 %
 % Bar charts, line charts and one dimensional scatter plots show the mean
 % and standard deviation of a measurement. Two dimensional scatter plots
-% allow plotting one measuerement versus another. As prompted, select a
+% allow plotting one measurement against another. As prompted, select a
 % CellProfiler output file containing the measurements, choose the
 % measurement parameter to be displayed, and choose the display type.
 %
@@ -54,13 +54,17 @@ PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListS
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});
 if isempty(PlotType), return,end
 
-FigHandle = CPfigure;
-
 if PlotType == 4
     %%% Get the feature types
     try
-        [Object,Feature,FeatureNo] = CPgetfeature(handles);
+        msg=CPmsgbox('In the following dialog, please choose measurements for the Y axis.');
+        uiwait(msg);
         [Object2,Feature2,FeatureNo2] = CPgetfeature(handles);
+        
+        msg=CPmsgbox('In the following dialog, please choose measurements for the X axis.');
+        uiwait(msg);
+        [Object,Feature,FeatureNo] = CPgetfeature(handles);
+        
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(30:end)]);
@@ -69,7 +73,7 @@ if PlotType == 4
     if isempty(Object),return,end
     if isempty(Object2),return,end
     try
-        CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+        CPplotmeasurement(handles,PlotType,0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
@@ -86,11 +90,10 @@ else
     end
     if isempty(Object),return,end
     try
-        CPplotmeasurement(handles,FigHandle,PlotType,0,Object,Feature,FeatureNo)
+       CPplotmeasurement(handles,PlotType,0,Object,Feature,FeatureNo)
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
         return
     end
 end
-set(FigHandle,'Numbertitle','off','name',['Plot Measurement: ',get(get(gca,'title'),'string')])

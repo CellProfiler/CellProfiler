@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Mike 8/11/06) Anne 7-20-06: Do you see any problem with renaming the measurement category "Neighbors" rather than NumberNeighbors? Many of the individual features have nothing to do with Number. Probably you should be the one to make the change when we are in between cluster projects so that we don't have batch jobs run with mixed naming.
+
 - (Rodrigo 8/8/06) (Requested by Anne 8-7-06) - Using ExampleFly images, if you LoadImages to load the _D image, then CorrectIllumCalculate and Apply with the following settings, an error results ("Function imlincomb expected its array input arguments (A1, A2, ...) to have the same class"):
 Note: the error occurred because the IllumCorrection image was changed to single format before using imsubtract in CorrIllum_Apply. The code was changed recently to do that, so it may have a purpose, although it didn't say why. The person who changed it (Jun) should go over it and see if it's really necessary and make the appropriate change.
 

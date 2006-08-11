@@ -229,12 +229,12 @@ drawnow
 
 if strcmp(ExtraMeasures,'Yes')
     %%% Saves neighbor measurements to handles structure.
-    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'NumberOfNeighbors' 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'};
-    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector' AngleBetweenTwoClosestNeighbors']};
+    handles.Measurements.(ObjectName).NeighborsFeatures = {'NumberOfNeighbors' 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'};
+    handles.Measurements.(ObjectName).Neighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector' AngleBetweenTwoClosestNeighbors']};
 else
     %%% Saves neighbor measurements to handles structure.
-    handles.Measurements.(ObjectName).NumberNeighborsFeatures = {'NumberOfNeighbors'};
-    handles.Measurements.(ObjectName).NumberNeighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};
+    handles.Measurements.(ObjectName).NeighborsFeatures = {'NumberOfNeighbors'};
+    handles.Measurements.(ObjectName).Neighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};
 end
 
 % This field is different from the usual measurements. To avoid problems with export modules etc we don't

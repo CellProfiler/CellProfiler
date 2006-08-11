@@ -102,8 +102,6 @@ if PlotType == 1
         end
     end
 
-    if isempty(ObjectTypename),return,end
-
     % Calculate mean and standard deviation
     MeasurementMean = zeros(length(Measurements),1);
     MeasurementStd = zeros(length(Measurements),1);
@@ -220,8 +218,6 @@ elseif PlotType == 2
         end
     end
     
-    if isempty(ObjectTypename),return,end
-    
     % Calculate mean and standard deviation
     MeasurementMean = zeros(length(Measurements),1);
     MeasurementStd = zeros(length(Measurements),1);
@@ -312,7 +308,6 @@ elseif PlotType == 3
         end
     end
     
-    if isempty(ObjectTypename),return,end
 
     switch UserAnswers.Color
         case 'Blue'
@@ -425,7 +420,6 @@ elseif PlotType == 4
             end
         end
         
-        if isempty(ObjectTypename),return,end
 
         switch UserAnswers.Color
             case 'Blue'

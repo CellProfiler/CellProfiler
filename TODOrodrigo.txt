@@ -1,20 +1,23 @@
 CURRENTLY WORKING ON:
 
 Update Help
-Project: apply better thresholding method (Ridler and Calvard method + add-on to Otsu's)
+Project: make identifybasedonoutlines module to properly identify c elegans
 
+OTHER TODO's:
 
-OTHER TODO'S:
-
-- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
-
-- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
-*??
-
-- (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
+June 8-12-06: In CPplotmeasurement.m: Immediately after each call to CPgetfeature, 
+there should be a line saying "if isempty(ObjectTypename),return,end". 
+This stops processing once the user has clicked cancel while choosing 
+a feature in the threshold data mode of the PlotMeasurements data 
+tool. Also, in the text of the help button labeled '?', delete the 
+last sentence saying that only the Y axis will be thresholded while in 
+scatterplot2 mode. This is not accurate because all measurements get 
+thresholded in all graphing styles.
 
 
 DONE (committed):
+
+- (Rodrigo 8/9/06) - Fixed bug in ReplaceTextInModules developer script: it didn't specify a pathname for CellProfiler.m, so it created a new file inside the current dir (c:\CellProfiler\DeveloperScripts)
 
 - (Rodrigo 8/8/06) (Requested by Anne 8-7-06) - Using ExampleFly images, if you LoadImages to load the _D image, then CorrectIllumCalculate and Apply with the following settings, an error results ("Function imlincomb expected its array input arguments (A1, A2, ...) to have the same class"):
 Note: the error occurred because the IllumCorrection image was changed to single format before using imsubtract in CorrIllum_Apply. The code was changed recently to do that, so it may have a purpose, although it didn't say why. The person who changed it (Jun) should go over it and see if it's really necessary and make the appropriate change.
@@ -127,7 +130,7 @@ Can we have the option to change preferences without saving them, whether it be 
 DisplayHistogram, DisplayImageHistogram should be fixed.
 bug in ReplaceTextInModules (creates CellProfiler.m in folder)
 Merge CalculateRatios and Calculate Ratios Data Tool
-
+enter a threshold manually?
 
 Said - InteractiveZoom - when you double click different images it gives an error.
 Said - Set Preferences doesnt remember current settings

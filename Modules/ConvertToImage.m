@@ -8,6 +8,9 @@ function handles = ConvertToImage(handles)
 % saved with the Save Images module.
 % *************************************************************************
 %
+% This module allows you to take previously identified objects and convert
+% them into an image, which can then be saved with the SaveImages modules.
+%
 % Settings:
 %
 % Binary (black & white), grayscale, or color: Choose how you would like
@@ -21,7 +24,7 @@ function handles = ConvertToImage(handles)
 %
 % Colormap:
 % Affect how the objects are colored. You can look up your default colormap
-% under File > Set Preferences.  Look in matlab help online (try Google) to
+% under File > Set Preferences. Look in matlab help online (try Google) to
 % see what the available colormaps look like. See also Help > HelpColormaps
 % in the main CellProfiler window.
 

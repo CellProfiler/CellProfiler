@@ -11,25 +11,22 @@ function handles = Align(handles)
 % For two or three input images, this module determines the optimal
 % alignment among them.  This works whether the images are correlated or
 % anti-correlated (bright in one = bright in the other, or bright in one =
-% dim in the other).  This is useful when the microscope is not perfectly
-% calibrated, because, for example, proper alignment is necessary for
+% dim in the other). This is useful when the microscope is not perfectly
+% calibrated because, for example, proper alignment is necessary for
 % primary objects to be helpful to identify secondary objects. The images
 % are cropped appropriately according to this alignment, so the final
 % images will be smaller than the originals by a few pixels if alignment is
 % necessary.
 % 
-% Settings: 
+% Settings:
+%
 % After entering the names of the images to be aligned as well as the 
 % aligned image name(s), choose whether to display the image produced by 
-% this module by selecting "yes" in the appropriate menu.  Lastly, select 
-% the method of alignment.  There are two choices, one is based on mutual 
-% information while the other is based on the cross correlation.  Keep in
-% mind that for the method based on cross correlation, the order in which
-% the images are to be selected is as follows.  When using the cross
-% correlation method, the second image should serve as a template and be
-% smaller than the first image selected.
-%
-%
+% this module by selecting "yes" in the appropriate menu. Lastly, select 
+% the method of alignment. There are two choices, one is based on mutual 
+% information while the other is based on the cross correlation. When using
+% the cross correlation method, the second image should serve as a template
+% and be smaller than the first image selected.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

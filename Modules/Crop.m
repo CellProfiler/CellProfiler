@@ -26,18 +26,18 @@ function handles = Crop(handles)
 % name of that identified object instead of Rectangle or Ellipse. Please
 % see PlateFix for information on cropping based on previously identified
 % plates.
-% To crop into an arbitrary shape you define, use the Load Single Image
+% To crop into an arbitrary shape you define, use the LoadSingleImage
 % module to load a black and white image (that you have already prepared)
 % from a file. If you have created this image in an image program such as
-% Photoshop, this binary image should contain only the values 0
-% and 255, with zeros (black) for the parts you want to remove and 255
-% (white) for the parts you want to retain.  Or, you may have previously
-% generated a binary image using this module (e.g. using the ellipse
-% option) and saved it using the Save Images module (see Special note on
-% saving images below).  In any case, the image must be the exact same
-% starting size as your image and should contain a contiguous block of
-% white pixels, because keep in mind that the cropping module will remove
-% rows and columns that are completely blank.
+% Photoshop, this binary image should contain only the values 0 and 255,
+% with zeros (black) for the parts you want to remove and 255 (white) for
+% the parts you want to retain. Or, you may have previously generated a
+% binary image using this module (e.g. using the ellipse option) and saved
+% it using the SaveImages module (see Special note on saving images below).
+% In any case, the image must be the exact same starting size as your image
+% and should contain a contiguous block of white pixels, because keep in
+% mind that the cropping module will remove rows and columns that are
+% completely blank.
 % To crop into the same shape as was used previously in the pipeline to
 % crop another image, type in CroppingPreviousCroppedImageName, where
 % PreviousCroppedImageName is the image you produced with the previous Crop
@@ -73,17 +73,17 @@ function handles = Crop(handles)
 % to crop 80 pixels from each edge of the plate, you could enter 80:end-80
 % for (Top, Left) and (Bottom, Right).
 %
-% Special note on saving images: See the help for the Save Images module.
+% Special note on saving images: See the help for the SaveImages module.
 % Also, you can save the cropping shape that you have used (e.g. an ellipse
-% you drew), so that in future analyses you can use the File option.  To do
+% you drew), so that in future analyses you can use the File option. To do
 % this, you need to add the prefix "Cropping" to the name you called the
 % cropped image (e.g. CroppingCropBlue) and this is the name of the image
-% you will want to save using the Save Images module.  I think you will
-% want to save it in mat format. You can also save the cropping shape,
-% trimmed for any unused rows and columns at the edges.  This image has the
-% prefix "CropMask" plus the name you called the cropped image (e.g.
-% CropMaskCropBlue).  This image is used for downstream modules that use
-% the CPgraythresh function.  The Cropping and CropMask images are similar
+% you will want to save using the SaveImages module. I think you will want
+% to save it in mat format. You can also save the cropping shape, trimmed
+% for any unused rows and columns at the edges. This image has the prefix
+% "CropMask" plus the name you called the cropped image (e.g.
+% CropMaskCropBlue). This image is used for downstream modules that use
+% the CPgraythresh function. The Cropping and CropMask images are similar
 % (both are binary and contain the cropping shape you used), but the
 % Cropping image is the same size as the original images to be processed
 % whereas the CropMask image is the same size as the final, cropped image.
@@ -494,17 +494,17 @@ handles.Pipeline.(CroppedImageName) = CroppedImage;
 function [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
 %%% Retrieves the Cropping image from the handles structure.
 try
-    BinaryCropImage = handles.Pipeline.(['Cropping',CroppedImageName]);
+    BinaryCropImage = CPretrieveimage(handles,['Cropping',CroppedImageName],ModuleName);
 catch
     try
-        BinaryCropImage = handles.Pipeline.(CroppedImageName);
+        BinaryCropImage = CPretrieveimage(handles,CroppedImageName,ModuleName);
     catch
         error(['Image processing was canceled in the ', ModuleName, ' module because you must choose rectangle, ellipse or the name of something from a previous module. If you are trying to rerun an imcomplete pipeline, this error might have occurred because the images you used were not saved for future use. See help for details.']);
     end
 end
 
 if any(size(OrigImage(:,:,1)) ~= size(BinaryCropImage(:,:,1)))
-    error(['Image processing was canceled in the ', ModuleName, ' module because an image you wanted to crop is not the same size as the cropping mask.  The pixel dimensions must be identical between the image that you are currently cropping and the image where you made the cropping mask.'])
+    error(['Image processing was canceled in the ', ModuleName, ' module because an image you wanted to crop is not the same size as the cropping mask. The pixel dimensions must be identical between the image that you are currently cropping and the image where you made the cropping mask.'])
 end
 %%% Sets pixels in the original image to zero if those pixels are zero in
 %%% the binary image file.

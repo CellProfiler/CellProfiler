@@ -9,13 +9,13 @@ function handles = ClassifyObjects(handles)
 % *************************************************************************
 %
 % This module classifies objects into a number of different classes
-% according to the value of a measurement (e.g. by size, intensity, shape,
-% etc.). Choose the measurement feature to be used to classify your objects
-% and specify what bins to use. This module requires that you run a
-% measurement module previous to this module in the pipeline so that the
-% measurement values can be used to classify the objects. If you are
-% classifying by the ratio of two measurements, you must put a
-% CalculateRatios module previous to this module in the pipeline.
+% according to the value of a measurement (e.g. by size, intensity, shape).
+% Choose the measurement feature to be used to classify your objects and
+% specify what bins to use. This module requires that you run a measurement
+% module previous to this module in the pipeline so that the measurement
+% values can be used to classify the objects. If you are classifying by the
+% ratio of two measurements, you must put a CalculateRatios module previous
+% to this module in the pipeline.
 %
 % Settings:
 %
@@ -25,14 +25,14 @@ function handles = ClassifyObjects(handles)
 % list of the features measured by that module.
 %
 % If you are selecting Ratio, this is the order of ratio measurements that
-% you calculated for the numerator.  For instance, if you previously
+% you calculated for the numerator. For instance, if you previously
 % calculated the ratio of Area to Perimeter for nuclei, MajorAxisLength to
 % MinorAxisLength for cells, and MeanIntensity to MaxIntensity for nuclei,
 % the value for the Area to Perimeter for nuclei would be 1, the value for
 % MajorAxisLength to MinorAxisLength for cells would be 2, and the value
 % for MeanIntensity to MaxIntensity for nuclei would be 3.
 %
-% See also FilterByObjectMeasurement.
+% See also ClassifyObjectsByTwoMeasurements, FilterByObjectMeasurement.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

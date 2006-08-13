@@ -7,11 +7,11 @@ function handles = CalculateMath(handles)
 % This module can take any measurements produced by previous modules and
 % can manipulate the numbers using basic arithmetic operations.
 % *************************************************************************
-% Settings:
+%
 % The arithmetic operations available in this module include addition,
-% subtraction, multiplication and division.  The operation can be choosen
-% by adjusting the operations setting.  The resulting data can also be
-% logged or raised to a power.  This data can then be used in other
+% subtraction, multiplication and division. The operation can be choosen
+% by adjusting the operations setting. The resulting data can also be
+% logged or raised to a power. This data can then be used in other
 % calculations and can be used in Classify Objects.
 %
 % This module currently works on an object-by-object basis (it calculates
@@ -24,7 +24,7 @@ function handles = CalculateMath(handles)
 % will be used for the operation. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% See also all Measure modules.
+% See also CalculateRatios, all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

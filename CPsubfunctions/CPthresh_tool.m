@@ -1,20 +1,20 @@
-function [level,bw] = thresh_tool(im,cmap,defaultLevel) %mainfunction
+function [level,bw] = CPthresh_tool(im,cmap,defaultLevel) %mainfunction
 %THRESH_TOOL  Interactively select intensity level for image thresholding.
 %   THRESH_TOOL launches a GUI (graphical user interface) for thresholding
 %   an intensity input image, IM. IM is displayed in the top left corner. A
 %   colorbar and IM's histogram are displayed on the bottom. A line on the
 %   histogram indicates the current threshold level. A binary image is
-%   displayed in the top right based on the selected level.  To change the
+%   displayed in the top right based on the selected level. To change the
 %   level, click and drag the line. The output image updates automatically.
 %
 %   There are two ways to use this tool.
 %
 %Mode 1 - nonblocking behavior:
-%   THRESH_TOOL(IM) launches GUI tool.  You can continue using the MATLAB
-%   Desktop.  Since no results are needed, the function does not block
+%   THRESH_TOOL(IM) launches GUI tool. You can continue using the MATLAB
+%   Desktop. Since no results are needed, the function does not block
 %   execution of other commands.
 %
-%   THRESH_TOOL(IM,CMAP) allows the user to specify the colormap, CMAP.  If
+%   THRESH_TOOL(IM,CMAP) allows the user to specify the colormap, CMAP. If
 %   not specified, the default colormap is used.
 %
 %   THRESH_TOOL(IM,CMAP,DEFAULTLEVEL) allows the user to specify the

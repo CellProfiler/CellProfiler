@@ -33,7 +33,7 @@ if strcmp(Answer,'All folders') == 1
     CPsubfunctionsFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'CPsubfunctions'));
     HelpFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Help'));
 %    OutdatedFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Outdated'));
-    AlgorithmFileNames = horzcat('CellProfiler',ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames);
+    AlgorithmFileNames = horzcat(fullfile(CellProfilerPathname,Filename),ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames);
 else
     PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
     if PathName == 0
@@ -74,7 +74,7 @@ for i = 1:NumberOfMFiles
             PostReplacementText = NewAlgorithmContents(PositionToReplace + length(TextToRemove):end);
             NewAlgorithmContents = [PreReplacementText,TextToAddInItsPlace,PostReplacementText];
         end
-        if exist('TestMode') == 1
+        if exist('TestMode','var')
             NumberOfSuccessfulReplacements(NumberOfMFiles+1,:) = {'This is test mode only. None of the replacements were actually made'};
         else
             fid=fopen([AlgorithmFileNames{i},'.m'],'w');

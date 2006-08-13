@@ -1,5 +1,13 @@
 CellProfiler cell image analysis software development 
 
+June 8-12-06: In CPplotmeasurement.m: Immediately after each call to CPgetfeature, 
+there should be a line saying "if isempty(ObjectTypename),return,end". 
+This stops processing once the user has clicked cancel while choosing 
+a feature in the threshold data mode of the PlotMeasurements data 
+tool. Also, in the text of the help button labeled '?', delete the 
+last sentence saying that only the Y axis will be thresholded while in 
+scatterplot2 mode. This is not accurate because all measurements get 
+thresholded in all graphing styles.
 
 Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
 

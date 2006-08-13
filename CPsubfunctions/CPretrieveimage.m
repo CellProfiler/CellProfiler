@@ -80,11 +80,11 @@ end
 
 if ColorFlag == 2
     if ndims(Image) ~= 2
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement. This may be because the image is a color image.']);
     end
 elseif ColorFlag == 3
     if ndims(Image) ~= 3
-        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is color, but the image loaded does not fit this requirement.  This may be because the image is grayscale.']);
+        error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is color, but the image loaded does not fit this requirement. This may be because the image is grayscale.']);
     end
 end
 

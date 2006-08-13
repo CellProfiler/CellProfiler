@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 8/13/06) - Fixed bug in ReplaceTextInModules developer script: it didn't specify a pathname for CellProfiler.m, so it created a new file inside the current dir (c:\CellProfiler\DeveloperScripts)
+
 Jun 8/11/06: Histogram data tool: Added more error checks for user input. Formatted axes labels when thresholding histogram data. Added message boxes before user chooses measurements with which to threshold data.
 
 - (Jun 8/11/06) (Requested by Anne 11-08-05) - Can we make PlotMeasurements as cool as Histograms? e.g. selecting subsets of images, 'gating' by plotting only cells above a threshold in a particular measurement.

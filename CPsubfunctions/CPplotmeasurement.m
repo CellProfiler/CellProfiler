@@ -33,9 +33,9 @@ catch
     FontSize = handles.Current.FontSize;
 end
 
-if (length(Feature) > 10) & strncmp(Feature,'Intensity_',10)
+if (length(Feature) > 10) && strncmp(Feature,'Intensity_',10)
     str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object,' in ',Feature(11:end)];
-elseif (length(Feature) > 8) & strncmp(Feature,'Texture_',8)
+elseif (length(Feature) > 8) && strncmp(Feature,'Texture_',8)
     str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object,' in ',Feature(11:end)];
 else
     str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object];
@@ -91,13 +91,10 @@ if PlotType == 1
             msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
             uiwait(msgfig);
             [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            % There's no need to nest the call to CPgetfeature again, because
-            % the only errors that can occur in CPgetfeature happen when
-            % handles is faulty, but CPgetfeature was called before and handles
-            % hasn't been modified. However, an empty check for ObjectTypename
-            % is needed. This would happen if the user clicked Cancel.
+            if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch CPerrordlg(lasterr)
+        catch
+            error(lasterr);
             return
         end
     end
@@ -207,14 +204,10 @@ elseif PlotType == 2
             msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
             uiwait(msgfig);
             [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            % There's no need to nest the call to CPgetfeature again, because
-            % the only errors that can occur in CPgetfeature happen when
-            % handles is faulty, but CPgetfeature was called before and handles
-            % hasn't been modified. However, an empty check for ObjectTypename
-            % is needed. This would happen if the user clicked Cancel.
+            if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch CPerrordlg(lasterr)
-            return
+        catch
+            error(lasterr);
         end
     end
     
@@ -297,13 +290,10 @@ elseif PlotType == 3
             msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
             uiwait(msgfig);
             [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            % There's no need to nest the call to CPgetfeature again, because
-            % the only errors that can occur in CPgetfeature happen when
-            % handles is faulty, but CPgetfeature was called before and handles
-            % hasn't been modified. However, an empty check for ObjectTypename
-            % is needed. This would happen if the user clicked Cancel.
+            if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch CPerrordlg(lasterr)
+        catch
+            error(lasterr);
             return
         end
     end
@@ -408,14 +398,11 @@ elseif PlotType == 4
                 msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
                 uiwait(msgfig);
                 [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-                % There's no need to nest the call to CPgetfeature again, because
-                % the only errors that can occur in CPgetfeature happen when
-                % handles is faulty, but CPgetfeature was called before and handles
-                % hasn't been modified. However, an empty check for ObjectTypename
-                % is needed. This would happen if the user clicked Cancel.
+                if isempty(ObjectTypename),return,end
                 [Thresholdstr2,Measurements2,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements2,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
                 [Thresholdstr1,Measurements1,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements1,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-            catch CPerrordlg(lasterr)
+            catch
+                error(lasterr);
                 return
             end
         end

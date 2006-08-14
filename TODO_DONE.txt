@@ -1,5 +1,10 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Rodrigo 8/14/06) (Requested by Jun 8-12-06) - In CPplotmeasurement.m: Immediately after each call to CPgetfeature, there should be a line saying "if isempty(ObjectTypename),return,end". This stops processing once the user has clicked cancel while choosing a feature in the threshold data mode of the PlotMeasurements data tool. Also, in the text of the help button labeled '?', delete the last sentence saying that only the Y axis will be thresholded while in scatterplot2 mode. This is not accurate because all measurements get thresholded in all graphing styles.
+
+- (Rodrigo 8/14/06) (Requested by ???) - Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
+Note: already done... we stopped using ordfilt2 when the gaussian filter was implemented, using conv2.
+
 - (Rodrigo 8/13/06) - Fixed bug in ReplaceTextInModules developer script: it didn't specify a pathname for CellProfiler.m, so it created a new file inside the current dir (c:\CellProfiler\DeveloperScripts)
 
 Jun 8/11/06: Histogram data tool: Added more error checks for user input. Formatted axes labels when thresholding histogram data. Added message boxes before user chooses measurements with which to threshold data.

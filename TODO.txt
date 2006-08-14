@@ -63,8 +63,6 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 
 - (Requested by Anne 11-21-05) - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
 
-- Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
-
 - (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.
 
 -(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.

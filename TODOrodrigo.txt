@@ -5,19 +5,17 @@ Project: make identifybasedonoutlines module to properly identify c elegans
 
 OTHER TODO's:
 
-June 8-12-06: In CPplotmeasurement.m: Immediately after each call to CPgetfeature, 
-there should be a line saying "if isempty(ObjectTypename),return,end". 
-This stops processing once the user has clicked cancel while choosing 
-a feature in the threshold data mode of the PlotMeasurements data 
-tool. Also, in the text of the help button labeled '?', delete the 
-last sentence saying that only the Y axis will be thresholded while in 
-scatterplot2 mode. This is not accurate because all measurements get 
-thresholded in all graphing styles.
+
 
 
 DONE (committed):
 
-- (Rodrigo 8/9/06) - Fixed bug in ReplaceTextInModules developer script: it didn't specify a pathname for CellProfiler.m, so it created a new file inside the current dir (c:\CellProfiler\DeveloperScripts)
+- (Rodrigo 8/14/06) (Requested by Jun 8-12-06) - In CPplotmeasurement.m: Immediately after each call to CPgetfeature, there should be a line saying "if isempty(ObjectTypename),return,end". This stops processing once the user has clicked cancel while choosing a feature in the threshold data mode of the PlotMeasurements data tool. Also, in the text of the help button labeled '?', delete the last sentence saying that only the Y axis will be thresholded while in scatterplot2 mode. This is not accurate because all measurements get thresholded in all graphing styles.
+
+- (Rodrigo 8/14/06) (Requested by ???) - Improve speed of ordfilt2 used by CPsmooth (takes forever). Look into getting new code at mathworks website or anywhere else. Something that does the same thing.
+Note: already done... we stopped using ordfilt2 when the gaussian filter was implemented, using conv2.
+
+- (Rodrigo 8/13/06) - Fixed bug in ReplaceTextInModules developer script: it didn't specify a pathname for CellProfiler.m, so it created a new file inside the current dir (c:\CellProfiler\DeveloperScripts)
 
 - (Rodrigo 8/8/06) (Requested by Anne 8-7-06) - Using ExampleFly images, if you LoadImages to load the _D image, then CorrectIllumCalculate and Apply with the following settings, an error results ("Function imlincomb expected its array input arguments (A1, A2, ...) to have the same class"):
 Note: the error occurred because the IllumCorrection image was changed to single format before using imsubtract in CorrIllum_Apply. The code was changed recently to do that, so it may have a purpose, although it didn't say why. The person who changed it (Jun) should go over it and see if it's really necessary and make the appropriate change.

@@ -31,7 +31,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003; 
 % Wahlby et al., 2004). Choosing different options for each of these three 
 % steps allows CellProfiler to flexibly analyze a variety of different cell
-% types. Here are the three steps: 
+% types. Here are the three steps:
 %   In step 1, CellProfiler determines whether an object is an individual
 % nucleus or two or more clumped nuclei. This determination can be
 % accomplished in two ways, depending on the cell type: When nuclei are
@@ -62,12 +62,13 @@ function handles = IdentifyPrimAutomatic(handles)
 % likely to be fragments of real nuclei, can be discarded. Alternately, any
 % of these small objects that touch a valid nucleus can be merged together
 % based on a set of heuristic rules; for example similarity in intensity
-% and statistics of the two objects. A separate module, Filter By Object
-% Measurement, further refines the identified nuclei, if desired, by
-% excluding objects that are a particular size, shape, intensity, or
-% texture. This refining step could eventually be extended to include other
-% quality-control filters, e.g. a second watershed on the distance
-% transformed image to break up remaining clusters (Wahlby et al., 2004).
+% and statistics of the two objects. A separate module,
+% FilterByObjectMeasurement, further refines the identified nuclei, if
+% desired, by excluding objects that are a particular size, shape,
+% intensity, or texture. This refining step could eventually be extended to
+% include other quality-control filters, e.g. a second watershed on the
+% distance transformed image to break up remaining clusters (Wahlby et al.,
+% 2004).
 %
 % For more details, see the Settings section below and also the notation
 % within the code itself (Developer's version).
@@ -99,8 +100,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % should be placed between the minimum and the maximum diameters. The units
 % here are pixels so that it is easy to zoom in on objects and determine
 % typical diameters. To measure distances easily, use the CellProfiler
-% Image Tool, 'Show Or Hide Pixel Data', in any open window. Once this tool
-% is activated, you can draw a line across objects in your image and the
+% Image Tool, 'ShowOrHidePixelData', in any open window. Once this tool is
+% activated, you can draw a line across objects in your image and the
 % length of the line will be shown in pixel units. Note that for non-round
 % objects, the diameter here is actually the 'equivalent diameter', meaning
 % the diameter of a circle with the same area as the object.
@@ -109,11 +110,11 @@ function handles = IdentifyPrimAutomatic(handles)
 % You can choose to discard objects outside the specified range of
 % diameters. This allows you to exclude small objects (e.g. dust, noise,
 % and debris) or large objects (e.g. clumps) if desired. See also the
-% Filter By Object Measurement module to further discard objects based on
-% some other measurement. During processing, the window for this module
-% will show that objects outlined in green were acceptable, objects
-% outlined in red were discarded based on their size, and objects outlined
-% in yellow were discarded because they touch the border.
+% FilterByObjectMeasurement module to further discard objects based on some
+% other measurement. During processing, the window for this module will
+% show that objects outlined in green were acceptable, objects outlined in
+% red were discarded based on their size, and objects outlined in yellow
+% were discarded because they touch the border.
 %
 % Try to merge 'too small' objects with nearby larger objects:
 % Use caution when choosing 'Yes' for this option! This is an experimental
@@ -135,50 +136,49 @@ function handles = IdentifyPrimAutomatic(handles)
 % example, the area would not be accurate).
 %
 % Select automatic thresholding method:
-%    The threshold affects the stringency of the lines between the
-% objects and the background. You can have the threshold automatically
-% calculated using several methods, or you can enter an absolute number
-% between 0 and 1 for the threshold (to see the pixel intensities for your
-% images in the appropriate range of 0 to 1, use the CellProfiler Image
-% Tool, 'Show Or Hide Pixel Data', in a window showing your image).
-% There are advantages either way.  An absolute number treats every
-% image identically, but is not robust to slight changes in
-% lighting/staining conditions between images. An automatically
-% calculated threshold adapts to changes in lighting/staining
-% conditions between images and is usually more robust/accurate, but
-% it can occasionally produce a poor threshold for unusual/artifactual
-% images. It also takes a small amount of time to calculate.
+%    The threshold affects the stringency of the lines between the objects
+% and the background. You can have the threshold automatically calculated
+% using several methods, or you can enter an absolute number between 0 and
+% 1 for the threshold (to see the pixel intensities for your images in the
+% appropriate range of 0 to 1, use the CellProfiler Image Tool,
+% 'ShowOrHidePixelData', in a window showing your image). There are
+% advantages either way. An absolute number treats every image identically,
+% but is not robust to slight changes in lighting/staining conditions
+% between images. An automatically calculated threshold adapts to changes
+% in lighting/staining conditions between images and is usually more
+% robust/accurate, but it can occasionally produce a poor threshold for
+% unusual/artifactual images. It also takes a small amount of time to
+% calculate.
 %    The threshold which is used for each image is recorded as a
-% measurement in the output file, so if you find unusual measurements
-% from one of your images, you might check whether the automatically
-% calculated threshold was unusually high or low compared to the
-% other images.
-%    There are three methods for finding thresholds automatically,
-% Otsu's method, the Mixture of Gaussian (MoG) method, and the Background
-% method. The Otsu method uses our version of the Matlab function
-% graythresh (the code is in the CellProfiler subfunction CPthreshold). Our
-% modifications include taking into account the max and min values in the
-% image and log-transforming the image prior to calculating the threshold.
-% Otsu's method is probably better if you don't know anything about the
-% image, or if the percent of the image covered by objects varies
-% substantially from image to image. But if you know the object coverage
-% percentage and it does not vary much from image to image, the MoG can be
-% better, especially if the coverage percentage is not near 50%. Note,
-% however, that the MoG function is experimental and has not been 
-% thoroughly validated. The background function is very simple and is 
-% appropriate for images in which most of the image is background. It finds
-% the mode of the histogram of the image, which is assumed to be the 
-% background of the image, and chooses a threshold at twice that value 
-% (which you can adjust with a Threshold Correction Factor, see below). 
-% This can be very helpful, for example, if your images vary in overall 
-% brightness but the objects of interest are always twice (or actually, 
-% any constant) as bright as the background of the image.
-%    You can also choose between global and adaptive thresholding,
-% where global means that one threshold is used for the entire image and
-% adaptive means that the threshold varies across the image. Adaptive is
-% slower to calculate but provides more accurate edge determination which
-% may help to separate clumps, especially if you are not using a
-% clump-separation method (see below).
+% measurement in the output file, so if you find unusual measurements from
+% one of your images, you might check whether the automatically calculated
+% threshold was unusually high or low compared to the other images.
+%    There are three methods for finding thresholds automatically, Otsu's
+% method, the Mixture of Gaussian (MoG) method, and the Background method.
+% The Otsu method uses our version of the Matlab function graythresh (the
+% code is in the CellProfiler subfunction CPthreshold). Our modifications
+% include taking into account the max and min values in the image and
+% log-transforming the image prior to calculating the threshold. Otsu's
+% method is probably better if you don't know anything about the image, or
+% if the percent of the image covered by objects varies substantially from
+% image to image. But if you know the object coverage percentage and it
+% does not vary much from image to image, the MoG can be better, especially
+% if the coverage percentage is not near 50%. Note, however, that the MoG
+% function is experimental and has not been thoroughly validated. The
+% background function is very simple and is appropriate for images in which
+% most of the image is background. It finds the mode of the histogram of
+% the image, which is assumed to be the background of the image, and
+% chooses a threshold at twice that value (which you can adjust with a
+% Threshold Correction Factor, see below). This can be very helpful, for
+% example, if your images vary in overall brightness but the objects of
+% interest are always twice (or actually, any constant) as bright as the
+% background of the image.
+%    You can also choose between global and adaptive thresholding, where
+% global means that one threshold is used for the entire image and adaptive
+% means that the threshold varies across the image. Adaptive is slower to
+% calculate but provides more accurate edge determination which may help to
+% separate clumps, especially if you are not using a clump-separation
+% method (see below).
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be
@@ -211,9 +211,9 @@ function handles = IdentifyPrimAutomatic(handles)
 % option counts each intensity peak as a separate object. The objects can
 % be any shape, so they need not be round and uniform in size as would be
 % required for a distance-based module. The module is more successful when
-% the objects have a smooth texture. By default, the image is
-% automatically blurred to attempt to achieve appropriate smoothness (see
-% blur option), but overriding the default value can improve the outcome on
+% the objects have a smooth texture. By default, the image is automatically
+% blurred to attempt to achieve appropriate smoothness (see blur option),
+% but overriding the default value can improve the outcome on
 % lumpy-textured objects. Technical description: Object centers are defined
 % as local intensity maxima.
 % * Shape - For cases when there are definite indentations separating
@@ -264,8 +264,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % objects will be recognized as only one object. Note that increasing the
 % size of the smoothing filter increases the processing time exponentially.
 %
-% Suppress local maxima within this distance (a positive
-% integer, in pixel units):
+% Suppress local maxima within this distance (a positive integer, in pixel
+% units):
 %    (Only used when distinguishing between clumped objects) This setting,
 % along with the size of the smoothing filter, affects whether objects
 % close to each other are considered a single object or multiple objects.
@@ -288,9 +288,9 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % Technical notes: The initial step of identifying local maxima is
 % performed on the user-controlled heavily smoothed image, the
-% foreground/background is done on a hard-coded slightly smoothed
-% image, and the dividing lines between clumped objects (watershed) is
-% done on the non-smoothed image.
+% foreground/background is done on a hard-coded slightly smoothed image,
+% and the dividing lines between clumped objects (watershed) is done on the
+% non-smoothed image.
 %
 % Laplacian of Gaussian method:
 % This is a specialized method to find objects and will override the above
@@ -386,6 +386,8 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %choiceVAR07 = MoG Adaptive
 %choiceVAR07 = Background Global
 %choiceVAR07 = Background Adaptive
+%choiceVAR07 = RidlerCalvard Global
+%choiceVAR07 = RidlerCalvard Adaptive
 %choiceVAR07 = All
 %choiceVAR07 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
@@ -471,9 +473,13 @@ if islogical(OrigImage)
 end
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
-    GetThreshold = 0;
-    BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
+    if isnan(str2double(Threshold))
+        GetThreshold = 0;
+        BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+    else
+        GetThreshold = 1;
+    end
 else
     GetThreshold = 1;
 end
@@ -554,7 +560,7 @@ else
 end
 
 %%% Sets up loop for test mode.
-if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,18}),'Yes')
+if strcmp(TestMode,'Yes')
     LocalMaximaTypeList = {'Intensity' 'Shape'};
     WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
 else
@@ -620,7 +626,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 if SizeOfSmoothingFilter == 0
                     %%% No blurring is done.
                 else
-                      BlurredImage = CPsmooth(OrigImage, SizeOfSmoothingFilter, handles.Current.SetBeingAnalyzed);
+                      BlurredImage = CPsmooth(OrigImage, 'M', str2num(SizeOfSmoothingFilter), 1);
 %                     FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
 %                     [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
 %                     f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel

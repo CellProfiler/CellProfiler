@@ -534,10 +534,9 @@ MaximumThreshold = ThresholdRange(index+1:end);
 %%% Check the smoothing filter size parameter
 if ~strcmpi(SizeOfSmoothingFilter,'Automatic')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
+    if isnan(SizeOfSmoothingFilter) | isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
     end
-    SizeOfSmoothingFilter = num2str(SizeOfSmoothingFilter);
 end
 
 %%% Check the maxima suppression size parameter
@@ -585,10 +584,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             if SizeOfSmoothingFilter == 0
                 %%% No blurring is done.
                 BlurredImage = OrigImage;
-            else        sigma = 1;
-                FiltLength = ceil(2*sigma);                                           % Determine filter size, min 3 pixels, max 61
-                [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-                f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
+            else
+                sigma = 1;
+                FiltLength = 2*sigma;                                              % Determine filter size, min 3 pixels, max 61
+                [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);   % Filter kernel grid
+                f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                 % Gaussian filter kernel
                 %                BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image
                 %%% This adjustment prevents the outer borders of the image from being
                 %%% darker (due to padding with zeros), which causes some objects on the
@@ -618,25 +618,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 %%% Smooth images for maxima suppression
                 if strcmpi(SizeOfSmoothingFilter,'Automatic')
-                    sigma = MinDiameter/3.5;                                            % Translate between minimum diameter of objects to sigma. Empirically derived formula.
-                    SizeOfSmoothingFilter = num2str(MinDiameter/3.5*2.35);
+                    [BlurredImage SizeOfSmoothingFilter] = CPsmooth(OrigImage,'M',MinDiameter,1);
                 else
-                    % sigma = SizeOfSmoothingFilter/2.35;                                 % Convert between Full Width at Half Maximum (FWHM) to sigma
+                    [BlurredImage SizeOfSmoothingFilter] = CPsmooth(OrigImage,'M',SizeOfSmoothingFilter,0);
                 end
-                if SizeOfSmoothingFilter == 0
-                    %%% No blurring is done.
-                else
-                      BlurredImage = CPsmooth(OrigImage, 'M', str2num(SizeOfSmoothingFilter), 1);
-%                     FiltLength = min(30,max(1,ceil(2*sigma)));                            % Determine filter size, min 3 pixels, max 61
-%                     [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
-%                     f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel
-%                     %%% The original image is blurred. Prior to this blurring, the
-%                     %%% image is padded with values at the edges so that the values
-%                     %%% around the edge of the image are not artificially low.  After
-%                     %%% blurring, these extra padded rows and columns are removed.
-%                     BlurredImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
-%                     BlurredImage = BlurredImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
-                end
+
                 %%% Get local maxima, where the definition of local depends on the
                 %%% user-provided object size. This will (usually) be done in a
                 %%% lower-resolution image for speed. The ordfilt2() function is
@@ -668,7 +654,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 MaximaMask = getnhood(strel('disk', MaximaSuppressionSize));
 
                 if strcmp(LocalMaximaType,'Intensity')
-
                     if strcmp(UseLowRes,'Yes')
                         %%% Find local maxima in a lower resolution image
                         ResizedBlurredImage = imresize(BlurredImage,ImageResizeFactor,'bilinear');
@@ -978,7 +963,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Preferences.FontSize);
                     if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.24 posx(3)+0.1 0.04],...
-                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',str2num(SizeOfSmoothingFilter)),'FontSize',handles.Preferences.FontSize);
+                            'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',SizeOfSmoothingFilter),'FontSize',handles.Preferences.FontSize);
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.28 posx(3)+0.1 0.04],...
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Maxima suppression size:  %d',round(MaximaSuppressionSize/ImageResizeFactor)),'FontSize',handles.Preferences.FontSize);
                     end

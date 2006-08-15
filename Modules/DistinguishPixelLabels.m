@@ -44,6 +44,7 @@ function handles = DistinguishPixelLabels(handles)
 %   advanced than distance from peaks to calculate probability
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
+% - MOST TODO ITEMS ARE IN ANOTHER TEXT FILE ON CHRIS'S COMPUTER, NOT SVN'D
 % - Chris: consider adding another thresholding method (RidlerCalvard
 %   Global and RidlerCalvard Adaptive) in the options. I recently added
 %   this method to CPthreshold, but I didn't want to add it to this
@@ -102,46 +103,46 @@ PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ThresholdingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = For NUMERIC, enter the coordinates for the peak in nucleus pixel intensity values as (NucleiX,NucleiY).
-%defaultVAR08 = 100,100
-NucleiPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = For ALL OPTIONS, what did you call the illumination correction matrix for nuclei? Select "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%infotypeVAR08 = imagegroup
+%choiceVAR08 = none
+LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu custom
 
-%textVAR09 = For NUMERIC, enter the coordinates for the peak in cell pixel intensity values as (CellsX,CellsY).
-%defaultVAR09 = 150,150
-CellsPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = For ALL OPTIONS, what did you call the illumination correction matrix for cells? Select "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%infotypeVAR09 = imagegroup
+%choiceVAR09 = none
+LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu custom
 
-%textVAR10 = For NUMERIC, enter the coordinates for the peak in background pixel intensity values as (BGX,BGY).
-%defaultVAR10 = 200,200
-BackgroundPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = For NUMERIC, enter the coordinates for the peak in nucleus pixel intensity values as (NucleiX,NucleiY).
+%defaultVAR10 = 100,100
+NucleiPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
-%choiceVAR11 = Histogram
-%choiceVAR11 = Correction Matrices
-MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
+%textVAR11 = For NUMERIC, enter the coordinates for the peak in cell pixel intensity values as (CellsX,CellsY).
+%defaultVAR11 = 150,150
+CellsPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
-%infotypeVAR12 = imagegroup
-LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
+%textVAR12 = For NUMERIC, enter the coordinates for the peak in background pixel intensity values as (BGX,BGY).
+%defaultVAR12 = 200,200
+BackgroundPeakInputValues = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for nuclei? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
-%infotypeVAR13 = imagegroup
-%choiceVAR13 = none
-LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu custom
+%textVAR13 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
+%choiceVAR13 = Histogram
+%choiceVAR13 = Correction Matrices
+MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
 
-%textVAR14 = For AUTOMATIC -or- MOUSE and CORRECTION MATRICES, what did you call the illumination correction matrix for cells? Choose "Other..." and enter "none" if you do not wish to correct illumination. (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%textVAR14 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
 %infotypeVAR14 = imagegroup
-%choiceVAR14 = none
-LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu custom
+LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
 
 %textVAR15 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
 %defaultVAR15 = Do not save
 SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
-%%%VariableRevisionNumber = 4
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -386,38 +387,32 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-NucImageScaleFactor = 1;
-CellImageScaleFactor = 1;
+if ~(strcmpi(LoadedNIllumCorrName,'none') || strcmpi(LoadedNIllumCorrName,'Do not load')...
+        || strcmpi(LoadedCIllumCorrName,'none') || strcmpi(LoadedCIllumCorrName,'Do not load'))
+    NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+    CellsCorrMat = CPretrieveimage(handles,LoadedCIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
+    OrigNucleiImage = OrigNucleiImage ./ NucleiCorrMat;
+    OrigCellsImage = OrigCellsImage ./ CellsCorrMat;
+end
 
 if strncmp(PeakSelectionMethod,'Automatic',9)
     
-    %%% Reads (opens) the correction matrix files as specified in
-    %%% LoadSingleImage before this module
-    if (strcmpi(LoadedNIllumCorrName,'none') || strcmpi(LoadedNIllumCorrName,'Do not load'))...
-            && (strcmpi(LoadedCIllumCorrName,'none') || strcmpi(LoadedCIllumCorrName,'Do not load'))
-        CNucImage = OrigNucleiImage;
-        CCellImage = OrigCellsImage;
-    else
-        NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
-        CellsCorrMat = CPretrieveimage(handles,LoadedCIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
-        CNucImage = OrigNucleiImage ./ NucleiCorrMat;
-        CCellImage = OrigCellsImage ./ CellsCorrMat;
-    end
-    
     %%% Sets pixels below max/256 to max/256 so we have a valid dynamic
     %%% scale of pixel values
-    MaxNucPixVal = max(CNucImage(:));
-    MaxCellPixVal = max(CCellImage(:));
+    MaxNucPixVal = max(OrigNucleiImage(:));
+    MaxCellPixVal = max(OrigCellsImage(:));
     MinNucPixVal = MaxNucPixVal/256;
     MinCellPixVal = MaxCellPixVal/256;
-    CNucImage(CNucImage < MinNucPixVal) = MinNucPixVal;
-    CCellImage(CCellImage < MinCellPixVal) = MinCellPixVal;
+    ClampedNucImage = OrigNucleiImage;
+    ClampedCellImage = OrigCellsImage;
+    ClampedNucImage(ClampedNucImage < MinNucPixVal) = MinNucPixVal;
+    ClampedCellImage(ClampedCellImage < MinCellPixVal) = MinCellPixVal;
     
     %%% Jitters these images on the log scale
-    JNucImage = log(CNucImage) + rand(size(CNucImage)) .*...
-        (log(CNucImage + MinNucPixVal) - log(CNucImage));
-    JCellImage = log(CCellImage) + rand(size(CCellImage)) .*...
-        (log(CCellImage + MinCellPixVal) - log(CCellImage));
+    JNucImage = log(ClampedNucImage) + rand(size(ClampedNucImage)) .*...
+        (log(ClampedNucImage + MinNucPixVal) - log(ClampedNucImage));
+    JCellImage = log(ClampedCellImage) + rand(size(ClampedCellImage)) .*...
+        (log(ClampedCellImage + MinCellPixVal) - log(ClampedCellImage));
     
     JLNucImage = (JNucImage - log(MinNucPixVal)) / (log(MaxNucPixVal) -log(MinNucPixVal));
     JLCellImage = (JCellImage - log(MinCellPixVal)) / (log(MaxCellPixVal) -log(MinCellPixVal));
@@ -426,36 +421,37 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     [handles,NucThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLNucImage,NucleiImageName,ModuleName);
     [handles,CellThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLCellImage,CellsImageName,ModuleName);
    
-    %%% Gets the mean of each image for all the foreground and all the
-    %%% background pixels separately
-    NucleiFGMean = 256*mean(JLNucImage(JLNucImage > NucThreshold));
-    NucleiBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold));
-    CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
-    CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
-    
-    %%% ==== TESTING NEW FEATURE ====
-    %%% Determines scaling factors to account for image-wide bias along one
-    %%% axis--as in, if the range of intensity for DNA-stained pixels is
-    %%% half that for actin-stained pixels, then the messages for nuclei
-    %%% will be half as strong, which skews results.  These factors are
-    %%% used later by phi.  NOTE: default is 1, set above.
-    NucleiMDiff = NucleiFGMean - NucleiBGMean;
-    CellsMDiff = CellsFGMean - CellsBGMean;
-    if NucleiMDiff > CellsMDiff
-        CellImageScaleFactor = NucleiMDiff / CellsMDiff;
-    else
-        NucImageScaleFactor = CellsMDiff / NucleiMDiff;
-    end
-    %%% === end new feature ===
+    %%% Gets the means in each section of the image that we believe to have
+    %%% a certain pixel label
+   % NucleiFGMean = 256*mean(JLNucImage(JLNucImage > NucThreshold));
+   % NucleiBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold));
+   % CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
+   % CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
+    NucleiBGCellBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold & JLCellImage <= CellThreshold));
+    CellsBGNucBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold & JLNucImage < NucThreshold));
+    NucleiBGCellFGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold & JLCellImage > CellThreshold));
+    CellsFGNucBGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold & JLNucImage < NucThreshold));
+    NucleiFGCellAllMean = 256*mean(JLNucImage(JLNucImage > NucThreshold));
+    CellsAllNucFGMean = 256*mean(JLCellImage(JLNucImage > NucThreshold));
     
     %%% Save the interpolated peaks to the handles structure
-    handles.Pipeline.NucleiPeak = [NucleiFGMean;CellsFGMean];%[CellsFGMean;NucleiFGMean];
-    handles.Pipeline.CellsPeak = [NucleiBGMean;CellsFGMean];%CellsFGMean;NucleiBGMean];
-    handles.Pipeline.BackgroundPeak = [NucleiBGMean;CellsBGMean];%[CellsBGMean;NucleiBGMean];
-    handles.Pipeline.PeakIntensityString = sprintf(['Peak Intensity Values\n\nNuclei: (%.1f, %.1f)',...
-        '\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)'],NucleiFGMean,CellsFGMean,NucleiBGMean,CellsFGMean,NucleiBGMean,CellsBGMean);
+    handles.Pipeline.NucleiPeak = [NucleiFGCellAllMean;CellsAllNucFGMean];%[NucleiFGMean;CellsFGMean];
+    handles.Pipeline.CellsPeak = [NucleiBGCellFGMean;CellsFGNucBGMean];%[NucleiBGMean;CellsFGMean];
+    handles.Pipeline.BackgroundPeak = [NucleiBGCellBGMean;CellsBGNucBGMean];%[NucleiBGMean;CellsBGMean];
+    handles.Pipeline.PeakIntensityString = sprintf(['Peak Intensity Values as (DNA-X,Actin-Y)\n\nNuclei: (%.1f, %.1f)',...
+        '\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)'],handles.Pipeline.NucleiPeak,handles.Pipeline.CellsPeak,handles.Pipeline.BackgroundPeak);
     
-    %%% Save 2d, & both marginal histograms to pipeline (comment this out!)
+    %%% Save and display 2d & both marginal histograms to pipeline (comment
+    %%% this out later!)
+    % AutoHistogram = sparse(floor(255*JLNucImage+1),floor(255*JLCellImage+1),1,256,256);
+    % figure, imagesc(AutoHistogram');
+    % axis xy;
+    % set(gcf,'colormap',colormap('jet'));
+    % ylabel('Actin staining intensity');
+    % xlabel('DNA staining intensity');
+    % text(handles.Pipeline.NucleiPeak(1),handles.Pipeline.NucleiPeak(2),'\leftarrow nuclei peak','BackgroundColor',[.7 .9 .7]);
+    % text(handles.Pipeline.CellsPeak(1),handles.Pipeline.CellsPeak(2),'\leftarrow cells peak','BackgroundColor',[.7 .9 .7]);
+    % text(handles.Pipeline.BackgroundPeak(1),handles.Pipeline.BackgroundPeak(2),'\leftarrow bg peak','BackgroundColor',[.7 .9 .7]);
     %MargHistDNA = hist(JLNucImage(:),100);
     %MargHistActin = hist(JLCellImage(:),100);
     %fieldname = ['Auto2DHistogramSet',int2str(handles.Current.SetBeingAnalyzed)];
@@ -467,6 +463,21 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     
 end
 
+%%% Determines scaling factors to account for image-wide (or image
+%%% set-wide) bias along one axis--as in, if the range of intensity for
+%%% DNA-stained pixels is half that for actin-stained pixels, then the
+%%% messages for nuclei will be half as strong, which skews results.  These
+%%% factors are used later by phi.
+NucImageScaleFactor = 1;
+CellImageScaleFactor = 1;
+NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
+CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
+if NucleiMDiff > CellsMDiff
+    CellImageScaleFactor = NucleiMDiff / CellsMDiff;
+else
+    NucImageScaleFactor = CellsMDiff / NucleiMDiff;
+end
+
 %%% Scales both input images to 0-256, loads them into 1 3D array with a
 %%% padded one-row/col border of zeros
 PaddedCompositeImage = zeros(size(OrigNucleiImage,1)+2,size(OrigNucleiImage,2)+2,2);
@@ -474,20 +485,34 @@ PaddedCompositeImage(2:end-1,2:end-1,1) = 256*OrigNucleiImage;
 PaddedCompositeImage(2:end-1,2:end-1,2) = 256*OrigCellsImage;
 %%% Log-transforms the pixel values, keeping 0-256 scale
 LoggedPaddedImage = 32 * (log(PaddedCompositeImage+1)/log(2));
-
+    
 %%% Creates 4 message-holders for the updating message vectors
 Messages.Right = ones(numel(LoggedPaddedImage),3);
 Messages.Left= ones(numel(LoggedPaddedImage),3);
 Messages.Up = ones(numel(LoggedPaddedImage),3);
 Messages.Down = ones(numel(LoggedPaddedImage),3);
 
-%%% Initializes the sub2ind storage
-IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles,1,1);
-%AllPhiValues = phi(LoggedPaddedImage,handles,NucImageScaleFactor,CellImageScaleFactor);
-%CPhelpdlg(sprintf('Factors for scaling were %.2f (nuc) and %.2f (cell).',NucImageScaleFactor,CellImageScaleFactor));
-%figure, imagesc(AllPhiValues);
+%%% TESTING PHI
+% TestIm = zeros(258,258,2);
+% TestIm(2:end-1,2:end-1,1) = repmat(1:256,256,1);
+% TestIm(2:end-1,2:end-1,2) = repmat((1:256)',1,256);
+% TestPhiVals = phi(TestIm,handles,NucImageScaleFactor,CellImageScaleFactor);
+% ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+% CPfigure(handles,'Image',ThisModuleFigureNumber);
+% subplot(1,1,1);
+% CPimagesc(TestPhiVals,handles);
+% axis xy;
+% xlabel('DNA staining intensity');
+% ylabel('actin staining intensity');
+% title('Nuclei Peak is red, Cell Peak is green, BG peak is blue');
+% error(handles.Pipeline.PeakIntensityString);
+%%% END OF TESTING
 
+%%% Initializes the sub2ind storage, calculates all phi values (these two
+%%% steps VASTLY improve runtime by eliminating thousands of subfunction
+%%% invocations)
+IndicesArray = initsub2ind(size(LoggedPaddedImage));
+AllPhiValues = phi(LoggedPaddedImage,handles,NucImageScaleFactor,CellImageScaleFactor);
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
@@ -578,6 +603,7 @@ if handles.Current.SetBeingAnalyzed == 1 && strcmp(MouseInputMethod,'Correction 
     handles.Pipeline.(SaveHistogram) = Image;
 end
 
+handles.Pipeline.BPNoPropagation = AllPhiValues;
 handles.Pipeline.BPAbsoluteBeliefMatrix = AllBeliefs;
 handles.Pipeline.BPProbableBeliefMatrix = AllNormalizedBeliefs;
 handles.Pipeline.BPAdjustedBeliefMatrix = (AllBeliefs-1)/2;
@@ -699,6 +725,47 @@ arr = zeros(rows,cols,3);
 c = repmat(handles.Pipeline.CellsPeak,1,cols);
 n = repmat(handles.Pipeline.NucleiPeak,1,cols);
 b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
+sigma = (handles.Pipeline.NucleiPeak(1) - handles.Pipeline.BackgroundPeak(1)) / 4;
+sigmas = [sigma*nucfactor; sigma*cellfactor];
+%%% for each row, for each column within that row, calculates the
+%%% probability that a given pixel will be labeled in each of the three
+%%% categories based on only its pixel intensity values.
+for yind = 1:rows
+    %%% x is the array of pixel values, [DNA;actin], for each corresponding
+    %%% pixel in padim, accounting for the pad of zeros
+    x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
+    %%% Calculates the 'distance' value based on exponential dropoff, as if
+    %%% each mean represented a gaussian curve, and hardcodes the sigma
+    %%% (stdev) value
+    sdB = (x-b).*repmat([nucfactor;cellfactor],1,cols);
+    sdN = (x-n).*repmat([nucfactor;cellfactor],1,cols);
+    sdC = (x-c).*repmat([nucfactor;cellfactor],1,cols);
+    disB = sum(exp(-sdB.*sdB./repmat(sigmas.^2,1,cols)));
+    disN = sum(exp(-sdN.*sdN./repmat(sigmas.^2,1,cols)));
+    disC = sum(exp(-sdC.*sdC./repmat(sigmas.^2,1,cols)));
+    %%% sums these values and normalize so that they sum to 1, making them a
+    %%% legitimate description of probability.
+    z=disB+disC+disN;
+    probB=disB./z;
+    probN=disN./z;
+    probC=disC./z;
+    %%% stores the results (which are an Nx3 array) into a 1xNx3 slice of
+    %%% the results array
+    arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);
+end
+
+function arr = phiDist(padim,handles,nucfactor,cellfactor)
+%%% THE OLD VERSION OF PHI
+%%% returns an array containing phi values (1x1x3) at each pixel in padim
+%%% except the border, as a R-1xC-1x3 array where padim is RxCx2
+
+rows = size(padim,1)-2;
+cols = size(padim,2)-2;
+arr = zeros(rows,cols,3);
+%%% repeats the peak matrices as necessary so they're the same size as x
+c = repmat(handles.Pipeline.CellsPeak,1,cols);
+n = repmat(handles.Pipeline.NucleiPeak,1,cols);
+b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
 %%% for each row, for each column within that row, calculates the
 %%% probability that a given pixel will be labeled in each of the three
 %%% categories based on only its pixel intensity values.
@@ -717,18 +784,15 @@ for yind = 1:rows
     %%% are multiplied by adjustment factors derived during automatic peak
     %%% detection.  This serves to equalize the strength of these messsages
     %%% to accommodate for image-wide differences in the ranges of actin and
-    %%% DNA stain intensity.
-    disB=(1./phinorm(b-x));
-    disN=(1./(nucfactor*phinorm(n-x)));
-    disC=(1./(cellfactor*phinorm(c-x)));
-    %%% sums these values and normalize so that they sum to 1, making them a
-    %%% legitimate description of probability.
+    %%% DNA stain intensity.  We also square the distances to bias the
+    %%% messages toward one peak.
+    disB=1./(phinorm(b-x).^2);
+    disN=1./((nucfactor*phinorm(n-x)).^2);
+    disC=1./((cellfactor*phinorm(c-x)).^2);
     z=disB+disC+disN;
     probB=disB./z;
     probN=disN./z;
     probC=disC./z;
-    %%% stores the results (which are an Nx3 array) into a 1xNx3 slice of
-    %%% the results array
     arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);
 end
 

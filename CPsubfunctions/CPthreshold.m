@@ -49,7 +49,7 @@ else
     end
 
     if MinimumThreshold > MaximumThreshold,
-        error(['Min bound on the threshold larger the Max bound on the threshold in the ', ModuleName, ' module.'])
+        error(['Min bound on the threshold larger than the Max bound on the threshold in the ', ModuleName, ' module.'])
     end
 end
 
@@ -61,6 +61,8 @@ if strfind(Threshold,'Global')
         Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
     elseif strfind(Threshold,'Background')
         Threshold = BackgroundThreshold(OrigImage,handles,ImageName);
+    elseif strfind(Threshold,'RidlerCalvard')
+        Threshold = RidlerCalvard(OrigImage,handles,ImageName);
     else
         error(['The method chosen for thresholding in the ',ModuleName,' module was not recognized.']) 
     end
@@ -113,8 +115,11 @@ elseif strfind(Threshold,'Adaptive')
         GlobalThreshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
         Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@MixtureOfGaussians,handles,pObject,ImageName);
     elseif strfind(Threshold,'Background')
-         GlobalThreshold = BackgroundThreshold(OrigImage,handles,ImageName);
+        GlobalThreshold = BackgroundThreshold(OrigImage,handles,ImageName);
         Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@BackgroundThreshold,handles,ImageName);
+    elseif strfind(Threshold,'RidlerCalvard')
+        GlobalThreshold = RidlerCalvard(OrigImage,handles,ImageName);
+        Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@RidlerCalvard,handles,ImageName);
     end
     
     %%% Resizes the block-produced image to be the size of the padded image.
@@ -212,24 +217,11 @@ else
 end
 %%% Correct the threshold using the correction factor given by the user
 %%% and make sure that the threshold is not larger than the minimum threshold
-
-if isfield(handles.Measurements.Image,'OrigThresholdFeatures')
-    OldColumn=strmatch(ImageName,handles.Measurements.Image.OrigThresholdFeatures);
-    if isempty(OldColumn)
-        NewColumn=length(handles.Measurements.Image.OrigThresholdFeatures)+1;
-        handles.Measurements.Image.OrigThresholdFeatures(NewColumn)={ImageName};
-        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,NewColumn)=mean(mean(Threshold));
-    else
-        handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}(:,OldColumn)=mean(mean(Threshold));
-    end
-else
-    handles.Measurements.Image.OrigThresholdFeatures={ImageName};
-    handles.Measurements.Image.OrigThreshold{handles.Current.SetBeingAnalyzed}=mean(mean(Threshold));
-end
-
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
+handles = CPaddmeasurements(handles,'Image','OrigThreshold',ImageName,mean(mean(Threshold)));
+
 
 function Threshold = MixtureOfGaussians(block,handles,pObject,ImageName)
 %%% This function finds a suitable threshold for the input image
@@ -471,11 +463,68 @@ end
 %%% The threshold is calculated by calculating the mode and multiplying by
 %%% 2 (an arbitrary empirical factor). The user will presumably adjust the
 %%% multiplication factor as needed.
-
 im = double(im(:));
-
 if max(im) == min(im),
     level = im(1);
 else
     level = 2*mode(im(:));
 end
+
+
+function level = RidlerCalvard(block,handles,ImageName)
+%%% If the image was produced using a cropping mask, we do not
+%%% want to include the Masked part in the calculation of the
+%%% proper threshold, because there will be many zeros in the
+%%% image.  So, we check to see whether there is a field in the
+%%% handles structure that goes along with the image of interest.
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname)
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    if length(size(block)) == 2
+        im = block;
+        BinaryCropImage = handles.Pipeline.(fieldname);
+    else
+        im = block(:,:,1);
+        BinaryCropImage = block(:,:,2);     
+    end
+
+    %%% Handle the case where there are no pixels on in the mask
+    if (~ any(BinaryCropImage)),
+        level = max(im(:)+1.0);
+        return;
+    end
+
+    if numel(im) == numel(BinaryCropImage)
+        %%% Masks the image and I think turns it into a linear
+        %%% matrix.
+        im = im(logical(BinaryCropImage));
+    end
+else
+    im = block;
+end
+
+%%% We want to limit the dynamic range of the image to 256.
+%%% Otherwise, an image with almost all values near zero can give a
+%%% bad result.
+Im = im(:);
+MinVal = max(Im)/256;
+Im(Im<MinVal) = MinVal;
+Im = log(Im);
+MinVal = min(Im);
+MaxVal = max(Im);
+Im = (Im - MinVal)/(MaxVal - MinVal);
+PreThresh = 0;
+%%% This method needs an initial value to start iterating. Using graythresh
+%%% (Otsu's method) is probably not the best, because the Ridler Calvard
+%%% threshold ends up being too close to this one and in most cases has the
+%%% same exact value.
+NewThresh = graythresh(Im);
+delta = 0.00001;
+while abs(PreThresh - NewThresh)>delta
+    PreThresh = NewThresh;
+    Mean1 = mean(Im(Im<PreThresh));
+    Mean2 = mean(Im(Im>=PreThresh));
+    NewThresh = mean([Mean1,Mean2]);
+end
+level = exp(MinVal + (MaxVal-MinVal)*NewThresh);

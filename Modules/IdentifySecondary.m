@@ -226,6 +226,10 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %choiceVAR05 = Otsu Adaptive
 %choiceVAR05 = MoG Global
 %choiceVAR05 = MoG Adaptive
+%choiceVAR05 = Background Global
+%choiceVAR05 = Background Adaptive
+%choiceVAR05 = RidlerCalvard Global
+%choiceVAR05 = RidlerCalvard Adaptive
 %choiceVAR05 = All
 %choiceVAR05 = Test Mode
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -296,9 +300,13 @@ PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented'
 EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
-    GetThreshold = 0;
-    BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
+    if isnan(str2double(Threshold))
+        GetThreshold = 0;
+        BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+    else
+        GetThreshold = 1;
+    end
 else
     GetThreshold = 1;
 end

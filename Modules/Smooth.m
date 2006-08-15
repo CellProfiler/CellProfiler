@@ -7,6 +7,9 @@ function handles = Smooth(handles)
 % Smooths (blurs) images.
 % *************************************************************************
 %
+% Sorry, this module's documentation is out of date. It will be documented
+% soon.
+%
 % Settings:
 %
 % Smoothing Method:
@@ -21,7 +24,7 @@ function handles = Smooth(handles)
 %
 % Technical note on the median filtering method: the artifact width is
 % divided by two to obtain the radius of a disk-shaped structuring element
-% which is used for filtering. 
+% which is used for filtering. No longer done this way.
 %
 % See also CorrectIllumination_Apply, CorrectIllumination_Calculate.
 
@@ -67,22 +70,30 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial:
+%textVAR03 = Enter the smoothing method you would like to use.
 %choiceVAR03 = Fit Polynomial
+%choiceVAR03 = Median Filtering
+%choiceVAR03 = Sum of squares
+%choiceVAR03 = Square of sum
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-if strcmp(SmoothingMethod,'Fit Polynomial')
-    SmoothingMethod='P';
-end
-%inputtypeVAR03 = popupmenu custom
+%inputtypeVAR03 = popupmenu
 
-%textVAR04 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
-%choiceVAR04 = No
-%choiceVAR04 = Yes
-WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = If you choose Median Filtering, Sum of squares, or Square of sum as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%defaultVAR04 = Automatic
+ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
+
+%textVAR05 = If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave '/'. If you entered a width for the previous variable, this will override it.
+%defaultVAR05 = /
+SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+
+%textVAR06 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
+%choiceVAR06 = No
+%choiceVAR06 = Yes
+WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 WaitForFlag = WaitForFlag(1);
-%inputtypeVAR04 = popupmenu
+%inputtypeVAR06 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -116,19 +127,52 @@ if strncmpi(WaitForFlag,'Y',1) == 1
         %%% image, etc.
     else error(['Image processing was canceled in the ', ModuleName, ' module because there is a programming error of some kind. The module was expecting to find the text Ready or NotReady in the field called ', fieldname, ' but that text was not matched for some reason.'])
     end
-elseif strncmpi(WaitForFlag,'N',1) == 1
-    %%% If we make it to this point, it is OK to proceed to calculating the smooth
-    %%% image, etc.
-else
-    error(['Image processing was canceled in the ', ModuleName, ' module because your response to the question "Are you using this module to smooth a projection image?" was not recognized. Please enter Y or N.'])
 end
 
 %%% If we make it to this point, it is OK to proceed to calculating the smooth
 %%% image, etc.
 
+%%% Some variable checking:
+
+if strcmp(SmoothingMethod,'Median Filtering')
+    SmoothingMethod = 'M';
+elseif strcmp(SmoothingMethod,'Fit Polynomial')
+    SmoothingMethod='P';
+elseif strcmp(SmoothingMethod,'Sum of squares')
+    SmoothingMethod = 'S';
+elseif strcmp(SmoothingMethod,'Square of sum')
+    SmoothingMethod = 'Q';
+end
+
+if ~strcmp(SizeOfSmoothingFilter,'/')
+    SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
+    if isnan(SizeOfSmoothingFilter)
+        error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
+    end
+    SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
+    WidthFlg = 0;
+else
+    if ~strcmpi(ObjectWidth,'Automatic')
+        ObjectWidth = str2double(ObjectWidth);
+        if isnan(ObjectWidth) || ObjectWidth<0
+            error(['Image processing was canceled in the ' ModuleName ' module because the object width you specified was invalid.']);
+        end
+        SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+        WidthFlg = 1;
+    else
+        SizeOfSmoothingFilter = 'A';
+        WidthFlg = 0;
+    end
+end
+
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-OrigImage = CPretrieveimage(handles,OrigImageName,ModuleName,'MustBeGray','CheckScale');
+try
+    OrigImage = CPretrieveimage(handles,OrigImageName,ModuleName,'MustBeGray','CheckScale');
+catch
+    ErrorMessage = lasterr;
+    error(['Image processing was canceled in the ' ModuleName ' module because: ' ErrorMessage(33:end)]);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -136,7 +180,12 @@ OrigImage = CPretrieveimage(handles,OrigImageName,ModuleName,'MustBeGray','Check
 drawnow
 
 %%% Smooths the OrigImage according to the user's specifications.
-SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
+try
+    SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+catch
+    ErrorMessage = lasterr;
+    error(['Image processing was canceled in the ' ModuleName ' module becuase: ' ErrorMessage(26:end)]);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -156,7 +205,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     subplot(2,1,2); 
-    CPimagesc(SmoothedImage,handles); 
+    CPimagesc(SmoothedImage,handles);
     title('Smoothed Image');
 end
 

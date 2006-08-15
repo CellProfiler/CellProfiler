@@ -163,43 +163,54 @@ EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Smoothing method: Enter the width of the artifacts (choose an even number) that are to be smoothed out by median filtering, or choose to smooth by fitting a low order polynomial, or choose no smoothing at all.
+%textVAR06 = Enter the smoothing method you would like to use, if any.
 %choiceVAR06 = No smoothing
-%choiceVAR06 = Fit polynomial
+%choiceVAR06 = Fit Polynomial
+%choiceVAR03 = Median Filtering
+%choiceVAR03 = Sum of squares
+%choiceVAR03 = Square of sum
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu custom
+%inputtypeVAR06 = popupmenu
 
-%textVAR07 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
-%choiceVAR07 = Yes
-%choiceVAR07 = No
-RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR07 = If you choose Median Filtering, Sum of squares, or Square of sum as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%defaultVAR07 = Automatic
+ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,7};
 
-%textVAR08 = (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR08 = Do not save
-%infotypeVAR08 = imagegroup indep
-AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu custom
+%textVAR08 = If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave '/'. If you entered a width for the previous variable, this will override it.
+%defaultVAR08 = /
+SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR09 = Do not save
-%infotypeVAR09 = imagegroup indep
-DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu custom
+%textVAR09 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
+%choiceVAR09 = Yes
+%choiceVAR09 = No
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
 
-%textVAR10 = REGULAR INTENSITY OPTIONS
+%textVAR10 = (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%choiceVAR10 = Do not save
+%infotypeVAR10 = imagegroup indep
+AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu custom
 
-%textVAR11 = If the incoming images are binary and you want to dilate each object in the final averaged image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
-%defaultVAR11 = 0
-ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%choiceVAR11 = Do not save
+%infotypeVAR11 = imagegroup indep
+DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu custom
 
-%textVAR12 = BACKGROUND INTENSITY OPTIONS
+%textVAR12 = REGULAR INTENSITY OPTIONS
 
-%textVAR13 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.
-%defaultVAR13 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
+%textVAR13 = If the incoming images are binary and you want to dilate each object in the final averaged image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
+%defaultVAR13 = 0
+ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%%%VariableRevisionNumber = 4
+%textVAR14 = BACKGROUND INTENSITY OPTIONS
+
+%textVAR15 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.
+%defaultVAR15 = 60
+BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -221,6 +232,28 @@ end
 try NumericalObjectDilationRadius = str2double(ObjectDilationRadius);
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
+end
+
+%%% Checks smooth method variables
+if ~strcmp(SizeOfSmoothingFilter,'/')
+    SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
+    if isnan(SizeOfSmoothingFilter)
+        error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
+    end
+    SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
+    WidthFlg = 0;
+else
+    if ~strcmpi(ObjectWidth,'Automatic')
+        ObjectWidth = str2double(ObjectWidth);
+        if isnan(ObjectWidth) || ObjectWidth<0
+            error(['Image processing was canceled in the ' ModuleName ' module because the object width you specified was invalid.']);
+        end
+        SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+        WidthFlg = 1;
+    else
+        SizeOfSmoothingFilter = 'A';
+        WidthFlg = 0;
+    end
 end
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
@@ -367,14 +400,20 @@ if strcmp(ReadyFlag, 'Ready')
         if ~strcmp(SmoothingMethod,'No smoothing')
             %%% Smooths the averaged image, if requested, but saves a raw copy
             %%% first.
-            if strcmp(SmoothingMethod,'Fit polynomial')
+            if strcmp(SmoothingMethod,'Median Filtering')
+                SmoothingMethod = 'M';
+            elseif strcmp(SmoothingMethod,'Fit Polynomial')
                 SmoothingMethod = 'P';
+            elseif strcmp(SmoothingMethod,'Sum of squares')
+                SmoothingMethod = 'S';
+            elseif strcmp(SmoothingMethod,'Square of sum')
+                SmoothingMethod = 'Q';
             end
 
             if exist('DilatedImage','var')
-                SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
+                SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
             elseif exist('RawImage','var')
-                SmoothedImage = CPsmooth(RawImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
+                SmoothedImage = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
             else error(['Image processing was canceled in the ', ModuleName, ' due to some sort of programming error.']);
             end
         end
@@ -394,10 +433,16 @@ if strcmp(ReadyFlag, 'Ready')
             %%% Smooths the Illumination image, if requested, but saves a raw copy
             %%% first.
             AverageMinimumsImage = IlluminationImage;
-            if strcmp(SmoothingMethod,'Fit polynomial')
+            if strcmp(SmoothingMethod,'Median Filtering')
+                SmoothingMethod = 'M';
+            elseif strcmp(SmoothingMethod,'Fit Polynomial')
                 SmoothingMethod = 'P';
+            elseif strcmp(SmoothingMethod,'Sum of squares')
+                SmoothingMethod = 'S';
+            elseif strcmp(SmoothingMethod,'Square of sum')
+                SmoothingMethod = 'Q';
             end
-            FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,handles.Current.SetBeingAnalyzed);
+            FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else
             FinalIlluminationFunction = IlluminationImage;
         end

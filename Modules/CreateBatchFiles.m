@@ -257,8 +257,8 @@ end
 for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     StartImage = n;
     EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-    BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
     if strcmpi(FileChoice,'MATLAB')
+        BatchFileName = sprintf('%s%d_to_%d.m', BatchFilePrefix, StartImage, EndImage);
         BatchFile = fopen(fullfile(BatchSavePath, BatchFileName), 'wt');
         fprintf(BatchFile, 'addpath(genpath(''%s''));\n', BatchCellProfilerPath);
         fprintf(BatchFile, 'BatchFilePrefix = ''%s'';\n', BatchFilePrefix);
@@ -291,6 +291,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
         fprintf(BatchFile, 'eval([''save '',sprintf(''%%s%%d_to_%%d_OUT'', BatchFilePrefix, StartImage, EndImage), '' handles;'']);\n');
         fclose(BatchFile);
     elseif strcmpi(FileChoice,'Compiled')
+        BatchFileName = sprintf('%s%d_to_%d.mat', BatchFilePrefix, StartImage, EndImage);
         cluster.StartImage = StartImage;
         cluster.EndImage = EndImage;
         cluster.BatchFilePrefix = BatchFilePrefix;

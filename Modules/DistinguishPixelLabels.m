@@ -44,6 +44,16 @@ function handles = DistinguishPixelLabels(handles)
 %   advanced than distance from peaks to calculate probability
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
+% - Chris: consider adding another thresholding method (RidlerCalvard
+%   Global and RidlerCalvard Adaptive) in the options. I recently added
+%   this method to CPthreshold, but I didn't want to add it to this
+%   module's options yet because (1) you are probably working on it right
+%   now, and (2) because I noticed that you had not included the Background
+%   method either (maybe there's a reason, or maybe it's just not updated).
+%   Since I don't know how this module works, I don't know if it'll be good
+%   to let the user choose this method, altough it probably is. The
+%   threshold it gives is very similar to that of Otsu's, so it should be
+%   ok. Thanks. -Rodrigo
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

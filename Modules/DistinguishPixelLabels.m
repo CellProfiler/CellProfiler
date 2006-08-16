@@ -37,7 +37,6 @@ function handles = DistinguishPixelLabels(handles)
 %
 % $Revision: 1750 $
 
-% Currently being developed by Chris Gang
 % TODO
 % - eventually a more advanced phi function would work better - one that
 %   fits gaussian blobs to the 2D histogram and uses something more
@@ -45,16 +44,16 @@ function handles = DistinguishPixelLabels(handles)
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
 % - MOST TODO ITEMS ARE IN ANOTHER TEXT FILE ON CHRIS'S COMPUTER, NOT SVN'D
-% - Chris: consider adding another thresholding method (RidlerCalvard
-%   Global and RidlerCalvard Adaptive) in the options. I recently added
-%   this method to CPthreshold, but I didn't want to add it to this
-%   module's options yet because (1) you are probably working on it right
-%   now, and (2) because I noticed that you had not included the Background
-%   method either (maybe there's a reason, or maybe it's just not updated).
-%   Since I don't know how this module works, I don't know if it'll be good
-%   to let the user choose this method, altough it probably is. The
-%   threshold it gives is very similar to that of Otsu's, so it should be
-%   ok. Thanks. -Rodrigo
+%
+% - Rodrigo: I've added both RidlerCalvard options and both background
+%   options for CPthreshold to this module's settings, but in all honesty I
+%   think we'll ultimately have it default to Otsu Global and remove this
+%   option at all.  For now, for consistency, all options are available,
+%   and if I have time I'll test to see if RidlerCalvard produces
+%   significantly better (or even just significantly different) results.
+%   Thanks for letting me know.
+% ! PLEASE DELETE THIS MESSAGE AFTER YOU READ IT -- OR I'LL DELETE IT IN A
+% ! WEEK OR TWO IF YOU DON'T.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -100,6 +99,10 @@ PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %choiceVAR07 = Otsu Adaptive
 %choiceVAR07 = MoG Global
 %choiceVAR07 = MoG Adaptive
+%choiceVAR07 = Background Global
+%choiceVAR07 = Background Adaptive
+%choiceVAR07 = RidlerCalvard Global
+%choiceVAR07 = RidlerCalvard Adaptive
 ThresholdingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
@@ -387,6 +390,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% Loads and applies illumination correction matrices if specified
 if ~(strcmpi(LoadedNIllumCorrName,'none') || strcmpi(LoadedNIllumCorrName,'Do not load')...
         || strcmpi(LoadedCIllumCorrName,'none') || strcmpi(LoadedCIllumCorrName,'Do not load'))
     NucleiCorrMat = CPretrieveimage(handles,LoadedNIllumCorrName,ModuleName,'DontCheckColor','DontCheckScale');
@@ -423,10 +427,6 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
    
     %%% Gets the means in each section of the image that we believe to have
     %%% a certain pixel label
-   % NucleiFGMean = 256*mean(JLNucImage(JLNucImage > NucThreshold));
-   % NucleiBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold));
-   % CellsFGMean = 256*mean(JLCellImage(JLCellImage > CellThreshold));
-   % CellsBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold));
     NucleiBGCellBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold & JLCellImage <= CellThreshold));
     CellsBGNucBGMean = 256*mean(JLCellImage(JLCellImage <= CellThreshold & JLNucImage < NucThreshold));
     NucleiBGCellFGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold & JLCellImage > CellThreshold));
@@ -435,14 +435,14 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     CellsAllNucFGMean = 256*mean(JLCellImage(JLNucImage > NucThreshold));
     
     %%% Save the interpolated peaks to the handles structure
-    handles.Pipeline.NucleiPeak = [NucleiFGCellAllMean;CellsAllNucFGMean];%[NucleiFGMean;CellsFGMean];
-    handles.Pipeline.CellsPeak = [NucleiBGCellFGMean;CellsFGNucBGMean];%[NucleiBGMean;CellsFGMean];
-    handles.Pipeline.BackgroundPeak = [NucleiBGCellBGMean;CellsBGNucBGMean];%[NucleiBGMean;CellsBGMean];
+    handles.Pipeline.NucleiPeak = [NucleiFGCellAllMean;CellsAllNucFGMean];
+    handles.Pipeline.CellsPeak = [NucleiBGCellFGMean;CellsFGNucBGMean];
+    handles.Pipeline.BackgroundPeak = [NucleiBGCellBGMean;CellsBGNucBGMean];
     handles.Pipeline.PeakIntensityString = sprintf(['Peak Intensity Values as (DNA-X,Actin-Y)\n\nNuclei: (%.1f, %.1f)',...
         '\nCells: (%.1f, %.1f)\nBackground: (%.1f, %.1f)'],handles.Pipeline.NucleiPeak,handles.Pipeline.CellsPeak,handles.Pipeline.BackgroundPeak);
     
-    %%% Save and display 2d & both marginal histograms to pipeline (comment
-    %%% this out later!)
+    %%% Save and display 2d & both marginal histograms to pipeline
+    %%% DELETE THIS WHEN DEVELOPMENT IS COMPLETE
     % AutoHistogram = sparse(floor(255*JLNucImage+1),floor(255*JLCellImage+1),1,256,256);
     % figure, imagesc(AutoHistogram');
     % axis xy;
@@ -463,20 +463,13 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     
 end
 
-%%% Determines scaling factors to account for image-wide (or image
-%%% set-wide) bias along one axis--as in, if the range of intensity for
-%%% DNA-stained pixels is half that for actin-stained pixels, then the
-%%% messages for nuclei will be half as strong, which skews results.  These
-%%% factors are used later by phi.
-NucImageScaleFactor = 1;
-CellImageScaleFactor = 1;
+%%% Determines image-wide (or image set-wide) bias along one axis--that is,
+%%% if the range of intensity for DNA-stained pixels is half that for
+%%% actin-stained pixels, then the messages for nuclei will be half as
+%%% strong, which skews results.  Phi corrects this discrepancy by
+%%% equalizing along the axis with a smaller range of values.
 NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
 CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
-if NucleiMDiff > CellsMDiff
-    CellImageScaleFactor = NucleiMDiff / CellsMDiff;
-else
-    NucImageScaleFactor = CellsMDiff / NucleiMDiff;
-end
 
 %%% Scales both input images to 0-256, loads them into 1 3D array with a
 %%% padded one-row/col border of zeros
@@ -492,19 +485,23 @@ Messages.Left= ones(numel(LoggedPaddedImage),3);
 Messages.Up = ones(numel(LoggedPaddedImage),3);
 Messages.Down = ones(numel(LoggedPaddedImage),3);
 
-%%% TESTING PHI
+%%% TESTING PHI (delete this when dev is complete!)
 % TestIm = zeros(258,258,2);
 % TestIm(2:end-1,2:end-1,1) = repmat(1:256,256,1);
 % TestIm(2:end-1,2:end-1,2) = repmat((1:256)',1,256);
-% TestPhiVals = phi(TestIm,handles,NucImageScaleFactor,CellImageScaleFactor);
+% TestPhiDistVals = phiDist(TestIm,handles,NucleiMDiff,CellsMDiff);
 % ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 % CPfigure(handles,'Image',ThisModuleFigureNumber);
 % subplot(1,1,1);
-% CPimagesc(TestPhiVals,handles);
+% CPimagesc(TestPhiDistVals,handles);
 % axis xy;
 % xlabel('DNA staining intensity');
 % ylabel('actin staining intensity');
 % title('Nuclei Peak is red, Cell Peak is green, BG peak is blue');
+% helpdlg('waiting...');
+% uiwait;
+% TestPhiVals = phi(TestIm,handles,NucleiMDiff,CellsMDiff);
+% CPimagesc(TestPhiVals,handles);
 % error(handles.Pipeline.PeakIntensityString);
 %%% END OF TESTING
 
@@ -512,7 +509,7 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles,NucImageScaleFactor,CellImageScaleFactor);
+AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff);
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
@@ -714,7 +711,7 @@ for xind = 2:size(padim,2)-1
 end
 
 
-function arr = phi(padim,handles,nucfactor,cellfactor)
+function arr = phi(padim,handles,nucdist,celldist)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
 
@@ -725,8 +722,8 @@ arr = zeros(rows,cols,3);
 c = repmat(handles.Pipeline.CellsPeak,1,cols);
 n = repmat(handles.Pipeline.NucleiPeak,1,cols);
 b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
-sigma = (handles.Pipeline.NucleiPeak(1) - handles.Pipeline.BackgroundPeak(1)) / 4;
-sigmas = [sigma*nucfactor; sigma*cellfactor];
+scaling = [1/nucdist 0; 0 1/celldist];
+sigma = 1;
 %%% for each row, for each column within that row, calculates the
 %%% probability that a given pixel will be labeled in each of the three
 %%% categories based on only its pixel intensity values.
@@ -737,12 +734,12 @@ for yind = 1:rows
     %%% Calculates the 'distance' value based on exponential dropoff, as if
     %%% each mean represented a gaussian curve, and hardcodes the sigma
     %%% (stdev) value
-    sdB = (x-b).*repmat([nucfactor;cellfactor],1,cols);
-    sdN = (x-n).*repmat([nucfactor;cellfactor],1,cols);
-    sdC = (x-c).*repmat([nucfactor;cellfactor],1,cols);
-    disB = sum(exp(-sdB.*sdB./repmat(sigmas.^2,1,cols)));
-    disN = sum(exp(-sdN.*sdN./repmat(sigmas.^2,1,cols)));
-    disC = sum(exp(-sdC.*sdC./repmat(sigmas.^2,1,cols)));
+    sdB = scaling * (b-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    sdN = scaling * (n-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    sdC = scaling * (c-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    disB = exp(sum(-sdB.*sdB/sigma));
+    disN = exp(sum(-sdN.*sdN/sigma));
+    disC = exp(sum(-sdC.*sdC/sigma));
     %%% sums these values and normalize so that they sum to 1, making them a
     %%% legitimate description of probability.
     z=disB+disC+disN;
@@ -754,10 +751,17 @@ for yind = 1:rows
     arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);
 end
 
-function arr = phiDist(padim,handles,nucfactor,cellfactor)
+function arr = phiDist(padim,handles,nucdist,celldist)
 %%% THE OLD VERSION OF PHI
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
+nucfactor = 1;
+cellfactor = 1;
+if nucdist > celldist
+    cellfactor = nucdist / celldist;
+else
+    nucfactor = celldist / nucdist;
+end
 
 rows = size(padim,1)-2;
 cols = size(padim,2)-2;

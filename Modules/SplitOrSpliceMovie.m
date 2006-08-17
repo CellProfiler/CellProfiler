@@ -29,6 +29,13 @@ function handles = SplitOrSpliceMovie(handles)
 % For SPLIT, you can split only one movie at a time, and the full file name
 % should be entered here.
 %
+% For SPLIT, how many frames per movie do you want?
+% The way CellProfiler reads movie files is that it reads each movie frame
+% by frame.  It will open the first frame and run through the pipeline then
+% open the next and do the same.  This is done until there are no more
+% frames.  Indicatingi the number of frames can be seen as also indicating
+% the number cycles that a Pipeline will be run.
+%
 % Note: This module is run by itself in a pipeline; there is no need to use
 % a Load Images or Save Images module.
 

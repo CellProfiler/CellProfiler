@@ -4,7 +4,9 @@ function GenerateHistogramMovie(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Creates a movie of the histogram of any measurement.
+% Creates a movie of the histogram of any measurement.  This will be done
+% after specifying which output file the measurements exist in and where to
+% write the resulting .avi file.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 

@@ -414,7 +414,7 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     %%% Gets thresholds for each image
     [handles,NucThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLNucImage,NucleiImageName,ModuleName);
     [handles,CellThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLCellImage,CellsImageName,ModuleName);
-   
+    
     %%% Gets the means in each section of the image that we believe to have
     %%% a certain pixel label
     NucleiBGCellBGMean = 256*mean(JLNucImage(JLNucImage <= NucThreshold & JLCellImage <= CellThreshold));
@@ -475,7 +475,7 @@ Messages.Left= ones(numel(LoggedPaddedImage),3);
 Messages.Up = ones(numel(LoggedPaddedImage),3);
 Messages.Down = ones(numel(LoggedPaddedImage),3);
 
-%%% TESTING PHI (delete this when dev is complete!)
+%%% TESTING PHI (delete this when development is complete!)
 % TestIm = zeros(258,258,2);
 % TestIm(2:end-1,2:end-1,1) = repmat(1:256,256,1);
 % TestIm(2:end-1,2:end-1,2) = repmat((1:256)',1,256);
@@ -488,18 +488,28 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 % xlabel('DNA staining intensity');
 % ylabel('actin staining intensity');
 % title('Nuclei Peak is red, Cell Peak is green, BG peak is blue');
-% helpdlg('waiting...');
-% uiwait;
+% h=helpdlg('waiting...');
+% uiwait(h);
 % TestPhiVals = phi(TestIm,handles,NucleiMDiff,CellsMDiff);
 % CPimagesc(TestPhiVals,handles);
+% axis xy;
+% xlabel('DNA staining intensity');
+% ylabel('actin staining intensity');
+% title('Nuclei Peak is red, Cell Peak is green, BG peak is blue');
 % error(handles.Pipeline.PeakIntensityString);
 %%% END OF TESTING
+
 
 %%% Initializes the sub2ind storage, calculates all phi values (these two
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff);
+%AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff);
+%AllPhiValues = phiDist(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff);
+%%% TESTING NEW VERSION OF PHI
+CThrHigh = 256*median(JLCellImage(JLCellImage > CellThreshold));
+CThrLow = 256*median(JLCellImage(JLCellImage <= CellThreshold));
+AllPhiValues = phiR(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff,CThrLow,CThrHigh);
 
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
@@ -590,7 +600,7 @@ if handles.Current.SetBeingAnalyzed == 1 && strcmp(MouseInputMethod,'Correction 
     handles.Pipeline.(SaveHistogram) = Image;
 end
 
-handles.Pipeline.BPNoPropagation = AllPhiValues;
+handles.Pipeline.BPInitialPhiLabels = AllPhiValues;
 handles.Pipeline.BPAbsoluteBeliefMatrix = AllBeliefs;
 handles.Pipeline.BPProbableBeliefMatrix = AllNormalizedBeliefs;
 handles.Pipeline.BPAdjustedBeliefMatrix = (AllBeliefs-1)/2;
@@ -736,6 +746,68 @@ for yind = 1:rows
     probB=disB./z;
     probN=disN./z;
     probC=disC./z;
+    %%% stores the results (which are an Nx3 array) into a 1xNx3 slice of
+    %%% the results array
+    arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);
+end
+
+function arr = phiR(padim,handles,nucdist,celldist,clo,chi)
+%%% TESTING NEW VERSION OF PHI based on Ray's suggestions
+%%% note: this only uses the peaks for nuclei - a less complex method of
+%%% thresholding gives probabilities for cells
+
+%%% returns an array containing phi values (1x1x3) at each pixel in padim
+%%% except the border, as a R-1xC-1x3 array where padim is RxCx2
+
+rows = size(padim,1)-2;
+cols = size(padim,2)-2;
+arr = zeros(rows,cols,3);
+c = repmat(handles.Pipeline.CellsPeak,1,cols);
+n = repmat(handles.Pipeline.NucleiPeak,1,cols);
+b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
+scaling = [1/nucdist 0; 0 1/celldist];
+sigma = 0.5;
+%%% for each row, for each column within that row, calculates the
+%%% probability that a given pixel will be labeled in each of the three
+%%% categories based on only its pixel intensity values.
+for yind = 1:rows
+    %%% x is the array of pixel values, [DNA;actin], for each corresponding
+    %%% pixel in padim, accounting for the pad of zeros
+    x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
+    baseprobB = zeros(1,cols);
+    baseprobC = zeros(1,cols);
+    for xind = 1:cols
+        if x(2,xind) < clo
+            %%% bg chance should be 0.9, cell chance 0.1
+            baseprobB(xind) = 0.9;
+            baseprobC(xind) = 0.1;
+        elseif x(2,xind) > chi
+            %%% viceversa: cell = 0.9, bg = 0.1
+            baseprobB(xind) = 0.1;
+            baseprobC(xind) = 0.9;
+        else %%% clo < x(2,xind) < chi
+            %%% 0.5 for each, or perhaps cell=0.6, bg =0.4
+            baseprobB(xind) = 0.4;
+            baseprobC(xind) = 0.6;
+        end
+    end
+    %%% Calculates the 'distance' value based on exponential dropoff, as if
+    %%% each mean represented a gaussian curve, and hardcodes the sigma
+    %%% (stdev) value
+    sdB = scaling * (b-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    sdN = scaling * (n-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    sdC = scaling * (c-x);%.*repmat([nucfactor;cellfactor],1,cols);
+    invdisB = exp(sum(-sdB.*sdB/sigma));
+    invdisN = exp(sum(-sdN.*sdN/sigma));
+    invdisC = exp(sum(-sdC.*sdC/sigma));
+    %%% sums these values and normalize so that they sum to 1, making them a
+    %%% legitimate description of probability.
+    z=invdisB+invdisC+invdisN;
+    %probB=invdisB./z;
+    probN=invdisN./z;
+    %probC=invdisC./z;
+    probB = baseprobB.*(1-probN);
+    probC = baseprobC.*(1-probN);
     %%% stores the results (which are an Nx3 array) into a 1xNx3 slice of
     %%% the results array
     arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);

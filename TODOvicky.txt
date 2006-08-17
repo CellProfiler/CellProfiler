@@ -1,12 +1,11 @@
 TODO
-
-- (Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
-
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS ALREADY, SUMMER 2006?
 
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
 
 DONE
+
+- (Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
 
@@ -96,10 +95,4 @@ Good references:
 2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
-
-RESEARCH
-(Miura)
-
-
-PLAN
 

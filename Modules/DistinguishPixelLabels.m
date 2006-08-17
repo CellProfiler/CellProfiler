@@ -44,16 +44,6 @@ function handles = DistinguishPixelLabels(handles)
 % - it doesn't really make sense to require that the histogram or
 %   correction matrices be calculated ahead of time
 % - MOST TODO ITEMS ARE IN ANOTHER TEXT FILE ON CHRIS'S COMPUTER, NOT SVN'D
-%
-% - Rodrigo: I've added both RidlerCalvard options and both background
-%   options for CPthreshold to this module's settings, but in all honesty I
-%   think we'll ultimately have it default to Otsu Global and remove this
-%   option at all.  For now, for consistency, all options are available,
-%   and if I have time I'll test to see if RidlerCalvard produces
-%   significantly better (or even just significantly different) results.
-%   Thanks for letting me know.
-% ! PLEASE DELETE THIS MESSAGE AFTER YOU READ IT -- OR I'LL DELETE IT IN A
-% ! WEEK OR TWO IF YOU DON'T.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

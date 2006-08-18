@@ -4,23 +4,26 @@ function handles = MeasureImageIntensity(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the total image intensity by summing every pixel's intensity. The
-% user can choose to ignore pixels below or above a particular intensity
-% level.
+% Measures the total image intensity by summing every pixel's intensity,
+% but can discard some pixel values if desired.
 % *************************************************************************
+%
+% This module will sum all pixel values to measure the total image
+% intensity. The user can also choose to ignore pixels below or above a
+% particular intensity level.
 %
 % Settings:
 %
 % You may tell the module to ignore pixels above or below a pixel intensity
 % value that you specify, in the range 0 to 1 (use the CellProfiler image
-% tool 'Show pixel data' to see the pixel intensities for your images in
-% the appropriate range of 0 to 1). Leaving these values at 0 and 1 means
-% that every pixel intensity will be included in the measurement. This
-% setting is useful to adjust when you are attempting to exclude bright
-% artifactual objects: you can first set the threshold to exclude these
-% bright objects, but it may also be desirable to expand the thresholded
-% region around those bright objects by a certain distance so as to avoid a
-% 'halo' effect.
+% tool 'ShowOrHidePixelData' to see the pixel intensities for your images
+% in the appropriate range of 0 to 1). Leaving these values at 0 and 1
+% means that every pixel intensity will be included in the measurement.
+% This setting is useful to adjust when you are attempting to exclude
+% bright artifactual objects: you can first set the threshold to exclude
+% these bright objects, but it may also be desirable to expand the
+% thresholded region around those bright objects by a certain distance so
+% as to avoid a 'halo' effect.
 %
 % See also MeasureObjectIntensity.
 

@@ -24,20 +24,20 @@ function handles = SplitOrSpliceMovie(handles)
 % The files to be spliced should all be located within a single folder. You
 % can choose a subset of movies in the folder to splice by specifying
 % common text in their names. To splice all movies in the folder, you can
-% just enter the file extension, avi.
+% just enter the file extension (e.g. '.avi').
 %
 % For SPLIT, you can split only one movie at a time, and the full file name
 % should be entered here.
 %
 % For SPLIT, how many frames per movie do you want?
 % The way CellProfiler reads movie files is that it reads each movie frame
-% by frame.  It will open the first frame and run through the pipeline then
-% open the next and do the same.  This is done until there are no more
-% frames.  Indicatingi the number of frames can be seen as also indicating
-% the number cycles that a Pipeline will be run.
+% by frame. It will open the first frame and run through the pipeline then
+% open the next and do the same. This is done until there are no more
+% frames. Indicating the number of frames can be seen as also indicating
+% the number cycles that a pipeline will be run.
 %
 % Note: This module is run by itself in a pipeline; there is no need to use
-% a Load Images or Save Images module.
+% a LoadImages or SaveImages module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

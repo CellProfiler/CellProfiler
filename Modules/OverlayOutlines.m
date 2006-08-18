@@ -8,8 +8,8 @@ function handles = OverlayOutlines(handles)
 % *************************************************************************
 %
 % Outlines (in a special format produced by an identify module) can be
-% placed on any desired image (grayscale or color both work) and then this
-% resulting image can be saved using the Save Images module.
+% placed on any desired image (grayscale or color) and then this resulting
+% image can be saved using the SaveImages module.
 %
 % Settings:
 % Would you like to set the intensity (brightness) of the outlines to be
@@ -18,6 +18,8 @@ function handles = OverlayOutlines(handles)
 % If your image is quite dim, then putting bright white lines onto it may
 % not be useful. It may be preferable to make the outlines equal to the
 % maximal brightness already occurring in the image.
+%
+% See also identify modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

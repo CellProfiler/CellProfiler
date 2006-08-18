@@ -16,8 +16,8 @@ function handles = FindEdges(handles)
 % Settings:
 %
 % Method: There are several different methods that can be used to identify
-% edges. The user is able to pick between Roberts, Sobel, Prewitt, Log,
-% Canny, and Ipince. These methods all implement different techniques and
+% edges. The user is able to pick between Roberts, Sobel, Prewitt, LoG,
+% Canny, and Ratio. These methods all implement different techniques and
 % algorithms which are suited towards different images.
 %   Sobel Method - finds edges using the Sobel approximation to the
 %                  derivative. It returns edges at those points where the
@@ -31,18 +31,18 @@ function handles = FindEdges(handles)
 %   LoG Method - This method first applies a Laplacian of Gaussian filter
 %                to the image and then finds zero crossings.
 %   Canny Method - The Canny method finds edges by looking for local maxima
-%                  of the gradient of I. The gradient is calculated using
-%                  the derivative of a Gaussian filter. The method uses two
-%                  thresholds, to detect strong and weak edges, and
-%                  includes the weak edges in the output only if they are
-%                  connected to strong edges. This method is therefore less
-%                  likely than the others to be fooled by noise, and more
-%                  likely to detect true weak edges.
+%                  of the gradient of the image. The gradient is calculated
+%                  using the derivative of a Gaussian filter. The method
+%                  uses two thresholds, to detect strong and weak edges,
+%                  and includes the weak edges in the output only if they
+%                  are connected to strong edges. This method is therefore
+%                  less likely than the others to be fooled by noise, and
+%                  more likely to detect true weak edges.
 %   Ratio Method - This method first applies two smoothing filters to the
 %                  image (sum of squares and square of sums), and then
 %                  takes the ratio of the two resulting images to determine
 %                  the edges. The filter size is then very important in
-%                  this method. The larger the filter size, the larger the
+%                  this method. The larger the filter size, the thicker the
 %                  edges will be. The recommended size is 8 pixels, or
 %                  roughly half the width of the objects you wish to edge.
 % To find the best method for an image, you can compare the results of each

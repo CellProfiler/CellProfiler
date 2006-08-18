@@ -11,7 +11,7 @@ function handles = Restart(handles)
 % Restarts an analysis run where it left off. Put Restart into a new
 % pipeline with no other modules. Click Analyze images. When the dialog
 % "Choose a settings or output file" appears, select the output file of the
-% incomplete run. Click ok and the pipeline will load from the output file
+% incomplete run. Click OK and the pipeline will load from the output file
 % and analysis will continue where it left off during the partially
 % completed run.
 

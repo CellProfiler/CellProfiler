@@ -4,9 +4,9 @@ function ViewData(handles)
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
-% Displays data or measurements from a CellProfiler output file.  This is
+% Displays data or measurements from a CellProfiler output file. This is
 % displayed after the user specifies which output file and which
-% measurements to extract data from.  
+% measurements to extract data from.
 % *************************************************************************
 % Note: this tool is beta-version and has not been thoroughly checked.
 %

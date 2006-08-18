@@ -8,11 +8,12 @@ function ExportData(handles)
 % in Excel or other spreadsheet programs.
 % *************************************************************************
 %
-% Once image analysis is complete, use this data tool to select the
-% output file to extract the measurements and other information about
-% the analysis.  The data will be converted to a tab-delimited text file
-% which can be read by Excel, another spreadsheet program, or a text
-% editor.
+% Once image analysis is complete, use this data tool to select the output
+% file to extract the measurements and other information about the
+% analysis. The data will be converted to a tab-delimited text file which
+% can be read by Excel, another spreadsheet program, or a text editor.
+%
+% See also ExportDatabase data tool, ExportToDatabase module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

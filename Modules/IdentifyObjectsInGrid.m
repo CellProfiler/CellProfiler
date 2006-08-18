@@ -5,14 +5,15 @@ function handles = IdentifyObjectsInGrid(handles)
 %
 % SHORT DESCRIPTION:
 % Identifies objects within each section of a grid that has been defined by
-% the Define Grid module. 
+% the DefineGrid module.
 % *************************************************************************
 %
 % This module identifies objects that are in a grid pattern which allows
 % you to measure the objects using measure modules. It requires that you
-% create a grid in an earlier module using the Define Grid module.
+% create a grid in an earlier module using the DefineGrid module.
 %
 % Settings:
+%
 % For several of the automatic options, you will need to tell the module
 % what you called previously identified objects. Typically, you roughly
 % identify objects of interest in a previous Identify module, and the
@@ -24,17 +25,16 @@ function handles = IdentifyObjectsInGrid(handles)
 % grid compartment contains two partial objects, they will be combined
 % together as a single object.
 %
-% If the grid fails...
 % If placing the objects within the grid is impossible for some reason (the
 % grid compartments are too close together to fit the proper sized circles,
 % for example) the grid will fail and processing will be canceled unless
 % you choose to re-use the grid from the previous image cycle instead.
 %
 % Special note on saving images: Using the settings in this module, object
-% outlines can be passed along to the module Overlay Outlines and then
-% saved with the Save Images module. Objects themselves can be passed along
-% to the object processing module Convert To Image and then saved with the
-% Save Images module. This module produces several additional types of
+% outlines can be passed along to the module OverlayOutlines and then
+% saved with the SaveImages module. Objects themselves can be passed along
+% to the object processing module ConvertToImage and then saved with the
+% SaveImages module. This module produces several additional types of
 % objects with names that are automatically passed along with the following
 % naming structure: (1) The unedited segmented image, which includes
 % objects on the edge of the image and objects that are outside the size

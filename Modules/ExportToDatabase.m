@@ -1,6 +1,6 @@
 function handles = ExportToDatabase(handles)
 
-% Help for the ExportToDatabase module:
+% Help for the Export To Database module:
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
@@ -37,6 +37,7 @@ function handles = ExportToDatabase(handles)
 % but the long name can be determined from the Column_Names table.
 %
 % Settings:
+%
 % Database Type: 
 % You can choose to export MySQL or Oracle database scripts. The exported
 % data is the same for each type, but the setup files for MySQL and Oracle

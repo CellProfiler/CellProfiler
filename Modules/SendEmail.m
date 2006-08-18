@@ -9,10 +9,11 @@ function handles = SendEmail(handles)
 %
 % This module emails the user-specified recipients about the current
 % progress of the image processing as well as the expected time remaining
-% until completion.  The user can specify how often emails are sent out
+% until completion. The user can specify how often emails are sent out
 % (for example, after the first cycle, after the last cycle, after every X
-% cycles, after N cycles).  Note:  This module should be placed at the
-% point in the pipeline when you want the emails to be sent.
+% cycles, after N cycles).
+% Note: This module should be placed at the point in the pipeline when you
+% want the emails to be sent.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

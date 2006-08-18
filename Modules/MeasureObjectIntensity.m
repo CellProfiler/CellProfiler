@@ -30,7 +30,7 @@ function handles = MeasureObjectIntensity(handles)
 % image should be "compacted": that is, each number should correspond to an
 % object, with no numbers skipped. So, if some objects were discarded from
 % the label matrix image, the image should be converted to binary and
-% re-made into a label matrix image before feeding into this module.
+% re-made into a label matrix image before feeding it to this module.
 %
 % Intensity Measurement descriptions:
 %

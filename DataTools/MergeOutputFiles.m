@@ -29,8 +29,8 @@ function MergeOutputFiles(handles)
 % handles.Pipeline is a snapshot of the pipeline after the first cycle
 % completes.
 %
-% See also: CreateBatchFiles, ExportDatabase (DataTool), ExportToDatabase
-% (Module).
+% See also: CreateBatchFiles, ExportDatabase data tool, ExportToDatabase
+% module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

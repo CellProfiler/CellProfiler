@@ -13,10 +13,10 @@ function handles = ClearData(handles)
 % several files.
 %
 % After executing this option, CelProfiler will ask the user to specify the
-% output file(s) from which to remove data from.  The user will then
-% specify which data to clear.  In most cases, the data to be cleared will
-% be data providing information about an object.
-%
+% output file(s) from which to remove data from. The user will then specify
+% which data to clear. In most cases, the data to be cleared will be data
+% providing information about an object.
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

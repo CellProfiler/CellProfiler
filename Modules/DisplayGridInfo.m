@@ -4,14 +4,14 @@ function handles = DisplayGridInfo(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Displays text info on grid (i.e. gene names).
+% Displays text information on grid (i.e. gene names).
 % *************************************************************************
 %
 % This module will display text information in a grid pattern. It requires
-% that you define a grid earlier in the pipeline using the Define Grid
-% module and also load text information using the Load Text module. This
+% that you define a grid earlier in the pipeline using the DefineGrid
+% module and also load text information using the LoadText module. This
 % module allows you to load multiple sets of text data. The different sets
-% can be displayed in different colors.  The text information must have the
+% can be displayed in different colors. The text information must have the
 % same number of entries as there are grid locations (grid squares).
 %
 % See also DefineGrid and LoadText.

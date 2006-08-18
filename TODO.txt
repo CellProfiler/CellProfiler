@@ -1,5 +1,8 @@
 CellProfiler cell image analysis software development 
 
+- Rodrigo 8/18/06: MeasureImageSlope module needs documentation.
+
+- Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
 
 Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
 
@@ -10,8 +13,6 @@ Anne 7-11-06: We should check through the existing error messages in modules, an
 - Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
 
 THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stacked tifs
-
-- Anne 6-30-06: Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented." but then document it ASAP!
 
 - Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we should have "run in memory mapping mode for large images?" as a preference in Set Preferences, and then we would adjust the CPretrieveimage subfunction (or whatever it's called) to check whether we are in memory mapping mode or not in order to decide how to retrieve images. It's unclear to me whether this would involve a ridiculous amount of change - for example, would we have to change every module that stores an image in the handles to store it in a particular special way?
 
@@ -185,7 +186,7 @@ This paper has many thresholding functions implemented. We could add many of the
 IDEA 3:
 Implement Jeff Price's FIR filter idea? (Price, Hunter, Gough Cytometry 1996), although we need to mark with a disclaimer that it's for academic purposes only because for commercial use, it's patented, and also Jeff says it does not deal with clumpy objects, so I guess it's for thresholding only, it is not a complete segmentation solution. 
 IDEA 4:
-(anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging} See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
+(anne has a copy): {Sezgin, 2004 #Survey over image thresholding techniques and quantitative performance evaluation, Journal of Electronic Imaging}
 
 +++ (Requested by Anne 9-14-05) ASK RAY IF THIS IS A USEFUL THING - Implement Bob Murphy's classification algorithms into CP?  These algorithms compare images of protein localization and can tell you which compartment a protein is localized in.  See Chen, Murphy, J Biomed/Biotech 2005 87-95.
 

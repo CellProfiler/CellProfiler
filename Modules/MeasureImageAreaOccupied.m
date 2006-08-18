@@ -38,30 +38,31 @@ function handles = MeasureImageAreaOccupied(handles)
 % from one of your images, you might check whether the automatically
 % calculated threshold was unusually high or low compared to the
 % other images.
-%    There are three methods for finding thresholds automatically,
-% Otsu's method, the Mixture of Gaussian (MoG) method, and the Background
-% method. The Otsu method uses our version of the MATLAB function
-% graythresh (the code is in the CellProfiler subfunction CPthreshold). Our
-% modifications include taking into account the max and min values in the
-% image and log-transforming the image prior to calculating the threshold.
-% Otsu's method is probably better if you don't know anything about the
-% image, or if the percent of the image covered by objects varies
-% substantially from image to image. But if you know the object coverage
-% percentage and it does not vary much from image to image, the MoG can be
-% better, especially if the coverage percentage is not near 50%. Note,
-% however, that the MoG function is experimental and has not been 
-% thoroughly validated. The background function is very simple and is 
+%    There are four methods for finding thresholds automatically, Otsu's
+% method, the Mixture of Gaussian (MoG) method, the Background method, and
+% the Ridler-Calvard method. The Otsu method uses our version of the Matlab
+% function graythresh (the code is in the CellProfiler subfunction
+% CPthreshold). Our modifications include taking into account the max and
+% min values in the image and log-transforming the image prior to
+% calculating the threshold. Otsu's method is probably better if you don't
+% know anything about the image, or if the percent of the image covered by
+% objects varies substantially from image to image. But if you know the
+% object coverage percentage and it does not vary much from image to image,
+% the MoG can be better, especially if the coverage percentage is not near
+% 50%. Note, however, that the MoG function is experimental and has not
+% been thoroughly validated. The background function is very simple and is
 % appropriate for images in which most of the image is background. It finds
-% the mode of the histogram of the image, which is assumed to be the 
-% background of the image, and chooses a threshold at twice that value 
-% (which you can adjust with a Threshold Correction Factor, see below). 
-% This can be very helpful, for example, if your images vary in overall 
-% brightness but the objects of interest are always twice (or actually, 
-% any constant) as bright as the background of the image.
-%    You can also choose between global and adaptive thresholding,
-% where global means that one threshold is used for the entire image and
-% adaptive means that the threshold varies across the image. Adaptive is
-% slower to calculate but provides more accurate edge determination.
+% the mode of the histogram of the image, which is assumed to be the
+% background of the image, and chooses a threshold at twice that value
+% (which you can adjust with a Threshold Correction Factor, see below).
+% This can be very helpful, for example, if your images vary in overall
+% brightness but the objects of interest are always twice (or actually, any
+% constant) as bright as the background of the image. The Ridler-Calvard
+% method is simple and its results are often very similar to Otsu's. It
+% chooses and initial threshold, and then iteratively calculates the next
+% one by taking the mean of the average intensities of the background and
+% foreground pixels determined by the first threshold, repeating this until
+% the threshold converges.
 %
 % * Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be

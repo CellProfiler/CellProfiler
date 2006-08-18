@@ -1,5 +1,50 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Vicky 8/10/06)(Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
+
+(Vicky 8/5/06) N/A anymore THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)
+
+- (Vicky 7/28/06)(Requested by Anne 2-12-06) -In the DevDropBox, there is a ProblemOtsuPIPE  plus two images (IIllumImageRescaled.mat and whitelight_DSC00001.JPG) that yields an error in MeasureAreaImageOccupied, but only when i choose Otsu Adaptive - Otsu global seems fine.
+
+- (Vicky 7/17- 7/21/06)
+-Adaptive thresholding (OTSU) fails because when CPgraythresh is accessed by blkproc, it does not pass in handles
+-Added a subfunction that CPblkproc.  has same functions as matlab's blkproc.  The difference is that it takes three dimensional blocks.  the padded crop mask and the padded image is stored into a 3 dimensional array.  when CPblkproc evaluates the block, it will take information from both arrays.  )Anne 7-12-06 (GOES WITH Mike 7-11-06): I added a new thresholding method to CPthreshold sbufunction, called Background. I have adjusted the help in IdentifyPrimAutomatic to describe this new method, and I have added Background Global to this list of choices selectable within IdentifyPrimAutomatic. There are several things to be done, though:
+(1) I got it working only for the one combination I was using, which did not require any cropping. Make sure that using the Background Global option does the correct thing if you previously crop the image in a circle shape. When determining a threshold, CPthreshold should ignore parts of the image that have been cropped away, which have the value zero. This is why CPthreshold goes looking in the handles for an image called CropMaskBlabla. Right now, we are pretty sure CPthreshold is a bit of a mess in this regard. Some combinations of options work fine but others don't. So (see Mike's 7-11 request) this whole process needs some overhauling.
+(2) Right now Background method only works in global mode, because if you choose Background adaptive, it is not sure how to deal with a cropmask (due to the block processing).
+(3) Every module that uses thresholding will need to have this option added to its choiceVAR's and also have the help updated to include the description of this new option.
+- Mike 7-11-06 (GOES WITH Anne 7-12-06): If using a cropped image, Identify modules use the crop mask when it calls CPthreshold to throw out things that have been cropped out. For instance, if you crop out a circle, you don't want to include anything outside of the circle since this will give a bad threshold. However, this fails when you want to do Adaptive Thresholding since the image is broken in to blocks before it produces a threshold, and the crop mask is the size of the original image. We want CPthreshold to be smart about adaptive thresholding, and if there is a cropmask in the handles, it should pad that image the same way the original image is padded and then sent to CPgraythresh.
+
+
+(Vicky 7/17- 7/21/06) -Adaptive thresholding (OTSU) fails because when CPgraythresh is accessed by blkproc, it does not pass in handles
+-Added a subfunction that CPblkproc.  has same functions as matlab's blkproc.  The difference is that it takes three dimensional blocks.  the padded crop mask and the padded image is stored into a 3 dimensional array.  when CPblkproc evaluates the block, it will take information from both arrays.  
+			 
+(Vicky 7/20)- (Anne 6/12/06) - It appears that pixel size is not loaded when you load old pipelines from output files. See the developer's note for info about pixel size; it's supposed to be in handles.Settings. We should probably check all instances where pixel size is used/stored and make absolutely sure it makes sense.
+
+(Vicky 7/17-7/17)- (Requested by Anne 2-22-06) - In the Load Images module, a warning msg pops up telling you your images are using less than 1/16 the available dynamic range and asks you to consider using a rescale intensity module. Before giving this suggestion, it should check handles.ModuleNames(:) to see whether you already *have* a rescale intensity module in the pipeline and if so, do not give the warning. 
+
+(Vicky 7/11-7/14) Anne 7-11-06: Now that you are the expert on hacking image file formats!, could you see whether it is easy to extract certain information from the DIB image file header? Right now, in CPimread we have to stop processing and ask the user a few questions: pixel height and width, number of channels, bit depth, etc., but I am pretty sure this info must be stored in the image header somewhere. I guess google probably won't help much here, but possibly you (and Ray) can figure it out?
+
+-(Vicky 7/13-7/13) Anne 7-5-06: When running in 'choose which windows to display mode', the "ok" button should be uppercase. Also, have OK be the default behavior, so the user can just press enter.
+
+-(Vicky 7/7-7/11) Changed function CPimread.  Added subfunction imreadZVI, reads images of .ZVI format. Requested by Anne 7-7-06: It would be great if CellProfiler could read ZVI format images. Someone has already written an open-source java-based ZVI reader:
+http://rsb.info.nih.gov/ij/plugins/zvi-reader.html so hopefully that program would help figure out the format so we can alter CPimread to handle this image type. Notice how we handle DIB format images in CPimread for an example. I put example ZVI images in the DeveloperDropBox (two files named SNAP...)
+
+-(Vicky 7/5-7/6)(Mike 5/10/06) ClassifyObjects recently got the ability to annotate the bins created. Currently it is saved in handles.Measurements.Image but if two classify object modules are used the annotation and features would be overwritten. Make the heading of these annotations be descriptive like the measurements are.
+
+(Vicky 7/6/06-7/6/06)- (Requested 6/29/06-6/29/06) - Update DataTools/Image Tools decription for report
+
+(Vicky 6/28-6/28) Report edits in Illustrator
+
+(Vicky 6/26-6/29) Added a SelectDisplayMode option in the Set Preferences window.  Display Modes are: No windows, All windows, Specify windows.  Specify windows creates a user prompt asking for which module windows to display.- Create the option to select certain display windows to open
+
+(Vicky 6/22/06-6/23) - (Anne 4/21/06) Re-design the Export Data window
+
+(Vicky 6/21/06-6/22/06) - (Anne 4/25/06) - We should add Help > Module help to the main CellProfiler window (like DataTools and ImageTools are currently set up)
+
+(Vicky 6/19-6/21) - Pipeline to make a tiled tiff
+
+(Vicky 6/15/06-6/19/06) Combine Module - Combines up to 3 images
+
 - (Rodrigo 8/18/06) - For project, restructured CPsmooth to add two smoothing methods, made modules Smooth, CorrectIllumination_Calculate, and IdentifyPrimAutomatic compatible with new CPsmooth, add new method to FindEdges and changed some of its current options too, changed IdentifyPrimAutomatic and IdentifySecondary allow manual thresholding again, added code to IdentifyPrimBasedOnOutlines, and added module CountWorms.
 
 - (Rodrigo 8/18/06) - Added Ridler-Calvard thresholding method and updated all modules that used thresholding. This was done when I tried to work on the threshold project: See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.

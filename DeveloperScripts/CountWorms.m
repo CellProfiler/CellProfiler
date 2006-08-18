@@ -200,7 +200,6 @@ ImageToThreshold = imfill(EdgedImage,'holes');                 % Fill whatever w
 StructEl = strel('disk',round(MinWidth/2));                    % Create structure element
 ImageToThreshold = imclose(ImageToThreshold,StructEl);         % Close small gaps
 ImageToThreshold = imfill(ImageToThreshold,'holes');           % Fill again
-warning on MATLAB:intConvertOverflow
 
 %%% Get new threshold. This will make the objects a little bit wider
 [handles, Threshold] = CPthreshold(handles,ThresholdMethod,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,ImageToThreshold,ImageName,ModuleName);
@@ -282,7 +281,7 @@ if strcmp(TryOtherMethodToo,'Yes')
     TotalAreaToUse2 = floor(TotalArea2/100);
     EstimatedNumberOfObjects2 = TotalAreaToUse2/MeanAreaToUse;
 end
-
+warning on MATLAB:intConvertOverflow
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -309,6 +308,11 @@ if any(findobj == ThisModuleFigureNumber)
         subplot(2,2,2);
         CPimagesc(Objects2,handles);
         title(['Masked ' ObjectName ' by other method']);
+
+        % Text for Total Area in masked image
+        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.52 0.22 0.45 0.03],...
+            'HorizontalAlignment','left','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+            'fontsize',FontSize,'fontweight','bold','string','Other Method:','UserData',SetBeingAnalyzed);
 
         % Text for Total Area in masked image
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.52 0.22 0.45 0.03],...

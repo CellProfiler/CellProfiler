@@ -4,13 +4,14 @@ function handles = Combine(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 grayscale images and combines them into 1. Each image's
+% Takes 1 to 3 color or grayscale images and combines them into 1. Each image's
 % intensity can be adjusted independently.
 % *************************************************************************
 %
-% This module takes grayscale images as inputs, and produces a new one
+% This module takes color or grayscale images as inputs, and produces a new one
 % which results from the weighted average of the pixel intensities of the
-% input images. The average is found by taking the product of each weight
+% input images. All the images to be combined must be all either grayscale
+% or color.  The average is found by taking the product of each weight
 % and the intensity of its corresponding image, adding the products, and 
 % then dividing the result by the sum of the weights. By taking the 
 % weighted average of the pixel intensities, the overall intensity of the 

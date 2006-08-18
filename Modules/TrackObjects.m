@@ -160,7 +160,7 @@ CStringOfMeas = cellstr(num2str((CurrLabels)'));
 
 %Create colored image
 ColoredImage = LabelByColor(handles.Pipeline.TrackObjects.(ObjectName), CurrLabels);
-[ColoredImage,handles] = CPlabel2rgb(handles, ColoredImage);
+[ColoredImage,handles] = TrackCPlabel2rgb(handles, ColoredImage);
 
 if strcmp(DisplayType, 'Grayscale and Number')
     DisplayImage = CurrSegImage;
@@ -440,3 +440,22 @@ for k = 1:NumberOfObjects
     [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
     ColoredImage(sub2ind([sr sc],r,c)) = CurrLabel(k);
 end
+
+function [im, handles] = TrackCPlabel2rgb(handles, image)
+    numregion = double(max(image(:)));
+    cmap = eval([handles.Preferences.LabelColorMap '(255)']);
+    try
+        if numregion>length(handles.newcmap)
+            newregions = numregions-length(handles.newcmap);
+            newindex = round(rand(1,newregions)*255);
+            index = [index newindex];
+            handles.newcmap = cmap(index,:,:);
+        end
+    catch
+        S = rand('state');
+        rand('state', 0);
+        index = round(rand(1,numregion)*255);
+        handles.Pipeline.TrackObjects.Colormap = cmap(index,:,:);
+        rand('state', S);
+    end
+    im = label2rgb(image, handles.Pipeline.TrackObjects.Colormap, 'k', 'noshuffle');

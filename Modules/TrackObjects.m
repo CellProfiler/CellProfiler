@@ -91,7 +91,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu
 TrackMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For objects to be tracked by Intensity of Distance, select pixel radius where objects within the area will be evaluated.
+%textVAR03 = For objects to be tracked by Size or Intensity, select pixel vicinity where objects within the area will be evaluated.
 %defaultVAR03 = 100
 PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 

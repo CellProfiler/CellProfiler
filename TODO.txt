@@ -1,5 +1,11 @@
 CellProfiler cell image analysis software development 
 
+- (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS ALREADY, SUMMER 2006?
+
+- (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
+
+- (Vicky 8/18/06) - The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. 
+
 - Rodrigo 8/18/06: MeasureImageSlope module needs documentation.
 
 - Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.

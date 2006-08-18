@@ -1,14 +1,18 @@
 CURRENTLY WORKING ON:
 
-Update Help
-Project: make identifybasedonoutlines module to properly identify c elegans
+- Nothing
 
 OTHER TODO's:
 
-
-
+- Nothing
 
 DONE (committed):
+
+- (Rodrigo 8/18/06) - For project, restructured CPsmooth to add two smoothing methods, made modules Smooth, CorrectIllumination_Calculate, and IdentifyPrimAutomatic compatible with new CPsmooth, add new method to FindEdges and changed some of its current options too, changed IdentifyPrimAutomatic and IdentifySecondary allow manual thresholding again, added code to IdentifyPrimBasedOnOutlines, and added module CountWorms.
+
+- (Rodrigo 8/18/06) - Added Ridler-Calvard thresholding method and updated all modules that used thresholding. This was done when I tried to work on the threshold project: See also Ridler-Calvard thresholding: I heard about it at a meeting in relation to Otsu's method and it's unclear whether it has any advantages.
+
+- (UROPs 8/18/06) (Requested by Anne 6-30-06): Find Edges, MaskImage, CalculateMath, Combine module need documentation and help. Check all the data tools, image tools, and modules to see that there is at least some documentation - sometimes we copy a new module from an old one, so there might be help there, BUT it's from the OLD MODULE! In these cases, we should delete the help and say "Sorry, this module is undocumented." but then document it ASAP!
 
 - (Rodrigo 8/14/06) (Requested by Jun 8-12-06) - In CPplotmeasurement.m: Immediately after each call to CPgetfeature, there should be a line saying "if isempty(ObjectTypename),return,end". This stops processing once the user has clicked cancel while choosing a feature in the threshold data mode of the PlotMeasurements data tool. Also, in the text of the help button labeled '?', delete the last sentence saying that only the Y axis will be thresholded while in scatterplot2 mode. This is not accurate because all measurements get thresholded in all graphing styles.
 
@@ -116,19 +120,13 @@ DONE (not yet committed):
 
 NOTICED BUGS AND NEW IDEAS:
 
-IdentifySecondary Display: the word 'objects' on the bottom is not displayed correctly.
-MeasureIntensityImage Display: information appears over one of the displayed images. Also, RGB bad.
-MeasureObjectAreaShape Display: "Cytoplasm" isnt displayed entirely. Also, not correct columns.
-MeasureObjectIntensity Display: Same as above
-MeasureTexture Display: format is not consistent - fucks up - speed
-OverlayOutlines Display: cannot see a button or axes. RGB bad.
-Crop Display: RGB bad.
-CPcd help error
-Can we have the option to change preferences without saving them, whether it be in CellProfilerPreferences or in a user-specified .mat file.
-DisplayHistogram, DisplayImageHistogram should be fixed.
-bug in ReplaceTextInModules (creates CellProfiler.m in folder)
-Merge CalculateRatios and Calculate Ratios Data Tool
-enter a threshold manually?
-
-Said - InteractiveZoom - when you double click different images it gives an error.
-Said - Set Preferences doesnt remember current settings
+-IdentifySecondary Display: the word 'objects' on the bottom is not displayed correctly.
+-MeasureIntensityImage Display: information appears over one of the displayed images. Also, RGB bad.
+-MeasureObjectAreaShape Display: "Cytoplasm" isnt displayed entirely. Also, not correct columns.
+-MeasureObjectIntensity Display: Same as above
+-MeasureTexture Display: format is not consistent (if more than 3 things) - speed could be improved by not creating so many uicontrols (very slow), but creating one with a big string instead (like the in the status details window). Also, instead of creating uicontrols that will just cover the old ones in new cycles, its better to just replace the string.
+-OverlayOutlines Display: cannot see a button or axes. RGB bad.
+-Crop Display: RGB bad.
+-CPcd help error
+-Can we have the option to change preferences without saving them, whether it be in CellProfilerPreferences or in a user-specified .mat file.
+-Merge CalculateRatios and Calculate Ratios Data Tool

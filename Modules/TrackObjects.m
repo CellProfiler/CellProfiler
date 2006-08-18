@@ -112,6 +112,14 @@ DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR06 = popupmenu
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
+%textVAR07 = Do you want to calculate stats? (THIS OPTION IS NOT COMPLETE
+%AT THE MOMENT)
+%defaultVAR07 = No
+%choiceVAR07 = Yes
+%choiceVAR07 = No
+%inputtypeVAR07 = popupmenu
+Stats = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -152,9 +160,48 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
             ObjectsToEval = FindObjectsToEval(PrevLocations, CurrLocations, PixelRadius);
             CurrLabels = CompareImages( handles.Pipeline.TrackObjects.(ObjectName), ObjectsToEval, ImageName, TrackMethod, PixelRadius, PrevLabels);
     end
+    
+    if strcmp(Stats, 'Yes')
+        PrevNumObj = max(PrevSegImage(:));
+        CurrSegObj = max(CurrSegImage(:));
+        if PrevNumObj < CurrSegObj
+            CellsEntered = CurrSegObj - PrevNumObj;
+            handles.TrackObjects.(ObjectName).CellsEnteredCount = CellsEntered + handles.TrackObjects.(ObjectName).CellsEnteredCount;
+        elseif PrevNumObj > CurrSegObj
+            CellsExited = PrevNumObj - CurrSegObj;
+            handles.TrackObjects.(ObjectName).CellsExitedCount = CellsExited + handles.TrackObjects.(ObjectName).CellsExitedCount;
+        end
+        
+        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            for i = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize)
+                a = find(CurrLabels == i);
+                if isempty(a)
+                    LastIsolatedObjSize(i) = NaN;
+                else
+                    [IsolatedObject, border]=IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, a);
+                    LastIsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
+                end
+            end
+            %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%%
+            FirstIsolatedObjSize = handles.Pipeline.TrackObject.(ObjectName).Stats.FirstObjSize;
+            ObjectSizeChange = FirstIsolatedObjSize./LastIsolatedObjSize;
+        end
+    end
+    
 else
     CurrLabels = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations);
+    if strcmp(Stats, 'Yes')
+        handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsEnteredCount = 0;
+        handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsExitedCount = 0;
+        
+        for i = 1:max(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage(:))
+            [IsolatedObject, border] = IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, i);
+            IsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
+        end
+        handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize = IsolatedObjSize;      
+    end
 end
+   
 
 CStringOfMeas = cellstr(num2str((CurrLabels)'));
 

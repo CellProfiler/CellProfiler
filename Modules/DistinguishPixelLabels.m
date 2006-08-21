@@ -459,63 +459,62 @@ AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff,SigmaValue,C
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
 PsiFunction = handles.Pipeline.Psi;
-% for i=1:NumberOfProps
-%     Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-% end
-% drawnow
-
-error('Warning: this module''s regular functionality has been disabled for testing how much rotation-induced hysteresis affects the results. Try an SVN update to get the newer, working version once Chris has deleted this.');
-%%% TEMPORARY CHANGES FOR ROTATION TESTING -- THIS WILL BE DELETED!
-for i = 1:NumberOfProps
-    Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str((i-1)*4+1)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
-    drawnow
-    Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str((i-1)*4+2)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
-    drawnow
-    Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str((i-1)*4+3)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
-    drawnow
-    Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str((i-1)*4+4)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
+for i=1:NumberOfProps
+    Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
 end
+drawnow
 
-%%% Calculates beliefs based on these messages, stores them as normalized
-%%% double values (where each message vector sums to 1) and as logicals,
-%%% where each vector contains one 1 and two 0's
-% AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
-% AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
-% LPISize = size(LoggedPaddedImage);
-% x = 2:LPISize(2)-1;
-% for yind = 2:LPISize(1)-1;
-%     RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
-%         Messages.Down(IndicesArray(yind-1,x),:)' .* ...
-%         Messages.Left(IndicesArray(yind,x+1),:)' .* ...
-%         Messages.Right(IndicesArray(yind,x-1),:)' .* ...
-%         permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
-%     NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
-%     [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
-%     for i=1:3
-%         AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
+% %%% TEMPORARY CHANGES FOR ROTATION TESTING -- THIS WILL BE DELETED!
+% for i = 1:NumberOfProps
+%     Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+%     if i == NumberOfProps
+%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+1)];
+%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
 %     end
-%     AllBeliefs(yind-1,x-1) = MaxIndices;
+%     drawnow
+%     Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+%     if i == NumberOfProps
+%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+2)];
+%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+%     end
+%     drawnow
+%     Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+%     if i == NumberOfProps
+%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+3)];
+%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+%     end
+%     drawnow
+%     Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+%     if i == NumberOfProps
+%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+4)];
+%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+%     end
 % end
+
+%% Calculates beliefs based on these messages, stores them as normalized
+%% double values (where each message vector sums to 1) and as logicals,
+%% where each vector contains one 1 and two 0's
+AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
+AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
+LPISize = size(LoggedPaddedImage);
+x = 2:LPISize(2)-1;
+for yind = 2:LPISize(1)-1;
+    RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
+        Messages.Down(IndicesArray(yind-1,x),:)' .* ...
+        Messages.Left(IndicesArray(yind,x+1),:)' .* ...
+        Messages.Right(IndicesArray(yind,x-1),:)' .* ...
+        permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
+    NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
+    [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
+    for i=1:3
+        AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
+    end
+    AllBeliefs(yind-1,x-1) = MaxIndices;
+end
 
 %%% Creates binary belief matrices for each pixel label
 FinalBinaryNuclei = zeros(size(AllBeliefs));

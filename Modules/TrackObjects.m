@@ -68,6 +68,11 @@ function handles = TrackObjects(handles)
 %   Joo Han Chang
 %   Colin Clarke
 %   Mike Lamprecht
+%   Peter Swire
+%   Rodrigo Ipince
+%   Vicky Lay
+%   Jun Liu
+%   Chris Gang
 %
 % Website: http://www.cellprofiler.org
 %

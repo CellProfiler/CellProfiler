@@ -14,7 +14,7 @@ Mike 8-7-06: If you filter then classify objects on subset and no cells present 
 
 Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle!
 
-- Rodrigo 7/24/06: We should prevent CellProfiler from opening again if its already open. Some of it functions stop working when this happens. It seems this was corrected before (10/05), but for some reason it's not working.
+- Rodrigo 7/24/06: We should prevent CellProfiler from opening again if its already open. Some of it functions stop working when this happens. It seems this was corrected before (10/05), but for some reason it's not working. Note (Anne 8-21-06) it seems to work fine on my computer (Mac), perhaps this is a PC-specific problem - can someone check on PC and Unix platforms?
 
 - Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
 
@@ -88,8 +88,6 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 PROJECTS, MOSTLY VISION/IMAGE ANALYSIS-RELATED:
 -----------------------------------------------
-+++ (Requested by Anne: WOULD BE *REALLY* HELPFUL FOR OUR WORM PROJECTS, WHICH START IN AUGUST!) - Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5
-
 ++ (Anne 5/10/06) - IMPORTANT - The propagate algorithm works very nicely in our IdSec module. We should add this as an option for the IdPrimAutomatic module (It would be a new method for finding the dividing lines between clumped objects, along with Intensity and Distance.)
 
 ++ (Requested by Anne 1-17-06) - We should make a new module to calculate the KS statistic for every image set. It would require notifying the software which images are controls (they can load this information using LoadText, as is done for the CalculateStatistics module), because this statistic compares the distribution of individual cell measures from each image to the distribution of individual cell measures from the control image(s). Once finished, we should see whether the calculated KS statistic produces a better Z' score than the 'percent above threshold' method for the BioImage cyto-nuc translocation assay. References: Chakravart LaR: Handbook of methods of applied statistics. Vol 1New york: John wiley, 1967:392-394; also Giuliano, Chen, Taylor, J Biomol Screening 2004; 9:557-568. See also Wilson, Si, Thompson, Smellie, Ashwell et al, J Biomol Screen 2005 or 2006 "Identification of a small molecule that induces mitotic arrest using s simplified high-content screening assay and data analysis method." because this has an example where KS statistics are calculated between several control images and this value is subtracted from the KS values for each image. Also, Smellie J Chem Inf Model 2005 or 2006.
@@ -165,7 +163,7 @@ estimate with no indication of its accuracy. - Ray
 * See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
 * Xiong Cytometry 2006 might be the best; C++ code available from authors.
 
-+++ (Requested by Anne) - Particle tracking over time module. At the very least, (Ray 7-6-06), we should perhaps implement something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary. Good references:
++++ (Requested by Anne - Vicky began this project by making the TrackObjects module) - Particle tracking over time module. At the very least, (Ray 7-6-06), we should perhaps implement something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary. Good references:
 1 - Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
 2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.

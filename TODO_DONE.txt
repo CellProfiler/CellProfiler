@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
++++ Rodrigo did this as his main project: (Requested by Anne: WOULD BE *REALLY* HELPFUL FOR OUR WORM PROJECTS, WHICH START IN AUGUST!) - Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5
+
 - (Vicky 8/10/06)(Requested by Anne 10-25-05) - ProcessOutlines (in DeveloperScripts) needs to be updated:  We need to rename this module IdentifyPrimBasedOnOutlines. State in the help whether the incoming image should be black background with white outlines or vice versa. We need to make this like the other Primary modules, which I think means we need to add fields like 'Edited' in the handles.Pipeline. I think we also need to produce fields in the handles.Measurements structure indicating Object count and maybe location too. See IdentifyPrimAutomatic to make this one consistent.  Doublecheck the IdentifyPrimManual to be sure it's consistent while we are at it.
 
 (Vicky 8/5/06) N/A anymore THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - When looking at DIB images, the window that asks for the dimensions should remember the last dimensions entered (store it in handles.Current)

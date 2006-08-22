@@ -134,26 +134,67 @@ if strcmpi(GridChoice,'Yes')
         CPerrordlg('The object you have chosen does not have Area measurements.');
     end
 
+    Fields=fieldnames(handles.Measurements.Image);
+    GridList={};
+    for i = 1:length(Fields)
+        if strcmp(Fields{i}(end-3:end),'Info')
+            GridList{end+1}=Fields{i};
+        end
+    end
+
+    if ~isempty(GridList)
+        Selection = listdlg('ListString',GridList,'ListSize', [300 200],...
+            'Name','Select Grid',...
+            'PromptString','Select grid to base grid correction on',...
+            'CancelString','Cancel',...
+            'SelectionMode','single');
+        GridToBaseCorrectionOn=handles.Measurements.Image.(GridList{Selection}){1};
+        GridInfo.XLocationOfLowestXSpot = GridToBaseCorrectionOn(1);
+        GridInfo.YLocationOfLowestYSpot = GridToBaseCorrectionOn(2);
+        GridInfo.XSpacing = GridToBaseCorrectionOn(3);
+        GridInfo.YSpacing = GridToBaseCorrectionOn(4);
+        GridInfo.Rows = GridToBaseCorrectionOn(5);
+        GridInfo.Columns = GridToBaseCorrectionOn(6);
+        GridInfo.TotalHeight = GridToBaseCorrectionOn(7);
+        GridInfo.TotalWidth = GridToBaseCorrectionOn(8);
+        if GridToBaseCorrectionOn(9) == 1
+            GridInfo.LeftOrRight = 'Left';
+        else
+            GridInfo.LeftOrRight = 'Right';
+        end
+        if GridToBaseCorrectionOn(10) == 1
+            GridInfo.TopOrBottom = 'Top';
+        else
+            GridInfo.TopOrBottom = 'Bottom';
+        end
+        if GridToBaseCorrectionOn(11) == 1
+            GridInfo.RowsOrColumns = 'Rows';
+        else
+            GridInfo.RowsOrColumns = 'Columns';
+        end
+        Grid = CPmakegrid(GridInfo);
+        VertLinesX = Grid.VertLinesX;
+        HorizLinesY = Grid.HorizLinesY;
+        EntireGridRows = GridToBaseCorrectionOn(5);
+        EntireGridCols = GridToBaseCorrectionOn(6);
+    else
+        error('Can''t do grid correction.');
+    end
+
     AcceptableAnswers = 0;
     while AcceptableAnswers == 0
-        Prompts{1} = 'How many rows in the entire grid?';
-        Prompts{2} = 'How many columns in the entire grid?';
-        Prompts{3} = 'How many rows in the sub-grid?';
-        Prompts{4} = 'How many columns in the sub-grid?';
+        Prompts{1} = 'How many rows in the sub-grid?';
+        Prompts{2} = 'How many columns in the sub-grid?';
 
-        Defaults{1} = '40';
-        Defaults{2} = '140';
-        Defaults{3} = '10';
-        Defaults{4} = '10';
+        Defaults{1} = '10';
+        Defaults{2} = '10';
 
-        Answers = inputdlg(Prompts(1:4),'Export Locations Settings',1,Defaults(1:4),'on');
+        Answers = inputdlg(Prompts(1:2),'Export Locations Settings',1,Defaults(1:2),'on');
 
-        EntireGridRows = round(str2double(Answers{1}));
-        EntireGridCols = round(str2double(Answers{2}));
-        SubGridRows = round(str2double(Answers{3}));
-        SubGridCols = round(str2double(Answers{4}));
+        SubGridRows = round(str2double(Answers{1}));
+        SubGridCols = round(str2double(Answers{2}));
 
-        if isempty(EntireGridRows) || isempty(EntireGridCols) || isempty(SubGridRows) || isempty(SubGridCols)
+        if isempty(SubGridRows) || isempty(SubGridCols)
             uiwait(CPwarndlg('You must enter integers for all grid values.'));
             continue
         end
@@ -176,22 +217,44 @@ if strcmpi(GridChoice,'Yes')
             SmallYLocations = OldYLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
             SmallAreas = OldObjectAreas((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
 
+            YGridLines=HorizLinesY(1,((i-1)*SubGridRows+1):(i*SubGridRows));
+            XGridLines=VertLinesX(1,((j-1)*SubGridCols+1):(j*SubGridCols));
+            NormedXVals=[];
+            NormedYVals=[];
             for a = 1:SubGridRows
-                Yvals = SmallYLocations(a,:);
-                Ysize = SmallAreas(a,:);
-                if length(Yvals(Ysize > 1)) > 0
-                    Yvals(Ysize == 1) = sum(Yvals(Ysize > 1))/length(Yvals(Ysize > 1));
+                for b = 1:SubGridCols
+                    Yval = SmallYLocations(a,b);
+                    Xval = SmallXLocations(a,b);
+                    SpotArea = SmallAreas(a,b);
+                    if SpotArea > 1
+                        NormedXVals(end+1)=Xval-XGridLines(b);
+                        NormedYVals(end+1)=Yval-YGridLines(a);
+                    end
                 end
-                NewYvals(a,:) = Yvals;
+            end
+
+            DifferenceXVal=abs(NormedXVals-mean(NormedXVals));
+            DifferenceYVal=abs(NormedYVals-mean(NormedYVals));
+            SortedDifferenceXVal=sort(DifferenceXVal);
+            SortedDifferenceYVal=sort(DifferenceYVal);
+            NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2)))));
+            NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2)))));
+            DifferenceXVal=abs(NormedXVals-mean(NewNormedXVals));
+            DifferenceYVal=abs(NormedYVals-mean(NewNormedYVals));
+            SortedDifferenceXVal=sort(DifferenceXVal);
+            SortedDifferenceYVal=sort(DifferenceYVal);
+            NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2)))));
+            NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2)))));
+
+            FinalXVal=mean(NewNormedXVals);
+            FinalYVal=mean(NewNormedYVals);
+
+            for a = 1:SubGridRows
+                NewYvals(a,1:SubGridRows) = YGridLines(a)+FinalYVal;
             end
 
             for b = 1:SubGridCols
-                Xvals = SmallXLocations(:,b);
-                Xsize = SmallAreas(:,b);
-                if length(Xvals(Xsize > 1)) > 0
-                    Xvals(Xsize == 1) = sum(Xvals(Xsize > 1))/length(Xvals(Xsize > 1));
-                end
-                NewXvals(:,b) = Xvals;
+                NewXvals(1:SubGridCols,b) = XGridLines(b)+FinalXVal;
             end
 
             NewXLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols)) = NewXvals;

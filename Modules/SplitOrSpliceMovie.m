@@ -167,6 +167,6 @@ if handles.Current.SetBeingAnalyzed == 1
                 return
             end
         end
-        close(NewAviMovie)
+        close(NewAviMovie);
     end
 end

@@ -8,7 +8,12 @@ function handles = DistinguishPixelLabels(handles)
 % using belief propagation.
 % *************************************************************************
 %
-% BETA VERSION
+% By using the belief propagation algorithm, finds a more intelligent
+% labeling of each pixel in the field of view as nucleus, cell, or
+% background.  Use this module before the IdentifyPrimAutomatic and
+% IdentifySecondary modules, and instead of selecting an automatic
+% threshold, enter the name of the binary images produced in this module.
+% MORE HELP TO COME LATER
 %
 % See also IdentifyPrimAutomatic, IdentifySecondary
 
@@ -459,62 +464,60 @@ AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff,SigmaValue,C
 %%% Runs through the belief propagation algorithm, iterating in each
 %%% direction several times
 PsiFunction = handles.Pipeline.Psi;
-for i=1:NumberOfProps
-    Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-end
-drawnow
-
-% %%% TEMPORARY CHANGES FOR ROTATION TESTING -- THIS WILL BE DELETED!
-% for i = 1:NumberOfProps
-%     Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-%     if i == NumberOfProps
-%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+1)];
-%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-%     end
-%     drawnow
-%     Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-%     if i == NumberOfProps
-%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+2)];
-%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-%     end
-%     drawnow
-%     Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-%     if i == NumberOfProps
-%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+3)];
-%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-%     end
-%     drawnow
-%     Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-%     if i == NumberOfProps
-%         [AllNormalizedBeliefs, AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-%         fieldname = ['BeliefsAfterPass',int2str((i-1)*4+4)];
-%         handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-%     end
+% for i=1:NumberOfProps
+%     Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
 % end
+% drawnow
 
-%% Calculates beliefs based on these messages, stores them as normalized
-%% double values (where each message vector sums to 1) and as logicals,
-%% where each vector contains one 1 and two 0's
-AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
-AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
-LPISize = size(LoggedPaddedImage);
-x = 2:LPISize(2)-1;
-for yind = 2:LPISize(1)-1;
-    RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
-        Messages.Down(IndicesArray(yind-1,x),:)' .* ...
-        Messages.Left(IndicesArray(yind,x+1),:)' .* ...
-        Messages.Right(IndicesArray(yind,x-1),:)' .* ...
-        permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
-    NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
-    [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
-    for i=1:3
-        AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
+
+%%% NORMAL FUNCTIONALITY DISABLED FOR TESTING!
+for i = 1:NumberOfProps
+    Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+    if i == NumberOfProps
+        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+        fieldname = ['BeliefsAfterPass',int2str(1)];
+        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
     end
-    AllBeliefs(yind-1,x-1) = MaxIndices;
+    Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+    if i == NumberOfProps
+        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+        fieldname = ['BeliefsAfterPass',int2str(2)];
+        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+    end
+    Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+    if i == NumberOfProps
+        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+        fieldname = ['BeliefsAfterPass',int2str(3)];
+        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+    end
+    Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+    if i == NumberOfProps
+        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+        fieldname = ['BeliefsAfterPass',int2str(4)];
+        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+    end
 end
+
+% %% Calculates beliefs based on these messages, stores them as normalized
+% %% double values (where each message vector sums to 1) and as logicals,
+% %% where each vector contains one 1 and two 0's
+% AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
+% AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
+% LPISize = size(LoggedPaddedImage);
+% x = 2:LPISize(2)-1;
+% for yind = 2:LPISize(1)-1;
+%     RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
+%         Messages.Down(IndicesArray(yind-1,x),:)' .* ...
+%         Messages.Left(IndicesArray(yind,x+1),:)' .* ...
+%         Messages.Right(IndicesArray(yind,x-1),:)' .* ...
+%         permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
+%     NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
+%     [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
+%     for i=1:3
+%         AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
+%     end
+%     AllBeliefs(yind-1,x-1) = MaxIndices;
+% end
 
 %%% Creates binary belief matrices for each pixel label
 FinalBinaryNuclei = zeros(size(AllBeliefs));
@@ -707,24 +710,25 @@ for yind = 1:rows
     %%% x is the array of pixel values, [DNA;actin], for each corresponding
     %%% pixel in padim, accounting for the pad of zeros
     x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
-    %%% Finds the locations (single-subscript indexing) where actin stain
-    %%% intensities are above, below, and between means of each half
-    lowestlocs = find(x(2,:) < clo);
-    highestlocs = find(x(2,:) > chi);
-    restoflocs = find(x(2,:) > clo & x(2,:) < chi);
+    % %%% Finds the locations (single-subscript indexing) where actin stain
+    % %%% intensities are above, below, and between means of each half
+    % lowestlocs = find(x(2,:) < clo);
+    % highestlocs = find(x(2,:) > chi);
+    % restoflocs = find(x(2,:) > clo & x(2,:) < chi);
     
     %%% Calculates probabilities of each label by finding distances, fixing
     %%% the actin staining data according to secondary means, and putting
     %%% this into a gaussian probability function for each label
     sdB = scaling * (b-x);
     sdN = scaling * (n-x);
-    sdC = scaling * (c-x);
-    sdC(2,lowestlocs) = 0.9;
-    sdC(2,highestlocs) = 0.1;
-    sdC(2,restoflocs) = 0.4;
-    sdB(2,lowestlocs) = 0.1;
-    sdB(2,highestlocs) = 0.9;
-    sdB(2,restoflocs) = 0.6;
+    sdC = actinsc * scaling * (c-x);
+    % sdC = scaling * (c-x);
+    % sdC(2,lowestlocs) = 0.9;
+    % sdC(2,highestlocs) = 0.1;
+    % sdC(2,restoflocs) = 0.4;
+    % sdB(2,lowestlocs) = 0.1;
+    % sdB(2,highestlocs) = 0.9;
+    % sdB(2,restoflocs) = 0.6;
     invdisB = exp(sum(-sdB.*sdB/sigma));
     invdisN = exp(sum(-sdN.*sdN/sigma));
     invdisC = exp(sum(-sdC.*sdC/sigma));
@@ -744,7 +748,7 @@ function [allnormbeliefs, allbeliefs] = CalculateBeliefs(sizeOrig,sizePadded,ind
 %%% Calculates beliefs based on the current state of messages (at any
 %%% passing moment) and returns them as an array of 1-2-3 and as their
 %%% final probabilities
-
+ 
 allnormbeliefs = zeros(sizeOrig(1),sizeOrig(2),3);
 allbeliefs = zeros(sizeOrig(1),sizeOrig(2));
 x = 2:sizePadded(2)-1;

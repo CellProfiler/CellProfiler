@@ -13,7 +13,21 @@ function handles = DistinguishPixelLabels(handles)
 % background.  Use this module before the IdentifyPrimAutomatic and
 % IdentifySecondary modules, and instead of selecting an automatic
 % threshold, enter the name of the binary images produced in this module.
-% MORE HELP TO COME LATER
+% MORE HELP TO BE WRITTEN LATER
+%
+% The actin scaling factor input variable will be used to scale the
+% distances between the actin peak and the real pixels by 1/input.  This
+% will be inverted again for the probabilities; thus, a higher number makes
+% the probabilities of actin foreground and actin background more powerful
+% relative to the probabilities from the DNA staining.
+%
+% With Testing Mode turned on, there will be 4 files saved to the
+% handles.Pipeline structure that are the beliefs that would be calculated
+% after each directional message passing during the final propagation step.
+% These are saved in handles.Pipeline.BeliefsAfterPass1 (and 2-4), and can
+% be accessed by other modules by selecting "Other..." and typing in
+% BeliefsAfterPass1 (or 2-4).  Otherwise, beliefs are only calculated once
+% (meaning that the module will run faster).
 %
 % See also IdentifyPrimAutomatic, IdentifySecondary
 
@@ -113,26 +127,36 @@ NumberOfPropagationsString = char(handles.Settings.VariableValues{CurrentModuleN
 %defaultVAR11 = 0.5
 SigmaValueString = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = For NUMERIC, enter the coordinates for the peak in nucleus, cell, and background pixel intensity values as (NucleiX,NucleiY,CellsX,CellsY,BGX,BGY).
-%defaultVAR12 = 100,100,150,150,200,200
-AllPeakInputValuesString = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%textVAR12 = Enter a positive scaling factor for enhancing the actin messages in the phi subfunction.
+%defaultVAR12 = 2
+ActinScalingFactorString = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
-%choiceVAR13 = Histogram
-%choiceVAR13 = Correction Matrices
-MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
+%textVAR13 = For NUMERIC, enter the coordinates for the peak in nucleus, cell, and background pixel intensity values as (NucleiX,NucleiY,CellsX,CellsY,BGX,BGY).
+%defaultVAR13 = 100,100,150,150,200,200
+AllPeakInputValuesString = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
-%infotypeVAR14 = imagegroup
-LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%textVAR14 = For MOUSE, you must either load two illumination correction matrices and calculate the 2-dimensional intensity histogram OR load the histogram file you saved earlier.  If you don't load a histogram, one will be calculated for all input cell and nucleus images during this module's first cycle.  Choose which file to load:
+%choiceVAR14 = Histogram
+%choiceVAR14 = Correction Matrices
+MouseInputMethod = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu
 
-%textVAR15 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
-%defaultVAR15 = Do not save
-SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%textVAR15 = For MOUSE and HISTOGRAM, what did you call the 2-dimensional intensity histogram file? (Use LoadSingleImage to load a .mat file containing a variable called "Image".)
+%infotypeVAR15 = imagegroup
+LoadedHistogramName = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
 
-%%%VariableRevisionNumber = 6
+%textVAR16 = For MOUSE and CORRECTION MATRICES, what do you want to call the histogram calculated using all images and these correction matrices (optional)?
+%defaultVAR16 = Do not save
+SaveHistogram = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+
+%textVAR17 = Do you want to run in test mode where beliefs are calculated after each direction of message passing during the final propagation? (see help for details)
+%choiceVAR17 = No
+%choiceVAR17 = Yes
+TestingMode = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu
+
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -141,7 +165,8 @@ drawnow
 
 %%% Parses user input for the number of propagations and the sigma value
 NumberOfProps = str2num(NumberOfPropagationsString); %#ok Ignore MLint
-SigmaValue = str2num(SigmaValueString); %#ok
+handles.Pipeline.SigmaValue = str2num(SigmaValueString); %#ok
+handles.Pipeline.ActinScalingFactor = str2num(ActinScalingFactorString); %#ok
 
 %%% If this is the first image set (and only then), displays or
 %%% creates the 2-Dimensional histogram to interactively find the peak
@@ -433,13 +458,13 @@ end
 %%% actin-stained pixels, then the messages for nuclei will be half as
 %%% strong, which skews results.  Phi corrects this discrepancy by
 %%% equalizing along the axis with a smaller range of values.
-NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
-CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
+handles.Pipeline.NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
+handles.Pipeline.CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
 
 %%% Finds secondary medians for each half of the actin stained image
 %%% (DOESN'T WORK WITH MANUAL PEAK SELECTION)
-CThrHigh = 256*median(JLCellImage(JLCellImage > CellThreshold));
-CThrLow = 256*median(JLCellImage(JLCellImage <= CellThreshold));
+handles.Pipeline.SecCellThreshHigh = 256*median(JLCellImage(JLCellImage > CellThreshold));
+handles.Pipeline.SecCellThreshLow = 256*median(JLCellImage(JLCellImage <= CellThreshold));
 
 %%% Scales both input images to 0-256, loads them into 1 3D array with a
 %%% padded one-row/col border of zeros
@@ -459,65 +484,80 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles,NucleiMDiff,CellsMDiff,SigmaValue,CThrLow,CThrHigh);
+AllPhiValues = phi(LoggedPaddedImage,handles);
 
-%%% Runs through the belief propagation algorithm, iterating in each
-%%% direction several times
-PsiFunction = handles.Pipeline.Psi;
-% for i=1:NumberOfProps
-%     Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-% end
-% drawnow
+if strcmp(TestingMode,'No')
 
+    %%% Runs through the belief propagation algorithm, iterating in each
+    %%% direction several times
+    PsiFunction = handles.Pipeline.Psi;
+    for i=1:NumberOfProps
+        Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+    end
+    drawnow
 
-%%% NORMAL FUNCTIONALITY DISABLED FOR TESTING!
-for i = 1:NumberOfProps
-    Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str(1)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+    %% Calculates beliefs based on these messages, stores them as normalized
+    %% double values (where each message vector sums to 1) and as logicals,
+    %% where each vector contains one 1 and two 0's
+    AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
+    AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
+    LPISize = size(LoggedPaddedImage);
+    x = 2:LPISize(2)-1;
+    for yind = 2:LPISize(1)-1;
+        RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
+            Messages.Down(IndicesArray(yind-1,x),:)' .* ...
+            Messages.Left(IndicesArray(yind,x+1),:)' .* ...
+            Messages.Right(IndicesArray(yind,x-1),:)' .* ...
+            permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
+        NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
+        [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
+        for i=1:3
+            AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
+        end
+        AllBeliefs(yind-1,x-1) = MaxIndices;
     end
-    Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str(2)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
-    Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str(3)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
-    end
-    Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
-    if i == NumberOfProps
-        [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
-        fieldname = ['BeliefsAfterPass',int2str(4)];
-        handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+
+else
+    %%% TestingMode results in 4 more images being saved to the handles
+    %%% structure, each one the beliefs calculated after passing messages
+    %%% in each direction during the final propagation.  These are in
+    %%% handles.Pipeline.BeliefsAfterPass<1-4> as an array of 0's, 1/2's,
+    %%% and 1's representing BG, Cell, and Nucleus, respectively.
+    %%% During testing mode, this module can be used normally, but you
+    %%% should really only run it when saving or otherwise using the
+    %%% intermediary belief calculations, since it slows the module down
+    %%% significantly.  
+    PsiFunction = handles.Pipeline.Psi;
+    for i = 1:NumberOfProps
+        Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+        if i == NumberOfProps
+            [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+            fieldname = ['BeliefsAfterPass',int2str(1)];
+            handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+        end
+        drawnow
+        Messages = PassDown(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+        if i == NumberOfProps
+            [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+            fieldname = ['BeliefsAfterPass',int2str(2)];
+            handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+        end
+        drawnow
+        Messages = PassRight(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+        if i == NumberOfProps
+            [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+            fieldname = ['BeliefsAfterPass',int2str(3)];
+            handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+        end
+        drawnow
+        Messages = PassLeft(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
+        if i == NumberOfProps
+            [AllNormalizedBeliefs,AllBeliefs] = CalculateBeliefs(size(OrigNucleiImage),size(LoggedPaddedImage),IndicesArray,AllPhiValues,Messages); %#ok
+            fieldname = ['BeliefsAfterPass',int2str(4)];
+            handles.Pipeline.(fieldname) = (AllBeliefs-1)/2;
+        end
     end
 end
-
-% %% Calculates beliefs based on these messages, stores them as normalized
-% %% double values (where each message vector sums to 1) and as logicals,
-% %% where each vector contains one 1 and two 0's
-% AllNormalizedBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2),3);
-% AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
-% LPISize = size(LoggedPaddedImage);
-% x = 2:LPISize(2)-1;
-% for yind = 2:LPISize(1)-1;
-%     RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
-%         Messages.Down(IndicesArray(yind-1,x),:)' .* ...
-%         Messages.Left(IndicesArray(yind,x+1),:)' .* ...
-%         Messages.Right(IndicesArray(yind,x-1),:)' .* ...
-%         permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
-%     NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
-%     [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
-%     for i=1:3
-%         AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
-%     end
-%     AllBeliefs(yind-1,x-1) = MaxIndices;
-% end
 
 %%% Creates binary belief matrices for each pixel label
 FinalBinaryNuclei = zeros(size(AllBeliefs));
@@ -686,21 +726,24 @@ for xind = 2:size(padim,2)-1
     Messages.Right(indsarr(y,xind),:) = messages';
 end
 
-
-
-
-function arr = phi(padim,handles,nucdist,celldist,sigma,clo,chi)
+function arr = phi(padim,handles)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
 
+%%% Initializes counters, preallocates the array to return
 rows = size(padim,1)-2;
 cols = size(padim,2)-2;
 arr = zeros(rows,cols,3);
+
+%%% Extracts relevant information from the handles structure
 c = repmat(handles.Pipeline.CellsPeak,1,cols);
 n = repmat(handles.Pipeline.NucleiPeak,1,cols);
 b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
-scaling = [1/nucdist 0; 0 1/celldist];
-%actinsc = [1 0; 0 0.5];
+scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
+sigma = handles.Pipeline.SigmaValue;
+actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
+% chi = handles.Pipeline.SecCellThreshHigh;
+% clo = handles.Pipeline.SecCellThreshLow;
 
 %%% for each row, for each column within that row, calculates the
 %%% probability that a given pixel will be labeled in each of the three

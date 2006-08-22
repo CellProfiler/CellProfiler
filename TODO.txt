@@ -1,5 +1,10 @@
 CellProfiler cell image analysis software development 
 
+- Anne 8-22-06: Adapt the filter objects module according to this post on our forum:
+http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
+
+- Anne 8-22-06: We would like to make a module that allows testing various settings for particular variables. The module would only allow processing of the first image set loaded in the LoadImages module (most likely, unless you can think of a way to do multiple image sets) but would automatically rerun the pipeline using a variety of settings. The output would be comparable to how we deal with movies, I think (frame 1,2,3 would be the same original image but with the different settings the user specifies). For example, if the user wanted to run the pipeline with IdentifyPrimAUto threshold set to a range of values, they would add this new TestSettings module to the end of the pipeline and specify: Module number, Variable number, and Values to test (edit box) where they would enter a range. Most likely, the first value they want to test should be specified in the original module in the pipeline, and the remainder of the values would be entered here, either comma-delimited, or using Matlab's normal range specifications, like [0:0.5:10]. So, when getting to this module at the end of the pipeline, the current image set's processing and measurements and everything would need to be moved somewhere so as not to be overwritten in the next round, and the settings in the handles structure need to be changed so that the next round will allow processing the same image using the next incremented settings.
+
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS ALREADY, SUMMER 2006?
 
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?

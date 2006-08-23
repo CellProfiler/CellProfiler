@@ -1,12 +1,8 @@
 Mike's TODO list
 
-- Sometime in early August we should assess whether we would like to invite Jun and Rodrigo to stay on during the fall semester.
+- MaskImage should allow for re-naming of the image to be masked so that it is not masked throughout the whole pipeline
 
-- Cell size - Fly200 (do not trust alignment) and NIRHT (dont trust spreading/crowding). Should we at least look at the controls for cell size?  Let's discuss at imaging subgroup.
-
-- Help Robert pick out cell cycle, cell count, cell size, phospho-S6, synthetic hits & give to lab members for biological follow up. (probably Adam will help here too, with normalization, etc.)
-
-- Follow-up Human funky phenotype hits: (1) RNA level/phenotype correlation for original shRNAs, (2) order more shRNAs and repeat, (3) interpret the lists of genes and design  specific biological follow up experiments.
+- Add ObjectCount to handles.Measurements?
 
 - Merck screens (image acquisition and analysis only)
 

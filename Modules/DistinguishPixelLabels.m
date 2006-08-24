@@ -4,16 +4,51 @@ function handles = DistinguishPixelLabels(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Given 2 input images, labels each pixel as cell, nucleus, or background
-% using belief propagation.
+% Labels pixels as cell, nucleus, or background based on actin and DNA stain
+% intensities and neighboring labels.
 % *************************************************************************
 %
-% By using the belief propagation algorithm, finds a more intelligent
-% labeling of each pixel in the field of view as nucleus, cell, or
-% background.  Use this module before the IdentifyPrimAutomatic and
-% IdentifySecondary modules, and instead of selecting an automatic
-% threshold, enter the name of the binary images produced in this module.
-% MORE HELP TO BE WRITTEN LATER
+% By using the belief propagation algorithm, this module finds a more accurate 
+% label for each pixel in the field of view.  Use this module before the 
+% IdentifyPrimAutomatic and IdentifySecondary modules, and instead of selecting 
+% an automatic threshold there, enter the name of a binary image produced in 
+% this module.
+%
+% Overview:
+%   The goal of this module is to find the most accurate binary images that specify
+% where in the image cells and nuclei exist.  Typically this is done by applying 
+% a threshold to input grayscale images, where every pixel above the threshold 
+% value is considered foreground and every pixel below, background.  
+% Using ordinary thresholds, however, ignores a great deal of information; the 
+% belief propagation algorithm improves upon this by labeling pixels as foreground
+% or background based not only on their pixel intensity value but also on the 
+% values of nearby pixels and a predetermined set of probabilities that neighboring 
+% pixels of each type share the same label.
+%   The belief propagation (BP) algorithm is used to solve inference problems--in 
+% this case, to predict the best label (cell, nucleus, or background) for a set
+% of pixels.  Treating the field of view as a pairwise markov random field, in
+% which the observed pixel intensities from two stained images are the observable
+% nodes and their corresponding labels are the hidden nodes, BP finds the 
+% marginal probabilities (or "beliefs") for each label at each pixel.  See 
+% Yedidia et. al. or scroll down to "Technical Description" for more 
+% information.
+%
+% Yedidia, J. S., Freeman, W. T., and Weiss, Y. (2002).  Understanding
+% belief propagation and its generalizations. Technical report, Mitsubishi
+% Electric Research Labs., TR-2001-22.
+%
+% Settings:
+% Peak pixel intensity selection method:
+% This module depends finding three "peaks" that represent the DNA and actin
+% staining intensities which are most common among each label.  You can choose
+% to have these peaks automatically calculated for each image in the set, or 
+% you can have a histogram displayed for manual selection.  For either manual 
+% option, the peaks remain the same for every image in the set.  Per-image 
+% calculation is more reliable unless all images seem to have about the same 
+% overall brightness and area covered by cells and nuclei.  
+%%%% SHOULD THIS OPTION BE ERASED? WE NEVER USE ANYTHING BUT AUTO-PERIMAGE 
+%%%% PEAK CALCULATION!
+%
 %
 % The actin scaling factor input variable will be used to scale the
 % distances between the actin peak and the real pixels by 1/input.  This
@@ -95,7 +130,7 @@ BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = For AUTOMATIC, select a thresholding method.
+%textVAR07 = For AUTOMATIC, select a thresholding method. [THIS IS A PLACEHOLDER: ALWAYS USES OTSU GLOBAL! TO BE REMOVED SOON...]
 %choiceVAR07 = Otsu Global
 %choiceVAR07 = Otsu Adaptive
 %choiceVAR07 = MoG Global
@@ -104,7 +139,7 @@ PeakSelectionMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %choiceVAR07 = Background Adaptive
 %choiceVAR07 = RidlerCalvard Global
 %choiceVAR07 = RidlerCalvard Adaptive
-ThresholdingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%ThresholdingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 = What did you call the illumination correction matrix for nuclei? Select "none" if you do not wish to correct illumination. 
@@ -425,17 +460,20 @@ if strncmp(PeakSelectionMethod,'Automatic',9)
     ClampedCellImage(ClampedCellImage < MinCellPixVal) = MinCellPixVal;
     
     %%% Jitters these images on the log scale
-    JNucImage = log(ClampedNucImage) + rand(size(ClampedNucImage)) .*...
-        (log(ClampedNucImage + MinNucPixVal) - log(ClampedNucImage));
-    JCellImage = log(ClampedCellImage) + rand(size(ClampedCellImage)) .*...
-        (log(ClampedCellImage + MinCellPixVal) - log(ClampedCellImage));
+    JNucImage = log(ClampedNucImage);% + rand(size(ClampedNucImage)) .*...
+        %(log(ClampedNucImage + MinNucPixVal) - log(ClampedNucImage));
+    JCellImage = log(ClampedCellImage);% + rand(size(ClampedCellImage)) .*...
+        %(log(ClampedCellImage + MinCellPixVal) - log(ClampedCellImage));
     
     JLNucImage = (JNucImage - log(MinNucPixVal)) / (log(MaxNucPixVal) -log(MinNucPixVal));
     JLCellImage = (JCellImage - log(MinCellPixVal)) / (log(MaxCellPixVal) -log(MinCellPixVal));
     
-    %%% Gets thresholds for each image
-    [handles,NucThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLNucImage,NucleiImageName,ModuleName);
-    [handles,CellThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLCellImage,CellsImageName,ModuleName);
+    % %%% Gets thresholds for each image
+    % [handles,NucThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLNucImage,NucleiImageName,ModuleName);
+    % [handles,CellThreshold] = CPthreshold(handles,ThresholdingMethod,'50%','Do not use','Do not use',1,JLCellImage,CellsImageName,ModuleName);
+    %%% Defaults to Otsu's method, ignores potential mask
+    NucThreshold = graythresh(JLNucImage);
+    CellThreshold = graythresh(JLCellImage);
     
     %%% Gets the means in each section of the image that we believe to have
     %%% a certain pixel label

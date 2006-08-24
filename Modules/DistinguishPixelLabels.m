@@ -277,13 +277,15 @@ if handles.Current.SetBeingAnalyzed == 1
         
     end
     
-    %%% Determines image-wide bias along one axis--that is, if the range of
-    %%% intensity for DNA-stained pixels is half that for actin-stained
-    %%% pixels, then the messages for nuclei will be half as strong, which
-    %%% skews results.  Phi corrects this discrepancy by equalizing along
-    %%% the axis with a smaller range of values.
-    handles.Pipeline.NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
-    handles.Pipeline.CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
+    if ~strfind(PeakSelectionMethod,'Per Image')
+        %%% Determines image-wide bias along one axis--that is, if the range of
+        %%% intensity for DNA-stained pixels is half that for actin-stained
+        %%% pixels, then the messages for nuclei will be half as strong, which
+        %%% skews results.  Phi corrects this discrepancy by equalizing along
+        %%% the axis with a smaller range of values.
+        handles.Pipeline.NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
+        handles.Pipeline.CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
+    end
 
     %%% Saves the preset psi function to handles structure
     handles.Pipeline.Psi = [.9004,.0203,0;.0996,.9396,.0186;0,.0400,.9814];

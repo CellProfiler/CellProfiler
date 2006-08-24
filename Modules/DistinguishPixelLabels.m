@@ -508,9 +508,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(NucleiOutputName) = FinalBinaryNuclei;
-handles.Pipeline.(CellsOutputName) = FinalBinaryCells|FinalBinaryNuclei;
-handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
+if ~strcmpi(NucleiOutputName,'Do not save')
+    handles.Pipeline.(NucleiOutputName) = FinalBinaryNuclei;
+end
+if ~strcmpi(CellsOutputName,'Do not save')
+    handles.Pipeline.(CellsOutputName) = FinalBinaryCells|FinalBinaryNuclei;
+end
+if ~strcmpi(BackgroundOutputName,'Do not save')
+    handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
+end
 
 %%% Uncomment these lines to save the intial phi values before message
 %%% passing and the final belief probabilities (before rounding off to

@@ -1,4 +1,4 @@
-function imout = clearborder(im)
+function imout = CPclearborder(im)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

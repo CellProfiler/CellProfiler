@@ -96,6 +96,7 @@ function handles = DistinguishPixelLabels(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+PhiVersion = 'Normal';
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images of nuclei?
@@ -522,7 +523,11 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-AllPhiValues = phi(LoggedPaddedImage,handles);
+if strcmp(PhiVersion,'hacky')
+    AllPhiValues = phiH(LoggedPaddedImage,handles);
+else
+    AllPhiValues = phi(LoggedPaddedImage,handles);
+end
 
 if strcmp(TestingMode,'No')
 
@@ -767,6 +772,67 @@ end
 function arr = phi(padim,handles)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
+
+%%% Initializes counters, preallocates the array to return
+rows = size(padim,1)-2;
+cols = size(padim,2)-2;
+arr = zeros(rows,cols,3);
+
+%%% Extracts relevant information from the handles structure
+c = repmat(handles.Pipeline.CellsPeak,1,cols);
+n = repmat(handles.Pipeline.NucleiPeak,1,cols);
+b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
+scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
+sigma = handles.Pipeline.SigmaValue;
+actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
+% chi = handles.Pipeline.SecCellThreshHigh;
+% clo = handles.Pipeline.SecCellThreshLow;
+
+%%% for each row, for each column within that row, calculates the
+%%% probability that a given pixel will be labeled in each of the three
+%%% categories based on only its pixel intensity values.
+for yind = 1:rows
+    
+    %%% x is the array of pixel values, [DNA;actin], for each corresponding
+    %%% pixel in padim, accounting for the pad of zeros
+    x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
+    % %%% Finds the locations (single-subscript indexing) where actin stain
+    % %%% intensities are above, below, and between means of each half
+    % lowestlocs = find(x(2,:) < clo);
+    % highestlocs = find(x(2,:) > chi);
+    % restoflocs = find(x(2,:) > clo & x(2,:) < chi);
+    
+    %%% Calculates probabilities of each label by finding distances, fixing
+    %%% the actin staining data according to secondary means, and putting
+    %%% this into a gaussian probability function for each label
+    sdB = scaling * (b-x);
+    sdN = scaling * (n-x);
+    sdC = actinsc * scaling * (c-x);
+    % sdC = scaling * (c-x);
+    % sdC(2,lowestlocs) = 0.9;
+    % sdC(2,highestlocs) = 0.1;
+    % sdC(2,restoflocs) = 0.4;
+    % sdB(2,lowestlocs) = 0.1;
+    % sdB(2,highestlocs) = 0.9;
+    % sdB(2,restoflocs) = 0.6;
+    invdisB = exp(sum(-sdB.*sdB/sigma));
+    invdisN = exp(sum(-sdN.*sdN/sigma));
+    invdisC = exp(sum(-sdC.*sdC/sigma));
+    
+    %%% Sums these values and normalizes so that they sum to 1
+    z=invdisB+invdisC+invdisN;
+    probB=invdisB./z;
+    probN=invdisN./z;
+    probC=invdisC./z;
+    %%% stores the results (which are an Nx3 array) into a 1xNx3 slice of
+    %%% the results array
+    arr(yind,:,:) = permute([probN; probC; probB],[3 2 1]);
+    
+end
+
+function arr = phiH(padim,handles)
+%%% returns an array containing phi values (1x1x3) at each pixel in padim
+%%% except the border, as a R-1xC-1x3 array where padim is RxCx2
 %%% MODDED CURRENTLY TO BE THE 'HACKY' VERSION, MEANING THAT VALUES ARE
 %%% HARD-CODED FOR ACTIN-INFO IN CELL,BG DISTANCES
 
@@ -781,7 +847,7 @@ n = repmat(handles.Pipeline.NucleiPeak,1,cols);
 b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
 scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
 sigma = handles.Pipeline.SigmaValue;
-actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
+% actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
 chi = handles.Pipeline.SecCellThreshHigh;
 clo = handles.Pipeline.SecCellThreshLow;
 
@@ -804,7 +870,7 @@ for yind = 1:rows
     %%% this into a gaussian probability function for each label
     sdB = scaling * (b-x);
     sdN = scaling * (n-x);
-    sdC = actinsc * scaling * (c-x);
+    % sdC = actinsc * scaling * (c-x);
     sdC = scaling * (c-x);
     sdC(2,lowestlocs) = 0.9;
     sdC(2,highestlocs) = 0.1;

@@ -125,7 +125,7 @@ BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 
 %textVAR06 = What do you want to call the grayscale image showing all three binaries?
 %defaultVAR06 = Do not save
-GrayscaleOutputName = char(handles.Settings.VariableValues{CurrentModuleNume,6});
+GrayscaleOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %infotypeVAR06 = imagegroup indep
 
 %textVAR07 = Choose peak pixel intensity selection method:

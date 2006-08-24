@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- Release new CellProfiler due to all the UROPs' nice changes.
+
 - Add ObjectCount to handles.Measurements?
 
 - Merck screens (image acquisition and analysis only)

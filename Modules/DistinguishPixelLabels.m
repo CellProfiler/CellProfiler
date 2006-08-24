@@ -119,11 +119,11 @@ CellsOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %infotypeVAR04 = imagegroup indep
 
 %textVAR05 = What do you want to call the binary image representing area labeled as background?
-%defaultVAR05 = BPBackground
+%defaultVAR05 = Do not save
 BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR05 = imagegroup indep
 
-%textVAR06 = What do you want to call the grayscale image showing all three binaries? (optional)
+%textVAR06 = What do you want to call the grayscale image showing all three binaries?
 %defaultVAR06 = Do not save
 GrayscaleOutputName = char(handles.Settings.VariableValues{CurrentModuleNume,6});
 %infotypeVAR06 = imagegroup indep
@@ -378,7 +378,7 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-if strcmp(PhiVersion,'hacky')
+if strcmpi(PhiVersion,'hacky')
     AllPhiValues = phiH(LoggedPaddedImage,handles);
 else
     AllPhiValues = phi(LoggedPaddedImage,handles);

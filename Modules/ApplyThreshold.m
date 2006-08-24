@@ -4,22 +4,22 @@ function handles = ApplyThreshold(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Pixel intensity below or above a certain threshold is set to zero. 
+% Pixel intensity below or above a certain threshold is set to zero.
 % *************************************************************************
 %
-% Settings: 
+% Settings:
 %
 % When a pixel is thresholded, its intensity value is set to zero so that
 % it appears black.
 %
-% If you wish to threshold dim pixels, change the value for which "Pixels 
-% below this value will be set to zero". In this case, the remaining pixels 
-% can retain their original intensity values or are shifted dimmer to 
-% match the threshold used. 
+% If you wish to threshold dim pixels, change the value for which "Pixels
+% below this value will be set to zero". In this case, the remaining pixels
+% can retain their original intensity values or are shifted dimmer to
+% match the threshold used.
 %
-% If you wish to threshold bright pixels, change the value for which 
-% "Pixels above this value will be set to zero". In this case, you can 
-% expand the thresholding around them by entering the number of pixels to 
+% If you wish to threshold bright pixels, change the value for which
+% "Pixels above this value will be set to zero". In this case, you can
+% expand the thresholding around them by entering the number of pixels to
 % expand here: This setting is useful to adjust when you are attempting to
 % exclude bright artifactual objects: you can first set the threshold to
 % exclude these bright objects, but it may also be desirable to expand the
@@ -92,21 +92,15 @@ BinaryChoice = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 
 %%%VariableRevisionNumber = 4
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-%%% Reads (opens) the image to be analyzed and assigns it to a variable,
-%%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 if BinaryChoice == 0
+    %%% Reads (opens) the image to be analyzed and assigns it to a variable,
+    %%% "OrigImage".
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
     %%% Identifies bright object pixels.
     BinaryBrightObjectsImage = zeros(size(OrigImage));
     BinaryBrightObjectsImage(OrigImage >= HighThreshold) = 1;
@@ -121,6 +115,9 @@ if BinaryChoice == 0
         ThresholdedImage(ThresholdedImage < 0) = 0;
     end
 else
+    %%% Reads (opens) the image to be analyzed and assigns it to a variable,
+    %%% "OrigImage".
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
     ThresholdedImage = im2bw(OrigImage,BinaryChoice);
 end
 

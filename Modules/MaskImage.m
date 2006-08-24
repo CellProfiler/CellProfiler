@@ -54,19 +54,27 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = Which image do you want to mask?
 %infotypeVAR02 = imagegroup
 %inputtypeVAR02 = popupmenu
-ImageToMask = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%%VariableRevisionNumber = 1
+%textVAR03 = What do you want to call the masked image?
+%defaultVAR03 = MaskBlue
+%infotypeVAR03 = imagegroup indep
+MaskedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
 
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+
 ObjectLabelMatrix = handles.Pipeline.(['Segmented',ObjectName]);
 
 ObjectLabelMatrix(ObjectLabelMatrix>0)=1;
 
-handles.Pipeline.(['CropMask',ImageToMask])=ObjectLabelMatrix;
+handles.Pipeline.(MaskedImageName)=OrigImage;
+handles.Pipeline.(['CropMask',MaskedImageName])=ObjectLabelMatrix;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%

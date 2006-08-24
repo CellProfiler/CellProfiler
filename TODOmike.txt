@@ -1,7 +1,5 @@
 Mike's TODO list
 
-- MaskImage should allow for re-naming of the image to be masked so that it is not masked throughout the whole pipeline
-
 - Add ObjectCount to handles.Measurements?
 
 - Merck screens (image acquisition and analysis only)

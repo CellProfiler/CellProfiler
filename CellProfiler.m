@@ -573,7 +573,7 @@ varargout{1} = handles.output;
 %%% CLEAR PIPELINE BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function ClearPipeline_Callback(hObject, eventdata, handles)
+function ClearPipeline_Callback(hObject, eventdata, handles) %#ok Ignore MLint
 
 if isempty(eventdata)
     Answer = CPquestdlg('Are you sure you want to clear the existing pipeline?','Confirm','Yes','No','Yes');
@@ -672,79 +672,74 @@ set(handles.slider1,'visible','off');
 
 %%% Check to make sure that the module files can be found and get paths
 ModuleNames = Settings.ModuleNames;
-NumberOfVariables = Settings.NumbersOfVariables;
 Skipped = 0;
 for k = 1:NumberOfModules
     if ~isdeployed
         CurrentModuleNamedotm = [char(ModuleNames{k}) '.m'];
-    else
-        CurrentModuleNamedotm = [char(ModuleNames{k}) '.txt'];
-    end
-    if exist(CurrentModuleNamedotm,'file')
-        if ~isdeployed
-            Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm));
+        if exist(CurrentModuleNamedotm,'file')
+            Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm)); %#ok Ignore MLint
         else
-            Pathnames{k-Skipped} = handles.Preferences.DefaultModuleDirectory;
+            %%% If the module.m file is not on the path, it won't be
+            %%% found, so ask the user where the modules are.
+            Choice = CPquestdlg(['The module ', CurrentModuleNamedotm, ' cannot be found. Either its name has changed or it was moved or deleted. What do you want to do? Note: You can also choose another module to replace ' CurrentModuleNamedotm ' if you select Search Module. It will be loaded with its default settings and you will also be able to see the saved settings of ' CurrentModuleNamedotm '.'],'Module not found','Skip Module','Search Module','Abort','Skip Module');
+            switch Choice
+                case 'Skip Module'
+                    %%% Check if this was the only module in the pipeline or if
+                    %%% all previous modules have been skipped too
+                    if Skipped+1 == NumberOfModules
+                        CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.','Loading Pipeline Error')
+                        Abort = 1;
+                    else
+                        %%% Remove module info from the settings
+                        View = CPquestdlg(['The pipeline will be loaded without ' CurrentModuleNamedotm ', but keep in mind that it might not work properly. Would you like to see the saved settings ' CurrentModuleNamedotm ' had?'], 'Module Skipped', 'Yes', 'No', 'Yes');
+                        if strcmp(View,'Yes')
+                            FailedModule(handles,Settings.VariableValues(k-Skipped,:),'Sorry, variable descriptions could not be retrieved from this file',CurrentModuleNamedotm,k-Skipped);
+                        end
+                        %%% Notice that if the skipped module is the one that
+                        %%% had the most variables, then the VariableValues
+                        %%% will have some empty columns at the end. I guess it
+                        %%% doesn't matter, but it could be fixed if necessary.
+                        Settings.VariableValues(k-Skipped,:) = [];
+                        Settings.VariableInfoTypes(k-Skipped,:) = [];
+                        Settings.ModuleNames(k-Skipped) = [];
+                        Settings.NumbersOfVariables(k-Skipped) = [];
+                        Settings.VariableRevisionNumbers(k-Skipped) = [];
+                        Skipped = Skipped+1;
+                        Abort = 0;
+                    end
+                case 'Search Module'
+                    if ~isdeployed
+                        [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.m'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
+                    else
+                        [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.txt'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
+                    end
+                    pause(.1);
+                    figure(handles.figure1);
+                    if Filename == 0
+                        Abort = 1;
+                    else
+                        Pathnames{k-Skipped} = Pathname;
+                        if ~isdeployed
+                            Settings.ModuleNames{k-Skipped} = Filename(1:end-2);
+                        else
+                            Settings.ModuleNames{k-Skipped} = Filename(1:end-4);
+                        end
+                        Abort = 0;
+                    end
+                otherwise
+                    Abort = 1;
+            end
+            if Abort
+                %%% Restore whatever the user had before attempting to load
+                set(handles.ModulePipelineListBox,'String',OldString);
+                set(handles.ModulePipelineListBox,'Value',OldValue);
+                ModulePipelineListBox_Callback(hObject,[],handles);
+                errFlg = 1;
+                return
+            end
         end
     else
-        %%% If the module.m file is not on the path, it won't be
-        %%% found, so ask the user where the modules are.
-        Choice = CPquestdlg(['The module ', CurrentModuleNamedotm, ' cannot be found. Either its name has changed or it was moved or deleted. What do you want to do? Note: You can also choose another module to replace ' CurrentModuleNamedotm ' if you select Search Module. It will be loaded with its default settings and you will also be able to see the saved settings of ' CurrentModuleNamedotm '.'],'Module not found','Skip Module','Search Module','Abort','Skip Module');
-        switch Choice
-            case 'Skip Module'
-                %%% Check if this was the only module in the pipeline or if
-                %%% all previous modules have been skipped too
-                if Skipped+1 == NumberOfModules
-                    CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.','Loading Pipeline Error')
-                    Abort = 1;
-                else
-                    %%% Remove module info from the settings
-                    View = CPquestdlg(['The pipeline will be loaded without ' CurrentModuleNamedotm ', but keep in mind that it might not work properly. Would you like to see the saved settings ' CurrentModuleNamedotm ' had?'], 'Module Skipped', 'Yes', 'No', 'Yes');
-                    if strcmp(View,'Yes')
-                        FailedModule(handles,Settings.VariableValues(k-Skipped,:),'Sorry, variable descriptions could not be retrieved from this file',CurrentModuleNamedotm,k-Skipped);
-                    end
-                    %%% Notice that if the skipped module is the one that
-                    %%% had the most variables, then the VariableValues
-                    %%% will have some empty columns at the end. I guess it
-                    %%% doesn't matter, but it could be fixed if necessary.
-                    Settings.VariableValues(k-Skipped,:) = [];
-                    Settings.VariableInfoTypes(k-Skipped,:) = [];
-                    Settings.ModuleNames(k-Skipped) = [];
-                    Settings.NumbersOfVariables(k-Skipped) = [];
-                    Settings.VariableRevisionNumbers(k-Skipped) = [];
-                    Skipped = Skipped+1;
-                    Abort = 0;
-                end
-            case 'Search Module'
-                if ~isdeployed
-                    [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.m'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
-                else
-                    [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.txt'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
-                end
-                pause(.1);
-                figure(handles.figure1);
-                if Filename == 0
-                    Abort = 1;
-                else
-                    Pathnames{k-Skipped} = Pathname;
-                    if ~isdeployed
-                        Settings.ModuleNames{k-Skipped} = Filename(1:end-2);
-                    else
-                        Settings.ModuleNames{k-Skipped} = Filename(1:end-4);
-                    end
-                    Abort = 0;
-                end
-            otherwise
-                Abort = 1;
-        end
-        if Abort
-            %%% Restore whatever the user had before attempting to load
-            set(handles.ModulePipelineListBox,'String',OldString);
-            set(handles.ModulePipelineListBox,'Value',OldValue);
-            ModulePipelineListBox_Callback(hObject,[],handles);
-            errFlg = 1;
-            return
-        end
+        Pathnames{k-Skipped} = handles.Preferences.DefaultModuleDirectory;
     end
 end
 
@@ -930,7 +925,6 @@ VariableInfoTypes = {[]};
 VariableDescriptions = {[]};
 VarRevNum = 0;
 NumbersOfVariables = 0;
-Failed = 0;
 if isdeployed
     ModuleNamedotm = [ModuleName '.txt'];
 else
@@ -2015,35 +2009,35 @@ if (length(ModuleHighlighted) > 0)
         end
         slider1_Callback(handles.slider1,0,handles);
     else
-% Anne 7/11/06 Nice idea to have a confirmation, but I commented out the
-% dialog, because I think almost always
-% the user will have clicked intentionally, and the consequences of opening
-% up the Add module window are pretty minimal (that is, it is an easily
-% reversible choice). Also, because this can only happen right when the
-% user starts up CellProfiler, the chances for random clicking are fairly
-% minimal as well.
-% Rodrigo 7/13/06 - Maybe we can check the selection type, and open the Add
-% module window only if the user double-clicked. Nothing will happen
-% otherwise. What do you prefer?
-% Rodrigo 7/20/06 - We may have another problem with this. When
-% ModulePipelineListBox_Callback gets called by ClearPipeline_Callback, it
-% opens the AddModule window because ClearPipeline sets
-% handles.Current.NumberOfModules to 0 right before making the call. I
-% removed the call from ClearPipeline, but the same happens when you use
-% RemoveModule when you only have 1 module in the listbox. Obviously I
-% can't remove the call from RemoveModule_Callback because it's necessary,
-% so we might need to add some kind of test here. I checked every other
-% call to ModulePipelineListBox_Callback and I think they're all ok.
-% Rodrigo 7/21/06 - I just added another call to this function. I needed to
-% call it in the LoadPipeline_Callback function to refresh the variable
-% panel if the loading was aborted. It also opens the AddModule window.
+        % Anne 7/11/06 Nice idea to have a confirmation, but I commented out the
+        % dialog, because I think almost always
+        % the user will have clicked intentionally, and the consequences of opening
+        % up the Add module window are pretty minimal (that is, it is an easily
+        % reversible choice). Also, because this can only happen right when the
+        % user starts up CellProfiler, the chances for random clicking are fairly
+        % minimal as well.
+        % Rodrigo 7/13/06 - Maybe we can check the selection type, and open the Add
+        % module window only if the user double-clicked. Nothing will happen
+        % otherwise. What do you prefer?
+        % Rodrigo 7/20/06 - We may have another problem with this. When
+        % ModulePipelineListBox_Callback gets called by ClearPipeline_Callback, it
+        % opens the AddModule window because ClearPipeline sets
+        % handles.Current.NumberOfModules to 0 right before making the call. I
+        % removed the call from ClearPipeline, but the same happens when you use
+        % RemoveModule when you only have 1 module in the listbox. Obviously I
+        % can't remove the call from RemoveModule_Callback because it's necessary,
+        % so we might need to add some kind of test here. I checked every other
+        % call to ModulePipelineListBox_Callback and I think they're all ok.
+        % Rodrigo 7/21/06 - I just added another call to this function. I needed to
+        % call it in the LoadPipeline_Callback function to refresh the variable
+        % panel if the loading was aborted. It also opens the AddModule window.
 
-%        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
-%       if strcmp(Answer,'Yes')
-%%%%%  if strcmp(get(gcf,'SelectionType'),'open') %% these two lines should make it work
-     AddModule_Callback(findobj('tag','AddModule'),[],handles);
-%%%%%  end
-%      end
+        %        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
+        %       if strcmp(Answer,'Yes')
+        %%%%%  if strcmp(get(gcf,'SelectionType'),'open') %% these two lines should make it work
+        AddModule_Callback(findobj('tag','AddModule'),[],handles);
+        %%%%%  end
+        %      end
     end
 else
     CPhelpdlg('No module highlighted.');
@@ -3879,7 +3873,7 @@ else
                 guidata(gcbo, handles)
             end %%% This "end" goes with the "while" loop (going through the cycles).
 
-            
+
             %%% Update the handles structure.
             guidata(gcbo, handles)
 
@@ -4100,7 +4094,7 @@ choosetext = uicontrol(...
     'String',TextString,...
     'Style','text',...
     'FontSize',FontSize,...
-    'Tag','informtext');
+    'Tag','informtext'); %#ok Ignore MLint
 
 listboxcallback = 'ToolsHelpWindowHandle = findobj(''tag'',''ToolsHelpWindow''); if (strcmpi(get(ToolsHelpWindowHandle,''SelectionType''),''open'')==1) toolsbox = findobj(''tag'',''toolsbox''); global toolsChoice; toolsChoice = get(toolsbox,''value''); close(ToolsHelpWindowHandle); end; clear ToolsHelpWindowHandle toolsChoice toolsbox';
 toolsbox = uicontrol(...
@@ -4114,7 +4108,7 @@ toolsbox = uicontrol(...
     'Value',1,...
     'Tag','toolsbox',...
     'FontSize',FontSize,...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 okbutton = uicontrol(...
     'Parent',ToolsHelpWindowHandle,...
@@ -4123,7 +4117,7 @@ okbutton = uicontrol(...
     'Callback',okbuttoncallback,...
     'Position',[0.30 0.077 0.2 0.06],...
     'String','Ok',...
-    'Tag','okbutton');
+    'Tag','okbutton'); %#ok Ignore MLint
 
 cancelbutton = uicontrol(...
     'Parent',ToolsHelpWindowHandle,...
@@ -4132,7 +4126,7 @@ cancelbutton = uicontrol(...
     'Callback',cancelbuttoncallback,...
     'Position',[0.55 0.077 0.2 0.06],...
     'String','Cancel',...
-    'Tag','cancelbutton');
+    'Tag','cancelbutton'); %#ok Ignore MLint
 
 toolsChoice = 0; %%% Makes sure toolsChoice indicates no selection
 %%% in case user closes window using x icon or Close Windows button
@@ -4141,19 +4135,19 @@ uiwait(ToolsHelpWindowHandle);
 if(toolsChoice ~= 0)
     if strcmp(ImageDataOrHelp,'Modules')
         HelpText = handles.Current.ModulesHelp{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Modules Help']);
+        CPtextdisplaybox(HelpText,'CellProfiler Modules Help');
     elseif strcmp(ImageDataOrHelp,'Image Tools')
         HelpText = handles.Current.ImageToolHelp{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Image Tools Help']);
+        CPtextdisplaybox(HelpText,'CellProfiler Image Tools Help');
     elseif strcmp(ImageDataOrHelp,'Data Tools')
         HelpText = handles.Current.DataToolHelp{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Data Tools Help']);
+        CPtextdisplaybox(HelpText,'CellProfiler Data Tools Help');
     elseif strcmp(ImageDataOrHelp,'Help')
         HelpText = handles.Current.Help{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Help']);
+        CPtextdisplaybox(HelpText,'CellProfiler Help');
     elseif strcmp(ImageDataOrHelp,'Getting Started')
         HelpText = handles.Current.GS{toolsChoice};
-        CPtextdisplaybox(HelpText,['CellProfiler Help']);
+        CPtextdisplaybox(HelpText,'CellProfiler Help');
     end
 end
 clear toolsChoice;
@@ -4517,7 +4511,7 @@ else
     CPtextdisplaybox(help(filename),'CellProfiler image analysis module help');
 end
 
-function BrowseButton_Callback(hObject, eventdata, AddModuleWindowHandles)
+function BrowseButton_Callback(hObject, eventdata, AddModuleWindowHandles) %#ok Ignore MLint
 % hObject    handle to PreProcessingListBox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % AddModuleWindowHandles    empty - AddModuleWindowHandles not created until after all CreateFcns called
@@ -4819,7 +4813,7 @@ function h1 = CellProfiler_LayoutFcn(policy)
 % policy - create a new figure or use a singleton. 'new' or 'reuse'.
 
 persistent hsingleton;
-if strcmpi(policy, 'reuse') & ishandle(hsingleton)
+if strcmpi(policy, 'reuse') & ishandle(hsingleton) %#ok Ignore MLint
     h1 = hsingleton;
     return;
 end
@@ -4904,7 +4898,7 @@ h3 = uicontrol(...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
     'Visible','off',...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'OpenFigureButton';
@@ -4921,7 +4915,7 @@ h4 = uicontrol(...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
     'Visible','off',...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'IndividualModulesText';
@@ -4938,7 +4932,7 @@ h5 = uicontrol(...
     'Tag','IndividualModulesText',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'AddModule';
@@ -4954,8 +4948,7 @@ h6 = uicontrol(...
     'Tag','AddModule',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
-
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 appdata = [];
 appdata.lastValidTag = 'RemoveModule';
 
@@ -4968,7 +4961,7 @@ h7 = uicontrol(...
     'String','-',...
     'Tag','RemoveModule',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'MoveUpButton';
@@ -4983,7 +4976,7 @@ h8 = uicontrol(...
     'Tag','MoveUpButton',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'MoveDownButton';
@@ -4998,7 +4991,7 @@ h9 = uicontrol(...
     'Tag','MoveDownButton',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'ModulePipelineListBox';
@@ -5016,7 +5009,7 @@ h10 = uicontrol(...
     'Tag','ModulePipelineListBox',...
     'KeyPressFcn',@RemoveModuleByKeyPressFcn,...
     'UserData',[],...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'variablepanel';
@@ -5032,7 +5025,7 @@ h11 = uipanel(...
     'Clipping','on',...
     'BackgroundColor',[.7 .7 .9],...
     'Position',[240 0 563 584],...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'slider1';
@@ -5048,7 +5041,7 @@ h12 = uicontrol(...
     'Value',1,...
     'Tag','slider1',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'Visible','off');
+    'Visible','off'); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'IndividualModuleHelp';
@@ -5064,7 +5057,7 @@ h13 = uicontrol(...
     'Tag','IndividualModuleHelp',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'PipelineText';
@@ -5086,7 +5079,7 @@ h14 = uicontrol(...
     'Tag','PipelineText',...
     'HorizontalAlignment','center',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'bottompanel';
@@ -5116,7 +5109,7 @@ h16 = uicontrol(...
     'String','Analyze images',...
     'Tag','AnalyzeImagesButton',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'OutputFilenameHelp';
@@ -5130,7 +5123,7 @@ h17 = uicontrol(...
     'String','?',...
     'Tag','OutputFilenameHelp',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'DefaultImageDirectoryText';
@@ -5147,7 +5140,7 @@ h18 = uicontrol(...
     'Tag','DefaultImageDirectoryText',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'BrowseImageDirectoryButton';
@@ -5162,8 +5155,7 @@ h19 = uicontrol(...
     'String','Browse...',...
     'Tag','BrowseImageDirectoryButton',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
-
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 appdata = [];
 appdata.lastValidTag = 'DefaultImageDirectoryEditBox';
 
@@ -5175,7 +5167,7 @@ h20 = uicontrol(...
     'String','',...
     'Style','edit',...
     'Tag','DefaultImageDirectoryEditBox',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'DefaultImageDirectoryHelp';
@@ -5189,7 +5181,7 @@ h21 = uicontrol(...
     'String','?',...
     'Tag','DefaultImageFolderHelp',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'NameOutputFileText';
@@ -5206,7 +5198,7 @@ h22 = uicontrol(...
     'Tag','NameOutputFileText',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'OutputFileNameEditBox';
@@ -5219,7 +5211,7 @@ h23 = uicontrol(...
     'String','',...
     'Style','edit',...
     'Tag','OutputFileNameEditBox',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'FilenamesListBox';
@@ -5234,7 +5226,7 @@ h24 = uicontrol(...
     'Style','listbox',...
     'Value',1,...
     'Tag','FilenamesListBox',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'DefaultOutputDirectoryText';
@@ -5251,7 +5243,7 @@ h25 = uicontrol(...
     'Tag','DefaultOutputDirectoryText',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'BrowseOutputDirectoryButton';
@@ -5266,7 +5258,7 @@ h26 = uicontrol(...
     'String','Browse...',...
     'Tag','BrowseOutputDirectoryButton',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'DefaultOutputDirectoryEditBox';
@@ -5279,7 +5271,7 @@ h27 = uicontrol(...
     'String','',...
     'Style','edit',...
     'Tag','DefaultOutputDirectoryEditBox',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'DefaultOutputDirectoryHelp';
@@ -5293,7 +5285,7 @@ h28 = uicontrol(...
     'String','?',...
     'Tag','DefaultOutputFolderHelp',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'PixelSizeText';
@@ -5310,7 +5302,7 @@ h29 = uicontrol(...
     'Tag','PixelSizeText',...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'PixelSizeEditBox';
@@ -5323,7 +5315,7 @@ h30 = uicontrol(...
     'String','1',...
     'Style','edit',...
     'Tag','PixelSizeEditBox',...
-    'Behavior',get(0,'defaultuicontrolBehavior'));
+    'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 
 appdata = [];
 appdata.lastValidTag = 'PixelSizeHelp';
@@ -5337,7 +5329,7 @@ h31 = uicontrol(...
     'String','?',...
     'Tag','PixelSizeHelp',...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
-    'CreateFcn', {@local_CreateFcn, '', appdata} );
+    'CreateFcn', {@local_CreateFcn, '', appdata} ); %#ok Ignore MLint
 
 hsingleton = h1;
 
@@ -5407,7 +5399,7 @@ else
     % specific CreateFunctions with an empty HANDLES structure.
 
     % Do feval on layout code in m-file if it exists
-    persistent gui_hFigure
+    persistent gui_hFigure %#ok Ignore MLint
     if ~isempty(gui_State.gui_LayoutFcn)
         if ishandle(gui_hFigure)
             display('CellProfiler is already running!!');

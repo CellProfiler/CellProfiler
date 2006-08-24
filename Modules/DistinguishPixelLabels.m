@@ -500,7 +500,7 @@ handles.Pipeline.NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipelin
 handles.Pipeline.CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
 
 %%% Finds secondary medians for each half of the actin stained image
-%%% (DOESN'T WORK WITH MANUAL PEAK SELECTION)
+%%% (DOESN'T WORK WITH MANUAL PEAK SELECTION -- only used in "hacky" phi)
 handles.Pipeline.SecCellThreshHigh = 256*median(JLCellImage(JLCellImage > CellThreshold));
 handles.Pipeline.SecCellThreshLow = 256*median(JLCellImage(JLCellImage <= CellThreshold));
 
@@ -767,6 +767,8 @@ end
 function arr = phi(padim,handles)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
+%%% MODDED CURRENTLY TO BE THE 'HACKY' VERSION, MEANING THAT VALUES ARE
+%%% HARD-CODED FOR ACTIN-INFO IN CELL,BG DISTANCES
 
 %%% Initializes counters, preallocates the array to return
 rows = size(padim,1)-2;
@@ -780,8 +782,8 @@ b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
 scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
 sigma = handles.Pipeline.SigmaValue;
 actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
-% chi = handles.Pipeline.SecCellThreshHigh;
-% clo = handles.Pipeline.SecCellThreshLow;
+chi = handles.Pipeline.SecCellThreshHigh;
+clo = handles.Pipeline.SecCellThreshLow;
 
 %%% for each row, for each column within that row, calculates the
 %%% probability that a given pixel will be labeled in each of the three
@@ -791,11 +793,11 @@ for yind = 1:rows
     %%% x is the array of pixel values, [DNA;actin], for each corresponding
     %%% pixel in padim, accounting for the pad of zeros
     x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
-    % %%% Finds the locations (single-subscript indexing) where actin stain
-    % %%% intensities are above, below, and between means of each half
-    % lowestlocs = find(x(2,:) < clo);
-    % highestlocs = find(x(2,:) > chi);
-    % restoflocs = find(x(2,:) > clo & x(2,:) < chi);
+    %%% Finds the locations (single-subscript indexing) where actin stain
+    %%% intensities are above, below, and between means of each half
+    lowestlocs = find(x(2,:) < clo);
+    highestlocs = find(x(2,:) > chi);
+    restoflocs = find(x(2,:) > clo & x(2,:) < chi);
     
     %%% Calculates probabilities of each label by finding distances, fixing
     %%% the actin staining data according to secondary means, and putting
@@ -803,13 +805,13 @@ for yind = 1:rows
     sdB = scaling * (b-x);
     sdN = scaling * (n-x);
     sdC = actinsc * scaling * (c-x);
-    % sdC = scaling * (c-x);
-    % sdC(2,lowestlocs) = 0.9;
-    % sdC(2,highestlocs) = 0.1;
-    % sdC(2,restoflocs) = 0.4;
-    % sdB(2,lowestlocs) = 0.1;
-    % sdB(2,highestlocs) = 0.9;
-    % sdB(2,restoflocs) = 0.6;
+    sdC = scaling * (c-x);
+    sdC(2,lowestlocs) = 0.9;
+    sdC(2,highestlocs) = 0.1;
+    sdC(2,restoflocs) = 0.4;
+    sdB(2,lowestlocs) = 0.1;
+    sdB(2,highestlocs) = 0.9;
+    sdB(2,restoflocs) = 0.6;
     invdisB = exp(sum(-sdB.*sdB/sigma));
     invdisN = exp(sum(-sdN.*sdN/sigma));
     invdisC = exp(sum(-sdC.*sdC/sigma));

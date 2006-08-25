@@ -1,19 +1,24 @@
 function handles = TrackObjects(handles)
 
-% Help for the Measure Object Neighbors module:
-% Category: Measurement
+% Help for the Track Objects module:
+% Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% The TrackObjects module is made so that objects can be tracked throughout
-% the duration of a video file.  
+% The TrackObjects module allows tracking objects throughout
+% the duration of a video file, so that each object has a stable number 
+% in the output measurements.
 % *************************************************************************
+% Note: this module is still beta-version and has not been thoroughly 
+% checked. Improvements to the code are welcome!
+% 
 % This module must be run after objects have been identified.  The image
 % that objects must appear in cannot be a color image.  For color video
 % files, run the ColorToGray module before this.  
 % 
 % Settings:
 % Objects To Track- Select the objects that you wish to track.  They must
-%       already be identified before this module. 
+%       already be identified before this module.
+%
 % Track Method -   Distance, Size, Intensity
 %
 %       Distance - This method will compare the distance between each
@@ -46,13 +51,12 @@ function handles = TrackObjects(handles)
 % Tracked Display Name - Specify the name of what the image with the
 %                        labeled object is to be stored. 
 %
-% Suggestions:  The Distance method generally works the best however, if
+% Suggestions:  The Distance method generally works the best; however, if
 % the objects move very quickly, try the size or intensity based on which
-% property is most consistent.  How well this module runs is purely based
-% on how well the objects are identified so choose the threshold in the
-% previous modules well!
-%
-%
+% property is most consistent.  How well this module works depends largely
+% on how well the objects were identified in the Identify module you are 
+% using.
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -77,6 +81,7 @@ function handles = TrackObjects(handles)
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 3899 $
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
@@ -89,14 +94,14 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = How do you want to track this object?
+%textVAR02 = Choose a tracking method:
 %choiceVAR02 = Size
 %choiceVAR02 = Intensity
 %choiceVAR02 = Distance
 %inputtypeVAR02 = popupmenu
 TrackMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For objects to be tracked by Size or Intensity, select pixel vicinity where objects within the area will be evaluated.
+%textVAR03 = For SIZE or INTENSITY, choose the neighborhood (in pixels) within which objects will be evaluated.
 %defaultVAR03 = 100
 PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
@@ -111,20 +116,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = How do you want to display the tracked objects?
-%defaultVAR06 = Color and Number
-%choiceVAR06 = Grayscale and Number
 %choiceVAR06 = Color and Number
+%choiceVAR06 = Grayscale and Number
 %inputtypeVAR06 = popupmenu
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Do you want to calculate stats? (THIS OPTION IS NOT COMPLETE
-%AT THE MOMENT)
+%textVAR07 = Do you want to calculate stats? (THIS OPTION IS NOT COMPLETE AT THE MOMENT)
 %defaultVAR07 = No
 %choiceVAR07 = Yes
 %choiceVAR07 = No
 %inputtypeVAR07 = popupmenu
 Stats = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

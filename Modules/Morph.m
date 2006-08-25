@@ -4,10 +4,10 @@ function handles = Morph(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Beta
+% Beta version: provides access to built in Matlab morphological functions.
 % *************************************************************************
 %
-% Beta
+% Beta version: provides access to built in Matlab morphological functions.
 %
 % Settings:
 %
@@ -55,7 +55,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 MorphImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What function do you want to perform (e.g. dilate)?
+%textVAR03 = What function do you want to perform?
 %choiceVAR03 = Do not use
 %choiceVAR03 = bothat
 %choiceVAR03 = bridge
@@ -82,7 +82,7 @@ Functions{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 1
 FunctionVariables{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What function do you want to perform (e.g. dilate)?
+%textVAR05 = What function do you want to perform?
 %choiceVAR05 = Do not use
 %choiceVAR05 = bothat
 %choiceVAR05 = bridge
@@ -109,7 +109,7 @@ Functions{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 1
 FunctionVariables{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What function do you want to perform (e.g. dilate)?
+%textVAR07 = What function do you want to perform?
 %choiceVAR07 = Do not use
 %choiceVAR07 = bothat
 %choiceVAR07 = bridge
@@ -136,7 +136,7 @@ Functions{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = 1
 FunctionVariables{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What function do you want to perform (e.g. dilate)?
+%textVAR09 = What function do you want to perform?
 %choiceVAR09 = Do not use
 %choiceVAR09 = bothat
 %choiceVAR09 = bridge
@@ -163,7 +163,7 @@ Functions{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 1
 FunctionVariables{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = What function do you want to perform (e.g. dilate)?
+%textVAR11 = What function do you want to perform?
 %choiceVAR11 = Do not use
 %choiceVAR11 = bothat
 %choiceVAR11 = bridge
@@ -190,7 +190,7 @@ Functions{5} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = 1
 FunctionVariables{5} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = What function do you want to perform (e.g. dilate)?
+%textVAR13 = What function do you want to perform?
 %choiceVAR13 = Do not use
 %choiceVAR13 = bothat
 %choiceVAR13 = bridge
@@ -216,7 +216,6 @@ Functions{6} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %textVAR14 = How many times do you want to repeat the function?
 %defaultVAR14 = 1
 FunctionVariables{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-
 
 %%%VariableRevisionNumber = 1
 

@@ -1,6 +1,6 @@
 Mike's TODO list
 
-- Release new CellProfiler due to all the UROPs' nice changes - check the main TODO first for a few things that should probably be done before release. Also, tell Anne to recompile a new manual once you are ready to release.
+- Release new CellProfiler due to all the UROPs' nice changes - check the main TODO first for a few things that should probably be done before release. Also, tell Anne to recompile a new manual once you are ready to release. We might want to exclude Distinguish Pixel Labels from the release because we haven't published/fully documented/tested it yet.
 
 - Add ObjectCount to handles.Measurements?
 

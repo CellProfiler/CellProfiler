@@ -1,6 +1,6 @@
 Mike's TODO list
 
-- Release new CellProfiler due to all the UROPs' nice changes.
+- Release new CellProfiler due to all the UROPs' nice changes - check the main TODO first for a few things that should probably be done before release. Also, tell Anne to recompile a new manual once you are ready to release.
 
 - Add ObjectCount to handles.Measurements?
 

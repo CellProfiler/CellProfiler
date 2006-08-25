@@ -8,61 +8,39 @@ function handles = DistinguishPixelLabels(handles)
 % intensities and neighboring labels.
 % *************************************************************************
 %
-% By using the belief propagation algorithm, this module finds a more accurate 
-% label for each pixel in the field of view.  Use this module before the 
-% IdentifyPrimAutomatic and IdentifySecondary modules, and instead of selecting 
-% an automatic threshold there, enter the name of a binary image produced in 
-% this module.
+% By using the belief propagation algorithm, this module finds a more
+% accurate label for each pixel in the field of view.  Use this module
+% before the IdentifyPrimAutomatic and IdentifySecondary modules, and
+% instead of selecting an automatic threshold there, enter the name of a
+% binary image produced in this module.
 %
 % Overview:
-%   The goal of this module is to find the most accurate binary images that specify
-% where in the image cells and nuclei exist.  Typically this is done by applying 
-% a threshold to input grayscale images, where every pixel above the threshold 
-% value is considered foreground and every pixel below, background.  
-% Using ordinary thresholds, however, ignores a great deal of information; the 
-% belief propagation algorithm improves upon this by labeling pixels as foreground
-% or background based not only on their pixel intensity value but also on the 
-% values of nearby pixels and a predetermined set of probabilities that neighboring 
-% pixels of each type share the same label.
-%   The belief propagation (BP) algorithm is used to solve inference problems--in 
-% this case, to predict the best label (cell, nucleus, or background) for a set
-% of pixels.  Treating the field of view as a pairwise markov random field, in
-% which the observed pixel intensities from two stained images are the observable
-% nodes and their corresponding labels are the hidden nodes, BP finds the 
-% marginal probabilities (or "beliefs") for each label at each pixel.  See 
-% Yedidia et. al. or scroll down to "Technical Description" for more 
-% information.
+%   The goal of this module is to find the most accurate binary images that 
+% specify where in the image cells and nuclei exist.  Typically this is
+% done by applying a threshold to input grayscale images, where every pixel
+% above the threshold value is considered foreground and every pixel below,
+% background.  Using ordinary thresholds, however, ignores a great deal of
+% information; the belief propagation algorithm improves upon this by
+% labeling pixels as foreground or background based not only on their pixel
+% intensity value but also on the values of nearby pixels and a
+% predetermined set of probabilities that neighboring pixels of each type
+% share the same label.
+%   The belief propagation (BP) algorithm is used to solve inference 
+% problems--in this case, to predict the best label (cell, nucleus, or
+% background) for a set of pixels.  Treating the field of view as a
+% pairwise markov random field, in which the observed pixel intensities
+% from two stained images are the observable nodes and their corresponding
+% labels are the hidden nodes, BP finds the marginal probabilities (or
+% "beliefs") for each label at each pixel.  See Yedidia et. al. or scroll
+% down to "Technical Description" for more information.
 %
 % Yedidia, J. S., Freeman, W. T., and Weiss, Y. (2002).  Understanding
 % belief propagation and its generalizations. Technical report, Mitsubishi
 % Electric Research Labs., TR-2001-22.
 %
 % Settings:
-% Peak pixel intensity selection method:
-% This module depends finding three "peaks" that represent the DNA and actin
-% staining intensities which are most common among each label.  You can choose
-% to have these peaks automatically calculated for each image in the set, or 
-% you can have a histogram displayed for manual selection.  For either manual 
-% option, the peaks remain the same for every image in the set.  Per-image 
-% calculation is more reliable unless all images seem to have about the same 
-% overall brightness and area covered by cells and nuclei.  
-%%%% SHOULD THIS OPTION BE ERASED? WE NEVER USE ANYTHING BUT AUTO-PERIMAGE 
-%%%% PEAK CALCULATION!
 %
-%
-% The actin scaling factor input variable will be used to scale the
-% distances between the actin peak and the real pixels by 1/input.  This
-% will be inverted again for the probabilities; thus, a higher number makes
-% the probabilities of actin foreground and actin background more powerful
-% relative to the probabilities from the DNA staining.
-%
-% With Testing Mode turned on, there will be 4 files saved to the
-% handles.Pipeline structure that are the beliefs that would be calculated
-% after each directional message passing during the final propagation step.
-% These are saved in handles.Pipeline.BeliefsAfterPass1 (and 2-4), and can
-% be accessed by other modules by selecting "Other..." and typing in
-% BeliefsAfterPass1 (or 2-4).  Otherwise, beliefs are only calculated once
-% (meaning that the module will run faster).
+% THESE NEED TO BE REWRITTEN
 %
 % See also IdentifyPrimAutomatic, IdentifySecondary
 
@@ -147,35 +125,35 @@ SigmaValueString = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 2
 ActinScalingFactorString = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = What did you call the illumination correction matrix for nuclei? (optional - leave as "none" if you do not wish to correct illumination) 
-%infotypeVAR11 = imagegroup
-%choiceVAR11 = none
-LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu custom
+%textVAR11 = What version of the phi subfunction do you want to use? "Normal" phi fits gaussian curves to both staining histograms to calculate probabilities, while "selective" phi uses 3 constant probabilities for actin-staining in order to pick out bright and dim cells.  "Selective" doesn't work with numeric peak selection. (see help for details)
+%choiceVAR11 = Normal
+%choiceVAR11 = Selective
+PhiVersion = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-%textVAR12 = What did you call the illumination correction matrix for nuclei? (optional - leave as "none" if you do not wish to correct illumination)
+%textVAR12 = What did you call the illumination correction matrix for nuclei? (optional - leave as "none" if you do not wish to correct illumination) 
 %infotypeVAR12 = imagegroup
 %choiceVAR12 = none
-LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+LoadedNIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 
-%textVAR13 = For NUMERIC, enter the coordinates for the peak in nucleus, cell, and background pixel intensity values as (NucleiX,NucleiY,CellsX,CellsY,BGX,BGY).
-%defaultVAR13 = 100,100,150,150,200,200
-AllPeakInputValuesString = char(handles.Settings.VariableValues{CurrentModuleNum,13}); 
+%textVAR13 = What did you call the illumination correction matrix for nuclei? (optional - leave as "none" if you do not wish to correct illumination)
+%infotypeVAR13 = imagegroup
+%choiceVAR13 = none
+LoadedCIllumCorrName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu custom
 
-%textVAR14 = Do you want to run in test mode where beliefs are calculated after each direction of message passing during the final propagation? (see help for details)
-%choiceVAR14 = No
-%choiceVAR14 = Yes
-TestingMode = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-%inputtypeVAR14 = popupmenu
+%textVAR14 = For NUMERIC, enter the coordinates for the peak in nucleus, cell, and background pixel intensity values as (NucleiX,NucleiY,CellsX,CellsY,BGX,BGY).
+%defaultVAR14 = 100,100,150,150,200,200
+AllPeakInputValuesString = char(handles.Settings.VariableValues{CurrentModuleNum,14}); 
 
-%textVAR15 = What version of the phi subfunction do you want to use? "Hacky" doesn't work with numeric peak selection. (REMOVE THIS OPTION OR RENAME IT AFTER DEVELOPMENT IS COMPLETE!)
-%choiceVAR15 = Normal
-%choiceVAR15 = Hacky
-PhiVersion = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%textVAR15 = Do you want to run in test mode where beliefs are calculated after each direction of message passing during the final propagation? (see help for details)
+%choiceVAR15 = No
+%choiceVAR15 = Yes
+TestingMode = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%%%VariableRevisionNumber = 8
+%%%VariableRevisionNumber = 9
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -221,6 +199,7 @@ if handles.Current.SetBeingAnalyzed == 1
         fieldname = ['FileList', CellsImageName];
         CellsFileList = handles.Pipeline.(fieldname);
 
+        %%% Alerts the user that this initial run will take longer
         handle1 = CPhelpdlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles skip this step and will run much more quickly.  Initial calculations are complete when this window closes.']);
 
         %%% initialize image log stores
@@ -261,6 +240,7 @@ if handles.Current.SetBeingAnalyzed == 1
         NucleiFGCellAllMean = 256*mean(AllNucleiImages(AllNucleiImages > NucThreshold));
         CellsAllNucFGMean = 256*mean(AllCellsImages(AllNucleiImages > NucThreshold));
 
+        %%% Closes the alert window
         close(handle1);
 
         %%% Save the interpolated peaks to the handles structure
@@ -269,15 +249,15 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Pipeline.BackgroundPeak = [NucleiBGCellBGMean;CellsBGNucBGMean];
         
         %%% Finds secondary medians for each half of the actin stained image
-        %%% (only used in "hacky" phi, hence the string to match)
-        if strcmp(PhiVersion,'hacky')
+        %%% (only used in non-normal phi)
+        if ~strcmpi(PhiVersion,'normal')
             handles.Pipeline.SecCellThreshHigh = 256*median(AllCellsImages(AllCellsImages > CellThreshold));
             handles.Pipeline.SecCellThreshLow = 256*median(AllCellsImages(AllCellsImages <= CellThreshold));
         end
         
     end
     
-    if ~strfind(PeakSelectionMethod,'Per Image')
+    if strcmp(PeakSelectionMethod,'Automatic - Per Set') || strncmp(PeakSelectionMethod,'Numeric',7)
         %%% Determines image-wide bias along one axis--that is, if the range of
         %%% intensity for DNA-stained pixels is half that for actin-stained
         %%% pixels, then the messages for nuclei will be half as strong, which
@@ -286,10 +266,7 @@ if handles.Current.SetBeingAnalyzed == 1
         handles.Pipeline.NucleiMDiff = handles.Pipeline.NucleiPeak(1) - (handles.Pipeline.BackgroundPeak(1) + handles.Pipeline.CellsPeak(1))/2;
         handles.Pipeline.CellsMDiff = handles.Pipeline.CellsPeak(2) - handles.Pipeline.BackgroundPeak(2);
     end
-
-    %%% Saves the preset psi function to handles structure
-    handles.Pipeline.Psi = [.9004,.0203,0;.0996,.9396,.0186;0,.0400,.9814];
-
+    
     drawnow
 end
 
@@ -342,8 +319,8 @@ if strcmp(PeakSelectionMethod,'Automatic - Per Image')
     handles.Pipeline.BackgroundPeak = [NucleiBGCellBGMean;CellsBGNucBGMean];
     
     %%% Finds secondary medians for each half of the actin stained image
-    %%% (only used in "hacky" phi, hence the string to match)
-    if strcmp(PhiVersion,'hacky')
+    %%% (only used in non-normal phi)
+    if ~strcmpi(PhiVersion,'normal')
         handles.Pipeline.SecCellThreshHigh = 256*median(JLCellImage(JLCellImage > CellThreshold));
         handles.Pipeline.SecCellThreshLow = 256*median(JLCellImage(JLCellImage <= CellThreshold));
     end
@@ -380,17 +357,21 @@ Messages.Down = ones(numel(LoggedPaddedImage),3);
 %%% steps VASTLY improve runtime by eliminating thousands of subfunction
 %%% invocations)
 IndicesArray = initsub2ind(size(LoggedPaddedImage));
-if strcmpi(PhiVersion,'hacky')
+if ~strcmpi(PhiVersion,'normal')
     AllPhiValues = phiH(LoggedPaddedImage,handles);
 else
     AllPhiValues = phi(LoggedPaddedImage,handles);
 end
 
+%%% The psi values are hard-coded from analysis of manual image
+%%% segmentation -- these relate the probabilities that neighboring pixels
+%%% will have the same labels, for each given label.
+PsiFunction = [.9004,.0203,0;.0996,.9396,.0186;0,.0400,.9814];
+
 if strcmp(TestingMode,'No')
 
     %%% Runs through the belief propagation algorithm, iterating in each
     %%% direction several times
-    PsiFunction = handles.Pipeline.Psi;
     for i=1:NumberOfProps
         Messages = Propagate(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
     end
@@ -403,13 +384,20 @@ if strcmp(TestingMode,'No')
     AllBeliefs = zeros(size(OrigNucleiImage,1),size(OrigNucleiImage,2));
     LPISize = size(LoggedPaddedImage);
     x = 2:LPISize(2)-1;
+    %%% For each row except the pad at the top and bottom, gets the product
+    %%% of all incoming messages and the phi values (which must be reshaped
+    %%% with the permute function)
     for yind = 2:LPISize(1)-1;
         RawPixelBeliefs = Messages.Up(IndicesArray(yind+1,x),:)' .* ...
             Messages.Down(IndicesArray(yind-1,x),:)' .* ...
             Messages.Left(IndicesArray(yind,x+1),:)' .* ...
             Messages.Right(IndicesArray(yind,x-1),:)' .* ...
             permute(AllPhiValues(yind-1,x-1,:),[3 2 1]);
+        %%% Normalizes these products so each column sums to 1
         NormalizedPixelBeliefs = RawPixelBeliefs ./ repmat(sum(RawPixelBeliefs),3,1);
+        %%% Gets the highest probability in each column and saves those
+        %%% values to AllBeliefs.  AllNormalizedBeliefs contains the final
+        %%% probabilities, prior to this "rounding off".
         [ignore, MaxIndices] = max(NormalizedPixelBeliefs); %#ok Ignore MLint
         for i=1:3
             AllNormalizedBeliefs(yind-1,x-1,i) = reshape(NormalizedPixelBeliefs(i,:),1,size(x,2),1);
@@ -427,7 +415,6 @@ else
     %%% should really only run it when saving or otherwise using the
     %%% intermediary belief calculations, since it slows the module down
     %%% significantly.  
-    PsiFunction = handles.Pipeline.Psi;
     for i = 1:NumberOfProps
         Messages = PassUp(LoggedPaddedImage,PsiFunction,AllPhiValues,IndicesArray,Messages);
         if i == NumberOfProps
@@ -649,8 +636,6 @@ b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
 scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
 sigma = handles.Pipeline.SigmaValue;
 actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
-% chi = handles.Pipeline.SecCellThreshHigh;
-% clo = handles.Pipeline.SecCellThreshLow;
 
 %%% for each row, for each column within that row, calculates the
 %%% probability that a given pixel will be labeled in each of the three
@@ -660,11 +645,6 @@ for yind = 1:rows
     %%% x is the array of pixel values, [DNA;actin], for each corresponding
     %%% pixel in padim, accounting for the pad of zeros
     x = [padim(yind+1,2:end-1,1);padim(yind+1,2:end-1,2)];
-    % %%% Finds the locations (single-subscript indexing) where actin stain
-    % %%% intensities are above, below, and between means of each half
-    % lowestlocs = find(x(2,:) < clo);
-    % highestlocs = find(x(2,:) > chi);
-    % restoflocs = find(x(2,:) > clo & x(2,:) < chi);
     
     %%% Calculates probabilities of each label by finding distances, fixing
     %%% the actin staining data according to secondary means, and putting
@@ -672,13 +652,6 @@ for yind = 1:rows
     sdB = scaling * (b-x);
     sdN = scaling * (n-x);
     sdC = actinsc * scaling * (c-x);
-    % sdC = scaling * (c-x);
-    % sdC(2,lowestlocs) = 0.9;
-    % sdC(2,highestlocs) = 0.1;
-    % sdC(2,restoflocs) = 0.4;
-    % sdB(2,lowestlocs) = 0.1;
-    % sdB(2,highestlocs) = 0.9;
-    % sdB(2,restoflocs) = 0.6;
     invdisB = exp(sum(-sdB.*sdB/sigma));
     invdisN = exp(sum(-sdN.*sdN/sigma));
     invdisC = exp(sum(-sdC.*sdC/sigma));
@@ -697,9 +670,9 @@ end
 function arr = phiH(padim,handles)
 %%% returns an array containing phi values (1x1x3) at each pixel in padim
 %%% except the border, as a R-1xC-1x3 array where padim is RxCx2
-%%% MODDED CURRENTLY TO BE THE 'HACKY' VERSION, MEANING THAT VALUES ARE
-%%% HARD-CODED FOR ACTIN-INFO IN CELL,BG DISTANCES
-CPhelpdlg('Alert: Using "hacky" version of the phi subfunction!');
+%%% NOTE: this version of phi operates in a more preset, manual way to pick
+%%% up dimmer cells that would otherwise be labeled as background because
+%%% of the presence of bright cells.
 
 %%% Initializes counters, preallocates the array to return
 rows = size(padim,1)-2;
@@ -712,7 +685,6 @@ n = repmat(handles.Pipeline.NucleiPeak,1,cols);
 b = repmat(handles.Pipeline.BackgroundPeak,1,cols);
 scaling = [1/handles.Pipeline.NucleiMDiff 0; 0 1/handles.Pipeline.CellsMDiff];
 sigma = handles.Pipeline.SigmaValue;
-% actinsc = [1 0; 0 1/handles.Pipeline.ActinScalingFactor];
 chi = handles.Pipeline.SecCellThreshHigh;
 clo = handles.Pipeline.SecCellThreshLow;
 
@@ -735,7 +707,6 @@ for yind = 1:rows
     %%% this into a gaussian probability function for each label
     sdB = scaling * (b-x);
     sdN = scaling * (n-x);
-    % sdC = actinsc * scaling * (c-x);
     sdC = scaling * (c-x);
     sdC(2,lowestlocs) = 0.9;
     sdC(2,highestlocs) = 0.1;

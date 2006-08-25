@@ -1,65 +1,44 @@
 CellProfiler cell image analysis software development 
 
+-----------------------------------------
+PROBABLY SHOULD DO BEFORE NEXT RELEASE:
+- Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
+
+Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
+
+- Anne 8-25-06: Make fill holes optional in IdentifyPrimAutomatic for the weird case where one object encircles several smaller objects. Requires remaking our example PIPEs.
+
 - Anne 8-22-06: Adapt the filter objects module according to this post on our forum:
 http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
 
-- Anne 8-22-06: We would like to make a module that allows testing various settings for particular variables. The module would only allow processing of the first image set loaded in the LoadImages module (most likely, unless you can think of a way to do multiple image sets) but would automatically rerun the pipeline using a variety of settings. The output would be comparable to how we deal with movies, I think (frame 1,2,3 would be the same original image but with the different settings the user specifies). For example, if the user wanted to run the pipeline with IdentifyPrimAUto threshold set to a range of values, they would add this new TestSettings module to the end of the pipeline and specify: Module number, Variable number, and Values to test (edit box) where they would enter a range. Most likely, the first value they want to test should be specified in the original module in the pipeline, and the remainder of the values would be entered here, either comma-delimited, or using Matlab's normal range specifications, like [0:0.5:10]. So, when getting to this module at the end of the pipeline, the current image set's processing and measurements and everything would need to be moved somewhere so as not to be overwritten in the next round, and the settings in the handles structure need to be changed so that the next round will allow processing the same image using the next incremented settings.
-
-- (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS ALREADY, SUMMER 2006?
-
-- (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
+- (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS SUMMER 2006 - we just need to check and see that it works.
 
 - (Vicky 8/18/06) - The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. 
 
 - Rodrigo 8/18/06: MeasureImageSlope module needs documentation.
 
-- Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
-
-Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
-
-Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle!
-
 - Rodrigo 7/24/06: We should prevent CellProfiler from opening again if its already open. Some of it functions stop working when this happens. It seems this was corrected before (10/05), but for some reason it's not working. Note (Anne 8-21-06) it seems to work fine on my computer (Mac), perhaps this is a PC-specific problem - can someone check on PC and Unix platforms?
 
 - Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
 
-THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stacked tifs
+- (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? [Anne 8-25-06: i am pretty sure we CAN get individual speckle data out, can't we?) Also, exporting the identity of neighbors I think is not currently possible. Need to doublecheck.
 
-- Anne 6-21-06: try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we should have "run in memory mapping mode for large images?" as a preference in Set Preferences, and then we would adjust the CPretrieveimage subfunction (or whatever it's called) to check whether we are in memory mapping mode or not in order to decide how to retrieve images. It's unclear to me whether this would involve a ridiculous amount of change - for example, would we have to change every module that stores an image in the handles to store it in a particular special way?
+-----------------------------------------
+MAYBE SHOULD DO BEFORE NEXT RELEASE:
 
 - (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process (using MATLAB editors especially)? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
 
-- (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? Also, exporting the identity of neighbors I think is not currently possible.
+-----------------------------------------
 
-- (Anne 5/25/06) - What are our latest stats for # downloads, interesting institutions/companies, mac vs pc, etc.
+PROBABLY WILL *NOT* DO BEFORE NEXT RELEASE:
 
-- (Anne 5/10/06) - When analyzing images in CellProfiler, after every cycle should we check to see what images are used downstream (checking all the imagegroup members) and strip the rest out? This would save a lot of memory.
+- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work! 8-25-06 I have a vague impression that someone may have worked on this already, but we should definitely check -Anne.
 
-- (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
+- (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
 
-- (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?
-
-- (Requested by Colin 3/20) - I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype.
-
-- (Anne 2-9-06) Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
-
-- (Requested by Anne 2-24-06) - I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files.
-
-- (Requested by Anne 12-16-05)- Design an informational brochure
-
-- (Requested by Anne 12-15-05)- Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps.
-
-- (Requested by Anne 12-09-05)-- The Manual Compiler chokes on the images for CorrectIllumination_Apply and _Calculate due to the underscore in their names - need to fix.
-
-- (Requested by Anne 12-09-05)-- We want the manual compiler to generate a page towards the beginning with all the short descriptions from each module and tool as a Quick Reference Guide.
-
-- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
-
-- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
-
-- Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities, GUI Tools & examples, and Misc.
+THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted: - Mike - Stacked tifs [Mike, do you have any idea what this means? -Anne]
 
 - (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?
 http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3
@@ -67,17 +46,31 @@ http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3
 - (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc: Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?
 http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 
-- (Requested by Anne 12-09-05)-- Make a data tool for normalization - see the help in Data Layout for starters and talk to Adam. We will probably put this tool in CellVisualizer instead.
+- GENERAL MODULE CHECKING: (1) Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle! (2) I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files. (3) (Requested by Anne 11-21-05) - Calculations shouldn't be made if they don't need to be (e.g. calculating outlines, colored label matrix for display when the figure is closed anyway). We should check through all the modules.
 
-- (Requested by Anne 12-09-05)- Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual.
+- (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
 
-- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work!
+- (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?
 
-- (Requested by Anne 11-21-05) - Calculations shouldnt be made if they don't need to be (outlines, colored label matrix for display)
+- MODULE/VARIABLE LOADING ISSUES: (1) [Colin] I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype. (2) [Anne] Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
+
+- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!
+
+- MANUAL IMPROVEMENTS: (Requested by Anne 12-09-05)- (1) Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual. (2) the Manual Compiler chokes on the images for CorrectIllumination_Apply and _Calculate due to the underscore in their names - need to fix. (3) We want the manual compiler to generate a page towards the beginning with all the short descriptions from each module and tool as a Quick Reference Guide.
+
+- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
 
 - (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.
 
 -(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
+
+- (Requested by Anne 12-15-05)- MEMORY ISSUES: Should we somehow refresh memory after every cycle of CP? It gets slower and slower with each cycle which can be fixed by using Restart module, so something must be up with the memory handling. See matlab's pack function, perhaps. Another idea: after every cycle should we check to see what images are used downstream (checking all the imagegroup members) and strip the rest out? This would save a lot of memory. Also, maybe try using MATLAB's function memmapfile to use memory mapping when loading really large images to see if it helps relieve 'out of memory' issues. We have super-large 5x scans of entire slides to use in this testing. If this works well, we should have "run in memory mapping mode for large images?" as a preference in Set Preferences, and then we would adjust the CPretrieveimage subfunction (or whatever it's called) to check whether we are in memory mapping mode or not in order to decide how to retrieve images. It's unclear to me whether this would involve a ridiculous amount of change - for example, would we have to change every module that stores an image in the handles to store it in a particular special way?
+
+- Check Matlab Central for useful code to incorporate into CellProfiler or its modules (last checked on 9-16-04: Biotech/medical, Graphics (all 3 categories), Image Processing, Utilities, GUI Tools & examples, and Misc.
+
+- ***NICE PROJECT FOR A UROP*** Anne 8-22-06: We would like to make a module that allows testing various settings for particular variables. The module would only allow processing of the first image set loaded in the LoadImages module (most likely, unless you can think of a way to do multiple image sets) but would automatically rerun the pipeline using a variety of settings. The output would be comparable to how we deal with movies, I think (frame 1,2,3 would be the same original image but with the different settings the user specifies). For example, if the user wanted to run the pipeline with IdentifyPrimAUto threshold set to a range of values, they would add this new TestSettings module to the end of the pipeline and specify: Module number, Variable number, and Values to test (edit box) where they would enter a range. Most likely, the first value they want to test should be specified in the original module in the pipeline, and the remainder of the values would be entered here, either comma-delimited, or using Matlab's normal range specifications, like [0:0.5:10]. So, when getting to this module at the end of the pipeline, the current image set's processing and measurements and everything would need to be moved somewhere so as not to be overwritten in the next round, and the settings in the handles structure need to be changed so that the next round will allow processing the same image using the next incremented settings.
+
+- (Requested by Anne 12-09-05)-- NOT SURE IF WE REALLY WANT THIS ENOUGH TO WORK ON IT: Make a data tool for normalization - see the help in Data Layout for starters and talk to Adam. We will probably put this tool in CellVisualizer instead.
 
 - (Requested by Colin) NOT SURE IF THIS IS PRACTICAL - The measure modules create an error when a label matrix with an object completely missing is given to it.  We took care of this by making Identify modules create a single pixel if an object is missing.  It would be nice to allow objects to be missing in measurement modules.  Also, once the measurement modules are working, make sure it is possible to export the data to excel.
 
@@ -95,11 +88,13 @@ PROJECTS, MOSTLY VISION/IMAGE ANALYSIS-RELATED:
 -----------------------------------------------
 ++ (Anne 5/10/06) - IMPORTANT - The propagate algorithm works very nicely in our IdSec module. We should add this as an option for the IdPrimAutomatic module (It would be a new method for finding the dividing lines between clumped objects, along with Intensity and Distance.)
 
++++ Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original. 
+
 ++ (Requested by Anne 1-17-06) - We should make a new module to calculate the KS statistic for every image set. It would require notifying the software which images are controls (they can load this information using LoadText, as is done for the CalculateStatistics module), because this statistic compares the distribution of individual cell measures from each image to the distribution of individual cell measures from the control image(s). Once finished, we should see whether the calculated KS statistic produces a better Z' score than the 'percent above threshold' method for the BioImage cyto-nuc translocation assay. References: Chakravart LaR: Handbook of methods of applied statistics. Vol 1New york: John wiley, 1967:392-394; also Giuliano, Chen, Taylor, J Biomol Screening 2004; 9:557-568. See also Wilson, Si, Thompson, Smellie, Ashwell et al, J Biomol Screen 2005 or 2006 "Identification of a small molecule that induces mitotic arrest using s simplified high-content screening assay and data analysis method." because this has an example where KS statistics are calculated between several control images and this value is subtracted from the KS values for each image. Also, Smellie J Chem Inf Model 2005 or 2006.
 
 ++ (Requested by Anne) - right now we choose between intensity and shape (or distance) at two places in IdentifyPrimAutomatic. It might be cool to develop a more sophisticated method that allows you to balance the input of these two sources of information.
 
-+ (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are supposedly described in an article currently in press at Pattern Recognition, by Bartek (short for a longer name) Rajwa in Robinson's lab at Purdue. I requested the article from him May 22. How about Fourier measures of shape? Is that a good idea?
++ (Anne 5/12/06) - Add more shape measures to MeasureObjectAreaShape. The Image processing handbook has some described starting on page 513 and the Shape analysis and classification book has some starting on page 422. See also articles that Anne has: {Rodenacker, 2003 A feature set for cytometry on digitized microscopic images}{Boland, 2001 #A neural network classifier capable of recognizing the patterns of all major subcellular structures in fluorescence microscope images of HeLa cells}  Another useful feature: # of invaginations of the perimeter.  Also investigate Tchebyshev orthogonal moments, which are described in an article currently in press at Pattern Recognition, by Rajwa in Robinson's lab at Purdue. Anne has the pdf article. How about Fourier measures of shape? Is that a good idea?  Is it possible to have our shape/texture measures match up with those used my Robert Murphy's lab at Carnegie Mellon? I think already our Haralick texture features are nicely categorized using his nomenclature but it's worth checking our other measures to be sure that they are proper categories with the proper SLF numbers.
 See also comments from Ray:
 Hi Ray,
 I just heard a talk about measuring shape in images, and the speaker
@@ -122,8 +117,6 @@ those shapes vary as the resolution drops, and we might be able to
 estimate ranges for those measurements, rather than just a single
 estimate with no indication of its accuracy. - Ray
 
-+ (Anne 5/20/06) - Is it possible to have our shape/texture measures match up with those used my Robert Murphy's lab at Carnegie Mellon? I think already our Haralick texture features are nicely categorized using his nomenclature but it's worth checking our other measures to be sure that they are proper categories with the proper SLF numbers.
-
 +++ (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
 +++ (Requested by Anne 11-02-05) - The paper Malladi & Sethian PNAS 1995 has what looks like a really nice filter that makes objects more obvious in images with lots of noise.   It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
@@ -132,13 +125,7 @@ estimate with no indication of its accuracy. - Ray
 
 +++ (Requested by Anne 10-31-05) - http://wiki.na-mic.org/Wiki/index.php/Main_Page has open source algorithms we could implement.
 
-+++ Write algorithms to compare hand-traced results to CellProfiler results quantitatively, then apply them to our hand-traced data sets. [2 parts: 1) segment manual images.  2) match object to object, 3) signed distance transfer]
-
-+++ Allow batches of different settings to be run and their results compared 
-
-+++ Allow automatic selection of settings based on hand-traced images
-
-+++ Make separate Identify Secondary modules: one for bright lines and one for dark lines between objects.  Also try watershedding the gradient image rather than the original. 
++++ Write algorithms to compare hand-traced results to CellProfiler results quantitatively, then apply them to our hand-traced data sets. [2 parts: 1) segment manual images.  2) match object to object, 3) signed distance transfer]. The next step is to allow CellProfiler to recommend automatic settings based on hand-traced images.
 
 + (Requested by Anne 10-13-05) - There is a fairly simple routine in Janssens, et al., Dev Genes Evol 2005 (215:374-381) for drosophila cells in embryos. It might be fun to implement this routine into a CP pipeline.
 

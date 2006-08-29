@@ -23,6 +23,8 @@ http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
 
 - (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? [Anne 8-25-06: i am pretty sure we CAN get individual speckle data out, can't we?) Also, exporting the identity of neighbors I think is not currently possible. Need to doublecheck.
 
+- (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?  NOTE: the text file that you download with the compiled version does not have any mention of that step, so we should add that step to the instructions before our next release.
+
 -----------------------------------------
 MAYBE SHOULD DO BEFORE NEXT RELEASE:
 
@@ -49,8 +51,6 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 - GENERAL MODULE CHECKING: (1) Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle! (2) I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files. (3) (Requested by Anne 11-21-05) - Calculations shouldn't be made if they don't need to be (e.g. calculating outlines, colored label matrix for display when the figure is closed anyway). We should check through all the modules.
 
 - (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
-
-- (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?
 
 - MODULE/VARIABLE LOADING ISSUES: (1) [Colin] I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype. (2) [Anne] Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.
 

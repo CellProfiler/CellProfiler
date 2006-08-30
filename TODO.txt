@@ -36,6 +36,8 @@ MAYBE SHOULD DO BEFORE NEXT RELEASE:
 
 PROBABLY WILL *NOT* DO BEFORE NEXT RELEASE:
 
+- (Anne 8/30/06) - In CreateBatch, if you leave it set to "." it says it will use the default modules folder, and it seems to indeed try to use the default modules folder, when in reality it seems it ought to use the PARENT of the default Modules folder, so that CPsubfunctions are found. At least I think this is how it should be. We don't have a great way to test it unless we make batches and run them locally somehow.
+
 - (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work! 8-25-06 I have a vague impression that someone may have worked on this already, but we should definitely check -Anne.
 
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?

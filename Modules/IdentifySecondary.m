@@ -796,7 +796,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% matrix image.
             subplot(2,2,2); 
             CPimagesc(ColoredLabelMatrixImage,handles); 
-            title(['Segmented ',SecondaryObjectName]);
+            title(['Outlined ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
             subplot(2,2,3); 

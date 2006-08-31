@@ -199,7 +199,7 @@ elseif strcmp(Threshold,'All')
     else fieldname = ['Threshold', ImageName];
         Threshold = handles.Pipeline.(fieldname);
     end
-elseif strcmp(Threshold,'Test Mode')
+elseif strcmp(Threshold,'Set interactively')
     fieldname = ['Threshold',ImageName];
     if handles.Current.SetBeingAnalyzed == 1
         Threshold = CPthresh_tool(OrigImage);

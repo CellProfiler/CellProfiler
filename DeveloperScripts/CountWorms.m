@@ -45,7 +45,7 @@ MinWidth = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = /
 MeanArea = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
+%textVAR06 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold during the first cycle to determine what will work well.
 %choiceVAR06 = Otsu Global
 %choiceVAR06 = Otsu Adaptive
 %choiceVAR06 = MoG Global
@@ -55,7 +55,7 @@ MeanArea = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %choiceVAR06 = RidlerCalvard Global
 %choiceVAR06 = RidlerCalvard Adaptive
 %choiceVAR06 = All
-%choiceVAR06 = Test Mode
+%choiceVAR06 = Set interactively
 ThresholdMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu custom
 
@@ -108,7 +108,7 @@ catch
 end
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(ThresholdMethod,'Otsu',4) || strncmp(ThresholdMethod,'MoG',3) || strncmp(ThresholdMethod,'Background',10) || strncmp(ThresholdMethod,'RidlerCalvard',13) || strcmp(ThresholdMethod,'All') || strcmp(ThresholdMethod,'Test Mode'))
+if ~(strncmp(ThresholdMethod,'Otsu',4) || strncmp(ThresholdMethod,'MoG',3) || strncmp(ThresholdMethod,'Background',10) || strncmp(ThresholdMethod,'RidlerCalvard',13) || strcmp(ThresholdMethod,'All') || strcmp(ThresholdMethod,'Set interactively'))
     if isnan(str2double(ThresholdMethod))
         error(['Image processing was canceled in the ' ModuleName ' module because the threshold method you specified is invalid. Please select one of the available methods or specify a threshold to use (a number in the range 0-1). Your input was ' ThresholdMethod]);
     end

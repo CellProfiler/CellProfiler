@@ -2,6 +2,11 @@ CellProfiler cell image analysis software development
 
 -----------------------------------------
 PROBABLY SHOULD DO BEFORE NEXT RELEASE:
+
+Don't release TrackObjects. The code is really quite junky and needs a lot of work (see 'after next release' list of projects).
+
+- Anne 8-31-06: Check the comment around line 484 of IdentifyPrimAutomatic.
+
 - Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
 
 Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
@@ -12,8 +17,6 @@ Mike 8-7-06: If you filter then classify objects on subset and no cells present 
 http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
 
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS SUMMER 2006 - we just need to check and see that it works.
-
-- (Vicky 8/18/06) - The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. 
 
 - Rodrigo 8/18/06: MeasureImageSlope module needs documentation.
 
@@ -61,6 +64,8 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 - MANUAL IMPROVEMENTS: (Requested by Anne 12-09-05)- (1) Many modules do not have corresponding images in the manual, so we should make some example images in Promotional/ImagesForManual. (2) the Manual Compiler chokes on the images for CorrectIllumination_Apply and _Calculate due to the underscore in their names - need to fix. (3) We want the manual compiler to generate a page towards the beginning with all the short descriptions from each module and tool as a Quick Reference Guide.
 
 - (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
+
+- (Requested by Anne 8-31-06) - Would be nice to be able to click on movie files in the lower left box and have them open and play. At the very least, the first frame should open as a figure.
 
 - (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.
 
@@ -157,7 +162,15 @@ estimate with no indication of its accuracy. - Ray
 * See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
 * Xiong Cytometry 2006 might be the best; C++ code available from authors.
 
-+++ (Requested by Anne - Vicky began this project by making the TrackObjects module) - Particle tracking over time module. At the very least, (Ray 7-6-06), we should perhaps implement something as simple as "assign nuclei in image B the same label as the closest nucleus in image A," with some magic for splitting/merging when necessary. Good references:
++++ (Requested by Anne): enhance/expand the TrackObjects module:
+- Right now, an intensity image is retrieved/stored even if we are using size or distance matching, which as far as I can imagine, do not require intensity information. We should instead allow the user to choose (1) distance, or (2) any measurement in handles structure so that they can choose size, intensity or anything else they want. Grabbing code from the FilterObjects byMeasurement module should be helpful for this.
+- There is a line marked %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%% and I don't know why it's marked that.
+- Check through the rest of the code because there is a lot of junk stored in handles.Pipeline.TrackObjects that might not need to be. Also, be sure that things stored in handles are in the right place (handles.Previous and handles.Current are BAD places, for example!)
+- The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. Alternately, we might instead have a MeasureChange module to be used in conjunction with this module that allows you to calculate the Change in a specified measurement.
+- Can we add some magic for splitting/merging when necessary? 
+- Options for abandoning objects if they disappear or or not present throughout the entire movie, etc? 
+- We should make it optional to show/hide the numbers on top of objects in the display window (I think the numbers can't be saved on the image because it's tough to make matlab save text data on images).
+- Good references for other tracking methods:
 1 - Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
 2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.

@@ -233,7 +233,7 @@ OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
+%textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold during the first cycle to determine what will work well.
 %choiceVAR05 = Otsu Global
 %choiceVAR05 = Otsu Adaptive
 %choiceVAR05 = MoG Global
@@ -243,7 +243,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %choiceVAR05 = RidlerCalvard Global
 %choiceVAR05 = RidlerCalvard Adaptive
 %choiceVAR05 = All
-%choiceVAR05 = Test Mode
+%choiceVAR05 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
@@ -312,7 +312,7 @@ PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented'
 EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');

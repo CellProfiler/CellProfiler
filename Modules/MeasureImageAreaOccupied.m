@@ -132,7 +132,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = CellStain
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
+%textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR03 = Otsu Global
 %choiceVAR03 = Otsu Adaptive
 %choiceVAR03 = MoG Global
@@ -142,7 +142,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = RidlerCalvard Global
 %choiceVAR03 = RidlerCalvard Adaptive
 %choiceVAR03 = All
-%choiceVAR03 = Test Mode
+%choiceVAR03 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 

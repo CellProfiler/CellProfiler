@@ -33,8 +33,12 @@ SmoothedImage = OrigImage;
 FiltLength = 0;
 
 %%% For now, nothing fancy is done to calculate the size automatically. We
-%%% just choose a fraction of the size of the image, as long as its always
-%%% between 1 and 30.
+%%% just choose 1/40 the size of the image, with a min of 1 and max of 30. 
+%%%
+%%% TODO: shouldn't size(OrigImage) be limited to the first two dimensions
+%%% (length and width) in case it's a color image? I suppose in general
+%%% only grayscale images will make it to this module anyway, but perhaps
+%%% we should explicitly confirm that. -Anne
 if strcmpi(SizeOfSmoothingFilter,'A')
     SizeOfSmoothingFilter = min(30,max(1,ceil(mean(size(OrigImage))/40))); % Get size of filter
     WidthFlg = 0;
@@ -42,7 +46,9 @@ end
 
 switch SmoothingMethod
     case 'P'
-        %%% The following is used to fit a low-dimensional polynomial to the original image.
+        %%% The following is used to fit a low-dimensional polynomial to
+        %%% the original image. The SizeOfSmoothingFilter is not relevant
+        %%% for this method.
         [x,y] = meshgrid(1:size(OrigImage,2), 1:size(OrigImage,1));
         x2 = x.*x;
         y2 = y.*y;
@@ -54,6 +60,7 @@ switch SmoothingMethod
         drawnow
         SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
     case 'S'
+        %%% The following is used for the Sum of squares method.
         if SizeOfSmoothingFilter == 0
             %%% No blurring is done.
             return;
@@ -69,6 +76,7 @@ switch SmoothingMethod
         SmoothedImage = conv2(PaddedImage.^2,ones(FiltLength,FiltLength),'same');
         SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
     case 'Q'
+        %%% The following is used for the Square of sum method.
         if SizeOfSmoothingFilter == 0
             %%% No blurring is done.
             return;
@@ -85,17 +93,27 @@ switch SmoothingMethod
         SmoothedImage = SumImage.^2;
         SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
     case 'M'
+        %%% The following is used for the Median Filtering method.
         if SizeOfSmoothingFilter == 0;
             %%% No blurring is done.
             return;
         end
+%%% Old versions of the code, prior to Rodrigo, used this:
+% sigma = SizeOfSmoothingFilter/2.35;   % Convert between Full Width at Half Maximum (FWHM) to sigma
+%%% Why suddenly all this mess about WidthFlag and why are we using 3.5 and
+%%% 4 rather than 2.35 as before?? Why do we multiply the FiltLength by two at the end??
+%%% Why is FiltLength exported at all? Asked Rodrigo 8-31-06
+%%% I am hoping that we can remove WidthFlag altogether, because I think
+%%% width is simply calculated from SizeOfSmoothingFilter in the modules
+%%% which require it. -Anne
+
         if WidthFlg
             %%% Empirically done (from IdentifyPrimAutomatic)
             sigma = SizeOfSmoothingFilter/3.5;         % Convert between Full Width at Half Maximum (FWHM) to sigma
             FiltLength = min(30,max(1,ceil(2*sigma))); % Determine filter size, min 3 pixels, max 61
         else
             sigma = SizeOfSmoothingFilter/4;           % Select sigma to be roughly the same as above (relatively)
-            FiltLength = min(30,max(1,ceil(SizeOfSmoothingFilter/2)));
+            FiltLength = min(30,max(1,ceil(2*sigma)));
         end
         [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
         f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                    % Gaussian filter kernel

@@ -72,7 +72,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % cycle has been processed, so it cannot be used in subsequent modules
 % unless they are instructed to wait until the last cycle.
 %
-% Dilation:
+% * Dilation:
 % For some applications, the incoming images are binary and each object
 % should be dilated with a gaussian filter in the final averaged
 % (projection) image. This is for a sophisticated method of illumination
@@ -89,6 +89,13 @@ function handles = CorrectIllumination_Calculate(handles)
 % without sharp bright or dim regions.  Note that smoothing is a
 % time-consuming process, and fitting a polynomial is fastest but does not
 % allow a very tight fit as compared to the slower median filtering method.
+%
+% * Approximate width of objects:
+% For certain smoothing methods, this will be used to calculate an adequate
+% filter size. If you don't know the width of your objects, you can use the
+% ShowOrHidePixelData image tool to find out or leave the word 'Automatic'
+% to calculate a smoothing filter simply based on the size of the image.
+%
 %
 % Rescaling:
 % The illumination function can be rescaled so that the pixel intensities
@@ -151,66 +158,70 @@ IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2}
 IntensityChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
-%choiceVAR04 = Each
-%choiceVAR04 = All
-EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 = For REGULAR INTENSITY: If the incoming images are binary and you want to dilate each object in the final averaged image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
+%defaultVAR04 = 0
+ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.
-%choiceVAR05 = Pipeline
-%choiceVAR05 = Load Images module
-SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR05 = For BACKGROUND INTENSITY: Enter the block size, which should be large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.
+%defaultVAR05 = 60
+BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Enter the smoothing method you would like to use, if any.
-%choiceVAR06 = No smoothing
-%choiceVAR06 = Fit Polynomial
-%choiceVAR03 = Median Filtering
-%choiceVAR03 = Sum of squares
-%choiceVAR03 = Square of sum
-SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
+%choiceVAR06 = Yes
+%choiceVAR06 = No
+RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = If you choose Median Filtering, Sum of squares, or Square of sum as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
-%defaultVAR07 = Automatic
-ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,7};
+%textVAR07 = Enter Each to calculate an illumination function for Each image individually (in which case, choose Pipeline mode in the next box) or All to calculate an illumination function based on All the specified images to be corrected. See the help for details.
+%choiceVAR07 = Each
+%choiceVAR07 = All
+EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
-%textVAR08 = If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave '/'. If you entered a width for the previous variable, this will override it.
-%defaultVAR08 = /
-SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Are the images you want to use to calculate the illumination function to be loaded straight from a Load Images module, or are they being produced by the pipeline? See the help for details.
+%choiceVAR08 = Pipeline
+%choiceVAR08 = Load Images module
+SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
-%textVAR09 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
-%choiceVAR09 = Yes
-%choiceVAR09 = No
-RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Enter the smoothing method you would like to use, if any.
+%choiceVAR09 = No smoothing
+%choiceVAR09 = Fit Polynomial
+%choiceVAR09 = Median Filtering
+%choiceVAR09 = Sum of squares
+%choiceVAR09 = Square of sum
+SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR10 = Do not save
-%infotypeVAR10 = imagegroup indep
-AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu custom
+%textVAR10 = For MEDIAN FILTERING, SUM OF SQUARES, or SQUARE OF SUMS, specify the approximate width of the artifacts to be smoothed (in pixels), or leave the word 'Automatic'.
+%defaultVAR10 = Automatic
+ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,10};
 
-%textVAR11 = What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR11 = Do not save
-%infotypeVAR11 = imagegroup indep
-DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu custom
+%%% TODO: it is unclear why we ask for width of objects and then allow
+%%% overriding, since one is calculated from the other. I asked Rodrigo
+%%% about it 8-31-06  Most likely we will remove the following variable and
+%%% instead provide instructions in the help to tell you how the
+%%% SizeOfSmoothingFilter is calculate from Artifact width, in case someone
+%%% wants to enter a precise vaule. We should then also check the
+%%% Average/Smooth module as well -Anne.
 
-%textVAR12 = REGULAR INTENSITY OPTIONS
+%textVAR11 = If you want override the above width of artifacts and set your own filter size (in pixels), please specify it here. Otherwise leave '/'.
+%defaultVAR11 = /
+SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR13 = If the incoming images are binary and you want to dilate each object in the final averaged image, enter the radius (roughly equal to the original radius of the objects). Otherwise, enter 0.
-%defaultVAR13 = 0
-ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR12 = (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%choiceVAR12 = Do not save
+%infotypeVAR12 = imagegroup indep
+AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
 
-%textVAR14 = BACKGROUND INTENSITY OPTIONS
+%textVAR13 = What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
+%choiceVAR13 = Do not save
+%infotypeVAR13 = imagegroup indep
+DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu custom
 
-%textVAR15 = Block size. This should be set large enough that every square block of pixels is likely to contain some background pixels, where no objects are located.
-%defaultVAR15 = 60
-BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
-
-%%%VariableRevisionNumber = 5
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

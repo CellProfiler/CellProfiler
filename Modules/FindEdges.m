@@ -45,6 +45,12 @@ function handles = FindEdges(handles)
 %                  this method. The larger the filter size, the thicker the
 %                  edges will be. The recommended size is 8 pixels, or
 %                  roughly half the width of the objects you wish to edge.
+%                  This method is taken from CJ Cronin, JE Mendel, S
+%                  Mukhtar, Y-M Kim, RC Stirbl, J Bruck and PW Sternberg,
+%                  An automated system for measuring parameters of nematode
+%                  sinusoidal movement, BMC Genetics, 6:5, 2005 available
+%                  here: http://www.biomedcentral.com/1471-2156/6/5
+%
 % To find the best method for an image, you can compare the results of each
 % by eye.
 %

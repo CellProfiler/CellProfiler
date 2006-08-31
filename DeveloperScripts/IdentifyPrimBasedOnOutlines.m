@@ -93,7 +93,7 @@ MergeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = If your image is not already binary, select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Test mode will allow you to manually adjust the threshold to determine what will work well.
+%textVAR08 = If your image is not already binary, select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold during the first cycle to determine what will work well.
 %choiceVAR08 = Otsu Global
 %choiceVAR08 = Otsu Adaptive
 %choiceVAR08 = MoG Global
@@ -103,7 +103,7 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,7})
 %choiceVAR08 = RidlerCalvard Global
 %choiceVAR08 = RidlerCalvard Adaptive
 %choiceVAR08 = All
-%choiceVAR08 = Test Mode
+%choiceVAR08 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu custom
 
@@ -206,7 +206,7 @@ catch
 end
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Test Mode'))
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
     if isnan(str2double(Threshold))
         error(['Image processing was canceled in the ' ModuleName ' module because the threshold method you specified is invalid. Please select one of the available methods or specify a threshold to use (a number in the range 0-1). Your input was ' Threshold]);
     end

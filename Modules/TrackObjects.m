@@ -4,58 +4,51 @@ function handles = TrackObjects(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% The TrackObjects module allows tracking objects throughout
-% the duration of a video file, so that each object has a stable number 
-% in the output measurements.
+% Allows tracking objects throughout sequential frames of a movie, so that
+% each object has a stable number in the output measurements.
 % *************************************************************************
-% Note: this module is still beta-version and has not been thoroughly 
-% checked. Improvements to the code are welcome!
+% Note: this module is beta-version. It is very simple and has not
+% been thoroughly checked. Improvements to the code are welcome!
 % 
-% This module must be run after objects have been identified.  The image
-% that objects must appear in cannot be a color image.  For color video
-% files, run the ColorToGray module before this.  
+% This module must be run after objects have been identified using an
+% identify module.
 % 
 % Settings:
-% Objects To Track- Select the objects that you wish to track.  They must
-%       already be identified before this module.
 %
-% Track Method -   Distance, Size, Intensity
+% Tracking Method:
+% Choose between the methods based on which is most consistent from frame
+% to frame of your movie:
 %
-%       Distance - This method will compare the distance between each
-%                  identified object in the previous frame with the current frame.
-%                  Closest objects to each other will be assigned the same label.
+%       Distance - Usually the best choice, this method will compare the
+%       distance between each identified object in the previous frame with
+%       the current frame. Closest objects to each other will be assigned
+%       the same label.
 %
-%       Size -     For this setting, the user must specify the pixel distance
-%                  where the objects of the next frame are to be compared to the
-%                  first.  After objects that are identified to be within the distance
-%                  specified, the object to be tracked will be compared to the
-%                  objects in question based on size.  The objects with the most
-%                  closely related size among the potential objects will be assigned the same label.
+%       Size - Each object will be compared to objects in the next frame
+%       that are within the "neighborhood" (as defined by the next
+%       variable) and the object with the closest size will be selected as
+%       a match and will be assigned the same label.
 %
-%       Intensity - For this setting, the user must also specify the pixel distance
-%                  of where the objects of the next frame are to be compared to the
-%                  first.  After objects that are identified to be within the distance
-%                  specified, the object to be tracked will be compared to the
-%                  objects in question based on size.  The objects with the most
-%                  closely related size among the potential objects will be
-%                  be assigned the same label.
+%       Intensity - Each object will be compared to objects in the next
+%       frame that are within the "neighborhood" (as defined by the next
+%       variable) and the object with the closest total intensity will be
+%       selected as a match and will be assigned the same label.
 %
-% Pixel Radius - This setting is only required for the methods of Size and
-%                Intensity.  This indicates the vicinity where objects in the next frame
-%                are to be compared.
+% Neighborhood:
+% This indicates the neighborhood (in pixels) within which objects in the
+% next frame are to be compared. To determine pixel distances, you can look
+% at the markings on the side of each image (these are in pixel units) and
+% you can also look at the values revealed using the Show Pixel Data Image
+% tool (in the CellProfiler Image Tools menu of figure windows). This
+% setting is only required for the methods of Size and Intensity.
 %
-% Image with Object -   Select the original image of where the objects to be
-%                       tracked were identified in.  Note that this image must not be a color
-%                       image.
+% Intensity image:
+% When using the Intensity option, you must specify the original image
+% whose intensity values you want to use for comparison. Note that this
+% image must be grayscale, not a color image.
 %
-% Tracked Display Name - Specify the name of what the image with the
-%                        labeled object is to be stored. 
-%
-% Suggestions:  The Distance method generally works the best; however, if
-% the objects move very quickly, try the size or intensity based on which
-% property is most consistent.  How well this module works depends largely
-% on how well the objects were identified in the Identify module you are 
-% using.
+% Statistics:
+% This option is not yet available.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -89,31 +82,31 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What objects do you want to track?
+%textVAR01 = What did you call the objects you want to track?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Choose a tracking method:
-%choiceVAR02 = Size
-%choiceVAR02 = Intensity
-%choiceVAR02 = Distance
-%inputtypeVAR02 = popupmenu
-TrackMethod = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the resulting image with tracked, color-coded objects?
+%defaultVAR02 = TrackedDataDisp
+%infotypeVAR02 = imagegroup indep
+DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For SIZE or INTENSITY, choose the neighborhood (in pixels) within which objects will be evaluated.
-%defaultVAR03 = 100
-PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+%textVAR03 = Choose a tracking method:
+%choiceVAR03 = Distance
+%choiceVAR03 = Size
+%choiceVAR03 = Intensity
+%inputtypeVAR03 = popupmenu
+TrackMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = What did you call the image with the object you wish to track?
-%infotypeVAR04 = imagegroup
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 = For SIZE or INTENSITY, choose the neighborhood (in pixels) within which objects will be evaluated to find a potential match.
+%defaultVAR04 = 100
+PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = What do you want to call the generated image with data?
-%defaultVAR05 = TrackedDataDisp
-%infotypeVAR05 = imagegroup indep
-DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = For INTENSITY, what did you call the intensity image you want to use for tracking?
+%infotypeVAR05 = imagegroup
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
 %textVAR06 = How do you want to display the tracked objects?
 %choiceVAR06 = Color and Number
@@ -121,14 +114,13 @@ DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR06 = popupmenu
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Do you want to calculate stats? (THIS OPTION IS NOT COMPLETE AT THE MOMENT)
-%defaultVAR07 = No
-%choiceVAR07 = Yes
+%textVAR07 = Do you want to calculate statistics? (SORRY, THIS OPTION IS NOT AVAILABLE YET)
 %choiceVAR07 = No
+%choiceVAR07 = Yes
 %inputtypeVAR07 = popupmenu
 Stats = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -139,7 +131,8 @@ try
     handles.Pipeline.TrackObjects.(ObjectName).Previous = handles.Pipeline.TrackObjects.(ObjectName).Current;
 end
 
-handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipeline.(ImageName);
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
+    handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipeline.(ImageName);
 %%% Saves the final segmented label matrix image to the handles structure.
 SegmentedObjectName = ['Segmented' ObjectName];
 handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage = handles.Pipeline.(SegmentedObjectName);
@@ -152,11 +145,13 @@ CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage
 
 if ~(handles.Current.SetBeingAnalyzed == 1)
     %%% Extracts data from the handles structure
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     PrevImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.(ImageName);
     PrevLocations = handles.Pipeline.TrackObjects.(ObjectName).Previous.Locations;
     PrevLabels = handles.Pipeline.TrackObjects.(ObjectName).Previous.Labels;
     PrevSegImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.SegmentedImage;
     
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     CurrImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
 
     CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
@@ -213,6 +208,8 @@ end
    
 
 CStringOfMeas = cellstr(num2str((CurrLabels)'));
+TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
+    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
 
 %Create colored image
 ColoredImage = LabelByColor(handles.Pipeline.TrackObjects.(ObjectName), CurrLabels);
@@ -223,36 +220,32 @@ if strcmp(DisplayType, 'Grayscale and Number')
 elseif strcmp(DisplayType, 'Color and Number')
     DisplayImage = ColoredImage;
 end
-%%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    
     %%% Activates the appropriate figure window.
-    DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     CPimagesc(DisplayImage, handles);
     title('Tracked Objects');
-    TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
-    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
 end
-
-Info = get(DataHandle,'UserData');
-Info.ListOfMeasurements = CurrLabels;
-Info.TextHandles = TextHandles;
-set(DataHandle,'UserData',Info);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if any(findobj == ThisModuleFigureNumber)
-    handles.Pipeline.TrackObjects.(ObjectName).Current.Labels = CurrLabels;
-    OneFrame = getframe(DataHandle);
-    handles.Pipeline.(DataImage)=OneFrame.cdata;
-end
+
+%%% DOES THIS STUFF REALLY NEED TO BE STORED IN THE HANDLES STRUCTURE, OR
+%%% IS IT ONLY USED DURING THE CURRENT CYCLE?
+handles.Pipeline.TrackObjects.(DataImage).Info.ListOfMeasurements = CurrLabels;
+handles.Pipeline.TrackObjects.(DataImage).Info.TextHandles = TextHandles;
+Info = handles.Pipeline.TrackObjects.(DataImage).Info;
+
+handles.Pipeline.TrackObjects.(ObjectName).Current.Labels = CurrLabels;
+handles.Pipeline.(DataImage)=DisplayImage;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%%% SUBFUNCTIONS %%%%
@@ -264,6 +257,7 @@ function CurrLabels = CompareImages(handles, Info, ImageName, Method, pixeldista
 PrevMaskedImage = handles.Previous.SegmentedImage;
 CurrentMaskedImage = handles.Current.SegmentedImage;
 
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
 PrevOrigImage = handles.Previous.(ImageName);
 CurrOrigImage = handles.Current.(ImageName);
 
@@ -284,9 +278,12 @@ for i = 1:Size(1)
             [NormPrevMask, NormCurrMask] = NormalizeSizes(PrevMaskedObj, CurrMaskedObj);
     
             %only when you need the orig isolatedimage
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
             PrevIsoObj= PrevOrigImage(PrevObjLoc(1):PrevObjLoc(2), PrevObjLoc(3):PrevObjLoc(4));
+%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
             CurrIsoObj= CurrOrigImage(CurrObjLoc(1):CurrObjLoc(2), CurrObjLoc(3):CurrObjLoc(4));
-            [NormPrevIso, NormCurrIso] = NormalizeSizes(PrevIsoObj, CurrIsoObj);
+
+[NormPrevIso, NormCurrIso] = NormalizeSizes(PrevIsoObj, CurrIsoObj);
             NormPrevIso(NormPrevMask==0) = 0;
             NormCurrIso(NormCurrMask==0) = 0;
 

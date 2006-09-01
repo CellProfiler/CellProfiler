@@ -462,7 +462,7 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 %inputtypeVAR18 = popupmenu
 
-%%%VariableRevisionNumber = 11
+%%%VariableRevisionNumber = 12
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%

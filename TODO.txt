@@ -3,11 +3,13 @@ CellProfiler cell image analysis software development
 -----------------------------------------
 PROBABLY SHOULD DO BEFORE NEXT RELEASE:
 
-Don't release TrackObjects. The code is really quite junky and needs a lot of work (see 'after next release' list of projects).
+Don't release TrackObjects. The code is really quite junky and needs a lot of work (see 'after next release' list of projects). I fixed a lot of stuff already and documented what needs to be fixed/added.
+
+We might also want to exclude Distinguish Pixel Labels and Illum Calculate New from the release because we haven't published/fully documented/tested it yet.
+
+- Anne 9-1-06: CPsmooth is a mess post-Rodrigo. See the lengthy comments in CPsmooth.m and also be sure modules using it (e.g. a critical one - IdentifyPrimAutomatic) are all brought in line with each other. I think they are all consistent with each other right now but I don't understand Rodrigo's approach because it introduces two variables where I think the one old one would suffice.
 
 - Anne 8-31-06: Check the comment around line 484 of IdentifyPrimAutomatic.
-
-- Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
 
 Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
 
@@ -28,6 +30,8 @@ http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
 
 - (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?  NOTE: the text file that you download with the compiled version does not have any mention of that step, so we should add that step to the instructions before our next release.
 
+- Rodrigo 8/16/06: Because many modules have changed, some example pipelines are giving errors or other results. They should be updated.
+
 -----------------------------------------
 MAYBE SHOULD DO BEFORE NEXT RELEASE:
 
@@ -38,6 +42,8 @@ MAYBE SHOULD DO BEFORE NEXT RELEASE:
 -----------------------------------------
 
 PROBABLY WILL *NOT* DO BEFORE NEXT RELEASE:
+
+- (Anne 9/1/06) - We should implement Krawtchouk and tchebyshev moment invariants to measure cell shape (see Bayraktar Rajwa Robinson SPIE 2005 (Feature extraction for cellular shape analysis... plus Rajwa's Pattern Recognition 2006 preprint, Anne has both). We know this group and could probably get code straight from them. Anne emailed them 9-1-06 asking for them to send it to us.
 
 - (Anne 8/30/06) - In CreateBatch, if you leave it set to "." it says it will use the default modules folder, and it seems to indeed try to use the default modules folder, when in reality it seems it ought to use the PARENT of the default Modules folder, so that CPsubfunctions are found. At least I think this is how it should be. We don't have a great way to test it unless we make batches and run them locally somehow.
 
@@ -126,6 +132,8 @@ estimate with no indication of its accuracy. - Ray
 
 +++ (Requested by Anne 11-02-05) - The paper Ortiz de Solorzano, Malladi, Lockett, J Microscopy 2001 has what looks like a really nice segmentation method. I think that the only problem is that it is slow, which they were planning to address in future work. It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
++++ (Requested by Anne 9-1-06) - Sio J Microbiol Methods 2006 describes an object detection method that seems like an edge detection method we could add to FindEdges, if it seems valuable and different from what we have already. Matlab code is apparently available from the authors/supplemental material.
+
 +++ (Requested by Anne 11-02-05) - The paper Malladi & Sethian PNAS 1995 has what looks like a really nice filter that makes objects more obvious in images with lots of noise.   It would be nice to contact the authors to see if they have any new algorithms and implement them into CP.
 
 +++ (Requested by Anne 9-19-05) - For cytoplasmic/nuclear translocation, implement Ilya Ravkin's technique where instead of having a binary mask that denotes nucleus vs cytoplasm, there is a weighted function that is based on the nuclear stain. The Univ. Delft people have done similar work in this area.
@@ -175,6 +183,7 @@ estimate with no indication of its accuracy. - Ray
 2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
+5- Schiffman...Goldberg (2006) Biotechniques 41(2) 199 has a section, middle of page 200 that gives several references for tracking methods that are more complex than the simple one implemented in the paper itself (nearest-neighbor).
 
 ++ (Requested by Anne) - Implement the cubic B-spline illumination correction method in Wahlby, Anal Cell Pathol 2002 p. 101. Its use is described in Xiong Cytometry 2006 (Anne has these articles in pdf format), and their source code (in C++) is available upon request. This seems like it would fit very nicely as another method (the variable where we normally choose Fit polynomial, or smooth by a particular artifact width).
 

@@ -156,7 +156,6 @@ drawnow
 
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-NumberOfImageSets = handles.Current.NumberOfImageSets;
 
 CellFlg = 0;
 switch Measure
@@ -175,8 +174,6 @@ switch Measure
         end
     case 'Intensity'
         Measure = ['Intensity_' Image];
-    case 'Neighbors'
-        Measure = 'NumberNeighbors';
     case 'Texture'
         Measure = ['Texture_[0-9]*[_]?' Image '$'];
         Fields = fieldnames(handles.Measurements.(ObjectName));

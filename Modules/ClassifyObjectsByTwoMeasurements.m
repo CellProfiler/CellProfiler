@@ -89,6 +89,7 @@ Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = Enter the second feature type to use:
 %choiceVAR05 = AreaShape
+%choiceVAR05 = Children
 %choiceVAR05 = Correlation
 %choiceVAR05 = Texture
 %choiceVAR05 = Intensity
@@ -147,8 +148,6 @@ for i=1:2
     switch CurrentMeasure
         case 'Intensity'
             CurrentMeasure = ['Intensity_' CurrentImage];
-        case 'Neighbors'
-            CurrentMeasure = 'NumberNeighbors';
         case 'Texture'
             CurrentMeasure = ['Texture_[0-9]*[_]?' CurrentImage '$'];
             Fields = fieldnames(handles.Measurements.(CurrentObjectName));

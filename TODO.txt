@@ -27,9 +27,6 @@ Mike 8-7-06: If you filter then classify objects on subset and no cells present 
 
 - Anne 8-25-06: Make fill holes optional in IdentifyPrimAutomatic for the weird case where one object encircles several smaller objects. Requires remaking our example PIPEs.
 
-- Anne 8-22-06: Adapt the filter objects module according to this post on our forum:
-http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
-
 - (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS SUMMER 2006 - we just need to check and see that it works.
 
 - Rodrigo 8/18/06: MeasureImageSlope module needs documentation.

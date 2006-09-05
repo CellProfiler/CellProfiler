@@ -59,6 +59,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
+%choiceVAR02 = Children
 %choiceVAR02 = Correlation
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
@@ -118,8 +119,6 @@ switch Measure
         end
     case 'Intensity'
         Measure = ['Intensity_' Image];
-    case 'Neighbors'
-        Measure = 'NumberNeighbors';
     case 'Texture'
         Measure = ['Texture_[0-9]*[_]?' Image '$'];
         Fields = fieldnames(handles.Measurements.(ObjectName));

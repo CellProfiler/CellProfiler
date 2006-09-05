@@ -79,6 +79,7 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you want to filter by?
 %choiceVAR03 = AreaShape
+%choiceVAR03 = Children
 %choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
 %choiceVAR03 = Neighbors
@@ -132,8 +133,6 @@ LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'
 switch Measure
     case 'Intensity'
         Measure = ['Intensity_' ImageName];
-    case 'Neighbors'
-        Measure = 'NumberNeighbors';
     case 'Texture'
         Measure = ['Texture_[0-9]*[_]?' Image '$'];
         Fields = fieldnames(handles.Measurements.(ObjectName));
@@ -146,11 +145,7 @@ switch Measure
         end
 end
 
-if strcmp(Measure,'NumberNeighbors')
-    MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,1);
-else
-    MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
-end
+MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
 
 if strcmpi(MinValue1, 'No minimum')
     MinValue1 = -Inf;
@@ -212,22 +207,22 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,2,1); 
+    subplot(2,2,1);
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
-    subplot(2,2,3); 
+    subplot(2,2,3);
     CPimagesc(LabelMatrixImage,handles);
     title(['Original ',ObjectName]);
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    
-    subplot(2,2,2); 
+
+    subplot(2,2,2);
     CPimagesc(ColoredLabelMatrixImage,handles);
     title(['Filtered ' ObjectName]);
-    subplot(2,2,4); 
+    subplot(2,2,4);
     CPimagesc(ObjectOutlinesOnOrigImage,handles);
     title([TargetName, ' Outlines on Input Image']);
 end

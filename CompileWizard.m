@@ -97,26 +97,51 @@ clear ToolList
 
 Helpfilelist = dir('Help/*.m');
 fprintf(fid,'%%%%%% HELP\n');
+ToolCount=1;
+GSToolCount=1;
 for i=1:length(Helpfilelist)
     ToolName = Helpfilelist(i).name;
-    fprintf(fid,['ToolHelp{',num2str(i),'} = sprintf([...\n']);
-    body = char(strread(help(Helpfilelist(i).name),'%s','delimiter','','whitespace',''));
-    for j = 1:size(body,1)
-        fixedtext = strrep(body(j,:),'''','''''');
-        fixedtext = strrep(fixedtext,'\','\\\\');
-        fixedtext = strrep(fixedtext,'%','%%%%');
-        newtext = ['''',fixedtext,'\\n''...\n'];
-        fprintf(fid,newtext);
-    end
-    fprintf(fid,']);\n\n');
-    if exist('ToolList','var')
-        ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
+    if strncmp(ToolName,'GS',2)
+        fprintf(fid,['GSToolHelp{',num2str(GSToolCount),'} = sprintf([...\n']);
+        GSToolCount=GSToolCount+1;
+        body = char(strread(help(Helpfilelist(i).name),'%s','delimiter','','whitespace',''));
+        for j = 1:size(body,1)
+            fixedtext = strrep(body(j,:),'''','''''');
+            fixedtext = strrep(fixedtext,'\','\\\\');
+            fixedtext = strrep(fixedtext,'%','%%%%');
+            newtext = ['''',fixedtext,'\\n''...\n'];
+            fprintf(fid,newtext);
+        end
+        fprintf(fid,']);\n\n');
+        if exist('GSToolList','var')
+            GSToolList = [GSToolList, ' ''',ToolName(1:end-2),''''];
+        else
+            GSToolList = ['''',ToolName(1:end-2),''''];
+        end
     else
-        ToolList = ['''',ToolName(1:end-2),''''];
+        fprintf(fid,['ToolHelp{',num2str(ToolCount),'} = sprintf([...\n']);
+        ToolCount=ToolCount+1;
+        body = char(strread(help(Helpfilelist(i).name),'%s','delimiter','','whitespace',''));
+        for j = 1:size(body,1)
+            fixedtext = strrep(body(j,:),'''','''''');
+            fixedtext = strrep(fixedtext,'\','\\\\');
+            fixedtext = strrep(fixedtext,'%','%%%%');
+            newtext = ['''',fixedtext,'\\n''...\n'];
+            fprintf(fid,newtext);
+        end
+        fprintf(fid,']);\n\n');
+        if exist('ToolList','var')
+            ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
+        else
+            ToolList = ['''',ToolName(1:end-2),''''];
+        end
     end
 end
 fprintf(fid,['handles.Current.HelpFilenames = {''Help'' ',ToolList,'};\n']);
 fprintf(fid,'handles.Current.Help = ToolHelp;\n\n');
+
+fprintf(fid,['handles.Current.GSFilenames = {''Help'' ',GSToolList,'};\n']);
+fprintf(fid,'handles.Current.GS = GSToolHelp;\n\n');
 
 clear ToolList
 

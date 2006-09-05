@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/5/06) Anne 9-1-06: CPsmooth is a mess post-Rodrigo. See the lengthy comments in CPsmooth.m and also be sure modules using it (e.g. a critical one - IdentifyPrimAutomatic) are all brought in line with each other. I think they are all consistent with each other right now but I don't understand Rodrigo's approach because it introduces two variables where I think the one old one would suffice.
+
 -(Mike 8/24/06) MaskImage should allow for re-naming of the image to be masked so that it is not masked throughout the whole pipeline
 
 +++ Rodrigo did this as his main project: (Requested by Anne: WOULD BE *REALLY* HELPFUL FOR OUR WORM PROJECTS, WHICH START IN AUGUST!) - Implement the matlab algorithms described here for identifying c elegans in images: Cronin, Mendel, et al BMC Genetics 2005  www.biomedcentral.com/1471-2156/6/5

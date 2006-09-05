@@ -1,5 +1,13 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(works fine, there are some random cases where it doesn't work but this is usually after something weird has already happened) Rodrigo 7/24/06: We should prevent CellProfiler from opening again if its already open. Some of it functions stop working when this happens. It seems this was corrected before (10/05), but for some reason it's not working. Note (Anne 8-21-06) it seems to work fine on my computer (Mac), perhaps this is a PC-specific problem - can someone check on PC and Unix platforms?
+
+-(Mike, you can already output subobject data, its only not possible for the database, this is a whole different problem) (Anne 5/26/06) - Make "subobject" data exportable - I am pretty sure right now we cannot get individual speckle data out, for example? [Anne 8-25-06: i am pretty sure we CAN get individual speckle data out, can't we?) Also, exporting the identity of neighbors I think is not currently possible. Need to doublecheck.
+
+-(There is no way around it, I guess we could search the WHOLE computer, but this would take a long time) (Anne 3-21-06) - In the installation instructions, one of the first things you are supposed to do is Set Preferences -> Modules. I just wanted to doublecheck that this step has to be done - there is no way we can at least attempt to figure it out?  NOTE: the text file that you download with the compiled version does not have any mention of that step, so we should add that step to the instructions before our next release.
+
+- Anne 8-31-06: Check the comment around line 484 of IdentifyPrimAutomatic.
+
 -(Mike 9/5/06) Anne 9-1-06: CPsmooth is a mess post-Rodrigo. See the lengthy comments in CPsmooth.m and also be sure modules using it (e.g. a critical one - IdentifyPrimAutomatic) are all brought in line with each other. I think they are all consistent with each other right now but I don't understand Rodrigo's approach because it introduces two variables where I think the one old one would suffice.
 
 -(Mike 8/24/06) MaskImage should allow for re-naming of the image to be masked so that it is not masked throughout the whole pipeline

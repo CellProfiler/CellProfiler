@@ -481,8 +481,6 @@ end
 if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
-        %%% TODO: Is this line right? It's retrieving "Threshold" rather
-        %%% than an image??
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
     else
         GetThreshold = 1;

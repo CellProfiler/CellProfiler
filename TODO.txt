@@ -23,8 +23,6 @@ We might also want to exclude Distinguish Pixel Labels and Illum Calculate New f
 
 - Anne 8-25-06: Make fill holes optional in IdentifyPrimAutomatic for the weird case where one object encircles several smaller objects. Requires remaking our example PIPEs.
 
-- Anne 7-20-06: Catch potential problems in the LoadImages module - right now if the user uses the same image name to call their loaded images, they will overwrite each other of course. So, if they put a couple of LoadImages modules in at various points in the pipeline and each time, for example, call the image "OrigBlue" (because they don't care if the one loaded earlier is overwritten at that point in the pipeline), everything will work OK the first time through the pipeline, but the 2nd time through, the last OrigBlue's FileList will be the only one present, so all the LoadImages modules will load those images. Ask Mike or Anne for details.
-
 -----------------------------------------
 MAYBE SHOULD DO BEFORE NEXT RELEASE:
 

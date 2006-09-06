@@ -62,10 +62,10 @@ function handles = LoadImages(handles)
 % explanation can be found at:
 %   http://www.mathworks.com/access/helpdesk/help/techdoc/matlab_prog/
 %   f0-42649.html
-%  
+%
 % The following metacharacters match exactly one character from its
 % respective set of characters:
-%  
+%
 %   Metacharacter   Meaning
 %  ---------------  --------------------------------
 %              .    Any character
@@ -77,7 +77,7 @@ function handles = LoadImages(handles)
 %             \D    Not a digit [^0-9]
 %             \s    Whitespace [ \t\r\n\f\v]
 %             \S    Not whitespace [^ \t\r\n\f\v]
-%  
+%
 % The following metacharacters are used to logically group subexpressions
 % or to specify context for a position in the match. These metacharacters
 % do not match any characters in the string:
@@ -90,24 +90,24 @@ function handles = LoadImages(handles)
 %             $     Match expression at the end of string
 %            \<     Match expression at the start of a word
 %            \>     Match expression at the end of a word
-%  
+%
 % The following metacharacters specify the number of times the previous
 % metacharacter or grouped subexpression may be matched:
-%     
+%
 %   Metacharacter   Meaning
 %  ---------------  --------------------------------
 %             *     Match zero or more occurrences
 %             +     Match one or more occurrences
 %             ?     Match zero or one occurrence
 %          {n,m}    Match between n and m occurrences
-%  
+%
 % Characters that are not special metacharacters are all treated literally
 % in a match. To match a character that is a special metacharacter, escape
 % that character with a '\'. For example '.' matches any character, so to
 % match a '.' specifically, use '\.' in your pattern.
 %
 % Examples:
-% 
+%
 %     * [trm]ail matches 'tail' or 'rail' or 'mail'
 %     * [0-9] matches any digit between 0 to 9
 %     * [^Q-S] matches any character other than 'Q' or 'R' or 'S'
@@ -348,6 +348,12 @@ drawnow
 %%% through this module.
 if SetBeingAnalyzed == 1
 
+    for i = 1:length(ImageName)
+        if isfield(handles.Pipeline,ImageName{i})
+            error(['Image processing was cancelled in the ', ModuleName, ' module because you are trying to load two sets of images with the same name (e.g. OrigBlue). The last set loaded will always overwrite the first set and make it obselete. Please remove one of these modules.']);
+        end
+    end
+
     %%% Get the pathname and check that it exists
     if strncmp(Pathname,'.',1)
         if length(Pathname) == 1
@@ -472,7 +478,7 @@ if SetBeingAnalyzed == 1
                 msgbox(ErrorText)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the number of movies identified for each movie type is not equal.  In the window under this box you will see how many movie have been found for each movie type.'])
             end
-NumberOfImageSets = str2double(UniqueNumbers{1});
+            NumberOfImageSets = str2double(UniqueNumbers{1});
             %%% Checks whether another load images module has already recorded a
             %%% number of cycles.  If it has, it will not be set at the default
             %%% of 1.  Then, it checks whether the number already stored as the
@@ -583,8 +589,8 @@ NumberOfImageSets = str2double(UniqueNumbers{1});
             CPmsgbox(ErrorText)
             error(['Image processing was canceled in the ', ModuleName, ' module because the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.'])
         end
-NumberOfImageSets = str2double(UniqueNumbers{1});
-%%% Checks whether another load images module has already recorded a
+        NumberOfImageSets = str2double(UniqueNumbers{1});
+        %%% Checks whether another load images module has already recorded a
         %%% number of cycles.  If it has, it will not be set at the default
         %%% of 1.  Then, it checks whether the number already stored as the
         %%% number of cycles is equal to the number of cycles that this

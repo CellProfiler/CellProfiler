@@ -23,13 +23,13 @@ function handles = IdentifyPrimAutomatic(handles)
 % by applying a simple threshold to the image. Many commercial software
 % packages use a version of this method which is fast but usually fails
 % when nuclei are touching. In CellProfiler, several automatic thresholding
-% methods are available, including global and adaptive, using Otsu's 
-% (Otsu, 1979) and our own version of a Mixture of Gaussians algorithm (O. 
-% Friman, unpublished). For most biological images, at least some nuclei 
-% are touching, so CellProfiler contains a novel modular three-step 
-% strategy based on previously published algorithms (Malpica et al., 1997; 
-% Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003; 
-% Wahlby et al., 2004). Choosing different options for each of these three 
+% methods are available, including global and adaptive, using Otsu's
+% (Otsu, 1979) and our own version of a Mixture of Gaussians algorithm (O.
+% Friman, unpublished). For most biological images, at least some nuclei
+% are touching, so CellProfiler contains a novel modular three-step
+% strategy based on previously published algorithms (Malpica et al., 1997;
+% Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003;
+% Wahlby et al., 2004). Choosing different options for each of these three
 % steps allows CellProfiler to flexibly analyze a variety of different cell
 % types. Here are the three steps:
 %   In step 1, CellProfiler determines whether an object is an individual
@@ -124,7 +124,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % incorrectly split into two objects, one of which is actually just a tiny
 % piece of the larger object. However, this could be dangerous if you have
 % selected poor settings which produce many tiny objects - the module
-% will take a very long time and you will not realize that it is because 
+% will take a very long time and you will not realize that it is because
 % the tiny objects are being merged. It is therefore a good idea to run the
 % module first without merging objects to make sure the settings are
 % reasonably effective.
@@ -456,13 +456,19 @@ LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
-%textVAR18 = Do you want to run in test mode where each method for distinguishing clumped objects is compared?
-%choiceVAR18 = No
+%textVAR18 = Do you want to fill holes in identified objects?
 %choiceVAR18 = Yes
-TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%choiceVAR18 = No
+FillHolesOption = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 %inputtypeVAR18 = popupmenu
 
-%%%VariableRevisionNumber = 11
+%textVAR19 = Do you want to run in test mode where each method for distinguishing clumped objects is compared?
+%choiceVAR19 = No
+%choiceVAR19 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
+%inputtypeVAR19 = popupmenu
+
+%%%VariableRevisionNumber = 12
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
@@ -614,7 +620,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 Objects = Objects & BinaryCropImage;
             end
             Threshold = mean(Threshold(:));                                       % Use average threshold downstreams
-            Objects = imfill(double(Objects),'holes');                            % Fill holes
+            if strcmp(FillHolesOption,'Yes')
+                Objects = imfill(double(Objects),'holes');                            % Fill holes
+            end
             drawnow
 
             %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
@@ -799,10 +807,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 PrevObjects = Objects;
                 Objects = CPclearborder(Objects);
 
-                %%% TESTING CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED
-                %%% OBJECTS
+                %%% CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED OBJECTS
                 if sum(PrevObjects(:)) == sum(Objects(:))
-                    try
+                    try %#ok Ignore MLint
                         CropMask = handles.Pipeline.(['CropMask',ImageName]);
                         CropBorders = bwperim(CropMask);
                         BorderTable = sortrows(unique([CropBorders(:) Objects(:)],'rows'),1);
@@ -1232,7 +1239,7 @@ while ~isempty(MergeIndex)
         WithinObjectClassStd    = std(OrigImagePatch(WithinObjectIndex)) + sqrt(eps);
         BackgroundClassMean     = mean(OrigImagePatch(BackgroundIndex));
         BackgroundClassStd      = std(OrigImagePatch(BackgroundIndex)) + sqrt(eps);
-        InterfaceMean           = mean(OrigImagePatch(InterfaceIndex));
+        InterfaceMean           = mean(OrigImagePatch(InterfaceIndex)); %#ok Ignore MLint
         LogLikelihoodObject     = -log(WithinObjectClassStd^2) - (InterfaceMean - WithinObjectClassMean)^2/(2*WithinObjectClassStd^2);
         LogLikelihoodBackground = -log(BackgroundClassStd^2) - (InterfaceMean - BackgroundClassMean)^2/(2*BackgroundClassStd^2);
         LikelihoodRatio(j)      =  LogLikelihoodObject - LogLikelihoodBackground;
@@ -1249,7 +1256,7 @@ while ~isempty(MergeIndex)
         tmp = zeros(size(OrigImage));
         tmp(rmin:rmax,cmin:cmax) = Interface;
         tmp = regionprops(double(tmp),'PixelIdxList');
-        OrigInterfaceIndex{j} = cat(1,tmp.PixelIdxList);
+        OrigInterfaceIndex{j} = cat(1,tmp.PixelIdxList); %#ok Ignore MLint
     end
 
     %%% Let each feature rank which neighbor to merge with. Then calculate

@@ -1,5 +1,13 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+-(Mike 9/6 this problem did not exist, maybe ask Ray?) Mike 8-7-06: If you filter then classify objects on subset and no cells present in second bin, first bin gets total object count not "filtered" object count
+
+-(Mike 9/6) Rodrigo 8/18/06: MeasureImageSlope module needs documentation.
+
+-(Mike 9/6) (Requested by Anne 12-09-05)-- Check that MergeBatchOutputs works and that the files it produces are exportable. I THINK THE UROPs DID THIS SUMMER 2006 - we just need to check and see that it works.
+
+-(Mike 9/6) Don't release TrackObjects. The code is really quite junky and needs a lot of work (see 'after next release' list of projects). I fixed a lot of stuff already and documented what needs to be fixed/added.
+
 -(Mike 9/5) Anne 8-22-06: Adapt the filter objects module according to this post on our forum:
 http://jura.wi.mit.edu/cellprofiler/forum/viewtopic.php?p=574#574
 

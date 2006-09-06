@@ -4,10 +4,31 @@ function handles = MeasureImageSlope(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Sorry, this module has not yet been documented
+% This module measures the image slope as described by Ilya Ravkin.
 % *************************************************************************
 %
-% See also
+% Subsample Size:
+% Subsampling of the image for background removal given as fraction
+%
+% Structuring Element Size:
+% Radius of structuring element (in subsampled image)
+% 
+% References for Granular Spectrum:
+% J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
+% Press, London, 1989 Maragos,P. “Pattern spectrum and multiscale shape
+% representation”, IEEE Transactions on Pattern Analysis and Machine
+% Intelligence, 11, N 7, pp. 701-716, 1989
+%
+% L.Vincent "Granulometries and Opening Trees", Fundamenta Informaticae,
+% 41, No. 1-2, pp. 57-90, IOS Press, 2000.
+%
+% L.Vincent "Morphological Area Opening and Closing for Grayscale Images",
+% Proc. NATO Shape in Picture Workshop, Driebergen, The Netherlands, pp.
+% 197-208, 1992.
+%
+% I.Ravkin, V.Temov “Bit representation techniques and image processing”,
+% Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
+% 1988 (in Russian)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

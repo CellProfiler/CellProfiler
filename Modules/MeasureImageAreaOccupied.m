@@ -126,7 +126,7 @@ drawnow
 %textVAR01 = What did you call the images you want to process?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
+%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = What do you want to call the staining measured by this module?
 %defaultVAR02 = CellStain

@@ -5,6 +5,8 @@ PROBABLY SHOULD DO BEFORE NEXT RELEASE:
 
 We might also want to exclude Distinguish Pixel Labels and Illum Calculate New from the release because we haven't published/fully documented/tested it yet.
 
+- Anne 9-8-06: There are two TODO things within FindEdges.m
+
 - Anne 9-1-06: The feature selection subfunction (not sure what it's called) that is used, e.g., in the Histogram data tool has all its windows gray rather than .7 .7 .9.  Also, the text above the selection window is pretty tiny - does not seem to use default font size and the height of the text area causes some text to be cut off the top and bottom (just a tiny bit).
 
 - Anne 9-1-06: Histogram data tool changes:

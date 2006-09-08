@@ -2035,12 +2035,17 @@ if (length(ModuleHighlighted) > 0)
         %        Answer = CPquestdlg('No modules are loaded. Do you want to add one?','No modules are loaded','Yes','No','Yes');
         %       if strcmp(Answer,'Yes')
         %%%%%  if strcmp(get(gcf,'SelectionType'),'open') %% these two lines should make it work
-        AddModule_Callback(findobj('tag','AddModule'),[],handles);
+        %
+        % Mike 9/7/06 I think opening the add module window should not
+        % be done here, since it happens on occasions such as trying to
+        % plot a histogram. Commented out.
+        % AddModule_Callback(findobj('tag','AddModule'),[],handles);
         %%%%%  end
         %      end
     end
 else
-    CPhelpdlg('No module highlighted.');
+    % Mike 9/7/06 This is also very annoying. Feel free to discuss with me.
+    %CPhelpdlg('No module highlighted.');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%

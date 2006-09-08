@@ -8,18 +8,19 @@ We might also want to exclude Distinguish Pixel Labels and Illum Calculate New f
 - Anne 9-1-06: The feature selection subfunction (not sure what it's called) that is used, e.g., in the Histogram data tool has all its windows gray rather than .7 .7 .9.  Also, the text above the selection window is pretty tiny - does not seem to use default font size and the height of the text area causes some text to be cut off the top and bottom (just a tiny bit).
 
 - Anne 9-1-06: Histogram data tool changes:
-- increase the height of the text area describing line 5,6,7, 11, 14, 15, 16.
-- Last sample number to show or export gives the wrong top-most number - it gives the total number of images that *should* have been analyzed, not the total number that was actually analyzed (e.g. if you chose to cancel).
-- "Threshold applied to histogram" should be "Threshold applied to data"
-- Export histogram data - edit box should be auto-filled with the output filename and Histogram.xls appended to the end. Also, the help box assoc'd with that should say *if* you want to open in a spreadsheet program like excel. It should also tell you if it will be tab-delimited or comma - csv.
-- The timer displayed upon exporting should be .7 .7 .9 - it's gray right now.
-- The window that says "THe data is now saved as the variables Bins and Data" is not .7.7.9 and doesn't use proper size font.
-- The exported xls file was written to the Modules folder rather than to the folder where the output file was opened from (I think maybe it's written to the current matlab directory, because I had the modules folder open in matlab).
-- I haven't checked whether Change plots/bars and export to Matlab are disabled in the compiled version - we should doublecheck, because I think these will cause errors if not (they use the editor).
-- It used to retain the settings from the last time you ran Histogram (at least within a single session of CP), but that does not seem to happen now.
-- There is a 'change bars' option but there's no 'change lines' option - should be easy to implement. (referring to the final, produced figure window)
+- DONE increase the height of the text area describing line 5,6,7, 11, 14, 15, 16.
+- DONE Last sample number to show or export gives the wrong top-most number - it gives the total number of images that *should* have been analyzed, not the total number that was actually analyzed (e.g. if you chose to cancel).
+- DONE "Threshold applied to histogram" should be "Threshold applied to data"
+- DONE Export histogram data - edit box should be auto-filled with the output filename and Histogram.xls appended to the end.
+- Also, the help box assoc'd with that should say *if* you want to open in a spreadsheet program like excel. It should also tell you if it will be tab-delimited or comma - csv.
+- DONE The timer displayed upon exporting should be .7 .7 .9 - it's gray right now.
+- DONE The window that says "THe data is now saved as the variables Bins and Data" is not .7.7.9 and doesn't use proper size font.
+- DONE The exported xls file was written to the Modules folder rather than to the folder where the output file was opened from (I think maybe it's written to the current matlab directory, because I had the modules folder open in matlab).
+- DONE I haven't checked whether Change plots/bars and export to Matlab are disabled in the compiled version - we should doublecheck, because I think these will cause errors if not (they use the editor).
+- DONE It used to retain the settings from the last time you ran Histogram (at least within a single session of CP), but that does not seem to happen now.
+- DONE There is a 'change bars' option but there's no 'change lines' option - should be easy to implement. (referring to the final, produced figure window)
 - In the final, produced figure window, all the buttons take a lot of space. It would be nice to put the Change options all in a single pull down menu, where the default state says "Change display", and the various lines revealed below that in the pulldown menu say "Change bars- this window" "Change bars - Current plot" plus the Fewer Decimals Restore options, etc. A second pulldown menu (placed to the right of the first one) could have the default = "Data" and the options as Add Control Histogram and Export Data to Matlab.
-- Is the help button in the final, produced figure window up-to-date? In particular, is the labeling of the bin edges described accurately  and is it true that changing the bin labels to Auto is irreversible?
+- YES Is the help button in the final, produced figure window up-to-date? In particular, is the labeling of the bin edges described accurately  and is it true that changing the bin labels to Auto is irreversible?
 
 -----------------------------------------
 MAYBE SHOULD DO BEFORE NEXT RELEASE:

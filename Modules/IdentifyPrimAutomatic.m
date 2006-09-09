@@ -7,9 +7,9 @@ function handles = IdentifyPrimAutomatic(handles)
 % Identifies objects given only an image as input.
 % *************************************************************************
 %
-% This module identifies primary objects in grayscale images that show
-% bright objects on a dark background. The module has many options which
-% vary in terms of speed and sophistication.
+% This module identifies primary objects (e.g. nuclei) in grayscale images
+% that show bright objects on a dark background. The module has many
+% options which vary in terms of speed and sophistication.
 %
 % Requirements for the images to be fed into this module:
 % * If the objects are dark on a light background, they must first be
@@ -20,18 +20,17 @@ function handles = IdentifyPrimAutomatic(handles)
 % Overview of the strategy ('Settings' below has more details):
 %   Properly identifying primary objects (nuclei) that are well-dispersed,
 % non-confluent, and bright relative to the background is straightforward
-% by applying a simple threshold to the image. Many commercial software
-% packages use a version of this method which is fast but usually fails
-% when nuclei are touching. In CellProfiler, several automatic thresholding
-% methods are available, including global and adaptive, using Otsu's
-% (Otsu, 1979) and our own version of a Mixture of Gaussians algorithm (O.
-% Friman, unpublished). For most biological images, at least some nuclei
-% are touching, so CellProfiler contains a novel modular three-step
-% strategy based on previously published algorithms (Malpica et al., 1997;
-% Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999; Wahlby, 2003;
-% Wahlby et al., 2004). Choosing different options for each of these three
-% steps allows CellProfiler to flexibly analyze a variety of different cell
-% types. Here are the three steps:
+% by applying a simple threshold to the image. This is fast but usually
+% fails when nuclei are touching. In CellProfiler, several automatic
+% thresholding methods are available, including global and adaptive, using
+% Otsu's (Otsu, 1979) and our own version of a Mixture of Gaussians
+% algorithm (O. Friman, unpublished). For most biological images, at least
+% some nuclei are touching, so CellProfiler contains a novel modular
+% three-step strategy based on previously published algorithms (Malpica et
+% al., 1997; Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999;
+% Wahlby, 2003; Wahlby et al., 2004). Choosing different options for each
+% of these three steps allows CellProfiler to flexibly analyze a variety of
+% different cell types. Here are the three steps:
 %   In step 1, CellProfiler determines whether an object is an individual
 % nucleus or two or more clumped nuclei. This determination can be
 % accomplished in two ways, depending on the cell type: When nuclei are

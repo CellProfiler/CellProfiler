@@ -11,9 +11,12 @@ function ExportData(handles)
 % Once image analysis is complete, use this data tool to select the output
 % file to extract the measurements and other information about the
 % analysis. The data will be converted to a tab-delimited text file which
-% can be read by Excel, another spreadsheet program, or a text editor.
+% can be read by Excel, another spreadsheet program, or a text editor. You
+% can add the ExportToExcel module to your pipeline if you want to
+% automatically export data.
 %
-% See also ExportDatabase data tool, ExportToDatabase module.
+% See also ExportDatabase data tool, ExportToDatabase module, ExportToExcel
+% module.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -95,7 +98,7 @@ while DataExists == 0
                 return
             end
         else
-            warnfig = CPwarndlg('You must select at least one measurement to export! If you wish to only export pipeline settings and not measurements, type a settings extension. Please try again.');
+            warnfig = CPwarndlg('You must select at least one measurement to export. If you wish to only export pipeline settings and not measurements, type a settings extension. Please try again.');
             uiwait(warnfig)
         end
     end
@@ -119,12 +122,12 @@ if isfield(ExportInfo, 'ExportProcessInfo')
     end
 
     %%% Done!
-    if strcmp(ExportInfo.ExportProcessInfo, 'Yes') & isempty(ExportInfo.ObjectNames)
-        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output directory, ', handles.Current.DefaultOutputDirectory, '.'])
+    if strcmp(ExportInfo.ExportProcessInfo, 'Yes') && isempty(ExportInfo.ObjectNames)
+        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', PathToSave, '.'])
     elseif strcmp(ExportInfo.ExportProcessInfo, 'Yes')
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output directory, ', handles.Current.DefaultOutputDirectory, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', PathToSave, '.'])
     else
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output directory, ', handles.Current.DefaultOutputDirectory, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', PathToSave, '.'])
     end
 end
     
@@ -160,17 +163,17 @@ end
 % Create Export window
 ETh = figure;
 set(ETh,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Export window','Color',[.7 .7 .9],'CloseRequestFcn','set(gcf,''UserData'',0);uiresume()');
-% Some variables controling the sizes of uicontrols
+% Some variables controlling the sizes of uicontrols
 uiheight = 0.3;
 % Set window size in inches, depends on the number of objects
 pos = get(ETh,'position');
 Height = 2.5+ceil(length(fields)/2)*uiheight+1;
-Width  = 5.1;
+Width  = 6.5;
 set(ETh,'position',[pos(1)+1 pos(2) Width Height]);
 
 if ~isempty(fields)
     % Top text
-    uicontrol(ETh,'style','text','String','Measurements to export:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
+    uicontrol(ETh,'style','text','String','Measurements to export:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
         'HorizontalAlignment','left','units','inches','position',[0.2 Height-0.3 4 0.2],'BackgroundColor',get(ETh,'color'))
 
     % Radio buttons for extracted measurements
@@ -184,13 +187,13 @@ if ~isempty(fields)
             ypos=ypos-uiheight;
         end   %index is even
         if rem(k,2) == 1
-            uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-                'units','inches','position',[0.6 ypos 3 0.18],'BackgroundColor',get(ETh,'color'))
+            uicontrol(ETh,'style','text','String',fields{k},'FontName','helvetica','FontSize',FontSize,'HorizontalAlignment','left',...
+                'units','inches','position',[0.6 ypos 3 0.2],'BackgroundColor',get(ETh,'color'))
             h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[0.2 ypos-.05 uiheight uiheight],...
                 'BackgroundColor',get(ETh,'color'),'Value',1);
         else
-            uicontrol(ETh,'style','text','String',fields{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-                'units','inches','position',[3.5 ypos 3 0.18],'BackgroundColor',get(ETh,'color'))
+            uicontrol(ETh,'style','text','String',fields{k},'FontName','helvetica','FontSize',FontSize,'HorizontalAlignment','left',...
+                'units','inches','position',[3.5 ypos 3 0.2],'BackgroundColor',get(ETh,'color'))
             h(k) = uicontrol(ETh,'Style','checkbox','units','inches','position',[3.1 ypos-.05 uiheight uiheight],...
                 'BackgroundColor',get(ETh,'color'),'Value',1);
         end
@@ -205,62 +208,99 @@ if ~isempty(fields)
     ProposedFilename = [ProposedFilename,'_Export'];
 
 else  % No measurements found
-    uicontrol(ETh,'style','text','String','No measurements found!','FontName','Times','FontSize',FontSize,...
+    uicontrol(ETh,'style','text','String','No measurements found','FontName','helvetica','FontSize',FontSize,...
         'units','inches','position',[0 Height-0.5 6 0.15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
 ProposedFilename = RawFileName;
 indexOUT = strfind(ProposedFilename,'OUT');
-if ~isempty(indexOUT),ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];end
+if ~isempty(indexOUT),
+    ProposedFilename = [ProposedFilename(1:indexOUT(1)-1) ProposedFilename(indexOUT(1)+3:end)];
+end
 indexMAT = strfind(ProposedFilename,'mat');
-if ~isempty(indexMAT),ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];end
-ProposedFilename = [ProposedFilename,'_ProcessInfo'];
-ypos=ypos-uiheight*2.5;
-
-uicontrol(ETh,'style','text','String','Each feature should be a:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.7 uiheight],'BackgroundColor',get(ETh,'color'));
-SwapRowsColumnInfo = uicontrol(ETh,'style','popupmenu','String',{'Column','Row'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[3.1 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
-
-ypos=ypos-uiheight;
-uicontrol(ETh,'style','text','String','Parameter to calculate for Images:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.7 uiheight],'BackgroundColor',get(ETh,'color'));
-DataExportParameter = uicontrol(ETh,'style','popupmenu','String',{'Mean','Median','Standard Deviation'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[3.1 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
-
-ypos=ypos-uiheight;
-uicontrol(ETh,'style','text','String','Ignore NaN''s (Not a Numbers) in that calculation?','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','left','units','inches','position',[0.2 ypos-uiheight 2.7 uiheight*2],'BackgroundColor',get(ETh,'color'));
-IgnoreNaN = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','left','units','inches','position',[3.1 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
+if ~isempty(indexMAT),
+    ProposedFilename = [ProposedFilename(1:indexMAT(1)-2) ProposedFilename(indexMAT(1)+3:end)];
+end
 
 ypos=ypos-uiheight*3;
-uicontrol(ETh,'style','text','String','Base filename for exported files:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','center','units','inches','position',[0.2 ypos 2.7 uiheight*1.7],'BackgroundColor',get(ETh,'color'));
-EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[0.2 ypos-0.2 2.7 uiheight],...
-    'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
-uicontrol(ETh,'style','text','String','Filename extension:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','center','units','inches','position',[3.1 ypos .7 uiheight*1.7],'BackgroundColor',get(ETh,'color'));
-EditMeasurementExtension = uicontrol(ETh,'Style','edit','units','inches','position',[3.1 ypos-0.2 .7 uiheight],...
-    'backgroundcolor',[1 1 1],'String','.xls','FontSize',FontSize);
 
-uicontrol(ETh,'style','text','String','Settings extension:','FontName','Times','FontSize',FontSize,'FontWeight', 'bold',...
-    'HorizontalAlignment','center','units','inches','position',[4 ypos .7 uiheight*1.7],'BackgroundColor',get(ETh,'color'),'FontSize',FontSize);
-EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[4 ypos-0.2 .7 uiheight],...
-    'backgroundcolor',[1 1 1],'String','','FontSize',FontSize);
-    
+uicontrol(ETh,'style','text','String','Each measured feature should be a:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 4 uiheight],'BackgroundColor',get(ETh,'color'));
+SwapRowsColumnInfo = uicontrol(ETh,'style','popupmenu','String',{'Column','Row'},'FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[4.4 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
+%Help button
+Help_Callback = 'CPhelpdlg(''Help should go here'')';
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos+.1 0.25 uiheight],...
+    'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','If exporting Image data, calculate and export:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 4 uiheight],'BackgroundColor',get(ETh,'color'));
+DataExportParameter = uicontrol(ETh,'style','popupmenu','String',{'Means','Medians','Standard Deviations'},'FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[4.4 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
+%Help button
+Help_Callback = 'CPhelpdlg(''Help should go here'')';
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos+.15 0.25 uiheight],...
+    'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Ignore NaN''s (Not a Numbers) in that calculation?','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos-uiheight 4 uiheight*2],'BackgroundColor',get(ETh,'color'));
+IgnoreNaN = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','left','units','inches','position',[4.4 ypos+.05 1.8 uiheight],'BackgroundColor',get(ETh, 'color'));
+%Help button
+Help_Callback = 'CPhelpdlg(''Help should go here'')';
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos+.1 0.25 uiheight],...
+    'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+ypos=ypos-uiheight;
+uicontrol(ETh,'style','text','String','Base filename for exported files:',...
+    'FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 2.7 uiheight*.8],...
+    'BackgroundColor',get(ETh,'color'));
+EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','inches','position',[3 ypos 3.2 uiheight],...
+    'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
+%Help button
+Help_Callback = 'CPhelpdlg(''Help should go here'')';
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos 0.25 uiheight],...
+    'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+ypos=ypos-uiheight*1.3;
+uicontrol(ETh,'style','text','String','Extension for exported measurement files:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 5 uiheight*.8],'BackgroundColor',get(ETh,'color'));
+EditMeasurementExtension = uicontrol(ETh,'Style','edit','units','inches','position',[5.5 ypos .7 uiheight],...
+    'backgroundcolor',[1 1 1],'String','.xls','FontSize',FontSize);
 %Help button
 Help_Callback = 'CPhelpdlg(''If exporting pipeline settings, please type the extension for the exported file. Suggested entries are .txt and .doc. The exported pipeline settings will be stored in a file named by the base filename followed by this extension. If not exporting pipeline settings, leave field blank.'')';
-uicontrol(ETh,'style','pushbutton','String','?','FontName','Times','FontSize',FontSize,...
-    'HorizontalAlignment','center','units','inches','position',[4.7 ypos-0.2 0.2 uiheight],'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos+.05 0.25 uiheight],'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+    'Callback', Help_Callback);
+
+ypos=ypos-uiheight*1.3;
+uicontrol(ETh,'style','text','String','Extension for exported pipeline settings file (optional):','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    'HorizontalAlignment','left','units','inches','position',[0.2 ypos 5 uiheight*.8],'BackgroundColor',get(ETh,'color'),'FontSize',FontSize);
+EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','inches','position',[5.5 ypos .7 uiheight],...
+    'backgroundcolor',[1 1 1],'String','.txt','FontSize',FontSize);   
+%Help button
+Help_Callback = 'CPhelpdlg(''If exporting pipeline settings, please type the extension for the exported file. Suggested entries are .txt and .doc. The exported pipeline settings will be stored in a file named by the base filename followed by this extension. If not exporting pipeline settings, leave field blank.'')';
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+    'HorizontalAlignment','center','units','inches','position',[6.25 ypos 0.25 uiheight],'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
     'Callback', Help_Callback);
 
 % Export and Cancel pushbuttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
-exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','Times','FontSize',FontSize,'FontWeight', 'bold','units','inches',...
-    'position',[posx 0.1 0.75 0.3],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
-cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','Times','FontSize',FontSize,'FontWeight', 'bold','units','inches',...
-    'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
+cancelbutton = uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold','units','inches',...
+    'position',[posx-1 0.1 0.75 uiheight*1.2],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
+exportbutton = uicontrol(ETh,'style','pushbutton','String','Export','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold','units','inches',...
+    'position',[posx+1.5 0.1 0.75 uiheight*1.2],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
 
 
 uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called

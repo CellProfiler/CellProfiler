@@ -1,5 +1,8 @@
 function handles = IdentifyPrimBasedOnOutlines(handles)
 
+%%% NOTE: THIS MODULE IS PROBABLY NOT USEFUL> WE ENDED UP USING COUNT WORMS, BUT ALSO WE ENDED UP JUST USING IDENTIFYPRIMAUTOMATIC. SO WE CAN PROBABLY DISCARD THIS.
+
+
 % Help for the Process Outlines module:
 % Category: Object Processing
 % 

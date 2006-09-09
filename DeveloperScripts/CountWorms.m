@@ -7,6 +7,18 @@ function handles = CountWorms(handles)
 % Estimates the amount of worms in a given image.
 % *************************************************************************
 %
+%%% THIS MODULE HAS BEEN REPLACED. You can replicate it by using FindEdges
+%%% plus IdentifyPrimAutomatic. The only unique things that we might want
+%%% to incorporate into IdentifyPrimAutomatic someday are the bits of code
+%%% that try to fill gaps (when you have objects that are outlines rather
+%%% than solid objects).IdentifyPrimAutomatic already fills holes in
+%%% completely closed objects, but this goes a bit further in the case
+%%% where objects are not completely closed circles. These sections are
+%%% marked %%% THIS PART SEEMS TO BE UNIQUE >>>
+
+
+
+
 % Given that CellProfiler currently has difficulty identifying weird shaped
 % objects, this module only estimates the amount of objects in an image,
 % rather than trying to identify them separately.
@@ -195,6 +207,10 @@ OrigThreshold = graythresh(EdgedImage);
 %%% Get binary edges of image
 EdgedImage = im2bw(EdgedImage, OrigThreshold);
 
+
+
+%%% THIS PART SEEMS TO BE UNIQUE >>>>
+
 warning off MATLAB:intConvertOverflow                          % For binary images not to give warnings
 ImageToThreshold = imfill(EdgedImage,'holes');                 % Fill whatever we can
 StructEl = strel('disk',round(MinWidth/2));                    % Create structure element
@@ -203,6 +219,11 @@ ImageToThreshold = imfill(ImageToThreshold,'holes');           % Fill again
 
 %%% Get new threshold. This will make the objects a little bit wider
 [handles, Threshold] = CPthreshold(handles,ThresholdMethod,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,ImageToThreshold,ImageName,ModuleName);
+
+%%% <<< THIS PART SEEMS TO BE UNIQUE
+
+
+
 
 %%% Apply a slight smoothing before thresholding to remove
 %%% 1-pixel objects and to smooth the edges of the objects.
@@ -221,6 +242,13 @@ BlurredImage = conv2(double(ImageToThreshold),f,'same') ./ conv2(ones(size(Image
 %%% Threshold image again
 PrelimObjects = BlurredImage > Threshold;
 
+
+
+
+
+
+%%% THIS PART SEEMS TO BE UNIQUE >>>>
+
 %%% Clean up
 StructEl2 = strel('disk',round(MinWidth/3.5));
 PrelimObjects = imclose(double(PrelimObjects),StructEl2);
@@ -228,6 +256,15 @@ PrelimObjects = imfill(double(PrelimObjects),'holes');
 
 StructEl3 = strel('disk',round(MinWidth/4));
 Objects = imerode(PrelimObjects,StructEl3);
+
+
+%%% <<< THIS PART SEEMS TO BE UNIQUE
+
+
+
+
+
+
 
 %%% Check for CropMask
 fieldname = ['CropMask', ImageName];
@@ -244,6 +281,10 @@ Area = cat(1,props.Area);
 TotalArea = sum(Area);
 TotalAreaToUse = floor(TotalArea/100);
 EstimatedNumberOfObjects = TotalAreaToUse/MeanAreaToUse;
+
+
+
+%%% THIS PART SEEMS TO BE UNIQUE >>>>
 
 if strcmp(TryOtherMethodToo,'Yes')
     %%% Get original image and apply traditional threshold to it
@@ -282,6 +323,12 @@ if strcmp(TryOtherMethodToo,'Yes')
     EstimatedNumberOfObjects2 = TotalAreaToUse2/MeanAreaToUse;
 end
 warning on MATLAB:intConvertOverflow
+
+
+%%% <<<< THIS PART SEEMS TO BE UNIQUE
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

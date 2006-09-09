@@ -174,7 +174,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % brightness but the objects of interest are always twice (or actually, any
 % constant) as bright as the background of the image. The Ridler-Calvard
 % method is simple and its results are often very similar to Otsu's. It
-% chooses and initial threshold, and then iteratively calculates the next
+% chooses an initial threshold, and then iteratively calculates the next
 % one by taking the mean of the average intensities of the background and
 % foreground pixels determined by the first threshold, repeating this until
 % the threshold converges.

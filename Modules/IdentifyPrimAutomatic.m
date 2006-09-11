@@ -483,16 +483,17 @@ if islogical(OrigImage)
 end
 
 %%% Checks if a custom entry was selected for Threshold
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
-    if isnan(str2double(Threshold))
-        GetThreshold = 0;
-        BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
-    else
-        GetThreshold = 1;
-    end
-else
-    GetThreshold = 1;
-end
+% if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+%     if isnan(str2double(Threshold))
+%         GetThreshold = 0;
+%         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+%     else
+%         GetThreshold = 1;
+%     end
+% else
+%     GetThreshold = 1;
+% end
+GetThreshold = 1;
 
 %%% Checks that the Laplace parameters have valid values
 if ~strcmp(LaplaceValues,'/')

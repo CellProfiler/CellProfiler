@@ -8,8 +8,6 @@ We might also want to exclude Distinguish Pixel Labels and Illum Calculate New f
 - Anne 9-9-06: Export data does not warn you before overwriting files.
 - Anne 9-9-06: I changed a lot of the ExportData interface - could you check that it still looks nice on the PC? Note, saving the .txt file with process info is now on by default, because it's a tiny file and REALLY helpful when trying to update old pipelines.
 
-- Anne 9-9-06: When there are no images in the default image folder, a window pops up telling you that, but the window is really ugly (at least on mac: The bottom part where you click OK is all gray). Also the text should be shortened to this: "Please note: there are no recognizable files in the default image folder".
-
 - Anne 9-8-06: I pretty much COMPLETELY rewrote the code of FindEdges (that Rodrigo made). There are still some TODO things in there that I wrote down but didn't change yet.
 
 - Anne 9-1-06: The feature selection subfunction (not sure what it's called) that is used, e.g., in the Histogram data tool has all its windows gray rather than .7 .7 .9.  Also, the text above the selection window is pretty tiny - does not seem to use default font size and the height of the text area causes some text to be cut off the top and bottom (just a tiny bit).

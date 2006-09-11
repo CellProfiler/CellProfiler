@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Mike 9/11) Anne 9-9-06: When there are no images in the default image folder, a window pops up telling you that, but the window is really ugly (at least on mac: The bottom part where you click OK is all gray). Also the text should be shortened to this: "Please note: there are no recognizable files in the default image folder".
+
 - (Mike 9/11) Anne 9-1-06: Histogram data tool changes:
 - DONE increase the height of the text area describing line 5,6,7, 11, 14, 15, 16.
 - DONE Last sample number to show or export gives the wrong top-most number - it gives the total number of images that *should* have been analyzed, not the total number that was actually analyzed (e.g. if you chose to cancel).

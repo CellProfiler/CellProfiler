@@ -233,7 +233,7 @@ end
 ImportedFieldnames = ImportedFieldnames(Importedmat == 1 | strcmp(ImportedFieldnames,'FileNames') == 1);
 if ~isempty(ImportedFieldnames)
     %%% Allows the user to select a heading from the list.
-    [Selection, ok] = listdlg('ListString',ImportedFieldnames, 'ListSize', [300 400],...
+    [Selection, ok] = CPlistdlg('ListString',ImportedFieldnames, 'ListSize', [300 400],...
         'Name','Select sample info',...
         'PromptString','Choose the sample info with which to label each histogram.','CancelString','Cancel',...
         'SelectionMode','single');
@@ -616,9 +616,9 @@ if ~strcmp(UserInput.Style,'Heatmap') && strcmp(UserInput.Display,'Yes')
     end
     
     if strcmp(UserInput.Style,'Line')
-        FunctionString = {'Change Display' 'Plots - This Window' 'Plots - Current' 'Plots - All Windows' 'Lines - This Window' 'Lines - Current' 'Lines - All Windows' 'Axis Labels - Fewer' 'Axis Labels - Decimals' 'Axis Labels - Restore'};
+        FunctionString = {'CHANGE DISPLAY:' 'Plots - This Window' 'Plots - Current' 'Plots - All Windows' 'Lines - This Window' 'Lines - Current' 'Lines - All Windows' 'Axis Labels - Fewer' 'Axis Labels - Decimals' 'Axis Labels - Restore'};
     else
-        FunctionString = {'Change Display' 'Plots - This Window' 'Plots - Current' 'Plots - All Windows' 'Bars - This Window' 'Bars - Current' 'Bars - All Windows' 'Axis Labels - Fewer' 'Axis Labels - Decimals' 'Axis Labels - Restore'};
+        FunctionString = {'CHANGE DISPLAY:' 'Plots - This Window' 'Plots - Current' 'Plots - All Windows' 'Bars - This Window' 'Bars - Current' 'Bars - All Windows' 'Axis Labels - Fewer' 'Axis Labels - Decimals' 'Axis Labels - Restore'};
     end
     
     MyButtonCallback = ['Value=get(gcbo,''value'');switch Value,case 2,',Button1Callback,'case 3,',Button2Callback,'case 4,',Button3Callback,'case 5,',Button4Callback,'case 6,',Button5Callback,'case 7,',Button6Callback,'case 8,',Button7Callback,'case 9,',Button8Callback,'case 10,',Button9Callback,'end;clear AxesHandles AxisHandle FigureHandle FigureHandles PatchHandles Value Command FigureSettings HideOption NewNumberValues NewNumberValuesPlusFirstLast NumberOfDecimals NumberValues PlotBinLocations PlotBinLocations2 PreXTickLabels XTickLabels XTickLabels2 tempData;'];
@@ -654,7 +654,7 @@ if ~strcmp(UserInput.Style,'Heatmap') && strcmp(UserInput.Display,'Yes')
         'end;'];
     %%% Button for exporting data to MATLAB
     if ~isdeployed      %button should only be shown in developer's version
-        FunctionString = {'Data' 'Add Control Histogram' 'Export Data to MATLAB'};
+        FunctionString = {'DATA:' 'Add Control Histogram' 'Export Data to MATLAB'};
         if strcmp(UserInput.Style,'Bar') || strcmp(UserInput.Style,'Area')
             Button12Callback = 'Bins = get(findobj(gcf,''type'',''patch''),''XData'');Data = get(findobj(gcf,''type'',''patch''),''YData''); CPmsgbox(''The data is now saved as the variables Bins and Data in the Matlab workspace.'');';
         else
@@ -662,7 +662,7 @@ if ~strcmp(UserInput.Style,'Heatmap') && strcmp(UserInput.Display,'Yes')
         end
         MyButtonCallback = ['Value=get(gcbo,''value'');switch Value,case 2,',Button11Callback,'case 3,',Button12Callback,'end;clear Value;'];
     else
-        FunctionString = {'Data' 'Add Control Histogram'};
+        FunctionString = {'DATA:' 'Add Control Histogram'};
         MyButtonCallback = ['Value=get(gcbo,''value'');switch Value,case 2,',Button11Callback,'end;clear Value;'];
     end
 

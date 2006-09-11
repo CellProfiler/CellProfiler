@@ -3085,16 +3085,7 @@ if exist(pathname,'dir')
     IsStartup = strcmp(ListBoxContents(1),'Listbox');
     IsAnalysisRun = strcmp(get(handles.AnalyzeImagesButton,'enable'),'off');
     if any([IsStartup, IsAnalysisRun]) == 0 && isempty(handles.Current.FilenamesInImageDir) == 1;
-        %%% Obtains the screen size and determines where the wait bar
-        %%% will be displayed.
-        ScreenSize = get(0,'ScreenSize');
-        ScreenHeight = ScreenSize(4);
-        PotentialBottom = [0, (ScreenHeight-720)];
-        BottomOfMsgBox = max(PotentialBottom);
-        PositionMsgBox = [500 BottomOfMsgBox 350 100];
-        ErrorDlgHandle = CPmsgbox('Please note: There are no files in the default image directory, as specified in the main CellProfiler window.');
-        set(ErrorDlgHandle, 'Position', PositionMsgBox)
-        drawnow
+        CPmsgbox('Please note: there are no recognizable files in the default image folder.','Default Image Folder');
     end
     guidata(hObject, handles);
     %%% If the directory entered in the box does not exist, give an error

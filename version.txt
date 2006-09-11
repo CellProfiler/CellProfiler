@@ -1,6 +1,7 @@
 Version 1.0.XXXX
  - Added MeasureImageSlope
  - Histogram data tool overhauled
+ - New thresholding options in IdentifyPrimAutomatic
 
 Version 1.0.3775
  - Windows menu now shows all CellProfiler windows

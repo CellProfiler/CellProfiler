@@ -8,6 +8,8 @@
 \
 - (Anne 9/1/06) - The SaveImages module says "The images you have loaded are outside the 0-1 range and you may be losing data" when you feed it colored images (e.g. from the TrackObjects module). The error message is annoying because it forces itself on top and in the center of the screen on every cycle (instead, it should check to see whether it exists already and leave itself where it is onscreen so the user can at least move it our of the way). Can we at least fix that, but possibly also make it realize when we are dealing with color object images that are ok to be outside the range?\
 \
+- (Anne 9/12/06) - When trying to saving an entire figure using the SaveImages module, if you have closed that particular figure window it fails and gives the message: Error using Save as > invalid handle. We should catch the error and tell the user they can't close figures if they want to save them.\
+\
 - (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?\
 http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3\
 \

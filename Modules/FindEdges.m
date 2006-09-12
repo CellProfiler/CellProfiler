@@ -124,7 +124,7 @@ OutputName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter an absolute threshold in the range [0,1], or type '/' to calculate automatically.
 %defaultVAR03 = /
-OrigThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+OrigThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the Threshold Adjustment Factor, or leave it = 1.
 %defaultVAR04 = 1
@@ -165,11 +165,11 @@ Direction = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For LoG and CANNY methods, enter the value of sigma. Use '/' to calculate automatically.
 %defaultVAR10 = /
-Sigma = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
+Sigma = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = For CANNY method, enter the low threshold. Use '/' to calculate automatically.
 %defaultVAR11 = /
-CannyLowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
+CannyLowThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 3
 
@@ -177,15 +177,6 @@ CannyLowThreshold = str2double(char(handles.Settings.VariableValues{CurrentModul
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-%%% TODO: It
-%%% seems like overall in this module the strategy was to continue
-%%% processing if an entry is wrong, which I think is dangerous. If the
-%%% entry is DEFINITELY wrong, we should error out and tell the user to
-%%% fix it. The only time we should give a warndlg is if something is
-%%% calculated that MIGHT be a problem sometimes but not always (e.g. the
-%%% threshold correction factor is a good use of warndlg because it won't
-%%% always cause a problem. -Anne
 
 if isnan(ThresholdCorrectionFactor)
     ThresholdCorrectionFactor = 1;
@@ -197,29 +188,50 @@ elseif strcmpi(Thinning, 'No')
     Thinning = 'nothinning';
 end
 
+CalculateThreshold = 0;
+if strcmp(OrigThreshold,'/')
+    CalculateThreshold = 1;
+else
+    AutoThresh = str2double(OrigThreshold);
+    if isnan(AutoThresh)
+        error(['The threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+    end
+end
+
 if strcmpi(Method, 'roberts')
     FourthVariable = Thinning;
 elseif strcmpi(Method, 'canny')
-    %%% TODO: see TODO below regarding sigma, in the 'log' section.
-    if isnan(Sigma) || Sigma <= 0
+    if strcmp(Sigma,'/')
         Sigma = 1; %canny's default is 1
-        CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' may be out of bounds. We set the value to 1']);
+    else
+        Sigma = str2double(Sigma);
+        if isnan(Sigma) || Sigma <= 0
+            error(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+        end
     end
     FourthVariable = Sigma;
-    if isnan(CannyLowThreshold)
+    if strcmp(CannyLowThreshold,'/')
         CannyLowThreshold = [];
+    else
+        CannyLowThreshold = str2double(CannyLowThreshold);
+        if isnan(CannyLowThreshold)
+            error(['The low threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+        end
     end
-    OrigThreshold = [CannyLowThreshold OrigThreshold];
 elseif  strcmpi(Method, 'log')
-%%% TODO: If the user wanted sigma to be calculated automatically, it still
-%%% yields a warning dialog. This is silly, especially since it's not like
-%%% we 'calculate' sigma anyway, it just uses the default value. So, if the
-%%% user has set sigma as '/', we should just use 2 without complaining.
-%%% see the TODO below regarding 'what is our common usage?' for a similar
-%%% case.
-    if isnan(Sigma) || Sigma <= 0
-        Sigma = 2; %log's default is two
-        CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' may be out of bounds. We set the value to 2']);
+    %%% TODO: If the user wanted sigma to be calculated automatically, it still
+    %%% yields a warning dialog. This is silly, especially since it's not like
+    %%% we 'calculate' sigma anyway, it just uses the default value. So, if the
+    %%% user has set sigma as '/', we should just use 2 without complaining.
+    %%% see the TODO below regarding 'what is our common usage?' for a similar
+    %%% case.
+    if strcmp(Sigma,'/')
+        Sigma = 2; %log's default is 1
+    else
+        Sigma = str2double(Sigma);
+        if isnan(Sigma) || Sigma <= 0
+            error(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+        end
     end
     FourthVariable = Sigma;
 elseif strcmpi(Method, 'sobel') || strcmpi(Method, 'prewitt')
@@ -229,12 +241,9 @@ elseif strcmpi(Method, 'sobel') || strcmpi(Method, 'prewitt')
     FourthVariable = Direction;
 end
 
-%%% TODO: this module require grayscale image input, so we need to check
-%%% for that here.
-
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -251,25 +260,16 @@ drawnow
 %%% method.
 if ~strcmpi(Method,'ratio')
 
-    %%% TODO: What is our standard usage, using the slash sign or typing
-    %%% 'automatic'? In either case, rather than just using isnan, we
-    %%% should check the actual input because if the user intends to type a
-    %%% number but accidentally types something else, like .56&, then an
-    %%% automatic OrigThreshold will be calculated without them knowing.
-    %%% So, If the entry is not / (or 'automatic', if that's what we decide
-    %%% to use), nor is it a number, then the user should receive an error
-    %%% message. See  next variable check too. Also, it looks like we later
-    %%% do a similar isnan check for sigma, so i guess you should check the
-    %%% whole module for isnans and move variable checks to the top.
-
     %%% For the case where we want to automatically calculate a threshold.
-    if isnan(OrigThreshold)
+    if CalculateThreshold
         %%% Note that we do not need to add the thinning variable to the
         %%% end of the edge function's variables for sobel because it does
         %%% not affect the calculation of the automatic threshold.
-        [EdgedImage, AutoThresh] = edge(OrigImage, Method, [], FourthVariable);
-    %%% If the user has specified an absolute number, it is used here.
-    else AutoThresh = OrigThreshold;
+        [EdgedImage, AutoThresh] = edge(OrigImage, Method, [], FourthVariable); %#ok
+    end
+
+    if strcmpi(Method,'canny')
+        AutoThresh = [CannyLowThreshold AutoThresh];
     end
 
     ThresholdUsed = ThresholdCorrectionFactor * AutoThresh;
@@ -280,7 +280,7 @@ if ~strcmpi(Method,'ratio')
     end
 
     if strcmpi(Method, 'sobel')
-        EdgedImage = edge(OrigImage, Method, ThresholdUsed, FourthVariable,Thinning);
+        EdgedImage = edge(OrigImage, Method, ThresholdUsed, FourthVariable, Thinning);
     else
         EdgedImage = edge(OrigImage, Method, ThresholdUsed, FourthVariable);
     end
@@ -310,23 +310,20 @@ elseif strcmpi(Method,'ratio')
 
     %%% The ratio image has really weird numbers, put it in the 0-1 range:
     [handles, EdgedImage] = CPrescale(handles,EdgedImage,'S',[]);
-    
+
     if strcmp(BinaryOrGray,'Binary')
         %%% For the case where we want to automatically calculate a threshold.
-        if isnan(OrigThreshold)
-            %%% TODO: This graythresh should be replaced by CPgraythresh I think, and the user
-            %%% should be told in the help what method will
-            %%% be used (I suppose Otsu global would be a reasonable choice).
-            AutoThresh = graythresh(EdgedImage);
-            %%% For the case where the user entered a numerical value.
-            %%% TODO: We ought to check for 0-1
-        else AutoThresh = OrigThreshold;
+        if CalculateThreshold
+            [handles,AutoThresh] = CPthreshold(handles,'Otsu Global','01','0','1',1,EdgedImage,['Edged_',ImageName],ModuleName);
+        else
+            if AutoThresh > 1 || AutoThresh < 0
+                CPwarndlg(['The threshold you entered in ', ModuleName,' should normally be between 0 and 1.']);
+            end
         end
         if ThresholdCorrectionFactor ~= 1
             ThresholdUsed = ThresholdCorrectionFactor * AutoThresh;
             if (ThresholdUsed > 1) || (ThresholdUsed < 0)
-                %%% TODO copy this warndlg fromabove.
-                CPwarndlg(['The Threshold Adjustment Factor you entered in ', ModuleName, ' may be out of bounds.']);
+                CPwarndlg(['The Threshold Correction Factor you entered in ', ModuleName, ' resulted in a threshold greater than 1 or less than zero. You might need to adjust the Threshold Correction Factor so that when multiplied by the automatically calculated threshold (or the absolute threshold you entered), the value is still in the range 0 to 1.']);
             end
         else
             ThresholdUsed = AutoThresh;
@@ -368,16 +365,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% TODO: We need to save the actual threshold used on the image (ThresholdUsed) as a
-%%% measurement in the Image substructure. Perhaps this is only necessary
-%%% when using automatically calculated thresholds and not absolute
-%%% thresholds. Keep in mind that the canny method uses a threshold w/ two
-%%% values (that is, it's two dimensional) so you will want to save both I
-%%% suppose. Also, these values should be displayed in the figure window so
-%%% you can adjust them if necessary. Note also that the Ratio method +
-%%% Grayscale option does not use a threshold at all, so the variables
-%%% won't be present for saving or display. -Anne
-
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
 handles.Pipeline.(OutputName) = EdgedImage;
+if ~strcmpi(Method,'ratio') || ~strcmpi(BinaryOrGray,'Grayscale')
+    if strcmpi(Method,'canny')
+        handles = CPaddmeasurements(handles,'Image','OrigThreshold',['Edged_',ImageName],ThresholdUsed(1));
+        handles = CPaddmeasurements(handles,'Image','OrigThreshold',['CannyLowEdged_',ImageName],ThresholdUsed(2));
+    else
+        handles = CPaddmeasurements(handles,'Image','OrigThreshold',['Edged_',ImageName],ThresholdUsed);
+    end
+end

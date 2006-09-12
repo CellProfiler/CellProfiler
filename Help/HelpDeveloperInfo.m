@@ -1,4 +1,4 @@
-function GSDeveloperInfo
+function HelpDeveloperInfo
 
 % Programming Notes for CellProfiler Developer's version
 %
@@ -337,7 +337,10 @@ function GSDeveloperInfo
 % supposed to be produced by this part of the code.  This is especially
 % problematic when running on a cluster of computers with no displays. If
 % you plan to save images which are normally produced for display only, the
-% corresponding lines should be moved outside this if statement.
+% corresponding lines should be moved outside this if statement. Also, any
+% additional uicontrol's (popupmenu's, pushbutton's) should be designed
+% using the unit of pixels, since this is standard across platforms unlike
+% other units such as inches and points.
 %
 % STEP 1: Find the appropriate figure window. If it is closed, usually none
 % of the remaining steps are performed.
@@ -438,7 +441,7 @@ function GSDeveloperInfo
 % look like, run a sample analysis and then go to File -> Tech Diagnosis.
 % This will let you manipulate the handles variable in MATLAB.
 
-helpdlg(help('GSDeveloperInfo'))
+helpdlg(help('HelpDeveloperInfo'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

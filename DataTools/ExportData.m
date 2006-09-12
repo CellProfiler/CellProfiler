@@ -130,7 +130,7 @@ if isfield(ExportInfo, 'ExportProcessInfo')
         CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', PathToSave, '.'])
     end
 end
-    
+
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
@@ -179,7 +179,7 @@ if ~isempty(fields)
         'HorizontalAlignment','left','units','pixels','position',[20 Height-30 400 20],'BackgroundColor',get(ETh,'color'))
 
     % Radio buttons for extracted measurements
-    h = [];    
+    h = [];
     %Arrange fields in a two column display, keep track of the y position
     %of the last object created
     ypos = Height - uiheight;
@@ -246,7 +246,7 @@ uicontrol(ETh,'style','text','String','Ignore NaN''s (Not a Numbers) in that cal
 IgnoreNaN = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','helvetica','FontSize',FontSize,...
     'HorizontalAlignment','left','units','pixels','position',[400 ypos+5 150 uiheight],'BackgroundColor',get(ETh, 'color'));
 %Help button
-Help_Callback = 'CPhelpdlg(''Sometimes a measurement is recorded as Not a Number, which means that it could not be calculated for some reason. For example, you cannot calculate the texture (smoothness) of an object made of only one pixel. So, when you want to calculate the mean texture for all objects in that image, you have two options: ignore NaNs and calculate the mean only for those objects that have a numerical texture measurement, or, if a NaN is present, record the mean measurement also as NaN.'')'
+Help_Callback = 'CPhelpdlg(''Sometimes a measurement is recorded as Not a Number, which means that it could not be calculated for some reason. For example, you cannot calculate the texture (smoothness) of an object made of only one pixel. So, when you want to calculate the mean texture for all objects in that image, you have two options: ignore NaNs and calculate the mean only for those objects that have a numerical texture measurement, or, if a NaN is present, record the mean measurement also as NaN.'')';
 
 uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
     'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
@@ -282,7 +282,7 @@ ypos=ypos-uiheight;
 uicontrol(ETh,'style','text','String','Extension for exported pipeline settings file (optional):','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
     'HorizontalAlignment','left','units','pixels','position',[20 ypos 500 uiheight],'BackgroundColor',get(ETh,'color'),'FontSize',FontSize);
 EditProcessInfoExtension = uicontrol(ETh,'Style','edit','units','pixels','position',[500 ypos+5 50 uiheight*.8],...
-    'backgroundcolor',[1 1 1],'String','.txt','FontSize',FontSize);   
+    'backgroundcolor',[1 1 1],'String','.txt','FontSize',FontSize);
 %Help button
 Help_Callback = 'CPhelpdlg(''To export the pipeline settings, type the desired file extension (e.g., .txt, .doc) so that the resulting file can be opened easily in a word processing program. The pipeline settings include the date and time of processing, module names in order, and the description and actual settings for each module. To refrain from exporting pipeline settings, make this box empty. ** For example, if you export data for Image and Cells with "Default" in the basename window, ".xls" in the file extension window, and ".txt" in the pipeline settings extension window, CellProfiler will produce three files: Default_Image.xls, Default_Cells.xls, and Default.txt .'')';
 uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
@@ -301,7 +301,7 @@ uiwait(ETh)                         % Wait until window is destroyed or uiresume
 ExportInfo.IgnoreNaN = get(IgnoreNaN,'Value');
 
 if get(ETh,'Userdata') == 1     % The user pressed the Export button
-    
+
     % File names
     if ~isempty(fields)
         ExportInfo.MeasurementFilename = get(EditMeasurementFilename,'String');
@@ -319,7 +319,7 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
     else
         ExportInfo.SwapRowsColumnInfo = 'Yes';
     end
-    
+
     if get(DataExportParameter,'Value')==1
         ExportInfo.DataParameter = 'mean';
     else if get(DataExportParameter,'Value')==2
@@ -328,21 +328,19 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
                 ExportInfo.DataParameter = 'std';
             end;
         end;
-    end;            
-        
+    end;
+
     % Get measurements to export
     if ~isempty(fields)
         buttonchoice = get(h,'Value');
         if iscell(buttonchoice)                              % buttonchoice will be a cell array if there are several objects
             buttonchoice = cat(1,buttonchoice{:});
         end
-        ExportInfo.ObjectNames = fields(find(buttonchoice));  % Get the fields for which the radiobuttons are enabled
+        ExportInfo.ObjectNames = fields(find(buttonchoice));  %#ok Get the fields for which the radiobuttons are enabled
     end
-    
+
     delete(ETh)
 else
     delete(ETh);
     ExportInfo.ObjectNames = [];
 end
-
-

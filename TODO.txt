@@ -1,26 +1,8 @@
 CellProfiler cell image analysis software development 
 
------------------------------------------
-PROBABLY SHOULD DO BEFORE NEXT RELEASE:
-
-We might also want to exclude Distinguish Pixel Labels and Illum Calculate New from the release because we haven't published/fully documented/tested it yet.
-
-- Anne 9-9-06: Export data does not warn you before overwriting files.
-
-- Anne 9-8-06: I pretty much COMPLETELY rewrote the code of FindEdges (that Rodrigo made). There are still some TODO things in there that I wrote down but didn't change yet.
-
-- Anne 9-1-06: The feature selection subfunction (not sure what it's called) that is used, e.g., in the Histogram data tool has all its windows gray rather than .7 .7 .9. Also, the text above the selection window is pretty tiny - does not seem to use default font size and the height of the text area causes some text to be cut off the top and bottom (just a tiny bit).
-
------------------------------------------
-MAYBE SHOULD DO BEFORE NEXT RELEASE:
-
 - (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process (using MATLAB editors especially)? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
-
------------------------------------------
-
-PROBABLY WILL *NOT* DO BEFORE NEXT RELEASE:
 
 - (Anne 9/1/06) - We should implement Krawtchouk and tchebyshev moment invariants to measure cell shape (see Bayraktar Rajwa Robinson SPIE 2005 (Feature extraction for cellular shape analysis... plus Rajwa's Pattern Recognition 2006 preprint, Anne has both). We know this group and could probably get code straight from them. Anne emailed them 9-1-06 asking for them to send it to us.
 

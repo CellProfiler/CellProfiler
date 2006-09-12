@@ -153,9 +153,15 @@ for Object = 1:length(ExportInfo.ObjectNames)
         ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
     end
     filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
+    if exist(fullfile(RawPathname,filename),'file')
+        Answer=CPquestdlg(['Do you want to overwrite ',fullfile(RawPathname,filename),'?'],'Overwrite File','Yes','No','Yes');
+        if strcmp(Answer,'No')
+            break
+        end
+    end
     fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
-        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);
     end
 
     % Get the measurements and feature names to export

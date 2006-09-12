@@ -1,4 +1,4 @@
-Version 1.0.XXXX
+Version 1.0.4299
  - Added MeasureImageSlope and Combine modules
  - Histogram data tool overhauled
  - New thresholding options in IdentifyPrimAutomatic

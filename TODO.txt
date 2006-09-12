@@ -33,6 +33,7 @@ THINGS TO DO WHEN NEW VERSIONS OF MATLAB COME OUT:
 
 - For many functions we have made our own CP versions - check the new matlab code to see if they've changed anything that would warrant us re-creating the CP subfunctions to use the new code. This would require saving a copy of the old matlab code to do side by side comparison (actually, could use 'file comparison' tool in matlab, I think, or at least in microsoft word).
 
+- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!! -Note: Mike says the only reason we can't do this is because the Mac-compiled version of CellProfiler has no way to find the directory currently running CellProfiler. He asked matlab to fix it, so perhaps someday it will be possible. This would also prevent the annoying step where compiled mac users have to manually set the Modules directory.
 
 PROJECTS, MOSTLY VISION/IMAGE ANALYSIS-RELATED:
 -----------------------------------------------

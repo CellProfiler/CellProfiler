@@ -39,7 +39,10 @@ function handles = CreateBatchFiles(handles)
 % Batch Prefix: This determines the prefix for all the batch files.
 %
 % CellProfiler Path: Here you must specify the exact location of
-% CellProfiler files as seen by the cluster computers.
+% CellProfiler files as seen by the cluster computers. If you want to use
+% the path that your local computer is currently using for CellProfiler,
+% leave a '.' in this box. Be sure that the cluster computers use the same
+% pathname and syntax.
 %
 % Other Paths: You can either specify the exact paths as seen by the
 % cluster computers, or you can leave a period (.) to use the default image
@@ -117,7 +120,7 @@ BatchSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2})
 %defaultVAR03 = Batch_
 BatchFilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%pathnametextVAR04 = If you chose the MATLAB option, what is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the default module folder.
+%pathnametextVAR04 = If you chose the MATLAB option, what is the path to the CellProfiler folder on the cluster machines?  Leave a period (.) to use the parent of the default module folder.
 %defaultVAR04 = .
 BatchCellProfilerPath = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 

@@ -28,10 +28,5 @@ http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3\
 \
 - (Anne 9/1/06) - The Change Colormap tool in the Image Tool window is nice! The window needs to be bigger, along with the corresponding text areas and buttons - it was designed on a computer with small default font size i think. If you click the ? button it tells you to go elsewhere to find help - is there a reason why we can't open the proper help directly?\
 \
-- (Anne 8/30/06) - In the CreateBatchFiles module, if you leave it set to "." it says it will use the default modules folder, and it seems to indeed try to use the default modules folder, when in reality it seems it ought to use the PARENT of the default Modules folder, so that CPsubfunctions are found. At least I think this is how it should be. We don't have a great way to test it unless we make batches and run them locally somehow.\
-\
-- (Requested by Anne 12-09-05)-- Make preferences work a bit better when having more than one copy of CP on a computer. E.g. if I start CP in my own copy of trunk/CellProfiler, it reads that previously I set the modules folder to someone else's trunk/CellProfiler, so it adds *their* Modules folder to the top of my path. In fact, perhaps we should not have the Modules folder be stored in the pref's anyway - it should just always be the Modules folder within the currently running CellProfiler!!\
-\
 \pard\pardeftab720\ql\qnatural
-\cf0 [THIS WAS PREVIOUSLY ON THE TODOurops list, which I've now deleted; Do you have any idea what this means?]\
-: - Mike - Stacked tifs}
+\cf0 - Allow CellProfiler to read 3D tif images. I don't have any examples, but probably some can be found online. This is only worth doing if < 1 hours' work.}

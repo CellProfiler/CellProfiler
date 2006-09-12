@@ -308,9 +308,17 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
     end
 
-    if ~strcmp(FileFormat,'fig')        
-        if ~isfield(handles.Pipeline, ImageName) 
-            error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module.'])
+    if ~strcmp(FileFormat,'fig')
+        if ~isfield(handles.Pipeline, ImageName)
+            %%% Checks if this might be a number, intended to save an
+            %%% entire figure.
+            if ~isempty(str2num(ImageName));
+                error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module. If you are trying to save an entire figure, be sure to choose the file format "fig".'])
+            else
+                %%% If it's not a number, then this must just be a case of not
+                %%% finding the image.
+                error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module.'])
+            end
         end
         Image = handles.Pipeline.(ImageName);
         if max(Image(:)) > 1 || min(Image(:)) < 0

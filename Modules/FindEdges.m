@@ -17,6 +17,14 @@ function handles = FindEdges(handles)
 %
 % Settings:
 %
+% Threshold: Enter the desired threshold or have CellProfiler calculate one
+% automatically. The methods use different processes to calculate the
+% automatic threshold.
+%
+% Threshold Adjustment Factor: This value will be multiplied by the
+% threshold (the numerical value you entered, or the automatically
+% calculated one if desired) used for edge detection.
+%
 % Method: There are several methods that can be used to identify edges:
 %   Ratio Method - This method first applies two smoothing filters to the
 %                  image (sum of squares and square of sums), and then
@@ -50,22 +58,6 @@ function handles = FindEdges(handles)
 %                  less likely than the others to be fooled by noise, and
 %                  more likely to detect true weak edges.
 %
-% Threshold: Enter the desired threshold or have CellProfiler calculate one
-% automatically. The methods use different processes to calculate the
-% automatic threshold.
-%
-% Edge Thinning (for Sobel and Roberts methods): If thinning is selected,
-% edges found will be thinned out
-% into a line (if possible).
-%
-% Direction (for Sobel and Prewitt methods):
-% It gives you the option of identifying all edges, or just those that are
-% predominantly horizontal or vertical.
-%
-% Threshold Adjustment Factor: This value will be
-% multiplied by the threshold (the numerical value you entered, or the automatically
-% calculated one if desired) used for edge detection.
-%
 % Size of smoothing filter (for Ratio method only): A square of NxN will be used for the filter, where N is the size you
 % specify here. See method description above for further information.
 %
@@ -74,11 +66,16 @@ function handles = FindEdges(handles)
 % white). The choice depends on what you intend to use the resulting image
 % for.
 %
-% TODO: Put the help in the same order as the variables, and also we need
-% to put help in here for sigma. Also, copy the help from the MATLAB edge function regarding edge
-% thinning, because i think it affects speed in addition to the final
-% output? I think the help above probably all ought to be checked more carefully. -Anne
+% Edge Thinning (for Sobel and Roberts methods): If thinning is selected,
+% edges found will be thinned out into a line (if possible). Specifying the
+% 'nothinning' option can speed up the operation of the algorithm by
+% skipping the additional edge thinning stage. 
 %
+% Direction (for Sobel and Prewitt methods): It gives you the option of
+% identifying all edges, or just those that are predominantly horizontal or
+% vertical.
+%
+% Sigma (LoG and Canny): Standard deviation of the gaussian filter
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -219,12 +216,6 @@ elseif strcmpi(Method, 'canny')
         end
     end
 elseif  strcmpi(Method, 'log')
-    %%% TODO: If the user wanted sigma to be calculated automatically, it still
-    %%% yields a warning dialog. This is silly, especially since it's not like
-    %%% we 'calculate' sigma anyway, it just uses the default value. So, if the
-    %%% user has set sigma as '/', we should just use 2 without complaining.
-    %%% see the TODO below regarding 'what is our common usage?' for a similar
-    %%% case.
     if strcmp(Sigma,'/')
         Sigma = 2; %log's default is 1
     else
@@ -288,28 +279,10 @@ if ~strcmpi(Method,'ratio')
 elseif strcmpi(Method,'ratio')
     if isnan(SizeOfSmoothingFilter)
         error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
-    else
-        %%% TODO: it looks like we are limiting the SizeOfSmoothingFilter
-        %%% between 1 and 30 - why? shouldn't the user be able to pick
-        %%% whatever they want? If we do decide to limit it, the variable
-        %%% description should tell the user the allowable range. In the
-        %%% help, i think the help should be something more like 'how wide are
-        %%% the typical edges you are looking for?' whereas right now it
-        %%% talks about how wide the objects themselves are.
-        SizeOfSmoothingFilter = min(30,max(1,floor(SizeOfSmoothingFilter)));
     end
     Sq = CPsmooth(OrigImage,'Q',SizeOfSmoothingFilter,0);
     Mn = CPsmooth(OrigImage,'S',SizeOfSmoothingFilter,0);
     EdgedImage = Mn./Sq;
-    %%% TODO: I do not think we should rescale by stretching. Is there
-    %%% any scaling we can do that retains the relative values of images vs. each
-    %%% other? In fact, As long as the ratio image values are positive, it might be ok to leave
-    %%% them as is, even if they are very low, because the automatic
-    %%% threshold
-    %%% calculated on the image would still be reasonable, I think.
-
-    %%% The ratio image has really weird numbers, put it in the 0-1 range:
-    [handles, EdgedImage] = CPrescale(handles,EdgedImage,'S',[]);
 
     if strcmp(BinaryOrGray,'Binary')
         %%% For the case where we want to automatically calculate a threshold.
@@ -330,11 +303,10 @@ elseif strcmpi(Method,'ratio')
         end
         EdgedImage = im2bw(EdgedImage, ThresholdUsed);
     end
-    %%% TODO: do we want to allow this option?
 
-    %     if strcmp(Thinning,'thinning')
-    %         EdgedImage = imerode(EdgedImage,strel('disk',3));
-    %     end
+    if strcmp(Thinning,'thinning')
+        EdgedImage = imerode(EdgedImage,strel('disk',3));
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -373,6 +345,8 @@ if ~strcmpi(Method,'ratio') || ~strcmpi(BinaryOrGray,'Grayscale')
         handles = CPaddmeasurements(handles,'Image','OrigThreshold',['Edged_',ImageName],ThresholdUsed(1));
         handles = CPaddmeasurements(handles,'Image','OrigThreshold',['CannyLowEdged_',ImageName],ThresholdUsed(2));
     else
-        handles = CPaddmeasurements(handles,'Image','OrigThreshold',['Edged_',ImageName],ThresholdUsed);
+        if ~(strcmpi(Method,'ratio') && strcmp(BinaryOrGray,'Binary') && CalculateThreshold)
+            handles = CPaddmeasurements(handles,'Image','OrigThreshold',['Edged_',ImageName],ThresholdUsed);
+        end
     end
 end

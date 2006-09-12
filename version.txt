@@ -1,7 +1,10 @@
 Version 1.0.XXXX
- - Added MeasureImageSlope
+ - Added MeasureImageSlope and Combine modules
  - Histogram data tool overhauled
  - New thresholding options in IdentifyPrimAutomatic
+ - Updated FindEdges Module
+ - ZVI file format is now supported
+ - Many feature names have been shortened to ease transition in to database
 
 Version 1.0.3775
  - Windows menu now shows all CellProfiler windows

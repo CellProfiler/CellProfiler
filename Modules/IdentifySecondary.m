@@ -750,12 +750,12 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     if strcmp(TestMode,'Yes')
         SecondaryTestFig = findobj('Tag','SecondaryTestFigure');
         if isempty(SecondaryTestFig)
-            CPfigure(handles,'Tag','SecondaryTestFigure','Name','Secondary Test Figure');
+            SecondaryTestFig = CPfigure(handles,'Image','Tag','SecondaryTestFigure','Name','Secondary Test Figure');
         else
-            CPfigure(handles,SecondaryTestFig);
+            CPfigure(handles,'Image',SecondaryTestFig);
         end
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',ThisModuleFigureNumber);
+            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',SecondaryTestFig);
         end
         subplot(2,2,IdentChoiceNumber);
         CPimagesc(ObjectOutlinesOnOrigImage,handles);
@@ -771,7 +771,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             handles.Measurements.(PrimaryObjectName) = {};
         end
 
-        [handles,ChildList,FinalParentList] = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage);
+        handles = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage);
 
         %%%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%

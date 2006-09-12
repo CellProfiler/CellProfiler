@@ -340,7 +340,7 @@ drawnow
 %%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
 if GetThreshold
-    [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName);
+    [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,SecondaryObjectName);
 else Threshold = 0; % should never be used
 end
 %%% ANNE REPLACED THIS LINE 11-06-05.

@@ -1,4 +1,4 @@
-function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName)
+function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,ObjectVar)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -24,6 +24,12 @@ function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThre
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 2802 $
+
+if nargin == 9
+    ObjectVar = [];
+else
+    ObjectVar = [ObjectVar,'_'];
+end
 
 %%% Convert user-specified percentage of image covered by objects to a prior probability
 %%% of a pixel being part of an object.
@@ -220,8 +226,7 @@ end
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
-handles = CPaddmeasurements(handles,'Image','OrigThreshold',ImageName,mean(mean(Threshold)));
-
+handles = CPaddmeasurements(handles,'Image','OrigThreshold',[ObjectVar,ImageName],mean(mean(Threshold)));
 
 function Threshold = MixtureOfGaussians(block,handles,pObject,ImageName)
 %%% This function finds a suitable threshold for the input image

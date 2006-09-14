@@ -31,14 +31,13 @@ if ~isfield(handles.Settings,'VariableValues') || ~isfield(handles.Settings,'Var
 end
 
 VariableValues = handles.Settings.VariableValues;
-VariableInfoTypes = handles.Settings.VariableInfoTypes;
 ModuleNames = handles.Settings.ModuleNames;
 ModuleNamedotm = [char(ModuleNames(1)) '.m'];
 %%% Check for location of m-files
 if exist(ModuleNamedotm,'file')
     if ~isdeployed
         FullPathname = which(ModuleNamedotm);
-        [PathnameModules, filename, ext, versn] = fileparts(FullPathname); % Why is filename, ext, and versn taken out? They aren't used later on...
+        PathnameModules = fileparts(FullPathname);
     else
         PathnameModules = handles.Preferences.DefaultModuleDirectory;
     end
@@ -60,7 +59,7 @@ if isstruct(ExportInfo)
     filename = [ExportInfo.ProcessInfoFilename ExportInfo.ProcessInfoExtension];
     fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
-        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name, or you do not have permission to write this file.',filename));
+        error('Cannot create the output file %s. There might be another program using a file with the same name, or you do not have permission to write this file.',filename);
     end
 else
     %Prompt what to save file as, and where to save it.
@@ -71,7 +70,7 @@ else
     end
     fid = fopen(fullfile(SavePathname,filename),'w');
     if fid == -1
-        error(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
+        error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);
     end
 end
 
@@ -81,7 +80,7 @@ if VariableSize(1) ~= max(size(ModuleNames))
     error('Your settings are not valid.')
 end
 
-if ~isstr(RawPathname) || ~isstr(RawFilename) || ~isstruct(ExportInfo)
+if ~ischar(RawPathname) || ~ischar(RawFilename) || ~isstruct(ExportInfo)
     fprintf(fid,['Saved Pipeline, in file ' filename ', Saved on ' date '\n']);
 else
     fprintf(fid,'Processing info for file: %s\n',fullfile(RawPathname, RawFilename));
@@ -98,9 +97,13 @@ end
 RevNums = handles.Settings.VariableRevisionNumbers;
 % Loop for each module loaded.
 for p = 1:VariableSize(1)
-    Module = [char(ModuleNames(p))];
+    Module = char(ModuleNames(p));
     fprintf(fid,['\nModule #' num2str(p) ': ' Module ' revision - ' num2str(RevNums(p)) '\n']);
-    ModuleNamedotm = [Module '.m'];
+    if isdeployed
+        ModuleNamedotm = [Module '.txt'];
+    else
+        ModuleNamedotm = [Module '.m'];
+    end
     fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
     while 1
         output = fgetl(fid2);
@@ -108,19 +111,19 @@ for p = 1:VariableSize(1)
         if strncmp(output,'%textVAR',8)
             displayval = output(13:end);
             istr = output(9:10);
-            i = str2num(istr);
-            VariableDescriptions(i) = {displayval};
+            i = str2double(istr);
+            VariableDescriptions(i) = {displayval}; %#ok Ignore MLint
         end
         if strncmp(output,'%pathnametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableDescriptions(i) = {displayval};
         end
         if strncmp(output,'%filenametextVAR',16)
             displayval = output(21:end);
             istr = output(17:18);
-            i = str2num(istr);
+            i = str2double(istr);
             VariableDescriptions(i) = {displayval};
         end
     end
@@ -137,8 +140,8 @@ for p = 1:VariableSize(1)
         fprintf(fid,['    ' VariableDescrip '    ' VariableVal '\n']);
     end
 end
-%% Save to a .txt file.
+% Save to a .txt file.
 fclose(fid);
-if ~isstr(RawPathname) || ~isstr(RawFilename)
+if ~ischar(RawPathname) || ~ischar(RawFilename)
     CPhelpdlg('The pipeline .txt file has been written.');
 end

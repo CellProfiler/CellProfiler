@@ -26,6 +26,11 @@ function handles = MeasureObjectNeighbors(handles)
 % are 0, and objects with neighbors are greater than 0, with the increasing
 % index corresponding to more neighbors.
 %
+% Note that the identity of neighbors for each object is saved in the
+% output file but that the structure of that data makes it incompatible
+% with CellProfiler's export functions. To access this data, you will have
+% to use MATLAB.
+%
 % Saving the objects:
 % * You can save the objects colored by number of neighbors to the handles 
 % structure to be used in other modules. Here, the scalar value 1 is added 

@@ -1,34 +1,24 @@
-{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf410
-{\fonttbl\f0\fswiss\fcharset77 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-\margl1440\margr1440\vieww17400\viewh15260\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+Jason's TODO (in rough order of priority):
 
-\f0\fs24 \cf0 Jason's TODO (in rough order of priority):\
-\
-- (Anne 9/1/06) - The SaveImages module says "The images you have loaded are outside the 0-1 range and you may be losing data" when you feed it colored images (e.g. from the TrackObjects module). The error message is annoying because it forces itself on top and in the center of the screen on every cycle (instead, it should check to see whether it exists already and leave itself where it is onscreen so the user can at least move it our of the way). Can we at least fix that, but possibly also make it realize when we are dealing with color object images that are ok to be outside the range?\
-\
-- (Anne 9/12/06) - When trying to saving an entire figure using the SaveImages module, if you have closed that particular figure window it fails and gives the message: Error using Save as > invalid handle. We should catch the error and tell the user they can't close figures if they want to save them.\
-\
-- (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?\
-http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3\
-\
-- (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?\
-http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3\
-\
-- (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.\
-\
-- (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.\
-\
-- GENERAL MODULE CHECKING: (1) Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle! (2) I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files. (3) (Requested by Anne 11-21-05) - Calculations shouldn't be made if they don't need to be (e.g. calculating outlines, colored label matrix for display when the figure is closed anyway). We should check through all the modules.\
-\
-- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.\
-\
-- (Requested by Anne 8-31-06) - Would be nice to be able to click on movie files in the lower left box and have them open and play. At the very least, the first frame should open as a figure.\
-\
--(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.\
-\
-- (Anne 9/1/06) - The Change Colormap tool in the Image Tool window is nice! The window needs to be bigger, along with the corresponding text areas and buttons - it was designed on a computer with small default font size i think. If you click the ? button it tells you to go elsewhere to find help - is there a reason why we can't open the proper help directly?\
-\
-\pard\pardeftab720\ql\qnatural
-\cf0 - Allow CellProfiler to read 3D tif images. I don't have any examples, but probably some can be found online. This is only worth doing if < 1 hours' work.}
+- (Anne 9/1/06) - The SaveImages module says "The images you have loaded are outside the 0-1 range and you may be losing data" when you feed it colored images (e.g. from the TrackObjects module). The error message is annoying because it forces itself on top and in the center of the screen on every cycle (instead, it should check to see whether it exists already and leave itself where it is onscreen so the user can at least move it our of the way). Can we at least fix that, but possibly also make it realize when we are dealing with color object images that are ok to be outside the range?
+
+- (Anne 9/12/06) - When trying to saving an entire figure using the SaveImages module, if you have closed that particular figure window it fails and gives the message: Error using Save as > invalid handle. We should catch the error and tell the user they can't close figures if they want to save them.
+
+- (requested by Anne 12-13-05) - If we use xlsread anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-QXCUJ: reported on September 15,2004 regarding MATLAB 7.0 (R14):  Why does XLSREAD on Mac OS X produce different results than on Windows in MATLAB?
+http://www.mathworks.com/support/solutions/data/1-QXCVA.html?ref=ts_r14sp3
+
+- (Anne 4/25/06) - The inability to nicely scroll the help windows is pretty annoying on the mac platform. Why can't we resize the window? Maybe there is a good reason.
+
+- (Requested by Anne 11-28-05) - Make the expand or shrink module work well with shrinking secondary objects.
+
+- GENERAL MODULE CHECKING: (1) Anne 7-11-06: We should check through the existing error messages in modules, and allow the user a way out if possible. For example, a lot of times a module will error out and cancel processing and say something like "your values were outside the range 0 to 1". Most likely, in that case you would provide a warning dialog that says "You entered a value of -0.5 which is below the minimum value of 0, so the value 0 will be used. Change settings to prevent this error in the future." Make sure that the window doesn't pop up fresh every cycle! (2) I just fixed a bug in LoadImages where if the user typed in 'automatic' in lower case for the two variables (blur and neighborhood suppression) it failed and gave an inexplicable error message. All I had to do was change the strcmp to strcmpi to make it case-insensitive. I think that this is probably a common thing we overlooked. We should go through the code and look for all strcmp and strncmp and replace with the case-insensitive versions strcmpi and strncmpi where appropriate. We don't want to just find and replace all of them because occasionally it might be necessary to be case sensitive! The tool in Matlab Edit > Find Files should be helpful to find all the instances of strcmp in the m files. (3) (Requested by Anne 11-21-05) - Calculations shouldn't be made if they don't need to be (e.g. calculating outlines, colored label matrix for display when the figure is closed anyway). We should check through all the modules.
+
+- (Requested by Anne 12-09-05) - See the developer script for Generate colormaps and have it display in the help window for HelpColormaps. Then alter the help for the various modules that use colormaps to see HelpColormaps for example colormaps.
+
+- (Requested by Anne 8-31-06) - Would be nice to be able to click on movie files in the lower left box and have them open and play. At the very least, the first frame should open as a figure.
+
+-(Mike 11/14 I think this can be done with invisible plot but i couldnt get it to work) (Requested by Anne) - Define grid: the row labels should be on the right (not left) and the column labels on the top (not bottom) so that the pixel locations are still visible on the left and bottom.
+
+- (Anne 9/1/06) - The Change Colormap tool in the Image Tool window is nice! The window needs to be bigger, along with the corresponding text areas and buttons - it was designed on a computer with small default font size i think. If you click the ? button it tells you to go elsewhere to find help - is there a reason why we can't open the proper help directly?
+
+- Allow CellProfiler to read 3D tif images. I don't have any examples, but probably some can be found online. This is only worth doing if < 1 hours' work.

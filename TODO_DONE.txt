@@ -1,5 +1,8 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Mike 9/14 this was fixed awhile ago, the catches look for version number of MATLAB on mac) (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?
+http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
+
 - (Mike 9/12) Anne 9-8-06: I pretty much COMPLETELY rewrote the code of FindEdges (that Rodrigo made). There are still some TODO things in there that I wrote down but didn't change yet.
 
 - (Mike 9/12) Anne 9-1-06: The feature selection subfunction (not sure what it's called) that is used, e.g., in the Histogram data tool has all its windows gray rather than .7 .7 .9. Also, the text above the selection window is pretty tiny - does not seem to use default font size and the height of the text area causes some text to be cut off the top and bottom (just a tiny bit).

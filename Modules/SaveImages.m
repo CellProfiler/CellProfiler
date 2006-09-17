@@ -322,10 +322,12 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         end
         Image = handles.Pipeline.(ImageName);
         if max(Image(:)) > 1 || min(Image(:)) < 0
-            CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
+            try findob(WarniningHandle)
+            catch
+                WarniningHandle=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
+            end
         end
-
-        if strcmp(RescaleImage,'Yes')
+if strcmp(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
             Image = imadjust(Image,LOW_HIGH,[0 1]);
         end

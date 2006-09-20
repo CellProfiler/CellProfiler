@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 9-14-06 add an error catch if the default output folder doesn't exist, or if you don't have write permission there, when you are trying to export data.
+
 - (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 
 - (Anne 6/12/06) - Do we have developer's instructions somewhere that warn about code changes that will also require changes in your compiling process (using MATLAB editors especially)? It would be good if Anne and the summer students are more aware of them so things don't crash and burn!
@@ -131,6 +133,8 @@ estimate with no indication of its accuracy. - Ray
 +++ (Requested by Anne) - New algorithm to calculate colocalization. Ask Ray if it seems like a good idea. One part of the paper is simply describing the concept of masking the image for the region of interest (ROI) prior to calculating the correlation coefficient, which we already do. But the second part is a different calculation which may be superior to the one we use, but not sure: Jaskolski, Mulle, Manzoni J Neurosci Methods 146(2005) 42-49. The matlab code is apparently available from the authors.
 
 ++ (Requested by Anne 11-01-05) - There are many ways to measure the best focus of an image. Right now our MeasureSaturationBlur module has only one of these methods. Implement many of the focus methods in this paper, and have the 'best'/fastest one be the default: Sun, Duthaler, Nelson, Microscopy Research & Technique 2004 (Anne has the pdf of this).
+
++++ (requested by Anne 9-19-06) - Adiga, IEEE trans on Image Processing vol 15 no. 8 August 2006 has a nice IdentifyPrim algorithm which we might want to implement.
 
 +++ (Requested by Anne) - RAY PROBABLY HAS ALREADY ACCOMPLISHED THIS WITH BELIEF PROPAGATION: Improve foreground/background determination, i.e. automatic thresholding, i.e. background/cell edge finding. Right now, thresholding is a real problem for us. Ask Ray for advice. 
 IDEA 1:

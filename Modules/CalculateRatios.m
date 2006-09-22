@@ -207,7 +207,7 @@ end
 
 % Make measurements and store in handle structure
 DenominatorMeasurements(DenominatorMeasurements==0) = NaN;
-DenominatorMeasurements(isnan(DenominatorMeasurements)) = nanmean(DenominatorMeasurements);
+DenominatorMeasurements(isnan(DenominatorMeasurements)) = CPnanmean(DenominatorMeasurements);
 FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
     FinalMeasurements = log10(FinalMeasurements);

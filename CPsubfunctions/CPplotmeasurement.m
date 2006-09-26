@@ -1,4 +1,4 @@
-function CPplotmeasurement(handles,PlotType,ModuleFlag,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+function CPplotmeasurement(handles,PlotType,FigHandle,ModuleFlag,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -25,6 +25,9 @@ function CPplotmeasurement(handles,PlotType,ModuleFlag,Object,Feature,FeatureNo,
 %
 % $Revision: 2802 $
 
+%%% IF YOU CHANGE THIS SUBFUNCTION, BE SURE TO CONFIRM FUNCTIONALITY WITH
+%%% ALL MODULES THAT CALL IT!
+
 try FontSize = handles.Preferences.FontSize;
     %%% We used to store the font size in Current, so this line makes old
     %%% output files compatible. Shouldn't be necessary with any files made
@@ -34,9 +37,9 @@ catch
 end
 
 if (length(Feature) > 10) && strncmp(Feature,'Intensity_',10)
-    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object,' in ',Feature(11:end)];
+    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Feature(11:end),' in ',Object];
 elseif (length(Feature) > 8) && strncmp(Feature,'Texture_',8)
-    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object,' in ',Feature(11:end)];
+    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Feature(9:end),' in ',Object];
 else
     str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object];
 end
@@ -82,7 +85,7 @@ if PlotType == 1
         otherwise
             LineColor=[.7 .7 .9];
     end
-    
+
     PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
@@ -107,7 +110,7 @@ if PlotType == 1
     for count=FirstImage:LastImage
         ImageSet=[ImageSet; count];
     end
-    
+
     emptymat=0;
     GraphedSamples=[];
     for k = 1:length(ImageSet)
@@ -120,18 +123,18 @@ if PlotType == 1
             emptymat=1;
         end
     end
-    
+
     if emptymat
         warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no bars). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
         uiwait(warnfig);
     end
-
-    FigHandle=CPfigure;
-    
-    %%% Do the plotting   
+    if isempty(FigHandle)
+        FigHandle=CPfigure;
+    end
+    %%% Do the plotting
     graph=bar(MeasurementsMean);
     set(graph,'FaceColor',LineColor);
-    
+
     hold on
     for k = 1:length(GraphedSamples)
         plot([k k],[MeasurementsMean(k)-MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
@@ -150,13 +153,13 @@ if PlotType == 1
     set(gca,'xtick',[0 1:length(ImageSet) length(ImageSet)+1]);
     set(gca,'xticklabel',[0; ImageSet; LastImage+1]);
     titlestr = str;
-    
+
     %%% Line graph
 elseif PlotType == 2
 
     %%% Extract the measurement
     Measurements = handles.Measurements.(Object).(Feature);
-    
+
 
 
     %%% Opens a window that lets the user choose graph settings
@@ -195,12 +198,12 @@ elseif PlotType == 2
         otherwise
             LineColor=[.7 .7 .9];
     end
-    
+
     PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
     if strcmp(UserAnswers.Logical,'None') ~= 1
-        try 
+        try
             msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
             uiwait(msgfig);
             [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
@@ -210,16 +213,16 @@ elseif PlotType == 2
             error(lasterr);
         end
     end
-    
+
     % Calculate mean and standard deviation
     MeasurementMean = zeros(length(Measurements),1);
     MeasurementStd = zeros(length(Measurements),1);
-    
+
     ImageSet=[];
     for count=FirstImage:LastImage
         ImageSet=[ImageSet; count];
     end
-   
+
     emptymat=0;
     for k = 1:length(ImageSet)
         imagenum=ImageSet(k);
@@ -230,7 +233,7 @@ elseif PlotType == 2
             emptymat=1;
         end
     end
-    
+
     if emptymat
         warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no lines). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
         uiwait(warnfig);
@@ -239,7 +242,9 @@ elseif PlotType == 2
     %%% Plots a line chart, where the X dimensions are incremented
     %%% from 1 to the number of measurements to be PlotTypeed, and Y is
     %%% the measurement of interest.
-    FigHandle=CPfigure;
+    if isempty(FigHandle)
+        FigHandle=CPfigure;
+    end
     hold on
     plot(1:length(MeasurementsMean), MeasurementsMean,'Color',LineColor,'LineWidth',1);
 
@@ -255,14 +260,14 @@ elseif PlotType == 2
     else
         ylabel(gca,[str,', mean +/- standard deviation'],'fontname','Helvetica','fontsize',FontSize+2)
     end
-    
+
     set(gca,'xtick',[0 1:length(ImageSet) length(ImageSet)+1]);
     set(gca,'xticklabel',[0; ImageSet; LastImage+1]);
     titlestr = str;
 
     %%% Scatter plot, 1 measurement
 elseif PlotType == 3
-    
+
     %%% Extract the measurements
     Measurements = handles.Measurements.(Object).(Feature);
 
@@ -281,12 +286,12 @@ elseif PlotType == 3
 
     FirstImage=UserAnswers.FirstSample;
     LastImage=UserAnswers.LastSample;
-    
+
     PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
     if strcmp(UserAnswers.Logical,'None') ~= 1
-        try 
+        try
             msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
             uiwait(msgfig);
             [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
@@ -297,7 +302,7 @@ elseif PlotType == 3
             return
         end
     end
-    
+
 
     switch UserAnswers.Color
         case 'Blue'
@@ -319,12 +324,12 @@ elseif PlotType == 3
         otherwise
             LineColor=[.7 .7 .9];
     end
-    
+
     ImageSet=[];
     for count=FirstImage:LastImage
         ImageSet=[ImageSet;count];
     end
-    
+
     emptymat=0;
     for k = 1:length(ImageSet)
         imagenum=ImageSet(k);
@@ -332,13 +337,15 @@ elseif PlotType == 3
             emptymat=1;
         end
     end
-    
+
     if emptymat
         warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no data points). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
         uiwait(warnfig);
     end
 
-    FigHandle=CPfigure;
+    if isempty(FigHandle)
+        FigHandle=CPfigure;
+    end
     %%% Plot
     hold on
     for k = FirstImage:LastImage
@@ -389,7 +396,7 @@ elseif PlotType == 4
 
         FirstImage=UserAnswers.FirstSample;
         LastImage=UserAnswers.LastSample;
-        
+
         PlotNum=1;
         %%% Thresholds the data if user chose other than "None"
         %%% Reassigns Measurements
@@ -406,7 +413,7 @@ elseif PlotType == 4
                 return
             end
         end
-        
+
 
         switch UserAnswers.Color
             case 'Blue'
@@ -428,8 +435,10 @@ elseif PlotType == 4
             otherwise
                 LineColor=[.7 .7 .9];
         end
-        
-        FigHandle=CPfigure;
+
+        if isempty(FigHandle)
+            FigHandle=CPfigure;
+        end
         %%% Plot
         hold on
         emptymat=0;
@@ -444,9 +453,11 @@ elseif PlotType == 4
             end
         end
         hold off
-        
+
     else
-        FigHandle=CPfigure;
+        if isempty(FigHandle)
+            FigHandle=CPfigure;
+        end
         hold on
         emptymat=0;
         for k = 1:length(Measurements1)
@@ -467,16 +478,16 @@ elseif PlotType == 4
         uiwait(warnfig);
     end
 
-    if (length(Feature2) > 10) & strncmp(Feature2,'Intensity_',10)
-        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ', Object2, ' in ',Feature2(11:end)];
+    if (length(Feature2) > 10) && strncmp(Feature2,'Intensity_',10)
+        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ',Feature2(11:end), ' in ',Object2];
     elseif (length(Feature2) > 8) & strncmp(Feature2,'Texture_',8)
-        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ', Object2, ' in ',Feature2(11:end)];
+        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ',Feature2(9:end), ' in ',Object2];
     else
         str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ', Object2];
     end
 
 
-    if strcmp(UserAnswers.Logical,'None') ~= 1
+    if ModuleFlag == 0 && strcmp(UserAnswers.Logical,'None') ~= 1
         xlabel(gca,{str;'for objects where';Thresholdstr1;[]},'fontsize',FontSize+2,'fontname','Helvetica')
         ylabel(gca,{[];str2;'for objects where';Thresholdstr2},'fontname','Helvetica','fontsize',FontSize+2)
     else
@@ -484,7 +495,7 @@ elseif PlotType == 4
         ylabel(gca,str2,'fontname','Helvetica','fontsize',FontSize+2)
     end
     titlestr = [str2,' vs. ',str];
-    
+
 end
 
 % Set some general figure and axes properties
@@ -499,7 +510,7 @@ end
 function UserAnswers = UserAnswersWindow(handles)
 % This function displays a window for user input. If the return variable 'UserAnswers' is empty
 % it means that either no measurements were found or the user pressed
-% the Cancel button (or the window was closed). 
+% the Cancel button (or the window was closed).
 
 
 % Store font size
@@ -507,7 +518,7 @@ FontSize = handles.Preferences.FontSize;
 
 % Create UserWindow window
 UserWindow = figure;
-set(UserWindow,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Choose control histogram settings','Color',[.7 .7 .9]);
+set(UserWindow,'units','inches','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Choose settings','Color',[.7 .7 .9]);
 % Some variables controling the sizes of uicontrols
 uiheight = 0.3;
 % Set window size in inches, depends on the number of prompts
@@ -572,9 +583,13 @@ uicontrol(UserWindow,'style','pushbutton','String','?','FontSize',FontSize,...
 
 %%% OK AND CANCEL BUTTONS
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
-okbutton = uicontrol(UserWindow,'style','pushbutton','String','OK','Fontweight','bold','FontSize',FontSize,'units','inches',...
-    'position',[posx 0.1 0.75 0.3],'BackgroundColor',[.7 .7 .9],'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear cobj cfig;','BackgroundColor',[.7 .7 .9]);
-cancelbutton = uicontrol(UserWindow,'style','pushbutton','String','Cancel','Fontweight','bold','FontSize',FontSize,'units','inches',...
+okbutton = uicontrol(UserWindow,'style','pushbutton','String','OK',...
+    'Fontweight','bold','FontSize',FontSize,'units','inches',...
+    'position',[posx 0.1 0.75 0.3],'BackgroundColor',[.7 .7 .9],...
+    'Callback','[cobj,cfig] = gcbo;set(cobj,''UserData'',1);uiresume(cfig);clear cobj cfig;',...
+    'BackgroundColor',[.7 .7 .9]);
+cancelbutton = uicontrol(UserWindow,'style','pushbutton','String','Cancel',...
+    'Fontweight','bold','FontSize',FontSize,'units','inches',...
     'position',[posx+0.95 0.1 0.75 0.3],'Callback','close(gcf)','BackgroundColor',[.7 .7 .9]);
 
 
@@ -674,17 +689,17 @@ NumberOfImages=handles.Current.NumberOfImageSets;
 
 Thresholdstr= [MeasurementToThresholdValueOnName,' ', UserAnswers.Logical,' ',num2str(UserAnswers.ThresholdVal)];
 % AdditionalInfoForTitle = [' for objects where ', MeasurementToThresholdValueOnName,' ', UserAnswers.Logical,' ',num2str(UserAnswers.ThresholdVal)];
-    
+
 CompressedImageNumber = 1;
 OutputMeasurements = cell(size(NumberOfImages,1),1);
 % FinalHistogramData = [];
 for ImageNumber = 1:NumberOfImages
     ListOfMeasurements{CompressedImageNumber,1} = Measurements{ImageNumber};
     ListOfMeasurements{CompressedImageNumber,2} = MeasurementToThresholdValueOn{ImageNumber};
-    
+
     %%% Applies the specified ThresholdValue and gives a cell
     %%% array as output.
-    if strcmp(UserAnswers.Logical,'>') == 1 
+    if strcmp(UserAnswers.Logical,'>') == 1
         newmat=[];
         boolcol=(ListOfMeasurements{CompressedImageNumber,2} > UserAnswers.ThresholdVal);
         for col=1:NumFeatures
@@ -695,7 +710,7 @@ for ImageNumber = 1:NumberOfImages
                     newcol=[newcol; datacol(row)];
                 end
             end
-            
+
             newmat=[newmat newcol];
         end
         OutputMeasurements{CompressedImageNumber,1} = newmat;
@@ -710,10 +725,10 @@ for ImageNumber = 1:NumberOfImages
                     newcol=[newcol; datacol(row)];
                 end
             end
-            
+
             newmat=[newmat newcol];
         end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;    
+        OutputMeasurements{CompressedImageNumber,1} = newmat;
     elseif strcmp(UserAnswers.Logical,'<') == 1
         newmat=[];
         boolcol=(ListOfMeasurements{CompressedImageNumber,2} < UserAnswers.ThresholdVal);
@@ -725,7 +740,7 @@ for ImageNumber = 1:NumberOfImages
                     newcol=[newcol; datacol(row)];
                 end
             end
-            
+
             newmat=[newmat newcol];
         end
         OutputMeasurements{CompressedImageNumber,1} = newmat;
@@ -740,7 +755,7 @@ for ImageNumber = 1:NumberOfImages
                     newcol=[newcol; datacol(row)];
                 end
             end
-            
+
             newmat=[newmat newcol];
         end
         OutputMeasurements{CompressedImageNumber,1} = newmat;
@@ -755,7 +770,7 @@ for ImageNumber = 1:NumberOfImages
                     newcol=[newcol; datacol(row)];
                 end
             end
-            
+
             newmat=[newmat newcol];
         end
         OutputMeasurements{CompressedImageNumber,1} = newmat;

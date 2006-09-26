@@ -136,8 +136,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             [GroupingValueRows,n] = size(GroupingValues);
                             [YmatrixRows, n] = size(Ymatrix);
                             if GroupingValueRows ~= YmatrixRows
-                                CPwarndlg('There was an error in the Calculate Statistics module involving the number of elements loaded for it.  CellProfiler will proceed anyways.');
-                                display 'There was an error in the Calculate Statistics module involving the number of elements loaded for it.  CellProfiler will proceed anyways.';
+                                CPwarndlg('There was an error in the Calculate Statistics module involving the number of text elements loaded for it.  CellProfiler will proceed but this module will be skipped.');
                                 return;
                             else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);

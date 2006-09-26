@@ -73,7 +73,7 @@ if PlotType == 4
     if isempty(Object),return,end
     if isempty(Object2),return,end
     try
-        CPplotmeasurement(handles,PlotType,0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+        CPplotmeasurement(handles,PlotType,[],0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
@@ -90,7 +90,7 @@ else
     end
     if isempty(Object),return,end
     try
-       CPplotmeasurement(handles,PlotType,0,Object,Feature,FeatureNo)
+       CPplotmeasurement(handles,PlotType,[],0,Object,Feature,FeatureNo)
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);

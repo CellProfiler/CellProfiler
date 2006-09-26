@@ -14,7 +14,7 @@ function handles = DisplayMeasurement(handles)
 % user may choose to plot a ratio of two data sets.  The scatterplot
 % requires additional information about the second set of measurements
 % used.
-
+%
 % The resulting plots can be saved using the Save Images module.
 %
 % Feature Number:
@@ -71,13 +71,12 @@ PlotType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which category of measurements would you like to use?
+%textVAR03 = Which category of measurements would you like to use? (For Texture, you must use Other... and include the scale of texture, e.g. Texture_3)
 %choiceVAR03 = AreaShape
 %choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
 %choiceVAR03 = Neighbors
 %choiceVAR03 = Ratio
-%choiceVAR03 = Texture
 %inputtypeVAR03 = popupmenu custom
 FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -141,11 +140,11 @@ drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-if strcmp(FeatureType,'Intensity') || strcmp(FeatureType,'Texture')
+if strcmp(FeatureType,'Intensity') || strncmp(FeatureType,'Texture',7)
     FeatureType = [FeatureType, '_',Image];
 end
 
-if strcmp(FeatureType2,'Intensity') || strcmp(FeatureType2,'Texture')
+if strcmp(FeatureType2,'Intensity') || strncmp(FeatureType2,'Texture',7)
     FeatureType2 = [FeatureType2, '_',Image2];
 end
 
@@ -173,9 +172,9 @@ drawnow
 FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 if PlotType == 4
-    CPplotmeasurement(handles,FigHandle,PlotType,1,ObjectName,FeatureType,FeatureNo,ObjectName2,FeatureType2,FeatureNo2);
+    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureType,FeatureNo,ObjectName2,FeatureType2,FeatureNo2);
 else
-    CPplotmeasurement(handles,FigHandle,PlotType,1,ObjectName,FeatureType,FeatureNo);
+    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureType,FeatureNo);
 end
 
 %%%%%%%%%%%%%%%

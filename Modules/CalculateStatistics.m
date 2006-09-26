@@ -151,23 +151,23 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                     for a = 1:length(z)
                                         handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+a) = z(a);
                                         handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+length(z)+a) = v(a);
-                                        handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureFeatures{a}];
-                                        handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureName,'_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureName,'_',MeasureFeatures{a}];
                                     end
                                 else
                                     for a = 1:length(z)
                                         handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
                                         handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
-                                        handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
-                                        handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureName,'_',MeasureFeatures{a}];
+                                        handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureName,'_',MeasureFeatures{a}];
                                     end
                                 end
                             else
                                 for a = 1:length(z)
                                     handles.Measurements.Experiment.(measurefield){1}(1,a) = z(a);
                                     handles.Measurements.Experiment.(measurefield){1}(1,length(z)+a) = v(a);
-                                    handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureFeatures{a}];
-                                    handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureFeatures{a}];
+                                    handles.Measurements.Experiment.(featuresfield){a} = ['Zfactor_',MeasureName,'_',MeasureFeatures{a}];
+                                    handles.Measurements.Experiment.(featuresfield){length(z)+a} = ['Vfactor_',MeasureName,'_',MeasureFeatures{a}];
                                 end
                             end
                         end

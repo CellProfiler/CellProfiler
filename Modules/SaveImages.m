@@ -322,12 +322,24 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         end
         Image = handles.Pipeline.(ImageName);
         if max(Image(:)) > 1 || min(Image(:)) < 0
-            try findob(WarniningHandle)
+        %%% Store the handle of a CPWarndlg in handles.Errors{CurrentModuleNum}.
+        %%% For each time through this module it will 'try' to find the
+        %%% WarningHandle for the pop up Warning Dialog. If it is not found
+        %%% an error will be thrown, caught, the Warning Dialog will be
+        %%% called and the WarningHandle will be written to
+        %%% handles.Errors{CurrentModuleNum}. If the Warning Dialog box was
+        %%% opened but closed by the user. There will be a number in
+        %%% handles.Errors{CurrentModuleNum} but the findobj will not find
+        %%% the object and will throw an error as well. If the object is
+        %%% found no error is thrown and nothing happens.
+            try findobj(handles.Errors{CurrentModuleNum});
             catch
-                WarniningHandle=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
+                WarningHandle=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
+                handles.Errors{CurrentModuleNum}=WarningHandle;
             end
+
         end
-if strcmp(RescaleImage,'Yes')
+        if strcmp(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
             Image = imadjust(Image,LOW_HIGH,[0 1]);
         end

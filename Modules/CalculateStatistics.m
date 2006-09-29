@@ -282,8 +282,14 @@ stds = avers;
 for ilab = 1 : labnum
     labinds = find(labels == ilab);
     labmatr = ymatr(labinds,:);
-    avers(ilab, :) = mean(labmatr);
-    stds(ilab, :) = std(labmatr, 1);
+    if size(labmatr,1) == 1
+        for j = 1:size(labmatr,2)
+            avers(ilab,j) = labmatr(j);
+        end
+    else
+        avers(ilab, :) = mean(labmatr);
+        stds(ilab, :) = std(labmatr, 1);
+    end
 end
 
 

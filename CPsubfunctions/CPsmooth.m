@@ -107,7 +107,9 @@ switch SmoothingMethod
         %%% blurring, these extra padded rows and columns are removed.
         SmoothedImage = conv2(padarray(OrigImage, [FiltLength,FiltLength], 'replicate'),f,'same');
         SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
-        RealFilterLength = 2*FiltLength+1;
+        % I think this is wrong, but we should ask Ray.
+        % RealFilterLength = 2*FiltLength+1;
+        RealFilterLength = FiltLength;
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

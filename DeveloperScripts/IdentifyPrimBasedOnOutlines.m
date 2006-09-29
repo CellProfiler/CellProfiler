@@ -424,7 +424,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         %%% From here on, most of this code is from IdPrimAuto. I didn't
         %%% have time to check the 'saving to handles structure' part and
         %%% some of the 'display results' part.
-        
+
         %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
         %%% to separate neighboring objects. (De-clump)
 
@@ -435,7 +435,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 % We'll just use the previous BlurredImage
                 SizeOfSmoothingFilter = 0;
             elseif strcmpi(SizeOfSmoothingFilter,'Automatic')
-                [BlurredImage SizeOfSmoothingFilter] = CPsmooth(ImageToThreshold,'M',MinDiameter,1);
+                SizeOfSmoothingFilter=2.35*MinDiameter/3.5;
+                [BlurredImage SizeOfSmoothingFilter] = CPsmooth(ImageToThreshold,'M',SizeOfSmoothingFilter,0);
             else
                 [BlurredImage SizeOfSmoothingFilter] = CPsmooth(ImageToThreshold,'M',SizeOfSmoothingFilter,0);
             end

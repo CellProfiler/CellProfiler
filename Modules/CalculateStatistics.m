@@ -10,21 +10,24 @@ function handles = CalculateStatistics(handles)
 %
 % The V and Z' factors are statistical measures of assay quality and are
 % calculated for each per-cell and per-image measurement that you have made
-% in the pipeline. This allows you to choose which measured features are
-% most powerful for distinguishing positive and negative control samples,
-% or for accurately quantifying the assay's response to dose.
+% in the pipeline. For example, the Z' factor indicate how well-separated
+% the positive and negative controls are. Calculating these values by
+% placing this module at the end of a pipeline allows you to choose which
+% measured features are most powerful for distinguishing positive and
+% negative control samples, or for accurately quantifying the assay's
+% response to dose.
 %
 % For both Z' and V factors, the highest possible value (best assay
-% quality) = 1 and they can both range into negative values (for assays
-% where distinguishing between positive and negative controls is difficult
-% or impossible). A Z' factor > 0.2 is generally considered screenable,
-% whereas > 0.5 is considered an excellent assay.
+% quality) = 1 and they can range into negative values (for assays where
+% distinguishing between positive and negative controls is difficult or
+% impossible). A Z' factor > 0 is potentially screenable; A Z' factor > 0.5
+% is considered an excellent assay.
 %
 % The Z' factor is based only on positive and negative controls. The V
 % factor is based on an entire dose-response curve rather than on the
 % minimum and maximum responses. When there are only two doses in the assay
 % (positive and negative controls only), the V factor will equal the Z'
-% factor. 
+% factor.
 %
 % Note that if the standard deviation of a measured feature is zero for a
 % particular set of samples (e.g. all the positive controls), the Z' and V
@@ -254,6 +257,9 @@ end
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
 drawnow
+
+% Code for the calculation of Z' and V factors was kindly donated by Ilya
+% Ravkin: http://www.ravkin.net
 
 function [v, z] = VZfactors(xcol, ymatr)
 % xcol is (Nobservations,1) column vector of grouping values

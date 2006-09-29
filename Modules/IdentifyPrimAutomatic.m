@@ -631,10 +631,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 %%% Smooth images for maxima suppression
                 if strcmpi(SizeOfSmoothingFilter,'Automatic')
-                    [BlurredImage SizeOfSmoothingFilter] = CPsmooth(OrigImage,'M',MinDiameter,1);
-                else
-                    [BlurredImage SizeOfSmoothingFilter] = CPsmooth(OrigImage,'M',SizeOfSmoothingFilter,0);
+                    SizeOfSmoothingFilter=2.35*MinDiameter/3.5;
                 end
+                BlurredImage = CPsmooth(OrigImage,'M',SizeOfSmoothingFilter,0);
 
                 %%% Get local maxima, where the definition of local depends on the
                 %%% user-provided object size. This will (usually) be done in a

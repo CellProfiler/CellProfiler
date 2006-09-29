@@ -219,13 +219,18 @@ if strcmp(OldPathname, '.') ~= 1
     %%% BatchSavePath is not changed, because that function is carried
     %%% out on the local machine.
     %%% BatchCellProfilerPath = strrep(fullfile(NewPathname,strrep(BatchCellProfilerPath,OldPathname,'')),'\','/');
-    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
-    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
-    BatchRemotePath = strrep(fullfile(NewPathname,strrep(BatchRemotePath,OldPathname,'')),'\','/');
+BatchImagePath = strrep(strrep(BatchImagePath,OldPathname,NewPathname),'\','/')
+%    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
+    BatchOutputPath = strrep(strrep(BatchOutputPath,OldPathname,NewPathname),'\','/');
+%    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
+    BatchRemotePath = strrep(strrep(BatchRemotePath,OldPathname,NewPathname),'\','/');
+%    BatchRemotePath = strrep(fullfile(NewPathname,strrep(BatchRemotePath,OldPathname,'')),'\','/');
     %%% Changes the default output and image pathnames.
-    NewDefaultOutputDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultOutputDirectory,OldPathname,'')),'\','/');
+    NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname,NewPathname),'\','/');
+%    NewDefaultOutputDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultOutputDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
-    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
+    NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname,NewPathname),'\','/');
+%    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
 else
     handles.Current.DefaultOutputDirectory = BatchOutputPath;

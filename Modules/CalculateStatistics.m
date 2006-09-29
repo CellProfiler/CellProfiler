@@ -4,17 +4,74 @@ function handles = CalculateStatistics(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Calculates the V and Z' factors for measurements made from images.
+% Calculates measures of assay quality (V and Z' factors) for all
+% measured features made from images.
 % *************************************************************************
-% Note: this module is beta-version and has not been thoroughly checked.
 %
 % The V and Z' factors are statistical measures of assay quality and are
-% calculated for each measurement that you have made in the pipeline. This
-% allows you to choose which measures are most powerful for distinguishing
-% positive and negative control samples. You must load a simple text file
-% with one entry per cycle (using the Load Text module) that tells this
-% module either which samples are positive and negative controls, or the 
-% concentrations of drugs.
+% calculated for each per-cell and per-image measurement that you have made
+% in the pipeline. This allows you to choose which measured features are
+% most powerful for distinguishing positive and negative control samples,
+% or for accurately quantifying the assay's response to dose.
+%
+% For both Z' and V factors, the highest possible value (best assay
+% quality) = 1 and they can both range into negative values (for assays
+% where distinguishing between positive and negative controls is difficult
+% or impossible). A Z' factor > 0.2 is generally considered screenable,
+% whereas > 0.5 is considered an excellent assay.
+%
+% The Z' factor is based only on positive and negative controls. The V
+% factor is based on an entire dose-response curve rather than on the
+% minimum and maximum responses. When there are only two doses in the assay
+% (positive and negative controls only), the V factor will equal the Z'
+% factor. 
+%
+% Note that if the standard deviation of a measured feature is zero for a
+% particular set of samples (e.g. all the positive controls), the Z' and V
+% factors will equal 1 despite the fact that this is not a useful feature
+% for the assay. This occurs when you have only one sample at each dose.
+% This also occurs for some non-informative measured features, like the
+% number of Cytoplasm compartments per Cell which is always equal to 1.
+%
+% You must load a simple text file with one entry per cycle (using the Load
+% Text module) that tells this module either which samples are positive and
+% negative controls, or the concentrations of the sample-perturbing reagent
+% (e.g., drug dosage). This text file would look something like this:
+%
+% [For the case where you have only positive or negative controls; in this
+% example the first three images are negative controls and the last three
+% are positive controls. They need not be labeled 0 and 1; the calculation
+% is based on whichever samples have minimum and maximum dose, so it would
+% work just as well to use -1 and 1, or indeed any pair of values:]
+% DESCRIPTION Doses
+% 0
+% 0
+% 0
+% 1
+% 1
+% 1
+%
+% [For the case where you have samples of varying doses; using decimal
+% values:]
+% DESCRIPTION Doses
+% .0000001
+% .00000003
+% .00000001
+% .000000003
+% .000000001
+% (Note that in this examples, the Z' and V factors will be meaningless because
+% there is only one sample at the each dose, so the standard deviation of
+% measured features at each dose will be zero).
+%
+% [Another example where you have samples of varying doses; this time using
+% exponential notation:]
+% DESCRIPTION Doses
+% 10^-7
+% 10^-7.523
+% 10^-8
+% 10^-8.523
+% 10^-9
+%
 %
 % The reference for Z' factor is: JH Zhang, TD Chung, et al. (1999) "A
 % simple statistical parameter for use in evaluation and validation of high
@@ -22,7 +79,10 @@ function handles = CalculateStatistics(handles)
 %
 % The reference for V factor is: I Ravkin (2004): Poster #P12024 - Quality
 % Measures for Imaging-based Cellular Assays. Society for Biomolecular
-% Screening Annual Meeting Abstracts.
+% Screening Annual Meeting Abstracts. This is likely to be published 
+%
+% Code for the calculation of Z' and V factors was kindly donated by Ilya
+% Ravkin: http://www.ravkin.net
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -212,11 +272,9 @@ vstd = mean(stds);
 v = 1 - 6 .* (vstd ./ range);
 zstd = stds(1, :) + stds(length(xs), :);
 z = 1 - 3 .* (zstd ./ range);
-return
 
 
 function [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr)
-
 ncols = size(ymatr,2);
 [labels, labnum, xs] = LocVectorLabels(xcol);
 avers = zeros(labnum, ncols);
@@ -230,7 +288,6 @@ end
 
 
 function [labels, labnum, uniqsortvals] = LocVectorLabels(x)
-%
 n = length(x);
 labels = zeros(1, n);
 [srt, inds] = sort(x);

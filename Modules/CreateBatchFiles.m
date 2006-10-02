@@ -15,7 +15,7 @@ function handles = CreateBatchFiles(handles)
 % Before using this module, you should read Help -> Getting Started ->
 % Batch Processing. That help file also will instruct you on how to
 % actually run the batch files that are created by this module.
-% 
+%
 % Settings:
 % MATLAB or Compiled: If your cluster has MATLAB licenses for every node,
 % you can use either the full MATLAB source code (i.e. the Developer's
@@ -70,8 +70,8 @@ function handles = CreateBatchFiles(handles)
 % - .m is used for the MATLAB version of CPCluster while .mat is used for
 % the Compiled version of CPCluster.
 % - X is the first cycle to be processed in the particular batch file,
-% and Y is the last.  
-% 
+% and Y is the last.
+%
 % See also MergeOutputFiles, GSBatchProcessing.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -219,18 +219,18 @@ if strcmp(OldPathname, '.') ~= 1
     %%% BatchSavePath is not changed, because that function is carried
     %%% out on the local machine.
     %%% BatchCellProfilerPath = strrep(fullfile(NewPathname,strrep(BatchCellProfilerPath,OldPathname,'')),'\','/');
-BatchImagePath = strrep(strrep(BatchImagePath,OldPathname,NewPathname),'\','/')
-%    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
+    BatchImagePath = strrep(strrep(BatchImagePath,OldPathname,NewPathname),'\','/');
+    %    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
     BatchOutputPath = strrep(strrep(BatchOutputPath,OldPathname,NewPathname),'\','/');
-%    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
+    %    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
     BatchRemotePath = strrep(strrep(BatchRemotePath,OldPathname,NewPathname),'\','/');
-%    BatchRemotePath = strrep(fullfile(NewPathname,strrep(BatchRemotePath,OldPathname,'')),'\','/');
+    %    BatchRemotePath = strrep(fullfile(NewPathname,strrep(BatchRemotePath,OldPathname,'')),'\','/');
     %%% Changes the default output and image pathnames.
     NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname,NewPathname),'\','/');
-%    NewDefaultOutputDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultOutputDirectory,OldPathname,'')),'\','/');
+    %    NewDefaultOutputDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultOutputDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
     NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname,NewPathname),'\','/');
-%    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
+    %    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
 else
     handles.Current.DefaultOutputDirectory = BatchOutputPath;

@@ -10,7 +10,7 @@ function handles = CalculateStatistics(handles)
 %
 % The V and Z' factors are statistical measures of assay quality and are
 % calculated for each per-cell and per-image measurement that you have made
-% in the pipeline. For example, the Z' factor indicate how well-separated
+% in the pipeline. For example, the Z' factor indicates how well-separated
 % the positive and negative controls are. Calculating these values by
 % placing this module at the end of a pipeline allows you to choose which
 % measured features are most powerful for distinguishing positive and

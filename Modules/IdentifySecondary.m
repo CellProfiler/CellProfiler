@@ -169,6 +169,17 @@ function handles = IdentifySecondary(handles)
 % postprocess. IdentifySecPropagateSubfunction is the subfunction
 % implemented in C and MEX to perform the propagate algorithm.
 %
+% IdentifySecPropagateSubfunction.cpp is the source code, in C
+% IdentifySecPropagateSubfunction.dll is compiled for windows
+% IdentifySecPropagateSubfunction.mexmac is compiled for macintosh
+% IdentifySecPropagateSubfunction.mexglx is compiled for linux
+% IdentifySecPropagateSubfunction.mexa64 is compiled for 64-bit windows or linux
+%
+% To compile IdentifySecPropagateSubfunction for an unusual computer
+% architecture, you will need to run the following at the command line of
+% MATLAB on the unusual computer:
+% mex IdentifySecPropagateSubfunction
+%
 % See also Identify primary modules.
 
 % CellProfiler is distributed under the GNU General Public License.

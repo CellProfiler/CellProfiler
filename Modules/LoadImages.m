@@ -138,10 +138,10 @@ function handles = LoadImages(handles)
 % Movies can be avi-formatted movies (must be uncompressed avi format on
 % UNIX and Mac platforms) or stk-format movies (stacks of tif images
 % produced by MetaMorph or NIHImage/ImageJ; The ability to read stk files
-% is due to code by: Francois Nedelec, EMBL, Copyright 1999-2003). Once the
-% files are identified, this module extracts each frame of each movie as a
-% separate image, and gives these images a meaningful name for the other
-% modules to access.
+% is thanks to code by: Francois Nedelec, EMBL, Copyright 1999-2003). Once
+% the files are identified, this module extracts each frame of each movie
+% as a separate image, and gives these images a meaningful name for the
+% other modules to access.
 %
 % Suggestions for third party software to uncompress AVI files and convert
 % MOV files:

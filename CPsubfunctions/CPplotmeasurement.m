@@ -44,6 +44,8 @@ else
     str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object];
 end
 
+str = strrep(str,'_',' ');
+
 % Bar graph
 if PlotType == 1
     %%% Extract the measurement
@@ -86,7 +88,6 @@ if PlotType == 1
             LineColor=[.7 .7 .9];
     end
 
-    PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
     if strcmp(UserAnswers.Logical,'None') ~= 1
@@ -97,14 +98,14 @@ if PlotType == 1
             if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
         catch
-            error(lasterr);
+            rethrow(lasterr);
             return
         end
     end
 
     % Calculate mean and standard deviation
-    MeasurementMean = zeros(length(Measurements),1);
-    MeasurementStd = zeros(length(Measurements),1);
+    MeasurementsMean = zeros(length(Measurements),1);
+    MeasurementsStd = zeros(length(Measurements),1);
 
     ImageSet=[];
     for count=FirstImage:LastImage
@@ -160,8 +161,6 @@ elseif PlotType == 2
     %%% Extract the measurement
     Measurements = handles.Measurements.(Object).(Feature);
 
-
-
     %%% Opens a window that lets the user choose graph settings
     %%% This function returns a UserAnswers structure with the
     %%% information required to carry out the calculations.
@@ -199,7 +198,6 @@ elseif PlotType == 2
             LineColor=[.7 .7 .9];
     end
 
-    PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
     if strcmp(UserAnswers.Logical,'None') ~= 1
@@ -210,13 +208,13 @@ elseif PlotType == 2
             if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
         catch
-            error(lasterr);
+            rethrow(lasterr);
         end
     end
 
     % Calculate mean and standard deviation
-    MeasurementMean = zeros(length(Measurements),1);
-    MeasurementStd = zeros(length(Measurements),1);
+    MeasurementsMean = zeros(length(Measurements),1);
+    MeasurementsStd = zeros(length(Measurements),1);
 
     ImageSet=[];
     for count=FirstImage:LastImage
@@ -287,7 +285,6 @@ elseif PlotType == 3
     FirstImage=UserAnswers.FirstSample;
     LastImage=UserAnswers.LastSample;
 
-    PlotNum=1;
     %%% Thresholds the data if user chose other than "None"
     %%% Reassigns Measurements
     if strcmp(UserAnswers.Logical,'None') ~= 1
@@ -298,7 +295,7 @@ elseif PlotType == 3
             if isempty(ObjectTypename),return,end
             [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
         catch
-            error(lasterr);
+            rethrow(lasterr);
             return
         end
     end
@@ -397,7 +394,6 @@ elseif PlotType == 4
         FirstImage=UserAnswers.FirstSample;
         LastImage=UserAnswers.LastSample;
 
-        PlotNum=1;
         %%% Thresholds the data if user chose other than "None"
         %%% Reassigns Measurements
         if strcmp(UserAnswers.Logical,'None') ~= 1
@@ -409,7 +405,7 @@ elseif PlotType == 4
                 [Thresholdstr2,Measurements2,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements2,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
                 [Thresholdstr1,Measurements1,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements1,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
             catch
-                error(lasterr);
+                rethrow(lasterr);
                 return
             end
         end
@@ -486,6 +482,7 @@ elseif PlotType == 4
         str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ', Object2];
     end
 
+    str2 = strrep(str2,'_',' ');
 
     if ModuleFlag == 0 && strcmp(UserAnswers.Logical,'None') ~= 1
         xlabel(gca,{str;'for objects where';Thresholdstr1;[]},'fontsize',FontSize+2,'fontname','Helvetica')
@@ -495,7 +492,6 @@ elseif PlotType == 4
         ylabel(gca,str2,'fontname','Helvetica','fontsize',FontSize+2)
     end
     titlestr = [str2,' vs. ',str];
-
 end
 
 % Set some general figure and axes properties
@@ -665,7 +661,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
+function [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum)
 
 
 if isempty(ObjectTypename),return,end

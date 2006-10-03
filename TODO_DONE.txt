@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Mike 10/2) Anne 9-26-06 - title and axes labels when using plot measurement tool have underscores handled improperly (they should be turned into spaces), so that you end up with the text appearing as subscripts. We have dealt with this with other figure-labeling applications (like File > Open Image for example handles image file names with underscores properly I think).
+
 - (Mike 9/14 this was fixed awhile ago, the catches look for version number of MATLAB on mac) (requested by Anne 12-13-05) - If we use propedit anywhere, apparently we can now use it for mac and pc (we currently have some catches in the code to prevent it from failing on the mac, I think): Service Request ID: 1-RR6M1: reported on September 29,2004 regarding MATLAB 7.0 (R14): Why do I receive an error when I use the PROPEDIT function in MATLAB 7.0 (R14)?
 http://www.mathworks.com/support/solutions/data/1-RWDNU.html?ref=ts_r14sp3
 

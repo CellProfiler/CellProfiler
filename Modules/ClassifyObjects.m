@@ -205,16 +205,16 @@ bins = zeros(1,NbrOfBins);
 RemainingLabels = Labels;
 ListOfLabels = {};
 EmptyIndex = 1:size(Measurements);
+ClassifyFeatureNames = cell(1,NbrOfBins);
 for k = 1:NbrOfBins
     index = find(Measurements > edges(k) & Measurements <= edges(k+1));
     QuantizedMeasurements(index) = k;
     bins(k) = length(index);
     if length(strfind(Labels,',')) == (NbrOfBins - 1)
         [BinLabel,RemainingLabels]=strtok(RemainingLabels,',');
-        ListOfLabels(k)={BinLabel};
+        ListOfLabels(index)={BinLabel};
         EmptyIndex(index) = 0;
-    else
-        ListOfLabels{k} = ['Bin', num2str(k)];
+        ClassifyFeatureNames{k} = BinLabel;
     end
 end
 
@@ -330,20 +330,20 @@ if ~strcmpi(FeatureType,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
     handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
-ClassifyFeatureNames = cell(1,NbrOfBins);
-
-for k = 1:NbrOfBins
-    ClassifyFeatureNames{k} = ['Bin', num2str(k)];
-end
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
 
 if length(strfind(Labels,',')) == (NbrOfBins - 1)
     EmptyIndex(EmptyIndex==0)=[];
+    ListOfLabels(EmptyIndex)={' '};
     handles.Measurements.(ObjectName).(['Classify_',FeatureName,'Description']) = {[ObjectName,'_',FeatureName]};
     handles.Measurements.(ObjectName).(['Classify_',FeatureName])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
+else
+    for k = 1:NbrOfBins
+        ClassifyFeatureNames{k} = ['Bin', num2str(k)];
+    end
 end
 
-handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName,'Features']) = ListOfLabels;
+handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName,'Features']) = ClassifyFeatureNames;
 if strcmp(AbsoluteOrPercentage,'Percentage')
     handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
 else

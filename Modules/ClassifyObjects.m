@@ -342,9 +342,18 @@ else
     end
 end
 
-handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName,'Features']) = ClassifyFeatureNames;
+fieldname=['Classify_',ObjectName,'_',FeatureName];
+% handles.Measurements.Image.([fieldname,'Features']) = ClassifyFeatureNames;
 if strcmp(AbsoluteOrPercentage,'Percentage')
-    handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
+    Data = bins/length(Measurements);
+    for i = 1:size(bins,2)
+        handles = CPaddmeasurements(handles,'Image',fieldname,ClassifyFeatureNames{i},Data(:,i));
+    end
+    %handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = ;
 else
-    handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins};
+    Data = bins;
+    for i = 1:size(bins,2)
+        handles = CPaddmeasurements(handles,'Image',fieldname,ClassifyFeatureNames{i},Data(:,i));
+    end
+    %handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {bins};
 end

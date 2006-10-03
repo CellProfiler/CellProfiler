@@ -183,7 +183,6 @@ drawnow
 % Get Measurements
 Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
 
-
 if PercentFlag == 1
     edges = [LowerBinMin,MidPointToUse,UpperBinMax];
     NbrOfBins = 2;
@@ -241,7 +240,7 @@ if ~strcmpi(FeatureType,'Ratio')
     end
     FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 else
-    FeatureName = ObjectName;
+    FeatureName = handles.Measurements.(ObjectName).([FeatureType,'Features']){FeatureNbr};
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -247,6 +247,10 @@ for i = 1:length(PathFieldnames),
     handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
 end
 
+%%% Make sure ModuleError has same number of elements as
+%%% ModuleErrorFeatures
+handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,CurrentModuleNum) = 0;
+
 %%% Saves the altered handles in a file which the user will feed to
 %%% the remote machines.
 PathAndFileName = fullfile(BatchSavePath, [BatchFilePrefix 'data.mat']);

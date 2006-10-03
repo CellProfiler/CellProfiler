@@ -64,9 +64,17 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
 
             end
-            if length(Measurements) == 0
+            if strcmp(fields{k}(1:end-8),'ModuleError')
+                for j = 2:handles.Current.NumberOfImageSets
+                    CellArray{j} = CellArray{1};
+                end
+            end
+            if isempty(Measurements)
                 Measurements = CellArray;
             else
+                if k == 9 && strcmp(ObjectName,'Nuclei')
+                    test=eps;
+                end
                 % Loop over the image sets
                 for j = 1:length(CellArray)
                     Measurements{j} = cat(2,Measurements{j},CellArray{j});
@@ -120,7 +128,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 else
                     % Loop over the image sets
                     for j = 1:length(CellArray)
-                        Text{j} = cat(2,Text{j},CellArray{j});
+                        if length(Text) >= j
+                            Text{j} = cat(2,Text{j},CellArray{j});
+                        end
                     end
                 end
                 TextNames = cat(2,TextNames,handles.Measurements.(ObjectName).(fields{k}));

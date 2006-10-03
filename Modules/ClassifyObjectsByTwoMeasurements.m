@@ -313,14 +313,12 @@ end
 
 FeatureName{1} = FeatureName{1}(~isspace(FeatureName{1}));                    % Remove spaces in the feature name
 FeatureName{2} = FeatureName{2}(~isspace(FeatureName{2}));
-%%% We are truncating the ObjectName in case it's really long.
-MaxLengthOfFieldname{1} = min(20,length(FeatureName{1}));
-MaxLengthOfFieldname{2} = min(20,length(FeatureName{2}));
 
 %%% Save to handles
-handles.Measurements.(ObjectName).(['Classified',ObjectName,'_',FeatureName{1}(1:MaxLengthOfFieldname{1}),'_',FeatureName{2}(1:MaxLengthOfFieldname{2}),'Features']) = BinLabels;
+fieldname = ['Classify_',ObjectName,'_',FeatureName{1},'_',FeatureName{2}];
+handles.Measurements.Image.([fieldname,'Features']) = BinLabels;
 if strcmp(AbsoluteOrPercentage,'Percentage')
-    handles.Measurements.(ObjectName).(['Classified',ObjectName,'_',FeatureName{1}(1:MaxLengthOfFieldname{1}),'_',FeatureName{2}(1:MaxLengthOfFieldname{2})])(SetBeingAnalyzed) = {Bins/length(Measurements)};
+    handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = {Bins/length(Measurements)};
 else
-    handles.Measurements.(ObjectName).(['Classified',ObjectName,'_',FeatureName{1}(1:MaxLengthOfFieldname{1}),'_',FeatureName{2}(1:MaxLengthOfFieldname{2})])(SetBeingAnalyzed) = {Bins};
+    handles.Measurements.Image.(fieldname)(SetBeingAnalyzed) = {Bins};
 end

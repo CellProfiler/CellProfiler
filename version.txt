@@ -1,3 +1,6 @@
+Version 1.0.XXXX
+ - CalculateStatistics now returns correct results with only 1 data point (image) per dose
+
 Version 1.0.4299
  - Added MeasureImageSlope and Combine modules
  - Histogram data tool overhauled

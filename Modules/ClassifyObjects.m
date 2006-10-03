@@ -339,7 +339,7 @@ FeatureName = FeatureName(~isspace(FeatureName));                    % Remove sp
 
 if length(strfind(Labels,',')) == (NbrOfBins - 1)
     EmptyIndex(EmptyIndex==0)=[];
-    handles.Measurements.(ObjectName).(['Classify_',FeatureName,'Description']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
+    handles.Measurements.(ObjectName).(['Classify_',FeatureName,'Description']) = {[ObjectName,'_',FeatureName]};
     handles.Measurements.(ObjectName).(['Classify_',FeatureName])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
 end
 

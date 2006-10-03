@@ -72,9 +72,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
             if isempty(Measurements)
                 Measurements = CellArray;
             else
-                if k == 9 && strcmp(ObjectName,'Nuclei')
-                    test=eps;
-                end
                 % Loop over the image sets
                 for j = 1:length(CellArray)
                     Measurements{j} = cat(2,Measurements{j},CellArray{j});

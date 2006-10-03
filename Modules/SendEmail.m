@@ -71,27 +71,27 @@ FirstImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 LastImageEmail = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = Send an e-mail after every X number of cycles?
+%textVAR06 = Send an e-mail after every Nth cycle:
 %defaultVAR06 = 0
 EveryXImageEmail = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Send an e-mail after the Nth cycle
+%textVAR07 = Send an e-mail after cycle number:
 %defaultVAR07 = 0
 Specified1Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Send an e-mail after the Nth cycle
+%textVAR08 = Send an e-mail after cycle number:
 %defaultVAR08 = 0
 Specified2Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Send an e-mail after the Nth cycle
+%textVAR09 = Send an e-mail after cycle number:
 %defaultVAR09 = 0
 Specified3Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Send an e-mail after the Nth cycle
+%textVAR10 = Send an e-mail after cycle number:
 %defaultVAR10 = 0
 Specified4Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = Send an e-mail after the Nth cycle
+%textVAR11 = Send an e-mail after cycle number:
 %defaultVAR11 = 0
 Specified5Email = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 

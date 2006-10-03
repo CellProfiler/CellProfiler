@@ -8,12 +8,22 @@ function handles = SendEmail(handles)
 % *************************************************************************
 %
 % This module emails the user-specified recipients about the current
-% progress of the image processing as well as the expected time remaining
-% until completion. The user can specify how often emails are sent out
-% (for example, after the first cycle, after the last cycle, after every X
-% cycles, after N cycles).
-% Note: This module should be placed at the point in the pipeline when you
-% want the emails to be sent.
+% progress of the image processing. The user can specify how often emails
+% are sent out (for example, after the first cycle, after the last cycle,
+% after every N cycles, after N cycles). This module should be placed at
+% the point in the pipeline when you want the emails to be sent. If email
+% sending fails for any reason, a warning message will appear but
+% processing will continue regardless.
+%
+% Settings:
+% Address to: you can send messages to multiple email addresses by entering
+% them with commas in between.
+%
+% SMTP server: often the default 'mail' will work. If not, ask your network
+% administrator for your outgoing mail server, which is often made up of
+% part of your email address, e.g., Something@company.com. You might be
+% able to find this information by checking your settings/preferences in
+% whatever email program you use.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -113,21 +123,25 @@ while isempty(AddressEmail) == 0
     [AddressTo{numAddresses} AddressEmail] = strtok(AddressEmail, ','); %#ok Ignore MLint
 end
 
-if strcmp(FirstImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.StartingImageSet
-    subject = 'CellProfiler:  First cycle has been completed';
-    if (SetBeingAnalyzed > 1)
-        subject = [subject,' after Restart, image # ',num2str(SetBeingAnalyzed)];
+try
+    if strcmp(FirstImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.StartingImageSet
+        subject = 'CellProfiler:  First cycle has been completed';
+        if (SetBeingAnalyzed > 1)
+            subject = [subject,' after Restart, image # ',num2str(SetBeingAnalyzed)];
+        end
+        sendmail(AddressTo,subject,subject);
+    elseif strcmp(LastImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
+        subject = 'CellProfiler:  Last cycle has been completed';
+        sendmail(AddressTo,'CellProfiler Progress',subject);
+    elseif EveryXImageEmail > 0 && mod(SetBeingAnalyzed,EveryXImageEmail) == 0
+        subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
+        sendmail(AddressTo,subject,subject);
+    elseif Specified1Email == SetBeingAnalyzed || Specified2Email == SetBeingAnalyzed || Specified3Email == SetBeingAnalyzed || Specified4Email == SetBeingAnalyzed || Specified5Email == SetBeingAnalyzed
+        subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
+        sendmail(AddressTo,subject,subject);
     end
-    sendmail(AddressTo,subject,subject);
-elseif strcmp(LastImageEmail, 'Yes') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    subject = 'CellProfiler:  Last cycle has been completed';
-    sendmail(AddressTo,'CellProfiler Progress',subject);
-elseif EveryXImageEmail > 0 && mod(SetBeingAnalyzed,EveryXImageEmail) == 0
-    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
-    sendmail(AddressTo,subject,subject);
-elseif Specified1Email == SetBeingAnalyzed || Specified2Email == SetBeingAnalyzed || Specified3Email == SetBeingAnalyzed || Specified4Email == SetBeingAnalyzed || Specified5Email == SetBeingAnalyzed
-    subject = ['CellProfiler: ', num2str(SetBeingAnalyzed),' cycles have been completed'];
-    sendmail(AddressTo,subject,subject);
+catch
+    CPwarndlg('Your current settings in the SendEmail module did not allow email to be sent, but processing will continue.')
 end
 
 %%%%%%%%%%%%%%%%%%%%%

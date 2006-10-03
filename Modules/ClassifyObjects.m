@@ -336,18 +336,16 @@ for k = 1:NbrOfBins
     ClassifyFeatureNames{k} = ['Bin', num2str(k)];
 end
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
-%%% We are truncating the ObjectName in case it's really long.
-MaxLengthOfFieldname = min(20,length(FeatureName));
 
 if length(strfind(Labels,',')) == (NbrOfBins - 1)
     EmptyIndex(EmptyIndex==0)=[];
-    handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname),'Description']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
-    handles.Measurements.(ObjectName).(['ClassifyLabels','_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
+    handles.Measurements.(ObjectName).(['Classify_',FeatureName,'Description']) = {[ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)]};
+    handles.Measurements.(ObjectName).(['Classify_',FeatureName])(handles.Current.SetBeingAnalyzed) = {ListOfLabels};
 end
 
-handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname),'Features']) = ListOfLabels;
+handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName,'Features']) = ListOfLabels;
 if strcmp(AbsoluteOrPercentage,'Percentage')
-    handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
+    handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins/length(Measurements)};
 else
-    handles.Measurements.Image.(['ClassifyObjects_',ObjectName,'_',FeatureName(1:MaxLengthOfFieldname)])(handles.Current.SetBeingAnalyzed) = {bins};
+    handles.Measurements.Image.(['Classify_',ObjectName,'_',FeatureName])(handles.Current.SetBeingAnalyzed) = {bins};
 end

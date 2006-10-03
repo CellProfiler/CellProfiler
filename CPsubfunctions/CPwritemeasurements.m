@@ -65,7 +65,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
             end
             if strcmp(fields{k}(1:end-8),'ModuleError')
-                for j = 2:handles.Current.NumberOfImageSets
+                for j = 2:handles.Current.SetBeingAnalyzed
                     CellArray{j} = CellArray{1};
                 end
             end

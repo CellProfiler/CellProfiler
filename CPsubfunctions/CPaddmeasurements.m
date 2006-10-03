@@ -28,10 +28,9 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 FeaturesField = [Measure,'Features'];
 
 if isfield(handles.Measurements.(Object),FeaturesField)
-    OldColumn = strmatch(Feature,handles.Measurements.(Object).(FeaturesField));
+    OldColumn = strmatch(Feature,handles.Measurements.(Object).(FeaturesField),'exact');
     if handles.Current.SetBeingAnalyzed == 1 || isempty(OldColumn)
-        CheckForRedundant = strmatch(Feature,handles.Measurements.(Object).(FeaturesField));
-        if length(CheckForRedundant) > 1
+        if length(OldColumn) > 1
             error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');
         end
         NewColumn = length(handles.Measurements.(Object).(FeaturesField)) + 1;

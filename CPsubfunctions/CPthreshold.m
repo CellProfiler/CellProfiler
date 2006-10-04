@@ -35,30 +35,34 @@ end
 %%% of a pixel being part of an object.
 pObject = str2double(pObject(1:2))/100;
 
-%%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
-%%% Otherwise make sure that the user gave a valid input.
-if strcmp(MinimumThreshold,'Do not use')
-    MinimumThreshold = 0;
-else
-    MinimumThreshold = str2double(MinimumThreshold);
-    if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1 %#ok Ignore MLint
-        error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
+%%% If we are running the Histogram data tool we do not want to limit the
+%%% threshold with a maximum of 1 or minimum of 0; otherwise we check for
+%%% values outside the range here.
+if ~strcmpi('Histogram Data tool',ModuleName)
+    %%% Check the MinimumThreshold entry. If no minimum threshold has been set, set it to zero.
+    %%% Otherwise make sure that the user gave a valid input.
+    if strcmp(MinimumThreshold,'Do not use')
+        MinimumThreshold = 0;
+    else
+        MinimumThreshold = str2double(MinimumThreshold);
+        if isnan(MinimumThreshold) |  MinimumThreshold < 0 | MinimumThreshold > 1 %#ok Ignore MLint
+            error(['The Minimum threshold entry in the ', ModuleName, ' module is invalid.'])
+        end
+    end
+
+    if strcmp(MaximumThreshold,'Do not use')
+        MaximumThreshold = 1;
+    else
+        MaximumThreshold = str2double(MaximumThreshold);
+        if isnan(MaximumThreshold) | MaximumThreshold < 0 | MaximumThreshold > 1 %#ok Ignore MLint
+            error(['The Maximum bound on the threshold in the ', ModuleName, ' module is invalid.'])
+        end
+
+        if MinimumThreshold > MaximumThreshold,
+            error(['Min bound on the threshold larger than the Max bound on the threshold in the ', ModuleName, ' module.'])
+        end
     end
 end
-
-if strcmp(MaximumThreshold,'Do not use')
-    MaximumThreshold = 1;
-else
-    MaximumThreshold = str2double(MaximumThreshold);
-    if isnan(MaximumThreshold) | MaximumThreshold < 0 | MaximumThreshold > 1 %#ok Ignore MLint
-        error(['The Maximum bound on the threshold in the ', ModuleName, ' module is invalid.'])
-    end
-
-    if MinimumThreshold > MaximumThreshold,
-        error(['Min bound on the threshold larger than the Max bound on the threshold in the ', ModuleName, ' module.'])
-    end
-end
-
 %%% STEP 1. Find threshold and apply to image
 if strfind(Threshold,'Global')
     if strfind(Threshold,'Otsu')

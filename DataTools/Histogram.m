@@ -377,13 +377,17 @@ try
         CalcStatistics = 'Yes';
         if strcmpi(CalcStatistics,'Yes')
             %%% Calculates a variety of statistics for the population.
-            Mean = mean(OutputMeasurements{1,1});
-            Median = median(OutputMeasurements{1,1});
+            %%% First change -Inf and +Inf to NaN.
+            OutputMeasurementsForStats = OutputMeasurements{1,1};
+            OutputMeasurementsForStats(OutputMeasurementsForStats==-Inf) = NaN;
+            OutputMeasurementsForStats(OutputMeasurementsForStats==Inf) = NaN;            
+            Mean = CPnanmean(OutputMeasurementsForStats,1);
+            Median = CPnanmedian(OutputMeasurementsForStats,1);
             %%% pObject is the percentage of image covered by objects. We will
             %%% set to 50% for now
             pObject = '50';
-            [handles,Otsu] = CPthreshold(handles,'Otsu Global',pObject,-Inf,Inf,1,OutputMeasurements{1,1},'HistogramData','Histogram Data tool');
-            [handles,MoG] = CPthreshold(handles,'MoG Global',pObject,-Inf,Inf,1,OutputMeasurements{1,1},'HistogramData','Histogram Data tool');
+            [handles,Otsu] = CPthreshold(handles,'Otsu Global',pObject,-Inf,Inf,1,OutputMeasurementsForStats,'HistogramData','Histogram Data tool');
+            [handles,MoG] = CPthreshold(handles,'MoG Global',pObject,-Inf,Inf,1,OutputMeasurementsForStats,'HistogramData','Histogram Data tool');
 
             %%% Display the results.
             StatsFigHandle = CPfigure;

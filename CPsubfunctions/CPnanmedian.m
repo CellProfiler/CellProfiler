@@ -39,9 +39,9 @@ function m = CPnanmedian(x,dim)
 % $Revision: 2802 $
 
 if nargin == 1
-    y = CPprctile(x, 50);
+    m = CPprctile(x, 50);
 else
-    y = CPprctile(x, 50,dim);
+    m = CPprctile(x, 50,dim);
 end
 
 function y = CPprctile(x,p,dim)

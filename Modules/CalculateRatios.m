@@ -17,9 +17,12 @@ function handles = CalculateRatios(handles)
 % ratios for object measurements by whole image measurements (to allow
 % normalization). Be careful with your denominator data. Any 0's found in
 % it will be changed to the average of the rest of the data. If all
-% denominator data is 0, all ratios will be set to 0 too.
+% denominator data is 0, all ratios will be set to 0 too. Also, if you are
+% choosing to log-transform your ratios, any ratios that are equal to
+% zero will also be changed to the average of the rest of the data, because
+% you cannot take the log of zero.
 %
-% The ratios will be stored under the numerator object's data. If the
+% The ratios will be stored along with the numerator object's data. If the
 % numerator is an object, data will be under the name Ratio. If the
 % numerator is an image, data will be under the name SingleRatio or
 % MultipleRatio depending on whether the denominator is another image or an
@@ -208,10 +211,14 @@ if length(NumeratorMeasurements) ~= length(DenominatorMeasurements)
 end
 
 % Make measurements and store in handle structure
+%%% Replace NaNs and zeros (since we cannot divide by zero) with the mean
+%%% of the remaining values.
 DenominatorMeasurements(DenominatorMeasurements==0) = NaN;
 DenominatorMeasurements(isnan(DenominatorMeasurements)) = CPnanmean(DenominatorMeasurements);
 FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
+    %%% We cannot take the log of zero, so replace zeros with the mean of the remaining values.
+    FinalMeasurements(FinalMeasurements==0)=CPnanmean(FinalMeasurements);
     FinalMeasurements = log10(FinalMeasurements);
 end
 if isnan(FinalMeasurements)

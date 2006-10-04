@@ -70,69 +70,71 @@ drawnow
 %inputtypeVAR01 = popupmenu
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Which category of measurements would you like to use?
-%choiceVAR02 = AreaShape
-%choiceVAR02 = Children
-%choiceVAR02 = Correlation
-%choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
-%choiceVAR02 = Texture
-%inputtypeVAR02 = popupmenu custom
-Measure{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = What do you want to call the ratio calculated by this module?
+%defaultVAR02 = Ratio1
+RatioName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
-%defaultVAR03 = 1
-FeatureNumber{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Which category of measurements would you like to use?
+%choiceVAR03 = AreaShape
+%choiceVAR03 = Children
+%choiceVAR03 = Correlation
+%choiceVAR03 = Intensity
+%choiceVAR03 = Neighbors
+%choiceVAR03 = Texture
+%inputtypeVAR03 = popupmenu custom
+Measure{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-if isempty(FeatureNumber{1}) || isnan(FeatureNumber{1})
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
-end
+%textVAR04 = Which feature do you want to use? (Enter the feature number - see help for details)
+%defaultVAR04 = 1
+FeatureNumber{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
-%infotypeVAR04 = imagegroup
-%inputtypeVAR04 = popupmenu
-Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%textVAR05 = Which object would you like to use for the denominator?
-%choiceVAR05 = Image
-%infotypeVAR05 = objectgroup
+%textVAR05 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
+%infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
-ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Which category of measurements would you like to use?
-%choiceVAR06 = AreaShape
-%choiceVAR06 = Correlation
-%choiceVAR06 = Intensity
-%choiceVAR06 = Neighbors
-%choiceVAR06 = Texture
-%inputtypeVAR06 = popupmenu custom
-Measure{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Which object would you like to use for the denominator?
+%choiceVAR06 = Image
+%infotypeVAR06 = objectgroup
+%inputtypeVAR06 = popupmenu
+ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
-%defaultVAR07 = 1
-FeatureNumber{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Which category of measurements would you like to use?
+%choiceVAR07 = AreaShape
+%choiceVAR07 = Correlation
+%choiceVAR07 = Intensity
+%choiceVAR07 = Neighbors
+%choiceVAR07 = Texture
+%inputtypeVAR07 = popupmenu custom
+Measure{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-if isempty(FeatureNumber{2}) || isnan(FeatureNumber{2})
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
-end
+%textVAR08 = Which feature do you want to use? (Enter the feature number - see help for details)
+%defaultVAR08 = 1
+FeatureNumber{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
-%infotypeVAR08 = imagegroup
-%inputtypeVAR08 = popupmenu
-Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-
-%textVAR09 = Do you want the log (base 10) of the ratio?
-%choiceVAR09 = No
-%choiceVAR09 = Yes
+%textVAR09 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
+%infotypeVAR09 = imagegroup
 %inputtypeVAR09 = popupmenu
-LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 4
+%textVAR10 = Do you want the log (base 10) of the ratio?
+%choiceVAR10 = No
+%choiceVAR10 = Yes
+%inputtypeVAR10 = popupmenu
+LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+for i = 1:2
+    if isempty(FeatureNumber{i}) || isnan(FeatureNumber{i})
+        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+    end
+end
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 

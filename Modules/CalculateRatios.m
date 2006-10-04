@@ -64,15 +64,15 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use for the numerator?
-%choiceVAR01 = Image
-%infotypeVAR01 = objectgroup
-%inputtypeVAR01 = popupmenu
-ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = What do you want to call the ratio calculated by this module?
+%defaultVAR01 = Ratio1
+RatioName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the ratio calculated by this module?
-%defaultVAR02 = Ratio1
-RatioName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = Which object would you like to use for the numerator?
+%choiceVAR02 = Image
+%infotypeVAR02 = objectgroup
+%inputtypeVAR02 = popupmenu
+ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
 %choiceVAR03 = AreaShape
@@ -217,7 +217,8 @@ end
 if isnan(FinalMeasurements)
     FinalMeasurements(:)=0;
 end
-NewFieldName = [ObjectName{1},'_',Measure{1}(1),'_',num2str(FeatureNumber{1}),'_dividedby_',ObjectName{2},'_',Measure{2}(1),'_',num2str(FeatureNumber{2})];
+% NewFieldName = [ObjectName{1},'_',Measure{1}(1),'_',num2str(FeatureNumber{1}),'_dividedby_',ObjectName{2},'_',Measure{2}(1),'_',num2str(FeatureNumber{2})];
+NewFieldName = RatioName;
 if strcmp(ObjectName{1},'Image')
     if length(FinalMeasurements)==1
         handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',NewFieldName,FinalMeasurements);

@@ -1,14 +1,14 @@
-function handles = MeasureImageSlope(handles)
+function handles = MeasureImageGranularity(handles)
 
-% Help for the Measure Image Slope module:
+% Help for the Measure Image Granularity module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% This module measures the image slope as described by Ilya Ravkin.
+% This module measures the image granularity as described by Ilya Ravkin.
 % *************************************************************************
 %
 % Subsample Size:
-% Subsampling of the image for background removal given as fraction
+% Subsampling of the image for background removal, given as fraction
 %
 % Structuring Element Size:
 % Radius of structuring element (in subsampled image)
@@ -128,6 +128,10 @@ if any(findobj == ThisModuleFigureNumber)
     title('Background Subtracted Image');
 end
 
+%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTIONS %%%
+%%%%%%%%%%%%%%%%%%%%
+
 function br=backgroundremoval(img,bgrsub,bgrthick)
 %REMOVE BACKGROUND BY SUBTRACTING OPEN IMAGE, LIKE TOP HAT, BUT FOR SPEED - SUBSAMPLE
 %PARAMETERS:
@@ -151,7 +155,7 @@ function gs=granspectr(img,ng)
 %I.Ravkin, V.Temov “Bit representation techniques and image processing”, Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow, 1988 (in Russian)
 
 %THIS IMPLEMENTATION INSTEAD OF OPENING USES EROSION FOLLOWED BY RECONSTRUCTION
-%BACKGOUND SHOULD BE REMOVED BEFORE THE CALCULATION OF THE GRANULAR SPECTRUM
+%BACKGROUND SHOULD BE REMOVED BEFORE THE CALCULATION OF THE GRANULAR SPECTRUM
 
 %PARAMETERS:
 % img - THE IMAGE, MUST BE TWO-DIMENSIONAL, GRAYSCALE

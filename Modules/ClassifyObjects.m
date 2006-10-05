@@ -66,6 +66,10 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
+if CurrentModuleNum == 23
+    test=eps;
+end
+
 %textVAR01 = What did you call the identified objects (for Ratio, enter the numerator object)?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -126,27 +130,6 @@ AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,10}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-PercentFlag = 0;
-CustomFlag = 0;
-try
-    if strncmpi(NbrOfBins,'P',1)
-        MidPointToUse = str2double(NbrOfBins(3:end));
-        PercentFlag = 1;
-    elseif strncmpi(NbrOfBins,'C',1)
-        NbrOfBins = str2num(NbrOfBins(3:end)); %#ok Ignore MLint
-        if length(NbrOfBins) >= 2
-            CustomFlag = 1;
-        end
-    else
-        NbrOfBins = str2double(NbrOfBins);
-        if isempty(NbrOfBins) || NbrOfBins < 1
-            error(['Image processing was canceled in the ', ModuleName, ' module because an error was found in the number of bins specification.']);
-        end
-    end
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, the letter P, or the letter C for the number of bins.'])
-end
-
 %%% Retrieves the label matrix image that contains the segmented objects
 fieldname = ['Segmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
@@ -182,6 +165,29 @@ drawnow
 
 % Get Measurements
 Measurements = handles.Measurements.(ObjectName).(FeatureType){handles.Current.SetBeingAnalyzed}(:,FeatureNbr);
+
+PercentFlag = 0;
+CustomFlag = 0;
+try
+    if strncmpi(NbrOfBins,'P',1)
+        LowerBinMin = min(Measurements)-eps;
+        MidPointToUse = str2double(NbrOfBins(3:end));
+        UpperBinMax = max(Measurements)+eps;
+        PercentFlag = 1;
+    elseif strncmpi(NbrOfBins,'C',1)
+        NbrOfBins = str2num(NbrOfBins(3:end)); %#ok Ignore MLint
+        if length(NbrOfBins) >= 2
+            CustomFlag = 1;
+        end
+    else
+        NbrOfBins = str2double(NbrOfBins);
+        if isempty(NbrOfBins) || NbrOfBins < 1
+            error(['Image processing was canceled in the ', ModuleName, ' module because an error was found in the number of bins specification.']);
+        end
+    end
+catch
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number, the letter P, or the letter C for the number of bins.'])
+end
 
 if PercentFlag == 1
     edges = [LowerBinMin,MidPointToUse,UpperBinMax];

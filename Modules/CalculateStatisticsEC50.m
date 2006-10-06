@@ -221,13 +221,13 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 CPwarndlg('There was an error in the Calculate Statistics module involving the number of text elements loaded for it.  CellProfiler will proceed but this module will be skipped.');
                                 return;
                             else
-                                [v, z] = VZfactors(GroupingValues,Ymatrix);
+                                [v, z, OrderedUniqueDoses, OrderedAverageValues] = VZfactors(GroupingValues,Ymatrix);
                                 if LicenseStats == 1
                                     if ~strcmpi(FigureName,'Do not save')
                                         PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
                                     else PartialFigureName = FigureName;
                                     end
-                                    ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear,PartialFigureName,ModuleName);
+                                    ec50stats = CPec50(OrderedUniqueDoses,OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName);
                                     ec = ec50stats(:,3);
                                 end
                             end
@@ -284,7 +284,7 @@ drawnow
 % Code for the calculation of Z' and V factors was kindly donated by Ilya
 % Ravkin: http://www.ravkin.net
 
-function [v, z] = VZfactors(xcol, ymatr)
+function [v, z, OrderedUniqueDoses, OrderedAverageValues] = VZfactors(xcol, ymatr)
 % xcol is (Nobservations,1) column vector of grouping values
 % (in terms of dose curve it may be Dose).
 % ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to observations
@@ -301,8 +301,9 @@ vstd = mean(stds);
 v = 1 - 6 .* (vstd ./ range);
 zstd = stds(1, :) + stds(length(xs), :);
 z = 1 - 3 .* (zstd ./ range);
-
-
+OrderedUniqueDoses = xs;
+OrderedAverageValues = avers;
+ 
 function [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr)
 ncols = size(ymatr,2);
 [labels, labnum, xs] = LocVectorLabels(xcol);

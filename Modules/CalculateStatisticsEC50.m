@@ -144,6 +144,12 @@ FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% Checks whether the user has the Image Processing Toolbox.
+LicenseStats = license('test','statistics_toolbox');
+if LicenseStats ~= 1
+    CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
+end
+
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Get all fieldnames in Measurements
@@ -214,8 +220,10 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 return;
                             else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);
-                                ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear,FigureName,ModuleName);
-                                ec = ec50stats(:,3);
+                                if LicenseStats == 1
+                                    ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear,FigureName,ModuleName);
+                                    ec = ec50stats(:,3);
+                                end
                             end
 
                             measurefield = [ObjectName,'Statistics'];
@@ -230,10 +238,12 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             for a = 1:length(z)
                                 handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+a) = z(a);
                                 handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+length(z)+a) = v(a);
-                                handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+2*length(z)+a) = ec(a);
                                 handles.Measurements.Experiment.(featuresfield){OldEnd+a} = ['Zfactor_',MeasureName,'_',MeasureFeatures{a}];
                                 handles.Measurements.Experiment.(featuresfield){OldEnd+length(z)+a} = ['Vfactor_',MeasureName,'_',MeasureFeatures{a}];
-                                handles.Measurements.Experiment.(featuresfield){OldEnd+2*length(z)+a} = ['EC50_',MeasureName,'_',MeasureFeatures{a}];
+                                if LicenseStats == 1
+                                    handles.Measurements.Experiment.(measurefield){1}(1,OldEnd+2*length(z)+a) = ec(a);
+                                    handles.Measurements.Experiment.(featuresfield){OldEnd+2*length(z)+a} = ['EC50_',MeasureName,'_',MeasureFeatures{a}];
+                                end
                             end
 
                         end

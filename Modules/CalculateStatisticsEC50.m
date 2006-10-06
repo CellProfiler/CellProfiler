@@ -134,7 +134,7 @@ DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = To save the plotted dose response data as an interactive figure, enter the filename here (.fig extension will be automatically added):
+%textVAR03 = To save the plotted dose response data as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added):
 %defaultVAR03 = Do not save
 %infotypeVAR03 = imagegroup indep
 FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -223,7 +223,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);
                                 if LicenseStats == 1
-                                    ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear,FigureName,ModuleName);
+                                    if ~strcmpi(FigureName,'Do not save')
+                                        PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
+                                    else PartialFigureName = FigureName;
+                                    end
+                                    ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear,PartialFigureName,ModuleName);
                                     ec = ec50stats(:,3);
                                 end
                             end
@@ -341,7 +345,7 @@ uniqsortvals = uniqsortvals(1 : labnum);
 %%% EC50 SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-function results=CPec50(conc,responses,LogOrLinear,FigureName,ModuleName)
+function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
 % 
@@ -380,12 +384,12 @@ for i=1:n
     PreviousWarningState = warning('off', 'all');
     [coeffs,r,J]=nlinfit(conc,response,'CPsigmoid',initial_params);
     nlintool(conc,response,'CPsigmoid',initial_params);
-    if ~strcmpi(FigureName,'Do not save')
+    if ~strcmpi(PartialFigureName,'Do not save')
         try
             FigureHandle = gcf;
-            saveas(FigureHandle,[FigureName,num2str(i),'.fig'],'fig');
+            saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
         catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            errordlg(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     end
 

@@ -15,7 +15,9 @@ function handles = CalculateStatistics(handles)
 % placing this module at the end of a pipeline allows you to choose which
 % measured features are most powerful for distinguishing positive and
 % negative control samples, or for accurately quantifying the assay's
-% response to dose.
+% response to dose. Both Z' and V factors will be calculated for all
+% measured values (Intensity, AreaShape, Texture, etc.). These measurements
+% can be exported as the "Experiment" set of data.
 %
 % For both Z' and V factors, the highest possible value (best assay
 % quality) = 1 and they can range into negative values (for assays where
@@ -119,14 +121,23 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the grouping values?
+%textVAR01 = What did you call the grouping values you loaded for each image cycle? See help for details.
 %infotypeVAR01 = datagroup
-%inputtypeVAR01 = popupmenu
 DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
 
-%textVAR02 = In order to run this module, you must use the Load Text module to load a grouping value for each cycle. This is either a marking of whether each cycle is a positive or negative control (for Z factor) or it is concentrations (doses) for each curve (required for meaningful V factors). Both Z and V factors will be calculated for all measured values (Intensity, AreaShape, Texture, etc.). These measurements can be exported as the "Experiment" set of data.
+%textVAR02 = Would you like to log-transform the grouping values before attempting to fit a sigmoid curve?
+%choiceVAR02 = Yes
+%choiceVAR02 = No
+LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR03 = To save the plotted dose response data as an interactive figure, enter the filename here (.fig extension will be automatically added):
+%defaultVAR03 = Do not save
+%infotypeVAR03 = imagegroup indep
+FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -340,6 +351,12 @@ function results=CPec50(conc,responses)
 % send comments to CCEvangelista@aol.com
 % Version 1.0    01/07/2004
 
+%%% If we are using a log-domain set of doses, we have a better chance of
+%%% fitting a sigmoid to the curve if the concentrations are 
+if strcmpi(LogOrLinear,'Yes')
+    conc = log(conc);
+end
+
 [m,n]=size(responses);
 results=zeros(n,4);
 for i=1:n
@@ -349,13 +366,23 @@ for i=1:n
     %%% Turns off MATLAB-level warnings but saves the previous warning state.
     PreviousWarningState = warning('off', 'all');
     [coeffs,r,J]=nlinfit(conc,response,'CPsigmoid',initial_params);
-    nlinfit(conc,response,'CPsigmoid',initial_params);
+    nlintool(conc,response,'CPsigmoid',initial_params);
+    if ~strcmpi(FigureName,'Do not save')
+        try
+            FigureHandle = gcf;
+            saveas(FigureHandle,[FigureName,num2str(i),'.fig'],'fig');
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+        end
+    end
+
     %%% Turns MATLAB-level warnings back on.
     warning(PreviousWarningState);
     for j=1:4
         results(i,j)=coeffs(j);
     end
 end
+
 
 
 function init_params = calc_init_params(x,y)

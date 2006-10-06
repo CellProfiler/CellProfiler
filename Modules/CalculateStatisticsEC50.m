@@ -88,6 +88,8 @@ function handles = CalculateStatistics(handles)
 %
 % Code for the calculation of Z' and V factors was kindly donated by Ilya
 % Ravkin: http://www.ravkin.net
+%
+% This module currently contains code copyrighted by Carlos Evangelista.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

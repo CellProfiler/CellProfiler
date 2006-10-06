@@ -214,7 +214,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 return;
                             else
                                 [v, z] = VZfactors(GroupingValues,Ymatrix);
-                                ec50stats = CPec50(GroupingValues,Ymatrix);
+                                ec50stats = CPec50(GroupingValues,Ymatrix,LogOrLinear);
                                 ec = ec50stats(:,3);
                             end
 
@@ -329,7 +329,7 @@ uniqsortvals = uniqsortvals(1 : labnum);
 %%% EC50 SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-function results=CPec50(conc,responses)
+function results=CPec50(conc,responses,LogOrLinear)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
 % 
@@ -352,7 +352,8 @@ function results=CPec50(conc,responses)
 % Version 1.0    01/07/2004
 
 %%% If we are using a log-domain set of doses, we have a better chance of
-%%% fitting a sigmoid to the curve if the concentrations are 
+%%% fitting a sigmoid to the curve if the concentrations are
+%%% log-transformed.
 if strcmpi(LogOrLinear,'Yes')
     conc = log(conc);
 end

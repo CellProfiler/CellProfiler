@@ -1714,3 +1714,216 @@ set(nlin_fig,'Userdata',ud);
 
 set(y_field1,'String',num2str(double(cy)));
 set(y_field2,'String',num2str(double(dcy)));
+
+function x = finv(p,v1,v2);
+%FINV   Inverse of the F cumulative distribution function.
+%   X=FINV(P,V1,V2) returns the inverse of the F distribution 
+%   function with V1 and V2 degrees of freedom, at the values in P.
+%
+%   The size of X is the common size of the input arguments. A scalar input  
+%   functions as a constant matrix of the same size as the other inputs.    
+%
+%   See also FCDF, FPDF, FRND, FSTAT, ICDF.
+
+%   References:
+%      [1]  M. Abramowitz and I. A. Stegun, "Handbook of Mathematical
+%      Functions", Government Printing Office, 1964, 26.6.2
+
+%   Copyright 1993-2004 The MathWorks, Inc.
+%   $Revision: 2.12.2.5 $  $Date: 2004/12/06 16:37:23 $
+
+if nargin <  3, 
+    error('stats:finv:TooFewInputs','Requires three input arguments.'); 
+end
+
+[errorcode p v1 v2] = distchck(3,p,v1,v2);
+
+if errorcode > 0
+    error('stats:finv:InputSizeMismatch',...
+          'Requires non-scalar arguments to match in size.');
+end
+
+if isa(p,'single') || isa(v1,'single') || isa(v2,'single')
+   x = zeros(size(p),'single');
+else
+   x = zeros(size(p));
+end
+
+k = (v1 <= 0 | v2 <= 0 | isnan(p));
+if any(k(:))
+   x(k) = NaN;
+end
+
+k1 = (p > 0 & p < 1 & v1 > 0 & v2 > 0);
+if any(k1(:))
+    z = betainv(1 - p(k1),v2(k1)/2,v1(k1)/2);
+    x(k1) = (v2(k1) ./ z - v2(k1)) ./ v1(k1);
+end
+
+k2 = (p == 1 & v1 > 0 & v2 > 0);
+if any(k2(:))
+   x(k2) = Inf;
+end
+
+
+function x = tinv(p,v);
+%TINV   Inverse of Student's T cumulative distribution function (cdf).
+%   X=TINV(P,V) returns the inverse of Student's T cdf with V degrees 
+%   of freedom, at the values in P.
+%
+%   The size of X is the common size of P and V. A scalar input   
+%   functions as a constant matrix of the same size as the other input.    
+%
+%   See also TCDF, TPDF, TRND, TSTAT, ICDF.
+
+%   References:
+%      [1]  M. Abramowitz and I. A. Stegun, "Handbook of Mathematical
+%      Functions", Government Printing Office, 1964, 26.6.2
+
+%   B.A. Jones 1-18-93
+%   Copyright 1993-2004 The MathWorks, Inc. 
+%   $Revision: 2.11.2.5 $  $Date: 2004/12/06 16:38:31 $
+
+if nargin < 2, 
+    error('stats:tinv:TooFewInputs','Requires two input arguments.'); 
+end
+
+[errorcode p v] = distchck(2,p,v);
+
+if errorcode > 0
+    error('stats:tinv:InputSizeMismatch',...
+          'Requires non-scalar arguments to match in size.');
+end
+
+% Initialize Y to zero, or NaN for invalid d.f.
+if isa(p,'single') || isa(v,'single')
+    x = zeros(size(p),'single');
+else
+    x = zeros(size(p));
+end
+x(v <= 0) = NaN;
+
+k = find(v == 1 & ~isnan(x));
+if any(k)
+  x(k) = tan(pi * (p(k) - 0.5));
+end
+
+% The inverse cdf of 0 is -Inf, and the inverse cdf of 1 is Inf.
+k0 = find(p == 0 & ~isnan(x));
+if any(k0)
+    tmp   = Inf;
+    x(k0) = -tmp(ones(size(k0)));
+end
+k1 = find(p ==1 & ~isnan(x));
+if any(k1)
+    tmp   = Inf;
+    x(k1) = tmp(ones(size(k1)));
+end
+
+% For small d.f., call betainv which uses Newton's method
+k = find(p >= 0.5 & p < 1 & ~isnan(x) & v < 1000);
+if any(k)
+    z = betainv(2*(1-p(k)),v(k)/2,0.5);
+    x(k) = sqrt(v(k) ./ z - v(k));
+end
+
+k = find(p < 0.5 & p > 0 & ~isnan(x) & v < 1000);
+if any(k)
+    z = betainv(2*(p(k)),v(k)/2,0.5);
+    x(k) = -sqrt(v(k) ./ z - v(k));
+end
+
+% For large d.f., use Abramowitz & Stegun formula 26.7.5
+k = find(p>0 & p<1 & ~isnan(x) & v >= 1000);
+if any(k)
+   xn = norminv(p(k));
+   df = v(k);
+   x(k) = xn + (xn.^3+xn)./(4*df) + ...
+           (5*xn.^5+16.*xn.^3+3*xn)./(96*df.^2) + ...
+           (3*xn.^7+19*xn.^5+17*xn.^3-15*xn)./(384*df.^3) +...
+           (79*xn.^9+776*xn.^7+1482*xn.^5-1920*xn.^3-945*xn)./(92160*df.^4);
+end
+
+function [eid,emsg,varargout]=statgetargs(pnames,dflts,varargin)
+%STATGETARGS Process parameter name/value pairs for statistics functions
+%   [EID,EMSG,A,B,...]=STATGETARGS(PNAMES,DFLTS,'NAME1',VAL1,'NAME2',VAL2,...)
+%   accepts a cell array PNAMES of valid parameter names, a cell array
+%   DFLTS of default values for the parameters named in PNAMES, and
+%   additional parameter name/value pairs.  Returns parameter values A,B,...
+%   in the same order as the names in PNAMES.  Outputs corresponding to
+%   entries in PNAMES that are not specified in the name/value pairs are
+%   set to the corresponding value from DFLTS.  If nargout is equal to
+%   length(PNAMES)+1, then unrecognized name/value pairs are an error.  If
+%   nargout is equal to length(PNAMES)+2, then all unrecognized name/value
+%   pairs are returned in a single cell array following any other outputs.
+%
+%   EID and EMSG are empty if the arguments are valid.  If an error occurs,
+%   EMSG is the text of an error message and EID is the final component
+%   of an error message id.  STATGETARGS does not actually throw any errors,
+%   but rather returns EID and EMSG so that the caller may throw the error.
+%   Outputs will be partially processed after an error occurs.
+%
+%   This utility is used by some Statistics Toolbox functions to process
+%   name/value pair arguments.
+%
+%   Example:
+%       pnames = {'color' 'linestyle', 'linewidth'}
+%       dflts  = {    'r'         '_'          '1'}
+%       varargin = {{'linew' 2 'nonesuch' [1 2 3] 'linestyle' ':'}
+%       [eid,emsg,c,ls,lw] = statgetargs(pnames,dflts,varargin{:})    % error
+%       [eid,emsg,c,ls,lw,ur] = statgetargs(pnames,dflts,varargin{:}) % ok
+
+%   Copyright 1993-2004 The MathWorks, Inc. 
+%   $Revision: 1.4.2.1 $  $Date: 2003/11/01 04:28:41 $ 
+
+% We always create (nparams+2) outputs:
+%    one each for emsg and eid
+%    nparams varargs for values corresponding to names in pnames
+% If they ask for one more (nargout == nparams+3), it's for unrecognized
+% names/values
+
+% Initialize some variables
+emsg = '';
+eid = '';
+nparams = length(pnames);
+varargout = dflts;
+unrecog = {};
+nargs = length(varargin);
+
+% Must have name/value pairs
+if mod(nargs,2)~=0
+    eid = 'WrongNumberArgs';
+    emsg = 'Wrong number of arguments.';
+else
+    % Process name/value pairs
+    for j=1:2:nargs
+        pname = varargin{j};
+        if ~ischar(pname)
+            eid = 'BadParamName';
+            emsg = 'Parameter name must be text.';
+            break;
+        end
+        i = strmatch(lower(pname),pnames);
+        if isempty(i)
+            % if they've asked to get back unrecognized names/values, add this
+            % one to the list
+            if nargout > nparams+2
+                unrecog((end+1):(end+2)) = {varargin{j} varargin{j+1}};
+                
+                % otherwise, it's an error
+            else
+                eid = 'BadParamName';
+                emsg = sprintf('Invalid parameter name:  %s.',pname);
+                break;
+            end
+        elseif length(i)>1
+            eid = 'BadParamName';
+            emsg = sprintf('Ambiguous parameter name:  %s.',pname);
+            break;
+        else
+            varargout{i} = varargin{j+1};
+        end
+    end
+end
+
+varargout{nparams+1} = unrecog;

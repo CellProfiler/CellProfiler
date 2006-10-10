@@ -321,24 +321,29 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             end
         end
         Image = handles.Pipeline.(ImageName);
-        if max(Image(:)) > 1 || min(Image(:)) < 0
-        %%% Store the handle of a CPWarndlg in handles.Errors{CurrentModuleNum}.
+        %% This is Warning Number One in the SaveImages Module
+        %% This method of handling the error/warning dialog windows allows 
+        %% multiple error/warning dialog boxes per module. 
+        if max(Image(:)) > 1 || min(Image(:)) < 0 
+        %%% Store the handle of a CPWarndlg in 
+        %%% handles.Errors{CurrentModuleNum}.Warning1
         %%% For each time through this module it will 'try' to find the
-        %%% WarningHandle for the pop up Warning Dialog. If it is not found
+        %%% WarningHandle for the pop up Warning Dialog for this error. If it is not found
         %%% an error will be thrown, caught, the Warning Dialog will be
         %%% called and the WarningHandle will be written to
-        %%% handles.Errors{CurrentModuleNum}. If the Warning Dialog box was
+        %%% handles.Errors{CurrentModuleNum}.Warning1. If the Warning Dialog box was
         %%% opened but closed by the user. There will be a number in
-        %%% handles.Errors{CurrentModuleNum} but the findobj will not find
+        %%% handles.Errors{CurrentModuleNum}.Warning1 but the findobj will not find
         %%% the object and will throw an error as well. If the object is
         %%% found no error is thrown and nothing happens.
-            try findobj(handles.Errors{CurrentModuleNum});
-            catch
-                WarningHandle=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace');
-                handles.Errors{CurrentModuleNum}=WarningHandle;
-            end
 
+            try findobj(handles.Errors{CurrentModuleNum}.Warning1);
+            catch
+                WarningHandle1=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace')
+                handles.Errors{CurrentModuleNum}.Warning1=WarningHandle1;
+            end
         end
+
         if strcmp(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
             Image = imadjust(Image,LOW_HIGH,[0 1]);

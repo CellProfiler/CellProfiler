@@ -84,10 +84,21 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
+% Put in a check to see if the Resizing factor is in the correct range. If
+% not, set it to the default value of 0.25.
 if ResizingFactor == 1
     ResizeData = SpecificSize;
-else ResizeData = ResizingFactor;
+elseif (ResizingFactor <= 0)
+    ResizingFactor=0.25;
+    ResizeData = ResizingFactor;
+    % This is considered Warning1 of the Resize module
+    try findobj(handles.Errors{CurrentModuleNum}.Warning1);
+    catch
+        WarningHandle1=CPwarndlg(['The resizing factor you have entered in the ', ModuleName, ' module is below the minimum value of 0, it is being reset to 0.25.'],'Resize factor too small','replace')
+        handles.Errors{CurrentModuleNum}.Warning1=WarningHandle1;
+    end
+else
+    ResizeData = ResizingFactor;
 end
 
 if strncmpi(InterpolationMethod,'N',1)

@@ -63,7 +63,7 @@ elseif nargin == 2,
         fclose(fid);
     elseif strcmp('.MAT',upper(ext))
         load(CurrentFileName);
-        if exist('Image')
+        if exist('Image','var')
             LoadedImage = Image;
         else
             error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');

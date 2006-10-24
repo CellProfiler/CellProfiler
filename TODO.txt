@@ -18,8 +18,6 @@ CellProfiler cell image analysis software development
 
 - (Anne 9/1/06) - We should implement Krawtchouk and tchebyshev moment invariants to measure cell shape (see Bayraktar Rajwa Robinson SPIE 2005 (Feature extraction for cellular shape analysis... plus Rajwa's Pattern Recognition 2006 preprint, Anne has both). We know this group and could probably get code straight from them. Anne emailed them 9-1-06 asking for them to send it to us.
 
-- (Requested by Anne 11-21-05) - In LoadImages and LoadSingleImage, we have a variable that asks for the file extension and it says "DOesn't work right now". We should make it work! 8-25-06 I have a vague impression that someone may have worked on this already, but we should definitely check -Anne.
-
 - (Anne 4/25/06) - Rename MergeOutputFiles and ConvertBatchFiles to be consistent with each other (maybe both should be BatchOutputFiles?), and combine the code?
 
 - MODULE/VARIABLE LOADING ISSUES: (1) [Colin] I think if you change a indep infotype and then click on another module before clicking anywhere else, it doesn't actually add the new infotype. (2) [Anne] Usually I name (in an IdentifyPrimAutomatic module) the outlines so they can later be overlaid on an image. When I type in the name in IdentifyPrimAutomatic and then go to the OverlayOutlines module, the new outlines name is not selectable. If I go back and click on the outlines name again and press enter and then go back to OverlayOutlines, it finally shows up. So it seems like some sort of little bug.

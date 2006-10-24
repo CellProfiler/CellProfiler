@@ -213,17 +213,15 @@ end
 % Make measurements and store in handle structure
 %%% Replace NaNs and zeros (since we cannot divide by zero) with the mean
 %%% of the remaining values.
-DenominatorMeasurements(DenominatorMeasurements==0) = NaN;
-DenominatorMeasurements(isnan(DenominatorMeasurements)) = CPnanmean(DenominatorMeasurements);
+% DenominatorMeasurements(DenominatorMeasurements==0) = NaN;
+% DenominatorMeasurements(isnan(DenominatorMeasurements)) = CPnanmean(DenominatorMeasurements);
 FinalMeasurements = NumeratorMeasurements./DenominatorMeasurements;
 if strcmp(LogChoice,'Yes')
     %%% We cannot take the log of zero, so replace zeros with the mean of the remaining values.
-    FinalMeasurements(FinalMeasurements==0)=CPnanmean(FinalMeasurements);
+    %FinalMeasurements(FinalMeasurements==0)=CPnanmean(FinalMeasurements);
     FinalMeasurements = log10(FinalMeasurements);
 end
-if isnan(FinalMeasurements)
-    FinalMeasurements(:)=0;
-end
+FinalMeasurements(isnan(FinalMeasurements))=0;
 % NewFieldName = [ObjectName{1},'_',Measure{1}(1),'_',num2str(FeatureNumber{1}),'_dividedby_',ObjectName{2},'_',Measure{2}(1),'_',num2str(FeatureNumber{2})];
 NewFieldName = RatioName;
 if strcmp(ObjectName{1},'Image')
@@ -252,9 +250,9 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
         'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
         'fontsize',FontSize,'fontweight','bold','string',sprintf('Average ratio features, cycle #%d',SetBeingAnalyzed),'UserData',SetBeingAnalyzed);
-    
+
     if SetBeingAnalyzed == handles.Current.StartingImageSet
-        
+
         % Text for Name of measurement
         if strcmp(OrigMeasure{1},'Intensity') || strcmp(OrigMeasure{1},'Texture')
             DisplayName1 = [ObjectName{1} ' ' handles.Measurements.(ObjectName{1}).([Measure{1} 'Features']){FeatureNumber{1}} ' in ' Image{1}];
@@ -280,7 +278,7 @@ if any(findobj == ThisModuleFigureNumber)
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Average Ratio:','UserData',SetBeingAnalyzed);
     end
-    
+
     % Number of objects
     uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.8 0.1 0.03],...
         'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...

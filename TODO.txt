@@ -1,7 +1,5 @@
 CellProfiler cell image analysis software development 
 
-- Anne 10-4-06: In Calculate Ratios, we have implemented some catches to deal with NaNs and divide by zeros, etc. I don't like the fact that we are replacing uncalculatable things with the mean of the remaining values, rather than just leaving them as NaNs and ignoring them in downstream calculations. Everything has ended up a little messy, same thing with Histogram tool. We need to go through things systematically and decide how this sort of thing should be handled (in general, store values as NaNs and then have all the data tools/calculation modules be able to deal with NaNs appropriately).
-
 - Anne 10-4-06: The ClassifyObjects module is strange - it no longer shows the resulting objects color-classified, but it used to. It has a 2 x 2 figure window but only two panels on the right hand side, which is weird. The histogram looks nice, but the numerical data in the chart below the histogram is so smooshed you can't see anything useful from it (at least in the case where I had only two bins). 
 
 - Anne 10-4-06: The histogram tool nicely saves your entries from the previous time you ran the tool, which is great. However, it does not seem to store the "last image" value; it usually shows image # 1 to 1, even when I left it 1 to 96 the previous time.

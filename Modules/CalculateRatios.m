@@ -222,16 +222,18 @@ if strcmp(LogChoice,'Yes')
     FinalMeasurements = log10(FinalMeasurements);
 end
 FinalMeasurements(isnan(FinalMeasurements))=0;
-% NewFieldName = [ObjectName{1},'_',Measure{1}(1),'_',num2str(FeatureNumber{1}),'_dividedby_',ObjectName{2},'_',Measure{2}(1),'_',num2str(FeatureNumber{2})];
-NewFieldName = RatioName;
+if ~isvarname(RatioName)
+    RatioName = ['Ratio_ModuleNumber',CurrentModule];
+    CPwarndlg(['The ratio name you entered was invalid, and has been replaced with ',RatioName,'.']);
+end
 if strcmp(ObjectName{1},'Image')
     if length(FinalMeasurements)==1
-        handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',NewFieldName,FinalMeasurements);
+        handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',RatioName,FinalMeasurements);
     else
-        handles = CPaddmeasurements(handles,ObjectName{1},'MultipleRatio',NewFieldName,FinalMeasurements);
+        handles = CPaddmeasurements(handles,ObjectName{1},'MultipleRatio',RatioName,FinalMeasurements);
     end
 else
-    handles = CPaddmeasurements(handles,ObjectName{1},'Ratio',NewFieldName,FinalMeasurements);
+    handles = CPaddmeasurements(handles,ObjectName{1},'Ratio',RatioName,FinalMeasurements);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

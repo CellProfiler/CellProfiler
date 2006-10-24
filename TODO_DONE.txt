@@ -1,5 +1,7 @@
 TODO_DONE list  ------- NEW ENTRIES GO AT THE TOP, WITH YOUR NAME & DATE
 
+- (Mike 10/24) Anne 10-4-06: In CalculateRatios module, add some error checking to be sure that whatever the user names the ratios, there are no spaces, and that it is an acceptable fieldname. Could just use a try/catch around it; there might be a matlab function to see whether a string is an acceptable fieldname, I think.  Also, check the Classify module, because if the user enters bin names these also should be checked to see that they are acceptable fieldnames (perhaps there is already a fix there?).
+
 - (Mike 10/24) Anne 10-4-06: In Calculate Ratios, we have implemented some catches to deal with NaNs and divide by zeros, etc. I don't like the fact that we are replacing uncalculatable things with the mean of the remaining values, rather than just leaving them as NaNs and ignoring them in downstream calculations. Everything has ended up a little messy, same thing with Histogram tool. We need to go through things systematically and decide how this sort of thing should be handled (in general, store values as NaNs and then have all the data tools/calculation modules be able to deal with NaNs appropriately).
 
 - (Mike 10/2) Anne 9-26-06 - title and axes labels when using plot measurement tool have underscores handled improperly (they should be turned into spaces), so that you end up with the text appearing as subscripts. We have dealt with this with other figure-labeling applications (like File > Open Image for example handles image file names with underscores properly I think).

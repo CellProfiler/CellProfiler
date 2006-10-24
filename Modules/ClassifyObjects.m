@@ -217,6 +217,9 @@ for k = 1:NbrOfBins
     bins(k) = length(index);
     if length(strfind(Labels,',')) == (NbrOfBins - 1)
         [BinLabel,RemainingLabels]=strtok(RemainingLabels,',');
+        if ~isvarname(BinLabel)
+            BinLabel=['Bin',num2str(k),'_Module',CurrentModule];
+        end
         ListOfLabels(index)={BinLabel};
         EmptyIndex(index) = 0;
         ClassifyFeatureNames{k} = BinLabel;

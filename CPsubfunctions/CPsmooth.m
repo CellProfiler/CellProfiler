@@ -42,6 +42,13 @@ if strcmpi(SizeOfSmoothingFilter,'A')
     WidthFlg = 0;
 end
 
+%%% If we are NOT using the polynomial method and the user set the Size of
+%%% Smoothing Filter to be 0, no smoothing will be done.
+if SizeOfSmoothingFilter == 0 && ~strncmp(SmoothingMethod,'P',1)
+    %%% No blurring is done.
+    return;
+end
+
 switch SmoothingMethod
     case 'P'
         %%% The following is used to fit a low-dimensional polynomial to
@@ -59,10 +66,6 @@ switch SmoothingMethod
         SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
     case 'S'
         %%% The following is used for the Sum of squares method.
-        if SizeOfSmoothingFilter == 0
-            %%% No blurring is done.
-            return;
-        end
         FiltLength = SizeOfSmoothingFilter;
         PaddedImage = padarray(OrigImage,[FiltLength FiltLength],'replicate');
         %%% Could be good to use a disk structuring element of
@@ -73,10 +76,6 @@ switch SmoothingMethod
         RealFilterLength=2*FiltLength;
     case 'Q'
         %%% The following is used for the Square of sum method.
-        if SizeOfSmoothingFilter == 0
-            %%% No blurring is done.
-            return;
-        end
         FiltLength = SizeOfSmoothingFilter;
         PaddedImage = padarray(OrigImage,[FiltLength FiltLength],'replicate');
         %%% Could be good to use a disk structuring element of
@@ -88,10 +87,6 @@ switch SmoothingMethod
         RealFilterLength=2*FiltLength;
     case 'M'
         %%% The following is used for the Median Filtering method.
-        if SizeOfSmoothingFilter == 0;
-            %%% No blurring is done.
-            return;
-        end
         if WidthFlg
             %%% Empirically done (from IdentifyPrimAutomatic)
             sigma = SizeOfSmoothingFilter/3.5;
@@ -110,6 +105,11 @@ switch SmoothingMethod
         % I think this is wrong, but we should ask Ray.
         % RealFilterLength = 2*FiltLength+1;
         RealFilterLength = FiltLength;
+    case 'A'
+        %%% The following is used for the Smooth to average method.
+        %%% Creates an image where every pixel has the value of the mean of the original
+        %%% image.
+        SmoothedImage = mean(OrigImage(:))*ones(size(OrigImage));
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

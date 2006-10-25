@@ -89,6 +89,10 @@ function handles = CorrectIllumination_Calculate(handles)
 % without sharp bright or dim regions.  Note that smoothing is a
 % time-consuming process, and fitting a polynomial is fastest but does not
 % allow a very tight fit as compared to the slower median filtering method.
+% Another option is to *completely* smooth the entire image by choosing
+% "Smooth to average", which will create a flat, smooth image where every
+% pixel of the image is the average of what the illumination function would
+% otherwise have been.
 %
 % * Approximate width of objects:
 % For certain smoothing methods, this will be used to calculate an adequate
@@ -190,6 +194,7 @@ SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum
 %choiceVAR09 = Median Filtering
 %choiceVAR09 = Sum of squares
 %choiceVAR09 = Square of sum
+%choiceVAR09 = Smooth to average
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
@@ -418,7 +423,9 @@ if strcmp(ReadyFlag, 'Ready')
             elseif strcmp(SmoothingMethod,'Sum of squares')
                 SmoothingMethod = 'S';
             elseif strcmp(SmoothingMethod,'Square of sum')
-                SmoothingMethod = 'Q';
+                SmoothingMethod = 'Q';                
+            elseif strcmp(SmoothingMethod,'Smooth to average')
+                SmoothingMethod = 'A';
             end
 
             if exist('DilatedImage','var')
@@ -452,6 +459,8 @@ if strcmp(ReadyFlag, 'Ready')
                 SmoothingMethod = 'S';
             elseif strcmp(SmoothingMethod,'Square of sum')
                 SmoothingMethod = 'Q';
+            elseif strcmp(SmoothingMethod,'Smooth to average')
+                SmoothingMethod = 'A';
             end
             FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else

@@ -174,7 +174,7 @@ end
 
 %textVAR15 - What would you like to call an RGB image with R = the image, G = grid lines, and B = text?
 %defaultVAR15 = Do not save
-%infotype = imagegroup indep
+%infotypeVAR15 = imagegroup indep
 RGBname = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
 

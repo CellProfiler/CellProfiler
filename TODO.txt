@@ -1,5 +1,16 @@
 CellProfiler cell image analysis software development 
 
+- Anne 10-25-06: Incorporate Antti's yeast segmentation code into CellProfiler:
+On Wed, 4 Oct 2006, Anne Carpenter wrote:
+Hello Antti,
+Thanks for being willing to contribute code to the open source CellProfiler project. I think we have many of the steps of the analysis you performed already built-in, so I don't think there will be too much work required to transfer the rest. What language is the code currently in? Most likely, we would just go over it and add the option of using thresholded intensity + thresholded variance to separate foreground/background in our IdentifyPrimAutomatic module.
+Antti replied:
+I find the CellProfiler project to be quite interesting, and I'm happy to contribute code. I dropped off the files "code.zip" and "imgset.zip" at ftpme.wi.mit.edu. [these are in the Dev Drop Box now, in a folder called Antti, and the paper describing the method is there too]. The implementation in code.zip is in MATLAB. The main script that you need to run is called segmperox. You need to define the directory where your images can be found on line 2 of segmperox.m. On line 3 you can define the image number. I've now set it to 13, which corresponds to the image pair shown in the IEEE paper. The script will display intermediate segmentation results on the screen (in total 9 MATLAB figures are opened). The "thresholded intensity + thresholded variance" method is implemented by segmmeanvar.m.
+Please note that this is still a work in progress. This is probably a slightly different version than the one that was used for the IEEE paper, but the main ideas are the same. Some of the remaining segmentation problems will be addressed in publications/code that we are currently working on. Note also that our underlying study is such that we are not too worried about false negatives in cell segmentation.
+If you have any questions on the code or the images, don't hesitate to ask.
+Best regards,
+Antti Niemistš
+
 - Anne 10-25-06: I asked Francois Nedelec about his function tiffread, which we use in our CPimread, I think just for reading stk images: "We used a version of tiffread from 2003, and I am writing to ask about the new versions you have posted on your website www.cytosim.org/other  . It is a little hard to tell whether there is major new functionality in each version - we do not use the metadata stored with each image so those functionalities will not help. One thing I noticed in tiffread4 is that it supports color images, so perhaps I should change our code to use this new version. Are tiffread2/3/4 all mutually exclusive, providing different functionality, or is 4 the best, current version?" 
 Here is his response: "tiffread2 is the one I maintain. The other versions have been contributed, mostly. I also try to keep them up to date, but that is a lot of work.
 You should use the tiffread2 (2.4) which is on www.cytosim.org now:

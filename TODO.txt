@@ -17,7 +17,19 @@ SO, it sounds like someone needs to take a look at the code and most likely use 
 
 - Anne 9-26-06 - CPplotmeasurement is a little bit of a mess: I think the strategy is to ask for UserAnswers only if you are running this subfunction  from the PlotMeasurement Data Tool, and not when running from the DisplayMeasurement module (in which case ModuleFlag = 1), because it doesn't make sense to have a dialog popping up all the time when running a pipeline. I think that this is handled properly when running the DisplayMeasurement module using the Scatter 2 option, but not when using the other three options (bar, line, scatter1). Also, when running the DisplayMeasurement module, if you click on some other window while the module is running the plot ends up in some other figure window by accident.  And, if you have chosen a measurement type that does not exist (e.g. AreaShape, but with no MeasureObjectAreaShape module in the pipeline), it gives a matlab based area 'reference to non-existent field' rather than a nice CellProfiler type error.  Anyway, the code ought to be thoroughly checked through to make sure it's logical overall. 
 
-- Anne 9-14-06 add an error catch if the default output folder doesn't exist, or if you don't have write permission there, when you are trying to export data.
+- Anne 9-14-06 add an error catch if the default output folder doesn't exist, or if you don't have write permission there, when you are trying to export data. Also, if you try to save a PIPE and do not have write permission, you get an error at the command line:
+Unable to write file /nfs/sabatini3_ata/2006_10_18_BhullarYeast/PIPE1.mat: permission denied.
+
+Error in ==> CellProfiler>SavePipeline_Callback at 1149
+    save(fullfile(Pathname,FileName),'Settings')
+
+Error in ==> CellProfiler>gui_mainfcn at 5385
+        feval(varargin{:});
+
+Error in ==> CellProfiler at 63
+    gui_mainfcn(gui_State, varargin{:});
+
+??? Error while evaluating uimenu Callback.
 
 - (Anne 6/14/06) - *outlines* of objects can be produced by Identify modules. Outlines are in a special group (outlinegroup) and they are binary images. But these images should also be in the imagegroup so that they can be inputted into other modules, like GrayToColor and SaveImages. Is it possible to add outlines to the image group as well, or would it be better to adjust every module that has a pulldown menu of images to also display outlinegroup members' names as selectable? Temporarily, I changed GrayToColor to allow us to custom enter image names, but we should change it back when we fix this problem.
 

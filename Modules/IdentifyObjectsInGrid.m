@@ -28,7 +28,8 @@ function handles = IdentifyObjectsInGrid(handles)
 % If placing the objects within the grid is impossible for some reason (the
 % grid compartments are too close together to fit the proper sized circles,
 % for example) the grid will fail and processing will be canceled unless
-% you choose to re-use the grid from the previous image cycle instead.
+% you choose to re-use any previous grid or the first grid in the in the 
+% image cycle.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then
@@ -66,6 +67,7 @@ function handles = IdentifyObjectsInGrid(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Adam M Papallo
 %
 % Website: http://www.cellprofiler.org
 %
@@ -110,9 +112,10 @@ Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR06 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = If the grid fails, would you like to use the previous grid which worked?
+%textVAR07 = If the grid fails, would you like to use a previous grid that worked?
 %choiceVAR07 = No
-%choiceVAR07 = Yes
+%choiceVAR07 = Any Previous
+%choiceVAR07 = The First
 FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
@@ -155,70 +158,79 @@ if strmatch('Circle',Shape)
     else
         radius = floor(str2double(Diameter)/2);
     end
+else
+    radius = 0; %Sets the radius to 0 for non-circle shapes.
+end
 
-    if strcmp(FailedGridChoice,'Yes')
-        measfield = [GridName,'Info'];
+if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
+    measfield = [GridName,'Info'];
+    if handles.Current.SetBeingAnalyzed == 1
+        featfield = [GridName,'InfoFeatures'];
+        handles.Measurements.Image.(featfield){12} = 'GridFailed';
+    end
+    if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
         if handles.Current.SetBeingAnalyzed == 1
-            featfield = [GridName,'InfoFeatures'];
-            handles.Measurements.Image.(featfield){12} = 'GridFailed';
-        end
-        if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-            if handles.Current.SetBeingAnalyzed == 1
-                error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
-            else
-                FailCheck = 1;
-                SetNum = 1;
+            error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
+        else
+            FailCheck = 1;
+            SetNum = 1;
+            if strcmp(FailedGridChoice,'The First')
+                PreviousGrid = handles.Measurements.Image.(measfield){1};
+            end
+            if strcmp(FailedGridChoice,'Any Previous')
                 while FailCheck >= 1
-                    PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
+                    try PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
+                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
+                    end
                     FailCheck = PreviousGrid(1,12);
                     SetNum = SetNum + 1;
                 end
-                GridInfo.XLocationOfLowestXSpot = PreviousGrid(1,1);
-                GridInfo.YLocationOfLowestYSpot = PreviousGrid(1,2);
-                GridInfo.XSpacing = PreviousGrid(1,3);
-                GridInfo.YSpacing = PreviousGrid(1,4);
-                GridInfo.Rows = PreviousGrid(1,5);
-                GridInfo.Columns = PreviousGrid(1,6);
-                GridInfo.TotalHeight = TotalHeight;
-                GridInfo.TotalWidth = TotalWidth;
-                if PreviousGrid(1,9) == 1
-                    GridInfo.LeftOrRight = 'Left';
-                else
-                    GridInfo.LeftOrRight = 'Right';
-                end
-                if PreviousGrid(1,10) == 1
-                    GridInfo.TopOrBottom = 'Top';
-                else
-                    GridInfo.TopOrBottom = 'Bottom';
-                end
-                if PreviousGrid(1,11) == 1
-                    GridInfo.RowsOrColumns = 'Rows';
-                else
-                    GridInfo.RowsOrColumns = 'Columns';
-                end
-
-                Grid = CPmakegrid(GridInfo);
-
-                Leftmost = PreviousGrid(1,1);
-                Topmost = PreviousGrid(1,2);
-                XDiv = PreviousGrid(1,3);
-                YDiv = PreviousGrid(1,4);
-                Rows = PreviousGrid(1,5);
-                Cols = PreviousGrid(1,6);
-                VertLinesX = Grid.VertLinesX;
-                VertLinesY = Grid.VertLinesY;
-                HorizLinesX = Grid.HorizLinesX;
-                HorizLinesY = Grid.HorizLinesY;
-                SpotTable = Grid.SpotTable;
             end
-            handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 1;
-        else
-            handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 0;
+            GridInfo.XLocationOfLowestXSpot = PreviousGrid(1,1);
+            GridInfo.YLocationOfLowestYSpot = PreviousGrid(1,2);
+            GridInfo.XSpacing = PreviousGrid(1,3);
+            GridInfo.YSpacing = PreviousGrid(1,4);
+            GridInfo.Rows = PreviousGrid(1,5);
+            GridInfo.Columns = PreviousGrid(1,6);
+            GridInfo.TotalHeight = TotalHeight;
+            GridInfo.TotalWidth = TotalWidth;
+            if PreviousGrid(1,9) == 1
+                GridInfo.LeftOrRight = 'Left';
+            else
+                GridInfo.LeftOrRight = 'Right';
+            end
+            if PreviousGrid(1,10) == 1
+                GridInfo.TopOrBottom = 'Top';
+            else
+                GridInfo.TopOrBottom = 'Bottom';
+            end
+            if PreviousGrid(1,11) == 1
+                GridInfo.RowsOrColumns = 'Rows';
+            else
+                GridInfo.RowsOrColumns = 'Columns';
+            end
+
+            Grid = CPmakegrid(GridInfo);
+
+            Leftmost = PreviousGrid(1,1);
+            Topmost = PreviousGrid(1,2);
+            XDiv = PreviousGrid(1,3);
+            YDiv = PreviousGrid(1,4);
+            Rows = PreviousGrid(1,5);
+            Cols = PreviousGrid(1,6);
+            VertLinesX = Grid.VertLinesX;
+            VertLinesY = Grid.VertLinesY;
+            HorizLinesX = Grid.HorizLinesX;
+            HorizLinesY = Grid.HorizLinesY;
+            SpotTable = Grid.SpotTable;
         end
+        handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 1;
     else
-        if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-            error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the Define Grid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
-        end
+        handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 0;
+    end
+else
+    if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
+        error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the Define Grid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
     end
 end
 

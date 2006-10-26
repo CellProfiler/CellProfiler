@@ -29,7 +29,7 @@ function [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(Measurem
 %
 % $Revision: 2802 $
 
-if nargin <= 5
+if nargin <= 7
     CountOption = 'Normal';
 end
 

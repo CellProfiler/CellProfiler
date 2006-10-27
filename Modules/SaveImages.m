@@ -228,25 +228,25 @@ if strcmpi(ColorMap,'Default') == 1
 end
 
 
-% Processing will continue when a user has selected to save the tiled image 
-% on "First cycle" or "Every cycle". Instead of an error occurring, 
-% the program will behave as if the user entered "Last cycle" 
-% by not saving the image until the last cycle. At the end of the last cycle, 
+% Processing will continue when a user has selected to save the tiled image
+% on "First cycle" or "Every cycle". Instead of an error occurring,
+% the program will behave as if the user entered "Last cycle"
+% by not saving the image until the last cycle. At the end of the last cycle,
 % the user will get a help dialog popup window.
 
 
 TileModuleNum = strmatch('Tile',handles.Settings.ModuleNames,'exact');
-             
+
 if ~isempty(TileModuleNum)      %if Tile Module is loaded
     for tilecount = 1: length(TileModuleNum)    %loop through all tiled images
         if strcmp(handles.Settings.VariableValues{TileModuleNum(tilecount), 3}, ImageName) %if saving one of the tiled images
             if ~strcmp(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
-                SaveWhen='Last cycle';  
+                SaveWhen='Last cycle';
                 if SetBeingAnalyzed == handles.Current.NumberOfImageSets    %if current cycle is last cycle
                     CPwarndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
                 end
             end
-            
+
         end
     end
 end
@@ -256,8 +256,8 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
         FileName = TwoDigitString(SetBeingAnalyzed);
-    %%% If the user has selected to use the same base name for all the new file
-    %%% names (used for movies).
+        %%% If the user has selected to use the same base name for all the new file
+        %%% names (used for movies).
     elseif strncmpi(ImageFileName,'=',1)
         Spaces = isspace(ImageFileName);
         if any(Spaces)
@@ -321,26 +321,14 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             end
         end
         Image = handles.Pipeline.(ImageName);
-        %% This is Warning Number One in the SaveImages Module
-        %% This method of handling the error/warning dialog windows allows 
-        %% multiple error/warning dialog boxes per module. 
-        if max(Image(:)) > 1 || min(Image(:)) < 0 
-        %%% Store the handle of a CPWarndlg in 
-        %%% handles.Errors{CurrentModuleNum}.Warning1
-        %%% For each time through this module it will 'try' to find the
-        %%% WarningHandle for the pop up Warning Dialog for this error. If it is not found
-        %%% an error will be thrown, caught, the Warning Dialog will be
-        %%% called and the WarningHandle will be written to
-        %%% handles.Errors{CurrentModuleNum}.Warning1. If the Warning Dialog box was
-        %%% opened but closed by the user. There will be a number in
-        %%% handles.Errors{CurrentModuleNum}.Warning1 but the findobj will not find
-        %%% the object and will throw an error as well. If the object is
-        %%% found no error is thrown and nothing happens.
-
-            try findobj(handles.Errors{CurrentModuleNum}.Warning1);
-            catch
-                WarningHandle1=CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],'Outside 0-1 Range','replace')
-                handles.Errors{CurrentModuleNum}.Warning1=WarningHandle1;
+        if max(Image(:)) > 1 || min(Image(:)) < 0
+            % Warn the users that the value is being changed.
+            % Outside 0-1 RangeWarning Box
+            if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range']))
+                % This warning dialog is already open
+            else
+                % This warning dialog is NOT open
+                CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range'],'replace');
             end
         end
 
@@ -354,7 +342,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             error(['Image processing was canceled in the ', ModuleName, ' module because the image file type entered is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab, or see the help for this module.'])
         end
     end
-    
+
     %%% Creates the fields that the LoadImages module normally creates when
     %%% loading images.
     if strcmp(UpdateFileOrNot,'Yes')
@@ -369,7 +357,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         PathNames = PathName;
         FileNamesText = ['Filename ', ImageName];
         PathNamesText = ['Path ', ImageName];
-        
+
         %%% Stores file and path name data in handles.Measurements. Since
         %%% there may be several load/save modules in the pipeline which
         %%% all write to the handles.Measurements.Image.FileName field, we

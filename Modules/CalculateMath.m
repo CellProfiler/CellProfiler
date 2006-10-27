@@ -99,7 +99,7 @@ SecondMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR07 = 1
-SecondObjectName = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
+SecondFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR08 = imagegroup
@@ -145,7 +145,7 @@ end
 FirstMeasurements = handles.Measurements.(FirstObjectName).(FirstMeasure){SetBeingAnalyzed};
 FirstMeasurements = FirstMeasurements(:,FirstFeatureNumber);
 SecondMeasurements = handles.Measurements.(SecondObjectName).(SecondMeasure){SetBeingAnalyzed};
-SecondMeasurements = SecondMeasurements(:,SecondObjectName);
+SecondMeasurements = SecondMeasurements(:,SecondFeatureNumber);
 
 if length(FirstMeasurements) ~= length(SecondMeasurements)
     error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',FirstObjectName,' and ',SecondObjectName,' do not have the same object count.']);

@@ -91,12 +91,15 @@ if ResizingFactor == 1
 elseif (ResizingFactor <= 0)
     ResizingFactor=0.25;
     ResizeData = ResizingFactor;
-    % This is considered Warning1 of the Resize module
-    try findobj(handles.Errors{CurrentModuleNum}.Warning1);
-    catch
-        WarningHandle1=CPwarndlg(['The resizing factor you have entered in the ', ModuleName, ' module is below the minimum value of 0, it is being reset to 0.25.'],'Resize factor too small','replace')
-        handles.Errors{CurrentModuleNum}.Warning1=WarningHandle1;
+
+    % Resize factor too small Warning Box
+    if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Resize factor too small']))
+        % This warning dialog is already open
+    else
+        % This warning dialog is NOT open
+        CPwarndlg(['The resizing factor you have entered in the ', ModuleName, ' module is below the minimum value of 0, it is being reset to 0.25.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Resize factor too small'],'replace');
     end
+
 else
     ResizeData = ResizingFactor;
 end

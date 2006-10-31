@@ -147,6 +147,7 @@ estimate with no indication of its accuracy. - Ray
 * Weaver_JNeuroMeth_2003.pdf. 
 * See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
 * Xiong Cytometry 2006 might be the best; C++ code available from authors.
+* If we want to work on this, a researcher at the Broad would be very interested in using CellProfiler to score his images: Letian Kuai letiank@broad.mit.edu
 
 +++ (Requested by Anne): enhance/expand the TrackObjects module:
 - Right now, an intensity image is retrieved/stored even if we are using size or distance matching, which as far as I can imagine, do not require intensity information. We should instead allow the user to choose (1) distance, or (2) any measurement in handles structure so that they can choose size, intensity or anything else they want. Grabbing code from the FilterObjects byMeasurement module should be helpful for this.

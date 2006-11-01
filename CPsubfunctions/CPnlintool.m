@@ -111,11 +111,11 @@ if (nargin == 0)
    catch
       s = [];
    end
-   hmsg = warndlg(msg, 'Nonlinear Fitting');
+%   hmsg = warndlg(msg, 'Nonlinear Fitting');
    if (length(s)>0)
       nlintool(x, y, 'hougen', b);
    end
-   figure(hmsg);
+%   figure(hmsg);
    return
 end
 
@@ -196,10 +196,10 @@ end
 
 % Fit nonlinear model.  Catch any error so we can restore the warning
 % state before re-throwing the error.
-[lastwmsg,lastwid] = lastwarn;
-lastwstate = warning;
-lastwarn('');
-warning('off');
+% [lastwmsg,lastwid] = lastwarn;
+% lastwstate = warning;
+% lastwarn('');
+% warning('off');
 
 try
    [ud.beta, residuals, J] = nlinfit(x,y,model,beta0);
@@ -208,18 +208,18 @@ catch
    ok = false;
 end
 
-wmsg = lastwarn;
-lastwarn(lastwmsg,lastwid);
-warning(lastwstate);
-if ~ok
-   rethrow(lasterror)
-end
-
-if ~isempty(wmsg)
-   hwarn = warndlg(wmsg);
-else
-   hwarn = [];
-end
+% wmsg = lastwarn;
+% lastwarn(lastwmsg,lastwid);
+% warning(lastwstate);
+% if ~ok
+%    rethrow(lasterror)
+% end
+% 
+% if ~isempty(wmsg)
+%    hwarn = warndlg(wmsg);
+% else
+%    hwarn = [];
+% end
 
 yhat = feval(model,ud.beta,x);
 
@@ -335,9 +335,9 @@ ud.wasnan = wasnan;
 setconf(ud);           % initialize settings on Bounds menu
 set(nlin_fig,'UserData',ud,'HandleVisibility','callback');
 
-if ~isempty(hwarn) && ishandle(hwarn)
-   figure(hwarn);
-end
+% if ~isempty(hwarn) && ishandle(hwarn)
+%    figure(hwarn);
+% end
 
 % Finished with plot startup function.
 

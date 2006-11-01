@@ -394,8 +394,7 @@ for i=1:n
         else XaxisLabel = [ConcName,''];
         end
         YaxisLabel = ['Feature #',num2str(i)];
-
-        FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
+        FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);        
         try saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
             try close(FigureHandle)
             end

@@ -395,11 +395,10 @@ for i=1:n
         end
         YaxisLabel = ['Feature #',num2str(i)];
 
-        nlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
-        try
-            FigureHandle = gcf;
-            saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
-            close(FigureHandle)
+        FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
+        try saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
+            try close(FigureHandle)
+            end
         catch
             errordlg(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end

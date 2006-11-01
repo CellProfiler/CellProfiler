@@ -64,7 +64,7 @@ function handles = CalculateStatistics(handles)
 % .00000001
 % .000000003
 % .000000001
-% (Note that in this examples, the Z' and V factors will be meaningless because
+% (Note that in this example, the Z' and V factors will be meaningless because
 % there is only one sample at the each dose, so the standard deviation of
 % measured features at each dose will be zero).
 %
@@ -134,7 +134,7 @@ DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = To save the plotted dose response data as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added):
+%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added). Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
 %defaultVAR03 = Do not save
 %infotypeVAR03 = imagegroup indep
 FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -227,8 +227,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                         PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
                                     else PartialFigureName = FigureName;
                                     end
-                                    ec50stats = CPec50(OrderedUniqueDoses,OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName);
+                                    ec50stats = CPec50(OrderedUniqueDoses',OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName,DataName);
                                     ec = ec50stats(:,3);
+                                    if strcmpi(LogOrLinear,'Yes')
+                                        ec = exp(ec);
+                                    end
                                 end
                             end
 
@@ -346,7 +349,7 @@ uniqsortvals = uniqsortvals(1 : labnum);
 %%% EC50 SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName)
+function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,ConcName)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
 % 
@@ -384,16 +387,23 @@ for i=1:n
     %%% Turns off MATLAB-level warnings but saves the previous warning state.
     PreviousWarningState = warning('off', 'all');
     [coeffs,r,J]=nlinfit(conc,response,'CPsigmoid',initial_params);
-    nlintool(conc,response,'CPsigmoid',initial_params);
     if ~strcmpi(PartialFigureName,'Do not save')
+        %%% This produces the figure with the interactive graph.
+        if strcmpi(LogOrLinear,'Yes')
+            XaxisLabel = ['log(',ConcName,')'];
+        else XaxisLabel = [ConcName,''];
+        end
+        YaxisLabel = ['Feature #',num2str(i)];
+
+        nlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
         try
             FigureHandle = gcf;
             saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
+            close(FigureHandle)
         catch
             errordlg(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     end
-
     %%% Turns MATLAB-level warnings back on.
     warning(PreviousWarningState);
     for j=1:4

@@ -152,6 +152,8 @@ if LicenseStats ~= 1
     CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
+FigureIncrement = 1;
+
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Get all fieldnames in Measurements
@@ -224,7 +226,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                         PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
                                     else PartialFigureName = FigureName;
                                     end
-                                    ec50stats = CPec50(OrderedUniqueDoses',OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName,DataName);
+                                    [FigureIncrement, ec50stats] = CPec50(OrderedUniqueDoses',OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName,DataName,FigureIncrement);
                                     ec = ec50stats(:,3);
                                     if strcmpi(LogOrLinear,'Yes')
                                         ec = exp(ec);
@@ -258,6 +260,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         end
     end
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -271,9 +274,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         close(ThisModuleFigureNumber)
     end
 end
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% V AND Z SUBFUNCTIONS %%%
@@ -345,7 +345,7 @@ uniqsortvals = uniqsortvals(1 : labnum);
 %%% EC50 SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,ConcName)
+function [FigureIncrement, results] = CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,ConcName,FigureIncrement)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
 %
@@ -389,7 +389,8 @@ for i=1:n
             XaxisLabel = ['log(',ConcName,')'];
         else XaxisLabel = [ConcName,''];
         end
-        YaxisLabel = ['Feature #',num2str(i)];
+        YaxisLabel = ['Feature #',num2str(FigureIncrement)];
+        FigureIncrement = FigureIncrement + 1;
         FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
         try saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
             try close(FigureHandle)
@@ -404,7 +405,6 @@ for i=1:n
         results(i,j)=coeffs(j);
     end
 end
-
 
 
 function init_params = calc_init_params(x,y)

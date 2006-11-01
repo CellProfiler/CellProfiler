@@ -84,7 +84,7 @@ function handles = CalculateStatistics(handles)
 %
 % The reference for V factor is: I Ravkin (2004): Poster #P12024 - Quality
 % Measures for Imaging-based Cellular Assays. Society for Biomolecular
-% Screening Annual Meeting Abstracts. This is likely to be published 
+% Screening Annual Meeting Abstracts. This is likely to be published
 %
 % Code for the calculation of Z' and V factors was kindly donated by Ilya
 % Ravkin: http://www.ravkin.net
@@ -159,15 +159,12 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     GroupingStrings = handles.Measurements.Image.(DataName);
     %%% Need column vector
-    GroupingValues = str2num(char(GroupingStrings'));
+    GroupingValues = str2num(char(GroupingStrings')); %#ok Ignore MLint
 
     for i = 1:length(ObjectFields)
 
         ObjectName = char(ObjectFields(i));
 
-        if strcmp(ObjectName,'Results')
-            test=eps;
-        end
         %%% Filter out Experiment and Image fields
         if ~strcmp(ObjectName,'Experiment')
 
@@ -215,8 +212,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 end
                             end
 
-                            [GroupingValueRows,n] = size(GroupingValues);
-                            [YmatrixRows, n] = size(Ymatrix);
+                            GroupingValueRows = size(GroupingValues,1);
+                            YmatrixRows = size(Ymatrix,1);
                             if GroupingValueRows ~= YmatrixRows
                                 CPwarndlg('There was an error in the Calculate Statistics module involving the number of text elements loaded for it.  CellProfiler will proceed but this module will be skipped.');
                                 return;
@@ -254,7 +251,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                     handles.Measurements.Experiment.(featuresfield){OldEnd+2*length(z)+a} = ['EC50_',MeasureName,'_',MeasureFeatures{a}];
                                 end
                             end
-
                         end
                     end
                 end
@@ -306,7 +302,7 @@ zstd = stds(1, :) + stds(length(xs), :);
 z = 1 - 3 .* (zstd ./ range);
 OrderedUniqueDoses = xs;
 OrderedAverageValues = avers;
- 
+
 function [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr)
 ncols = size(ymatr,2);
 [labels, labnum, xs] = LocVectorLabels(xcol);
@@ -352,11 +348,11 @@ uniqsortvals = uniqsortvals(1 : labnum);
 function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,ConcName)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
-% 
+%
 % Requirements: nlinfit function in the Statistics Toolbox
 %           and accompanying m.files: calc_init_params.m and sigmoid.m
 % Inputs: 1. a 1 dimensional array of drug concentrations
-%         2. the corresponding m x n array of responses 
+%         2. the corresponding m x n array of responses
 % Algorithm: generate a set of initial coefficients including the Hill
 %               coefficient
 %            fit the data to the 4 parameter dose-response curve using
@@ -367,7 +363,7 @@ function results=CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,
 %         results[m,3]=ec50
 %         results[m,4]=Hill coefficient
 %
-% Copyright 2004 Carlos Evangelista 
+% Copyright 2004 Carlos Evangelista
 % send comments to CCEvangelista@aol.com
 % Version 1.0    01/07/2004
 
@@ -378,7 +374,7 @@ if strcmpi(LogOrLinear,'Yes')
     conc = log(conc);
 end
 
-[m,n]=size(responses);
+n=size(responses,2);
 results=zeros(n,4);
 for i=1:n
     response=responses(:,i);
@@ -394,7 +390,7 @@ for i=1:n
         else XaxisLabel = [ConcName,''];
         end
         YaxisLabel = ['Feature #',num2str(i)];
-        FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);        
+        FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
         try saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
             try close(FigureHandle)
             end

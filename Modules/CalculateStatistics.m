@@ -392,7 +392,7 @@ for i=1:n
         YaxisLabel = ['Feature #',num2str(FigureIncrement)];
         FigureIncrement = FigureIncrement + 1;
         FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
-        try saveas(FigureHandle,[PartialFigureName,num2str(i),'.fig'],'fig');
+        try saveas(FigureHandle,[PartialFigureName,num2str(FigureIncrement),'.fig'],'fig');
             try close(FigureHandle)
             end
         catch

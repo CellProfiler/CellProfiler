@@ -79,14 +79,32 @@ elseif nargin == 2,
         end
     else
         try
-            %%% Read (open) the image you want to analyze and assign it to a variable,
-            %%% "LoadedImage".
-            %%% Opens Matlab-readable file formats.
-            LoadedImage = im2double(imread(char(CurrentFileName)));
+            if strcmpi('.tif',ext) || strcmpi('.tiff',ext)
+
+                if length(imfinfo(char(CurrentFileName)))>1
+                    LoadedImage(:,:,1) = im2double(imread(char(CurrentFileName),2));
+                    LoadedImage(:,:,2) = im2double(imread(char(CurrentFileName),3));
+                    LoadedImage(:,:,3) = im2double(imread(char(CurrentFileName),4));
+                    LoadedImage(:,:,4) = im2double(imread(char(CurrentFileName),5));
+                    StillneedToLoad = 0;
+                else %% it is a normal tif
+                    StillneedToLoad = 1;
+                end
+            else StillneedToLoad = 1;
+            end
+
+
+            if StillneedToLoad == 1
+                %% Read (open) the image you want to analyze and assign it to a variable,
+                %% "LoadedImage".
+                %% Opens Matlab-readable file formats.
+                LoadedImage = im2double(imread(char(CurrentFileName)));
+            end
         catch
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
         end
     end
+
 else
     CurrentFileName = varargin{1};
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));

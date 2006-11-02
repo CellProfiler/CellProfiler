@@ -20,6 +20,7 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Adam M Papallo
 %
 % Website: http://www.cellprofiler.org
 %
@@ -160,7 +161,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
             if isnan(BatchSize)
                 errordlg('STOP!');
             end
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -169,15 +170,15 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
                 EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
                 ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
                 ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',ImageSQLFileName,TablePrefix);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',ImageSQLFileName,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',ObjectSQLFileName,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
             end
         else
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','' \;\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
         end
         fclose(fmain);
@@ -412,7 +413,7 @@ for img_idx = FirstSet:LastSet
                 elseif iscell(vals)
                     if ischar(vals{1}) %is char
                         for cellindex = 1:size(vals,2),
-                            fprintf(fimage, ',%s', vals{cellindex});
+                            fprintf(fimage, ',"%s"', vals{cellindex});
                         end
                     else %vals{cellindex} is not char
                         fprintf(fimage, ',%g', cell2mat(vals));

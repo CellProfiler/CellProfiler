@@ -1,5 +1,22 @@
 Mike's TODO list
 
+- Analyze image of cell array for Chris Love (Pleough lab). Location in sabatini3_ata in a folder 2006_11_02_ChrisLove. He wants a 76 x 76 grid of rows and columns to be placed on the image, and then within each square of the grid he wants to measure a couple things. Final result: Excel file with three columns:
+1. Well number (count across first, 1 to 76 then the next row is 77 to...)
+2. Cell count (he actually only cares about scoring each well YES/NO as having 1 cell or not, he does not need the precise number if it's zero or 2 or 3)
+3. mean(integrated intensity within nucleus to get DNA content)
+
+I think we need new code to count the number of objects within each square of the grid? Shouldn't be too hard, but I think this functionality is not existent right now.  An alternative which is a little goofy is to make secondary objects by expanding nuclei a well diameter's distance, then use Tertiary to create 'cytoplasm', then measure the intensity of the nuclei label matrix within the cytoplasm region. If the intensity > 0, it means that there are other nuclei nearby the original nucleus, otherwise, it was a single nucleus. Like I said, a little goofy but it would answer his YES/NO question without having to change any code. Actually counting the number of cells might be better long-term but requires new code, so it's up to you which is easier to do.
+
+Also, I noticed it's a little hard to click to position the grid in DefineGrid because you can't zoom in on the image. We might want to adjust the code to allow this. Otherwise you have to zoom in on the image (separate from the pipeline) and write down the coordinates and type them in. Kind of a pain.
+
+If the image is too big to process at once (Adam's could DefineGrid but failed at IdentifyPrimAuto using the compiled 64 bit version but maybe yours can handle it), then I suppose we chop the image into several horizontal slices (so the numbering stays easy to piece back together). You should be able to see a 7 x 7 array of subgrids. Each subgrid is 10x10. So perhaps the subgrids make nice dividing lines (crop the original image into 7 horizontal slices). The reason we are calling this 76 by 76 is because in between the 7 subgrids is one row that is totally blank. 
+
+Mostly for now he just wants the numbers but later he might be routinely doing this. We want to set this up so it's reasonable to do it in the future, but it need not be perfect right now. (e.g. eventually we'd want a pipeline that helps chop the image into horizontal slices, but for now it's probly ok to just use photoshop.)
+
+- Try old learners on new crescent images. What's the % accuracy when asking for ~100 positive nuclei? If it starts out with at least some real positives, roughly how many new ones do you have to sort to refine the classifier to work well for the new image set?
+
+- Score widerborst images blindly, then tabulate the data and draw conclusions - do new dsRNAs work? Did old ones repeat?
+
 - Add ObjectCount to handles.Measurements?
 
 - Merck screens (image acquisition and analysis only)

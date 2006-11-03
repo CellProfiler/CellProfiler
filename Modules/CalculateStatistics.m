@@ -390,7 +390,6 @@ for i=1:n
         else XaxisLabel = [ConcName,''];
         end
         YaxisLabel = ['Feature #',num2str(FigureIncrement)];
-        FigureIncrement = FigureIncrement + 1;
         FigureHandle = CPnlintool(conc,response,'CPsigmoid',initial_params,.05,XaxisLabel,YaxisLabel);
         try saveas(FigureHandle,[PartialFigureName,num2str(FigureIncrement),'.fig'],'fig');
             try close(FigureHandle)
@@ -398,6 +397,7 @@ for i=1:n
         catch
             errordlg(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
+        FigureIncrement = FigureIncrement + 1;
     end
     %%% Turns MATLAB-level warnings back on.
     warning(PreviousWarningState);

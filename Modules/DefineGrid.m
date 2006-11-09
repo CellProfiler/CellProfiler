@@ -27,6 +27,7 @@ function handles = DefineGrid(handles)
 % You can choose to define a grid for EACH CYCLE, or ONCE for all
 % images. The grid can be defined using AUTOMATIC or MANUAL modes. 
 %
+%
 % For MANUAL mode, several questions relate to the control spot. This 
 % control spot can be specified by MOUSE or COORDINATES. For some
 % projects, you might have a control spot which is always present in every
@@ -177,6 +178,12 @@ end
 %infotypeVAR15 = imagegroup indep
 RGBname = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
+%textVAR16 = If the gridding fails, would you like to use a previous grid that worked?
+%choiceVAR16 = No
+%choiceVAR16 = Any Previous
+%choiceVAR16 = The First
+FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
@@ -226,7 +233,7 @@ if strncmp(EachOrOnce,'Once',4) && handles.Current.SetBeingAnalyzed ~= 1
 else
     %%% In Automatic mode, the objects' locations are used to define
     %%% the outer edges of the grid and the proper spacing.
-    if strcmp(AutoOrManual,'Automatic')
+    if strcmp(AutoOrManual,'Automatic') && strcmp(FailedGridChoice,'No')
         tmp = regionprops(OrigImage,'Centroid');
         Location = cat(1,tmp.Centroid);
         %%% Chooses the coordinates of the objects at the farthest edges
@@ -245,6 +252,43 @@ else
         %%% grid extending from the furthest objects in each direction.
         XSpacing = round((XLocationOfHighestXSpot - XLocationOfLowestXSpot)/(Columns - 1));
         YSpacing = round((YLocationOfHighestYSpot - YLocationOfLowestYSpot)/(Rows - 1));
+    elseif strcmp(AutoOrManual,'Automatic') && ~strcmp(FailedGridChoice,'No')
+        tmp = regionprops(OrigImage,'Centroid');
+        Location = cat(1,tmp.Centroid);
+        %%% Chooses the coordinates of the objects at the farthest edges
+        %%% of the incoming image.
+        if size(Location,1) > 1
+            x = sort(Location(:,1));
+            y = sort(Location(:,2));
+            XLocationOfLowestXSpot = floor(min(x));
+            YLocationOfLowestYSpot = floor(min(y));
+            XLocationOfHighestXSpot = ceil(max(x));
+            YLocationOfHighestYSpot = ceil(max(y));
+            %%% Calculates the horizontal and vertical spacing based on the
+            %%% grid extending from the furthest objects in each direction.
+            XSpacing = round((XLocationOfHighestXSpot - XLocationOfLowestXSpot)/(Columns - 1));
+            YSpacing = round((YLocationOfHighestYSpot - YLocationOfLowestYSpot)/(Rows - 1));
+        else
+            measfield = [GridName,'Info'];
+            FailCheck = 1;
+            SetNum = 1;
+            if strcmp(FailedGridChoice,'The First')
+                PreviousGrid = handles.Measurements.Image.(measfield){1};
+            end
+            if strcmp(FailedGridChoice,'Any Previous')
+                while FailCheck >= 1
+                    try PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
+                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
+                    end
+                    FailCheck = PreviousGrid(1,12);
+                    SetNum = SetNum + 1;
+                end
+            end
+            XLocationOfLowestXSpot = PreviousGrid(1,1);
+            YLocationOfLowestYSpot = PreviousGrid(1,2);
+            XSpacing = PreviousGrid(1,3);
+            YSpacing = PreviousGrid(1,4);
+         end
     elseif strcmp(AutoOrManual,'Manual')
         if strcmp(ControlSpotMode,'Coordinates')
             if strncmp(EachOrOnce,'Once',4)

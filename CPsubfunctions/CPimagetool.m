@@ -110,7 +110,8 @@ if ~isempty(varargin)
                     ChangeColormapHandle = CPfigure('units','inches','resize','off','menubar','none','toolbar','none','numbertitle','off','Tag','ChangeColormapWindow','Name','Change Colormap');
                     pos = get(ChangeColormapHandle,'position');
                     %set(ChangeColormapHandle,'position',[(pos(1)+2) pos(2) 3.5 1.2]);
-                    set(ChangeColormapHandle,'position',[(pos(1)+2) pos(2) 3.5 1.6]);
+                    set(ChangeColormapHandle,'position',[(pos(1)+2) pos(2) 3.5 2.0]);
+                    %                    set(ChangeColormapHandle,'position',[(pos(1)+2) pos(2) 3.5 1.6]);
                     Title = get(FigureHandle,'name');
 
                     % Create callback functions
@@ -228,8 +229,8 @@ if ~isempty(varargin)
                         'end;',...
                         'clear Button ThisFigure ButtonData ChangeColormapPopupMenu ColormapOptions SelectedColormap ImagesInFigure WhichColormap CurrentData Choice i;'];
                     CloseCallback = 'delete(gcf)';
-                    HelpCallback = 'CPhelpdlg(''Help for this window and colormaps in general can be found in the Image Tool window help and in Help > General Help in the main CellProfiler window.'',''Colormaps Help'')';
-
+                    %                    HelpCallback = 'CPhelpdlg(''Help for this window and colormaps in general can be found in the Image Tool window help and in Help > General Help in the main CellProfiler window.'',''Colormaps Help'')';
+                    HelpCallback = 'HelpChangeColorMap';
                     % Create buttons
                     FigureText         = uicontrol(ChangeColormapHandle,'style','text','units','normalized','position',[.05 .8 .9 .15],'string',Title,'BackgroundColor',[.7 .7 .9],'FontSize',FontSize,'FontWeight','bold','Tag','FigureText');
                     SelectColormapText = uicontrol(ChangeColormapHandle,'style','text','units','normalized','position',[.055 .36 .56 .4],'string','Please specify the colormap to use.   Note: this will have effect in the whole figure, not just the selected image.','BackgroundColor',[.7 .7 .9],'FontSize',FontSize,'HorizontalAlignment','left');
@@ -569,7 +570,7 @@ if ~isempty(varargin)
                     'Tag','CancelSaveImageButton',...
                     'BackgroundColor',[.7 .7 .9]);
 
-                
+
             otherwise
                 disp('Unknown action')                        % Should never get here, but just in case.
         end % goes with switch

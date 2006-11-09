@@ -133,6 +133,15 @@ else
         catch
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
         end
+    elseif strcmp('.AVI',upper(ext))
+        try 
+            %%% Read (open) the movie you want to analyze and assign the
+            %%% first image in it to a variable, "LoadedImage"
+            mov = aviread(CurrentFileName,1);
+            LoadedImage = im2double(mov.cdata);
+        catch
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+        end
     else
         try
             %%% Read (open) the image you want to analyze and assign it to a variable,

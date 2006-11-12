@@ -3944,14 +3944,22 @@ function errorfunction(CurrentModuleNumber,FontSize,ModuleName)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
+
+ExtraInfo = ''
+errorinfo = lasterror;
+if isfield(errorinfo, 'stack'),
+    stackinfo = error.stack(1,1);
+    ExtraInfo = [' (file ', stackinfo.file, ' function ', stackinfo.name, ' line ', stackinfo.line, ')'];
+end
+
 if strncmp(Error,'Error using ==> ',16)
-    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '. ', Error];
+    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '. ', Error, ExtraInfo];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif ~isempty(strfind(Error,'bad magic'))
-    ErrorExplanation = 'There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.';
+    ErrorExplanation = ['There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.', ExtraInfo];
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.'];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.', ExtraInfo];
 end
 CPerrordlg(ErrorExplanation);
 

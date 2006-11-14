@@ -3649,7 +3649,7 @@ else
             startingImageSet = 1;
             handles.Current.StartingImageSet = startingImageSet;
             while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
-                pack
+                pack;
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 NumberofWindows = 0;
                 for SlotNumber = 1:handles.Current.NumberOfModules
@@ -3945,11 +3945,11 @@ Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
 
-ExtraInfo = ''
+ExtraInfo = '';
 errorinfo = lasterror;
 if isfield(errorinfo, 'stack'),
-    stackinfo = error.stack(1,1);
-    ExtraInfo = [' (file ', stackinfo.file, ' function ', stackinfo.name, ' line ', stackinfo.line, ')'];
+    stackinfo = errorinfo.stack(1,1);
+    ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
 end
 
 if strncmp(Error,'Error using ==> ',16)

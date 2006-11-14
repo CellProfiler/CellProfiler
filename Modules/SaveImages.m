@@ -309,7 +309,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         if ~isfield(handles.Pipeline, ImageName)
             %%% Checks if this might be a number, intended to save an
             %%% entire figure.
-            if ~isempty(str2num(ImageName));
+            if ~isempty(str2double(ImageName));
                 error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module. If you are trying to save an entire figure, be sure to choose the file format "fig".'])
             else
                 %%% If it's not a number, then this must just be a case of not
@@ -321,10 +321,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         if max(Image(:)) > 1 || min(Image(:)) < 0
             % Warn the users that the value is being changed.
             % Outside 0-1 RangeWarning Box
-            if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range']))
-                % This warning dialog is already open
-            else
-                % This warning dialog is NOT open
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range']))
                 CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range'],'replace');
             end
         end
@@ -447,10 +444,9 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         try
             saveas(FigureHandle,FileAndPathName,'fig');
         catch
-            if ~(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Figure to save closed']))
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Figure to save closed']))
                 CPwarndlg(['Warning in the ' ModuleName ' module. Figure was not saved because the figure you selected to save has been closed. Figures that have been closed cannot be saved.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Figure to save closed'],'replace');
             end
-            % Original: error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
         if SetBeingAnalyzed == 1 &&  strcmpi(CheckOverwrite,'Y')
@@ -548,7 +544,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                 error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings, and see the Matlab imwrite function for details about parameters for each file format.  The error is: ', lasterr])
             end
         else
-            Image=Image/min(min(Image(Image~=0)));
+            Image=Image/min(min(Image(Image~=0))); %#ok Ignore MLint
             eval(['ChosenColormap = colormap(',ColorMap,'(max(max(Image))));']);
             try eval(['imwrite(Image, ChosenColormap, FileAndPathName, FileFormat', FileSavingParameters,')']);
             catch

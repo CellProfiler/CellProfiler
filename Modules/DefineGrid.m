@@ -458,7 +458,8 @@ if any(findobj == ThisModuleFigureNumber)
     else
         set(gca, 'YTickLabel',{1:Rows})
     end
-
+    set(gca,'XAxisLocation','top');
+    set(gca,'YAxisLocation','right');
     TextButtonCallback = [...
         'if strcmp(get(gcbo,''String''),''Hide Text''),'...
         'set(gcbo,''String'',''Show Text'');'...

@@ -32,9 +32,9 @@ function handles = CorrectIllumination_Calculate(handles)
 % CorrectIllumination_Apply. Note that if you are in Each mode or using a
 % small set of images with few objects, there will be regions in the
 % average image that contain no objects and smoothing by median filtering
-% is unlikely to work well. 
-% Note: it does not make sense to choose (Regular + no smoothing + Each) 
-% because the illumination function would be identical to the original 
+% is unlikely to work well.
+% Note: it does not make sense to choose (Regular + no smoothing + Each)
+% because the illumination function would be identical to the original
 % image and applying it will yield a blank image. You either need to smooth
 % each image or you need to use All images.
 %
@@ -43,12 +43,12 @@ function handles = CorrectIllumination_Calculate(handles)
 % same pattern of illumination as your objects of interest, you can choose
 % Background intensities. Background intensities finds the minimum pixel
 % intensities in blocks across the image (or group of images if you are in
-% All mode) and is most often applied by subtraction using the 
-% CorrectIllumination_Apply module. 
-% Note: if you will be using the Subtract option in the 
-% CorrectIllumination_Apply module, you almost certainly do NOT want to 
+% All mode) and is most often applied by subtraction using the
+% CorrectIllumination_Apply module.
+% Note: if you will be using the Subtract option in the
+% CorrectIllumination_Apply module, you almost certainly do NOT want to
 % Rescale! See below!!
-% 
+%
 % * Each or All?
 % Enter Each to calculate an illumination function for each image
 % individually, or enter All to calculate the illumination function from
@@ -253,19 +253,29 @@ end
 %%% Checks smooth method variables
 if ~strcmp(SizeOfSmoothingFilter,'/')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isnan(SizeOfSmoothingFilter)
-        error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
+    if isnan(SizeOfSmoothingFilter) || (SizeOfSmoothingFilter < 0)
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing filter invalid']))
+            CPwarndlg(['The size of smoothing filter you specified in the ' ModuleName ' module was invalid. It is being reset to automatically calculated.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing filter invalid'],'replace');
+        end
+        SizeOfSmoothingFilter = '/';
+    else
+        SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
+        WidthFlg = 0;
     end
-    SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
-    WidthFlg = 0;
-else
+end
+if strcmp(SizeOfSmoothingFilter,'/')
     if ~strcmpi(ObjectWidth,'Automatic')
         ObjectWidth = str2double(ObjectWidth);
         if isnan(ObjectWidth) || ObjectWidth<0
-            error(['Image processing was canceled in the ' ModuleName ' module because the object width you specified was invalid.']);
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid']))
+                CPwarndlg(['The object width you specified in the ', ModuleName, ' module was invalid. It is being reset to automatically calculated.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid'],'replace');
+            end
+            SizeOfSmoothingFilter = 'A';
+            WidthFlg = 0;
+        else
+            SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+            WidthFlg = 1;
         end
-        SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
-        WidthFlg = 1;
     else
         SizeOfSmoothingFilter = 'A';
         WidthFlg = 0;
@@ -281,7 +291,19 @@ if strcmp(IntensityChoice,'Background')
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);
     if BlockSize >= MinLengthWidth
-        error(['Image processing was canceled in the ', ModuleName, ' module because the selected block size is greater than or equal to the image size itself.'])
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too large']))
+            CPwarndlg(['The selected block size in the ' ModuleName ' module is greater than or equal to the image size itself. The blocksize is being reset to the default value of 60.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too large'],'replace');
+        end
+        BlockSize = 60;
+    elseif MinLengthWidth <= 60
+        error(['Image processing was canceled in the ', ModuleName, ' module because the default block size of 60 is greater than or equal to the image size itself.'])
+    end
+    if BlockSize <= 0
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too small']))
+        else
+            CPwarndlg(['The selected block size in the ' ModuleName ' module is less than or equal to zero. The blocksize is being reset to the default value of 60.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too small'],'replace');
+        end
+        BlockSize = 60;
     end
 end
 
@@ -409,8 +431,12 @@ end
 %%% Dilates the objects, and/or smooths the RawImage if the user requested.
 if strcmp(ReadyFlag, 'Ready')
     if strcmp(IntensityChoice,'Regular')
-        if NumericalObjectDilationRadius ~= 0
+        if (NumericalObjectDilationRadius > 0)
             DilatedImage = CPdilatebinaryobjects(RawImage, NumericalObjectDilationRadius);
+        elseif (NumericalObjectDilationRadius < 0)
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Dilation factor too small']))
+                CPwarndlg(['The dilation factor you have entered in the ', ModuleName, ' module is below the minimum value of 0, it is being reset to 0.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Dilation factor too small'],'replace');
+            end
         end
 
         if ~strcmp(SmoothingMethod,'No smoothing')
@@ -423,7 +449,7 @@ if strcmp(ReadyFlag, 'Ready')
             elseif strcmp(SmoothingMethod,'Sum of squares')
                 SmoothingMethod = 'S';
             elseif strcmp(SmoothingMethod,'Square of sum')
-                SmoothingMethod = 'Q';                
+                SmoothingMethod = 'Q';
             elseif strcmp(SmoothingMethod,'Smooth to average')
                 SmoothingMethod = 'A';
             end
@@ -509,18 +535,18 @@ if any(findobj == ThisModuleFigureNumber)
             else
                 title('Averaged image calculated so far');
             end
-        else subplot(2,2,1); 
+        else subplot(2,2,1);
             CPimagesc(OrigImage,handles);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
-                subplot(2,2,3); 
+                subplot(2,2,3);
                 CPimagesc(DilatedImage,handles);
                 title('Dilated image');
             end
             if exist('SmoothedImage','var')
-                subplot(2,2,4); 
+                subplot(2,2,4);
                 CPimagesc(SmoothedImage,handles);
                 title('Smoothed image');
             end

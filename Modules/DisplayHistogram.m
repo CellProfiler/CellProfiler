@@ -197,19 +197,55 @@ switch Measure
 end
 
 %%% Checks that the Min and Max have valid values
-if ~strcmpi(MinAndMax,'Automatic')
-    try
+%Replacement starts here
+try (strread(MinAndMax));
+    % Check to see if the numeric string is of the correct length.
+    % Were two numberes entered? If not change to Automatic and warn user.
+    if (length(strread(MinAndMax))==2)
         MinAndMax = strread(MinAndMax);
-    catch
-        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the range for frequency counts on the Y axis was invalid. Please follow the specified format.']);
+        MinHistogramValue = MinAndMax(1);
+        MaxHistogramValue = MinAndMax(2);
+        % Make sure that max is greater than min.
+        % If not change to automatic
+        if (MaxHistogramValue <= MinHistogramValue)
+            MinAndMax = 'Automatic';
+            MinHistogramValue = 'automatic';
+            MaxHistogramValue = 'automatic';
+            % Warn the users that the value is being changed.
+            % Max < Min Warning Box
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Max < Min']))
+                CPwarndlg(['Error in module number ', ModuleName, '. The range on the X axis for frequency counts requires the second number to be greater than the first. Changed to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Max < Min'],'replace');
+            end
+        end
+    else
+        MinHistogramValue = 'automatic';
+        MaxHistogramValue = 'automatic';
+        % Warn the users that the value is being changed.
+        % Bad axis range Warning Box
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad axis range']))
+            CPwarndlg(['Error in module number ', ModuleName, '. The range on the X axis for frequency counts on the Y axis requires two numbers to be entered. Changed to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad axis range'],'replace');
+        end
     end
-    MinHistogramValue = MinAndMax(1);
-    MaxHistogramValue = MinAndMax(2);
-else
-    MinHistogramValue = 'automatic';
-    MaxHistogramValue = 'automatic';
+catch
+    % This block is executed if the entry is a character string, assumed to
+    % be Automatic. Check to make sure that it is.
+    if ~strcmpi('Automatic',MinAndMax)
+        % A string was entered that was not 'Automatic'
+        MinHistogramValue = 'automatic';
+        MaxHistogramValue = 'automatic';
+        % Warn the users that the value is being changed.
+        % Unknown Entry Warning Box
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Unknown Entry']))
+            CPwarndlg(['Error in module number ', ModuleName, '. The range on the X axis for frequency counts on the Y axis requires two numbers to be entered. An unknown entry was made. Changed to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Unknown Entry'],'replace');
+        end
+    else
+        % Automatic was entered
+        MinHistogramValue='automatic';
+        MaxHistogramValue='automatic';
+    end
 end
 
+%Replacement ends here
 %%% Get measurements
 try  Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
     if CellFlg
@@ -234,52 +270,66 @@ PotentialMinHistogramValue = min(SelectedMeasurementsMatrix);
 if strcmp(MinHistogramValue,'automatic')
     MinHistogramValue = PotentialMinHistogramValue;
 end
-
 if strcmp(MaxHistogramValue,'automatic')
     MaxHistogramValue = PotentialMaxHistogramValue;
 end
-
-if strcmpi(LogOrLinear,'Yes')
+% Replacement Starts here
+if (((MaxHistogramValue > 0) && (MinHistogramValue > 0)) && (strcmpi(LogOrLinear, 'Yes')))
+    % value are greater than zero and Log plot is requested
     MaxLog = log10(MaxHistogramValue);
     MinLog = log10(MinHistogramValue);
     HistogramRange = MaxLog - MinLog;
     if HistogramRange <= 0
-        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
+        % This only occurs now if the values were automatically calculated
+        % incorrectly, which would be a bad error.
+        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);
-        PlotBinLocations(n) = 10^(MinLog + BinWidth*(n-2));
+        PlotBinLocations(n) = 10^(MinLog + BinWidth*(n-2)); %#ok Ignore MLint
     end
-else
-    %%% Determine plot bin locations.
+    PlotBinLocations = PlotBinLocations';
+    for n = 1:length(PlotBinLocations);
+        PlotBinLocations(n) = log10(PlotBinLocations(n));
+    end
+elseif (~((MaxHistogramValue > 0) && (MinHistogramValue > 0)) && (strcmpi(LogOrLinear, 'Yes')))
+    % if a range value is less than or equal to zero and log plot is
+    % requested. Warn user that plot type is being change to linear
     HistogramRange = MaxHistogramValue - MinHistogramValue;
     if HistogramRange <= 0
-        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers you entered for the minimum or maximum, or the number which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
+        % This only occurs now if the values were automatically calculated
+        % incorrectly, which would be a bad error.
+        error(['Image processing was canceled in the ', ModuleName, ' module because the numbers which was calculated automatically for one of these values, results in the range being zero or less.  For example, this would occur if you entered a minimum that is greater than the maximum which you asked to be automatically calculated.']);
+    end
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Switch to Linear Plot']))
+        CPwarndlg(['Error in module ', ModuleName, '. A negative or zero range value was entered or automatically calculated which is not compatible with a log plot. Plot type changed to Linear.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Switch to Linear Plot'],'replace');
     end
     BinWidth = HistogramRange/NumberOfBins;
     for n = 1:(NumberOfBins+2);
-        PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2);
+        PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2); %#ok Ignore MLint
     end
+    PlotBinLocations = PlotBinLocations';
+else
+    % Linear plot type was selected
+    HistogramRange = MaxHistogramValue - MinHistogramValue;
+    BinWidth = HistogramRange/NumberOfBins;
+    for n = 1:(NumberOfBins+2);
+        PlotBinLocations(n) = MinHistogramValue + BinWidth*(n-2); %#ok Ignore MLint
+    end
+    PlotBinLocations = PlotBinLocations';
 end
-
-%%% Now, for histogram-calculating bins (BinLocations), replace the
+% Replacement ends here
+%%% Now, for histogram-calculating  (BinLocations), replace the
 %%% initial and final PlotBinLocations with + or - infinity.
-PlotBinLocations = PlotBinLocations';
 BinLocations = PlotBinLocations;
 BinLocations(1) = -inf;
 BinLocations(n+1) = +inf;
 %%% Calculates the XTickLabels.
 for i = 1:(length(BinLocations)-1)
-    XTickLabels{i} = BinLocations(i);
+    XTickLabels{i} = BinLocations(i); %#ok Ignore MLint
 end
 XTickLabels{1} = ['< ', num2str(BinLocations(2),3)];
 XTickLabels{i} = ['>= ', num2str(BinLocations(i),3)];
-
-if strcmpi(LogOrLinear,'Yes')
-    for n = 1:length(PlotBinLocations);
-        PlotBinLocations(n) = log10(PlotBinLocations(n));
-    end
-end
 
 HistogramData = histc(SelectedMeasurementsMatrix,BinLocations);
 %%% Deletes the last value of HistogramData, which is
@@ -301,8 +351,6 @@ end
 drawnow
 
 StdUnit = 'point';
-StdColor = get(0,'DefaultUIcontrolBackgroundColor');
-PointsPerPixel = 72/get(0,'ScreenPixelsPerInch');
 
 switch Color
     case 'Blue'
@@ -407,7 +455,7 @@ Button3 = uicontrol('Parent',HistHandle, ...
     'Units','Normalized',...
     'String','Restore', ...
     'Style','pushbutton', ...
-    'FontSize',FontSize);
+    'FontSize',FontSize); %#ok Ignore MLint
 
 % %Add buttons
 FigureSettings{1} = PlotBinLocations;
@@ -420,7 +468,5 @@ tempData.FigureSettings = FigureSettings;
 tempData.handles = rmfield(handles,'Pipeline');
 tempData.Application = 'CellProfiler';
 set(HistHandle,'UserData',tempData);
-
-
 OneFrame = getframe(HistHandle);
 handles.Pipeline.(HistImage)=OneFrame.cdata;

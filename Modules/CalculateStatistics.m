@@ -200,8 +200,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                             MeasureName = MeasureFeatureName(1:end-8);
                             %%% Check for measurements
                             if ~isfield(handles.Measurements.(ObjectName),MeasureName)
-                                error(['Image processing was canceled in the ', ModuleName, ' module because it could not find the measurements you specified.']);
-                            end
+                                CPwarndlg(['There is a problem in the ' ModuleName ' module becaue it could not find the measurements you specified. CellProfiler will proceed but this module will be skipped.']);
+                                return;
+                            end                                
+                
+
 
                             Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
                             for k = 1:handles.Current.NumberOfImageSets

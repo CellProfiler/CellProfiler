@@ -12,10 +12,10 @@ function handles = Combine(handles)
 % which results from the weighted average of the pixel intensities of the
 % input images. All the images to be combined must be all either grayscale
 % or color.  The average is found by taking the product of each weight
-% and the intensity of its corresponding image, adding the products, and 
-% then dividing the result by the sum of the weights. By taking the 
-% weighted average of the pixel intensities, the overall intensity of the 
-% resulting image will remain the same as that of the inputs. If you want 
+% and the intensity of its corresponding image, adding the products, and
+% then dividing the result by the sum of the weights. By taking the
+% weighted average of the pixel intensities, the overall intensity of the
+% resulting image will remain the same as that of the inputs. If you want
 % to change the overall intensity, you should use the Rescale module.
 %
 % Settings:
@@ -113,9 +113,9 @@ Weights = str2double(ImageWeights);
 %%% If selected, load images and create existance flag matrix for them
 Images = {};
 for i = 1:3
-    if ~strcmp(ImageNames{i},'Leave this blank')
+    if ~strcmpi(ImageNames{i},'Leave this blank')
         try
-            Images{end+1} = CPretrieveimage(handles,ImageNames{i},ModuleName,'DontCheckColor','CheckScale');
+            Images{end+1} = CPretrieveimage(handles,ImageNames{i},ModuleName,'DontCheckColor','CheckScale'); %#ok Ignore MLint
         catch
             error(['Image processing was canceled in the ' ModuleName 'module because an error occurred while trying to load the image ' ImageNames{i} '. Please make sure it is a valid input image. Perhaps you chose an image that will be created later in the pipeline, in which case you should relocate the Combine module or the other one.']);
         end
@@ -135,7 +135,10 @@ if any(Rows~=Rows(1)) || any(Columns~=Columns(1))
 end
 Weights = Weights(~isnan(Weights));
 if sum(Weights)<=0 || any(Weights<0)
-    error(['Image processing was canceled in the ' ModuleName ' module because the weights you entered were invalid. Please enter only positive values.']);
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Non-positive values entered']))
+        CPwarndlg(['The values entered in ' ModuleName ' are required to all be positive values. Non-positive values are being changed to default values of 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Non-positive values entered'],'replace');
+    end
+    Weights((Weights < 0)) = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -172,7 +175,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the Combined Image
     %%% image.  Using CPimagesc or image instead of imshow doesn't work when
     %%% some of the pixels are saturated.
-    subplot(2,2,1); 
+    subplot(2,2,1);
     CPimagesc(CombinedImage,handles);
     title(['Combined Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display Image 1.

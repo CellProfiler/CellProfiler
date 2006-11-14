@@ -69,7 +69,7 @@ function handles = FindEdges(handles)
 % Edge Thinning (for Sobel and Roberts methods): If thinning is selected,
 % edges found will be thinned out into a line (if possible). Specifying the
 % 'nothinning' option can speed up the operation of the algorithm by
-% skipping the additional edge thinning stage. 
+% skipping the additional edge thinning stage.
 %
 % Direction (for Sobel and Prewitt methods): It gives you the option of
 % identifying all edges, or just those that are predominantly horizontal or
@@ -191,10 +191,12 @@ if strcmp(OrigThreshold,'/')
 else
     AutoThresh = str2double(OrigThreshold);
     if isnan(AutoThresh)
-        error(['The threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad threshold entry']))
+            CPwarndlg(['The threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. It has been changed to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad threshold entry'],'replace');
+        end
+        CalculateThreshold = 1;
     end
 end
-
 if strcmpi(Method, 'roberts')
     FourthVariable = Thinning;
 elseif strcmpi(Method, 'canny')
@@ -203,7 +205,10 @@ elseif strcmpi(Method, 'canny')
     else
         Sigma = str2double(Sigma);
         if isnan(Sigma) || Sigma <= 0
-            error(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Sigma entry']))
+                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Sigma entry'],'replace');
+            end
+            Sigma = 1;
         end
     end
     FourthVariable = Sigma;
@@ -212,7 +217,10 @@ elseif strcmpi(Method, 'canny')
     else
         CannyLowThreshold = str2double(CannyLowThreshold);
         if isnan(CannyLowThreshold)
-            error(['The low threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Canny low threshold entry']))
+                CPwarndlg(['The low threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Canny low threshold entry'],'replace');
+            end
+            CannyLowThreshold = [];
         end
     end
 elseif  strcmpi(Method, 'log')
@@ -221,7 +229,10 @@ elseif  strcmpi(Method, 'log')
     else
         Sigma = str2double(Sigma);
         if isnan(Sigma) || Sigma <= 0
-            error(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value.']);
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad LoG Sigma entry']))
+                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad LoG Sigma entry'],'replace');
+            end
+            Sigma = 2;
         end
     end
     FourthVariable = Sigma;
@@ -277,8 +288,11 @@ if ~strcmpi(Method,'ratio')
     end
 
 elseif strcmpi(Method,'ratio')
-    if isnan(SizeOfSmoothingFilter)
-        error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
+    if (isnan(SizeOfSmoothingFilter) || (SizeOfSmoothingFilter < 1))
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad filter size entry']))
+            CPwarndlg(['The smoothing filter size you entered in the ' ModuleName ' was invalid. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad filter size entry'],'replace');
+        end
+        SizeOfSmoothingFilter = 8;
     end
     Sq = CPsmooth(OrigImage,'Q',SizeOfSmoothingFilter,0);
     Mn = CPsmooth(OrigImage,'S',SizeOfSmoothingFilter,0);

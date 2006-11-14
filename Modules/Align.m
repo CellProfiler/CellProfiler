@@ -117,7 +117,7 @@ Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'MustBeGray','CheckScale'
 Image2 = CPretrieveimage(handles,Image2Name,ModuleName,'MustBeGray','CheckScale');
 
 %%% Same for Image 3.
-if ~strcmp(Image3Name,'Do not use')
+if ~strcmpi(Image3Name,'Do not use')
     Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'MustBeGray','CheckScale');
 end
 
@@ -127,7 +127,7 @@ end
 drawnow
 
 %%% Aligns three input images.
-if ~strcmp(Image3Name,'Do not use')
+if ~strcmpi(Image3Name,'Do not use')
     %%% Aligns 1 and 2 (see subfunctions at the end of the module).
     [sx, sy] = autoalign(Image1, Image2, AlignMethod);
     Temp1 = subim(Image1, sx, sy);
@@ -163,7 +163,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     if strcmp(AdjustImage,'Yes')
         %%% For three input images.
-        if (~strcmp(Image3Name,'Do not use') && all(size(Image1) == size(Image2)) && all(size(Image1) == size(Image3))),
+        if (~strcmpi(Image3Name,'Do not use') && all(size(Image1) == size(Image2)) && all(size(Image1) == size(Image3))),
             OriginalRGB(:,:,1) = Image3;
             OriginalRGB(:,:,2) = Image2;
             OriginalRGB(:,:,3) = Image1;
@@ -221,7 +221,7 @@ if strcmp(AdjustImage,'Yes')
     %%% by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
     handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
-    if strcmp(Image3Name,'Do not use') ~= 1
+    if strcmpi(Image3Name,'Do not use') ~= 1
         handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
     end
 end
@@ -230,7 +230,7 @@ end
 %%% purposes.
 
 %%% If three images were aligned:
-if ~strcmp(Image3Name,'Do not use')
+if ~strcmpi(Image3Name,'Do not use')
     fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name,'Features'];
     handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign' 'ImageXAlignFirstTwoImages' 'ImageYAlignFirstTwoImages'};
     fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name];

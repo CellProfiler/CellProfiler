@@ -232,6 +232,13 @@ if strcmp(OldPathname, '.') ~= 1
     NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname,NewPathname),'\','/');
     %    NewDefaultImageDirectory = strrep(fullfile(NewPathname,strrep(handles.Current.DefaultImageDirectory,OldPathname,'')),'\','/');
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+    Fields=fieldnames(handles.Pipeline);
+    for i = 1:length(Fields)
+        if strcmp(Fields{i}(1:8),'FileList')
+            FieldName = Fields{i};
+            handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
+        end
+    end
 else
     handles.Current.DefaultOutputDirectory = BatchOutputPath;
     handles.Current.DefaultImageDirectory = BatchImagePath;

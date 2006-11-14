@@ -227,20 +227,18 @@ if strcmpi(ColorMap,'Default') == 1
     ColorMap = handles.Preferences.IntensityColorMap;
 end
 
-
 % Processing will continue when a user has selected to save the tiled image
 % on "First cycle" or "Every cycle". Instead of an error occurring,
 % the program will behave as if the user entered "Last cycle"
 % by not saving the image until the last cycle. At the end of the last cycle,
 % the user will get a help dialog popup window.
 
-
 TileModuleNum = strmatch('Tile',handles.Settings.ModuleNames,'exact');
 
 if ~isempty(TileModuleNum)      %if Tile Module is loaded
     for tilecount = 1: length(TileModuleNum)    %loop through all tiled images
         if strcmp(handles.Settings.VariableValues{TileModuleNum(tilecount), 3}, ImageName) %if saving one of the tiled images
-            if ~strcmp(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
+            if ~strcmpi(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
                 SaveWhen='Last cycle';
                 if SetBeingAnalyzed == handles.Current.NumberOfImageSets    %if current cycle is last cycle
                     CPwarndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
@@ -251,11 +249,10 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
     end
 end
 
-
-if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmp(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
+if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
-        FileName = TwoDigitString(SetBeingAnalyzed);
+        FileName = DigitString(handles.Current.NumberOfImageSets,SetBeingAnalyzed);
         %%% If the user has selected to use the same base name for all the new file
         %%% names (used for movies).
     elseif strncmpi(ImageFileName,'=',1)
@@ -279,10 +276,10 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         end
     end
 
-    if strcmp(Appendage,'N')
-        FileName = [FileName TwoDigitString(SetBeingAnalyzed)];
+    if strcmpi(Appendage,'N')
+        FileName = [FileName DigitString(handles.Current.NumberOfImageSets,SetBeingAnalyzed)];
     else
-        if ~strcmp(Appendage,'\')
+        if ~strcmpi(Appendage,'\')
             Spaces = isspace(Appendage);
             if any(Spaces)
                 error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
@@ -308,7 +305,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
     end
 
-    if ~strcmp(FileFormat,'fig')
+    if ~strcmpi(FileFormat,'fig')
         if ~isfield(handles.Pipeline, ImageName)
             %%% Checks if this might be a number, intended to save an
             %%% entire figure.
@@ -332,20 +329,20 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             end
         end
 
-        if strcmp(RescaleImage,'Yes')
+        if strcmpi(RescaleImage,'Yes')
             LOW_HIGH = stretchlim(Image,0);
             Image = imadjust(Image,LOW_HIGH,[0 1]);
         end
 
         %%% Checks whether the file format the user entered is readable by Matlab.
-        if ~any(strcmp(FileFormat,CPimread)) && ~strcmp(FileFormat,'avi')
+        if ~any(strcmp(FileFormat,CPimread)) && ~strcmpi(FileFormat,'avi')
             error(['Image processing was canceled in the ', ModuleName, ' module because the image file type entered is not recognized by Matlab. For a list of recognizable image file formats, type "CPimread" (no quotes) at the command line in Matlab, or see the help for this module.'])
         end
     end
 
     %%% Creates the fields that the LoadImages module normally creates when
     %%% loading images.
-    if strcmp(UpdateFileOrNot,'Yes')
+    if strcmpi(UpdateFileOrNot,'Yes')
         %%% Stores file and path name data in handles.Pipeline.
         handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
         handles.Pipeline.(['Pathname',ImageName]) = PathName;
@@ -393,7 +390,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
 
     FileAndPathName = fullfile(PathName, FileName);
 
-    if strcmp(CheckOverwrite,'Yes') && ~strcmp(FileFormat,'avi')
+    if strcmpi(CheckOverwrite,'Yes') && ~strcmpi(FileFormat,'avi')
         %%% Checks whether the new image name is going to overwrite the
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each
@@ -404,10 +401,10 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
             catch
                 error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
             end
-            if strcmp(Answer,'Skip Module')
+            if strcmpi(Answer,'Skip Module')
                 return;
             end
-            if strcmp(Answer,'Cancel')
+            if strcmpi(Answer,'Cancel')
                 error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
         end
@@ -419,11 +416,11 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
     drawnow
 
     FileSavingParameters = [];
-    if ~strcmp(BitDepth,'8') && (strcmp(FileFormat,'jpg') || strcmp(FileFormat,'jpeg') || strcmp(FileFormat,'png'))
+    if ~strcmp(BitDepth,'8') && (strcmpi(FileFormat,'jpg') || strcmpi(FileFormat,'jpeg') || strcmpi(FileFormat,'png'))
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
         %%% In jpeg format at 12 and 16 bits, the mode must be set to
         %%% lossless to avoid failure of the imwrite function.
-        if strcmp(FileFormat,'jpg') || strcmp(FileFormat,'jpeg')
+        if strcmpi(FileFormat,'jpg') || strcmpi(FileFormat,'jpeg')
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
         end
     end
@@ -432,13 +429,13 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         FileSavingParameters = [',',OptionalParameters,FileSavingParameters];
     end
 
-    if strcmp(FileFormat,'mat')
+    if strcmpi(FileFormat,'mat')
         try
             eval(['save(''',FileAndPathName,''',''Image'')']);
         catch
             error(['Image processing was canceled in the ', ModuleName, ' module because the image could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
-    elseif strcmp(FileFormat,'fig')
+    elseif strcmpi(FileFormat,'fig')
         if length(ImageName) == 1
             fieldname = ['FigureNumberForModule0',ImageName];
         elseif length(ImageName) == 2
@@ -450,10 +447,13 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
         try
             saveas(FigureHandle,FileAndPathName,'fig');
         catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            if ~(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Figure to save closed']))
+                CPwarndlg(['Warning in the ' ModuleName ' module. Figure was not saved because the figure you selected to save has been closed. Figures that have been closed cannot be saved.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Figure to save closed'],'replace');
+            end
+            % Original: error(['Image processing was canceled in the ', ModuleName, ' module because the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
     elseif strcmpi(FileFormat,'avi')
-        if SetBeingAnalyzed == 1 &&  strcmp(CheckOverwrite,'Y')
+        if SetBeingAnalyzed == 1 &&  strcmpi(CheckOverwrite,'Y')
             %%% Checks whether the new image name is going to overwrite
             %%% the original file, but only on the first cycle,
             %%% because otherwise the check would be done on each frame
@@ -464,7 +464,7 @@ if strcmp(SaveWhen,'Every cycle') || strcmp(SaveWhen,'First cycle') && SetBeingA
                 catch
                     error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
                 end
-                if strcmp(Answer,'Cancel')
+                if strcmpi(Answer,'Cancel')
                     error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
                 end
             end
@@ -572,10 +572,25 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
     end
 end
 
-function twodigit = TwoDigitString(val)
+function twodigit = DigitString(LastImageSet,val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit
 %representation of a string for our purposes.
-if ((val > 99) || (val < 0)),
-    error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
+if val < 0
+    error(['DigitString: Can''t convert ' num2str(val) ' to a digit number']);
 end
-twodigit = sprintf('%02d', val);
+
+if LastImageSet < 10
+    twodigit = sprintf('%01d', val);
+elseif LastImageSet < 100 && LastImageSet > 9
+    twodigit = sprintf('%02d', val);
+elseif LastImageSet < 1000 && LastImageSet > 99
+    twodigit = sprintf('%03d', val);
+elseif LastImageSet < 10000 && LastImageSet > 999
+    twodigit = sprintf('%04d', val);
+elseif LastImageSet < 100000 && LastImageSet > 9999
+    twodigit = sprintf('%05d', val);
+elseif LastImageSet < 1000000 && LastImageSet > 99999
+    twodigit = sprintf('%06d', val);
+else
+    error(['DigitString: Can''t convert ' num2str(val) ' to a digit number']);
+end

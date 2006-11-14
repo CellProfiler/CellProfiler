@@ -118,9 +118,9 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 subplot(3,2,[1 2 3 4])
-ImageHandle = CPimagesc(OrigImage,handles);
+CPimagesc(OrigImage,handles);
 %%% OK to use axis image here.
-axis image 
+axis image
 drawnow
 
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
@@ -129,7 +129,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         displaytext = 'Click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points. Use Edit > Colormap to adjust the contrast of the image if needed.';
         set(displaytexthandle,'string',displaytext)
         [x,y] = getpts(FigureHandle);
-        while length(x) < 2    
+        while length(x) < 2
             warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Mouse rotation method, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
             uiwait(warnfig);
             [x,y] = getpts(FigureHandle);
@@ -157,15 +157,22 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
             if isempty(Answers) == 1
                 error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
-            Pixel1 = str2num(Answers{1});
-            Pixel2 = str2num(Answers{2});
+            Pixel1 = str2num(Answers{1}); %#ok Ignore MLint
+            Pixel2 = str2num(Answers{2}); %#ok Ignore MLint
             LowerLeftX = Pixel1(1);
             LowerLeftY = Pixel1(2);
             LowerRightX = Pixel2(1);
             LowerRightY = Pixel2(2);
         elseif strcmp(IndividualOrOnce,'Only Once')
-            Pixel1 = str2num(Pixel1);
-            Pixel2 = str2num(Pixel2);
+            Pixel1 = str2num(Pixel1); %#ok Ignore MLint
+            %% Check to make sure that Pixel values were enetered correctly
+            if isempty(Pixel1)
+                error(['The coordinates you entered for point one in the ', ModuleName, ' module are invalid, it is being reset to the default of 1,1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Point one invalid'],'replace');
+            end
+            Pixel2 = str2num(Pixel2); %#ok Ignore MLint
+            if isempty(Pixel2)
+                error(['The coordinates you entered for the other point in the ', ModuleName, ' module are invalid, it is being reset to the default of 100,5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid'],'replace');
+            end
             LowerLeftX = Pixel1(1);
             LowerLeftY = Pixel1(2);
             LowerRightX = Pixel2(1);
@@ -190,9 +197,16 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
             if isempty(Answers) == 1
                 error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
-            AngleToRotateDegrees = str2num(Answers{1});
+            AngleToRotateDegrees = str2double(Answers{1});
         elseif strcmp(IndividualOrOnce,'Only Once')
-            AngleToRotateDegrees = str2num(Angle);
+            AngleToRotateDegrees = str2double(Angle);
+            if isempty(AngleToRotateDegrees)
+                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid']))
+                else
+                    CPwarndlg(['The angle you entered in the ', ModuleName, ' module are invalid, it is being reset to the default of 5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
+                end
+                AngleToRotateDegrees = 5;
+            end
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
         end
@@ -201,7 +215,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
     end
 else
     column = find(strcmp(handles.Measurements.Image.RotationFeatures,ImageName));
-    AngleToRotateDegrees = handles.Measurements.Image.Rotation{1}(column);
+    AngleToRotateDegrees = handles.Measurements.Image.Rotation{1}(column); %#ok Ignore MLint
 end
 
 if ~isfield(handles.Measurements.Image,'RotationFeatures')
@@ -251,13 +265,13 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); 
-    CPimagesc(OrigImage,handles); 
+    subplot(2,1,1);
+    CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the rotated
     %%% Image.
-    subplot(2,1,2); 
-    CPimagesc(RotatedImage,handles); 
+    subplot(2,1,2);
+    CPimagesc(RotatedImage,handles);
     title('Rotated Image');
 end
 

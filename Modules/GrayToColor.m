@@ -1,5 +1,5 @@
 function handles = GrayToColor(handles)
-
+  
 % Help for the Gray To Color module:
 % Category: Image Processing
 %
@@ -158,7 +158,26 @@ end
 if any(size(BlueImage) ~= size(GreenImage)) || any(size(RedImage) ~= size(GreenImage))
     error(['Image processing was canceled in the ', ModuleName, ' module because the three images selected are not the same size.  The pixel dimensions must be identical. Most likely one of the images is not in the same format as the others - for example, one of the images might already be in color (RGB) format.'])
 end
-
+%%% Check to see if all adjustment factors are in the correct range of 0 to
+%%% 1
+if (str2double(RedAdjustmentFactor) < 0.0) || isnan(str2double(RedAdjustmentFactor))
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Red adjustment factor invalid']))
+        CPwarndlg(['The red adjustment factor you have entered in the ' ModuleName ' module is invalid or less than 0. It is being set to the default value of 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Red adjustment factor invalid']);
+    end
+    RedAdjustmentFactor = '1';
+end
+if (str2double(GreenAdjustmentFactor) < 0.0) || isnan(str2double(GreenAdjustmentFactor))
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Green adjustment factor invalid']))
+        CPwarndlg(['The green adjustment factor you have entered in the ' ModuleName ' module is invalid or less than 0. It is being set to the default value of 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Green adjustment factor invalid']);
+    end
+    GreenAdjustmentFactor = '1';
+end
+if (str2double(BlueAdjustmentFactor) < 0.0) || isnan(str2double(BlueAdjustmentFactor))
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Blue adjustment factor invalid']))
+        CPwarndlg(['The blue adjustment factor you have entered in the ' ModuleName ' module is invalid or less than 0. It is being set to the default value of 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Blue adjustment factor invalid']);
+    end
+    BlueAdjustmentFactor = '1';
+end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%

@@ -146,19 +146,29 @@ end
 
 if ~strcmp(SizeOfSmoothingFilter,'/')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isnan(SizeOfSmoothingFilter)
-        error(['Image processing was canceled in the ' ModuleName ' module because the size of smoothing filter you specified was invalid.']);
+    if isnan(SizeOfSmoothingFilter) || (SizeOfSmoothingFilter < 1)
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing size invalid']))
+            CPwarndlg(['The size of the smoothing filter you specified  in the ', ModuleName, ' module is invalid, it is being reset to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing size invalid'],'replace');
+        end
+        SizeOfSmoothingFilter = 'A';
+        WidthFlg = 0;
+    else
+        SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
+        WidthFlg = 0;
     end
-    SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
-    WidthFlg = 0;
 else
     if ~strcmpi(ObjectWidth,'Automatic')
         ObjectWidth = str2double(ObjectWidth);
-        if isnan(ObjectWidth) || ObjectWidth<0
-            error(['Image processing was canceled in the ' ModuleName ' module because the object width you specified was invalid.']);
+        if isnan(ObjectWidth) || ObjectWidth < 0
+            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid']))
+                CPwarndlg(['The object width you specified  in the ', ModuleName, ' module is invalid, it is being reset to Automatic.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Object width invalid'],'replace');
+            end
+            SizeOfSmoothingFilter = 'A';
+            WidthFlg = 0;
+        else
+            SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
+            WidthFlg = 1;
         end
-        SizeOfSmoothingFilter = 2*floor(ObjectWidth/2);
-        WidthFlg = 1;
     else
         SizeOfSmoothingFilter = 'A';
         WidthFlg = 0;
@@ -201,10 +211,10 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original
     %%% image and the smoothed image.
-    subplot(2,1,1); 
+    subplot(2,1,1);
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2); 
+    subplot(2,1,2);
     CPimagesc(SmoothedImage,handles);
     title('Smoothed Image');
 end

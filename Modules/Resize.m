@@ -87,16 +87,21 @@ drawnow
 % Put in a check to see if the Resizing factor is in the correct range. If
 % not, set it to the default value of 0.25.
 if ResizingFactor == 1
-    ResizeData = SpecificSize;
-elseif (ResizingFactor <= 0)
+    if isempty(SpecificSize) || (SpecificSize(1) < 1) || (SpecificSize(2) < 1)
+        % Resize factor too small Warning Box
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Specific size invalid']))
+            CPwarndlg(['The specific size you have entered in the ', ModuleName, ' module is invalid or too small, it is being reset to 100,100.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Specific size invalid'],'replace');
+        end
+        ResizeData = [100 100];
+    else
+        ResizeData = SpecificSize';
+    end
+elseif (ResizingFactor <= 0) || isnan(ResizingFactor)
     ResizingFactor=0.25;
     ResizeData = ResizingFactor;
 
     % Resize factor too small Warning Box
-    if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Resize factor too small']))
-        % This warning dialog is already open
-    else
-        % This warning dialog is NOT open
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Resize factor too small']))
         CPwarndlg(['The resizing factor you have entered in the ', ModuleName, ' module is below the minimum value of 0, it is being reset to 0.25.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Resize factor too small'],'replace');
     end
 
@@ -141,13 +146,13 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1); 
+    subplot(2,1,1);
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the Resized
     %%% Image.
-    subplot(2,1,2); 
-    CPimagesc(ResizedImage,handles); 
+    subplot(2,1,2);
+    CPimagesc(ResizedImage,handles);
     title('Resized Image');
 end
 

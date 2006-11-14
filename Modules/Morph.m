@@ -231,13 +231,22 @@ tmp1 = {};
 tmp2 = {};
 for n = 1:6
     if ~strcmp(Functions{n}, 'Do not use')
-        tmp1{end+1} = Functions{n};
-        tmp2{end+1} = FunctionVariables{n};
+        tmp1{end+1} = Functions{n}; %#ok Ignore MLint
+        tmp2{end+1} = FunctionVariables{n}; %#ok Ignore MLint
     end
 end
 Functions = tmp1;
 FunctionVariables = tmp2;
-
+%%% Check FunctionVariables to make sure they are all valid, if not reset
+%%% to the default value of 1.
+for i=1:length(FunctionVariables)
+    if (str2double(FunctionVariables(i))<1) || (isnan(str2double(FunctionVariables(i))))
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Times to repeat the function invalid']))
+            CPwarndlg(['The number of times to repeat the function you have entered in the ' ModuleName ' module is invalid or less than one. It is being set to the default value of 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Times to repeat the function invalid']);
+        end
+        FunctionVariables{i} = '1';
+    end
+end
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%

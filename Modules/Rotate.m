@@ -1,6 +1,6 @@
 function handles = Rotate(handles)
- 
-% Help for the Rotate module: 
+
+% Help for the Rotate module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
@@ -167,19 +167,12 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
             Pixel1 = str2num(Pixel1); %#ok Ignore MLint
             %% Check to make sure that Pixel values were enetered correctly
             if isempty(Pixel1)
-                error(['The coordinates you entered for point one in the ', ModuleName, ' module are invalid, it is being reset to the default of 1,1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Point one invalid'],'replace');
+                error(['The coordinates you entered for point one in the ', ModuleName, ' module are invalid.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Point one invalid'],'replace');
             end
             Pixel2 = str2num(Pixel2); %#ok Ignore MLint
             if isempty(Pixel2)
-                error(['The coordinates you entered for the other point in the ', ModuleName, ' module are invalid, it is being reset to the default of 100,5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid'],'replace');
+                error(['The coordinates you entered for the other point in the ', ModuleName, ' module are invalid.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Point two invalid'],'replace');
             end
-            if isempty(Pixel2)
-                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid']))
-                else
-                    CPwarndlg(['The cooredinates you entered for the other point in the ', ModuleName, ' module are invalid, it is being reset to the default of 100,5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid'],'replace');
-                end
-                Pixel2 = [100 5];
-            end            
             LowerLeftX = Pixel1(1);
             LowerLeftY = Pixel1(2);
             LowerRightX = Pixel2(1);
@@ -205,23 +198,15 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
                 error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
             AngleToRotateDegrees = str2double(Answers{1});
+            if isempty(AngleToRotateDegrees)
+                error(['The angle you entered in the ', ModuleName, ' module are invalid.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
+            end
         elseif strcmp(IndividualOrOnce,'Only Once')
             AngleToRotateDegrees = str2double(Angle);
             if isempty(AngleToRotateDegrees)
-                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid']))
-                else
-                    CPwarndlg(['The angle you entered in the ', ModuleName, ' module are invalid, it is being reset to the default of 5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
-                end
-                AngleToRotateDegrees = 5;
+                error(['The angle you entered in the ', ModuleName, ' module are invalid.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
             end
-            if isempty(AngleToRotateDegrees)
-                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid']))
-                else
-                    CPwarndlg(['The angle you entered in the ', ModuleName, ' module are invalid, it is being reset to the default of 5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
-                end
-                AngleToRotateDegrees = 5;
-            end
-         else
+        else
             error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
         end
     else

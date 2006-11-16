@@ -1,5 +1,7 @@
 CELLVISUALIZER/DATA MINING PROJECTS:
 
+- Anne 11-16-06: Add features/statistics to CellVisualizer that allow answering gene-centric questions like "Is my gene unusual in any of its measured features?" and "what genes look like my favorite gene?" (this is a clustering question).
+
 - Anne 7-14-06 - Use CellVisualizer to poke around for samples with unusual measurement values, to find new phenotypes to train classifiers and identify genes in the human NIRHT data. \
 
 - Anne 7-14-06 - In NIRHT, using CellVisualizer, look up our favorite control genes and report on their cell size, cell cycle (DNA content), and cell count:
@@ -22,4 +24,4 @@ ON GOING:
 
 -Help lab members in mining their data from screens.
 
--Continue to develope CellVisualizer
+-Continue to develop CellVisualizer

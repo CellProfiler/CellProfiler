@@ -1,5 +1,39 @@
 CellProfiler cell image analysis software development 
 
+- MAJOR - Anne 11-16-06: Make amazon's rentable CPU's work well with CellProfiler - in fact, can we hook up a local desktop computer so that it send all its jobs straight to Amazon??
+
+- MAJOR - Anne 11-16-06: Improve the speed of CellProfiler.
+
+- MAJOR - Anne 11-14-06: make a GUI wrapper that can present a pipeline in a simplified manner: it would use as source material a pipeline plus a statement of which variables should be adjustable (Hy Carrinski’s idea)
+
+- MAJOR - Anne 11-16-06: Work out good algorithms for c. elegans identification from brightfield and/or fluorescence images.
+
+- MAJOR - Anne 11-16-06: Implement Neurite tracing algorithm: see potentially useful references, which Anne has: 
+* J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.  
+* Weaver_NeuralComput_2004.pdf
+* Weaver_JNeuroMeth_2003.pdf. 
+* See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
+* Xiong Cytometry 2006 might be the best; C++ code available from authors.
+* If we want to work on this, a researcher at the Broad would be very interested in using CellProfiler to score his images: Letian Kuai letiank@broad.mit.edu
+
+- MAJOR - Anne 11-16-06: enhance/expand the TrackObjects module:
+- Right now, an intensity image is retrieved/stored even if we are using size or distance matching, which as far as I can imagine, do not require intensity information. We should instead allow the user to choose (1) distance, or (2) any measurement in handles structure so that they can choose size, intensity or anything else they want. Grabbing code from the FilterObjects byMeasurement module should be helpful for this.
+- There is a line marked %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%% and I don't know why it's marked that.
+- The window says Tracked Objects rather than the actual name of objects (e.g. Tracked Nuclei).
+- I think the figure window into which the numbers on top of the objects are placed is not well-specified because if you close windows, they start appearing all over the place!
+- I think the module should output objects (rather than an image), because then you can use the convertObjectToImage module with all its options.
+- Check through the rest of the code because there is a lot of junk stored in handles.Pipeline.TrackObjects that might not need to be. Also, be sure that things stored in handles are in the right place (handles.Previous and handles.Current are BAD places, for example!). I already took out some bad storage of things in the UserData of the figure window, which causes things to fail if the window is closed, or if you are running on the cluster.
+- The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. Alternately, we might instead have a MeasureChange module to be used in conjunction with this module that allows you to calculate the Change in a specified measurement.
+- Can we add some magic for splitting/merging when necessary? 
+- Options for abandoning objects if they disappear or or not present throughout the entire movie, etc? 
+- We should make it optional to show/hide the numbers on top of objects in the display window (I think the numbers can't be saved on the image because it's tough to make matlab save text data on images).
+- Good references for other tracking methods:
+1 - Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
+2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
+3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
+4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
+5- Schiffman...Goldberg (2006) Biotechniques 41(2) 199 has a section, middle of page 200 that gives several references for tracking methods that are more complex than the simple one implemented in the paper itself (nearest-neighbor).
+
 - Anne 11-01-06: Improvements to EC50 calculations in CalculateStatistics: If the user chooses to display and save the resulting interactive figures, it would be great for each figure to be labeled with the feature name (e.g., on the Y axis). By the time we get to the point of creating the figure using nlintool, the data are a matrix rather than coming straight from the handles so it might be a little challenging to get the feature name out. Secondly, we would like to make an EC50 data tool that asks the users to choose a particular feature, and then it creates the interactive figure and leaves it open. You can base the tool on the CalcStatistics module, and make CPsubfunctions if they ought to share code.
 
 - Anne 10-25-06: Incorporate Antti's yeast segmentation code into CellProfiler:
@@ -142,32 +176,6 @@ estimate with no indication of its accuracy. - Ray
 +++ (Requested by Anne) - Make modules to identify objects in transmitted light/DIC images. Potentially useful references: Heise, Sonnleitner, Klement, Microsc Research & Technique 66:312-320 (2005).  This paper looks like it has a few options for ways to pre-process DIC images to end up with images that look more like fluorescence images which can then be processed using our normal Identify algorithms. This one might also help: Kam, Bioimaging 1998 on line integration and deconvolution of DIC images which would be a cool filter to implement that might allow people to analyze DIC images.
 
 ++ (Requested by Anne) - Align/resize a stack of images (like yeast plates). See Matlab demo on image registration.
-
-+++ (Requested by Anne) - Implement Neurite tracing algorithm: see potentially useful references, which Anne has: 
-* J Neurosci Methods. 2005 Sep 17; Automated identification of axonal growth cones in time-lapse image sequences. Keenan TM, Hooker A, Spilker ME, Li N, Boggy GJ, Vicini P, Folch A.  
-* Weaver_NeuralComput_2004.pdf
-* Weaver_JNeuroMeth_2003.pdf. 
-* See also Anne's emails from Weaver and Brent Lindquist and John Pinezich.
-* Xiong Cytometry 2006 might be the best; C++ code available from authors.
-* If we want to work on this, a researcher at the Broad would be very interested in using CellProfiler to score his images: Letian Kuai letiank@broad.mit.edu
-
-+++ (Requested by Anne): enhance/expand the TrackObjects module:
-- Right now, an intensity image is retrieved/stored even if we are using size or distance matching, which as far as I can imagine, do not require intensity information. We should instead allow the user to choose (1) distance, or (2) any measurement in handles structure so that they can choose size, intensity or anything else they want. Grabbing code from the FilterObjects byMeasurement module should be helpful for this.
-- There is a line marked %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%% and I don't know why it's marked that.
-- The window says Tracked Objects rather than the actual name of objects (e.g. Tracked Nuclei).
-- I think the figure window into which the numbers on top of the objects are placed is not well-specified because if you close windows, they start appearing all over the place!
-- I think the module should output objects (rather than an image), because then you can use the convertObjectToImage module with all its options.
-- Check through the rest of the code because there is a lot of junk stored in handles.Pipeline.TrackObjects that might not need to be. Also, be sure that things stored in handles are in the right place (handles.Previous and handles.Current are BAD places, for example!). I already took out some bad storage of things in the UserData of the figure window, which causes things to fail if the window is closed, or if you are running on the cluster.
-- The Stats option of TrackObjects is incomplete. Things like size grown, displacement, intensity, etc. .... can be done fairly easily. Alternately, we might instead have a MeasureChange module to be used in conjunction with this module that allows you to calculate the Change in a specified measurement.
-- Can we add some magic for splitting/merging when necessary? 
-- Options for abandoning objects if they disappear or or not present throughout the entire movie, etc? 
-- We should make it optional to show/hide the numbers on top of objects in the display window (I think the numbers can't be saved on the image because it's tough to make matlab save text data on images).
-- Good references for other tracking methods:
-1 - Sbalzarini Koumoutsakos J Struct Biol 151 (2005) p 182 has fairly complicated free code in C, although a license of some sort is required.  Also, in there there is a reference to Cheezum BioPhys J 2001, 81, 2378-2388 having several algorithms implemented and compared.
-2- Debeir,  Decaestacker IEEE TRans. Medical Imaging vol 24 no 6 June 2005. I don't really understand the algorithm in this one.
-3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
-4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
-5- Schiffman...Goldberg (2006) Biotechniques 41(2) 199 has a section, middle of page 200 that gives several references for tracking methods that are more complex than the simple one implemented in the paper itself (nearest-neighbor).
 
 ++ (Requested by Anne) - Implement the cubic B-spline illumination correction method in Wahlby, Anal Cell Pathol 2002 p. 101. Its use is described in Xiong Cytometry 2006 (Anne has these articles in pdf format), and their source code (in C++) is available upon request. This seems like it would fit very nicely as another method (the variable where we normally choose Fit polynomial, or smooth by a particular artifact width).
 

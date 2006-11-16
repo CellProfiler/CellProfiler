@@ -234,9 +234,11 @@ if strcmp(OldPathname, '.') ~= 1
     handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
     Fields=fieldnames(handles.Pipeline);
     for i = 1:length(Fields)
-        if strcmp(Fields{i}(1:8),'FileList')
-            FieldName = Fields{i};
-            handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
+        if length(Fields{i}) > 8
+            if strcmp(Fields{i}(1:8),'FileList')
+                FieldName = Fields{i};
+                handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
+            end
         end
     end
 else

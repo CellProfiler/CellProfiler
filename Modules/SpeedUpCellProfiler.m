@@ -161,13 +161,11 @@ ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 if strcmpi(ClearMemory,'Yes')
     ListOfFields = fieldnames(handles.Pipeline);
-    tempPipe = handles.Pipeline;
     for i = 1:length(ListOfFields)
-        if all(size(tempPipe.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i})) && ~iscell(tempPipe.(ListOfFields{i}))
-            tempPipe = rmfield(tempPipe,ListOfFields(i));
+        if all(size(handles.Pipeline.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i})) && ~iscell(handles.Pipeline.(ListOfFields{i}))
+            handles.Pipeline = rmfield(handles.Pipeline,ListOfFields(i));
         end
     end
-    handles.Pipeline = tempPipe;
 end
 
 if strcmpi(PackMemory,'Yes')
@@ -180,10 +178,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-try SaveWhen = str2double(SaveWhen);
-catch error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles must be entered as a number.'])
+if handles.Current.SetBeingAnalyzed == 1
+    try SaveWhen = str2double(SaveWhen);
+    catch error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles must be entered as a number.'])
+    end
+    handles.Current.SaveOutputHowOften = SaveWhen;
 end
-handles.Current.SaveOutputHowOften = SaveWhen;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

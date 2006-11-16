@@ -1,6 +1,6 @@
 function handles = Rotate(handles)
-
-% Help for the Rotate module:
+ 
+% Help for the Rotate module: 
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
@@ -173,6 +173,13 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
             if isempty(Pixel2)
                 error(['The coordinates you entered for the other point in the ', ModuleName, ' module are invalid, it is being reset to the default of 100,5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid'],'replace');
             end
+            if isempty(Pixel2)
+                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid']))
+                else
+                    CPwarndlg(['The cooredinates you entered for the other point in the ', ModuleName, ' module are invalid, it is being reset to the default of 100,5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': The other point is invalid'],'replace');
+                end
+                Pixel2 = [100 5];
+            end            
             LowerLeftX = Pixel1(1);
             LowerLeftY = Pixel1(2);
             LowerRightX = Pixel2(1);
@@ -207,7 +214,14 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
                 end
                 AngleToRotateDegrees = 5;
             end
-        else
+            if isempty(AngleToRotateDegrees)
+                if (findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid']))
+                else
+                    CPwarndlg(['The angle you entered in the ', ModuleName, ' module are invalid, it is being reset to the default of 5.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Angle invalid'],'replace');
+                end
+                AngleToRotateDegrees = 5;
+            end
+         else
             error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
         end
     else

@@ -164,10 +164,10 @@ end
 
 if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
     measfield = [GridName,'Info'];
-    if handles.Current.SetBeingAnalyzed == 1
-        featfield = [GridName,'InfoFeatures'];
-        handles.Measurements.Image.(featfield){12} = 'GridFailed';
-    end
+    %if handles.Current.SetBeingAnalyzed == 1
+    featfield = [GridName,'InfoFeatures'];
+    handles.Measurements.Image.(featfield){12} = 'GridFailed';
+    %end
     if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
         if handles.Current.SetBeingAnalyzed == 1
             error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);

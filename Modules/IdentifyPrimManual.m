@@ -132,15 +132,11 @@ title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),'. Click on consecu
     {'Press enter when finished, the first and last points will be connected automatically.'},...
     {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
 
-NewImage = zeros(size(LowResOrigImage));
+[Mlr Nlr Plr] = size(LowResOrigImage);
+NewImage = zeros(Mlr,Nlr);
 
-loopControl = 1; 
+loopControl = 1;
 i = 1;
-%%%% For some reason, the button is unable to change the value of
-%%%% loopControl that the while loop sees.
-% DoneButton = uicontrol('Style', 'pushbutton', 'String', 'Done',...
-%     'Position', [10 10 60 20], 'Callback', 'ButtonName=questdlg(''Continue outlining objects?'', ''IdentifyPrimManual'',''Yes'', ''No'', ''Yes'');if(strcmp(ButtonName, ''No''))loopControl = 0;end');
-% uicontrol(DoneButton);
 
 while loopControl == 1
     %%% Manual outline of the object, see local function 'getpoints' below.
@@ -149,7 +145,8 @@ while loopControl == 1
     [nrows,ncols] = size(LowResOrigImage);
     [X,Y] = meshgrid(1:ncols,1:nrows);
     LowResInterior = inpolygon(X,Y, x,y);
-    FinalLabelMatrixImage{i} = double(imresize(LowResInterior,size(OrigImage)) > 0.5);
+    [M, N, P]=size(OrigImage);
+    FinalLabelMatrixImage{i} = double(imresize(LowResInterior,[M N]) > 0.5);
     FinalOutline{i} = bwperim(FinalLabelMatrixImage{i} > 0);
     NewImage(find(LowResInterior==1))=i;
     % combine the matrices
@@ -158,8 +155,8 @@ while loopControl == 1
     end
     i = i+1;
     ButtonName=questdlg('Continue outlining objects?', ...
-                       'IdentifyPrimManual', ...
-                       'Yes', 'No', 'Yes');
+        'IdentifyPrimManual', ...
+        'Yes', 'No', 'Yes');
     if(strcmp(ButtonName, 'No'))
         loopControl = 0;
     end
@@ -184,19 +181,19 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(LowResOrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    subplot(2,2,1); 
-    CPimagesc(LowResOrigImage,handles); 
+    subplot(2,2,1);
+    CPimagesc(LowResOrigImage,handles);
     title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); 
-    CPimagesc(FinalLabelMatrixImage,handles); 
+    subplot(2,2,2);
+    CPimagesc(FinalLabelMatrixImage,handles);
     title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
-    FinalOutlineOnOrigImage(FinalOutline) = max(max(OrigImage));
-    subplot(2,2,3); 
-    CPimagesc(FinalOutlineOnOrigImage,handles); 
+    FinalOutlineOnOrigImage(FinalOutline) = max(max(max(OrigImage)));
+    subplot(2,2,3);
+    CPimagesc(FinalOutlineOnOrigImage,handles);
     title([ObjectName, ' Outline']);
-    subplot(2,2,4); 
-    CPimagesc(ColoredLabelMatrixImage,handles); 
+    subplot(2,2,4);
+    CPimagesc(ColoredLabelMatrixImage,handles);
     title(['Identified ' ObjectName]);
 end
 
@@ -219,7 +216,7 @@ column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountF
 if isempty(column)
     handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ' ObjectName]};
     column = length(handles.Measurements.Image.ObjectCountFeatures);
-end                                                                                                           
+end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
 
 %%% Saves the location of each segmented object

@@ -142,7 +142,7 @@ while loopControl == 1
     %%% Manual outline of the object, see local function 'getpoints' below.
     %%% Continue until user has drawn a valid shape
     [x,y] = getpoints(AxisHandle);
-    [nrows,ncols] = size(LowResOrigImage);
+    [nrows,ncols,IgnoreColorInfo] = size(LowResOrigImage);
     [X,Y] = meshgrid(1:ncols,1:nrows);
     LowResInterior = inpolygon(X,Y, x,y);
     [M, N, P]=size(OrigImage);

@@ -617,8 +617,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% Retrieves previously selected cropping mask from handles
                 %%% structure.
                 BinaryCropImage = handles.Pipeline.(fieldname);
-                try 
-                    Objects = Objects & BinaryCropImage;
+                try Objects = Objects & BinaryCropImage;
                 catch
                     error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
                 end

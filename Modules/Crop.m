@@ -286,14 +286,14 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             CropFromObjectFlag = 1;
         else
             CropFromObjectFlag = 1;
-            try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
-                handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
+            try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
+                handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
             catch
-                try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape], ModuleName);
-                    handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
+                try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],ModuleName);
+                    handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
                 catch
-                    try [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape], ModuleName);
-                        handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropImage;
+                    try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],ModuleName);
+                        handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
                     catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end
@@ -386,7 +386,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
             if strcmp(IndividualOrOnce,'Individually') && (CropFromObjectFlag == 0)
@@ -452,11 +452,11 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
     end
     %%% See subfunction below.
 else
-    [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
+    [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -491,7 +491,22 @@ drawnow
 %%% subsequent modules.
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
-function [handles, CroppedImage, BinaryCropImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
+%%% Saves the amount of cropping in case it is useful.
+FeatureNames = {'AreaRetainedAfterCropping','OriginalImageArea'};
+fieldname = ['Crop_',CroppedImageName,'Features'];
+handles.Measurements.Image.(fieldname) = FeatureNames;
+%%% Retrieves the pixel size that the user entered (micrometers per pixel).
+PixelSize = str2double(handles.Settings.PixelSize);
+[rows,columns] = size(OrigImage);
+OriginalImageArea = rows*columns*PixelSize*PixelSize;
+AreaRetainedAfterCropping = sum(BinaryCropImage(:))*PixelSize*PixelSize;
+fieldname = ['Crop_',CroppedImageName];
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaRetainedAfterCropping;
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = OriginalImageArea;
+
+
+
+function [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
 %%% Retrieves the Cropping image from the handles structure.
 try
     BinaryCropImage = CPretrieveimage(handles,['Cropping',CroppedImageName],ModuleName);

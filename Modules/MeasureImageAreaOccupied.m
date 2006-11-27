@@ -203,6 +203,9 @@ ThresholdedOrigImage = OrigImage > Threshold;
 AreaOccupiedPixels = sum(ThresholdedOrigImage(:));
 AreaOccupied = AreaOccupiedPixels*PixelSize*PixelSize;
 
+[rows,columns] = size(OrigImage);
+TotalImageArea = rows*columns*PixelSize*PixelSize;
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -238,10 +241,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-FeatureNames = {'AreaOccupied','ThresholdUsed'};
+FeatureNames = {'AreaOccupied','TotalImageArea','ThresholdUsed'};
 fieldname = ['AreaOccupied_',ObjectName,'Features'];
 handles.Measurements.Image.(fieldname) = FeatureNames;
 
 fieldname = ['AreaOccupied_',ObjectName];
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = Threshold;
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = TotalImageArea;
+handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,3) = Threshold;

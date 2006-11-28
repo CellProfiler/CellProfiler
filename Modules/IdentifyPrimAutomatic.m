@@ -164,7 +164,7 @@ function handles = IdentifyPrimAutomatic(handles)
 % object coverage percentage and it does not vary much from image to image,
 % the MoG can be better, especially if the coverage percentage is not near
 % 50%. Note, however, that the MoG function is experimental and has not
-% been thoroughly validated. The background function is very simple and is
+% been thoroughly validated. The Background method is very simple and is
 % appropriate for images in which most of the image is background. It finds
 % the mode of the histogram of the image, which is assumed to be the
 % background of the image, and chooses a threshold at twice that value
@@ -390,6 +390,8 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %choiceVAR07 = MoG Adaptive
 %choiceVAR07 = Background Global
 %choiceVAR07 = Background Adaptive
+%choiceVAR07 = Robust Background Global
+%choiceVAR07 = Robust Background Adaptive
 %choiceVAR07 = RidlerCalvard Global
 %choiceVAR07 = RidlerCalvard Adaptive
 %choiceVAR07 = All
@@ -482,17 +484,17 @@ if islogical(OrigImage)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image is binary (black/white). The input image must be grayscale.']);
 end
 
-%%% Checks if a custom entry was selected for Threshold
-% if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) || strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
-%     if isnan(str2double(Threshold))
-%         GetThreshold = 0;
-%         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
-%     else
-%         GetThreshold = 1;
-%     end
-% else
-%     GetThreshold = 1;
-% end
+%%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+    if isnan(str2double(Threshold))
+        GetThreshold = 0;
+        BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
+    else
+        GetThreshold = 1;
+    end
+else
+   GetThreshold = 1;
+end
 GetThreshold = 1;
 
 %%% Checks that the Laplace parameters have valid values

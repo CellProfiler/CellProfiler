@@ -142,29 +142,29 @@ Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-%textVAR05 = Would you like to perform the step above (typing or clicking) for each image individually or just once then apply the settings to subsequent image cycles?
-%choiceVAR05 = Just Once
+%textVAR05 = Should the cropping pattern in the first image cycle be applied to all subsequent image cycles (First option) or should each image cycle be cropped individually?
+%choiceVAR05 = First
 %choiceVAR05 = Individually
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
-%textVAR06 = For COORDINATES + JUST ONCE + RECTANGLE, specify the (Left, Right) pixel positions (the word "end" can be substituted for right pixel if you do not want to crop the right edge)
+%textVAR06 = For COORDINATES + FIRST + RECTANGLE, specify the (Left, Right) pixel positions (the word "end" can be substituted for right pixel if you do not want to crop the right edge)
 %defaultVAR06 = 1,100
 Pixel1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = For COORDINATES + JUST ONCE + RECTANGLE, specify the (Top, Bottom) pixel positions (the word "end" can be substituted for bottom pixel if you do not want to crop the bottom edge)
+%textVAR07 = For COORDINATES + FIRST + RECTANGLE, specify the (Top, Bottom) pixel positions (the word "end" can be substituted for bottom pixel if you do not want to crop the bottom edge)
 %defaultVAR07 = 1,100
 Pixel2 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = For COORDINATES + JUST ONCE + ELLIPSE, what is the center pixel position of the ellipse in form X,Y?
+%textVAR08 = For COORDINATES + FIRST + ELLIPSE, what is the center pixel position of the ellipse in form X,Y?
 %defaultVAR08 = 500,500
 Center = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = For COORDINATES + JUST ONCE + ELLIPSE, what is the radius of the ellipse in the X direction?
+%textVAR09 = For COORDINATES + FIRST + ELLIPSE, what is the radius of the ellipse in the X direction?
 %defaultVAR09 = 400
 X_axis = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = For COORDINATES + JUST ONCE + ELLIPSE, what is the radius of the ellipse in the Y direction?
+%textVAR10 = For COORDINATES + FIRST + ELLIPSE, what is the radius of the ellipse in the Y direction?
 %defaultVAR10 = 200
 Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

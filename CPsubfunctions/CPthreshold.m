@@ -409,12 +409,16 @@ else
         if numel(im) == numel(BinaryCropImage)
             %%% Masks the image and I think turns it into a linear
             %%% matrix.
+            %%% We need to turn off the warning because if the
+            %%% BinaryCropImage is a label matrix, conversion to logical
+            %%% yields an error.
+            warning('off','MATLAB:conversionToLogical')
             im = im(logical(BinaryCropImage));
+            warning('on','MATLAB:conversionToLogical')
         end
     else
         im = block;
     end
-    
 end
 
 %%% The threshold is calculated using the matlab function graythresh

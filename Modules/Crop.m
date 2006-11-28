@@ -174,7 +174,7 @@ Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR11 = popupmenu
 PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

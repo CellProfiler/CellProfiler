@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 11-27-06: I was using LoadImages (exact match) to load images with the text "Green1.tif". I had an image named 1.tif and Green1.tif and BOTH were loaded!  What the heck? Can someone reproduce this or was it totally random weirdness?
+
 - MAJOR - Anne 11-16-06: Make amazon's rentable CPU's work well with CellProfiler - in fact, can we hook up a local desktop computer so that it send all its jobs straight to Amazon??
 
 - MAJOR - Anne 11-16-06: Improve the speed of CellProfiler.

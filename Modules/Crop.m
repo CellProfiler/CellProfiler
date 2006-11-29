@@ -130,7 +130,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Into which shape would you like to crop? See the help for several other options.
+%textVAR03 = For RECTANGLE + ELLIPSE, into which shape would you like to crop? See the help for several other options.
 %choiceVAR03 = Rectangle
 %choiceVAR03 = Ellipse
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});

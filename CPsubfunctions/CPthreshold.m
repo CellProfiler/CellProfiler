@@ -169,7 +169,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
 
         %%% Sends the linear masked image to the appropriate thresholding
         %%% subfunction, in blocks.
-        eval(['Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@',ThresholdMethod,',handles,ImageName);']);
+        eval(['Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@',ThresholdMethod,',handles,ImageName,pObject);']);
         %%% This evaluates to something like: Threshold =
         %%% CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize
         %%% 2],@Otsu,handles,ImageName);
@@ -288,8 +288,21 @@ function level = Otsu(im,handles,ImageName,pObject)
 %%% This is the Otsu method of thresholding, adapted from MATLAB's
 %%% graythresh function. Our modifications work in log space, and take into
 %%% account the max and min values in the image.
-im = double(im(:));
-if max(im) == min(im),
+
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
+if max(im) == min(im)
     level = im(1);
 else
     %%% We want to limit the dynamic range of the image to 256. Otherwise,
@@ -322,16 +335,29 @@ function level = MoG(im,handles,ImageName,pObject)
 %%% pixels based on the probability of an object pixel 'pObject' given by
 %%% the user.
 
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
 %%% The number of classes is set to 3
 NumberOfClasses = 3;
 
-%%% Transform the image into a vector. Also, if the image is (larger than
-%%% 512x512), select a subset of 512^2 pixels for speed. This should be
-%%% enough to capture the statistics in the image.
-Intensities = im(:);
-if length(Intensities) > 512^2
-    indexes = randperm(length(Intensities));
-    Intensities = Intensities(indexes(1:512^2));
+%%% If the image is larger than 512x512, select a subset of 512^2 pixels
+%%% for speed. This should be enough to capture the statistics in the
+%%% image.
+% im = im(:);
+if length(im) > 512^2
+    indexes = randperm(length(im));
+    im = im(indexes(1:512^2));
 end
 
 %%% Convert user-specified percentage of image covered by objects to a
@@ -349,10 +375,10 @@ pBackground = 1 - pObject;
 %%% remove 1% of the smallest and highest intensities in case there are any
 %%% quantization effects that have resulted in unaturally many 0:s or 1:s
 %%% in the image.
-Intensities = sort(Intensities);
-Intensities = Intensities(ceil(length(Intensities)*0.01):round(length(Intensities)*0.99));
-ClassMean(1) = Intensities(round(length(Intensities)*pBackground/2));                      %%% Initialize background class
-ClassMean(3) = Intensities(round(length(Intensities)*(1 - pObject/2)));                    %%% Initialize object class
+im = sort(im);
+im = im(ceil(length(im)*0.01):round(length(im)*0.99));
+ClassMean(1) = im(round(length(im)*pBackground/2));                      %%% Initialize background class
+ClassMean(3) = im(round(length(im)*(1 - pObject/2)));                    %%% Initialize object class
 ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
 %%% Initialize standard deviations of the Gaussians. They should be the
 %%% same to avoid problems.
@@ -365,8 +391,8 @@ pClass(2) = 1/4*pBackground + 1/4*pObject;
 pClass(3) = 3/4*pObject;
 
 %%% Apply transformation.  a < x < b, transform to log((x-a)/(b-x)).
-%a = - 0.000001; b = 1.000001; Intensities =
-%log((Intensities-a)./(b-Intensities)); ClassMean = log((ClassMean-a)./(b -
+%a = - 0.000001; b = 1.000001; im =
+%log((im-a)./(b-im)); ClassMean = log((ClassMean-a)./(b -
 %ClassMean)) ClassStd(1:3) = [1 1 1];
 
 %%% Expectation-Maximization algorithm for fitting the three Gaussian
@@ -381,15 +407,15 @@ while delta > 0.001
     %%% Update probabilities of a pixel belonging to the background or
     %%% object1 or object2
     for k = 1:NumberOfClasses
-        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(Intensities - ClassMean(k)).^2/(2*ClassStd(k)^2));
+        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(im - ClassMean(k)).^2/(2*ClassStd(k)^2));
     end
     pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
 
     %%% Update parameters in Gaussian distributions
     for k = 1:NumberOfClasses
         pClass(k) = mean(pPixelClass(:,k));
-        ClassMean(k) = sum(pPixelClass(:,k).*Intensities)/(length(Intensities)*pClass(k));
-        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(Intensities - ClassMean(k)).^2)/(length(Intensities)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
+        ClassMean(k) = sum(pPixelClass(:,k).*im)/(length(im)*pClass(k));
+        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(im - ClassMean(k)).^2)/(length(im)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
     end
 
     %%% Calculate change
@@ -426,7 +452,20 @@ function level = Background(im,handles,ImageName,pObject)
 %%% The threshold is calculated by calculating the mode and multiplying by
 %%% 2 (an arbitrary empirical factor). The user will presumably adjust the
 %%% multiplication factor as needed.
-im = double(im(:));
+
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
 if max(im) == min(im),
     level = im(1);
 else
@@ -438,41 +477,68 @@ function level = RobustBackground(im,handles,ImageName,pObject)
 %%% The threshold is calculated by trimming the top and bottom 25% of
 %%% pixels off the image, then calculating the mean and standard deviation
 %%% of the remaining image. The threshold is then set at 2 (empirical
-%%% value) standard deviations above the mean. The image is converted to
-%%% double (not sure if this is necessary), then sorted from low to high.
-im = sort(double(im(:)));
+%%% value) standard deviations above the mean. 
+
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
+%%% First, the image's pixels are sorted from low to high.
+im = sort(im);
 %%% The index of the 25th percentile is calculated, with a minimum of 1.
-LowIndex = max(1,round(.25*length(im)))
+LowIndex = max(1,round(.25*length(im)));
 %%% The index of the 75th percentile is calculated, with a maximum of the
 %%% number of pixels in the whole image.
-HighIndex = min(round(.75*length(im)))
+HighIndex = min(round(.75*length(im)));
 TrimmedImage = im(LowIndex: HighIndex);
-Mean = mean(TrimmedImage)
-StDev = std(TrimmedImage)
-level = Mean + 2*StDev
+Mean = mean(TrimmedImage);
+StDev = std(TrimmedImage);
+level = Mean + 2*StDev;
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)
+
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
 %%% We want to limit the dynamic range of the image to 256. Otherwise, an
 %%% image with almost all values near zero can give a bad result.
-Im = im(:);
-MinVal = max(Im)/256;
-Im(Im<MinVal) = MinVal;
-Im = log(Im);
-MinVal = min(Im);
-MaxVal = max(Im);
-Im = (Im - MinVal)/(MaxVal - MinVal);
+MinVal = max(im)/256;
+im(im<MinVal) = MinVal;
+im = log(im);
+MinVal = min(im);
+MaxVal = max(im);
+im = (im - MinVal)/(MaxVal - MinVal);
 PreThresh = 0;
 %%% This method needs an initial value to start iterating. Using graythresh
 %%% (Otsu's method) is probably not the best, because the Ridler Calvard
 %%% threshold ends up being too close to this one and in most cases has the
 %%% same exact value.
-NewThresh = graythresh(Im);
+NewThresh = graythresh(im);
 delta = 0.00001;
 while abs(PreThresh - NewThresh)>delta
     PreThresh = NewThresh;
-    Mean1 = mean(Im(Im<PreThresh));
-    Mean2 = mean(Im(Im>=PreThresh));
+    Mean1 = mean(im(im<PreThresh));
+    Mean2 = mean(im(im>=PreThresh));
     NewThresh = mean([Mean1,Mean2]);
 end
 level = exp(MinVal + (MaxVal-MinVal)*NewThresh);

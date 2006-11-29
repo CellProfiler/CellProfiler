@@ -70,7 +70,10 @@ if strfind(Threshold,'Global')
     elseif strfind(Threshold,'MoG')
         Threshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
     elseif strfind(Threshold,'Background')
-        Threshold = BackgroundThreshold(OrigImage,handles,ImageName);
+        if strfind(Threshold,'Robust')
+            Threshold = RobustBackgroundThreshold(OrigImage,handles,ImageName);
+        else Threshold = BackgroundThreshold(OrigImage,handles,ImageName);
+        end
     elseif strfind(Threshold,'RidlerCalvard')
         Threshold = RidlerCalvard(OrigImage,handles,ImageName);
     else
@@ -125,8 +128,13 @@ elseif strfind(Threshold,'Adaptive')
         GlobalThreshold = MixtureOfGaussians(OrigImage,handles,pObject,ImageName);
         Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@MixtureOfGaussians,handles,pObject,ImageName);
     elseif strfind(Threshold,'Background')
-        GlobalThreshold = BackgroundThreshold(OrigImage,handles,ImageName);
-        Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@BackgroundThreshold,handles,ImageName);
+        if strfind(Threshold,'Robust')
+             GlobalThreshold = RobustBackgroundThreshold(OrigImage,handles,ImageName);
+             Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@RobustBackgroundThreshold,handles,ImageName);
+        else 
+             GlobalThreshold = BackgroundThreshold(OrigImage,handles,ImageName);
+             Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@BackgroundThreshold,handles,ImageName);
+        end
     elseif strfind(Threshold,'RidlerCalvard')
         GlobalThreshold = RidlerCalvard(OrigImage,handles,ImageName);
         Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@RidlerCalvard,handles,ImageName);
@@ -482,6 +490,50 @@ if max(im) == min(im),
 else
     level = 2*mode(im(:));
 end
+
+function level = RobustBackgroundThreshold(block,handles,ImageName)
+%%% If the image was produced using a cropping mask, we do not
+%%% want to include the Masked part in the calculation of the
+%%% proper threshold, because there will be many zeros in the
+%%% image.  So, we check to see whether there is a field in the
+%%% handles structure that goes along with the image of interest.
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname)
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    if length(size(block)) == 2
+        im = block;
+        BinaryCropImage = handles.Pipeline.(fieldname);
+    else
+        im = block(:,:,1);
+        BinaryCropImage = block(:,:,2);     
+    end
+
+    %%% Handle the case where there are no pixels on in the mask
+    if (~ any(BinaryCropImage)),
+        level = max(im(:)+1.0);
+        return;
+    end
+
+    if numel(im) == numel(BinaryCropImage)
+        %%% Masks the image and I think turns it into a linear
+        %%% matrix.
+        im = im(logical(BinaryCropImage));
+    end
+else
+    im = block;
+end
+%%% The threshold is calculated by trimming the top and bottom 25% of pixels off the image, then calculating the mean and standard deviation of the remaining image. The threshold is then set at 2 (empirical value) standard deviations above the mean.
+%%% The image is converted to double (not sure if this is necessary), then sorted from low to high.
+im = sort(double(im(:)));
+%%% The index of the 25th percentile is calculated, with a minimum of 1.
+LowIndex = max(1,round(.25*length(im)))
+%%% The index of the 75th percentile is calculated, with a maximum of the number of pixels in the whole image.
+HighIndex = min(round(.75*length(im)))
+TrimmedImage = im(LowIndex: HighIndex);
+Mean = mean(TrimmedImage)
+StDev = std(TrimmedImage)
+level = Mean + 2*StDev
 
 
 function level = RidlerCalvard(block,handles,ImageName)

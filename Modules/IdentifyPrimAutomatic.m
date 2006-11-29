@@ -485,7 +485,7 @@ if islogical(OrigImage)
 end
 
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strncmp(Threshold,'Background',10) ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Threshold,'Background') ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');

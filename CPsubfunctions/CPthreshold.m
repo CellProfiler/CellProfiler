@@ -73,7 +73,8 @@ else
         %%% image has values above one, so we temporarily turn the warning
         %%% off.
         OrigWarnState = warning('off','MATLAB:conversionToLogical');
-        RetrievedBinaryCropMask = logical(handles.Pipeline.(fieldname));
+        RetrievedCropMask = handles.Pipeline.(fieldname);
+        RetrievedBinaryCropMask = logical(RetrievedCropMask);
         warning(OrigWarnState);
         %%% Handle the case where there are no pixels on in the mask, in
         %%% which case the threshold should be set to a numnber higher than
@@ -108,29 +109,36 @@ else
 end
 
 %%% STEP 1. Find threshold and apply to image
-if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive'))
-    if ~isempty(strfind(Threshold,'Adaptive'))
+if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive')) || ~isempty(strfind(Threshold,'PerObject'))
+    if ~isempty(strfind(Threshold,'Global'))
+        AdaptiveFlag = 0;
+    elseif ~isempty(strfind(Threshold,'Adaptive'))
         AdaptiveFlag = 1;
-    else AdaptiveFlag = 0;
+    elseif ~isempty(strfind(Threshold,'PerObject'))
+        AdaptiveFlag = 2
     end
-    %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
+    %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive' or 'PerObject').
     ThresholdMethod = strtok(Threshold);
     %%% Makes sure we are using an existing thresholding method.
     if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard'},'exact'))
         error(['The method chosen for thresholding, ',Threshold,', in the ',ModuleName,' module was not recognized by the CPthreshold subfunction. Adjustment to the code of CellProfiler is needed; sorry for the inconvenience.'])
     end
-
-    %%% For either Global or Adaptive methods, we want to calculate the
-    %%% global threshold. Sends the linear masked image to the appropriate
-    %%% thresholding subfunction.
+    
+    %%% For all methods, Global or Adaptive or PerObject, we want to
+    %%% calculate the global threshold. Sends the linear masked image to
+    %%% the appropriate thresholding subfunction.
     eval(['Threshold = ',ThresholdMethod,'(LinearMaskedImage,handles,ImageName,pObject);']);
-    %%% This evaluates to something like: 
-    %%% Threshold = Otsu(LinearMaskedImage,handles,ImageName,pObject);
+    %%% This evaluates to something like: Threshold =
+    %%% Otsu(LinearMaskedImage,handles,ImageName,pObject);
 
-    if AdaptiveFlag == 1;
-        %%% The global threshold is used to constrain the adaptive
-        %%% threshholds.
-        GlobalThreshold = Threshold;
+    %%% The global threshold is used to constrain the Adaptive or PerObject
+    %%% thresholds.
+    GlobalThreshold = Threshold;
+
+    %%% For Global, we are done. There are more steps involved for Adaptive
+    %%% and PerObject methods.
+
+    if AdaptiveFlag == 1 %%% The Adaptive method.
         %%% Choose the block size that best covers the original image in
         %%% the sense that the number of extra rows and columns is minimal.
         %%% Get size of image
@@ -180,16 +188,44 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         %%% original image.
         Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
         Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
+        
+    elseif AdaptiveFlag == 2 %%% The PerObject method.
+        %%% This method require the Retrieved CropMask, which should be a
+        %%% label matrix of objects, where each object consists of an
+        %%% integer that is its label.
+        if ~exist('RetrievedCropMask','var')
+            error(['Image processing was canceled in the ,',ModuleName,' module because you have chosen to calculate the threshold on a per-object basis, but CellProfiler could not find the image of the objects you want to use.'])
+        end
+        %%% Initializes the Threshold variable (which will end up being the
+        %%% same size as the original image).
+        Threshold = ones(size(OrigImage));
+        NumberOfLabelsInLabelMatrix = max(RetrievedCropMask(:));
+        for i = 1:NumberOfLabelsInLabelMatrix
+            %%% Chooses out the pixels in the orig image that correspond
+            %%% with i in the label matrix. This simultaneously produces a
+            %%% linear set of numbers.
+            Intensities = OrigImage(RetrievedCropMask == i);
+            %%% Sends those pixels to the appropriate threshold
+            %%% subfunctions.
+            eval(['CalculatedThreshold = ',ThresholdMethod,'(Intensities,handles,ImageName,pObject);']);
+            %%% This evaluates to something like: Threshold =
+            %%% Otsu(Intensities,handles,ImageName,pObject);
 
-        %%% For any of the threshold values that is lower than the
-        %%% user-specified minimum threshold, set to equal the minimum
-        %%% threshold.  Thus, if there are no objects within a block (e.g.
-        %%% if cells are very sparse), an unreasonable threshold will be
-        %%% overridden by the minimum threshold.
+            %%% Sets the pixels corresponding to object i to equal the
+            %%% calculated threshold.
+            Threshold(RetrievedCropMask == i) = CalculatedThreshold;
+        end
+    end
+
+    if AdaptiveFlag == 1 || AdaptiveFlag == 2 %%% For the Adaptive and the PerObject methods.
+        %%% Adjusts any of the threshold values that are significantly
+        %%% lower or higher than the global threshold.  Thus, if there are
+        %%% no objects within a block (e.g. if cells are very sparse), an
+        %%% unreasonable threshold will be overridden.
         Threshold(Threshold <= 0.7*GlobalThreshold) = 0.7*GlobalThreshold;
         Threshold(Threshold >= 1.5*GlobalThreshold) = 1.5*GlobalThreshold;
-
     end
+
 elseif strcmp(Threshold,'All')
     if handles.Current.SetBeingAnalyzed == 1
         try
@@ -199,10 +235,12 @@ elseif strcmp(Threshold,'All')
             ScreenHeight = ScreenSize(4);
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
-            PositionMsgBox = [500 BottomOfMsgBox 350 100];
             h = CPmsgbox('Preliminary calculations are under way for the Identify Primary Threshold module.  Subsequent image sets will be processed much more quickly than the first image set.');
+            OrigSize = get(h, 'Position');
+            PositionMsgBox = [500 BottomOfMsgBox OrigSize(3) OrigSize(4)];
             set(h, 'Position', PositionMsgBox)
             drawnow
+            
             %%% Retrieves the path where the images are stored from the
             %%% handles structure.
             fieldname = ['Pathname', ImageName];

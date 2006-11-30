@@ -484,8 +484,11 @@ if islogical(OrigImage)
     error(['Image processing was canceled in the ', ModuleName, ' module because the input image is binary (black/white). The input image must be grayscale.']);
 end
 
+%%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
+ThresholdMethod = strtok(Threshold);
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
-if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Threshold,'Background') ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','All','Set interactively'},'exact'))
+    %if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Threshold,'Background') ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');
@@ -493,7 +496,7 @@ if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Thresh
         GetThreshold = 1;
     end
 else
-   GetThreshold = 1;
+    GetThreshold = 1;
 end
 GetThreshold = 1;
 

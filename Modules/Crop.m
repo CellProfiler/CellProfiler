@@ -193,7 +193,11 @@ drawnow
 RecalculateFlag = 1;
 
 CropFromObjectFlag = 0;
-if ~handles.Current.SetBeingAnalyzed == 1 || ~strcmp(IndividualOrOnce, 'Individually') || ~strcmp(PlateFix,'Yes')
+if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
+   %%% These are all cases where we want to go calculate the croppping
+   %%% freshly, rather than retrieving a previously calculated crop image
+   %%% from the handles structure.
+else
     try
         %%% In these cases we can just retrieve the previously existing
         %%% BinaryCropImage and apply it.

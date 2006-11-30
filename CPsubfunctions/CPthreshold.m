@@ -115,7 +115,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     elseif ~isempty(strfind(Threshold,'Adaptive'))
         MethodFlag = 1;
     elseif ~isempty(strfind(Threshold,'PerObject'))
-        MethodFlag = 2
+        MethodFlag = 2;
     end
     %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive' or 'PerObject').
     ThresholdMethod = strtok(Threshold);

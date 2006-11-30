@@ -158,9 +158,17 @@ if strmatch('Circle',Shape)
     else
         radius = floor(str2double(Diameter)/2);
     end
+    %%% IF there are no objects, Area and radius are empty. Or, if they are
+    %%% very small, radius might = zero. This causes problems when
+    %%% automatically trying to discern the circle size.
+    if isempty(radius) || radius < 1 || isnan(radius)
+        radius = 1;
+    end
 else
     radius = 0; %Sets the radius to 0 for non-circle shapes.
 end
+
+
 
 if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
     measfield = [GridName,'Info'];

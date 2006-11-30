@@ -190,9 +190,29 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-CropFromObjectFlag = 0;
+RecalculateFlag = 1;
 
-if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
+CropFromObjectFlag = 0;
+if ~handles.Current.SetBeingAnalyzed == 1 || ~strcmp(IndividualOrOnce, 'Individually') || ~strcmp(PlateFix,'Yes')
+    try
+        %%% In these cases we can just retrieve the previously existing
+        %%% BinaryCropImage and apply it.
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
+        
+        %%% We have a try/catch here for a situation like this: we are
+        %%% using Rectangle and the 'First' option (because we always want
+        %%% to crop at 1,100 1,100 for example). The first images run fine,
+        %%% but halfway through the image set the image size changes
+        %%% slightly. We still want to crop at 1,100 1,100, but the
+        %%% BinaryCropImage that is retrieved does not perfectly match the
+        %%% size of the new images, so the CropImageBasedOnMaskInHandles
+        %%% function fails. This will catch that situation and allow
+        %%% recalculation of the BinaryCropImage.
+        RecalculateFlag = 0;
+    end
+end
+
+if RecalculateFlag == 1
 
     ImageToBeCropped = OrigImage;
 
@@ -318,7 +338,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Ellipse shape and Mouse mode, you must click on at least five points in the image and then press enter. Please try again.'], 'Warning');
                 uiwait(warnfig);
                 [Pre_x,Pre_y] = getpts(CroppingFigureHandle);
-            end 
+            end
             [a b c] = size(ImageToBeCropped);
             if any(Pre_x < 1) || any(Pre_y < 1) || any(Pre_x > b) || any(Pre_y > a)
                 Pre_x(Pre_x<1) = 1;
@@ -435,7 +455,7 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
                 warnfig=CPwarndlg(['In the ', ModuleName, ' module while in Rectangle shape and Mouse mode, you must click on at least two points in the image and then press enter. Please try again.'], 'Warning');
                 uiwait(warnfig);
                 [x, y] = getpts(CroppingFigureHandle);
-            end 
+            end
             close(CroppingFigureHandle);
             [a b c] = size(ImageToBeCropped);
             if any(x < 1) || any(y < 1) || any(x > b) || any(y > a)
@@ -455,8 +475,6 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individual
         [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
     end
     %%% See subfunction below.
-else
-    [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

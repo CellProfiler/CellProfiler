@@ -1,6 +1,11 @@
 function Answer=CPinputdlg(Prompt, Title, NumLines, DefAns, Resize)
 
-% This function should only be used within CellProfiler
+% This function should only be used within CellProfiler.
+% This is the MATLAB built-in function inputdlg, with the only change
+% being the color of the dialog box. We also had to put in some
+% subfunctions at the bottom to make it work outside its original MATLAB
+% folder.
+%
 %
 %INPUTDLG Input dialog box.
 %  ANSWER = INPUTDLG(PROMPT) creates a modal dialog box that returns user

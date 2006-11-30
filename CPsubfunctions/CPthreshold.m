@@ -267,8 +267,10 @@ else
     %%% by the user, or that we calculated it in the binary crop image
     %%% section above. Checks that the Threshold parameter has a valid
     %%% value
-    Threshold = str2double(Threshold);
-    if isnan(Threshold) | Threshold > 1 | Threshold < 0 %#ok Ignore MLint
+    if strcmp(class(Threshold),'char')
+        Threshold = str2double(Threshold);
+    end
+    if isnan(Threshold) || Threshold > 1 || Threshold < 0 %#ok Ignore MLint
         error(['The threshold entered in the ', ModuleName, ' module is not a number, or is outside the acceptable range of 0 to 1.'])
     end
 end

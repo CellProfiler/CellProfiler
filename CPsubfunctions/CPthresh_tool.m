@@ -119,7 +119,7 @@ FmtSpec = ['%.' num2str(ceil(-log10(di))) 'f'];
 
 %new figure - interactive GUI tool for level segmenting
 h_fig = figure;
-set(h_fig,'ToolBar','Figure')
+set(h_fig,'ToolBar','Figure','Color',[0.7,0.7,0.9])
 if nargin>1 && isstr(cmap) && strmatch(lower(cmap),'gray')
   full_map = gray(num_colors);
 elseif nargin>1 && isnumeric(cmap) && length(size(cmap))==2 && size(cmap,2)==3

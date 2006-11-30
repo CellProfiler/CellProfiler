@@ -111,11 +111,11 @@ end
 %%% STEP 1. Find threshold and apply to image
 if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive')) || ~isempty(strfind(Threshold,'PerObject'))
     if ~isempty(strfind(Threshold,'Global'))
-        AdaptiveFlag = 0;
+        MethodFlag = 0;
     elseif ~isempty(strfind(Threshold,'Adaptive'))
-        AdaptiveFlag = 1;
+        MethodFlag = 1;
     elseif ~isempty(strfind(Threshold,'PerObject'))
-        AdaptiveFlag = 2
+        MethodFlag = 2
     end
     %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive' or 'PerObject').
     ThresholdMethod = strtok(Threshold);
@@ -138,7 +138,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     %%% For Global, we are done. There are more steps involved for Adaptive
     %%% and PerObject methods.
 
-    if AdaptiveFlag == 1 %%% The Adaptive method.
+    if MethodFlag == 1 %%% The Adaptive method.
         %%% Choose the block size that best covers the original image in
         %%% the sense that the number of extra rows and columns is minimal.
         %%% Get size of image
@@ -189,7 +189,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
         Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
         
-    elseif AdaptiveFlag == 2 %%% The PerObject method.
+    elseif MethodFlag == 2 %%% The PerObject method.
         %%% This method require the Retrieved CropMask, which should be a
         %%% label matrix of objects, where each object consists of an
         %%% integer that is its label.
@@ -217,7 +217,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         end
     end
 
-    if AdaptiveFlag == 1 || AdaptiveFlag == 2 %%% For the Adaptive and the PerObject methods.
+    if MethodFlag == 1 || MethodFlag == 2 %%% For the Adaptive and the PerObject methods.
         %%% Adjusts any of the threshold values that are significantly
         %%% lower or higher than the global threshold.  Thus, if there are
         %%% no objects within a block (e.g. if cells are very sparse), an

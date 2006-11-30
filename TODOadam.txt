@@ -1,6 +1,11 @@
 CELLVISUALIZER/DATA MINING PROJECTS:
 
-- Anne 11-16-06: Add features/statistics to CellVisualizer that allow answering gene-centric questions like "Is my gene unusual in any of its measured features?" and "what genes look like my favorite gene?" (this is a clustering question).
+- Anne 11-16-06: Add features/statistics to CellVisualizer that allow answering gene-centric questions like "Is my gene unusual in any of its measured features?" and "what genes look like my favorite gene?" (this is a clustering question). This is part of a grand project: We could present a searchable database for people to find out 'what's weird about my gene' as a public resource.  This short blurb describes this sort of a resource:
+http://www.nature.com/nmeth/journal/v3/n12/full/nmeth1206-964a.html
+We are very close to having our own database done; it simply involves:
+1. Developing the few missing tools in CellVisualizer that are 'gene-centric' - figuring out the statistics is the key thing, so people have confidence in whether their gene really is an outlier or not for each feature.
+2. Possibly processing a larger set than just 1000 genes. Novartis probably has a full set that we might be able to use.
+3. Coming up with a few convincing examples.
 
 - Anne 7-14-06 - Use CellVisualizer to poke around for samples with unusual measurement values, to find new phenotypes to train classifiers and identify genes in the human NIRHT data. \
 

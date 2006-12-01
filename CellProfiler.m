@@ -3941,6 +3941,10 @@ end
 %%% be a simple task.
 
 function errorfunction(CurrentModuleNumber,FontSize,ModuleName)
+%%% lasterr is an old MATLAB function; lasterror is a new MATLAB function
+%%% that will eventually replace it. Most likely sometime we can simplify
+%%% the following code, but we should think carefully about how it affects
+%%% old vs new versions of MATLAB.
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
@@ -3948,8 +3952,15 @@ Error = lasterr;
 ExtraInfo = '';
 errorinfo = lasterror;
 if isfield(errorinfo, 'stack'),
-    stackinfo = errorinfo.stack(1,1);
-    ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
+    try
+        stackinfo = errorinfo.stack(1,1);
+        ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
+    catch
+        %%% The line stackinfo = errorinfo.stack(1,1); will fail if the
+        %%% errorinfo.stack is empty, which sometimes happens during
+        %%% debugging, I think. So we catch it here.
+        ExtraInfo = ['No specific error information was produced by MATLAB.'];
+    end
 end
 
 if strncmp(Error,'Error using ==> ',16)

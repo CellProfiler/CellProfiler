@@ -1,5 +1,10 @@
 CellProfiler cell image analysis software development 
 
+- Anne 12-1-06: Allow CellProfiler to read 3D tif images. We don't have any examples of this format, but they can apparently be created like this: imwrite(data,filename,'TIF','WriteMode','append')
+And they can be read easy enough -->
+A=imread(filename,'TIF',#); where # is which number in the file to read.
+So we need to adapt LoadImages to recognize this format as a movie format, where each slice of the tif is read out individually as a 'frame' of a movie. See existing code for .avi and .stk files. In fact, maybe .stk files are very similar to 3D TIF's?
+
 - Anne 11-29-06: We should go over Malo et al Nat Biotech Feb 2006 in a journal club.
 
 - Anne 11-27-06: I was using LoadImages (exact match) to load images with the text "Green1.tif". I had an image named 1.tif and Green1.tif and BOTH were loaded!  What the heck? Can someone reproduce this or was it totally random weirdness?

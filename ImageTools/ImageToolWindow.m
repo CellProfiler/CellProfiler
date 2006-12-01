@@ -78,5 +78,6 @@ function ImageToolWindow(handles)
 % This function itself is simply a menu item in the CellProfiler Image Tools
 % menu which informs the user that more tools can be accessed by clicking
 % on an individual image within a figure window. Its help is accessible via
-% the normal image tools help extraction.
+% the normal image tools help extraction. The actual code for the image
+% tool window is CPimagetool.m in the CPsubfunctions folder.
 CPmsgbox('For more image tools, click on an individual image within a display window.')

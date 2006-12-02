@@ -203,8 +203,48 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         for i = 1:NumberOfLabelsInLabelMatrix
             %%% Chooses out the pixels in the orig image that correspond
             %%% with i in the label matrix. This simultaneously produces a
-            %%% linear set of numbers.
+            %%% linear set of numbers (and masking of pixels outside the
+            %%% object is done automatically, in a sense).
             Intensities = OrigImage(RetrievedCropMask == i);
+            
+            
+            
+            
+            
+%             %%% Diagnostic:
+%             PerObjectImage = zeros(size(OrigImage));
+%             PerObjectImage(RetrievedCropMask == i) = OrigImage(RetrievedCropMask == i);
+%             %figure(31)
+%             %imagesc(PerObjectImage)
+% 
+%             %%% Removes Rows and Columns that are completely blank.
+%             ColumnTotals = sum(PerObjectImage,1);
+%             warning off all
+%             ColumnsToDelete = ~logical(ColumnTotals);
+%             warning on all
+%             drawnow
+%             CroppedImage = PerObjectImage;
+%             CroppedImage(:,ColumnsToDelete,:) = [];
+%             CroppedImagePlusRange = CroppedImage;
+%             [rows,columns] = size(CroppedImage);
+%             CroppedImagePlusRange(:,end+1) = 1;
+% 
+%             [ManualThreshold,bw] = CPthresh_tool(CroppedImagePlusRange,'gray',1);
+%             ManualThreshold = log(ManualThreshold);
+%             %%% Initializes the variables.
+%             if ~exist('ManualThresholds','var')
+%                 ManualThresholds = [];
+%             end
+%             ManualThresholds(end+1) = ManualThreshold;
+%             save('Batch_32Manualdata','ManualThresholds');
+
+            
+
+            
+            
+            
+            
+            
             %%% Sends those pixels to the appropriate threshold
             %%% subfunctions.
             eval(['CalculatedThreshold = ',ThresholdMethod,'(Intensities,handles,ImageName,pObject);']);
@@ -214,6 +254,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
             %%% Sets the pixels corresponding to object i to equal the
             %%% calculated threshold.
             Threshold(RetrievedCropMask == i) = CalculatedThreshold;
+%            figure(32), imagesc(Threshold), colormap('gray')
         end
     end
 
@@ -356,6 +397,21 @@ else
     level = exp(minval + (maxval - minval) * graythresh(im));
 end
 
+% %%% For debugging:
+% data = TrimmedImage;
+% figure(30)
+% subplot(1,2,1)
+% hist(data(:),100);
+% title(['trimmed data; Mean = ',num2str(Mean),'; StDev = ',num2str(StDev)])
+% data = im;
+% subplot(1,2,2)
+% [Contents,BinLocations] = hist(data(:),100);
+% hist(data(:),100);
+% title(['Thresh = ',num2str(level),'; log data'])
+% hold on
+% plot([level;level],[0,max(Contents)])
+% hold off
+% figure(30)
 
 function level = MoG(im,handles,ImageName,pObject)
 %%% Stands for Mixture of Gaussians. This function finds a suitable
@@ -534,15 +590,61 @@ end
 
 %%% First, the image's pixels are sorted from low to high.
 im = sort(im);
-%%% The index of the 25th percentile is calculated, with a minimum of 1.
-LowIndex = max(1,round(.25*length(im)));
-%%% The index of the 75th percentile is calculated, with a maximum of the
+%%% The index of the 5th percentile is calculated, with a minimum of 1.
+LowIndex = max(1,round(.05*length(im)));
+%%% The index of the 95th percentile is calculated, with a maximum of the
 %%% number of pixels in the whole image.
-HighIndex = min(round(.75*length(im)));
+HighIndex = min(length(im),round(.95*length(im)));
 TrimmedImage = im(LowIndex: HighIndex);
 Mean = mean(TrimmedImage);
 StDev = std(TrimmedImage);
 level = Mean + 2*StDev;
+
+% %%% DEBUGGING
+% Logim = log(sort(im(im~=0)));
+% 
+% %%% For debugging:
+% figure(30)
+% subplot(1,2,1)
+% hist(Logim,100);
+% title(['Log data; Mean = ',num2str(Mean),'; StDev = ',num2str(StDev)])
+% pause(0.1)
+
+% %%% For debugging:
+% data = TrimmedImage;
+% figure(30)
+% subplot(1,2,1)
+% hist(data(:),100);
+% title(['trimmed data; Mean = ',num2str(Mean),'; StDev = ',num2str(StDev)])
+% data = im;
+% subplot(1,2,2)
+% [Contents,BinLocations] = hist(data(:),100);
+% hist(data(:),100);
+% title(['Thresh = ',num2str(level),'; raw data'])
+% hold on
+% plot([level;level],[0,max(Contents)])
+% hold off
+% 
+% figure(30)
+
+% %%% More debugging:
+% try
+%     load('Batch_32Autodata');
+% end
+% %%% Initializes the variables.
+% if ~exist('Means','var')
+%    Means = []; 
+%    StDevs = [];
+%    Levels = [];
+%    TrimmedImages = [];
+%    Images = [];
+% end
+% Means(end+1) = Mean;
+% StDevs(end+1) = StDev;
+% Levels(end+1) = level;
+% TrimmedImages{end+1} = {TrimmedImage};
+% Images{end+1} = {im};
+% save('Batch_32Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)

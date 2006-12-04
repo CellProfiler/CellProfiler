@@ -137,7 +137,9 @@ elseif size(SecondaryObjectImage) > size(PrimaryObjectImage)
     CroppedLabelMatrix(RowsToDelete,:,:) = [];
     clear SecondaryObjectImage
     SecondaryObjectImage = CroppedLabelMatrix;
-else error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
+end
+if size(SecondaryObjectImage) ~= size(PrimaryObjectImage)
+    error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
 end
 
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));

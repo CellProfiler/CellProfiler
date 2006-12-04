@@ -152,37 +152,56 @@ function handles = IdentifyPrimAutomatic(handles)
 % measurement in the output file, so if you find unusual measurements from
 % one of your images, you might check whether the automatically calculated
 % threshold was unusually high or low compared to the other images.
-%    There are four methods for finding thresholds automatically, Otsu's
-% method, the Mixture of Gaussian (MoG) method, the Background method, and
-% the Ridler-Calvard method. The Otsu method uses our version of the Matlab
-% function graythresh (the code is in the CellProfiler subfunction
-% CPthreshold). Our modifications include taking into account the max and
-% min values in the image and log-transforming the image prior to
-% calculating the threshold. Otsu's method is probably better if you don't
-% know anything about the image, or if the percent of the image covered by
-% objects varies substantially from image to image. But if you know the
-% object coverage percentage and it does not vary much from image to image,
-% the MoG can be better, especially if the coverage percentage is not near
-% 50%. Note, however, that the MoG function is experimental and has not
-% been thoroughly validated. The Background method is very simple and is
-% appropriate for images in which most of the image is background. It finds
-% the mode of the histogram of the image, which is assumed to be the
-% background of the image, and chooses a threshold at twice that value
+%    There are five methods for finding thresholds automatically, Otsu's
+% method, the Mixture of Gaussian (MoG) method, the Background method, the
+% Robust Background method and the Ridler-Calvard method. The Otsu method
+% uses our version of the Matlab function graythresh (the code is in the
+% CellProfiler subfunction CPthreshold). Our modifications include taking
+% into account the max and min values in the image and log-transforming the
+% image prior to calculating the threshold. Otsu's method is probably best
+% if you don't know anything about the image, or if the percent of the
+% image covered by objects varies substantially from image to image. If you
+% know the object coverage percentage and it does not vary much from image
+% to image, the MoG can be better, especially if the coverage percentage is
+% not near 50%. Note, however, that the MoG function is experimental and
+% has not been thoroughly validated. The Background method is very simple
+% and is appropriate for images in which most of the image is background.
+% It finds the mode of the histogram of the image, which is assumed to be
+% the background of the image, and chooses a threshold at twice that value
 % (which you can adjust with a Threshold Correction Factor, see below).
 % This can be very helpful, for example, if your images vary in overall
 % brightness but the objects of interest are always twice (or actually, any
-% constant) as bright as the background of the image. The Ridler-Calvard
-% method is simple and its results are often very similar to Otsu's. It
-% chooses an initial threshold, and then iteratively calculates the next
-% one by taking the mean of the average intensities of the background and
-% foreground pixels determined by the first threshold, repeating this until
-% the threshold converges.
-%    You can also choose between global and adaptive thresholding, where
-% global means that one threshold is used for the entire image and adaptive
-% means that the threshold varies across the image. Adaptive is slower to
-% calculate but provides more accurate edge determination which may help to
-% separate clumps, especially if you are not using a clump-separation
-% method (see below).
+% constant) as bright as the background of the image. The Robust background
+% method trims the brightest and dimmest 5% of pixel intensities off first
+% in the hopes that the remaining pixels represent a gaussian of intensity
+% values that are mostly background pixels. It then calculates the mean and
+% standard deviation of the remaining pixels and calculates the threshold
+% as the mean + 2 times the standard deviation. The Ridler-Calvard method
+% is simple and its results are often very similar to Otsu's. It chooses an
+% initial threshold, and then iteratively calculates the next one by taking
+% the mean of the average intensities of the background and foreground
+% pixels determined by the first threshold, repeating this until the
+% threshold converges.
+%    You can also choose between Global, Adaptive, and Per object
+% thresholding:
+% Global: one threshold is used for the entire image (fast).
+% Adaptive: the threshold varies across the image - a bit slower but
+% provides more accurate edge determination which may help to separate
+% clumps, especially if you are not using a clump-separation method (see
+% below).
+% Per object: if you are using this module to find child objects located
+% *within* parent objects, the per object method will calculate a distinct
+% threshold for each parent object. This is especially helpful, for
+% example, when the background brightness varies substantially among the
+% parent objects. Important: the per object method requires that you run an
+% IdentifyPrim module to identify the parent objects upstream in the
+% pipeline. After the parent objects are identified in the pipeline, you
+% must then also run a Crop module as follows: the shape in which to crop
+% is the name of the parent objects, and the image to be cropped is the one
+% that you will want to use within this module to identify the children
+% objects (e.g., ChildrenStainedImage). Then, set this
+% IdentifyPrimAutomatic module to identify objects within the
+% CroppedChildrenStainedImage.
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be
@@ -699,6 +718,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                     if GetThreshold
                         %%% Remove dim maxima
+                        %%% TODO: THIS IS THE MEAN THRESHOLD, SHOULDN'T IT
+                        %%% BE THE ORIG THRESHOLD?
+                     
                         MaximaImage = MaximaImage > Threshold;
                     end
                     %%% Shrink to points (needed because of the resizing)
@@ -1085,10 +1107,12 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 handles.Measurements.Image.NumberOfMergedObjects{handles.Current.SetBeingAnalyzed}(1,column) = NumberOfMergedObjects;
             end
 
-            %%% Saves the Threshold value to the handles structure.
-            %%% Storing the threshold is a little more complicated than storing other measurements
-            %%% because several different modules will write to the handles.Measurements.Image.Threshold
-            %%% structure, and we should therefore probably append the current threshold to an existing structure.
+            %%% Saves the Threshold value to the handles structure. Storing
+            %%% the threshold is a little more complicated than storing
+            %%% other measurements because several different modules will
+            %%% write to the handles.Measurements.Image.Threshold
+            %%% structure, and we should therefore probably append the
+            %%% current threshold to an existing structure.
             % First, if the Threshold fields don't exist, initialize them
             if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
                 handles.Measurements.Image.ThresholdFeatures = {};
@@ -1096,8 +1120,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             end
             % Search the ThresholdFeatures to find the column for this object type
             column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
-            % If column is empty it means that this particular object has not been segmented before. This will
-            % typically happen for the first cycle. Append the feature name in the
+            % If column is empty it means that this particular object has
+            % not been segmented before. This will typically happen for the
+            % first cycle. Append the feature name in the
             % handles.Measurements.Image.ThresholdFeatures matrix
             if isempty(column)
                 handles.Measurements.Image.ThresholdFeatures(end+1) = {ObjectName};

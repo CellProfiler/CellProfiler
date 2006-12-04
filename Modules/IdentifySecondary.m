@@ -64,7 +64,11 @@ function handles = IdentifySecondary(handles)
 % Select automatic thresholding method or enter an absolute threshold:
 %    The threshold affects the stringency of the lines between the objects
 % and the background. See the help for the IdentifyPrimAutomatic module for
-% a complete description of the options.
+% a complete description of the options. Note that Per object options are
+% not available for IdentifySecondary because the Per object method relies
+% on identifying objects *smaller* than the primary objects, whereas
+% secondary objects are always *larger* than their corresponding primary
+% objects.
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be
@@ -204,19 +208,14 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold during the first cycle to determine what will work well.
 %choiceVAR05 = Otsu Global
 %choiceVAR05 = Otsu Adaptive
-%choiceVAR05 = Otsu PerObject
 %choiceVAR05 = MoG Global
 %choiceVAR05 = MoG Adaptive
-%choiceVAR05 = MoG PerObject
 %choiceVAR05 = Background Global
 %choiceVAR05 = Background Adaptive
-%choiceVAR05 = Background PerObject
 %choiceVAR05 = RobustBackground Global
 %choiceVAR05 = RobustBackground Adaptive
-%choiceVAR05 = RobustBackground PerObject
 %choiceVAR05 = RidlerCalvard Global
 %choiceVAR05 = RidlerCalvard Adaptive
-%choiceVAR05 = RidlerCalvard PerObject
 %choiceVAR05 = All
 %choiceVAR05 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});

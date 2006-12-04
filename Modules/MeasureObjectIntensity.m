@@ -167,6 +167,29 @@ for i = 1:length(ObjectNameList)
     %%% will be measured with this module.
     LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
+    %%% For the cases where the label matrix was produced from a cropped
+    %%% image, the sizes of the images will not be equal. So, we crop the
+    %%% LabelMatrix and try again to see if the matrices are then the
+    %%% proper size. Removes Rows and Columns that are completely blank.
+    if size(OrigImage) < size(LabelMatrixImage)
+        ColumnTotals = sum(LabelMatrixImage,1);
+        RowTotals = sum(LabelMatrixImage,2)';
+        warning off all
+        ColumnsToDelete = ~logical(ColumnTotals);
+        RowsToDelete = ~logical(RowTotals);
+        warning on all
+        drawnow
+        CroppedLabelMatrix = LabelMatrixImage;
+        CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+        CroppedLabelMatrix(RowsToDelete,:,:) = [];
+        clear LabelMatrixImage
+        LabelMatrixImage = CroppedLabelMatrix;
+    end
+
+    if size(OrigImage) ~= size(LabelMatrixImage)
+        error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName,' objects were identified.'])
+    end
+        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

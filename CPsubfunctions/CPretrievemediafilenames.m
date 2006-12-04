@@ -81,7 +81,11 @@ else
     for i=1:length(NotYetTextMatchedFileNames)
         if ~isempty(TextToFind)
             if strncmpi(ExactOrRegExp,'E',1)
-                if ~isempty(findstr(lower(char(NotYetTextMatchedFileNames(i))), lower(TextToFind)))||isempty(TextToFind)
+                %%% This used to be findstr, but that produced bad results
+                %%% if the user entered a long string as the text to find,
+                %%% and there is a filename with part, but not all, of the
+                %%% name in common with that long string.
+                if ~isempty(strfind(lower(char(NotYetTextMatchedFileNames(i))), lower(TextToFind)))||isempty(TextToFind)
                     FileNames{Count} = char(NotYetTextMatchedFileNames(i));
                     Count = Count + 1;
                 end

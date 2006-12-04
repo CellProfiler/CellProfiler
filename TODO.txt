@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+- Anne 12-4-06: When using the Per Object thresholding method, save off the per object threshold as an object measurement in handles.Measurements.(ObjectName).Threshold  This information should be present in the Threshold variable, which is the same size as the label matrix - you'd just have to run something to pair off the label matrix and the threshold matrix and then do the 'unique' function on it.
+
+- Anne 12-1-06: The help says that IdentifyPrimAutomatic uses the Otsu method when you choose 'All'. First, this seems to not be the case, because a different value is calculated when you use 'All' and just one image in a folder vs. using Otsu Global on that same image. Second, while we are at it, why don't we make 'All' an option that can be used in conjunction with any thresholding method (Otsu, mog, background, etc). This would make All an alternative to Global, adaptive, and per object. It's possible that it's too computationally intensive to accumulate all the pixel intensities from the entire image set. In fact, that may be why the 'All' method uses a different method of calculating the threshold compared to Otsu global - it seems to generate a histogram rather than simply accumulating all the pixels.
+
 - Anne 12-1-06: Allow CellProfiler to read 3D tif images. We don't have any examples of this format, but they can apparently be created like this: imwrite(data,filename,'TIF','WriteMode','append')
 And they can be read easy enough -->
 A=imread(filename,'TIF',#); where # is which number in the file to read.

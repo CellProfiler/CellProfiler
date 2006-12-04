@@ -103,7 +103,7 @@ drawnow
 %%% cases where the secondary object is exactly the same size as the
 %%% primary object.
 %%%
-%%% WARNING: THIS MEANS TERTIARY REGIONS ARE NOT EXCLUSIVE PRIMARY +
+%%% WARNING: THIS MEANS TERTIARY REGIONS ARE NOT EXCLUSIVE... PRIMARY +
 %%% SECONDARY ~= TERTIARY
 
 %%% For the cases where one of the label matrices was produced from a
@@ -111,7 +111,7 @@ drawnow
 %%% line above will fail. So, we crop the LabelMatrix and try again to
 %%% see if the matrices are then the proper size. Removes Rows and
 %%% Columns that are completely blank.
-if size(SecondaryObjectImage) < size(PrimaryObjectImage)
+if any(size(SecondaryObjectImage) < size(PrimaryObjectImage))
     ColumnTotals = sum(PrimaryObjectImage,1);
     RowTotals = sum(PrimaryObjectImage,2)';
     warning off all
@@ -124,7 +124,7 @@ if size(SecondaryObjectImage) < size(PrimaryObjectImage)
     CroppedLabelMatrix(RowsToDelete,:,:) = [];
     clear PrimaryObjectImage
     PrimaryObjectImage = CroppedLabelMatrix;
-elseif size(SecondaryObjectImage) > size(PrimaryObjectImage)
+elseif any(size(SecondaryObjectImage) > size(PrimaryObjectImage))
     ColumnTotals = sum(SecondaryObjectImage,1);
     RowTotals = sum(SecondaryObjectImage,2)';
     warning off all
@@ -138,7 +138,7 @@ elseif size(SecondaryObjectImage) > size(PrimaryObjectImage)
     clear SecondaryObjectImage
     SecondaryObjectImage = CroppedLabelMatrix;
 end
-if size(SecondaryObjectImage) ~= size(PrimaryObjectImage)
+if any(size(SecondaryObjectImage) ~= size(PrimaryObjectImage))
     error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
 end
 

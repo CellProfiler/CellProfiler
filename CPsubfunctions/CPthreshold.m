@@ -673,24 +673,24 @@ end
 % 
 % figure(30)
 
-% %%% More debugging:
-% try
-%     load('Batch_44Autodata');
-% end
-% %%% Initializes the variables.
-% if ~exist('Means','var')
-%    Means = []; 
-%    StDevs = [];
-%    Levels = [];
-%    TrimmedImages = [];
-%    Images = [];
-% end
-% Means(end+1) = Mean;
-% StDevs(end+1) = StDev;
-% Levels(end+1) = level;
-% TrimmedImages{end+1} = {TrimmedImage};
-% Images{end+1} = {im};
-% save('Batch_44Autodata','Means','StDevs','Levels','TrimmedImages','Images');
+%%% More debugging:
+try
+    load('Batch_79Autodata');
+end
+%%% Initializes the variables.
+if ~exist('Means','var')
+   Means = []; 
+   StDevs = [];
+   Levels = [];
+   TrimmedImages = [];
+   Images = [];
+end
+Means(end+1) = Mean;
+StDevs(end+1) = StDev;
+Levels(end+1) = level;
+TrimmedImages{end+1} = {TrimmedImage};
+Images{end+1} = {im};
+save('Batch_79Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)

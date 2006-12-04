@@ -214,7 +214,7 @@ for i = 1:6
     %%% image, the sizes of the images will not be equal. So, we crop the
     %%% LabelMatrix and try again to see if the matrices are then the
     %%% proper size. Removes Rows and Columns that are completely blank.
-    if size(OrigImage) < size(LabelMatrixImage)
+    if any(size(OrigImage) < size(LabelMatrixImage))
         ColumnTotals = sum(LabelMatrixImage,1);
         RowTotals = sum(LabelMatrixImage,2)';
         warning off all
@@ -229,7 +229,7 @@ for i = 1:6
         LabelMatrixImage = CroppedLabelMatrix;
     end
 
-    if size(OrigImage) ~= size(LabelMatrixImage)
+    if any(size(OrigImage) ~= size(LabelMatrixImage))
         error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName,' objects were identified.'])
     end
 

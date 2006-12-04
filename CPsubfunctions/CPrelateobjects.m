@@ -1,4 +1,4 @@
-function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName,ParentName,ChildLabelMatrix,ParentLabelMatrix)
+function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName,ParentName,ChildLabelMatrix,ParentLabelMatrix,ModuleName)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -28,8 +28,30 @@ function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName
 %%% This line creates two rows containing all values for both label matrix
 %%% images. It then takes the unique rows (no repeats), and sorts them
 %%% according to the first column which is the sub object values.
-ChildParentList = sortrows(unique([ChildLabelMatrix(:) ParentLabelMatrix(:)],'rows'),1);
-%%% We want to get rid of the children values and keep the parent values.
+try ChildParentList = sortrows(unique([ChildLabelMatrix(:) ParentLabelMatrix(:)],'rows'),1);
+catch
+    %%% For the cases where the ChildLabelMatrix was produced from a
+    %%% cropped version of the ParentLabelMatrix, the sizes of the matrices will not be equal, so the line above will fail. So, we crop the
+    %%% ParentLabelMatrix and try again to see if the matrices are then the
+    %%% proper size.
+    %%% Removes Rows and Columns that are completely blank.
+    ColumnTotals = sum(ParentLabelMatrix,1);
+    RowTotals = sum(ParentLabelMatrix,2)';
+    warning off all
+    ColumnsToDelete = ~logical(ColumnTotals);
+    RowsToDelete = ~logical(RowTotals);
+    warning on all
+    drawnow
+    CroppedParentLabelMatrix = ParentLabelMatrix;
+    CroppedParentLabelMatrix(:,ColumnsToDelete,:) = [];
+    CroppedParentLabelMatrix(RowsToDelete,:,:) = [];
+    %%% And we try the original line again.
+    try ChildParentList = sortrows(unique([ChildLabelMatrix(:) CroppedParentLabelMatrix(:)],'rows'),1);
+    catch error(['Image processing was canceled in the ',ModuleName, ' module because the parent and children objects you are trying to relate come from images that are not the same size.'])
+    end
+end
+
+    %%% We want to get rid of the children values and keep the parent values.
 ParentList = ChildParentList(:,2);
 %%% This gets rid of all parent values which have no corresponding children
 %%% values (where children = 0 but parent = 1).
@@ -43,7 +65,7 @@ end
 
 if exist('FinalParentList','var')
     if max(ChildLabelMatrix(:)) ~= size(FinalParentList,1)
-        error('Image processing was canceled in CPrelateobjects because objects cannot have two parents, something is wrong.');
+        error(['Image processing was canceled in CPrelateobjects, a subfunction used by the ',ModuleName,' module, because objects cannot have two parents, something is wrong.']);
     end
     handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,FinalParentList);
 else

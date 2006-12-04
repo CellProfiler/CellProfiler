@@ -166,21 +166,28 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         ColumnsToAddPost = ColumnsToAdd - ColumnsToAddPre;
         PaddedImage = padarray(OrigImage,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
         PaddedImage = padarray(PaddedImage,[RowsToAddPost ColumnsToAddPost],'replicate','post');
-        %%% Pad the crop mask too.
+        PaddedImageandCropMask = PaddedImage;
         if exist('BinaryCropMask','var')
+            %%% Pad the crop mask too.
             PaddedCropMask = padarray(BinaryCropMask,[RowsToAddPre ColumnsToAddPre],'replicate','pre');
             PaddedCropMask = padarray(PaddedCropMask,[RowsToAddPost ColumnsToAddPost],'replicate','post');
+            %%% For the CPblkproc function, the original image and the crop
+            %%% mask image (if it exists) must be combined into one.
+            PaddedImageandCropMask(:,:,2) = PaddedCropMask;
+            %%% And the Block must have two layers, too.
+            Block = [BestBlockSize BestBlockSize 2];
+            %%% Sends the linear masked image to the appropriate
+            %%% thresholding subfunction, in blocks.
+            eval(['Threshold = CPblkproc(PaddedImageandCropMask,Block,@',ThresholdMethod,',handles,ImageName,pObject);']);
+            %%% This evaluates to something like: Threshold =
+            %%% CPblkproc(PaddedImageandCropMask,Block,@Otsu,handles,ImageN
+            %%% ame);
+        else
+            %%% If there is no crop mask, then we can simply use the
+            %%% blkproc function rather than CPblkproc.
+            Block = [BestBlockSize BestBlockSize];
+            eval(['Threshold = blkproc(PaddedImageandCropMask,Block,@',ThresholdMethod,',handles,ImageName,pObject);']);
         end
-        %%% For the blkproc function, the images must be combined into one.
-        PaddedImageandCropMask(:,:,1) = PaddedImage;
-        PaddedImageandCropMask(:,:,2) = PaddedCropMask;
-
-        %%% Sends the linear masked image to the appropriate thresholding
-        %%% subfunction, in blocks.
-        eval(['Threshold = CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize 2],@',ThresholdMethod,',handles,ImageName,pObject);']);
-        %%% This evaluates to something like: Threshold =
-        %%% CPblkproc(PaddedImageandCropMask,[BestBlockSize BestBlockSize
-        %%% 2],@Otsu,handles,ImageName);
 
         %%% Resizes the block-produced image to be the size of the padded
         %%% image. Bilinear prevents dipping below zero. The crop the image
@@ -194,7 +201,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         %%% label matrix of objects, where each object consists of an
         %%% integer that is its label.
         if ~exist('RetrievedCropMask','var')
-            error(['Image processing was canceled in the ,',ModuleName,' module because you have chosen to calculate the threshold on a per-object basis, but CellProfiler could not find the image of the objects you want to use.'])
+            error(['Image processing was canceled in the ',ModuleName,' module because you have chosen to calculate the threshold on a per-object basis, but CellProfiler could not find the image of the objects you want to use.'])
         end
         %%% Initializes the Threshold variable (which will end up being the
         %%% same size as the original image).
@@ -385,6 +392,14 @@ end
 
 if max(im) == min(im)
     level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
 else
     %%% We want to limit the dynamic range of the image to 256. Otherwise,
     %%% an image with almost all values near zero can give a bad result.
@@ -444,105 +459,116 @@ if ndims(im) == 3
 else im = im(:);
 end
 
-%%% The number of classes is set to 3
-NumberOfClasses = 3;
-
-%%% If the image is larger than 512x512, select a subset of 512^2 pixels
-%%% for speed. This should be enough to capture the statistics in the
-%%% image.
-% im = im(:);
-if length(im) > 512^2
-    indexes = randperm(length(im));
-    im = im(indexes(1:512^2));
-end
-
-%%% Convert user-specified percentage of image covered by objects to a
-%%% prior probability of a pixel being part of an object.
-pObject = str2double(pObject(1:2))/100;
-%%% Get the probability for a background pixel
-pBackground = 1 - pObject;
-
-%%% Initialize mean and standard deviations of the three Gaussian
-%%% distributions by looking at the pixel intensities in the original image
-%%% and by considering the percentage of the image that is covered by
-%%% object pixels. Class 1 is the background class and Class 3 is the
-%%% object class. Class 2 is an intermediate class and we will decide later
-%%% if it encodes background or object pixels. Also, for robustness the we
-%%% remove 1% of the smallest and highest intensities in case there are any
-%%% quantization effects that have resulted in unaturally many 0:s or 1:s
-%%% in the image.
-im = sort(im);
-im = im(ceil(length(im)*0.01):round(length(im)*0.99));
-ClassMean(1) = im(round(length(im)*pBackground/2));                      %%% Initialize background class
-ClassMean(3) = im(round(length(im)*(1 - pObject/2)));                    %%% Initialize object class
-ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
-%%% Initialize standard deviations of the Gaussians. They should be the
-%%% same to avoid problems.
-ClassStd(1:3) = 0.15;
-%%% Initialize prior probabilities of a pixel belonging to each class. The
-%%% intermediate class is gets some probability from the background and
-%%% object classes.
-pClass(1) = 3/4*pBackground;
-pClass(2) = 1/4*pBackground + 1/4*pObject;
-pClass(3) = 3/4*pObject;
-
-%%% Apply transformation.  a < x < b, transform to log((x-a)/(b-x)).
-%a = - 0.000001; b = 1.000001; im =
-%log((im-a)./(b-im)); ClassMean = log((ClassMean-a)./(b -
-%ClassMean)) ClassStd(1:3) = [1 1 1];
-
-%%% Expectation-Maximization algorithm for fitting the three Gaussian
-%%% distributions/classes to the data. Note, the code below is general and
-%%% works for any number of classes. Iterate until parameters don't change
-%%% anymore.
-delta = 1;
-while delta > 0.001
-    %%% Store old parameter values to monitor change
-    oldClassMean = ClassMean;
-
-    %%% Update probabilities of a pixel belonging to the background or
-    %%% object1 or object2
-    for k = 1:NumberOfClasses
-        pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(im - ClassMean(k)).^2/(2*ClassStd(k)^2));
-    end
-    pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
-
-    %%% Update parameters in Gaussian distributions
-    for k = 1:NumberOfClasses
-        pClass(k) = mean(pPixelClass(:,k));
-        ClassMean(k) = sum(pPixelClass(:,k).*im)/(length(im)*pClass(k));
-        ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(im - ClassMean(k)).^2)/(length(im)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
-    end
-
-    %%% Calculate change
-    delta = sum(abs(ClassMean - oldClassMean));
-end
-
-%%% Now the Gaussian distributions are fitted and we can describe the
-%%% histogram of the pixel intensities as the sum of these Gaussian
-%%% distributions. To find a threshold we first have to decide if the
-%%% intermediate class 2 encodes background or object pixels. This is done
-%%% by choosing the combination of class probabilities 'pClass' that best
-%%% matches the user input 'pObject'.
-level = linspace(ClassMean(1),ClassMean(3),10000);
-Class1Gaussian = pClass(1) * 1/sqrt(2*pi*ClassStd(1)^2) * exp(-(level - ClassMean(1)).^2/(2*ClassStd(1)^2));
-Class2Gaussian = pClass(2) * 1/sqrt(2*pi*ClassStd(2)^2) * exp(-(level - ClassMean(2)).^2/(2*ClassStd(2)^2));
-Class3Gaussian = pClass(3) * 1/sqrt(2*pi*ClassStd(3)^2) * exp(-(level - ClassMean(3)).^2/(2*ClassStd(3)^2));
-if abs(pClass(2) + pClass(3) - pObject) < abs(pClass(3) - pObject)
-    %%% Intermediate class 2 encodes object pixels
-    BackgroundDistribution = Class1Gaussian;
-    ObjectDistribution = Class2Gaussian + Class3Gaussian;
+if max(im) == min(im)
+    level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
 else
-    %%% Intermediate class 2 encodes background pixels
-    BackgroundDistribution = Class1Gaussian + Class2Gaussian;
-    ObjectDistribution = Class3Gaussian;
+
+    %%% The number of classes is set to 3
+    NumberOfClasses = 3;
+
+    %%% If the image is larger than 512x512, select a subset of 512^2
+    %%% pixels for speed. This should be enough to capture the statistics
+    %%% in the image.
+    % im = im(:);
+    if length(im) > 512^2
+        indexes = randperm(length(im));
+        im = im(indexes(1:512^2));
+    end
+
+    %%% Convert user-specified percentage of image covered by objects to a
+    %%% prior probability of a pixel being part of an object.
+    pObject = str2double(pObject(1:2))/100;
+    %%% Get the probability for a background pixel
+    pBackground = 1 - pObject;
+
+    %%% Initialize mean and standard deviations of the three Gaussian
+    %%% distributions by looking at the pixel intensities in the original
+    %%% image and by considering the percentage of the image that is
+    %%% covered by object pixels. Class 1 is the background class and Class
+    %%% 3 is the object class. Class 2 is an intermediate class and we will
+    %%% decide later if it encodes background or object pixels. Also, for
+    %%% robustness the we remove 1% of the smallest and highest intensities
+    %%% in case there are any quantization effects that have resulted in
+    %%% unaturally many 0:s or 1:s in the image.
+    im = sort(im);
+    im = im(ceil(length(im)*0.01):round(length(im)*0.99));
+    ClassMean(1) = im(round(length(im)*pBackground/2));                      %%% Initialize background class
+    ClassMean(3) = im(round(length(im)*(1 - pObject/2)));                    %%% Initialize object class
+    ClassMean(2) = (ClassMean(1) + ClassMean(3))/2;                                            %%% Initialize intermediate class
+    %%% Initialize standard deviations of the Gaussians. They should be the
+    %%% same to avoid problems.
+    ClassStd(1:3) = 0.15;
+    %%% Initialize prior probabilities of a pixel belonging to each class.
+    %%% The intermediate class is gets some probability from the background
+    %%% and object classes.
+    pClass(1) = 3/4*pBackground;
+    pClass(2) = 1/4*pBackground + 1/4*pObject;
+    pClass(3) = 3/4*pObject;
+
+    %%% Apply transformation.  a < x < b, transform to log((x-a)/(b-x)).
+    %a = - 0.000001; b = 1.000001; im = log((im-a)./(b-im)); ClassMean =
+    %log((ClassMean-a)./(b - ClassMean)) ClassStd(1:3) = [1 1 1];
+
+    %%% Expectation-Maximization algorithm for fitting the three Gaussian
+    %%% distributions/classes to the data. Note, the code below is general
+    %%% and works for any number of classes. Iterate until parameters don't
+    %%% change anymore.
+    delta = 1;
+    while delta > 0.001
+        %%% Store old parameter values to monitor change
+        oldClassMean = ClassMean;
+
+        %%% Update probabilities of a pixel belonging to the background or
+        %%% object1 or object2
+        for k = 1:NumberOfClasses
+            pPixelClass(:,k) = pClass(k)* 1/sqrt(2*pi*ClassStd(k)^2) * exp(-(im - ClassMean(k)).^2/(2*ClassStd(k)^2));
+        end
+        pPixelClass = pPixelClass ./ repmat(sum(pPixelClass,2) + eps,[1 NumberOfClasses]);
+
+        %%% Update parameters in Gaussian distributions
+        for k = 1:NumberOfClasses
+            pClass(k) = mean(pPixelClass(:,k));
+            ClassMean(k) = sum(pPixelClass(:,k).*im)/(length(im)*pClass(k));
+            ClassStd(k)  = sqrt(sum(pPixelClass(:,k).*(im - ClassMean(k)).^2)/(length(im)*pClass(k))) + sqrt(eps);    % Add sqrt(eps) to avoid division by zero
+        end
+
+        %%% Calculate change
+        delta = sum(abs(ClassMean - oldClassMean));
+    end
+
+    %%% Now the Gaussian distributions are fitted and we can describe the
+    %%% histogram of the pixel intensities as the sum of these Gaussian
+    %%% distributions. To find a threshold we first have to decide if the
+    %%% intermediate class 2 encodes background or object pixels. This is
+    %%% done by choosing the combination of class probabilities 'pClass'
+    %%% that best matches the user input 'pObject'.
+    level = linspace(ClassMean(1),ClassMean(3),10000);
+    Class1Gaussian = pClass(1) * 1/sqrt(2*pi*ClassStd(1)^2) * exp(-(level - ClassMean(1)).^2/(2*ClassStd(1)^2));
+    Class2Gaussian = pClass(2) * 1/sqrt(2*pi*ClassStd(2)^2) * exp(-(level - ClassMean(2)).^2/(2*ClassStd(2)^2));
+    Class3Gaussian = pClass(3) * 1/sqrt(2*pi*ClassStd(3)^2) * exp(-(level - ClassMean(3)).^2/(2*ClassStd(3)^2));
+    if abs(pClass(2) + pClass(3) - pObject) < abs(pClass(3) - pObject)
+        %%% Intermediate class 2 encodes object pixels
+        BackgroundDistribution = Class1Gaussian;
+        ObjectDistribution = Class2Gaussian + Class3Gaussian;
+    else
+        %%% Intermediate class 2 encodes background pixels
+        BackgroundDistribution = Class1Gaussian + Class2Gaussian;
+        ObjectDistribution = Class3Gaussian;
+    end
+
+    %%% Now, find the threshold at the intersection of the background
+    %%% distribution and the object distribution.
+    [ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution)); %#ok Ignore MLint
+    level = level(index);
 end
-
-%%% Now, find the threshold at the intersection of the background
-%%% distribution and the object distribution.
-[ignore,index] = min(abs(BackgroundDistribution - ObjectDistribution)); %#ok Ignore MLint
-level = level(index);
-
 
 function level = Background(im,handles,ImageName,pObject)
 %%% The threshold is calculated by calculating the mode and multiplying by
@@ -562,8 +588,16 @@ if ndims(im) == 3
 else im = im(:);
 end
 
-if max(im) == min(im),
+if max(im) == min(im)
     level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
 else
     level = 2*mode(im(:));
 end
@@ -588,6 +622,17 @@ if ndims(im) == 3
 else im = im(:);
 end
 
+if max(im) == min(im)
+    level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
+else
 %%% First, the image's pixels are sorted from low to high.
 im = sort(im);
 %%% The index of the 5th percentile is calculated, with a minimum of 1.
@@ -599,6 +644,7 @@ TrimmedImage = im(LowIndex: HighIndex);
 Mean = mean(TrimmedImage);
 StDev = std(TrimmedImage);
 level = Mean + 2*StDev;
+end
 
 % %%% DEBUGGING
 % Logim = log(sort(im(im~=0)));
@@ -627,24 +673,24 @@ level = Mean + 2*StDev;
 % 
 % figure(30)
 
-% %%% More debugging:
-% try
-%     load('Batch_32Autodata');
-% end
-% %%% Initializes the variables.
-% if ~exist('Means','var')
-%    Means = []; 
-%    StDevs = [];
-%    Levels = [];
-%    TrimmedImages = [];
-%    Images = [];
-% end
-% Means(end+1) = Mean;
-% StDevs(end+1) = StDev;
-% Levels(end+1) = level;
-% TrimmedImages{end+1} = {TrimmedImage};
-% Images{end+1} = {im};
-% save('Batch_32Autodata','Means','StDevs','Levels','TrimmedImages','Images');
+%%% More debugging:
+try
+    load('Batch_44Autodata');
+end
+%%% Initializes the variables.
+if ~exist('Means','var')
+   Means = []; 
+   StDevs = [];
+   Levels = [];
+   TrimmedImages = [];
+   Images = [];
+end
+Means(end+1) = Mean;
+StDevs(end+1) = StDev;
+Levels(end+1) = level;
+TrimmedImages{end+1} = {TrimmedImage};
+Images{end+1} = {im};
+save('Batch_44Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)
@@ -662,25 +708,37 @@ if ndims(im) == 3
 else im = im(:);
 end
 
-%%% We want to limit the dynamic range of the image to 256. Otherwise, an
-%%% image with almost all values near zero can give a bad result.
-MinVal = max(im)/256;
-im(im<MinVal) = MinVal;
-im = log(im);
-MinVal = min(im);
-MaxVal = max(im);
-im = (im - MinVal)/(MaxVal - MinVal);
-PreThresh = 0;
-%%% This method needs an initial value to start iterating. Using graythresh
-%%% (Otsu's method) is probably not the best, because the Ridler Calvard
-%%% threshold ends up being too close to this one and in most cases has the
-%%% same exact value.
-NewThresh = graythresh(im);
-delta = 0.00001;
-while abs(PreThresh - NewThresh)>delta
-    PreThresh = NewThresh;
-    Mean1 = mean(im(im<PreThresh));
-    Mean2 = mean(im(im>=PreThresh));
-    NewThresh = mean([Mean1,Mean2]);
+if max(im) == min(im)
+    level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
+else
+    %%% We want to limit the dynamic range of the image to 256. Otherwise,
+    %%% an image with almost all values near zero can give a bad result.
+    MinVal = max(im)/256;
+    im(im<MinVal) = MinVal;
+    im = log(im);
+    MinVal = min(im);
+    MaxVal = max(im);
+    im = (im - MinVal)/(MaxVal - MinVal);
+    PreThresh = 0;
+    %%% This method needs an initial value to start iterating. Using
+    %%% graythresh (Otsu's method) is probably not the best, because the
+    %%% Ridler Calvard threshold ends up being too close to this one and in
+    %%% most cases has the same exact value.
+    NewThresh = graythresh(im);
+    delta = 0.00001;
+    while abs(PreThresh - NewThresh)>delta
+        PreThresh = NewThresh;
+        Mean1 = mean(im(im<PreThresh));
+        Mean2 = mean(im(im>=PreThresh));
+        NewThresh = mean([Mean1,Mean2]);
+    end
+    level = exp(MinVal + (MaxVal-MinVal)*NewThresh);
 end
-level = exp(MinVal + (MaxVal-MinVal)*NewThresh);

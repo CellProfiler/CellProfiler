@@ -522,7 +522,8 @@ if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground
 else
     GetThreshold = 1;
 end
-GetThreshold = 1;
+%%% I don't think this should be here, Anne 12-4-06
+% GetThreshold = 1;
 
 %%% Checks that the Laplace parameters have valid values
 if ~strcmp(LaplaceValues,'/')

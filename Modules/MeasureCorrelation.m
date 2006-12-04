@@ -184,6 +184,30 @@ end
 
 %%% For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
+    
+    %%% For the cases where the label matrix was produced from a cropped
+    %%% image, the sizes of the images will not be equal. So, we crop the
+    %%% LabelMatrix and try again to see if the matrices are then the
+    %%% proper size. Removes Rows and Columns that are completely blank.
+    if size(Image{i}) < size(LabelMatrixImage{ObjectNameNbr})
+        ColumnTotals = sum(LabelMatrixImage{ObjectNameNbr},1);
+        RowTotals = sum(LabelMatrixImage{ObjectNameNbr},2)';
+        warning off all
+        ColumnsToDelete = ~logical(ColumnTotals);
+        RowsToDelete = ~logical(RowTotals);
+        warning on all
+        drawnow
+        CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
+        CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+        CroppedLabelMatrix(RowsToDelete,:,:) = [];
+        LabelMatrixImage{ObjectNameNbr} = [];
+        LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
+    end
+
+    if size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr})
+        error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
+    end
+    
     %%% Calculate the correlation in all objects for all pairwise image combinations
     NbrOfObjects = max(LabelMatrixImage{ObjectNameNbr}(:));          % Get number of segmented objects
     Correlation = zeros(NbrOfObjects,length(CorrelationFeatures));   % Pre-allocate memory

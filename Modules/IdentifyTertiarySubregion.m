@@ -105,9 +105,45 @@ drawnow
 %%%
 %%% WARNING: THIS MEANS TERTIARY REGIONS ARE NOT EXCLUSIVE PRIMARY +
 %%% SECONDARY ~= TERTIARY
-%%%
+
+%%% For the cases where one of the label matrices was produced from a
+%%% cropped image, the sizes of the matrices will not be equal, so the
+%%% line above will fail. So, we crop the LabelMatrix and try again to
+%%% see if the matrices are then the proper size. Removes Rows and
+%%% Columns that are completely blank.
+if size(SecondaryObjectImage) < size(PrimaryObjectImage)
+    ColumnTotals = sum(PrimaryObjectImage,1);
+    RowTotals = sum(PrimaryObjectImage,2)';
+    warning off all
+    ColumnsToDelete = ~logical(ColumnTotals);
+    RowsToDelete = ~logical(RowTotals);
+    warning on all
+    drawnow
+    CroppedLabelMatrix = PrimaryObjectImage;
+    CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+    CroppedLabelMatrix(RowsToDelete,:,:) = [];
+    clear PrimaryObjectImage
+    PrimaryObjectImage = CroppedLabelMatrix;
+elseif size(SecondaryObjectImage) > size(PrimaryObjectImage)
+    ColumnTotals = sum(SecondaryObjectImage,1);
+    RowTotals = sum(SecondaryObjectImage,2)';
+    warning off all
+    ColumnsToDelete = ~logical(ColumnTotals);
+    RowsToDelete = ~logical(RowTotals);
+    warning on all
+    drawnow
+    CroppedLabelMatrix = SecondaryObjectImage;
+    CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+    CroppedLabelMatrix(RowsToDelete,:,:) = [];
+    clear SecondaryObjectImage
+    SecondaryObjectImage = CroppedLabelMatrix;
+else error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
+end
+
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
-SubregionObjectImage = max(0,SecondaryObjectImage - ErodedPrimaryObjectImage);
+
+SubregionObjectImage = SecondaryObjectImage;
+SubregionObjectImage(ErodedPrimaryObjectImage~=0) = 0;
 
 %%% Calculates object outlines
 MaxFilteredImage = ordfilt2(SubregionObjectImage,9,ones(3,3),'symmetric');

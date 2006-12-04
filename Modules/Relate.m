@@ -75,7 +75,7 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],Modu
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix);
+[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
 
 handles.Measurements.(SubObjectName).SubObjectFlag=1;
 

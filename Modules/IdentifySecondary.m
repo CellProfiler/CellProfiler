@@ -739,7 +739,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             handles.Measurements.(PrimaryObjectName) = {};
         end
 
-        handles = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage);
+        handles = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage,ModuleName);
 
         %%%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%

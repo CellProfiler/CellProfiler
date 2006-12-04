@@ -633,17 +633,17 @@ elseif isempty(im)
     %%% real objects?
     level = 1;
 else
-%%% First, the image's pixels are sorted from low to high.
-im = sort(im);
-%%% The index of the 5th percentile is calculated, with a minimum of 1.
-LowIndex = max(1,round(.05*length(im)));
-%%% The index of the 95th percentile is calculated, with a maximum of the
-%%% number of pixels in the whole image.
-HighIndex = min(length(im),round(.95*length(im)));
-TrimmedImage = im(LowIndex: HighIndex);
-Mean = mean(TrimmedImage);
-StDev = std(TrimmedImage);
-level = Mean + 2*StDev;
+    %%% First, the image's pixels are sorted from low to high.
+    im = sort(im);
+    %%% The index of the 5th percentile is calculated, with a minimum of 1.
+    LowIndex = max(1,round(.05*length(im)));
+    %%% The index of the 95th percentile is calculated, with a maximum of the
+    %%% number of pixels in the whole image.
+    HighIndex = min(length(im),round(.95*length(im)));
+    TrimmedImage = im(LowIndex: HighIndex);
+    Mean = mean(TrimmedImage);
+    StDev = std(TrimmedImage);
+    level = Mean + 2*StDev;
 end
 
 % %%% DEBUGGING
@@ -673,24 +673,24 @@ end
 % 
 % figure(30)
 
-%%% More debugging:
-try
-    load('Batch_44Autodata');
-end
-%%% Initializes the variables.
-if ~exist('Means','var')
-   Means = []; 
-   StDevs = [];
-   Levels = [];
-   TrimmedImages = [];
-   Images = [];
-end
-Means(end+1) = Mean;
-StDevs(end+1) = StDev;
-Levels(end+1) = level;
-TrimmedImages{end+1} = {TrimmedImage};
-Images{end+1} = {im};
-save('Batch_44Autodata','Means','StDevs','Levels','TrimmedImages','Images');
+% %%% More debugging:
+% try
+%     load('Batch_44Autodata');
+% end
+% %%% Initializes the variables.
+% if ~exist('Means','var')
+%    Means = []; 
+%    StDevs = [];
+%    Levels = [];
+%    TrimmedImages = [];
+%    Images = [];
+% end
+% Means(end+1) = Mean;
+% StDevs(end+1) = StDev;
+% Levels(end+1) = level;
+% TrimmedImages{end+1} = {TrimmedImage};
+% Images{end+1} = {im};
+% save('Batch_44Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)

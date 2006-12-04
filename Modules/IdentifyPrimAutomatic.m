@@ -575,7 +575,12 @@ MaximumThreshold = ThresholdRange(index+1:end);
 %%% Check the smoothing filter size parameter
 if ~strcmpi(SizeOfSmoothingFilter,'Automatic')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isnan(SizeOfSmoothingFilter) | isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 | SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
+    if isnan(SizeOfSmoothingFilter) | isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 %| SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
+        %%% I commented out the part where we check that the size of
+        %%% smoothing filter is greater than the image, because I think it
+        %%% does not yield errors when that is the case, and in some
+        %%% dynamic pipelines, the size of the image may be very small in
+        %%% some cases and large in others.
         error(['Image processing was canceled in the ', ModuleName, ' module because the specified size of the smoothing filter is not valid or unreasonable.'])
     end
 end

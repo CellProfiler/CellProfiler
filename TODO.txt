@@ -1,5 +1,11 @@
 CellProfiler cell image analysis software development 
 
+- Anne 12-04-06: In IdentifyPrimAutomatic, check on this (requires serious thinking - the Threshold variable is sometimes a single scalar but other times is a whole image size of thresholds):
+ %%% Remove dim maxima
+ %%% TODO: THIS IS THE MEAN THRESHOLD, SHOULDN'T IT
+ %%% BE THE ORIG THRESHOLD?
+MaximaImage = MaximaImage > Threshold;
+
 - Anne 12-04-06: Deal with these warnings:
 Warning: Divide by zero.
 > In imresize at 86

@@ -643,7 +643,7 @@ else
     TrimmedImage = im(LowIndex: HighIndex);
     Mean = mean(TrimmedImage);
     StDev = std(TrimmedImage);
-    level = Mean + 3*StDev;
+    level = Mean + 2*StDev;
 end
 
 % %%% DEBUGGING
@@ -672,25 +672,25 @@ end
 % hold off
 % 
 % figure(30)
-
-%%% More debugging:
-try
-    load('Batch_80Autodata');
-end
-%%% Initializes the variables.
-if ~exist('Means','var')
-   Means = []; 
-   StDevs = [];
-   Levels = [];
-   TrimmedImages = [];
-   Images = [];
-end
-Means(end+1) = Mean;
-StDevs(end+1) = StDev;
-Levels(end+1) = level;
-TrimmedImages{end+1} = {TrimmedImage};
-Images{end+1} = {im};
-save('Batch_80Autodata','Means','StDevs','Levels','TrimmedImages','Images');
+% 
+% %%% More debugging:
+% try
+%     load('Batch_80Autodata');
+% end
+% %%% Initializes the variables.
+% if ~exist('Means','var')
+%    Means = []; 
+%    StDevs = [];
+%    Levels = [];
+%    TrimmedImages = [];
+%    Images = [];
+% end
+% Means(end+1) = Mean;
+% StDevs(end+1) = StDev;
+% Levels(end+1) = level;
+% TrimmedImages{end+1} = {TrimmedImage};
+% Images{end+1} = {im};
+% save('Batch_80Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)

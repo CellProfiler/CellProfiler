@@ -643,7 +643,7 @@ else
     TrimmedImage = im(LowIndex: HighIndex);
     Mean = mean(TrimmedImage);
     StDev = std(TrimmedImage);
-    level = Mean + 2*StDev;
+    level = Mean + 3*StDev;
 end
 
 % %%% DEBUGGING
@@ -675,7 +675,7 @@ end
 
 %%% More debugging:
 try
-    load('Batch_79Autodata');
+    load('Batch_80Autodata');
 end
 %%% Initializes the variables.
 if ~exist('Means','var')
@@ -690,7 +690,7 @@ StDevs(end+1) = StDev;
 Levels(end+1) = level;
 TrimmedImages{end+1} = {TrimmedImage};
 Images{end+1} = {im};
-save('Batch_79Autodata','Means','StDevs','Levels','TrimmedImages','Images');
+save('Batch_80Autodata','Means','StDevs','Levels','TrimmedImages','Images');
 
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)

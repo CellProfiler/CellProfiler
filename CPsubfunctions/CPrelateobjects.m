@@ -31,7 +31,8 @@ function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName
 try ChildParentList = sortrows(unique([ChildLabelMatrix(:) ParentLabelMatrix(:)],'rows'),1);
 catch
     %%% For the cases where the ChildLabelMatrix was produced from a
-    %%% cropped version of the ParentLabelMatrix, the sizes of the matrices will not be equal, so the line above will fail. So, we crop the
+    %%% cropped version of the ParentLabelMatrix, the sizes of the matrices
+    %%% will not be equal, so the line above will fail. So, we crop the
     %%% ParentLabelMatrix and try again to see if the matrices are then the
     %%% proper size.
     %%% Removes Rows and Columns that are completely blank.
@@ -47,6 +48,8 @@ catch
     CroppedParentLabelMatrix(RowsToDelete,:,:) = [];
     %%% And we try the original line again.
     try ChildParentList = sortrows(unique([ChildLabelMatrix(:) CroppedParentLabelMatrix(:)],'rows'),1);
+        clear ParentLabelMatrix
+        ParentLabelMatrix = CroppedParentLabelMatrix;
     catch error(['Image processing was canceled in the ',ModuleName, ' module because the parent and children objects you are trying to relate come from images that are not the same size.'])
     end
 end

@@ -143,8 +143,8 @@ CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = Should the cropping pattern in the first image cycle be applied to all subsequent image cycles (First option) or should each image cycle be cropped individually?
-%choiceVAR05 = First
 %choiceVAR05 = Individually
+%choiceVAR05 = First
 IndividualOrOnce = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 

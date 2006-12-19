@@ -1,5 +1,9 @@
 Mike's TODO list
 
+- Set up the Intel Mac with MATLAB and CellProfiler - or were we waiting for a new MATLAB version to be released or something?
+
+- Note - the PC next to where Ray sits is not CellProfiler-happy... I think the problem has something to do with different people svn updating CellProfiler and then the permissions are all scrambled. Perhaps we won't use this computer anymore anyway, so we shouldn't bother? But it seems like it'd be nice to fix it so we have a spare PC around when we move. If i've done something wrong (e.g. svn updating as myself), put a note on the computer so i don't do it again!
+
 - Analyze image of cell array for Chris Love (Pleough lab). Location in sabatini3_ata in a folder 2006_11_02_ChrisLove. He wants a 76 x 76 grid of rows and columns to be placed on the image, and then within each square of the grid he wants to measure a couple things. Final result: Excel file with three columns:
 1. Well number (count across first, 1 to 76 then the next row is 77 to...)
 2. Cell count (he actually only cares about scoring each well YES/NO as having 1 cell or not, he does not need the precise number if it's zero or 2 or 3)

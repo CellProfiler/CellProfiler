@@ -570,7 +570,7 @@ BinaryCropMaskImage = BinaryCropImage;
 BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
 BinaryCropMaskImage(RowsToDelete,:,:) = [];
 %%% In case the entire image has been cropped away, we store a single
-%%% zero pixel in the handles structure.
+%%% zero pixel for these variables.
 if isempty(CroppedImage)
     CroppedImage = 0;
     BinaryCropMaskImage = 0;

@@ -46,6 +46,11 @@ catch
     CroppedParentLabelMatrix = ParentLabelMatrix;
     CroppedParentLabelMatrix(:,ColumnsToDelete,:) = [];
     CroppedParentLabelMatrix(RowsToDelete,:,:) = [];
+        %%% In case the entire image has been cropped away, we store a single
+    %%% zero pixel for the variable.
+    if isempty(CroppedParentLabelMatrix)
+        CroppedParentLabelMatrix = 0;
+    end
     %%% And we try the original line again.
     try ChildParentList = sortrows(unique([ChildLabelMatrix(:) CroppedParentLabelMatrix(:)],'rows'),1);
         clear ParentLabelMatrix

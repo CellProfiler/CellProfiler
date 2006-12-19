@@ -202,12 +202,17 @@ for ObjectNameNbr = 1:ObjectNameCount
         CroppedLabelMatrix(RowsToDelete,:,:) = [];
         LabelMatrixImage{ObjectNameNbr} = [];
         LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
+        %%% In case the entire image has been cropped away, we store a
+        %%% single zero pixel for the variable.
+        if isempty(LabelMatrixImage{ObjectNameNbr})
+            LabelMatrixImage{ObjectNameNbr} = 0;
+        end
     end
 
     if any(size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr}))
         error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
     end
-    
+
     %%% Calculate the correlation in all objects for all pairwise image combinations
     NbrOfObjects = max(LabelMatrixImage{ObjectNameNbr}(:));          % Get number of segmented objects
     Correlation = zeros(NbrOfObjects,length(CorrelationFeatures));   % Pre-allocate memory

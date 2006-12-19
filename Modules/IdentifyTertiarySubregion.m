@@ -124,6 +124,11 @@ if any(size(SecondaryObjectImage) < size(PrimaryObjectImage))
     CroppedLabelMatrix(RowsToDelete,:,:) = [];
     clear PrimaryObjectImage
     PrimaryObjectImage = CroppedLabelMatrix;
+    %%% In case the entire image has been cropped away, we store a single
+    %%% zero pixel for the variable.
+    if isempty(PrimaryObjectImage)
+        PrimaryObjectImage = 0;
+    end
 elseif any(size(SecondaryObjectImage) > size(PrimaryObjectImage))
     ColumnTotals = sum(SecondaryObjectImage,1);
     RowTotals = sum(SecondaryObjectImage,2)';
@@ -137,7 +142,13 @@ elseif any(size(SecondaryObjectImage) > size(PrimaryObjectImage))
     CroppedLabelMatrix(RowsToDelete,:,:) = [];
     clear SecondaryObjectImage
     SecondaryObjectImage = CroppedLabelMatrix;
+    %%% In case the entire image has been cropped away, we store a single
+    %%% zero pixel for the variable.
+    if isempty(SecondaryObjectImage)
+        SecondaryObjectImage = 0;
+    end
 end
+ 
 if any(size(SecondaryObjectImage) ~= size(PrimaryObjectImage))
     error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
 end

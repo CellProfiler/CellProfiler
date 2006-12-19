@@ -227,6 +227,11 @@ for i = 1:6
         CroppedLabelMatrix(RowsToDelete,:,:) = [];
         clear LabelMatrixImage
         LabelMatrixImage = CroppedLabelMatrix;
+        %%% In case the entire image has been cropped away, we store a single
+        %%% zero pixel for the variable.
+        if isempty(LabelMatrixImage)
+            LabelMatrixImage = 0;
+        end
     end
 
     if any(size(OrigImage) ~= size(LabelMatrixImage))

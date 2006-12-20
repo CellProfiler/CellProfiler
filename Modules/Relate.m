@@ -98,6 +98,11 @@ if isfield(handles.Measurements.(SubObjectName),'Parent')
                         if isempty(index)
                             handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
                         else
+                            %%% Handles the case is a child has more than one
+                            %%% parent. It just chooses the first one (it would
+                            %%% be nice if it chose the one with more overlap,
+                            %%, but we don't have time to code that now.)
+                            index = index(1);
                             handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
                         end
                     end

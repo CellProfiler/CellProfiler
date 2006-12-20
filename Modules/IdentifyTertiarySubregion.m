@@ -104,7 +104,7 @@ drawnow
 %%% primary object.
 %%%
 %%% WARNING: THIS MEANS TERTIARY REGIONS ARE NOT EXCLUSIVE... PRIMARY +
-%%% SECONDARY ~= TERTIARY
+%%% TERTIARY ~= SECONDARY
 
 %%% For the cases where one of the label matrices was produced from a
 %%% cropped image, the sizes of the matrices will not be equal, so the

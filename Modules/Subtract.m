@@ -94,6 +94,21 @@ BasicImage = CPretrieveimage(handles,BasicImageName,ModuleName,'MustBeGray','Che
 
 SubtractImage = CPretrieveimage(handles,SubtractImageName,ModuleName,'MustBeGray','CheckScale');
 
+%%% Check to make sure multiply factors are valid entries. If not change to
+%%% default and warn user.
+if isnan(MultiplyFactor1)
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid']))
+        CPwarndlg(['The first image multiply factor you have entered in the ', ModuleName, ' module is invalid, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid'],'replace');
+    end
+    MultiplyFactor1 = 1;
+end
+if isnan(MultiplyFactor2)
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Second multiply factor invalid']))
+        CPwarndlg(['The second image multiply factor you have entered in the ', ModuleName, ' module is invalid, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Second multiply factor invalid'],'replace');
+    end
+    MultiplyFactor2 = 1;
+end
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%

@@ -1,5 +1,7 @@
-Version 1.0.XXXX
+Version 1.0.4532
  - CalculateStatistics now returns correct results with only 1 data point (image) per dose
+ - SaveImages can now automatically number images when there are more then 100 cycles
+ - Several various bug fixes
 
 Version 1.0.4303
  - Added MeasureImageSlope and Combine modules
@@ -18,7 +20,7 @@ Version 1.0.3775
  - ExportToDatabase creates MySQL tables with FLOAT NOT NULL to improve speed
  - ExportData can export labels created by ClassifyObjects
  - Added help menu for Modules
- - Various bug fixes
+ - Several various bug fixes
 
 Version 1.0.3544
  - Added new help section "Getting Started"

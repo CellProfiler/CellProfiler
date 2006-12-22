@@ -264,7 +264,7 @@ function GSBatchProcessing
 % 
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************
 
-helpdlg(help('GSBatchProcessing'))
+helpdlg(help('BatchProcessing'))
 
 % We have one line of actual code in these files so that the help is
 % visible. We are not using CPhelpdlg because using helpdlg instead allows

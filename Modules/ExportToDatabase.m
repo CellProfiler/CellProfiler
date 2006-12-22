@@ -69,12 +69,17 @@ function handles = ExportToDatabase(handles)
 % SQL File Prefix: All the CSV files will start with this prefix.
 %
 % ********************* How To Import MySQL *******************************
-% Step 1: Using a terminal, navigate to folder where the CSV output files
-% and the SETUP script is located.
+% Step 1: Log onto the server where the database will be located.
 %
-% Step 2: Log into MySQL: "mysql -uUsername -pPassword -hHost"
+% Step 2: From within a terminal logged into that server, navigate to folder 
+% where the CSV output files and the SETUP script is located.
 %
-% Step 3: Run SETUP script: "\. DefaultDB_SETUP.SQL"
+% Step 3: Type the following within the terminal to log into MySQL on the 
+% server where the database will be located:
+%    mysql -uUsername -pPassword -hHost
+%
+% Step 4: Type the following within the terminal to run SETUP script: 
+%      \. DefaultDB_SETUP.SQL
 %
 % The SETUP file will do everything necessary to load the database.
 %

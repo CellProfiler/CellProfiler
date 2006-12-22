@@ -1,5 +1,12 @@
 Mike's TODO list
 
+- Announce the latest CellProfiler release on the website.
+
+- Update PIPEs to go with latest version of CellProfiler. All are ok as of 12-22-06 except:
+1. ExampleGridImages needs one module updated, not a huge deal because the changes are easy.
+2. ExampleSpecklesImages could use our new per object method of thresholding - ask Anne, because it's cool and it'd be good for you to know it for future projects.
+3. I tested all the way down (alphabetically) to TumorImages - can you check the rest?
+
 - Set up the Intel Mac with MATLAB and CellProfiler - or were we waiting for a new MATLAB version to be released or something?
 
 - Note - the PC next to where Ray sits is not CellProfiler-happy... I think the problem has something to do with different people svn updating CellProfiler and then the permissions are all scrambled. Perhaps we won't use this computer anymore anyway, so we shouldn't bother? But it seems like it'd be nice to fix it so we have a spare PC around when we move. If i've done something wrong (e.g. svn updating as myself), put a note on the computer so i don't do it again!

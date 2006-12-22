@@ -321,7 +321,7 @@ for n = 2:BatchSize:handles.Current.NumberOfImageSets,
     end
 end
 
-CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the batch files for processing on your cluster. See Help > Getting Started > BatchProcessing for more information.', 'BatchFilesDialog');
+CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the batch files for processing on your cluster. See Help > General Help > BatchProcessing for more information.', 'BatchFilesDialog');
 
 %%% This is the first cycle, so this is the first time seeing this
 %%% module.  It should cause a cancel so no further processing is done

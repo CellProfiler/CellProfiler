@@ -55,8 +55,8 @@ function handles = MeasureTexture(handles)
 % Entropy                 |       9
 % DifferenceVariance      |      10
 % DifferenceEntropy       |      11
-% InformationMeasure      |      12
-% InformationMeasure2     |      13
+% InfoMeas                |      12
+% InfoMeas2               |      13
 % GaborX                  |      14
 % GaborY                  |      15
 %
@@ -253,8 +253,8 @@ for i = 1:6
         'Entropy',...
         'DifferenceVariance',...
         'DifferenceEntropy',...
-        'InformationMeasure1',...
-        'InformationMeasure2'};
+        'InfoMeas1',...
+        'InfoMeas2'};
 
     Gabor = [];
     GaborFeatures    = {'GaborX',...

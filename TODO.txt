@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+- Anne 1-2-07: In ExportToDatabase, have a catch tell the user if any column names exceed 65 characters if they are using MySQL. If they are using Oracle, there might also be a limit in addition to the fact that Oracle can only handle 1000 columns? Anyway, we should check through to discover what these limits are, and warn the user the first time through the pipeline whether any of these limits will be hit, so they have the option to stop and shorten some of the names, to prevent SQL importing problems later.
+
+- Anne 12-22-06: Write a developer's script to load and run all PIPEs in the ExampleImages folder to check for errors. If one fails, have it tell you which PIPE failed and whether it failed when loading (due to variable revision numbers changing) or, if it failed during processing, the name and number of the module, and the error.
+
 - Anne 12-22-06: When a new release of CellProfiler comes out, we try to make it straightforward to load your old pipelines with minimal hassle. Normally when you load an old pipeline, you will obtain a popup window for each module that has had significant changes in the new release. It will show you your old settings and ask you to re-enter them in the new module, so that you can doublecheck that everything makes sense with the new version.
 
 The only weirdness is that if that procedure happens for a particular module that normally should produce an image called GreenCropped, when you load the new pipeline everything that used to USE the GreenCropped image will revert to some other image name (because GreenCropped is no longer in the pipeline). So keep an eye out for that. Maybe load the old pipeline once, see what the changes are and then just pay attention to what modules used to use that image name. Same goes for object names.

@@ -80,6 +80,10 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         if strfind(ssf, 'TimeElapsed')
             continue
         end
+        
+        if strfind(ssf, 'Spectrum')
+            continue
+        end
 
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);

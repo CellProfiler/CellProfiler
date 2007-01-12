@@ -1,5 +1,7 @@
 Mike's TODO list
 
+- Anne(1-12-07) - MeasureImageGranularity does not seem to be storing anything in 'Features' and it messed up ExportToDatabase in peculiar ways (no column headers and extra data). Please see if you can fix it.
+
 - Announce the latest CellProfiler release on the website.
 
 - Update PIPEs to go with latest version of CellProfiler. All are ok as of 12-22-06 except:

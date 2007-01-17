@@ -1,3 +1,6 @@
+Version 1.0.XXXX
+ - IdentifySecondary and FilterByObjectMeasurement now export locations of [0 0] when there are no initial objects
+
 Version 1.0.4532
  - CalculateStatistics now returns correct results with only 1 data point (image) per dose
  - SaveImages can now automatically number images when there are more then 100 cycles

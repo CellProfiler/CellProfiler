@@ -1,4 +1,5 @@
 Version 1.0.XXXX
+ - MeasureImageGranularity now correctly stores granularity data
  - IdentifySecondary and FilterByObjectMeasurement now export locations of [0 0] when there are no initial objects
 
 Version 1.0.4532

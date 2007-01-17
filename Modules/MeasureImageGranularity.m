@@ -12,7 +12,7 @@ function handles = MeasureImageGranularity(handles)
 %
 % Structuring Element Size:
 % Radius of structuring element (in subsampled image)
-% 
+%
 % References for Granular Spectrum:
 % J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
 % Press, London, 1989 Maragos,P. “Pattern spectrum and multiscale shape
@@ -96,6 +96,12 @@ B = imresize(OrigImage, SubSampleSize, 'bilinear'); %RESULTS ON iCyte IMAGES WIT
 C = backgroundremoval(B, ImageSampleSize, ElementSize);
 gs = granspectr(C, GranularSpectrumLength);
 
+if handles.Current.SetBeingAnalyzed == 1
+    for i = 1:GranularSpectrumLength
+        FeatureNames{i} = ['GS',num2str(i)]; %#ok
+    end
+    handles.Measurements.Image.([ImageName 'SpectrumFeatures'])=FeatureNames;
+end
 handles.Measurements.Image.([ImageName 'Spectrum']){handles.Current.SetBeingAnalyzed}=gs;
 
 %%%%%%%%%%%%%%%%%%%%%%%

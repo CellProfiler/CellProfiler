@@ -80,10 +80,6 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
         if strfind(ssf, 'TimeElapsed')
             continue
         end
-        
-        if strfind(ssf, 'Spectrum')
-            continue
-        end
 
         if isfield(substruct, [ssf 'Features']),
             names = handles.Measurements.(SubFieldname).([ssf 'Features']);
@@ -111,11 +107,11 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
 
         if strcmp(SubFieldname, 'Image')
             for n = 1:length(names)
-                per_image_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]);
+                per_image_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]); %#ok
             end
         else
             for n = 1:length(names)
-                per_object_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]);
+                per_object_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]); %#ok
             end
         end
     end %end of substrucfield

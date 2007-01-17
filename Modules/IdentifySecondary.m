@@ -766,24 +766,24 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
-            subplot(2,2,1); 
-            CPimagesc(OrigImage,handles); 
+            subplot(2,2,1);
+            CPimagesc(OrigImage,handles);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
-            subplot(2,2,2); 
-            CPimagesc(ColoredLabelMatrixImage,handles); 
+            subplot(2,2,2);
+            CPimagesc(ColoredLabelMatrixImage,handles);
             title(['Outlined ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
-            subplot(2,2,3); 
-            CPimagesc(ObjectOutlinesOnOrigImage,handles); 
+            subplot(2,2,3);
+            CPimagesc(ObjectOutlinesOnOrigImage,handles);
             title([SecondaryObjectName, ' Outlines on Input Image']);
             %%% A subplot of the figure window is set to display the original
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
-            subplot(2,2,4); 
-            CPimagesc(BothOutlinesOnOrigImage,handles); 
+            subplot(2,2,4);
+            CPimagesc(BothOutlinesOnOrigImage,handles);
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
         end
 
@@ -797,8 +797,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         fieldname = ['Segmented',SecondaryObjectName];
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
-        %%% TODO: why do we have the same thing twice here, with an OR?
-        if strcmp(IdentChoice,'Propagation') || strcmp(IdentChoice,'Propagation')
+        if strcmp(IdentChoice,'Propagation')
             %%% Saves the Threshold value to the handles structure.
             %%% Storing the threshold is a little more complicated than storing other measurements
             %%% because several different modules will write to the handles.Measurements.Image.Threshold
@@ -836,6 +835,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         handles.Measurements.(SecondaryObjectName).LocationFeatures = {'CenterX','CenterY'};
         tmp = regionprops(FinalLabelMatrixImage,'Centroid');
         Centroid = cat(1,tmp.Centroid);
+        if isempty(Centroid)
+            Centroid = [0 0];
+        end
         handles.Measurements.(SecondaryObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
         %%% Saves images to the handles structure so they can be saved to the hard

@@ -92,10 +92,6 @@ Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 1
 FeatureNum = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-if isempty(FeatureNum) || isnan(FeatureNum)
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
-end
-
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
@@ -122,6 +118,10 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+if isempty(FeatureNum) || isnan(FeatureNum)
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+end
 
 if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
@@ -263,6 +263,9 @@ handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,colum
 handles.Measurements.(TargetName).LocationFeatures = {'CenterX','CenterY'};
 tmp = regionprops(FinalLabelMatrixImage,'Centroid');
 Centroid = cat(1,tmp.Centroid);
+if isempty(Centroid)
+    Centroid = [0 0];
+end
 handles.Measurements.(TargetName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
 
 if ~strcmp(SaveOutlines,'Do not save')

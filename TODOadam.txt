@@ -12,7 +12,7 @@ We are very close to having our own database done; it simply involves:
 - Anne 7-14-06 - In NIRHT, using CellVisualizer, look up our favorite control genes and report on their cell size, cell cycle (DNA content), and cell count:
 mTOR, S6K, Rheb, PTEN, Akt1. Ideally, some sense of significance values would be nice, but perhaps a visual check would be ok. What to use for controls? Perhaps shLuc + GFP + PGW + EMPTY on the same plate? We probably don't want to compare across plates, because Ray is afraid there are some serious variations.
 
-- Improve normalization procedures for array data.
+- Improve normalization procedures for array data so they are easier for people to do themselves (build into CellVisualizer)
 
 - According to literature, ploidy (DNA content) is tightly linked to cell size. Is this true across G1, S, G2 phases of the cell cycle?  Look for gene knockdowns which break the correlation: e.g., where 4c cells are not as tightly 2x the size as 2c, to find genes involved in the maintenance of a tight correlation between cell size and genome size.
 

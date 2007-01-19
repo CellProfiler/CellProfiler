@@ -1,6 +1,8 @@
-Version 1.0.XXXX
+Version 1.0.4553
+ - GenePix format TIF files are now supported
  - MeasureImageGranularity now correctly stores granularity data
  - IdentifySecondary and FilterByObjectMeasurement now export locations of [0 0] when there are no initial objects
+ - Fixed bug with MeasureTexture not being able to measure 'Image' correctly
 
 Version 1.0.4532
  - CalculateStatistics now returns correct results with only 1 data point (image) per dose

@@ -2151,7 +2151,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
         else
             if strcmp(PrevStrSet(Values),PrevValue)
                 if exist('ModList3','var')
-                    ModList3(end+1) = ModList2(i);
+                    ModList3(end+1) = ModList2(i); %#ok
                 else
                     ModList3 = ModList2(i);
                 end
@@ -2174,7 +2174,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 else
                     if strcmp(PrevStrSet(Values),StrSet)
                         if exist('ModList4','var')
-                            ModList4(end+1) = ModList2(i);
+                            ModList4(end+1) = ModList2(i); %#ok
                         else
                             ModList4 = ModList2(i);
                         end
@@ -2189,7 +2189,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 if Values == 0
                     if strcmp(PrevStrSet,StrSet(OrigValues))
                         if exist('ModList4','var')
-                            ModList4(end+1) = ModList2(i);
+                            ModList4(end+1) = ModList2(i); %#ok
                         else
                             ModList4 = ModList2(i);
                         end
@@ -2197,7 +2197,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 else
                     if strcmp(PrevStrSet(Values),StrSet(OrigValues))
                         if exist('ModList4','var')
-                            ModList4(end+1) = ModList2(i);
+                            ModList4(end+1) = ModList2(i); %#ok
                         else
                             ModList4 = ModList2(i);
                         end
@@ -2212,7 +2212,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             if Values == 0
                 if strcmp(PrevStrSet,StrSet(UserEntry))
                     if exist('ModList4','var')
-                        ModList4(end+1) = ModList2(i);
+                        ModList4(end+1) = ModList2(i); %#ok
                     else
                         ModList4 = ModList2(i);
                     end
@@ -2220,7 +2220,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
             else
                 if strcmp(PrevStrSet(Values),StrSet(UserEntry))
                     if exist('ModList4','var')
-                        ModList4(end+1) = ModList2(i);
+                        ModList4(end+1) = ModList2(i); %#ok
                     else
                         ModList4 = ModList2(i);
                     end
@@ -3649,7 +3649,6 @@ else
             startingImageSet = 1;
             handles.Current.StartingImageSet = startingImageSet;
             while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
-                pack;
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 NumberofWindows = 0;
                 for SlotNumber = 1:handles.Current.NumberOfModules
@@ -3689,7 +3688,7 @@ else
                                             end
                                         end
                                     end
-                                    FigHandleList(SlotNumber) = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
+                                    FigHandleList(SlotNumber) = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]); %#ok
                                 end
                             end
                             %%% Runs the appropriate module, with the handles structure as an
@@ -4093,10 +4092,10 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
-    TextString = sprintf('CellProfiler version 1.0.4532\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.4553\n\nPlease choose specific help below:');
 elseif strcmp(ImageDataOrHelp,'Getting Started')
     set(ToolsHelpWindowHandle,'name','Getting Started');
-    TextString = sprintf('CellProfiler version 1.0.4532\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.4553\n\nPlease choose specific help below:');
 end
 
 FontSize = handles.Preferences.FontSize;
@@ -4471,7 +4470,7 @@ load_listbox(handles.Preferences.DefaultModuleDirectory,AddModuleWindowHandles);
 % uiwait(AddModuleWindowHandles.figure1);
 
 % --- Executes on selection change in PreProcessingListBox.
-function AddModuleListBox_Callback(hObject, eventdata, AddModuleWindowHandles)
+function AddModuleListBox_Callback(hObject, eventdata, AddModuleWindowHandles) %#ok
 % hObject    handle to PreProcessingListBox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % AddModuleWindowHandles    structure with AddModuleWindowHandles and user data (see GUIDATA)

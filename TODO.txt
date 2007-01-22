@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Exchange file format info with the BioImageXD project so the we can read more image file formats and they can take advantage of the ones we have built into CPimread. From their website: "We have a new olympus FV1000 confocal microscope, so we need to open that data in BioImageXD! Lots of people have BioRad and all sorts of other microscopes we could support, if we can code a reader. (Sample data files and the file format specifications are very helpful if you have them! Please contact info@bioimagexd.org, if you can assist us in this."
+
 - Anne 1-2-07: In ExportToDatabase, have a catch tell the user if any column names exceed 65 characters if they are using MySQL. If they are using Oracle, there might also be a limit in addition to the fact that Oracle can only handle 1000 columns? Anyway, we should check through to discover what these limits are, and warn the user the first time through the pipeline whether any of these limits will be hit, so they have the option to stop and shorten some of the names, to prevent SQL importing problems later.
 
 - Anne 12-22-06: Write a developer's script to load and run all PIPEs in the ExampleImages folder to check for errors. If one fails, have it tell you which PIPE failed and whether it failed when loading (due to variable revision numbers changing) or, if it failed during processing, the name and number of the module, and the error.

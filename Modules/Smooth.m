@@ -194,7 +194,7 @@ try
     SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
 catch
     ErrorMessage = lasterr;
-    error(['Image processing was canceled in the ' ModuleName ' module becuase: ' ErrorMessage(26:end)]);
+    error(['Image processing was canceled in the ' ModuleName ' module because: ' ErrorMessage(26:end)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -1,3 +1,6 @@
+CELLPROFILER:
+- Make cluster jobs write files that are overwriteable by others.
+
 CELLVISUALIZER/DATA MINING PROJECTS:
 
 - Anne 11-16-06: Add features/statistics to CellVisualizer that allow answering gene-centric questions like "Is my gene unusual in any of its measured features?" and "what genes look like my favorite gene?" (this is a clustering question). This is part of a grand project: We could present a searchable database for people to find out 'what's weird about my gene' as a public resource.  This short blurb describes this sort of a resource:

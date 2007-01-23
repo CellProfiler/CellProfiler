@@ -49,6 +49,11 @@ if SizeOfSmoothingFilter == 0 && ~strncmp(SmoothingMethod,'P',1)
     return;
 end
 
+%%% If the incoming image is binary (logical), we convert it to grayscale.
+if islogical(OrigImage)
+    OrigImage = im2double(OrigImage);
+end
+
 switch SmoothingMethod
     case 'P'
         %%% The following is used to fit a low-dimensional polynomial to

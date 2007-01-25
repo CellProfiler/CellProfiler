@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 1-25-07: MAJOR!! - Ask Dave DeCaprio about software to submit and monitor jobs sent to a cluster, with minimal command-line/hands-on work. Set up CellProfiler so that jobs can easily be sent to the cluster.
+
 - Exchange file format info with the BioImageXD project so the we can read more image file formats and they can take advantage of the ones we have built into CPimread. From their website: "We have a new olympus FV1000 confocal microscope, so we need to open that data in BioImageXD! Lots of people have BioRad and all sorts of other microscopes we could support, if we can code a reader. (Sample data files and the file format specifications are very helpful if you have them! Please contact info@bioimagexd.org, if you can assist us in this."
 
 - Anne 1-2-07: In ExportToDatabase, have a catch tell the user if any column names exceed 65 characters if they are using MySQL. If they are using Oracle, there might also be a limit in addition to the fact that Oracle can only handle 1000 columns? Anyway, we should check through to discover what these limits are, and warn the user the first time through the pipeline whether any of these limits will be hit, so they have the option to stop and shorten some of the names, to prevent SQL importing problems later.

@@ -158,15 +158,16 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Get all fieldnames in Measurements
     ObjectFields = fieldnames(handles.Measurements);
-
+ObjectFields
     GroupingStrings = handles.Measurements.Image.(DataName);
+GroupingStrings
     %%% Need column vector
     GroupingValues = str2num(char(GroupingStrings')); %#ok Ignore MLint
-
+GroupingValues
     for i = 1:length(ObjectFields)
-
+i
         ObjectName = char(ObjectFields(i));
-
+ObjectName
         %%% Filter out Experiment and Image fields
         if ~strcmp(ObjectName,'Experiment')
 
@@ -178,12 +179,12 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             end
 
             for j = 1:length(MeasureFields)
-
+j
                 MeasureFeatureName = char(MeasureFields(j));
-
+MeasureFeatureName
                 if length(MeasureFeatureName) > 7
                     if strcmp(MeasureFeatureName(end-7:end),'Features')
-
+                        
                         %%% Not placed with above if statement since
                         %%% MeasureFeatureName may not be 8 characters long
                         if ~strcmp(MeasureFeatureName(1:8),'Location')

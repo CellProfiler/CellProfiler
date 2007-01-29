@@ -158,16 +158,11 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Get all fieldnames in Measurements
     ObjectFields = fieldnames(handles.Measurements);
-ObjectFields
     GroupingStrings = handles.Measurements.Image.(DataName);
-GroupingStrings
     %%% Need column vector
     GroupingValues = str2num(char(GroupingStrings')); %#ok Ignore MLint
-GroupingValues
     for i = 1:length(ObjectFields)
-i
         ObjectName = char(ObjectFields(i));
-ObjectName
         %%% Filter out Experiment and Image fields
         if ~strcmp(ObjectName,'Experiment')
 
@@ -179,9 +174,7 @@ ObjectName
             end
 
             for j = 1:length(MeasureFields)
-j
                 MeasureFeatureName = char(MeasureFields(j));
-MeasureFeatureName
                 if length(MeasureFeatureName) > 7
                     if strcmp(MeasureFeatureName(end-7:end),'Features')
                         
@@ -193,7 +186,6 @@ MeasureFeatureName
                                 continue;
                             end
 
-
                             %%% Get Features
                             MeasureFeatures = handles.Measurements.(ObjectName).(MeasureFeatureName);
 
@@ -204,8 +196,6 @@ MeasureFeatureName
                                 CPwarndlg(['There is a problem in the ' ModuleName ' module becaue it could not find the measurements you specified. CellProfiler will proceed but this module will be skipped.']);
                                 return;
                             end                                
-                
-
 
                             Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
                             for k = 1:handles.Current.NumberOfImageSets
@@ -230,7 +220,11 @@ MeasureFeatureName
                                         PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
                                     else PartialFigureName = FigureName;
                                     end
-                                    [FigureIncrement, ec50stats] = CPec50(OrderedUniqueDoses',OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName,DataName,FigureIncrement);
+                                    try
+                                        [FigureIncrement, ec50stats] = CPec50(OrderedUniqueDoses',OrderedAverageValues,LogOrLinear,PartialFigureName,ModuleName,DataName,FigureIncrement);
+                                    catch
+                                        ec50stats = zeros(size(OrderedAverageValues,2),4);
+                                    end
                                     ec = ec50stats(:,3);
                                     if strcmpi(LogOrLinear,'Yes')
                                         ec = exp(ec);
@@ -386,7 +380,11 @@ for i=1:n
     % OPTIONS = statset('display','iter');
     %%% Turns off MATLAB-level warnings but saves the previous warning state.
     PreviousWarningState = warning('off', 'all');
-    [coeffs,r,J]=nlinfit(conc,response,'CPsigmoid',initial_params);
+    try
+        [coeffs,r,J]=nlinfit(conc,response,'CPsigmoid',initial_params);
+    catch
+        tes=eps;
+    end
     if ~strcmpi(PartialFigureName,'Do not save')
         %%% This produces the figure with the interactive graph.
         if strcmpi(LogOrLinear,'Yes')

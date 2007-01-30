@@ -1,5 +1,27 @@
 CellProfiler cell image analysis software development 
 
+- Anne 1-30-07: The ColorToGray module seems to stick the word "Split" into the objectgroup category. It doesn't look like the code should make this happen but I can't really figure it out. The following was my pipeline, and for some reason the word "Split" showed up when trying to choose objects in the other modules. If I re-load the pipeline the problem goes away, so it's hard to reproduce this problem.
+	LoadImages
+	ColorToGray
+	IdentifyPrimAutomatic
+	IdentifySecondary
+	IdentifyTertiarySubregion
+	CorrectIllumination_Calculate
+	CorrectIllumination_Apply
+	IdentifyPrimAutomatic
+	Relate
+	MeasureObjectIntensity
+	MeasureObjectIntensity
+	MeasureObjectIntensity
+	MeasureTexture
+	MeasureTexture
+	MeasureTexture
+	MeasureObjectAreaShape
+	MeasureObjectNeighbors
+
+
+- Anne 1-30-07: Add a try/catch for the Relate module such that if it fails for some reason, tell the user in a help box that the Relate module is supposed to be AFTER all Measure modules. Moving it to the end of Measure modules often fixes the problem.
+
 - Anne 1-25-07: MAJOR!! - Ask Dave DeCaprio about software to submit and monitor jobs sent to a cluster, with minimal command-line/hands-on work. Set up CellProfiler so that jobs can easily be sent to the cluster.
 
 - Anne 1-25-07: In Matlab version 73 on Anne's Mac OSX system, the words "CellProfiler image analysis pipeline" are off the screen. We have routinely had problems in the past with this bit of text moving all over on various systems. It might have something to do with relative vs absolute positioning, or whatever units the positioning is defined in. We should try to figure out the root cause, and then doublecheck that it looks nice on various systems (PC/mac/unix). THe other weird thing is that the Timer appears almost at the top of my screen. Not a huge problem, but it is obscured by the first windows that open, so we should move it if possible without messing it up on other platforms/older matlabs.

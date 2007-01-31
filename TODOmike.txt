@@ -1,5 +1,12 @@
 Mike's TODO list
 
+- Anne 1-24-07: will this "license" check cause it to fail in the compiled version of the software? If so, we should check the code for these instances.
+%%% Checks whether the user has the Image Processing Toolbox.
+LicenseStats = license('test','statistics_toolbox');
+if LicenseStats ~= 1
+    CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
+end
+
 - Anne(1-12-07) - MeasureImageGranularity does not seem to be storing anything in 'Features' and it messed up ExportToDatabase in peculiar ways (no column headers and extra data). Please see if you can fix it.
 
 - Announce the latest CellProfiler release on the website.

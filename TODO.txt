@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- 1-31-07 Fix CalculateStatistics where CPec50 uses nlinfit. There is a fix there now when bad values create an error it just replaces with zeros, this should instead input correct initial variables. For some reason, versions before 2006b of MATLAB appear to work fine.
+
 - Anne 1-30-07: The ColorToGray module seems to stick the word "Split" into the objectgroup category. It doesn't look like the code should make this happen but I can't really figure it out. The following was my pipeline, and for some reason the word "Split" showed up when trying to choose objects in the other modules. If I re-load the pipeline the problem goes away, so it's hard to reproduce this problem.
 	LoadImages
 	ColorToGray

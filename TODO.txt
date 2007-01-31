@@ -254,6 +254,8 @@ So we need to adapt LoadImages to recognize this format as a movie format, where
 
 - Anne 11-01-06: Improvements to EC50 calculations in CalculateStatistics: If the user chooses to display and save the resulting interactive figures, it would be great for each figure to be labeled with the feature name (e.g., on the Y axis). By the time we get to the point of creating the figure using nlintool, the data are a matrix rather than coming straight from the handles so it might be a little challenging to get the feature name out. Secondly, we would like to make an EC50 data tool that asks the users to choose a particular feature, and then it creates the interactive figure and leaves it open. You can base the tool on the CalcStatistics module, and make CPsubfunctions if they ought to share code.
 
+- Anne 1-31-07: Improvements to CalculateStatistics: When the data is exported into an excel file called "Experiment", the output looks funny. All the measures are a separate row (if you chose 'row' output), whereas it seems it would make sense to have 4 columns: the feature name, and then the values for the Z factor, V factor, and EC50.
+
 - Anne 10-25-06: Incorporate Antti's yeast segmentation code into CellProfiler:
 On Wed, 4 Oct 2006, Anne Carpenter wrote:
 Hello Antti,

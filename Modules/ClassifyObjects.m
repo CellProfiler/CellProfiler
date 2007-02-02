@@ -66,10 +66,6 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-if CurrentModuleNum == 23
-    test=eps;
-end
-
 %textVAR01 = What did you call the identified objects (for Ratio, enter the numerator object)?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});

@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+- Anne 2-2-07: When using CreateBatchScripts, if you have onle one image cycle to analyze, it should warn you that there is no batch file written because you only have one cycle.
+
 - Anne 2-2-07: On some of the computers, figure windows pile up at the right rather than wrapping around like they used to. Mac OSX running 2006b of mATLAB.
 
 - Anne 2-2-07: ConvertToImage - the displayed resulting image is currently labeled "NewImage" rather than whatever the user decided to name the image.

@@ -143,7 +143,7 @@ else
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have previously run a module that generates an image with the objects identified.  You specified in the ', ModuleName, ' module that the primary objects were named ',FeatureType,' which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
 end
 
-if strcmp(FeatureType,'Intensity') || strcmp(FeatureType,'Texture')
+if strcmp(FeatureType,'Intensity') || any(strfind(FeatureType,'Texture'))
     FeatureType = [FeatureType, '_', Image];
 end
 

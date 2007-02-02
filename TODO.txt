@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+- Anne 2-2-07: On some of the computers, figure windows pile up at the right rather than wrapping around like they used to. Mac OSX running 2006b of mATLAB.
+
+- Anne 2-2-07: ConvertToImage - the displayed resulting image is currently labeled "NewImage" rather than whatever the user decided to name the image.
+
 - 1-31-07 Fix CalculateStatistics where CPec50 uses nlinfit. There is a fix there now when bad values create an error it just replaces with zeros, this should instead input correct initial variables. For some reason, versions before 2006b of MATLAB appear to work fine.
 
 - Anne 1-30-07: The ColorToGray module seems to stick the word "Split" into the objectgroup category. It doesn't look like the code should make this happen but I can't really figure it out. The following was my pipeline, and for some reason the word "Split" showed up when trying to choose objects in the other modules. If I re-load the pipeline the problem goes away, so it's hard to reproduce this problem.

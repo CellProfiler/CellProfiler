@@ -575,7 +575,7 @@ MaximumThreshold = ThresholdRange(index+1:end);
 %%% Check the smoothing filter size parameter
 if ~strcmpi(SizeOfSmoothingFilter,'Automatic')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
-    if isnan(SizeOfSmoothingFilter) | isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 %| SizeOfSmoothingFilter > min(size(OrigImage)) %#ok Ignore MLint
+    if isnan(SizeOfSmoothingFilter) | isempty(SizeOfSmoothingFilter) | SizeOfSmoothingFilter < 0 %#ok Ignore MLint
         %%% I commented out the part where we check that the size of
         %%% smoothing filter is greater than the image, because I think it
         %%% does not yield errors when that is the case, and in some
@@ -726,7 +726,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         %%% Remove dim maxima
                         %%% TODO: THIS IS THE MEAN THRESHOLD, SHOULDN'T IT
                         %%% BE THE ORIG THRESHOLD?
-                     
+
                         MaximaImage = MaximaImage > Threshold;
                     end
                     %%% Shrink to points (needed because of the resizing)
@@ -1153,6 +1153,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
             tmp = regionprops(FinalLabelMatrixImage,'Centroid');
             Centroid = cat(1,tmp.Centroid);
+            if isempty(Centroid)
+                Centroid = [0 0];
+            end
             handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
         end
 

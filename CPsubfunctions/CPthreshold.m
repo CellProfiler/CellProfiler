@@ -61,7 +61,7 @@ end
 %%% cases: if the user is going to set the threshold interactively, if they
 %%% are using All images together to calculate the threshold, or if they
 %%% have manually entered a numerical value for the threshold.
-if strcmp(Threshold,'Set interactively') || strcmp(Threshold,'All') || ~strcmp(class(Threshold),'char')
+if strcmp(Threshold,'Set interactively') || strcmp(Threshold,'All') || ~isempty(str2num(Threshold))
     %%% In these cases, don't do anything.
 else
     fieldname = ['CropMask', ImageName];

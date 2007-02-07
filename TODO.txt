@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 
-- Anne 2-2-07: When using CreateBatchScripts, if you have onle one image cycle to analyze, it should warn you that there is no batch file written because you only have one cycle.
+- Anne 2-7-07: In the ClassifyObjects module, if you use Texture, you also need to specify the scale of texture, like this: Texture_11  (if the scale is 11, for example). Add this to the help, and make sure it works properly!
+
+- Anne 2-2-07: When using CreateBatchScripts, if you have only one image cycle to analyze, it should warn you that there is no batch file written because you only have one cycle.
 
 - Anne 2-2-07: On some of the computers, figure windows pile up at the right rather than wrapping around like they used to. Mac OSX running 2006b of mATLAB.
 

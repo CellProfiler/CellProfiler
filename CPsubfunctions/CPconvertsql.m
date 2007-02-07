@@ -178,7 +178,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         else
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','' \;\n',basename,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
         end
         fclose(fmain);

@@ -87,6 +87,15 @@ function handles = MeasureImageAreaOccupied(handles)
 % thresholding but may be used for other thresholding methods in the
 % future.
 %
+% Features measured:      Feature Number:
+% AreaOccupied        |        1
+% TotalImageArea      |        2
+% ThresholdUsed       |        3
+%
+% (Note: to use with Calculate modules, the "category of measures you would
+% like to use" should be entered as: AreaOccupied_Name, where Name is the 
+% name you entered in the MeasureAreaOccupied module.)
+%
 % See also IdentifyPrimAutomatic, IdentifyPrimManual, and
 % MeasureObjectAreaShape modules.
 

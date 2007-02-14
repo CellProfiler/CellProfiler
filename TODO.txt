@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+Anne 2-13-07: The pause button is weird - creating a pop up window that gets hidden seems silly. We should instead have the Pause button's wording change to 'Resume' when the processing is paused.
+
+Anne 2-13-07: It would be nice to implement a way to save whether you want particular figure windows open or not for a pipeline; e.g., right-click on the module in the pipeline to turn the figure off for good. We need to think carefully about how to do this because we already have File > Set Prefs to turn all on/off or ask the user each time. Actually, maybe the better thing to do would be to have the window 'choose which windows to display' remember what you did last time, if applicable.
+
 - Anne 2-7-07: In the ClassifyObjects module, if you use Texture, you also need to specify the scale of texture, like this: Texture_11  (if the scale is 11, for example). Add this to the help, and make sure it works properly! Also, check the help for a lot of other modules to make sure feature numbers are described for all necessary modules - MeasureAreaOccupied did not have any feature numbers described until I added them just now, for example. And, check whether each module has special rules for using it with classify modules (you have to enter AreaOccupied_Name rather than just AreaOccupied for the category, for example).
 
 - Anne 2-2-07: When using CreateBatchScripts, if you have only one image cycle to analyze, it should warn you that there is no batch file written because you only have one cycle.

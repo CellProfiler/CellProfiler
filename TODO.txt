@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 2-14-07: It seems that sometimes after changing the name of an image produced by the pipeline, it is not immediately available in other modules as a selectable image type. It seems you have to go back and press enter, and then suddenly that image type is available. We should fix this, but also make very sure that a similar problem does not happen if you change a numerical setting... does it not register if you just click away from the edit box, or does it require pressing enter?
+
 Anne 2-14-07: Our help windows are SO annoying. You can't copy and paste text from them, and the scrolling does not work well at all!
 
 Anne 2-14-07: When using the CreateBatchFiles module and writing the necessary .m and .mat files, would it be possible to check the permissions of that output folder and make sure the whole world can write to that folder? This permission will be necessary for the cluster computers to write anything to the folder and it's really frustrating to submit jobs and then realize that they failed because the cluster computers can't write to your output folder.

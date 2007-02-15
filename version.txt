@@ -1,3 +1,7 @@
+Version 1.0.XXXX
+ - ConvertToImage has option to save in uint16 format
+ - CalculateStatistics now returns 0 for invalid EC50, instead of crashing
+
 Version 1.0.4553
  - GenePix format TIF files are now supported
  - MeasureImageGranularity now correctly stores granularity data

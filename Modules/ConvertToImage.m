@@ -74,6 +74,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Color
 %choiceVAR03 = Binary (black & white)
 %choiceVAR03 = Grayscale
+%choiceVAR03 = uint16
 %inputtypeVAR03 = popupmenu
 ImageMode = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -122,6 +123,8 @@ elseif strcmp(ImageMode,'Color')
         end
         Image = label2rgb(LabelMatrixImage,cmap,'k');
     end
+elseif strcmp(ImageMode,'uint16')
+    Image = uint16(LabelMatrixImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

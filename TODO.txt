@@ -1,5 +1,12 @@
 CellProfiler cell image analysis software development 
 
+Anne 2-20-07: Turn off the warning that this CP user is describing:
+here is some output from LSF/Cluster. what does "Divide by Zero" mean in regards to output?
+Warning: Divide by zero.
+In ConvertToImage at 113
+In CPCluster at 20 
+When we convert objects in to images we divide by the largest numbered object to put it in grayscale levels. When no objects are identified, the largest number is zero and therefore it gives this error. It makes no difference in your output and can be ignored. Mike
+
 Anne 2-14-07: It seems that sometimes after changing the name of an image produced by the pipeline, it is not immediately available in other modules as a selectable image type. It seems you have to go back and press enter, and then suddenly that image type is available. We should fix this, but also make very sure that a similar problem does not happen if you change a numerical setting... does it not register if you just click away from the edit box, or does it require pressing enter?
 
 Anne 2-14-07: Our help windows are SO annoying. You can't copy and paste text from them, and the scrolling does not work well at all!

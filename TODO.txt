@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Adam 2-20-07 Have CP show a warning if there is not enough space to write a file to disk.
+
 Anne 2-20-07: In the help windows, Help > Getting Started yields "GSGettingStarted" We should strip off the GS part before diplaying it in the list (and do the same for the other help files and categories).
 
 Anne 2-20-07: Turn off the warning that this CP user is describing:

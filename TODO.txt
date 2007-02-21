@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 2-21-07: MAJOR PROJECT - give CellProfiler a visual interface with modules connecting together and talking to each other.
+
 Adam 2-20-07 Have CP show a warning if there is not enough space to write a file to disk.
 
 Anne 2-20-07: In the help windows, Help > Getting Started yields "GSGettingStarted" We should strip off the GS part before diplaying it in the list (and do the same for the other help files and categories).

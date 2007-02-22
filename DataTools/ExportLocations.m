@@ -87,16 +87,19 @@ else
 end
 
 AcceptableAnswers = 0;
+Prompts{1} = 'What do you want the x,y location of the first object to be (in final units)?';
+Prompts{2} = 'How many units per pixel (e.g. microns)?';
+Prompts{3} = 'If based on a grid, do you want locations in comb or meander format (ignore otherwise)?';
+Prompts{4} = 'Do you want to correct for uneven sub-grids?';
+
+Defaults{1} = '0,0';
+Defaults{2} = '10';
+Defaults{3} = 'Comb';
+Defaults{4} = 'No';
+
 while AcceptableAnswers == 0
-    Prompts{1} = 'What do you want the x,y location of the first object to be (in final units)?';
-    Prompts{2} = 'How many units per pixel (e.g. microns)?';
-    Prompts{3} = 'Do you want to correct for uneven grids?';
 
-    Defaults{1} = '0,0';
-    Defaults{2} = '10';
-    Defaults{3} = 'No';
-
-    Answers = inputdlg(Prompts(1:3),'Export Locations Settings',1,Defaults(1:3),'on');
+    Answers = inputdlg(Prompts(1:4),'Export Locations Settings',1,Defaults(1:4),'on');
 
     FirstObjectLocation = Answers{1};
     comma = strfind(FirstObjectLocation,',');
@@ -119,7 +122,12 @@ while AcceptableAnswers == 0
         continue
     end
 
-    GridChoice = Answers{3};
+    MeanderOption = Answers{3};
+    if ~strcmpi(MeanderOption,'Comb') && ~strcmpi(MeanderOption,'Meander')
+        uiwait(CPwarndlg('You did not enter comb or meander, so locations will be left as default.'));
+    end
+
+    GridChoice = Answers{4};
     if ~strcmpi(GridChoice,'Yes') && ~strcmpi(GridChoice,'No')
         uiwait(CPwarndlg('You must answer either yes or no for correcting uneven grids.'));
         continue
@@ -127,18 +135,13 @@ while AcceptableAnswers == 0
     AcceptableAnswers = 1;
 end
 
-if strcmpi(GridChoice,'Yes')
-    try
-        ObjectAreas = handles.Measurements.(ObjectTypename).AreaShape{1}(:,1);
-    catch
-        CPerrordlg('The object you have chosen does not have Area measurements.');
-    end
+if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
 
     Fields=fieldnames(handles.Measurements.Image);
     GridList={};
     for i = 1:length(Fields)
         if strcmp(Fields{i}(end-3:end),'Info')
-            GridList{end+1}=Fields{i};
+            GridList{end+1}=Fields{i}; %#ok Ignore MLint
         end
     end
 
@@ -181,91 +184,105 @@ if strcmpi(GridChoice,'Yes')
         error('Can''t do grid correction.');
     end
 
-    AcceptableAnswers = 0;
-    while AcceptableAnswers == 0
-        Prompts{1} = 'How many rows in the sub-grid?';
-        Prompts{2} = 'How many columns in the sub-grid?';
-
-        Defaults{1} = '10';
-        Defaults{2} = '10';
-
-        Answers = inputdlg(Prompts(1:2),'Export Locations Settings',1,Defaults(1:2),'on');
-
-        SubGridRows = round(str2double(Answers{1}));
-        SubGridCols = round(str2double(Answers{2}));
-
-        if isempty(SubGridRows) || isempty(SubGridCols)
-            uiwait(CPwarndlg('You must enter integers for all grid values.'));
-            continue
+    if strcmpi(GridChoice,'Yes')
+        try
+            ObjectAreas = handles.Measurements.(ObjectTypename).AreaShape{1}(:,1);
+        catch
+            CPerrordlg('The object you have chosen does not have Area measurements.');
         end
 
-        if rem(EntireGridRows,SubGridRows) || rem(EntireGridCols,SubGridCols)
-            uiwait(CPwarndlg('The entire grids rows and columns must be divisible by sub grids rows and columns.'));
-            continue
+        AcceptableAnswers = 0;
+        while AcceptableAnswers == 0
+            Prompts{1} = 'How many rows in the sub-grid?';
+            Prompts{2} = 'How many columns in the sub-grid?';
+
+            Defaults{1} = '10';
+            Defaults{2} = '10';
+
+            Answers = inputdlg(Prompts(1:2),'Export Locations Settings',1,Defaults(1:2),'on');
+
+            SubGridRows = round(str2double(Answers{1}));
+            SubGridCols = round(str2double(Answers{2}));
+
+            if isempty(SubGridRows) || isempty(SubGridCols)
+                uiwait(CPwarndlg('You must enter integers for all grid values.'));
+                continue
+            end
+
+            if rem(EntireGridRows,SubGridRows) || rem(EntireGridCols,SubGridCols)
+                uiwait(CPwarndlg('The entire grids rows and columns must be divisible by sub grids rows and columns.'));
+                continue
+            end
+
+            AcceptableAnswers = 1;
         end
 
-        AcceptableAnswers = 1;
-    end
+        OldXLocations = reshape(Locations{1}(:,1),EntireGridCols,EntireGridRows)';
+        OldYLocations = reshape(Locations{1}(:,2),EntireGridCols,EntireGridRows)';
+        OldObjectAreas = reshape(ObjectAreas,EntireGridCols,EntireGridRows)';
 
-    OldXLocations = reshape(Locations{1}(:,1),EntireGridCols,EntireGridRows)';
-    OldYLocations = reshape(Locations{1}(:,2),EntireGridCols,EntireGridRows)';
-    OldObjectAreas = reshape(ObjectAreas,EntireGridCols,EntireGridRows)';
+        for i = 1:(EntireGridRows/SubGridRows)
+            for j = 1:(EntireGridCols/SubGridCols)
+                SmallXLocations = OldXLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
+                SmallYLocations = OldYLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
+                SmallAreas = OldObjectAreas((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
 
-    for i = 1:(EntireGridRows/SubGridRows)
-        for j = 1:(EntireGridCols/SubGridCols)
-            SmallXLocations = OldXLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
-            SmallYLocations = OldYLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
-            SmallAreas = OldObjectAreas((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols));
-
-            YGridLines=HorizLinesY(1,((i-1)*SubGridRows+1):(i*SubGridRows));
-            XGridLines=VertLinesX(1,((j-1)*SubGridCols+1):(j*SubGridCols));
-            NormedXVals=[];
-            NormedYVals=[];
-            for a = 1:SubGridRows
-                for b = 1:SubGridCols
-                    Yval = SmallYLocations(a,b);
-                    Xval = SmallXLocations(a,b);
-                    SpotArea = SmallAreas(a,b);
-                    if SpotArea > 1
-                        NormedXVals(end+1)=Xval-XGridLines(b);
-                        NormedYVals(end+1)=Yval-YGridLines(a);
+                YGridLines=HorizLinesY(1,((i-1)*SubGridRows+1):(i*SubGridRows));
+                XGridLines=VertLinesX(1,((j-1)*SubGridCols+1):(j*SubGridCols));
+                NormedXVals=[];
+                NormedYVals=[];
+                for a = 1:SubGridRows
+                    for b = 1:SubGridCols
+                        Yval = SmallYLocations(a,b);
+                        Xval = SmallXLocations(a,b);
+                        SpotArea = SmallAreas(a,b);
+                        if SpotArea > 1
+                            NormedXVals(end+1)=Xval-XGridLines(b); %#ok Ignore MLint
+                            NormedYVals(end+1)=Yval-YGridLines(a); %#ok Ignore MLint
+                        end
                     end
                 end
+
+                DifferenceXVal=abs(NormedXVals-mean(NormedXVals));
+                DifferenceYVal=abs(NormedYVals-mean(NormedYVals));
+                SortedDifferenceXVal=sort(DifferenceXVal);
+                SortedDifferenceYVal=sort(DifferenceYVal);
+                NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2))))); %#ok Ignore MLint
+                NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2))))); %#ok Ignore MLint
+                DifferenceXVal=abs(NormedXVals-mean(NewNormedXVals));
+                DifferenceYVal=abs(NormedYVals-mean(NewNormedYVals));
+                SortedDifferenceXVal=sort(DifferenceXVal);
+                SortedDifferenceYVal=sort(DifferenceYVal);
+                NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2))))); %#ok Ignore MLint
+                NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2))))); %#ok Ignore MLint
+
+                FinalXVal=mean(NewNormedXVals);
+                FinalYVal=mean(NewNormedYVals);
+
+                for a = 1:SubGridRows
+                    NewYvals(a,1:SubGridRows) = YGridLines(a)+FinalYVal; %#ok Ignore MLint
+                end
+
+                for b = 1:SubGridCols
+                    NewXvals(1:SubGridCols,b) = XGridLines(b)+FinalXVal; %#ok Ignore MLint
+                end
+
+                NewXLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols)) = NewXvals;
+                NewYLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols)) = NewYvals;
             end
-
-            DifferenceXVal=abs(NormedXVals-mean(NormedXVals));
-            DifferenceYVal=abs(NormedYVals-mean(NormedYVals));
-            SortedDifferenceXVal=sort(DifferenceXVal);
-            SortedDifferenceYVal=sort(DifferenceYVal);
-            NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2)))));
-            NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2)))));
-            DifferenceXVal=abs(NormedXVals-mean(NewNormedXVals));
-            DifferenceYVal=abs(NormedYVals-mean(NewNormedYVals));
-            SortedDifferenceXVal=sort(DifferenceXVal);
-            SortedDifferenceYVal=sort(DifferenceYVal);
-            NewNormedXVals=NormedXVals(find(DifferenceXVal<SortedDifferenceXVal((round(length(SortedDifferenceXVal)/2)))));
-            NewNormedYVals=NormedYVals(find(DifferenceYVal<SortedDifferenceYVal((round(length(SortedDifferenceYVal)/2)))));
-
-            FinalXVal=mean(NewNormedXVals);
-            FinalYVal=mean(NewNormedYVals);
-
-            for a = 1:SubGridRows
-                NewYvals(a,1:SubGridRows) = YGridLines(a)+FinalYVal;
-            end
-
-            for b = 1:SubGridCols
-                NewXvals(1:SubGridCols,b) = XGridLines(b)+FinalXVal;
-            end
-
-            NewXLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols)) = NewXvals;
-            NewYLocations((i*SubGridRows-SubGridRows+1):(i*SubGridRows),(j*SubGridCols-SubGridCols+1):(j*SubGridCols)) = NewYvals;
         end
+
+        NewLocations{1}(:,1) = reshape(NewXLocations',1,[]);
+        NewLocations{1}(:,2) = reshape(NewYLocations',1,[]);
+
+        Locations = NewLocations;
     end
 
-    NewLocations{1}(:,1) = reshape(NewXLocations',1,[]);
-    NewLocations{1}(:,2) = reshape(NewYLocations',1,[]);
-
-    Locations = NewLocations;
+    if strcmpi(MeanderOption,'Meander')
+        for i = 2:2:EntireGridRows
+            Locations{1}((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:)=flipud(Locations{1}((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:));
+        end
+    end
 end
 
 for ImageNumber = 1:length(Locations)

@@ -328,10 +328,13 @@ drawnow
 
 %%% If we are using a user defined field, there is no corresponding
 %%% image.
-if ~strcmpi(FeatureType,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
+if strcmpi(FeatureType,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you have requested to save the resulting color-coded image called ',SaveColoredObjects,' but that image cannot be produced by the Classify module. The color-coded image can only be produced when using measurements straight from a Measure module, not when using measurements from a CalculateRatios module. Sorry for the inconvenience.']);
+end
+if ~strcmpi(SaveColoredObjects,'Do not save')
     %%% Saves images to the handles structure so they can be saved to the hard
     %%% drive, if the user requests.
-    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
+    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage; 
 end
 
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name

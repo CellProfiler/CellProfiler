@@ -1,5 +1,13 @@
 CellProfiler cell image analysis software development 
 
+Anne 3-9-07: There are a few options if we want to get more information about CP.org accesses.  We can write a script that runs every day and counts accesses to the home page.  We can set up an external counter
+somewhere.  We could also set up a Google Analytics account for the
+site (Ray has one for his home page, already), which we could also use
+to track things like how many people download CP when they come to the
+page.
+
+Anne 3-9-07: It would be great to have an Undo function (Ctrl-Z). We should also put Edit > Copy/Cut/Paste on the menu in the main window (the key combinations work just fine, at least on the mac, but if people don't know them they won't realize you can cut/copy/paste).
+
 Anne 2-21-07: MAJOR PROJECT - give CellProfiler a visual interface with modules connecting together and talking to each other.
 
 Adam 2-20-07 Have CP show a warning if there is not enough space to write a file to disk.

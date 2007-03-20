@@ -1,6 +1,6 @@
 CellProfiler cell image analysis software development 
 
-Anne 3-19-07: Get the code from Andrew Gordon's Cell-ID paper (Brent lab, Nature Methods 2007) and see whether it's worth implementing any of it into CellProfiler. Andrew has offered to help if we need any assistance with the code (and he probably has a fresher version than what's available online): agordon@molsci.org
+Anne 3-19-07: Get the code from Andrew Gordon's Cell-ID paper (Brent lab, Nature Methods 2007) and see whether it's worth implementing any of it into CellProfiler. Andrew has offered to help if we need any assistance with the code (he does NOT have a fresher version than what's available online): agordon@molsci.org  He is moving to Brookhaven National Labs in April so won't be as readily accessible but he is writing a document describing the code and any unusual strategies/data structures to help whomever takes the project on in our group.
 
 Anne 3-9-07: There are a few options if we want to get more information about CP.org accesses.  We can write a script that runs every day and counts accesses to the home page.  We can set up an external counter
 somewhere.  We could also set up a Google Analytics account for the

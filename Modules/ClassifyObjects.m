@@ -334,7 +334,7 @@ end
 if ~strcmpi(SaveColoredObjects,'Do not save')
     %%% Saves images to the handles structure so they can be saved to the hard
     %%% drive, if the user requests.
-    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage; 
+    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
 FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
@@ -350,7 +350,12 @@ else
     end
 end
 
-fieldname=['Classify_',ObjectName,'_',FeatureName];
+
+if any(strfind(FeatureType,'Intensity')) || any(strfind(FeatureType,'Texture'))
+    fieldname=['Classify_',ObjectName,'_',FeatureName,'_',Image];
+else
+    fieldname=['Classify_',ObjectName,'_',FeatureName];
+end
 % handles.Measurements.Image.([fieldname,'Features']) = ClassifyFeatureNames;
 if strcmp(AbsoluteOrPercentage,'Percentage')
     Data = bins/length(Measurements);

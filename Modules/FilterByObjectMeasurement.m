@@ -134,7 +134,7 @@ switch Measure
     case 'Intensity'
         Measure = ['Intensity_' ImageName];
     case 'Texture'
-        Measure = ['Texture_[0-9]*[_]?' Image '$'];
+        Measure = ['Texture_[0-9]*[_]?' ImageName '$'];
         Fields = fieldnames(handles.Measurements.(ObjectName));
         TextComp = regexp(Fields,Measure);
         A = cellfun('isempty',TextComp);

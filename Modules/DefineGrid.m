@@ -4,39 +4,75 @@ function handles = DefineGrid(handles)
 % Category: Other
 %
 % SHORT DESCRIPTION:
-% Produces a grid of desired specifications either manually or
-% automatically, based on previously identified objects. The grid can then
+% Produces a grid of desired specifications either manually, or
+% automatically based on previously identified objects. The grid can then
 % be used to make measurements (using Identify Objects in Grid) or to
 % display text information (using Display Grid Info) within each
 % compartment of the grid.
 % *************************************************************************
 %
-% This module defines a grid that can be used by modules downstream.  If
-% you would like the grid to be defined automatically, an identify module
-% must be run prior to this module to identify the objects which will be
-% used to define the grid. The left-most, right-most, top-most, and
-% bottom-most object will be used to define the edges of the grid and the
-% rows and columns will be evenly spaced between these edges. Note that
-% automatic mode requires that the incoming objects are nicely defined -
-% for example, if there is an object at the edge of the images that is not
-% really an object that ought to be in the grid, a skewed grid will result.
+% This module defines the location of a grid that can be used by modules
+% downstream. When used in combination with IdentifyObjectsInGrid, it
+% allows the measurement of the size, shape, intensity and texture of each
+% object in a grid. The grid is defined by the location of marker spots
+% (control spots) in the grid, which are either indicated manually or are
+% found automatically using previous modules in the pipeline.
 %
-% Settings:
-% Most are self-explanatory.
+% If you are using images of plastic plates, it may be useful to precede
+% this module with an IdentifyPrimAtuomatic module to find the plastic
+% plate, followed by a Crop module to remove the plastic edges of the
+% plate, so that the grid can be defined within the smooth portion of the
+% plate only. If the plates are not centered in exactly the same position
+% from one image to the next, this allows the plates to be identified
+% automatically and then cropped so that the interior of the plates, upon
+% which the grids will be defined, are always in precise alignment with
+% each other. 
+%
+% Settings: Most are self-explanatory.
 % 
-% You can choose to define a grid for EACH CYCLE, or ONCE for all
-% images. The grid can be defined using AUTOMATIC or MANUAL modes. 
+% EACH CYCLE or ONCE: If all of your images are perfectly aligned with each
+% other (due to very consistent image acquisition, consistent grid location
+% within the plate, and/or automatic cropping precisely within each plate),
+% you can define the location of the marker spots ONCE for all of the image
+% cycles; if the location of the grid will vary from one image cycle to the
+% next then you should define the location of the marker spots for EACH
+% CYCLE independently.
 %
+% MANUAL mode: In MANUAL mode, you manually indicate known locations of
+% marker spots in the grid and have the rest of the positions calculated
+% from those marks, no matter what the image itself looks like. This mode
+% requires manually clicking on a marker spot with the MOUSE for each image
+% (if it is not visible you have to click where it ought to be). Or, you
+% can type in the pixel COORDINATES of the marker spots. DISTANCE from the
+% control spot to the top left corner of the grid: If the marker spot you
+% have chosen to use is the top left corner spot of the grid, then specify
+% 0,0. As another example, if the control spot is in the same row as the
+% grid and is one spot distance to the left of the grid, you could specify
+% that the spot is -1,0 spot units away from the top left spot. You can
+% also us marker spots that are within the grid. For example, if the 3rd
+% row, 3rd column spot is the one you choose to be the marker spot because
+% it is always present in images, then you would enter 3,3.
 %
-% For MANUAL mode, several questions relate to the control spot. This 
-% control spot can be specified by MOUSE or COORDINATES. For some
-% projects, you might have a control spot which is always present in every
-% image (e.g. the top left spot of the grid is always present). For
-% example, if the marker spot is within the grid itself at the top left
-% position, you could specify 0,0. As another example, if the control spot
-% is in the same row as the grid and is one spot to the left of the grid,
-% you could specify that the spot is -1,0 spot units away from the top left
-% spot.
+% AUTOMATIC mode: If you would like the grid to be defined automatically,
+% an IdentifyPrimAutomatic module must be run prior to this module to
+% identify the objects which will be used to define the grid. The
+% left-most, right-most, top-most, and bottom-most object will be used to
+% define the edges of the grid and the rows and columns will be evenly
+% spaced between these edges. Note that automatic mode requires that the
+% incoming objects are nicely defined - for example, if there is an object
+% at the edge of the images that is not really an object that ought to be
+% in the grid, a skewed grid will result. You might wish to use a
+% FilterByObjectMeasurement module to clean up badly identified objects
+% prior to defining the grid. If the spots are slightly out of alignment
+% with each other from one image cycle to the next, this allows the
+% identification to be a bit flexible and adapt to the real location of the
+% spots.
+%
+% SAVING IMAGES: You can save the grid and numbering produced by this
+% module as a color image, on top of the original image. You can then save
+% this image using the SaveImages module or use the ColorToGray module to
+% separate out the color of interest to combine with other images as
+% desired.
 %
 % See also IdentifyObjectsInGrid, DisplayGridInfo.
 
@@ -171,7 +207,6 @@ try
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because there was an invalid value for the location of the control spot.  The value needs to be two integers seperated by a comma.']);
 end
-
 
 %textVAR15 - What would you like to call an RGB image with R = the image, G = grid lines, and B = text?
 %defaultVAR15 = Do not save

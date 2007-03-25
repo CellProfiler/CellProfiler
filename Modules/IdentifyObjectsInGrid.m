@@ -18,12 +18,13 @@ function handles = IdentifyObjectsInGrid(handles)
 % what you called previously identified objects. Typically, you roughly
 % identify objects of interest in a previous Identify module, and the
 % locations and/or shapes of these rough objects are refined in this
-% module. Objects are also numbered according to the grid definitions. For
-% the Natural Shape option, if an object does not exist within a grid
-% compartment, an object consisting of one single pixel in the middle of
-% the grid square will be created. Also, for the Natural Shape option, if a
-% grid compartment contains two partial objects, they will be combined
-% together as a single object.
+% module. Within this module, objects are re-numbered according to the grid
+% definitions rather than their original numbering from the original 
+% Identify module. For the Natural Shape option, if an object does not 
+% exist within a grid compartment, an object consisting of one single pixel 
+% in the middle of the grid square will be created. Also, for the Natural 
+% Shape option, if a grid compartment contains two partial objects, they 
+% will be combined together as a single object.
 %
 % If placing the objects within the grid is impossible for some reason (the
 % grid compartments are too close together to fit the proper sized circles,

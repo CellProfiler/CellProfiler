@@ -1,6 +1,20 @@
 CellProfiler cell image analysis software development 
 
-Anne 3-29-07: See the BioFormats project (in the SVN repository project are two text documents - reader-guide and using-bioformats - that might be helpful. Anne met Curtis Rueden project lead at an OME User's meeting in Paris in March 2007, Melissa is the Project programmer. They would like for us to contribute our knowledge of the DIB format, preferably by writing a DIB reader for them, and we would like use to make CP use BioFormats to read tons of microscopy image formats.
+Anne 3-29-07: Refreshing the image file list takes a lot of time and is done several times (e.g., when setting the default image folder, when clicking Analyze Images I think it might actually happen twice). This takes a huge amount of time when dealing with large image sets. Is there a way on the various computing platforms (PC, Unix Mac) to tell the time when the folder was last modified? If so, we can store the time in handles.Current when the file list was read and then when going to check the file list again, see whether the files have been modified since the list was originally made and if not, then skip the step.
+
+Anne 3-29-07: Set up the Trac system (open source) to replace this TODO list.
+
+Anne 3-29-07: Store the CellProfiler revision number in the PIPE file, and OUT file (if not already done). Make sure it's exported when using the option to export a PIPE file as text.
+
+Anne 3-29-07: Make a CreateCVPropertiesFile module. It should allow you to enter all the values required for CellVisualizer, or load them from an existing Properties file (that you've loaded into CP using LoadText). This module should also include the ability to choose text (that you've loaded using LoadText) that describes whatever meta data we choose to store about the experiment. Investigate various standards for meta data that should be collected per experiment (see MIACA - minimal information about a cell assay and whatever else we can find) and choose one to use for screens we run. Make CellVisualizer able to read this meta data and display it to the user.
+
+Anne 3-29-07: When exporting to databases, if we do end up writing a data table that contains per-experiment data, make sure that the data table will contain the name of the CSV files that produced it so there is a link between the final database data and the OUT.mat or SQL files or whatever our output data is stored as.
+
+Anne 3-29-07: Learn about the BioFormats project (in the SVN repository project are two text documents - reader-guide and using-bioformats - that might be helpful) you can get the SVN repository of fresh code from the ome.org website. Anne met Curtis Rueden project lead at an OME User's meeting in Paris in March 2007, Melissa is the Project programmer. They would like for us to contribute our knowledge of the DIB format, preferably by writing a DIB reader for them, and we would like use to make CP use BioFormats to read tons of microscopy image formats.
+
+Anne 3-29-07: We should write an ExtractImageInfo module which is able to read the image headers and extract data into a metadata file which could be exported into a database (along with the MIACA-type information; see CreateCVPropertiesFile above). Some data is per-image (row/column notation, time of acquisition) and other data is per-experiment (lens resolution). The BioFormats project might be necessary to extract image header data.
+
+Anne 3-29-07: We should make CellProfiler able to write OME-TIFF format images (but this only makes sense if we are able to read image file headers).
 
 Anne 3-28-07: Xiaobo Zhou has offered to have some of his students solve the c. elegans segmentation problem and would be happy to collaborate whenever we have the time to send him the project.
 

@@ -7,6 +7,27 @@ function handles = MeasureImageGranularity(handles)
 % This module measures the image granularity as described by Ilya Ravkin.
 % *************************************************************************
 %
+% Image granularity can be useful to measure particular assays.
+%
+% Features measured:      Feature Number:
+% GS1                 |        1
+% GS2                 |        2
+% GS3                 |        3
+% GS4                 |        4
+% GS5                 |        5
+% GS6                 |        6
+% GS7                 |        7
+% GS8                 |        8
+% GS9                 |        9
+% GS10                |        10
+% GS11                |        11
+% GS12                |        12
+% GS13                |        13
+% GS14                |        14
+% GS15                |        15
+% GS16                |        16
+%
+%
 % Subsample Size:
 % Subsampling of the image for background removal, given as fraction
 %

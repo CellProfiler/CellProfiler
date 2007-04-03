@@ -14,6 +14,17 @@ function handles = MeasureObjectNeighbors(handles)
 % object were expanded up until the point where it hits another object. To
 % use this option, enter 0 (the number zero) for the pixel distance.
 %
+% Features measured:      Feature Number:
+% NumberOfNeighbors         |    1
+% PercentTouching           |    2
+% FirstClosestObjectNumber  |    3
+% FirstClosestXVector       |    4
+% FirstClosestYVector       |    5
+% SecondClosestObjectNumber |    6
+% SecondClosestXVector      |    7
+% SecondClosestYVector      |    8
+% AngleBetweenNeighbors     |    9
+%
 % How it works:
 % Retrieves objects in label matrix format. The objects are expanded by the
 % number of pixels the user specifies, and then the module counts up how

@@ -18,6 +18,10 @@ function handles = MeasureCorrelation(handles)
 % OrigBlue  /OrigRed        Correlation:    0.59886        -0.02752
 % OrigGreen /OrigRed        Correlation:    0.83605         0.68489
 %
+% Features measured:      Feature Number:
+% Correlation          |         1
+% Slope                |         2
+%
 % See also MeasureObjectIntensity, MeasureImageIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.

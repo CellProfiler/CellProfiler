@@ -12,6 +12,12 @@ function handles = MeasureImageIntensity(handles)
 % intensity. The user can also choose to ignore pixels below or above a
 % particular intensity level.
 %
+% Features measured:      Feature Number:
+% TotalIntensity       |         1
+% MeanIntensity        |         2
+% TotalArea            |         3
+%
+%
 % Settings:
 %
 % You may tell the module to ignore pixels above or below a pixel intensity

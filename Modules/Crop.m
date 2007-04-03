@@ -16,6 +16,11 @@ function handles = Crop(handles)
 % measure their intensity in the *original* image will not work because the
 % two images are not the same size.
 %
+% Features measured:          Feature Number:
+% AreaRetainedAfterCropping |   1
+% OriginalImageArea         |   2
+%
+%
 % Settings:
 %
 % Shape:

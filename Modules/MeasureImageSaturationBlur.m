@@ -8,6 +8,10 @@ function handles = MeasureImageSaturationBlur(handles)
 % measures blur (poor focus). 
 % *************************************************************************
 %
+% Features measured:      Feature Number:
+% FocusScore           |         1
+% PercentSaturated     |         2
+%
 % The percentage of pixels that are saturated is calculated and stored as a
 % measurement in the output file. 'Saturated' means that the pixel's
 % intensity value is equal to the maximum possible intensity value for that

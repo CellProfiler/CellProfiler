@@ -28,6 +28,20 @@ function handles = DefineGrid(handles)
 % which the grids will be defined, are always in precise alignment with
 % each other. 
 %
+% Features measured:      Feature Number:
+% XLocationOfLowestXSpot |      1
+% YLocationOfLowestYSpot |      2
+% XSpacing               |      3 
+% YSpacing               |      4 
+% Rows                   |      5
+% Columns                |      6 
+% TotalHeight            |      7
+% TotalWidth             |      8
+% LeftOrRightNum         |      9
+% TopOrBottomNum         |     10
+% RowsOrColumnsNum       |     11
+%
+%
 % Settings: Most are self-explanatory.
 % 
 % EACH CYCLE or ONCE: If all of your images are perfectly aligned with each

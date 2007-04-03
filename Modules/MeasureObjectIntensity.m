@@ -11,7 +11,7 @@ function handles = MeasureObjectIntensity(handles)
 % module extracts intensity features for each object based on a
 % corresponding grayscale image. Measurements are recorded for each object.
 %
-% Measurement:             Feature Number:
+% Features measured:       Feature Number:
 % IntegratedIntensity     |       1
 % MeanIntensity           |       2
 % StdIntensity            |       3

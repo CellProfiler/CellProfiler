@@ -7,6 +7,10 @@ function handles = Rotate(handles)
 % Rotates images either automatically or by user's mouse input.
 % *************************************************************************
 %
+% Features measured:   Feature Number:
+% Rotation             |      1
+% (this is the angle of rotation)
+%
 % Settings:
 %
 % Rotation method:

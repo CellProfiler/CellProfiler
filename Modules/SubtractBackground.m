@@ -46,6 +46,10 @@ function handles = SubtractBackground(handles)
 % because in a small image set, that position may always be occupied by 
 % real staining.
 %
+% Features measured:    Feature Number:
+% IntensityToShift    |   1
+%
+%
 % See also ApplyThreshold.
 
 % CellProfiler is distributed under the GNU General Public License.

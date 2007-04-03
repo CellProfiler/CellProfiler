@@ -43,7 +43,7 @@ function handles = MeasureTexture(handles)
 % texture cannot be trusted as being completely independent of the
 % intensity difference.
 %
-% Measurement:             Feature Number:
+% Features measured:      Feature Number:
 % AngularSecondMoment     |       1
 % Contrast                |       2
 % Correlation             |       3

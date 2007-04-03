@@ -38,6 +38,12 @@ function handles = CalculateStatistics(handles)
 % This also occurs for some non-informative measured features, like the
 % number of Cytoplasm compartments per Cell which is always equal to 1.
 %
+% Features measured:   Feature Number:
+% Zfactor            |      1
+% Vfactor            |      2
+% EC50               |      3
+%
+%
 % You must load a simple text file with one entry per cycle (using the Load
 % Text module) that tells this module either which samples are positive and
 % negative controls, or the concentrations of the sample-perturbing reagent

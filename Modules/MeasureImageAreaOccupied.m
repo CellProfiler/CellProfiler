@@ -17,6 +17,15 @@ function handles = MeasureImageAreaOccupied(handles)
 % binary image. The number of white pixels are then counted. This provides
 % a measurement of the area occupied by the staining.
 %
+% Features measured:      Feature Number:
+% AreaOccupied        |        1
+% TotalImageArea      |        2
+% ThresholdUsed       |        3
+%
+% (Note: to use with Calculate modules, the "category of measures you would
+% like to use" should be entered as: AreaOccupied_Name, where Name is the 
+% name you entered in the MeasureAreaOccupied module.)
+%
 % Settings:
 %
 % * Select automatic thresholding method:
@@ -86,15 +95,6 @@ function handles = MeasureImageAreaOccupied(handles)
 % information is currently only used in the MoG (Mixture of Gaussian)
 % thresholding but may be used for other thresholding methods in the
 % future.
-%
-% Features measured:      Feature Number:
-% AreaOccupied        |        1
-% TotalImageArea      |        2
-% ThresholdUsed       |        3
-%
-% (Note: to use with Calculate modules, the "category of measures you would
-% like to use" should be entered as: AreaOccupied_Name, where Name is the 
-% name you entered in the MeasureAreaOccupied module.)
 %
 % See also IdentifyPrimAutomatic, IdentifyPrimManual, and
 % MeasureObjectAreaShape modules.

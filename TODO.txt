@@ -14,6 +14,8 @@ As the measurements in the Image file. Seems weird in two ways: (1) I guess ther
 Another weird issue: the Parent, ObjectCount, and Location measures come out in separate chunks in the output file; seems like they might want to be all together. But maybe it's because the data comes out Image first, then per-image features derived from Nuclei, then per-image features derived from Cells, then per-image features derived from Cytoplasm?
 LoadImages (when exported to Excel) names its columns OrigBlue but there's no indication of 'file name' or 'path name'.
 
+There is a file called CPmeasurements.rtf in the Developer Drop box that might be helpful in this project. We might also consider including the information in that document in CP's help somewhere (once it is updated/verified) to help programmers?
+
 Anne 3-29-07: Refreshing the image file list takes a lot of time and is done several times (e.g., when setting the default image folder, when clicking Analyze Images I think it might actually happen twice). This takes a huge amount of time when dealing with large image sets. Is there a way on the various computing platforms (PC, Unix Mac) to tell the time when the folder was last modified? If so, we can store the time in handles.Current when the file list was read and then when going to check the file list again, see whether the files have been modified since the list was originally made and if not, then skip the step.
 
 Anne 3-29-07: Set up the Trac system (open source) to replace this TODO list.

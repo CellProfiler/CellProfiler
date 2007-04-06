@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-6-07: We should make a fairly comprehensive change that will allow us to switch between images of different resolutions more easily. We should pay closer attention to the pixel size of the images and display everything in units of microns rather than pixels. This includes the figure window displays, the output of pixval (Show/Hide pixel data), and the size ranges entered for filters and sizes in the modules (like scale of texture, block sizes, exclude objects by size).
+
 Anne 3-31-07: I think we decided to make CalculateMath like CalculateRatios but never actually implemented: The user should be allowed to name their new calculated math result "
 Note also that when exported, this data from CalculateMath comes out as:
 Nuclei_I_1_Multiply_Cells_I_Cells (Nuclei, Ratio)

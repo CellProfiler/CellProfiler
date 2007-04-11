@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-11-07: We would like the ability to enter a wider range of percentage coverage for the MoG thresholding method (used in a variety of modules). Right now you have to choose 10%,20%,30%, etc. Let's change it to fraction coverage so the user can enter 1% or even .001% if needed.
+
 Anne 4-6-07: We should make a fairly comprehensive change that will allow us to switch between images of different resolutions more easily. We should pay closer attention to the pixel size of the images and display everything in units of microns rather than pixels. This includes the figure window displays, the output of pixval (Show/Hide pixel data), and the size ranges entered for filters and sizes in the modules (like scale of texture, block sizes, exclude objects by size).
 
 Anne 3-31-07: I think we decided to make CalculateMath like CalculateRatios but never actually implemented: The user should be allowed to name their new calculated math result "
@@ -330,6 +332,7 @@ So we need to adapt LoadImages to recognize this format as a movie format, where
 3- Miura Adv Biochem Engin/Biotech 2005 95:267-295 is a nice overview.
 4- See also Niven, Fuks, J MIcrobiol Methods 2005 where they feed XY locations into a program they wrote called ObjectTracker, which might be helpful.
 5- Schiffman...Goldberg (2006) Biotechniques 41(2) 199 has a section, middle of page 200 that gives several references for tracking methods that are more complex than the simple one implemented in the paper itself (nearest-neighbor).
+6- Implement the algorithm from Shen, Nelson, Kennedy et al: Automatic tracking of biological cells and compartments using particle filters and active contours, Chemometrics and Intelligent Laboratory Systems, in press. At least try implementing the object-identification algorithm into IdentifyPrimAutomatic, but perhaps do the kinetic (time-lapse) part too.
 
 - Anne 11-01-06: Improvements to EC50 calculations in CalculateStatistics: If the user chooses to display and save the resulting interactive figures, it would be great for each figure to be labeled with the feature name (e.g., on the Y axis). By the time we get to the point of creating the figure using nlintool, the data are a matrix rather than coming straight from the handles so it might be a little challenging to get the feature name out. Secondly, we would like to make an EC50 data tool that asks the users to choose a particular feature, and then it creates the interactive figure and leaves it open. You can base the tool on the CalcStatistics module, and make CPsubfunctions if they ought to share code.
 
@@ -462,8 +465,6 @@ estimate with no indication of its accuracy. - Ray
 +++  (Requested by Anne) - Implement the algorithm for in vitro angiogenesis from  IEEE Trans Med Imaging. 2005 Apr;24(4):549-53. Robust quantification of in vitro angiogenesis through image analysis. Niemisto A, Dunmire V, Yli-Harja O, Zhang W, Shmulevich I
 
 +++  (Requested by Anne) - Implement the algorithm for migration analysis from Qin J, Chittenden TW, Gao L, Pearlman JD.	 Automated migration analysis based on cell texture: method & reliability. BMC Cell Biol. 2005 Mar 3;6(1):9. 
-
-+++ (Anne 4-21-06)  Implement the algorithm from Shen, Nelson, Kennedy et al: Automatic tracking of biological cells and compartments using particle filters and active contours, Chemometrics and Intelligent Laboratory Systems, in press. At least try implementing the object-identification algorithm into IdentifyPrimAutomatic, but perhaps do the kinetic (time-lapse) part too.
 
 +++ (Requested by Anne 2-14-06) -  Implement the algorithm from: IEEE Trans Inf Technol Biomed. 2006 Jan;10(1):5-10. A new detection algorithm (NDA) based on fuzzy cellular neural networks for white blood cell detection.  Shitong W, Min W.
 

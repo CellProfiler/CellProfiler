@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-11-07: Allow putting 'breakpoints' into an analysis. In other words, the program will know to stop after a particular module, allow the user to change settings, and re-run the module (or continue).
+
 Anne 4-11-07: We need to characterize and describe the Propagate subfunction better. In my testing, The value 2 looked like Distance-B (which is expected). The value -100 also looked like 2 (which is weird; if sub-zero values are nonsense we should tell the user so, or they should be equivalent to zero). Propagate 0 does not look like watershed (this seems unexpected to me, but I think it's because of the size of the 'spillways' so to speak? If this is the case we should say in the help 'Propagate with the value of 0 uses intensity information, like the watershed, but differs because XXX').  Propagate .01 is different from .000001 (.01 is more distance-like and .000001 is more watershed-like). It seems strange that such tiny differences matter. If this is correct, we should state in the help that the range is 0 to infinity but describe a bit better what ranges are most reasonable to try.
 
 Anne 4-11-07: We would like the ability to enter a wider range of percentage coverage for the MoG thresholding method (used in a variety of modules). Right now you have to choose 10%,20%,30%, etc. Let's change it to fraction coverage so the user can enter 1% or even .001% if needed.

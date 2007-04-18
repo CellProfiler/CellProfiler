@@ -1,0 +1,93 @@
+MODULES
+File Processing Modules
+CreateBatchScripts	Produces script files (these are files of plain text) which allow individual batches of images to be processed separately on a cluster computer. 
+LoadImages	Allows you to specify which images or movies are to be loaded and in which order. Groups of images will be loaded per cycle of CellProfiler processing. 
+LoadSingleImage	Loads a single image, which will be used for all image cycles. 
+LoadText	Loads text information corresponding to images. This data (e.g. Gene Names) can be displayed on a grid or exported with the measurements to help track samples. 
+MergeBatchOutput	Combines output files together which were run as separate batches using the Create Batch Scripts module. 
+RenameOrRenumberFiles	Renames or renumbers files on the hard drive. 
+Restart	Restarts image analysis which had failed or was canceled, using the partially completed output file. 
+SaveImages	Saves any image produced during the image analysis, in any image format. 
+SplitOrSpliceMovie	Creates one large movie from several small movies, or creates several small movies from one large movie. 
+WriteSQLFiles	Exports data in database readable format, including an importing file with column names. 
+
+Image Processing Modules
+Align	Aligns two or three images relative to each other. Particularly useful to align microscopy images acquired from different color channels. 
+ApplyThreshold	Pixels below (or above) a certain threshold are set to zero. The remaining pixels retain their original value or (if settings pixels below a boundary to zero and the user chooses to do so), are shifted to match the threshold used. 
+Average	Images are averaged together (a projection is made). 
+ColorToGray	Converts RGB (Red, Green, Blue) color images to grayscale. All channels can be merged into one grayscale image or each channel can extracted into a separate grayscale image. All identify modules require grayscale images. 
+CorrectIllumination_Apply	Applies an illumination function, created by CorrectIllumination_Calculate, to an image in order to correct for uneven illumination (uneven shading). 
+CorrectIllumination_Calculate	Calculates an illumination function, used to correct uneven illumination/lighting/shading or to reduce uneven background in images. 
+Crop	Images can be cropped into a rectangle, ellipse, an arbitrary shape provided by the user, a shape identified by an identify module, or a shape used at a previous step in the pipeline on another image. 
+Flip	Flips an image from top to bottom, left to right, or both. 
+GrayToColor	Takes 1 to 3 images and assigns them to colors in a final red, green, blue (RGB) image. Each color''s brightness can be adjusted independently. 
+InvertIntensity	Converts the intensities of a grayscale image so that black becomes white. 
+OverlayOutlines	Places outlines produced by an identify module over a desired image. 
+PlaceAdjacent	Place up to six images next to each other, either horizontally or vertically, to produce a single image. 
+RescaleIntensity	Changes intensity range of an image to desired specifications. 
+Resize	Resizes images. 
+Rotate	Rotates images either automatically or based on the user clicking. 
+Smooth	Smooths (blurs) images. 
+Subtract	Subtracts the intensities of one image from another. 
+SubtractBackground	Calculates the minimum pixel intensity value for the entire set of images and subtracts this value from every pixel in every image. 
+Tile	Creates one large, tiled image from all images of a certain type. 
+
+Object Processing Modules
+ClassifyObjects	Classifies objects into a number of different classes according to the value of a measurement you choose. 
+ConvertToImage	Converts objects you have identified into an image so that it can be saved with the Save Images module. 
+Exclude	Removes objects outside of specified region. 
+ExpandOrShrink	Expands or shrinks identified objects by a defined distance. 
+FilterByObjectMeasurement	Eliminates objects based on their measurements (e.g. Area, Shape, Texture, Intensity). 
+IdentifyObjectsInGrid	After a grid has been established by the Define Grid module, this module will identify objects within each section of the grid. 
+IdentifyPrimAutomatic	Identifies objects given only an image as input. 
+IdentifyPrimManual	Identifies an object based on manual intervention (clicking) by the user. 
+IdentifySecondary	Identifies objects (e.g. cell edges) using "seed" objects identified by an Identify Primary module (e.g. nuclei). 
+IdentifyTertiarySubregion	Identifies tertiary obects (e.g. cytoplasm) by removing the primary objects (e.g. nuclei) from secondary objects (e.g. cells) leaving a ring shape. 
+Relate	Assigns relationships: All objects (e.g. speckles) within a parent object (e.g. nucleus) become its children. 
+
+Measurement Modules
+CalculateRatios	Measures the ratio between any measurements already measured (e.g. Intensity of green staining in cytoplasm/Area of cells) 
+CalculateStatistics	Calculates the V and Z'' factors for measurements made from images. 
+MeasureCorrelation	Measures the correlation between intensities in different images (e.g. different color channels) on a pixel by pixel basis, within identified objects or across an entire image. 
+MeasureImageAreaOccupied	Measures total area covered by stain in an image. 
+MeasureImageIntensity	Measures the total image intensity by summing every pixel''s intensity. The user can choose to ignore pixels below or above a particular intensity level. 
+MeasureImageSaturationBlur	Measures the percentage of pixels in the image that are saturated and measures blur using a focus score. 
+MeasureObjectAreaShape	Measures several area and shape features of identified objects. 
+MeasureObjectIntensity	Measures several intensity features for identified objects. 
+MeasureObjectNeighbors	Calculates how many neighbors each object has. 
+MeasureTexture	Measures several texture features for identified objects or for entire images. 
+
+Other Modules
+CreateWebPage	Creates the html for a webpage to display images (or their thumbnails, if desired), including a link to a zipped file with all of the included images. 
+DefineGrid	Produces a grid of desired specifications either manually or automatically, based on previously identified objects. The grid can then be used to make measurements (using Identify Objects in Grid) or to display text information (using Display Grid Info) within each compartment of the grid. 
+DisplayDataOnImage	Produce image with measured data on top of measured objects. 
+DisplayGridInfo	Displays text info on grid (i.e. gene names) 
+DisplayHistogram	Produces a histogram of measurements. 
+DisplayImageHistogram	Produces a histogram of the intensity of pixels within an image. 
+DisplayMeasurement	Plot measured data in several formats. 
+SendEmail	Sends emails to a specified address at desired stages of the processing. 
+SpeedUpCellProfiler	Prevents saving partial output files after every image cycle and/or clears the memory. 
+
+
+DATA TOOLS:
+AddData	Allows adding information for each image cycle to an output file. 
+ClearData	Allows removing information/measurements from an output file. 
+ConvertBatchFiles	Converts output files produced by the Create Batch Scripts module into regular CellProfiler output files. 
+DataLayout	Shows mean measurements for each image in a specified spatial layout. 
+ExportData	Export measurements into excel file. 
+ExportDatabase	Export measurements in database format. 
+ExportLocations	Export center locations of objects. Good for creating locations list for microscope. 
+GenerateHistogramMovie	Creates a movie of the histogram of any measurement. 
+Histogram	Displays a histogram of individual object measurements. 
+MeasurementCalculator	Allows the user to multiply or divide measurements in output files. 
+MergeOutputFiles	Merges together output files produced by the Create Batch Scripts module into one regular CellProfiler output file. 
+PlotMeasurement	Allows plotting bar charts, line charts, or scatter plots. 
+ShowDataOnImage	Displays an image with corresponding measurements overlaid on top. 
+ViewData	Allows viewing data or measurements in a CellProfiler output file. 
+
+
+IMAGE TOOLS:
+ImageToolWindow	The Image Tool Window opens when you click on any image. 
+InteractiveZoom	Allows interactive zooming over the image. 
+OpenNewImageFile	Opens an image file in a new window. 
+ShowOrHidePixelData	Shows X,Y pixel location and intensity information in the figure window. 

@@ -1,5 +1,9 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-20-07: In the Crop module, have an option when cropping based on previously identified objects: remove rows/columns without any objects (Yes/No) so that the resulting image can stay the same size if desired.
+
+Anne 4-20-07: In the relate module, it would be nice to have an option: Filter out parent objects if they do not contain ANY children objects (Yes/No).
+
 Anne 4-18-07: Our collaborator at Harvard gave us a few timelapse movies of brightfield cells to tackle. Can we identify and track the cells over time? The images are in imaging_analysis/2007_04_18_LahavPhaseTimelapse, with a bit of description.
 
 Anne 4-11-07: Allow putting 'breakpoints' into an analysis. In other words, the program will know to stop after a particular module, allow the user to change settings, and re-run the module (or continue).

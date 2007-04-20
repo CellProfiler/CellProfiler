@@ -1,5 +1,13 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-20-07: This paper's method might be interesting to investigate:
+ Med Image Comput Comput Assist Interv Int Conf Med Image Comput Comput Assist Interv. 2006;9(Pt 1):101-8.	Related Articles
+Cell segmentation using coupled level sets and graph-vertex coloring.
+Nath SK, Palaniappan K, Bunyak F.
+MCVL, Department of Computer Science, University of Missouri-Columbia, Columbia, MO 65211, USA. naths@missouri.edu
+Current level-set based approaches for segmenting a large number of objects are computationally expensive since they require a unique level set per object (the N-level set paradigm), or [log2N] level sets when using a multiphase interface tracking formulation. Incorporating energy-based coupling constraints to control the topological interactions between level sets further increases the computational cost to O(N2). We propose a new approach, with dramatic computational savings, that requires only four, or fewer, level sets for an arbitrary number of similar objects (like cells) using the Delaunay graph to capture spatial relationships. Even more significantly, the coupling constraints (energy-based and topological) are incorporated using just constant O(1) complexity. The explicit topological coupling constraint, based on predicting contour collisions between adjacent level sets, is developed to further prevent false merging or absorption of neighboring cells, and also reduce fragmentation during level set evolution. The proposed four-color level set algorithm is used to efficiently and accurately segment hundreds of individual epithelial cells within a moving monolayer sheet from time-lapse images of in vitro wound healing without any false merging of cells.
+PMID: 17354879 [PubMed - indexed for MEDLINE]
+
 Anne 4-20-07: In the Crop module, have an option when cropping based on previously identified objects: remove rows/columns without any objects (Yes/No) so that the resulting image can stay the same size if desired.
 
 Anne 4-20-07: In the relate module, it would be nice to have an option: Filter out parent objects if they do not contain ANY children objects (Yes/No).

@@ -553,3 +553,6 @@ angiogenesis
 +++  (Requested by Anne) SHOULD PROBABLY WAIT UNTIL WE HAVE A PRACTICAL USE FOR IT!! - Make a user-scoring module that allows the user to view and annotate each image manually. Show control side by side (1-4 at a time) and add that assessment to the data structure. Maybe allow randomizing (to do blind tests). Allow clicking through. Could also be used just for viewing images (e.g. every third image in a gigantic image set).  Whether the file name and/or sample info is shown should be optional. 
 
 +++  (Requested by Anne) - Allow data to be exported to Open Microscopy Environment databases.  (WAIT ON THIS - Being worked on by Tony Scelfo in Peter Sorger's lab).
+
+
++++  (Requested by Anne) - Adam try to add a line.

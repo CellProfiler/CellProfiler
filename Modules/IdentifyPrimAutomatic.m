@@ -432,6 +432,7 @@ ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModule
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For MoG thresholding, what is the approximate percentage of image covered by objects?
+%choiceVAR10 = 01%
 %choiceVAR10 = 10%
 %choiceVAR10 = 20%
 %choiceVAR10 = 30%

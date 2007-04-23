@@ -1,4 +1,6 @@
-Version 1.0.XXXX
+Version 1.0.4628
+ - FilterByObjectMeasurement does not fail when using texture measurements
+ - ClassifyObjects includes image name in output to distinguish different modules
  - ConvertToImage has option to save in uint16 format
  - CalculateStatistics now returns 0 for invalid EC50, instead of crashing
 

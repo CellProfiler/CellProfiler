@@ -1,5 +1,7 @@
 CellProfiler cell image analysis software development 
 
+Anne 4-24-07: We need to make Measure modules respect images that have been cropped. MeasureCorrelation for example, should ignore the zeros that result from being cropped.
+
 Anne 4-20-07: This paper's method might be interesting to investigate:
  Med Image Comput Comput Assist Interv Int Conf Med Image Comput Comput Assist Interv. 2006;9(Pt 1):101-8.	Related Articles
 Cell segmentation using coupled level sets and graph-vertex coloring.

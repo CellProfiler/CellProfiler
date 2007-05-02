@@ -294,16 +294,24 @@ function [v, z, OrderedUniqueDoses, OrderedAverageValues] = VZfactors(xcol, ymat
 % and columns corresponds to different measures.
 % v, z are (1, Nmeasures) row vectors containing V- and Z-factors
 % for the corresponding measures.
+%
+% When ranges are zero, we set the V and Z' factor to a very negative
+% value.
+
 [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr);
-range = max(avers) - min(avers);
-cnstns = find(range == 0);
-if (length(cnstns) > 0)
-    range(cnstns) = 0.000001;
-end
+vrange = max(avers) - min(avers);
+vstd(vrange == 0) = 1;
+vrange(vrange == 0) = 0.000001;
 vstd = mean(stds);
-v = 1 - 6 .* (vstd ./ range);
+v = 1 - 6 .* (vstd ./ vrange);
+
+% Z factor is defined by the positive and negative controls, so we take the
+% extremes BY DOSE of the averages and stdevs.
+zrange = abs(avers(1, :) - avers(length(xs), :));
 zstd = stds(1, :) + stds(length(xs), :);
-z = 1 - 3 .* (zstd ./ range);
+zstd(zrange == 0) = 1;
+zrange(zrange == 0) = 0.000001;
+z = 1 - 3 .* (zstd ./ zrange);
 OrderedUniqueDoses = xs;
 OrderedAverageValues = avers;
 

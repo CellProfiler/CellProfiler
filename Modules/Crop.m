@@ -179,7 +179,13 @@ Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR11 = popupmenu
 PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%%%VariableRevisionNumber = 4
+%textVAR12 = Do you want to remove rows and columns that lack objects? (see Help, only used when cropping based on previously identified objects)
+%choiceVAR12 = No
+%choiceVAR12 = Yes
+%inputtypeVAR12 = popupmenu
+RemoveRowsAndColumns = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -206,7 +212,7 @@ else
     try
         %%% In these cases we can just retrieve the previously existing
         %%% BinaryCropImage and apply it.
-        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName,RemoveRowsAndColumns);
         
         %%% We have a try/catch here for a situation like this: we are
         %%% using Rectangle and the 'First' option (because we always want
@@ -315,13 +321,13 @@ if RecalculateFlag == 1
             CropFromObjectFlag = 1;
         else
             CropFromObjectFlag = 1;
-            try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName);
+            try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName,RemoveRowsAndColumns);
                 handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
             catch
-                try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],ModuleName);
+                try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],ModuleName,RemoveRowsAndColumns);
                     handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
                 catch
-                    try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],ModuleName);
+                    try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],ModuleName,RemoveRowsAndColumns);
                         handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
                     catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
@@ -415,7 +421,7 @@ if RecalculateFlag == 1
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName);
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName,RemoveRowsAndColumns);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
             if strcmp(IndividualOrOnce,'Individually') && (CropFromObjectFlag == 0)
@@ -481,7 +487,7 @@ if RecalculateFlag == 1
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
         handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
-        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName);
+        [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName,RemoveRowsAndColumns);
     end
     %%% See subfunction below.
 end
@@ -533,7 +539,7 @@ handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = 
 
 
 
-function [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName)
+function [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName, RemoveRowsAndColumns)
 %%% Retrieves the Cropping image from the handles structure.
 try
     BinaryCropImage = CPretrieveimage(handles,['Cropping',CroppedImageName],ModuleName);
@@ -556,24 +562,31 @@ for Channel = 1:size(PrelimCroppedImage,3),
     PrelimCroppedImage((Channel-1)*ImagePixels + find(BinaryCropImage == 0)) = 0;
 end
 drawnow
-%%% Removes Rows and Columns that are completely blank.
-ColumnTotals = sum(BinaryCropImage,1);
-RowTotals = sum(BinaryCropImage,2)';
-warning off all
-ColumnsToDelete = ~logical(ColumnTotals);
-RowsToDelete = ~logical(RowTotals);
-warning on all
-drawnow
+
 CroppedImage = PrelimCroppedImage;
-CroppedImage(:,ColumnsToDelete,:) = [];
-CroppedImage(RowsToDelete,:,:) = [];
-%%% The Binary Crop Mask image is saved to the handles
-%%% structure so it can be used in subsequent cycles to
-%%% show which parts of the image were cropped (this will be used
-%%% by CPthreshold).
 BinaryCropMaskImage = BinaryCropImage;
-BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
-BinaryCropMaskImage(RowsToDelete,:,:) = [];
+
+if strcmp(RemoveRowsAndColumns,'Yes') == 1
+    %%% Removes Rows and Columns that are completely blank.
+    ColumnTotals = sum(BinaryCropImage,1);
+    RowTotals = sum(BinaryCropImage,2)';
+    warning off all
+    ColumnsToDelete = ~logical(ColumnTotals);
+    RowsToDelete = ~logical(RowTotals);
+    warning on all
+    drawnow
+    CroppedImage(:,ColumnsToDelete,:) = [];
+    CroppedImage(RowsToDelete,:,:) = [];
+
+    %%% The Binary Crop Mask image is saved to the handles
+    %%% structure so it can be used in subsequent cycles to
+    %%% show which parts of the image were cropped (this will be used
+    %%% by CPthreshold).
+    BinaryCropMaskImage(:,ColumnsToDelete,:) = [];
+    BinaryCropMaskImage(RowsToDelete,:,:) = [];
+
+end
+
 %%% In case the entire image has been cropped away, we store a single
 %%% zero pixel for these variables.
 if isempty(CroppedImage)

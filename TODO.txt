@@ -1,6 +1,8 @@
 CellProfiler cell image analysis software development 
 ---------------------------
 PROJECTS FOR MARTHA TO START ON:
+- Anne 5-4-07: In the ExportToExcel module (and possibly the ExportToDatabase module, not sure), right now most of the options in the pulldown menu come from the object group. One exception is that "Image" shows up automatically. The module should check and see whether the CalculateStatistics module is present in the pipeline, and if so, it should add "Experiment" as another 'exceptional' option.
+
 - Anne 2-2-07: When using CreateBatchScripts, if you have only one image cycle to analyze, it should warn you that there is no batch file written because you only have one cycle.
 
 - Anne 2-2-07: ConvertToImage - the displayed resulting image is currently labeled "NewImage" rather than whatever the user decided to name the image.

@@ -38,6 +38,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
     if strcmp(ObjectName,'Neighbors')
         continue
     end
+    if ~isfield(handles.Measurements,ObjectName)
+        CPwarndlg(['The ',ObjectName,' results cannot be exported because those measurements were not made.'],'Warning')
+        continue
+    end
+    
     %%% Get fields in handles.Measurements
     fields = fieldnames(handles.Measurements.(ObjectName));
 
@@ -150,7 +155,9 @@ for Object = 1:length(ExportInfo.ObjectNames)
     if strcmp(ObjectName,'Neighbors')
         continue
     end
-
+    if ~isfield(handles.Measurements,ObjectName)
+        continue
+    end
     %%% Update waitbar
     CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
 
@@ -171,6 +178,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
         error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);
     end
 
+    
     % Get the measurements and feature names to export
     Measurements     = SuperMeasurements{Object};
     MeasurementNames = SuperMeasurementNames{Object};

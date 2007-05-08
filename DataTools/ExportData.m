@@ -167,22 +167,29 @@ set(ETh,'units','pixels','resize','on','menubar','none','toolbar','none','number
 uiheight = 28;
 % Set window size in inches, depends on the number of objects
 ScreenSize = get(0,'ScreenSize');
-Height = 300+ceil(length(fields)/2)*uiheight;
+Height = 330+ceil(length(fields)/2)*uiheight;
 Width  = 600;
 LeftPos = (ScreenSize(3)-Width)/2;
 BottomPos = (ScreenSize(4)-Height)/2;
 set(ETh,'position',[LeftPos BottomPos Width Height]);
 
 if ~isempty(fields)
+    NumberOfImageSetsCompleted = num2str(handles.Current.SetBeingAnalyzed); 
+    NumberOfImageSetsPlanned = num2str(handles.Current.NumberOfImageSets);
     % Top text
-    uicontrol(ETh,'style','text','String','Measurements to export:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+    uicontrol(ETh,'style','text','String',...
+        [NumberOfImageSetsCompleted,' image cycles were completed out of ',NumberOfImageSetsPlanned,' total cycles planned.'],...
+        'FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
         'HorizontalAlignment','left','units','pixels','position',[20 Height-30 400 20],'BackgroundColor',get(ETh,'color'))
+    
+    uicontrol(ETh,'style','text','String','Measurements to export:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+        'HorizontalAlignment','left','units','pixels','position',[20 Height-60 400 20],'BackgroundColor',get(ETh,'color'))
 
     % Radio buttons for extracted measurements
     h = [];
     %Arrange fields in a two column display, keep track of the y position
     %of the last object created
-    ypos = Height - uiheight;
+    ypos = Height - uiheight-30;
     for k = 1:length(fields)
         if rem(k,2) == 1 %when index is odd
             ypos=ypos-uiheight;
@@ -202,7 +209,7 @@ if ~isempty(fields)
 
 else  % No measurements found
     uicontrol(ETh,'style','text','String','No measurements found','FontName','helvetica','FontSize',FontSize,...
-        'units','pixels','position',[0 Height-50 600 15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
+        'units','pixels','position',[0 Height-80 600 15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
 ProposedFilename = RawFileName;

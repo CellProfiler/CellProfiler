@@ -159,10 +159,14 @@ drawnow
 
 %%% If this isn't the first cycle, we are running on the
 %%% cluster, and should just continue.
-if (handles.Current.SetBeingAnalyzed > 1),
+if (handles.Current.SetBeingAnalyzed > 1)
     return;
 end
-
+if handles.Current.NumberOfImageSets == 1 
+   CPwarndlg(['Warning: No batch scripts have been written because ',...
+       'you have scheduled only one cycle to be processed and that cycle is already complete.',... 
+       'Warning'); 
+end    
 if strncmp(BatchSavePath, '.',1)
     if length(BatchSavePath) == 1
         BatchSavePath = handles.Current.DefaultOutputDirectory;

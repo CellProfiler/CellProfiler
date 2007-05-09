@@ -196,10 +196,10 @@ function handles = IdentifyPrimAutomatic(handles)
 % parent objects. Important: the per object method requires that you run an
 % IdentifyPrim module to identify the parent objects upstream in the
 % pipeline. After the parent objects are identified in the pipeline, you
-% must then also run a Crop module as follows: the shape in which to crop
-% is the name of the parent objects, and the image to be cropped is the one
+% must then also run a Crop module as follows: the image to be cropped is the one
 % that you will want to use within this module to identify the children
-% objects (e.g., ChildrenStainedImage). Then, set this
+% objects (e.g., ChildrenStainedImage), and the shape in which to crop
+% is the name of the parent objects (e.g., Nuclei). Then, set this
 % IdentifyPrimAutomatic module to identify objects within the
 % CroppedChildrenStainedImage.
 %

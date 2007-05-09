@@ -145,7 +145,7 @@ if any(findobj == ThisModuleFigureNumber)
     title(['Original Identified ', ObjectName]);
     subplot(2,1,2);
     CPimagesc(Image,handles);
-    title('New Image');
+    title(ImageName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

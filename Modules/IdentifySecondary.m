@@ -166,7 +166,7 @@ function handles = IdentifySecondary(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1808 $
+% $Revision: 1809 $
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -229,18 +229,20 @@ ThresholdCorrection = str2double(char(handles.Settings.VariableValues{CurrentMod
 %defaultVAR07 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = For MoG thresholding, what is the approximate percentage of image covered by objects?
-%choiceVAR08 = 10%
-%choiceVAR08 = 20%
-%choiceVAR08 = 30%
-%choiceVAR08 = 40%
-%choiceVAR08 = 50%
-%choiceVAR08 = 60%
-%choiceVAR08 = 70%
-%choiceVAR08 = 80%
-%choiceVAR08 = 90%
+%textVAR08 = For MoG thresholding, what is the approximate fraction of image covered by objects?
+%choiceVAR08 = 0.01
+%choiceVAR08 = 0.1
+%choiceVAR08 = 0.2
+%choiceVAR08 = 0.3
+%choiceVAR08 = 0.4
+%choiceVAR08 = 0.5
+%choiceVAR08 = 0.6
+%choiceVAR08 = 0.7
+%choiceVAR08 = 0.8
+%choiceVAR08 = 0.9
+%choiceVAR08 = 0.99
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%inputtypeVAR08 = popupmenu custom
 
 %textVAR09 = For DISTANCE, enter the number of pixels by which to expand the primary objects [Positive integer]
 %defaultVAR09 = 10

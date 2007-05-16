@@ -61,7 +61,7 @@ end
 %%% cases: if the user is going to set the threshold interactively, if they
 %%% are using All images together to calculate the threshold, or if they
 %%% have manually entered a numerical value for the threshold.
-if strcmp(Threshold,'Set interactively') || strcmp(Threshold,'All') || ~isempty(str2num(Threshold))
+if strcmp(Threshold,'Set interactively') || strcmp(Threshold,'All') || ~isempty(str2num(Threshold)) 
     %%% In these cases, don't do anything.
 else
     fieldname = ['CropMask', ImageName];
@@ -485,7 +485,20 @@ else
 
     %%% Convert user-specified percentage of image covered by objects to a
     %%% prior probability of a pixel being part of an object.
-    pObject = str2double(pObject(1:2))/100;
+    
+    %%% Since the default list for MoG thresholding contains a % sign, we
+    %%% need to remove the percent sign and use only the number to
+    %%% calculate the threshold. If the pObject does not contain a % sign,
+    %%% it will continue.  
+    %%% pObject is important, but pObjectNew is only used in  2 lines of code.blah
+    if regexp(pObject, '%')
+        pObjectNew = regexprep(pObject, '%', '');
+        pObject = (str2double(pObjectNew)/100);
+    
+    else
+        pObject = str2double(pObject);
+    end
+    %pObject = str2double(pObject(1:2))/100; old code--need to remove
     %%% Get the probability for a background pixel
     pBackground = 1 - pObject;
 
@@ -497,7 +510,7 @@ else
     %%% decide later if it encodes background or object pixels. Also, for
     %%% robustness the we remove 1% of the smallest and highest intensities
     %%% in case there are any quantization effects that have resulted in
-    %%% unaturally many 0:s or 1:s in the image.
+    %%% unnaturally many 0:s or 1:s in the image.
     im = sort(im);
     im = im(ceil(length(im)*0.01):round(length(im)*0.99));
     ClassMean(1) = im(round(length(im)*pBackground/2));                      %%% Initialize background class

@@ -165,23 +165,25 @@ ThresholdCorrection = str2double(char(handles.Settings.VariableValues{CurrentMod
 %defaultVAR05 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = For MoG thresholding, what is the approximate percentage of image covered by objects?
-%choiceVAR06 = 10%
-%choiceVAR06 = 20%
-%choiceVAR06 = 30%
-%choiceVAR06 = 40%
-%choiceVAR06 = 50%
-%choiceVAR06 = 60%
-%choiceVAR06 = 70%
-%choiceVAR06 = 80%
-%choiceVAR06 = 90%
+%textVAR06 = For MoG thresholding, what is the approximate fraction of image covered by objects? 
+%choiceVAR06 = 0.01
+%choiceVAR06 = 0.1
+%choiceVAR06 = 0.2
+%choiceVAR06 = 0.3
+%choiceVAR06 = 0.4
+%choiceVAR06 = 0.5
+%choiceVAR06 = 0.6
+%choiceVAR06 = 0.7
+%choiceVAR06 = 0.8
+%choiceVAR06 = 0.9
+%choiceVAR06 = 0.99
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu
+%inputtypeVAR06 = popupmenu custom
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

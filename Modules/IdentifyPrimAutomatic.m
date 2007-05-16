@@ -358,7 +358,7 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1879 $
+% $Revision: 1880 $
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -431,19 +431,20 @@ ThresholdCorrection = str2num(char(handles.Settings.VariableValues{CurrentModule
 %defaultVAR09 = 0,1
 ThresholdRange = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = For MoG thresholding, what is the approximate percentage of image covered by objects?
-%choiceVAR10 = 01%
-%choiceVAR10 = 10%
-%choiceVAR10 = 20%
-%choiceVAR10 = 30%
-%choiceVAR10 = 40%
-%choiceVAR10 = 50%
-%choiceVAR10 = 60%
-%choiceVAR10 = 70%
-%choiceVAR10 = 80%
-%choiceVAR10 = 90%
+%textVAR10 = For MoG thresholding, what is the approximate fraction of image covered by objects?
+%choiceVAR10 = 0.01
+%choiceVAR10 = 0.1
+%choiceVAR10 = 0.2
+%choiceVAR10 = 0.3
+%choiceVAR10 = 0.4
+%choiceVAR10 = 0.5
+%choiceVAR10 = 0.6
+%choiceVAR10 = 0.7
+%choiceVAR10 = 0.8
+%choiceVAR10 = 0.9
+%choiceVAR10 = 0.99
 pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%inputtypeVAR10 = popupmenu custom
 
 %textVAR11 = Method to distinguish clumped objects (see help for details):
 %choiceVAR11 = Intensity

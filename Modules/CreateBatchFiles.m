@@ -164,8 +164,8 @@ if (handles.Current.SetBeingAnalyzed > 1)
 end
 if handles.Current.NumberOfImageSets == 1 
    CPwarndlg(['Warning: No batch scripts have been written because ',...
-       'you have scheduled only one cycle to be processed and that cycle is already complete.',... 
-       'Warning']); 
+       'you have scheduled only one cycle to be processed and that cycle is already complete.']);
+   return;
 end    
 if strncmp(BatchSavePath, '.',1)
     if length(BatchSavePath) == 1

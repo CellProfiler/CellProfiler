@@ -232,7 +232,9 @@ end
 % the program will behave as if the user entered "Last cycle"
 % by not saving the image until the last cycle. At the end of the last cycle,
 % the user will get a help dialog popup window.
-
+warning off MATLAB:intConvertNonIntVal;
+warning off MATLAB:intConvertOverflow;
+warning off MATLAB:intMathOverflow;
 TileModuleNum = strmatch('Tile',handles.Settings.ModuleNames,'exact');
 
 if ~isempty(TileModuleNum)      %if Tile Module is loaded
@@ -536,6 +538,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             end
         end
     else  %%% For all other image formats, including most normal ones.
+
         if strcmpi(ColorMap,'gray') || ndims(Image) == 3
             %%% For color images or for grayscale saved in gray format, we do
             %%% not want to alter the image by applying a colormap.
@@ -553,6 +556,9 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         end
     end
 end
+warning on MATLAB:intConvertNonIntVal;
+warning on MATLAB:intConvertOverflow;
+warning on MATLAB:intMathOverflow;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

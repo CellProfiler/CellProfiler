@@ -111,7 +111,9 @@ LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
 if strcmp(ImageMode,'Binary (black & white)')
     Image = logical(LabelMatrixImage ~= 0);
 elseif strcmp(ImageMode,'Grayscale')
+       warning off Matlab:DivideByZero
     Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));
+       warning on Matlab:DivideByZero
 elseif strcmp(ImageMode,'Color')
     if strcmpi(ColorMap,'Default')
         Image = CPlabel2rgb(handles,LabelMatrixImage);

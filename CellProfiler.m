@@ -473,11 +473,11 @@ try addpath(Pathname)
         for i = 1:length(FileNamesNoDir),
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
                 if strncmp(FileNamesNoDir{i}(1:2),'GS',2)
-                    GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2))); %#ok Ignore MLint
+                    GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(3:end-2)};
+                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(3:end-2))); %#ok Ignore MLint
                 else
-                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
-                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
+                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(3:end-2)};
+                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(3:end-2)));
                 end
             end
         end

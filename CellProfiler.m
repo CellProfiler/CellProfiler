@@ -476,8 +476,8 @@ try addpath(Pathname)
                     GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(3:end-2)};
                     GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(3:end-2))); %#ok Ignore MLint
                 else
-                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(3:end-2)};
-                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(3:end-2)));
+                    ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
+                    ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
                 end
             end
         end
@@ -602,7 +602,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% LOAD PIPELINE BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
 function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
     LoadPipeline_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 
@@ -779,7 +779,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         handles.Settings.ModuleNames(ModuleNum-Skipped) = {'ExportToDatabase'};
     end
     %%% Load the module's settings
-    
+
     try
         %%% First load the module with its default settings
         [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
@@ -789,7 +789,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         else
             SavedVarRevNum = 0;
         end
-        
+
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
         %%% load is the same
@@ -993,12 +993,12 @@ while 1
         catch
             VarRevNum = str2double(output(29:29));
         end
-      elseif strncmp(output,'% $Revision:', 12) 
-         try
-             ModuleRevNum = str2double(output(14:17));
-         catch
-             ModuleRevNum = str2double(output(14:18));
-         end
+    elseif strncmp(output,'% $Revision:', 12)
+        try
+            ModuleRevNum = str2double(output(14:17));
+        catch
+            ModuleRevNum = str2double(output(14:18));
+        end
     end
 end
 fclose(fid);
@@ -1302,7 +1302,7 @@ if ModuleNamedotm ~= 0,
         handles.Settings.VariableRevisionNumbers(ModuleCurrent+1) = handles.Settings.VariableRevisionNumbers(ModuleCurrent);
         %%% 5. Copy then clear the module revision numbers in the handles
         %%% structure.
-        handles.Settings.ModuleRevisionNumbers(ModuleCurrent+1) = handles.Settings.ModuleRevisionNumbers(ModuleCurrent);        
+        handles.Settings.ModuleRevisionNumbers(ModuleCurrent+1) = handles.Settings.ModuleRevisionNumbers(ModuleCurrent);
         %%% 6. Copy then clear the variable infotypes in the handles
         %%% structure.
         if size(handles.Settings.VariableInfoTypes,1) >= ModuleCurrent
@@ -1632,7 +1632,7 @@ if ModuleNamedotm ~= 0,
             end
 
             clear StrSet
-        elseif strncmp(output,'% $Revision:', 12) 
+        elseif strncmp(output,'% $Revision:', 12)
             try
                 handles.Settings.ModuleRevisionNumbers(ModuleNums) = str2double(output(14:17));
             catch
@@ -1683,12 +1683,12 @@ if ModuleNamedotm ~= 0,
     end
 
     try Contents = handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber));
-    catch handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = 0;  
+    catch handles.Settings.VariableRevisionNumbers(str2double(ModuleNumber)) = 0;
     end
-     
-    %blah  
+
+    %blah
     try ModuleRevContents = handles.Settings.ModuleRevisionNumbers(str2double(ModuleNumber));
-    catch handles.Settings.ModuleRevisionNumbers(str2double(ModuleNumber)) = 0;  
+    catch handles.Settings.ModuleRevisionNumbers(str2double(ModuleNumber)) = 0;
     end
 
     %%% 5. Saves the ModuleName to the handles structure.
@@ -1946,7 +1946,7 @@ if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighligh
         handles.Settings.VariableRevisionNumbers(ModuleNow) = handles.Settings.VariableRevisionNumbers(ModuleDown);
         handles.Settings.VariableRevisionNumbers(ModuleDown) = copyVarRevNums;
         %%% 5. Copy then clear the module revision numbers in the handles
-        %%% structure. 
+        %%% structure.
         copyModRevNums = handles.Settings.ModuleRevisionNumbers(ModuleNow);
         handles.Settings.ModuleRevisionNumbers(ModuleNow) = handles.Settings.ModuleRevisionNumbers(ModuleDown);
         handles.Settings.ModuleRevisionNumbers(ModuleDown) = copyModRevNums;
@@ -2665,6 +2665,8 @@ SetPreferencesWindowHandle = figure(...
     'HandleVisibility','on',...
     'Tag','SetPreferenceWindow',...
     'UserData',userData);
+
+Option = [];
 
 for i = 1:length(handles.Current.HelpFilenames),
     if strfind(handles.Current.HelpFilenames{i},'HelpPreferences')

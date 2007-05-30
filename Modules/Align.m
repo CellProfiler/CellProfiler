@@ -9,14 +9,16 @@ function handles = Align(handles)
 % *************************************************************************
 %
 % For two or three input images, this module determines the optimal
-% alignment among them.  This works whether the images are correlated or
-% anti-correlated (bright in one = bright in the other, or bright in one =
-% dim in the other). This is useful when the microscope is not perfectly
-% calibrated because, for example, proper alignment is necessary for
-% primary objects to be helpful to identify secondary objects. The images
-% are cropped appropriately according to this alignment, so the final
-% images will be smaller than the originals by a few pixels if alignment is
-% necessary.
+% alignment among them.  If using Mutual Information (see below), this
+% works whether the images are correlated or anti-correlated (bright
+% in one = bright in the other, or bright in one = dim in the other).
+% The Normalized Cross Correlation option requires that the images
+% have matching bright and dark areas.  This is useful when the
+% microscope is not perfectly calibrated because, for example, proper
+% alignment is necessary for primary objects to be helpful to identify
+% secondary objects. The images are cropped appropriately according to
+% this alignment, so the final images will be smaller than the
+% originals by a few pixels if alignment is necessary.
 % 
 % Settings:
 %
@@ -423,8 +425,10 @@ while true,
 end
 
 function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
-%%% Finds the best one pixel move, but only in the same direction(s) we
-%%% moved last time (no sense repeating evaluations)
+%%% Finds the best one pixel move, but only in the same direction(s)
+%%% we moved last time (no sense repeating evaluations).  ldx is last
+%%% dx, ldy is last dy.  Technically, if one of them is zero, the test
+%%% should be more restrictive (XXX).
 nb = best;
 for dx=-1:1,
     for dy=-1:1,

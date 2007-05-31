@@ -92,6 +92,14 @@ if isfield(handles.Measurements.(SubObjectName),'Parent')
                 MeasurementFeatures=handles.Measurements.(SubObjectName).(FieldName);
                 handles.Measurements.(NewObjectName).(FieldName)=MeasurementFeatures;
                 Measurements=handles.Measurements.(SubObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed};
+                % The loop over 'j' below will never be entered if
+                % there are no parents in the image, leading to a bug
+                % where the data is truncated if the last few images
+                % don't contain parents.  This next statement handles
+                % that case by ensuring that at least something is
+                % written at the correction location in the
+                % Measurements structure.
+                handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed} = [];
                 for i=1:length(MeasurementFeatures)
                     for j=1:max(max(ParentObjectLabelMatrix))
                         index=find(Parents==j);

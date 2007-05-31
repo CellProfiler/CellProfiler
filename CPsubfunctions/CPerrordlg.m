@@ -50,6 +50,22 @@ end
 if NumArgIn<2,  DlgName = 'Error Dialog'; end
 if NumArgIn<3,  Replace='non-modal'     ; end
 
+% copied from CellProfiler.m errofunction()
+errorinfo = lasterror;
+if isfield(errorinfo, 'stack'),
+    try
+        stackinfo = errorinfo.stack(1,1);
+        ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
+    catch
+        %%% The line stackinfo = errorinfo.stack(1,1); will fail if the
+        %%% errorinfo.stack is empty, which sometimes happens during
+        %%% debugging, I think. So we catch it here.
+        ExtraInfo = '';
+    end
+end
+
+ErrorString = [ErrorString ExtraInfo];
+
 % Backwards Compatibility
 if ischar(Replace),
   if strcmp(Replace,'on'),

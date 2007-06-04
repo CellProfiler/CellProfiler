@@ -657,6 +657,9 @@ for n = 1:length(ImageName)
         %%% This try/catch will catch any problems in the load movies module.
         try
 
+            if(SetBeingAnalyzed == 10)
+               blah=1; 
+            end
             %%% Determines which movie to analyze.
             fieldname = ['FileList', ImageName{n}];
             FileList = handles.Pipeline.(fieldname);
@@ -666,8 +669,18 @@ for n = 1:length(ImageName)
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             if strcmpi(FileFormat,'avi') == 1
-                LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+                %%%If you do not subtract 1 from the index, as specified 
+                %%%in aviread.m, the  movie will fail to load.  However,
+                %%%the first frame will fail if the index=0.  
+            	IndexLocation=(cell2mat(CurrentFileName(2)));
+                NumberOfImageSets = handles.Current.NumberOfImageSets;
+                if (cell2mat(CurrentFileName(2)) ~= NumberOfImageSets)
+                LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), (IndexLocation));
                 LoadedImage = im2double(LoadedRawImage.cdata);
+                else
+                LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), (IndexLocation-1));
+                LoadedImage = im2double(LoadedRawImage.cdata)
+                end
             elseif strcmpi(FileFormat,'stk') == 1
                 LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
                 LoadedImage = im2double(LoadedRawImage.data);

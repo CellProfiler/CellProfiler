@@ -82,7 +82,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the objects you want to track?
+%textVAR01 = What did you call the objects you want to track? 
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -92,7 +92,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Choose a tracking method:
+%textVAR03 = Choose a tracking method:(SORRY, ONLY THE DISTANCE METHOD IS CURRENTLY FUNCTIONING.)
 %choiceVAR03 = Distance
 %choiceVAR03 = Size
 %choiceVAR03 = Intensity

@@ -258,6 +258,14 @@ for i = 1:length(ObjectNameList)
             for Object = 1:NumObjects
                 %%% Calculate Zernike shape features
                 [xcord,ycord] = find(LabelMatrixImage==Object);
+                %%% It's possible for objects not to have any pixels,
+                %%% particularly tertiary objects (such as cytoplasm from
+                %%% cells the exact same size as their nucleus).
+                if isempty(xcord),
+                    % no need to create an empty line of data, as that's
+                    % already done above.
+                    continue;
+                end
                 diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
                 if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 

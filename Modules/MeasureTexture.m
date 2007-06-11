@@ -279,7 +279,8 @@ for i = 1:6
             % The centroids indicate where we should measure the Gabor
             % filter output
             tmp = regionprops(LabelMatrixImage,'Area','Centroid');
-            MedianArea = median(cat(1,tmp.Area));
+            Areas = cat(1,tmp.Area);
+            MedianArea = median(Areas);
 
             % Round centroids and find linear index for them.
             % The centroids are stored in [column,row] order.
@@ -332,6 +333,14 @@ for i = 1:6
                     Gabor(1,GaborFeatureNo) = abs(sum(sum(g.*p)));
                 else
                     for k = 1:ObjectCount
+                        %%% It's possible for objects not to have any pixels,
+                        %%% particularly tertiary objects (such as cytoplasm from
+                        %%% cells the exact same size as their nucleus).
+                        if Areas(k) == 0,
+                            Gabor(k, GaborFeatureNo) = 0;
+                            continue;
+                        end
+                        
                         xmin1 = Centroids(k,1)-KernelSize;
                         xmax1 = Centroids(k,1)+KernelSize;
                         ymin1 = Centroids(k,2)-KernelSize;

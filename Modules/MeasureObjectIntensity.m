@@ -223,6 +223,13 @@ for i = 1:length(ObjectNameList)
 
         [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
+            %%% It's possible for objects not to have any pixels,
+            %%% particularly tertiary objects (such as cytoplasm from
+            %%% cells the exact same size as their nucleus).
+            if isempty(props(Object).PixelIdxList),
+                Basic(Object,1:11) = 0;
+                continue;
+            end
 
             %%% Measure basic set of Intensity features
             Basic(Object,1) = sum(OrigImage(props(Object).PixelIdxList));

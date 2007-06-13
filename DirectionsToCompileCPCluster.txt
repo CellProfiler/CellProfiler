@@ -1,0 +1,18 @@
+Directions to compile CPCluster.m
+These directions will guide you in compiling and running the CPCluster.m file for using CellProfiler on a cluster without MatLab licenses. The directions are guided for use with Linux computers, since almost all computing clusters are Linux or Macintosh based.
+
+Step 1: Unzip CPCluster files into folder (this is probably done already! e.g. /home/username/CPCluster)
+
+Step 2: In MatLab, go to File -> Set Path -> Add With Subfolders and choose the CPCluster folder you just created
+
+Step 3: In MatLab, type "mcc -m CPCluster.m" This will create the CPCluster executable file. However, to work independently of MatLab, you must provide it with the MatLab library files
+
+Step 4: In MatLab, type "buildmcr" and hit enter. This will take some time.
+
+Step 5: The output of this command is the pathname to MCRInstaller.zip and it is usually something like: /usr/local/bin/MatLab/toolbox/compiler/deploy/glnx86/MCRInstaller.zip
+
+Step 6: Unzip the contents of MCRInstaller (should be one folder, v73) into a foldercalled MCR. Then move this MCR folder into the same folder as the CPCluster executable (e.g. /home/username/CPCluster/MCR/)
+
+To test that the compiled version is working, open the CPCluster folder and run CPCluster.command. The first time it is run, it should say it is unzipping a CTF file, and then it should fail because it cannot find the batch or cluster file.
+
+If compiling CPCluster worked, you can move the entire folder to somewhere on your cluster where all nodes can see it.

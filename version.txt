@@ -1,3 +1,10 @@
+Version 1.04684
+- Fixed bug for loading a pipeline from a previous version
+
+Version 1.0.4666
+ - CalculateStatistics.m - an error in calculating Z'-factors was fixed.  Previously, Z'-factors were calculated from the most extreme effects, rather than the most extreme doses.  
+ - Windows-32bit version: MEX file error in the IdentifyPrimAutomatic module has been fixed.
+
 Version 1.0.4628
  - FilterByObjectMeasurement does not fail when using texture measurements
  - ClassifyObjects includes image name in output to distinguish different modules

@@ -6,8 +6,6 @@ Mike's TODO list
 
 - As we discovered, Plate fix in the Crop module works to force the coordinates to be used each time freshly (when doing rectangle, coordinates). Can you describe in the help why/how this works? I guess in my case none of the rows/columns were 50% empty, so the real purpose of Plate fix was thwarted, while the cute side benefit of repeating use of the coordinates was used?
 
-- Try old learners on new crescent images. What's the % accuracy when asking for ~100 positive nuclei? If it starts out with at least some real positives, roughly how many new ones do you have to sort to refine the classifier to work well for the new image set?
-
 - Score widerborst images blindly, then tabulate the data and draw conclusions - do new dsRNAs work? Did old ones repeat?
 
 - Merck screens (image acquisition and analysis only)

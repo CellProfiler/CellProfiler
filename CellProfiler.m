@@ -474,7 +474,7 @@ try addpath(Pathname)
             if strncmp(FileNamesNoDir{i}(end-1:end),'.m',2)
                 if strncmp(FileNamesNoDir{i}(1:2),'GS',2)
                     GSListOfTools(length(GSListOfTools)+1) = {FileNamesNoDir{i}(3:end-2)};
-                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(3:end-2))); %#ok Ignore MLint
+                    GSToolHelp{length(GSListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2))); %#ok Ignore MLint
                 else
                     ListOfTools(length(ListOfTools)+1) = {FileNamesNoDir{i}(1:end-2)};
                     ToolHelp{length(ListOfTools)-1} = help(char(FileNamesNoDir{i}(1:end-2)));
@@ -4135,10 +4135,10 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
-    TextString = sprintf('CellProfiler version 1.0.4628\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.4684\n\nPlease choose specific help below:');
 elseif strcmp(ImageDataOrHelp,'Getting Started')
     set(ToolsHelpWindowHandle,'name','Getting Started');
-    TextString = sprintf('CellProfiler version 1.0.4628\n\nPlease choose specific help below:');
+    TextString = sprintf('CellProfiler version 1.0.4684\n\nPlease choose specific help below:');
 end
 
 FontSize = handles.Preferences.FontSize;

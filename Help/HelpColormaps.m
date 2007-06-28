@@ -48,7 +48,7 @@ function helpFig = CPtextandfiguredisplaybox(Text,Title)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4076 $
+% $Revision$
 helpFig = CPfigure;
 set(helpFig,'Resize','off');
 set(helpFig,'NumberTitle','off');

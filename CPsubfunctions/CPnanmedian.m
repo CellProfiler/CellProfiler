@@ -11,7 +11,7 @@ function m = CPnanmedian(x,dim)
 %   See also MEDIAN, NANMEAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.12.2.2 $  $Date: 2004/01/24 09:34:33 $
+%   $Revision$  $Date$
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -36,7 +36,7 @@ function m = CPnanmedian(x,dim)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 if nargin == 1
     m = CPprctile(x, 50);
@@ -74,7 +74,7 @@ function y = CPprctile(x,p,dim)
 %   See also IQR, MEDIAN, NANMEDIAN, QUANTILE.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.12.4.5 $  $Date: 2004/06/25 18:52:56 $
+%   $Revision$  $Date$
 
 if ~isvector(p) || numel(p) == 0
     error('stats:prctile:BadPercents', ...
@@ -200,7 +200,7 @@ function yi=CPinterp1q(x,y,xi)
 %   See also INTERP1.
 
 %   Copyright 1984-2004 The MathWorks, Inc.
-%   $Revision: 1.15.4.2 $  $Date: 2004/06/25 18:52:22 $
+%   $Revision$  $Date$
 
 siz = size(xi);
 if length(xi)~=1

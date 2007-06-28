@@ -15,7 +15,7 @@ function varargout = CPerrordlg(ErrorString,DlgName,Replace)
 
 %  Author: L. Dean
 %  Copyright 1984-2002 The MathWorks, Inc.
-%  $Revision: 5.24 $  $Date: 2002/04/15 03:25:03 $
+%  $Revision$  $Date$
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -40,7 +40,7 @@ function varargout = CPerrordlg(ErrorString,DlgName,Replace)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 NumArgIn = nargin;
 if NumArgIn==0,

@@ -137,7 +137,7 @@ function handles = CorrectIllumination_Calculate(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1750 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

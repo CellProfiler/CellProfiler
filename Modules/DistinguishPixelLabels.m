@@ -67,7 +67,7 @@ function handles = DistinguishPixelLabels(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1750 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

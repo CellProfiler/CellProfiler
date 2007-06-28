@@ -44,7 +44,7 @@ function handles = OverlayOutlines(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1718 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

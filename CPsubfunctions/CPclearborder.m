@@ -23,7 +23,7 @@ function imout = CPclearborder(im)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 map = 0:max(im(:));
 map(im(1,:)+1)=0;

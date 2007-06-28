@@ -54,7 +54,7 @@ function Answer=CPinputdlg(Prompt, Title, NumLines, DefAns, Resize)
 %  See also TEXTWRAP, ERRORDLG, HELPDLG, QUESTDLG, WARNDLG, UIWAIT.
 
 %  Copyright 1994-2005 The MathWorks, Inc.
-%  $Revision: 1.58.4.9 $
+%  $Revision$
 
 %%%%%%%%%%%%%%%%%%%%
 %%% Nargin Check %%%
@@ -451,7 +451,7 @@ function figure_size = getnicedialoglocation(figure_size, figure_units)
 % or into the upper 3rd of the screen
 
 %  Copyright 1999-2002 The MathWorks, Inc.
-%  $Revision: 1.1.6.1 $
+%  $Revision$
 
 parentHandle = gcbf;
 propName = 'Position';

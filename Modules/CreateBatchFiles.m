@@ -97,7 +97,7 @@ function handles = CreateBatchFiles(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3417 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

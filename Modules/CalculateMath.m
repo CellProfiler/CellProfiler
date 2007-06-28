@@ -50,7 +50,7 @@ function handles = CalculateMath(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1843 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

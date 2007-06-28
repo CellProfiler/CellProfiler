@@ -23,7 +23,7 @@ function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 %%% This line creates two rows containing all values for both label matrix
 %%% images. It then takes the unique rows (no repeats), and sorts them

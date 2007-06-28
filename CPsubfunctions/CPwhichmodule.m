@@ -27,7 +27,7 @@ function [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 CurrentModule = handles.Current.CurrentModuleNumber;
 CurrentModuleNum = str2double(CurrentModule);

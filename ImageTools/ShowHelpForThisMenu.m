@@ -33,7 +33,7 @@ function ShowHelpForThisMenu(vaargin)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2991 $
+% $Revision$
 
 global toolsChoice;
 global ImageToolHelp;

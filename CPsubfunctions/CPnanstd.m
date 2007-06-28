@@ -46,7 +46,7 @@ function y = CPnanstd(varargin)
 %   See also STD, NANVAR, NANMEAN, NANMEDIAN, NANMIN, NANMAX, NANSUM.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.10.2.5 $  $Date: 2004/07/28 04:38:43 $
+%   $Revision$  $Date$
 
 % Call nanvar(x,flag,dim) with as many inputs as needed
 y = sqrt(CPnanvar(varargin{:}));
@@ -79,7 +79,7 @@ function y = CPnanvar(x,w,dim)
 %   See also VAR, NANSTD, NANMEAN, NANMEDIAN, NANMIN, NANMAX, NANSUM.
 
 %   Copyright 1984-2005 The MathWorks, Inc.
-%   $Revision: 1.1.6.4 $  $Date: 2005/03/23 20:25:41 $
+%   $Revision$  $Date$
 
 if nargin < 2 || isempty(w), w = 0; end
 
@@ -148,7 +148,7 @@ function y = CPnansum(x,dim)
 %   See also SUM, NANMEAN, NANVAR, NANSTD, NANMIN, NANMAX, NANMEDIAN.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.10.2.4 $  $Date: 2004/07/28 04:38:44 $
+%   $Revision$  $Date$
 
 % Find NaNs and set them to zero.  Then sum up non-NaNs.  Cols of all NaNs
 % will return zero.

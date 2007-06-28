@@ -23,7 +23,7 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 FeaturesField = [Measure,'Features'];
 

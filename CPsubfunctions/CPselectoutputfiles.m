@@ -23,7 +23,7 @@ function [Pathname SelectedFiles] = CPselectoutputfiles(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4073 $
+% $Revision$
 
 %%% Ask the user to choose the directory from which to extract measurements.
 if exist(handles.Current.DefaultOutputDirectory, 'dir')

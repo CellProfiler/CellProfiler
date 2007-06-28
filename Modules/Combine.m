@@ -56,7 +56,7 @@ function handles = Combine(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3524 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

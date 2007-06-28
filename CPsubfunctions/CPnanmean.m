@@ -11,7 +11,7 @@ function m = CPnanmean(x,dim)
 %   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
 
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.13.4.3 $  $Date: 2004/07/28 04:38:41 $
+%   $Revision$  $Date$
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -36,7 +36,7 @@ function m = CPnanmean(x,dim)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 % Find NaNs and set them to zero
 nans = isnan(x);

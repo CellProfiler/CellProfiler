@@ -166,7 +166,7 @@ function handles = IdentifySecondary(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1809 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

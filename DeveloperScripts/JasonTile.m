@@ -53,7 +53,7 @@ function handles = Tile(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3382 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -122,7 +122,7 @@ function handles = IdentifyPrimYeastPhase(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2852 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

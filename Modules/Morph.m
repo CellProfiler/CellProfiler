@@ -36,7 +36,7 @@ function handles = Morph(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4170 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

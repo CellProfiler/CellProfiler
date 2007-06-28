@@ -25,7 +25,7 @@ function rgOut = RgSmartDilate(rgIn,n)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 global rg4trans
 

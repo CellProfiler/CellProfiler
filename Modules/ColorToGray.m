@@ -52,7 +52,7 @@ function handles = ColorToGray(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1718 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

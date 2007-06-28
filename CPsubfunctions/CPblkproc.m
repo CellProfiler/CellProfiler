@@ -22,7 +22,7 @@ function b = CPblkproc(varargin)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 % This function is very similar to Matlab's function blkproc.  The only
 % difference is that CPblkproc can take a third dimension for the block

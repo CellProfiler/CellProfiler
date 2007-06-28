@@ -33,7 +33,7 @@ function GenerateHistogramMovie(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1011 $
+% $Revision$
 
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.

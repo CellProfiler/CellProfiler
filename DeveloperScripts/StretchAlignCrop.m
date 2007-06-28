@@ -54,7 +54,7 @@ function handles = StretchAlignCrop(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2782 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

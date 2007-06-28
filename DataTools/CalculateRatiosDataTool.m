@@ -49,7 +49,7 @@ function CalculateRatiosDataTool(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3534 $
+% $Revision$
 
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     [FileName, Pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');

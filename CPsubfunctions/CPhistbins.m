@@ -27,7 +27,7 @@ function [BinLocations,PlotBinLocations,XTickLabels,YData] = CPhistbins(Measurem
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 if nargin <= 7
     CountOption = 'Normal';

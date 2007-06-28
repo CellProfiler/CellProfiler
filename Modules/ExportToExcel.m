@@ -39,7 +39,7 @@ function handles = ExportToExcel(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2989 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -227,7 +227,7 @@ function handles = LoadImages(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1725 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

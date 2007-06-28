@@ -23,7 +23,7 @@ function h = CPimagesc(Image,handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 %%% Displays the image.
 h = imagesc(Image);

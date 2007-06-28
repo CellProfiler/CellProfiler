@@ -50,7 +50,7 @@ function handles = DisplayImageHistogram(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2535 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

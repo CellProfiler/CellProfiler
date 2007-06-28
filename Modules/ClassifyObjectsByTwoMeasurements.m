@@ -55,7 +55,7 @@ function handles = ClassifyObjectsByTwoMeasurements(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4076 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

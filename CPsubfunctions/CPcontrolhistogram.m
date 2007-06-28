@@ -23,7 +23,7 @@ function CPcumhistogram(h_Parent,tempData,Flip)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 Logical = tempData.Logical;
 ThresholdVal = tempData.ThresholdVal;

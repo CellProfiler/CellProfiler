@@ -42,7 +42,7 @@ function nlin_fig = CPnlintool(x,y,model,beta0,varargin)
 %   See also NLINFIT, NLPARCI, NLPREDCI.
    
 %   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision: 2.30.4.6 $  $Date: 2004/07/05 17:02:59 $
+%   $Revision$  $Date$
 
 if (nargin == 0)
     action = 'start';

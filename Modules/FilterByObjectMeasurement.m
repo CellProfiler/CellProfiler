@@ -58,7 +58,7 @@ function handles = FilterByObjectMeasurement(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2221 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

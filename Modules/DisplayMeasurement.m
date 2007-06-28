@@ -48,7 +48,7 @@ function handles = DisplayMeasurement(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2606 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -23,7 +23,7 @@ function CPresizefigure(OrigImage,Layout,FigHandle)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2807 $
+% $Revision$
 
 FigPosOrig = get(FigHandle,'Position');
 FigPos = FigPosOrig;

@@ -75,7 +75,7 @@ function handles = MeasureOrientation(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3261 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

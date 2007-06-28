@@ -26,7 +26,7 @@ function Grid = CPmakegrid(GridInfo)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 XLocationOfLowestXSpot = GridInfo.XLocationOfLowestXSpot;
 YLocationOfLowestYSpot= GridInfo.YLocationOfLowestYSpot;

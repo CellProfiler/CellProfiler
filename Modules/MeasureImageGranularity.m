@@ -74,7 +74,7 @@ function handles = MeasureImageGranularity(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 1843 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

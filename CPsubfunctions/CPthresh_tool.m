@@ -65,7 +65,7 @@ function [level,bw] = CPthresh_tool(im,cmap,defaultLevel) %mainfunction
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2802 $
+% $Revision$
 
 %defensive programming
 error(nargchk(1,3,nargin))

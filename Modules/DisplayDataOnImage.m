@@ -42,7 +42,7 @@ function handles = DisplayDataOnImage(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 2614 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

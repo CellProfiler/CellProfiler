@@ -73,7 +73,7 @@ function handles = TrackObjects(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 3899 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

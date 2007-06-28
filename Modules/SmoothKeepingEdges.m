@@ -28,7 +28,7 @@ function handles = SmoothKeepingEdges(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

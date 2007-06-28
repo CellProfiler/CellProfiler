@@ -42,9 +42,9 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR2 = What do you want to call the smoothed image?
-%defaultVAR2 = SmoothedImage
-%infotypeVAR2 = imagegroup indep
+%textVAR02 = What do you want to call the smoothed image?
+%defaultVAR02 = SmoothedImage
+%infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Smoothing options:
@@ -53,7 +53,7 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR04 = 16.0
 SpatialRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
-%textVAR05 = What intensity-based raiud should be used, in intensity units? (Half the intensity step that indicates an edge is good.  Set to 0.0 to calculate from the image.)?
+%textVAR05 = What intensity-based radius should be used, in intensity units? (Half the intensity step that indicates an edge is good.  Set to 0.0 to calculate from the image.)?
 %defaultVAR05 = 0.1
 IntensityRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 

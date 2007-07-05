@@ -19,7 +19,8 @@ function handles = ProbSeg(handles)
 % Methods to identify secondary objects:
 % * Grady: Given predefined primary objects (seeds), the algorithm
 %   determines the probability that a random walker starting at each
-%   unlabeled pixel will first reach one of the primary objects.
+%   unlabeled pixel will first reach one of the primary objects.  One of
+%   the seeds should be the background.
 %   [doi:10.1109/TPAMI.2006.233, doi:10.1109/CVPR.2005.239]
 %
 % * Ljosa: XXX
@@ -123,11 +124,11 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     if strcmp(IdentChoice,'Grady')
       %%% Leo Grady's random-walk--based segmentation method.
       indices = find(PrelimPrimaryLabelMatrixImage > 0);
-      [FinalLabelMatrixImage, SegmentationProbabilities] = random_walker(OrigImage, ...
-						  indices, ...
-						  PrelimPrimaryLabelMatrixImage(indices));
+      [FinalLabelMatrixImage, SegmentationProbabilities] = ...
+          CPrandomwalker(OrigImage, indices, ...
+                    	 PrelimPrimaryLabelMatrixImage(indices));
       EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
-      % XXX: Some form of thresholding based on the probabilities?
+      % 
     else
       error 'Internal error: Unexpected IdentChoice'
     end

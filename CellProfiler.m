@@ -4484,18 +4484,22 @@ if exist('EnteredPreferences','var')
 end
 
 function ZipFiles_Callback(hObject, eventdata, handles)
+ListOfThingsToSave = {'CPsubfunctions/CPsplash.jpg' ...
+    'CPsubfunctions/*.m' 'CPsubfunctions/graphAnalysisToolbox-1.0/*.m' ...
+    'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.m' ...
+    'Modules/IdentifySecPropagateSubfunction.*' 'Help/*.m' 'CellProfiler.m'};
 if ispc
-    ListOfThingsToSave = {'CPsubfunctions\CPsplash.jpg' 'CPsubfunctions\*.m' 'DataTools\*.m' 'ImageTools\*.m' 'Modules\*.m' 'Modules\IdentifySecPropagateSubfunction.*' 'Help\*.m' 'CellProfiler.m'};
-else
-    ListOfThingsToSave = {'CPsubfunctions/CPsplash.jpg' 'CPsubfunctions/*.m' 'DataTools/*.m' 'ImageTools/*.m' 'Modules/*.m' 'Modules/IdentifySecPropagateSubfunction.*' 'Help/*.m' 'CellProfiler.m'};
+    for i=1:numel(ListOfThingsToSave)
+        ListOfThingsToSave{i} = strrep(ListOfThingsToSave{i}, '/', '\');
+    end
 end
 try
     ZipFileName = [handles.Current.DefaultOutputDirectory '/CellProfilerCode_',date,'.zip'];
     zip(ZipFileName,ListOfThingsToSave,handles.Current.CellProfilerPathname);
+    CPmsgbox(['The files have been saved to ', ZipFileName, '.']);
 catch
     CPhelpdlg(['The files could not be saved for some reason.  This could be because you do not have access to folder ' handles.Current.DefaultOutputDirectory '  Make sure you have access or you can change the default output directory by going to ''set preferences'' on the main menu.']);
 end
-CPmsgbox(['The files have been saved to ', ZipFileName, '.']);
 
 % --- Executes just before AddModuleWindow_export is made visible.
 function AddModuleWindow_OpeningFcn(hObject, eventdata, AddModuleWindowHandles, varargin)

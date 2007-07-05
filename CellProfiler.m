@@ -609,9 +609,9 @@ function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
 if isempty(eventdata)
     errFlg = 0;
     if exist(handles.Current.DefaultOutputDirectory, 'dir')
-        [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.', '*.mat'),'Choose a settings or output file');
+        [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory, '*.mat'),'Choose a pipeline file');
     else
-        [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a settings or output file');
+        [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a pipeline file');
     end
     pause(.1);
     figure(handles.figure1);

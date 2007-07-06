@@ -1,0 +1,39 @@
+This package contains an implementation of Ljosa and Singh's
+probabilistic segmentation algorithm, described in the following
+paper:
+
+    Vebjorn Ljosa and Ambuj K. Singh: "Probabilistic Segmentation and
+    Analysis of Horizontal Cells," in Proceedings of the 2006 IEEE
+    International Conference on Data Mining (ICDM), December, 2006,
+    doi:10.1109/ICDM.2006.129.
+
+The program is written in C, and simulates a random walk on the image.
+We also have an eigenvector-based solution, but that is not included
+in this package at this time.  We may incorporate it in the future.
+
+Just typing "make" should build the stand-alone program
+"ljosaprobsegsim" as well as a Matlab MEX module called
+"ljosaprobseg".  The stand-along program can, for instance, be invoked
+as follows:
+
+   ./ljosaprobsegsim -o output.pgm -n 2 -8 -r 0.0001 7cap33x.pgm \
+   5000 206,467 207,467 206,468
+
+Do "./ljosaprobsegsim -h" to learn about the available options.  Type
+"help ljosaprobseg" in Matlab to learn how to invoke the Matlab
+module, or see the example in demo_ljosaprobseg.m.
+
+The programs are multithreaded in order to improve their running time
+on machines with multiple processors or cores.  For the stand-alone
+program, use the "-n" option to specify the number of worker threads.
+The Matlab module is hardcoded to use two worker threads.  (This can
+easily be changed in the source code, if desired.)
+
+The software is released under the BSD license.  See the file LICENSE
+for details.
+
+See http://www.ljosa.com/~ljosa/software/ for the laters version of
+this package.  Email be at vebjorn@ljosa.com with any questions.
+
+July, 2007
+Vebjorn Ljosa

@@ -1,4 +1,4 @@
-function handles = ProbSeg(handles)
+function handles = ProbabilisticSegmentation(handles)
 
 % Help for the Probabilistic Segmentation module:
 % Category: Object Processing
@@ -19,11 +19,16 @@ function handles = ProbSeg(handles)
 % Methods to identify secondary objects:
 % * Grady: Given predefined primary objects (seeds), the algorithm
 %   determines the probability that a random walker starting at each
-%   unlabeled pixel will first reach one of the primary objects.  One of
-%   the seeds should be the background.
-%   [doi:10.1109/TPAMI.2006.233, doi:10.1109/CVPR.2005.239]
+%   unlabeled pixel will first reach one of the primary objects.
 %
-% * Ljosa: XXX
+%   For many images it is necessary to provide a seed for the background.
+%   This module will identify a secondary object based on that seed.  To
+%   remove this spurious object, use the FilterByObjectMeasurement module.
+% 
+%   See Grady's publications [doi:10.1109/TPAMI.2006.233, 
+%   doi:10.1109/CVPR.2005.239] for details of the method.
+%
+% * Ljosa and Singh: XXX
 %   [doi:10.1109/ICDM.2006.129]
 %
 % Note: Primary identify modules produce two (hidden) output images that
@@ -54,8 +59,8 @@ drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %%% Sets up loop for test mode.
-if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,5}),'Yes')
-    IdentChoiceList = {'Grady' 'Ljosa'};
+if strcmp(char(handles.Settings.VariableValues{CurrentModuleNum,7}),'Yes')
+    IdentChoiceList = {'Grady' 'Ljosa and Singh'};
 else
     IdentChoiceList = {char(handles.Settings.VariableValues{CurrentModuleNum,3})};
 end
@@ -72,7 +77,7 @@ SecondaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Select the method to identify the secondary objects:
 %choiceVAR03 = Grady
-%choiceVAR03 = Ljosa
+%choiceVAR03 = Ljosa and Singh
 %inputtypeVAR03 = popupmenu
 OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -81,14 +86,19 @@ OriginalIdentChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
-% XXX: Add variables for restart probability, momentum, and distance
-% on/off.
+%textVAR05 = For Grady's algorithm, what is the weight parameter (beta)?
+%defaultVAR05 = 90
+Beta = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR05 = Do you want to run in test mode where each method for identifying secondary objects is compared?
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR06 = For Ljosa and Singh's algorithm, what is the restart probability?
+%defaultVAR06 = 0.001
+restart_probability = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
+
+%textVAR07 = Do you want to run in test mode where each method for identifying secondary objects is compared?
+%choiceVAR07 = No
+%choiceVAR07 = Yes
+TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
 
 %%%VariableRevisionNumber = 3
 
@@ -126,16 +136,23 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
       indices = find(PrelimPrimaryLabelMatrixImage > 0);
       [FinalLabelMatrixImage, SegmentationProbabilities] = ...
           CPrandomwalker(OrigImage, indices, ...
-                    	 PrelimPrimaryLabelMatrixImage(indices));
-      EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
-      % 
+                    	 PrelimPrimaryLabelMatrixImage(indices), Beta);
+    elseif strcmp(IdentChoice, 'Ljosa and Singh')
+        nseeds = max(max(PrelimPrimaryLabelMatrixImage));
+        SegmentationProbabilities = zeros(size(OrigImage,1), size(OrigImage,2), nseeds);
+        for i = 1:nseeds
+            indices = find(PrelimPrimaryLabelMatrixImage == i);
+            x = fix(indices / size(OrigImage, 1));
+            y = mod(indices, size(OrigImage, 1));
+            seed = [x y];
+            SegmentationProbabilities(:,:,i) = CPljosaprobseg(OrigImage, restart_probability, 1000, seed);
+        end
+        [highest_probability, FinalLabelMatrixImage] = max(SegmentationProbabilities, [], 3);
     else
       error 'Internal error: Unexpected IdentChoice'
     end
+    EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
 
-    %%% Calculates the ColoredLabelMatrixImage, which will be used to
-    %%% visualize the probabilistic segmentation in subplot(1,2,2).
-    global ColoredLabelMatrixImage;
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
 
     if strcmp(TestMode,'Yes')
@@ -162,7 +179,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             handles.Measurements.(PrimaryObjectName) = {};
         end
 
-        handles = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage,ModuleName);
+%        handles = CPrelateobjects(handles,SecondaryObjectName,PrimaryObjectName,FinalLabelMatrixImage,EditedPrimaryLabelMatrixImage,ModuleName);
 
         %%%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
@@ -199,25 +216,5 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         handles.Pipeline.(['SegmentationProbabilities', SecondaryObjectName]) = SegmentationProbabilities;
 
-        %%% Saves the ObjectCount, i.e. the number of segmented objects.
-        if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-            handles.Measurements.Image.ObjectCountFeatures = {};
-            handles.Measurements.Image.ObjectCount = {};
-        end
-        column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));
-        if isempty(column)
-            handles.Measurements.Image.ObjectCountFeatures(end+1) = {SecondaryObjectName};
-            column = length(handles.Measurements.Image.ObjectCountFeatures);
-        end
-        handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
-        %%% Saves the location of each segmented object
-        handles.Measurements.(SecondaryObjectName).LocationFeatures = {'CenterX','CenterY'};
-        tmp = regionprops(FinalLabelMatrixImage,'Centroid');
-        Centroid = cat(1,tmp.Centroid);
-        if isempty(Centroid)
-            Centroid = [0 0];
-        end
-        handles.Measurements.(SecondaryObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
     end
 end

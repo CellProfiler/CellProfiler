@@ -142,13 +142,14 @@ for ImageNbr = 1:4
         end
     end
 end
-%%% Get rid of 'Do not use' in the ImageName cell array so we don't have to care about them later.
-ImageName = tmpImageName;   
 
 %%% Check so that at least two images have been entered
 if ImageCount < 2
     error(['Image processing was canceled in the ', ModuleName, ' module because at least two image types must be chosen.'])
 end
+
+%%% Get rid of 'Do not use' in the ImageName cell array so we don't have to care about them later.
+ImageName = tmpImageName;   
 
 %%% Get the masks of segmented objects
 ObjectNameCount = 0;

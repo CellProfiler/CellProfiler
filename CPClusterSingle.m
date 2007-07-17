@@ -23,7 +23,7 @@ if strcmp(BatchSetBeingAnalyzed, 'all'),
         quit;
     end
     for imageset = 2:handles.Current.NumberOfImageSets,
-        if ~ exist(sprintf('%s/%s%d_DONE',OutputFolder,BatchFilePrefix,imageset)),
+        if ~ exist(sprintf('%s/%s%d_DONE.mat',OutputFolder,BatchFilePrefix,imageset)),
             disp(imageset);
         end
     end

@@ -388,6 +388,10 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% "IdentifySecPropagateSubfunction.mexmac" (or whichever version is
         %%% appropriate for the computer platform being used), which consists of C
         %%% code that has been compiled to run quickly within Matlab.
+        
+        % 2007-Jul-16 Kyungnam: If you want to get additional outputs, then
+        % add more output arguments as follows:
+        %%% [PropagatedImage, dist, diff_count, pop_count] = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,RegularizationFactor);
         PropagatedImage = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,RegularizationFactor);
         drawnow
 

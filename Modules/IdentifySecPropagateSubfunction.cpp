@@ -10,6 +10,7 @@
  *   Anne Carpenter <carpenter@wi.mit.edu>                          
  *   Thouis Jones   <thouis@csail.mit.edu>                          
  *   In Han Kang    <inthek@mit.edu>                                
+ *   Kyungnam Kim   <kkim@broad.mit.edu>
  *
  * $Revision$
  */
@@ -30,8 +31,13 @@ using namespace std;
 /* Output Arguments */
 #define LABELS_OUT        plhs[0]
 #define DISTANCES_OUT        plhs[1]
+#define DIFF_COUNT_OUT    plhs[2]
+#define POP_COUNT_OUT     plhs[3]
 
 #define IJ(i,j) ((j)*m+(i))
+
+static double *difference_count = 0;
+static double *pop_count = 0;
 
 class Pixel { 
 public:
@@ -79,7 +85,7 @@ Difference(double *image,
                          clamped_fetch(image, i2 + delta_i, j2 + delta_j, m, n));
     }
   }
-
+  (*difference_count)++;
   return (sqrt(pixel_diff*pixel_diff + (fabs((double) i1 - i2) + fabs((double) j1 - j2)) * lambda * lambda));
 }
 
@@ -88,34 +94,46 @@ push_neighbors_on_queue(PixelQueue &pq, double dist,
                         double *image,
                         unsigned int i, unsigned int j,
                         unsigned int m, unsigned int n,
-                        double lambda, double label)
+                        double lambda, double label,
+                        double *labels_out)
 {
+  /* TODO: Check if the neighbor is already labelled. If so, skip pushing. 
+   */    
+    
   /* 4-connected */
   if (i > 0) {
-    pq.push(Pixel(dist + Difference(image, i, j, i-1, j, m, n, lambda), i-1, j, label));
+    if ( 0 == labels_out[IJ(i-1,j)] ) // if the neighbor was not labeled, do pushing
+      pq.push(Pixel(dist + Difference(image, i, j, i-1, j, m, n, lambda), i-1, j, label));
   }                                                                   
   if (j > 0) {                                                        
-    pq.push(Pixel(dist + Difference(image, i, j, i, j-1, m, n, lambda), i, j-1, label));
+    if ( 0 == labels_out[IJ(i,j-1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i, j-1, m, n, lambda), i, j-1, label));
   }                                                                   
-  if (i < (m-1)) {                                                    
-    pq.push(Pixel(dist + Difference(image, i, j, i+1, j, m, n, lambda), i+1, j, label));
+  if (i < (m-1)) {
+    if ( 0 == labels_out[IJ(i+1,j)] ) 
+      pq.push(Pixel(dist + Difference(image, i, j, i+1, j, m, n, lambda), i+1, j, label));
   }                                                                   
-  if (j < (n-1)) {                                                    
-    pq.push(Pixel(dist + Difference(image, i, j, i, j+1, m, n, lambda), i, j+1, label));
+  if (j < (n-1)) {              
+    if ( 0 == labels_out[IJ(i,j+1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i, j+1, m, n, lambda), i, j+1, label));
   } 
 
   /* 8-connected */
   if ((i > 0) && (j > 0)) {
-    pq.push(Pixel(dist + Difference(image, i, j, i-1, j-1, m, n, lambda), i-1, j-1, label));
+    if ( 0 == labels_out[IJ(i-1,j-1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i-1, j-1, m, n, lambda), i-1, j-1, label));
   }                                                                       
   if ((i < (m-1)) && (j > 0)) {                                           
-    pq.push(Pixel(dist + Difference(image, i, j, i+1, j-1, m, n, lambda), i+1, j-1, label));
+    if ( 0 == labels_out[IJ(i+1,j-1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i+1, j-1, m, n, lambda), i+1, j-1, label));
   }                                                                       
   if ((i > 0) && (j < (n-1))) {                                           
-    pq.push(Pixel(dist + Difference(image, i, j, i-1, j+1, m, n, lambda), i-1, j+1, label));
+    if ( 0 == labels_out[IJ(i-1,j+1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i-1, j+1, m, n, lambda), i-1, j+1, label));
   }                                                                       
-  if ((i < (m-1)) && (j < (n-1))) {                                       
-    pq.push(Pixel(dist + Difference(image, i, j, i+1, j+1, m, n, lambda), i+1, j+1, label));
+  if ((i < (m-1)) && (j < (n-1))) {
+    if ( 0 == labels_out[IJ(i+1,j+1)] )   
+      pq.push(Pixel(dist + Difference(image, i, j, i+1, j+1, m, n, lambda), i+1, j+1, label));
   }
   
 }
@@ -126,18 +144,28 @@ static void propagate(double *labels_in, double *im_in,
                       unsigned int m, unsigned int n,
                       double lambda)
 {
+  /* TODO: Initialization of nuclei labels can be simplified by labeling
+   *       the nuclei region first, then make the queue prepared for 
+   *       propagation
+   */
   unsigned int i, j;
   PixelQueue pixel_queue;
 
+  /* initialize dist to Inf, read labels_in and wrtite out to labels_out */
   for (j = 0; j < n; j++) {
     for (i = 0; i < m; i++) {
-      dists[IJ(i,j)] = mxGetInf();
-      
+      dists[IJ(i,j)] = mxGetInf();            
+      labels_out[IJ(i,j)] = labels_in[IJ(i,j)];
+    }
+  }
+  /* if the pixel is already labeled (i.e, labeled in labels_in) and within a mask, 
+   * then set dist to 0 and push its neighbors for propagation */
+  for (j = 0; j < n; j++) {
+    for (i = 0; i < m; i++) {        
       double label = labels_in[IJ(i,j)];
-      labels_out[IJ(i,j)] = label;
       if ((label > 0) && (mask_in[IJ(i,j)])) {
         dists[IJ(i,j)] = 0.0;
-        push_neighbors_on_queue(pixel_queue, 0.0, im_in, i, j, m, n, lambda, label);
+        push_neighbors_on_queue(pixel_queue, 0.0, im_in, i, j, m, n, lambda, label, labels_out);
       }
     }
   }
@@ -145,6 +173,7 @@ static void propagate(double *labels_in, double *im_in,
   while (! pixel_queue.empty()) {
     Pixel p = pixel_queue.top();
     pixel_queue.pop();
+    (*pop_count)++;
     
     //    cout << "popped " << p.i << " " << p.j << endl;
 
@@ -155,7 +184,7 @@ static void propagate(double *labels_in, double *im_in,
     if ((dists[IJ(p.i, p.j)] > p.distance) && (mask_in[IJ(p.i,p.j)])) {
       dists[IJ(p.i, p.j)] = p.distance;
       labels_out[IJ(p.i, p.j)] = p.label;
-      push_neighbors_on_queue(pixel_queue, p.distance, im_in, p.i, p.j, m, n, lambda, p.label);
+      push_neighbors_on_queue(pixel_queue, p.distance, im_in, p.i, p.j, m, n, lambda, p.label, labels_out);
     }
   }
 }
@@ -167,16 +196,15 @@ void mexFunction( int nlhs, mxArray *plhs[],
     double *labels_in, *im_in; 
     mxLogical *mask_in;
     double *labels_out, *dists;
-    double *lambda; 
-    mxArray *dists_array;
+    double *lambda;    
     unsigned int m, n; 
     
     /* Check for proper number of arguments */
     
     if (nrhs != 4) { 
         mexErrMsgTxt("Four input arguments required."); 
-    } else if (nlhs > 2) {
-        mexErrMsgTxt("Too many output arguments."); 
+    } else if (nlhs !=1 && nlhs !=2 && nlhs !=4) {
+        mexErrMsgTxt("The number of output arguments should be 1, 2, or 4."); 
     } 
 
     m = mxGetM(IM_IN); 
@@ -204,7 +232,9 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     /* Create matrices for the return arguments */ 
     LABELS_OUT = mxCreateDoubleMatrix(m, n, mxREAL); 
-    dists_array = mxCreateDoubleMatrix(m, n, mxREAL);
+    DISTANCES_OUT = mxCreateDoubleMatrix(m, n, mxREAL);
+    DIFF_COUNT_OUT = mxCreateDoubleScalar(0);
+    POP_COUNT_OUT = mxCreateDoubleScalar(0);
     
     /* Assign pointers to the various parameters */ 
     labels_in = mxGetPr(LABELS_IN);
@@ -214,14 +244,18 @@ void mexFunction( int nlhs, mxArray *plhs[],
     lambda = mxGetPr(LAMBDA_IN);
 
     /* Do the actual computations in a subroutine */
-    dists = mxGetPr(dists_array);
+    dists = mxGetPr(DISTANCES_OUT);
+    difference_count = mxGetPr(DIFF_COUNT_OUT);
+    pop_count = mxGetPr(POP_COUNT_OUT);
 
     propagate(labels_in, im_in, mask_in, labels_out, dists, m, n, *lambda); 
-
-    if (nlhs == 2) {
-      DISTANCES_OUT = dists_array;
-    } else {
-      mxDestroyArray(dists_array);
+    
+    if (nlhs <= 2) {
+      mxDestroyArray(DIFF_COUNT_OUT);
+      mxDestroyArray(POP_COUNT_OUT);
+      if (nlhs == 1) {
+        mxDestroyArray(DISTANCES_OUT);
+      }
     }      
 
     return;

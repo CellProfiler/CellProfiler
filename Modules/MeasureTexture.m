@@ -523,7 +523,7 @@ end
 % Do the quantization
 qim = zeros(size(im));
 for k = 1:Levels
-    qim(find(im > BinEdges(k))) = k; %#ok Ignore MLint
+    qim(find(im >= BinEdges(k))) = k; %#ok Ignore MLint
 end
 
 % Shift ScaleOfTexture step to the right
@@ -544,15 +544,19 @@ im1 = im1(index);
 im2 = im2(index);
 
 %%% Calculate co-occurence matrix
-P = zeros(Levels);
-for k = 1:Levels
-    index = find(im1==k);
-    if ~isempty(index)
-        P(k,:) = hist(im2(index),(1:Levels));
-    else
-        P(k,:) = zeros(1,Levels);
-    end
-end
+% P = zeros(Levels);
+% for k = 1:Levels
+%     index = find(im1==k);
+%     if ~isempty(index)
+%         P(k,:) = hist(im2(index),(1:Levels));
+%     else
+%         P(k,:) = zeros(1,Levels);
+%     end
+% end
+% 
+% The line below is a fast 2D-histogram in matlab, and is equivalent to the
+% loop above.  Ray & Kyungnam, 2007-07-18.
+P = full(sparse(im1,im2,1,Levels,Levels)); 
 P = P/length(im1);
 
 %%% Calculate features from the co-occurence matrix

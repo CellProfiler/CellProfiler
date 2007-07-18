@@ -608,11 +608,9 @@ function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
 
 if isempty(eventdata)
     errFlg = 0;
-    if exist(handles.Current.DefaultOutputDirectory, 'dir')
-        [SettingsFileName, SettingsPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory, '*.mat'),'Choose a pipeline file');
-    else
-        [SettingsFileName, SettingsPathname] = uigetfile('*.mat','Choose a pipeline file');
-    end
+    [SettingsFileName, SettingsPathname] = ...
+	CPuigetfile('*.mat', 'Choose a pipeline file', ...
+		    handles.Current.DefaultOutputDirectory); 
     pause(.1);
     figure(handles.figure1);
 else
@@ -711,10 +709,11 @@ for k = 1:NumberOfModules
                     end
                 case 'Search Module'
                     if ~isdeployed
-                        [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.m'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
-                    else
-                        [Filename Pathname] = uigetfile(fullfile(handles.Preferences.DefaultModuleDirectory,'*.txt'),['Find ' CurrentModuleNamedotm ' or Choose Another Module']);
-                    end
+		      filter = '*.m';
+		    else
+		      filter = '*.txt';
+		    end
+		    [Filename Pathname] = CPuigetfile(filter, ['Find ' CurrentModuleNamedotm ' or Choose Another Module'], handles.Preferences.DefaultModuleDirectory);
                     pause(.1);
                     figure(handles.figure1);
                     if Filename == 0
@@ -1231,12 +1230,11 @@ if exist(handles.Preferences.DefaultModuleDirectory, 'dir')
     end
 else
     if isdeployed
-        [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.txt'),...
-            'Choose an image analysis module');
+      filter = '*.txt';
     else
-        [ModuleNamedotm,Pathname] = uigetfile(fullfile(cd,'.', '*.m'),...
-            'Choose an image analysis module');
+      filter = '*.m';
     end
+    [ModuleNamedotm,Pathname] = uigetfile(filter, 'Choose an image analysis module');
     pause(.1);
     figure(handles.figure1);
     PutModuleInListBox(ModuleNamedotm,Pathname,handles,0);
@@ -1434,7 +1432,7 @@ if ModuleNamedotm ~= 0,
                 'Parent',handles.variablepanel,...
                 'Units','pixels',...
                 'BackgroundColor',[.7 .7 .9],...
-                'Callback','handles = guidata(findobj(''tag'',''figure1'')); VariableBoxHandle = get(gco,''UserData''); CurrentChoice = get(VariableBoxHandle,''String''); if exist(CurrentChoice,''file''), if ~isdeployed, Pathname = fileparts(which(CurrentChoice)); end; else, Pathname = handles.Current.DefaultImageDirectory; end; [Filename Pathname] = uigetfile(fullfile(Pathname,''*.*''),''Choose a file''); pause(.1); figure(handles.figure1); if Pathname == 0, else, set(VariableBoxHandle,''String'',Filename); ModuleHighlighted = get(handles.ModulePipelineListBox,''Value''); ModuleNumber = ModuleHighlighted(1); VariableName = get(VariableBoxHandle,''Tag''); VariableNumberStr = VariableName(12:13); VarNum = str2num(VariableNumberStr); handles.Settings.VariableValues(ModuleNumber,VarNum) = {Filename}; guidata(handles.figure1,handles); end; clear handles VariableBoxHandle CurrentChoice Pathname Filename ModuleHighlighted ModuleNumber VariableName VariableNumberStr VarNum;',...
+                'Callback','handles = guidata(findobj(''tag'',''figure1'')); VariableBoxHandle = get(gco,''UserData''); CurrentChoice = get(VariableBoxHandle,''String''); if exist(CurrentChoice,''file''), if ~isdeployed, Pathname = fileparts(which(CurrentChoice)); end; else, Pathname = handles.Current.DefaultImageDirectory; end; [Filename Pathname] = CPuigetfile([],''Choose a file'',Pathname); pause(.1); figure(handles.figure1); if Pathname == 0, else, set(VariableBoxHandle,''String'',Filename); ModuleHighlighted = get(handles.ModulePipelineListBox,''Value''); ModuleNumber = ModuleHighlighted(1); VariableName = get(VariableBoxHandle,''Tag''); VariableNumberStr = VariableName(12:13); VarNum = str2num(VariableNumberStr); handles.Settings.VariableValues(ModuleNumber,VarNum) = {Filename}; guidata(handles.figure1,handles); end; clear handles VariableBoxHandle CurrentChoice Pathname Filename ModuleHighlighted ModuleNumber VariableName VariableNumberStr VarNum;',...
                 'FontName','helvetica',...
                 'FontSize',handles.Preferences.FontSize,...
                 'FontWeight','bold',...
@@ -4410,9 +4408,8 @@ function LoadPreferences_Callback(hObject,eventdata,handles)
 %%% This function will load settings which have been saved from the Set
 %%% Preferences window
 
-[SettingsFileName, SettingsPathname] = uigetfile(fullfile(matlabroot,'.','*.mat'),'Choose a preferences file');
+[SettingsFileName, SettingsPathname] = CPuigetfile('*.mat','Choose a preferences file',matlabroot);
 if isequal(SettingsFileName,0) || isequal(SettingsPathname,0)
-    CPwarndlg('You did not specify a preferences file.');
     return
 else
     try
@@ -4587,7 +4584,7 @@ Path = handles.Preferences.DefaultModuleDirectory;
 if ~exist(Path,'dir')
     Path = cd;
 end
-[FileName PathName] = uigetfile(fullfile(Path,'.','*.m'),'Choose an image analysis module');
+[FileName PathName] = CPuigetfile('*.m','Choose an image analysis module',Path);
 pause(.1);
 figure(handles.figure1);
 try

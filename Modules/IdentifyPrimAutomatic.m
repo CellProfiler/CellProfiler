@@ -504,11 +504,8 @@ drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a variable,
 %%% "OrigImage".
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+OrigImage = double(CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale'));
 
-if islogical(OrigImage)
-    error(['Image processing was canceled in the ', ModuleName, ' module because the input image is binary (black/white). The input image must be grayscale.']);
-end
 
 %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
 ThresholdMethod = strtok(Threshold);

@@ -1265,6 +1265,7 @@ if ModuleNamedotm ~= 0,
     %%% version (isdeployed), we must remove 4 characters (=.txt) instead.
     if isdeployed
         ModuleName = ModuleNamedotm(1:end-4);
+        CPwarndlg('Only compiled modules (.txt files) can be added to the pipeline in the compiled version of CellProfiler. If you load .m files, your pipeline will not function correctly.');
     else
         ModuleName = ModuleNamedotm(1:end-2);
     end

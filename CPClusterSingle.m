@@ -1,4 +1,4 @@
-function CPClusterSingle(batchfile,StartingSet,EndingSet,OutputFolder,BatchFilePrefix)
+function CPClusterSingle(batchfile,StartingSet,EndingSet,OutputFolder,BatchFilePrefix, KeepAlive)
 
 %%% Must list all CellProfiler modules here
 %#function CPwritemeasurements CPlogo CPconvertsql CPmsgbox CPretrievemediafilenames CPrelateobjects CPselectmodules CPaddmeasurements CPtextdisplaybox CPthresh_tool CPselectoutputfiles CPnanmean CPfigure CPrescale CPinputdlg CPimagesc CPclearborder CPlabel2rgb CPimagetool CPwarndlg CPhistbins CPcontrolhistogram CPtextpipe CPdilatebinaryobjects CPsigmoid CPimread CPwhichmodule CPthreshold CPmakegrid CPlistdlg CPcompilesubfunction CPsmooth CPresizefigure CPgetfeature CPwaitbar CPrgsmartdilate CPretrieveimage CPnanstd CPerrordlg CPaverageimages CPcd CPblkproc CPnanmedian CPplotmeasurement CPhelpdlg CPquestdlg CPnlintool Tile SaveImages SplitOrSpliceMovie Morph CalculateStatistics SpeedUpCellProfiler FilterByObjectMeasurement PlaceAdjacent LoadImages ConvertToImage ApplyThreshold MeasureTexture GrayToColor Align MeasureObjectAreaShape MeasureObjectNeighbors CreateBatchFiles MeasureImageGranularity ExportToDatabase DistinguishPixelLabels ClassifyObjects Crop InvertIntensity RescaleIntensity ExpandOrShrink IdentifyTertiarySubregion CorrectIllumination_Apply CalculateRatios CreateWebPage Restart SendEmail CorrectIllumination_New Combine ExportToExcel LoadText MeasureCorrelation ClassifyObjectsByTwoMeasurements DisplayImageHistogram CalculateMath DefineGrid Smooth MaskImage Relate Subtract CorrectIllumination_Calculate RenameOrRenumberFiles Resize IdentifySecondary OverlayOutlines MeasureObjectIntensity DisplayHistogram ColorToGray Average IdentifyObjectsInGrid SmoothKeepingEdges LoadSingleImage IdentifyPrimManual DisplayMeasurement MeasureImageIntensity SubtractBackground Flip MeasureImageSaturationBlur IdentifyPrimAutomatic Exclude DisplayDataOnImage Rotate FindEdges DisplayGridInfo MeasureImageAreaOccupied
@@ -13,6 +13,7 @@ catch
     reportBatchError(['Batch Error: Loading batch file (' batchfile ')']);
 end
 
+
 % If we get the argument 'all', use EndingSet as a step size and print
 % out the imageset numbers for each set that still needs to run.
 if strcmp(StartingSet, 'all'),
@@ -25,8 +26,8 @@ if strcmp(StartingSet, 'all'),
     Ends = Starts + StepSize - 1;
     Ends(end) = handles.Current.NumberOfImageSets;
     for imagesets = [Starts ; Ends],
-        if ~ exist(sprintf('%s/%s%d_to_%d_DONE',OutputFolder,BatchFilePrefix,imageset(1),imageset(2))),
-            disp(sptrintf('%d %d', imageset(1), imageset(2));
+        if ~ exist(sprintf('%s/%s%d_to_%d_DONE.mat',OutputFolder,BatchFilePrefix,imagesets(1),imagesets(2))),
+            disp(sprintf('%d %d', imagesets(1), imagesets(2)));
         end
     end
     quit;
@@ -40,6 +41,7 @@ handles.Current.BatchInfo.Start = StartingSet;
 handles.Current.BatchInfo.End = EndingSet;
 
 for BatchSetBeingAnalyzed = StartingSet:EndingSet,
+    t_set_start = toc;
     disp(sprintf('Analyzing set %d.', BatchSetBeingAnalyzed));
     handles.Current.SetBeingAnalyzed = BatchSetBeingAnalyzed;
 
@@ -52,7 +54,11 @@ for BatchSetBeingAnalyzed = StartingSet:EndingSet,
         end
     end
 
+
     for SlotNumber = 1:handles.Current.NumberOfModules,
+        % Signal that we're alive
+        system(KeepAlive);
+
         t_start = toc;
         ModuleNumberAsString = sprintf('%02d', SlotNumber);
         ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
@@ -66,10 +72,11 @@ for BatchSetBeingAnalyzed = StartingSet:EndingSet,
         t_end = toc;
         disp(sprintf('    %f seconds', t_end - t_start));
      end
+     disp(sprintf('  %f seconds for image set %d.', toc - t_set_start, BatchSetBeingAnalyzed));
 end
 
 t_tot = toc;
-disp(sprintf('All sets analyzed in %f seconds (%f per image set)', t_tot, t_tot / (EndingSet - StartingSet + 1))
+disp(sprintf('All sets analyzed in %f seconds (%f per image set)', t_tot, t_tot / (EndingSet - StartingSet + 1)));
 
 
 % handles.Pipeline = [];

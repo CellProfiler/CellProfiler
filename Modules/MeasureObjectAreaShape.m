@@ -273,6 +273,8 @@ for i = 1:length(ObjectNameList)
                 [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
                 r = sqrt(x.^2+y.^2);
                 phi = atan(y./(x+eps));
+                % It is necessary to normalize the bases by area.
+                normalization = sum(r(:) <= 1);
                 Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
 
                 for k = 1:size(Zernikeindex,1)
@@ -283,7 +285,7 @@ for i = 1:length(ObjectNameList)
                         s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
                     end
                     s(r>1) = 0;
-                    Zf(:,:,k) = s;
+                    Zf(:,:,k) = s / normalization;
                 end
 
                 % Get image patch

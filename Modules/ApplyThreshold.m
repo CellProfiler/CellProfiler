@@ -112,14 +112,13 @@ if BinaryChoice == 0
     %%% "OrigImage".
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
     %%% Identifies bright object pixels.
-    BinaryBrightObjectsImage = zeros(size(OrigImage));
     if (HighThreshold > 1)||(HighThreshold < 0)
         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': High threshold outside 0-1 range']))
             CPwarndlg(['The high threshold value you entered of ' num2str(HighThreshold) ' in the ', ModuleName, ' module is outside the range of 0 to 1, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': High threshold outside 0-1 range'],'replace');
         end
         HighThreshold = 1;
     end
-    BinaryBrightObjectsImage(OrigImage >= HighThreshold) = 1;
+    BinaryBrightObjectsImage = (OrigImage > HighThreshold);
     if (DilationValue < 0)
         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad dilation value']))
             CPwarndlg(['The dilation value you entered of ' num2str(LowThreshold) ' in the ', ModuleName, ' module is less than 0. It is being changed to the default value of 0'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad dilation value'],'replace');
@@ -129,7 +128,7 @@ if BinaryChoice == 0
     StructuringElement = strel('disk',DilationValue,8);
     DilatedBinaryBrightObjectsImage = imdilate(BinaryBrightObjectsImage,StructuringElement);
     ThresholdedImage = OrigImage;
-    ThresholdedImage(DilatedBinaryBrightObjectsImage == 1) = 0;
+    ThresholdedImage(DilatedBinaryBrightObjectsImage) = 0;
     if (LowThreshold > 1)||(LowThreshold < 0)
         if ~findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Low threshold outside 0-1 range'])
             CPwarndlg(['The low threshold value you entered of ' num2str(LowThreshold) '  in the ', ModuleName, ' module is outside the range of 0 to 1, it is being reset to 0.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Low threshold outside 0-1 range'],'replace');

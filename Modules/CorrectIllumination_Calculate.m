@@ -290,20 +290,17 @@ if strcmp(IntensityChoice,'Background')
     %%% Checks whether the chosen block size is larger than the image itself.
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);
-    if BlockSize >= MinLengthWidth
-        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too large']))
-            CPwarndlg(['The selected block size in the ' ModuleName ' module is greater than or equal to the image size itself. The blocksize is being reset to the default value of 60.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too large'],'replace');
-        end
-        BlockSize = 60;
-    elseif MinLengthWidth <= 60
-        error(['Image processing was canceled in the ', ModuleName, ' module because the default block size of 60 is greater than or equal to the image size itself.'])
-    end
     if BlockSize <= 0
-        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too small']))
-        else
-            CPwarndlg(['The selected block size in the ' ModuleName ' module is less than or equal to zero. The blocksize is being reset to the default value of 60.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too small'],'replace');
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size below zero']))
+            CPwarndlg(['The selected block size in the ' ModuleName ' module is less than or equal to zero. The block size is being reset to the default value of 60.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size changed'],'replace');
         end
         BlockSize = 60;
+    end
+    if BlockSize > MinLengthWidth
+        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size too large']))
+            CPwarndlg(['The selected block size in the ' ModuleName ' module is either not a positive number, or it is larger than the image size itself. The block size is being set to ',num2str(MinLengthWidth),'.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Block size changed'],'replace');
+        end
+        BlockSize = MinLengthWidth;
     end
 end
 

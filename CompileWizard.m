@@ -4,7 +4,20 @@ function CompileWizard
 % file with help information stored in variables to be used in the compiled
 % version of CellProfiler.
 
-fid = fopen('CompileWizardText.m','w');
+
+
+% 2007-07-30 Ray: Someday, the code below should be rewritten.  In the
+% meantime, I want this function to automatically do all the work
+% necessary for building the updated CellProfiler.m.  So, for now, I'm
+% going to change what 'fid' is multiple time to create some temporary
+% files, then use those to rewrite CellProfiler.m
+% changes are marked by "%%% AUTOMATIC EDITING CHANGES"
+
+
+%%% AUTOMATIC EDITING CHANGES
+% First, the help text.
+assert(~ exist('CompileWizardText_help.m','file'), 'CompileWizardText_help.m should not exist.');
+fid = fopen('CompileWizardText_help.m','w');
 
 ImageToolfilelist = dir('ImageTools/*.m');
 fprintf(fid,'%%%%%% IMAGE TOOL HELP\n');
@@ -145,6 +158,16 @@ fprintf(fid,'handles.Current.GS = GSToolHelp;\n\n');
 
 clear ToolList
 
+
+
+%%% AUTOMATIC EDITING CHANGES
+fclose(fid);
+
+%%% AUTOMATIC EDITING CHANGES
+% Next, the listbox code.
+assert(~ exist('CompileWizardText_listbox.m','file'), 'CompileWizardText_listbox.m should not exist.');
+fid = fopen('CompileWizardText_listbox.m','w');
+
 Modulefilelist = dir('Modules/*.m');
 fprintf(fid,'%%%%%% load_listbox code (replace function in CellProfiler.m)\n\n');
 FileProcessingFiles ={};
@@ -235,6 +258,9 @@ fprintf(fid,'AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;\n');
 fprintf(fid,'AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;\n');
 fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\n\n');
 
+%%% AUTOMATIC EDITING CHANGES
+fclose(fid);
+
 CPsubfunctionfilelist = dir('CPsubfunctions/*.m');
 for i=1:length(CPsubfunctionfilelist)
     ToolName = CPsubfunctionfilelist(i).name;
@@ -245,10 +271,70 @@ for i=1:length(CPsubfunctionfilelist)
     end
 end
 
+
+%%% AUTOMATIC EDITING CHANGES
+% Finally, the "%%#function" code.
+assert(~ exist('CompileWizardText_function.m','file'), 'CompileWizardText_function.m should not exist.');
+fid = fopen('CompileWizardText_function.m','w');
+
 fprintf(fid,'%%%%%% FUNCTIONS TO ADD (place before first line of code in CellProfiler.m)\n');
-fprintf(fid,['%%#function ',ToolListNoQuotes]);
+fprintf(fid,['%%#function ',ToolListNoQuotes, '\n']);
 
 fclose(fid);
+
+
+
+%%% AUTOMATIC EDITING CHANGES 
+%%% Now we do the automatic edits and remove the temporary files.
+
+% read the current CellProfiler.m into memory
+fid = fopen('CellProfiler.m', 'r');
+CPcode = fread(fid, inf, '*char')';
+fclose(fid);
+
+% read the modules line into memory
+fid = fopen('CompileWizardText_function.m', 'r');
+Functioncode = fread(fid, inf, '*char')';
+fclose(fid);
+
+% read the help text into memory
+fid = fopen('CompileWizardText_help.m', 'r');
+Helpcode = fread(fid, inf, '*char')';
+fclose(fid);
+
+% read the load_listbox into memory
+fid = fopen('CompileWizardText_listbox.m', 'r');
+Listboxcode = fread(fid, inf, '*char')';
+fclose(fid);
+
+%%% Now do the search and replaces
+function_idx = strfind(CPcode, '%%% Compiler: INSERT FUNCTIONS HERE');
+assert(length(function_idx) == 1, 'Could not find place to put %%#functions line.');
+CPcode = [CPcode(1:function_idx-1) Functioncode CPcode(function_idx:end)];
+
+help_startidx = strfind(CPcode, '%%% Compiler: BEGIN HELP');
+help_endidx = strfind(CPcode, '%%% Compiler: END HELP');
+assert(length(help_startidx) == 1, 'Could not find start of Help section.');
+assert(length(help_endidx) == 1, 'Could not find end of Help section.');
+CPcode = [CPcode(1:help_startidx-1) Helpcode CPcode(help_endidx:end)];
+
+listbox_startidx = strfind(CPcode, '%%% Compiler: BEGIN load_listbox');
+listbox_endidx = strfind(CPcode, '%%% Compiler: END load_listbox');
+assert(length(listbox_startidx) == 1, 'Could not find start of load_listbox function.');
+assert(length(listbox_endidx) == 1, 'Could not find end of load_listbox function.');
+CPcode = [CPcode(1:listbox_startidx-1) Listboxcode CPcode(listbox_endidx:end)];
+
+% write out the result
+fid = fopen('CompileWizardText_Output.m', 'w');
+fprintf(fid, '%s', CPcode);
+fclose(fid);
+
+% remove the temporary files
+delete('CompileWizardText_function.m');
+delete('CompileWizardText_help.m');
+delete('CompileWizardText_listbox.m');
+
+
 
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

@@ -34,6 +34,9 @@ function varargout = CellProfiler(varargin)
 %
 % $Revision$
 
+%%% Do not remove the following line.  It is used by CompileWizard.m.
+%%% Compiler: INSERT FUNCTIONS HERE
+
 % Begin initialization code - DO NOT EDIT
 if ~nargin
     SplashScreen;
@@ -326,7 +329,9 @@ set(handles.CPlogoAxes,'visible','off')
 
 %%% Finds all available tools, which are .m files residing in the
 %%% Modules folder.
-
+%%%
+%%% Do not remove the BEGIN line below.  It is used by CompileWizard.m.
+%%% Compiler: BEGIN HELP
 Pathname = fullfile(handles.Current.CellProfilerPathname,'Modules');
 ListOfTools{1} = 'Modules: none loaded';
 try addpath(Pathname)
@@ -500,6 +505,10 @@ clear GSListOfTools GSToolHelp
 
 % Update handles structure
 guidata(hObject, handles);
+%%% Do not remove the END line below.  It is used by CompileWizard.m.
+%%% Compiler: END HELP
+
+
 
 FileMenu=uimenu(hObject,'Label','File');
 DataToolsMenu=uimenu(hObject,'Label','Data Tools');
@@ -4830,6 +4839,8 @@ if ~isempty(createfcn)
 end
 
 
+%%% Do not remove the BEGIN or END lines, below.  They are used by CompileWizard.m.
+%%% Compiler: BEGIN load_listbox
 function load_listbox(dir_path,AddModuleWindowHandles)
 dir_struct = dir([dir_path '/*.m']);
 FileProcessingFiles ={};
@@ -4864,6 +4875,8 @@ AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;
 AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;
 
 guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);
+%%% Compiler: END load_listbox
+%%% Do not remove the BEGIN or END lines, above.  They are used by CompileWizard.m.
 
 function c = file_in_category(filename, category)
 h = help(filename);

@@ -2,7 +2,7 @@
 from sys import argv,exit
 from subprocess import Popen, PIPE, STDOUT
 
-if len(argv) != 6:
+if len(argv) != 7:
     print "usage: %s DataDir BatchPrefix QueueType BatchSize WriteOutData(yes/no) Timeout"%(argv[0])
     exit(1)
 

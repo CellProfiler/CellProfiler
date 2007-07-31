@@ -4839,9 +4839,9 @@ if ~isempty(createfcn)
 end
 
 
+function load_listbox(dir_path,AddModuleWindowHandles)
 %%% Do not remove the BEGIN or END lines, below.  They are used by CompileWizard.m.
 %%% Compiler: BEGIN load_listbox
-function load_listbox(dir_path,AddModuleWindowHandles)
 dir_struct = dir([dir_path '/*.m']);
 FileProcessingFiles ={};
 PreProcessingFiles={};

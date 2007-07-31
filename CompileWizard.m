@@ -14,6 +14,8 @@ function CompileWizard
 % changes are marked by "%%% AUTOMATIC EDITING CHANGES"
 
 
+addpath Modules CPsubfunctions DataTools ImageTools Help
+
 %%% AUTOMATIC EDITING CHANGES
 % First, the help text.
 assert(~ exist('CompileWizardText_help.m','file'), 'CompileWizardText_help.m should not exist.');

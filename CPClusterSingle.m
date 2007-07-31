@@ -1,4 +1,4 @@
-function CPClusterSingle(batchfile,StartingSet,EndingSet,OutputFolder,BatchFilePrefix, KeepAlive)
+function CPClusterSingle(batchfile,StartingSet,EndingSet,OutputFolder,BatchFilePrefix,WriteMatFiles,KeepAlive)
 
 %%% Must list all CellProfiler modules here
 %#function CPwritemeasurements CPlogo CPconvertsql CPmsgbox CPretrievemediafilenames CPrelateobjects CPselectmodules CPaddmeasurements CPtextdisplaybox CPthresh_tool CPselectoutputfiles CPnanmean CPfigure CPrescale CPinputdlg CPimagesc CPclearborder CPlabel2rgb CPimagetool CPwarndlg CPhistbins CPcontrolhistogram CPtextpipe CPdilatebinaryobjects CPsigmoid CPimread CPwhichmodule CPthreshold CPmakegrid CPlistdlg CPcompilesubfunction CPsmooth CPresizefigure CPgetfeature CPwaitbar CPrgsmartdilate CPretrieveimage CPnanstd CPerrordlg CPaverageimages CPcd CPblkproc CPnanmedian CPplotmeasurement CPhelpdlg CPquestdlg CPnlintool Tile SaveImages SplitOrSpliceMovie Morph CalculateStatistics SpeedUpCellProfiler FilterByObjectMeasurement PlaceAdjacent LoadImages ConvertToImage ApplyThreshold MeasureTexture GrayToColor Align MeasureObjectAreaShape MeasureObjectNeighbors CreateBatchFiles MeasureImageGranularity ExportToDatabase DistinguishPixelLabels ClassifyObjects Crop InvertIntensity RescaleIntensity ExpandOrShrink IdentifyTertiarySubregion CorrectIllumination_Apply CalculateRatios CreateWebPage Restart SendEmail CorrectIllumination_New Combine ExportToExcel LoadText MeasureCorrelation ClassifyObjectsByTwoMeasurements DisplayImageHistogram CalculateMath DefineGrid Smooth MaskImage Relate Subtract CorrectIllumination_Calculate RenameOrRenumberFiles Resize IdentifySecondary OverlayOutlines MeasureObjectIntensity DisplayHistogram ColorToGray Average IdentifyObjectsInGrid SmoothKeepingEdges LoadSingleImage IdentifyPrimManual DisplayMeasurement MeasureImageIntensity SubtractBackground Flip MeasureImageSaturationBlur IdentifyPrimAutomatic Exclude DisplayDataOnImage Rotate FindEdges DisplayGridInfo MeasureImageAreaOccupied
@@ -78,9 +78,12 @@ end
 t_tot = toc;
 disp(sprintf('All sets analyzed in %f seconds (%f per image set)', t_tot, t_tot / (EndingSet - StartingSet + 1)));
 
+if strcmp(WriteMatFiles, 'yes'),
+    handles.Pipeline = [];
+    OutputFileName = sprintf('%s/%s%d_to_%d_DATA.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
+    save(OutputFileName,'handles');
+end
 
-% handles.Pipeline = [];
-% save(sprintf('%s%d_OUT',BatchFilePrefix,BatchSetBeingAnalyzed),'handles');
 OutputFileName = sprintf('%s/%s%d_to_%d_DONE.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
 save(OutputFileName,'BatchSetBeingAnalyzed');
 disp(sprintf('Created %s',OutputFileName));

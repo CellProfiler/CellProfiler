@@ -504,9 +504,9 @@ handles.Current.Help = ToolHelp;
 clear GSListOfTools GSToolHelp
 
 % Update handles structure
-guidata(hObject, handles);
 %%% Do not remove the END line below.  It is used by CompileWizard.m.
 %%% Compiler: END HELP
+guidata(hObject, handles);
 
 
 

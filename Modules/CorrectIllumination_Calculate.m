@@ -134,6 +134,7 @@ function handles = CorrectIllumination_Calculate(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -191,10 +192,11 @@ SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum
 %textVAR09 = Enter the smoothing method you would like to use, if any.
 %choiceVAR09 = No smoothing
 %choiceVAR09 = Fit Polynomial
-%choiceVAR09 = Median Filtering
-%choiceVAR09 = Sum of squares
-%choiceVAR09 = Square of sum
-%choiceVAR09 = Smooth to average
+%choiceVAR09 = Median Filter
+%choiceVAR09 = Gaussian Filter
+%choiceVAR09 = Sum of Squares
+%choiceVAR09 = Square of Sum
+%choiceVAR09 = Smooth to Average
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
@@ -439,17 +441,6 @@ if strcmp(ReadyFlag, 'Ready')
         if ~strcmp(SmoothingMethod,'No smoothing')
             %%% Smooths the averaged image, if requested, but saves a raw copy
             %%% first.
-            if strcmp(SmoothingMethod,'Median Filtering')
-                SmoothingMethod = 'M';
-            elseif strcmp(SmoothingMethod,'Fit Polynomial')
-                SmoothingMethod = 'P';
-            elseif strcmp(SmoothingMethod,'Sum of squares')
-                SmoothingMethod = 'S';
-            elseif strcmp(SmoothingMethod,'Square of sum')
-                SmoothingMethod = 'Q';
-            elseif strcmp(SmoothingMethod,'Smooth to average')
-                SmoothingMethod = 'A';
-            end
 
             if exist('DilatedImage','var')
                 SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
@@ -474,17 +465,6 @@ if strcmp(ReadyFlag, 'Ready')
             %%% Smooths the Illumination image, if requested, but saves a raw copy
             %%% first.
             AverageMinimumsImage = IlluminationImage;
-            if strcmp(SmoothingMethod,'Median Filtering')
-                SmoothingMethod = 'M';
-            elseif strcmp(SmoothingMethod,'Fit Polynomial')
-                SmoothingMethod = 'P';
-            elseif strcmp(SmoothingMethod,'Sum of squares')
-                SmoothingMethod = 'S';
-            elseif strcmp(SmoothingMethod,'Square of sum')
-                SmoothingMethod = 'Q';
-            elseif strcmp(SmoothingMethod,'Smooth to average')
-                SmoothingMethod = 'A';
-            end
             FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else
             FinalIlluminationFunction = IlluminationImage;

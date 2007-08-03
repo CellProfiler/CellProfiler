@@ -97,6 +97,7 @@ function handles = FindEdges(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -294,8 +295,8 @@ elseif strcmpi(Method,'ratio')
         end
         SizeOfSmoothingFilter = 8;
     end
-    Sq = CPsmooth(OrigImage,'Q',SizeOfSmoothingFilter,0);
-    Mn = CPsmooth(OrigImage,'S',SizeOfSmoothingFilter,0);
+    Sq = CPsmooth(OrigImage,'Square of Sum',SizeOfSmoothingFilter,0);
+    Mn = CPsmooth(OrigImage,'Sum of Squares',SizeOfSmoothingFilter,0);
     EdgedImage = Mn./Sq;
 
     if strcmp(BinaryOrGray,'Binary')

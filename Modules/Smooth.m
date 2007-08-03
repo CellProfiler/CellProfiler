@@ -48,6 +48,7 @@ function handles = Smooth(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -72,9 +73,10 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the smoothing method you would like to use.
 %choiceVAR03 = Fit Polynomial
-%choiceVAR03 = Median Filtering
-%choiceVAR03 = Sum of squares
-%choiceVAR03 = Square of sum
+%choiceVAR03 = Median Filter
+%choiceVAR03 = Gaussian Filter
+%choiceVAR03 = Sum of Squares
+%choiceVAR03 = Square of Sum
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
@@ -133,16 +135,6 @@ end
 %%% image, etc.
 
 %%% Some variable checking:
-
-if strcmp(SmoothingMethod,'Median Filtering')
-    SmoothingMethod = 'M';
-elseif strcmp(SmoothingMethod,'Fit Polynomial')
-    SmoothingMethod='P';
-elseif strcmp(SmoothingMethod,'Sum of squares')
-    SmoothingMethod = 'S';
-elseif strcmp(SmoothingMethod,'Square of sum')
-    SmoothingMethod = 'Q';
-end
 
 if ~strcmp(SizeOfSmoothingFilter,'/')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);

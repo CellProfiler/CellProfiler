@@ -355,6 +355,7 @@ function handles = IdentifyPrimAutomatic(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -670,7 +671,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 if strcmpi(SizeOfSmoothingFilter,'Automatic')
                     SizeOfSmoothingFilter=2.35*MinDiameter/3.5;
                 end
-                BlurredImage = CPsmooth(OrigImage,'M',SizeOfSmoothingFilter,0);
+                BlurredImage = CPsmooth(OrigImage,'Gaussian Filter',SizeOfSmoothingFilter,0);
 
                 %%% Get local maxima, where the definition of local depends on the
                 %%% user-provided object size. This will (usually) be done in a

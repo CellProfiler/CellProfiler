@@ -97,11 +97,13 @@ switch lower(SmoothingMethod)
     case 'median filter'
         %%% The following is used for the Median Filtering smoothing method
         %%% [Kyungnam 2007-Aug-3] 
-        %%% medfilt2 pads the image with 0's on the edges, so the median
+        %%% 'medfilt2' pads the image with 0's on the edges, so the median
         %%% values for the points within [m n]/2 of the edges might appear distorted (to 0).
-        %%% Median filtered images may look brighter than original ones
-        %%% because CellProfiler displays images based on their dynamic ranges.
-        SmoothedImage = medfilt2(OrigImage,[SizeOfSmoothingFilter SizeOfSmoothingFilter]);
+        %%% So, pad the image with 'replicate' values, and then median-filters.
+        FiltLength = SizeOfSmoothingFilter;
+        PaddedImage = padarray(OrigImage,[FiltLength FiltLength],'replicate');
+        SmoothedImage = medfilt2(PaddedImage,[SizeOfSmoothingFilter SizeOfSmoothingFilter]);
+        SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
     case {'median filtering','m'}
         %%% We leave this SmoothingMethod to be compatible with previous
         %%% pipelines that used 'median filtering'

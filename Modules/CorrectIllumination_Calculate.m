@@ -200,7 +200,7 @@ SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = For MEDIAN FILTERING, SUM OF SQUARES, or SQUARE OF SUMS, specify the approximate width of the artifacts to be smoothed (in pixels), or leave the word 'Automatic'.
+%textVAR10 = For MEDIAN FILTER, GAUSSIAN FILTER, SUM OF SQUARES, or SQUARE OF SUM, specify the approximate width of the artifacts to be smoothed (in pixels), or leave the word 'Automatic'.
 %defaultVAR10 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,10};
 
@@ -228,7 +228,7 @@ AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
 
-%%%VariableRevisionNumber = 6
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

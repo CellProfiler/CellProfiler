@@ -95,7 +95,7 @@ WaitForFlag = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 WaitForFlag = WaitForFlag(1);
 %inputtypeVAR06 = popupmenu
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

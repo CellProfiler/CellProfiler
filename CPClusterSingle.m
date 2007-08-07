@@ -37,6 +37,7 @@ end
 StartingSet = str2num(StartingSet);
 EndingSet = str2num(EndingSet);
 
+% this is necessary for some modules (e.g., ExportToDatabase) to work correctly.
 handles.Current.BatchInfo.Start = StartingSet;
 handles.Current.BatchInfo.End = EndingSet;
 

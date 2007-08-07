@@ -228,7 +228,7 @@ AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
 
-%%%VariableRevisionNumber = 7
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

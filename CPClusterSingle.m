@@ -81,7 +81,7 @@ disp(sprintf('All sets analyzed in %f seconds (%f per image set)', t_tot, t_tot 
 
 if strcmp(WriteMatFiles, 'yes'),
     handles.Pipeline = [];
-    OutputFileName = sprintf('%s/%s%d_to_%d_DATA.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
+    OutputFileName = sprintf('%s/%s%d_to_%d_OUT.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
     save(OutputFileName,'handles');
 end
 

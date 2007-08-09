@@ -1,4 +1,12 @@
-function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName,ParentName,ChildLabelMatrix,ParentLabelMatrix,ModuleName)
+function [handles,ChildCounts,ParentList] = CPrelateobjects(handles,ChildName,ParentName,ChildLabelMatrix,ParentLabelMatrix,ModuleName)
+% function [handles,ChildCounts,ParentList] = CPrelateobjects(handles,ChildName,ParentName,ChildLabelMatrix,ParentLabelMatrix,ModuleName)
+%
+% This function does the heavy lifting of relating child objects to
+% parents.  It returns the number of children for each parent in
+% ChildCounts and the map from children to parent in ParentList.
+%
+% It also updates the handles.Measurements with these values (.Parent
+% for children, .Children (just a count) for parents).
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -25,76 +33,67 @@ function [handles,ChildList,FinalParentList] = CPrelateobjects(handles,ChildName
 %
 % $Revision$
 
-%%% This line creates two rows containing all values for both label matrix
-%%% images. It then takes the unique rows (no repeats), and sorts them
-%%% according to the first column which is the sub object values.
-try ChildParentList = sortrows(unique([ChildLabelMatrix(:) ParentLabelMatrix(:)],'rows'),1);
-catch
+%%% First, we need to make sure the two matrices are the same size.
+if size(ChildLabelMatrix) ~= size(ParentLabelMatrix),
     %%% For the cases where the ChildLabelMatrix was produced from a
-    %%% cropped version of the ParentLabelMatrix, the sizes of the matrices
-    %%% will not be equal, so the line above will fail. So, we crop the
-    %%% ParentLabelMatrix and try again to see if the matrices are then the
-    %%% proper size.
+    %%% cropped version of the ParentLabelMatrix, the sizes of the
+    %%% matrices will not be equal. So, we try cropping the
+    %%% ParentLabelMatrix to see if the matrices are then the proper
+    %%% size.
+
     %%% Removes Rows and Columns that are completely blank.
     ColumnTotals = sum(ParentLabelMatrix,1);
     RowTotals = sum(ParentLabelMatrix,2)';
-    warning off all
+
+    % Is this necessary? - Ray 2007-08-09
+    warningstate = warning('off', 'all');
     ColumnsToDelete = ~logical(ColumnTotals);
     RowsToDelete = ~logical(RowTotals);
-    warning on all
-    drawnow
+    warning(warningstate)
+
     CroppedParentLabelMatrix = ParentLabelMatrix;
     CroppedParentLabelMatrix(:,ColumnsToDelete,:) = [];
     CroppedParentLabelMatrix(RowsToDelete,:,:) = [];
-        %%% In case the entire image has been cropped away, we store a single
+    %%% In case the entire image has been cropped away, we store a single
     %%% zero pixel for the variable.
     if isempty(CroppedParentLabelMatrix)
         CroppedParentLabelMatrix = 0;
     end
-    %%% And we try the original line again.
-    try ChildParentList = sortrows(unique([ChildLabelMatrix(:) CroppedParentLabelMatrix(:)],'rows'),1);
-        clear ParentLabelMatrix
-        ParentLabelMatrix = CroppedParentLabelMatrix;
-    catch error(['Image processing was canceled in the ',ModuleName, ' module because the parent and children objects you are trying to relate come from images that are not the same size.'])
-    end
-end
-
-    %%% We want to get rid of the children values and keep the parent values.
-ParentList = ChildParentList(:,2);
-%%% This gets rid of all parent values which have no corresponding children
-%%% values (where children = 0 but parent = 1).
-for i = 1:max(ChildParentList(:,1))
-    ParentValue = max(ParentList(ChildParentList(:,1) == i));
-    if isempty(ParentValue)
-        ParentValue = 0;
-    end
-    FinalParentList(i,1) = ParentValue;
-end
-
-if exist('FinalParentList','var')
-    if max(ChildLabelMatrix(:)) ~= size(FinalParentList,1)
-        error(['Image processing was canceled in CPrelateobjects, a subfunction used by the ',ModuleName,' module, because objects cannot have two parents, something is wrong.']);
-    end
-    handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,FinalParentList);
-else
-    handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,0);
-end
-
-for i = 1:max(ParentList)
-    if exist('FinalParentList','var')
-        ChildList(i,1) = length(FinalParentList(FinalParentList == i));
+    %%% And we check if sizes are the same, now.
+    if size(ChildLabelMatrix) ~= size(CroppedParentLabelMatrix),
+        error(['Image processing was canceled in the ',ModuleName, ' module because the parent and children objects you are trying to relate come from images that are not the same size.']);
     else
-        ChildList(i,1) = 0;
+        % They match, so replace the parent matrix with its cropped version.
+        ParentLabelMatrix = CroppedParentLabelMatrix;
     end
 end
 
-if exist('ChildList','var')
-    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildList);
-else
-    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],0);
-    ChildList = 0;
-end
+%%% Get the number of children and parents in the label matrices.
+NumberOfParents = max(ParentLabelMatrix(:));
+NumberOfSubobjects = max(ChildLabelMatrix(:));
 
-if ~exist('FinalParentList','var')
-    FinalParentList = 0;
-end
+%%% We want to choose a child's parent based on the most overlapping
+%%% parent.  We first find all pixels that are in both a child and a
+%%% parent, as we wish to ignore pixels that are background in either
+%%% labelmatrix.
+BothForegroundMask = (ChildLabelMatrix > 0) & (ParentLabelMatrix > 0);
+
+%%% Use the Matlab full(sparse()) trick to create a 2D histogram of
+%%% child/parent overlap counts.
+ParentChildLabelHistogram = full(sparse(ParentLabelMatrix(BothForegroundMask), ChildLabelMatrix(BothForegroundMask), 1, NumberOfParents, NumberOfSubobjects));
+
+%%% For each child, we must choose a single parent.  We will choose
+%%% this by maximum overlap, which in this case is maximum value in
+%%% the child's column in the histogram.  sort() will give us the
+%%% necessary parent (row) index as its second return argument.
+[ignore, ParentIndexes] = sort(ParentChildLabelHistogram);
+% transpose to a column vector.
+ParentList = ParentIndexes(end, :)';
+
+%%% Now we need the number of children for each parent.  We can get
+%%% this as a histogram, again.
+ChildCounts = full(sparse(ParentList, 1, 1, NumberOfParents, 1));
+
+%%% Add the new measurements to the handles
+handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,ParentList);
+handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildCounts);

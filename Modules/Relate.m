@@ -75,13 +75,15 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],Modu
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-[handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
+[handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
 
 handles.Measurements.(SubObjectName).SubObjectFlag=1;
 
 MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
 NewObjectName=['Mean',SubObjectName];
 if isfield(handles.Measurements.(SubObjectName),'Parent')
+
+    % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
     if length(handles.Measurements.(SubObjectName).Parent) >= handles.Current.SetBeingAnalyzed
         Parents=handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed};
         for RemainingMeasurementFieldnames = MeasurementFieldnames
@@ -106,11 +108,6 @@ if isfield(handles.Measurements.(SubObjectName),'Parent')
                         if isempty(index)
                             handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
                         else
-                            %%% Handles the case is a child has more than one
-                            %%% parent. It just chooses the first one (it would
-                            %%% be nice if it chose the one with more overlap,
-                            %%, but we don't have time to code that now.)
-                            index = index(1);
                             handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
                         end
                     end
@@ -123,9 +120,9 @@ end
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to
 %%% their parents values. This does not get saved and is only for display.
-if ~isempty(FinalParentList)
-    FinalParentListLM = [0;FinalParentList];
-    NewObjectParentLabelMatrix = FinalParentListLM(SubObjectLabelMatrix+1);
+if ~isempty(ParentsOfChildren)
+    ParentsOfChildrenLM = [0;ParentsOfChildren];
+    NewObjectParentLabelMatrix = ParentsOfChildrenLM(SubObjectLabelMatrix+1);
 else
     NewObjectParentLabelMatrix = SubObjectLabelMatrix;
 end

@@ -1662,7 +1662,7 @@ if ModuleNamedotm ~= 0,
     if ~isfield(handles.Settings,'VariableInfoTypes')||size(handles.Settings.VariableInfoTypes,1)==size(handles.Settings.VariableValues,1)-1
         handles.Settings.VariableInfoTypes(size(handles.Settings.VariableValues,1),:)={[]};
     end
-
+    
     for i=1:lastVariableCheck
         if strcmp(get(handles.VariableBox{ModuleNums}(i),'style'),'edit')
             if ~RunInBG
@@ -1678,7 +1678,20 @@ if ModuleNamedotm ~= 0,
                 PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
                 if isempty(PPos)
                     if ~strcmp(handles.Settings.VariableValues{ModuleNums,i},'Pipeline Value')
-                        set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);
+                        %%% [Kyungnam & Anne, Aug-08-2007]
+                        %%% Here is the place where the values of VariableBoxes are set
+                        %%% based on the Settings of the pipeline loaded by the user.
+                        %%% We are adding a catch to help deal with old versions of the Modules using Median Filtering
+                        %%% e.g., CorrectIllumination_Calculate, Smooth. Median Filtering is automatically converted to
+                        %%% Gaussian Filter.
+                        if strcmp(handles.Settings.VariableValues{ModuleNums,i}, 'Median Filtering')
+                            handles.Settings.VariableValues{ModuleNums,i} = 'Gaussian Filter';
+                            CPwarndlg('Your pipeline uses Modules(s) including old ''Median Filtering'' which is actually ''Gaussian Filter''. We automatically convert Median Filtering to Gaussian Filter for your convenience');
+                        else
+                            set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);                            
+                        end                                            
+                        PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
+                        set(handles.VariableBox{ModuleNums}(i),'Value',PPos);
                     end
                 else
                     set(handles.VariableBox{ModuleNums}(i),'Value',PPos);
@@ -1686,7 +1699,7 @@ if ModuleNamedotm ~= 0,
             end
         end
     end
-
+    
     if lastVariableCheck == 0
         CPerrordlg(['The module you attempted to add, ', ModuleNamedotm,', is not a valid CellProfiler module because it does not appear to have any variables.  Sometimes this error occurs when you try to load a module that has the same name as a built-in Matlab function and the built in function is located in a directory higher up on the Matlab search path.']);
         return

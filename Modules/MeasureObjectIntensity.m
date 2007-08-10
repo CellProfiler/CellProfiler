@@ -74,6 +74,7 @@ function handles = MeasureObjectIntensity(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -215,13 +216,16 @@ for i = 1:length(ObjectNameList)
         'MassDisplacement'};
 
     %%% Get pixel indexes (fastest way), and count objects
+    [sr sc] = size(LabelMatrixImage);        
     props = regionprops(LabelMatrixImage,'PixelIdxList');
-    ObjectCount = length(props);
-    if ObjectCount > 0
+    ObjectCount = length(props);    
 
+    %%% Label-aware boundary finding (even when two objects are adjacent)
+    LabelBoundaryImage = CPlabelperim(LabelMatrixImage);
+    
+    if ObjectCount > 0
         Basic = zeros(ObjectCount,4);
 
-        [sr sc] = size(LabelMatrixImage);
         for Object = 1:ObjectCount
             %%% It's possible for objects not to have any pixels,
             %%% particularly tertiary objects (such as cytoplasm from
@@ -230,32 +234,42 @@ for i = 1:length(ObjectNameList)
                 Basic(Object,1:11) = 0;
                 continue;
             end
-
+         
             %%% Measure basic set of Intensity features
             Basic(Object,1) = sum(OrigImage(props(Object).PixelIdxList));
             Basic(Object,2) = mean(OrigImage(props(Object).PixelIdxList));
             Basic(Object,3) = std(OrigImage(props(Object).PixelIdxList));
             Basic(Object,4) = min(OrigImage(props(Object).PixelIdxList));
-            Basic(Object,5) = max(OrigImage(props(Object).PixelIdxList));
-
+            Basic(Object,5) = max(OrigImage(props(Object).PixelIdxList));     
+     
+            %%% Kyungnam, 2007-Aug-06: optimized code
             %%% Cut patch so that we don't have to deal with entire image
             [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
             rmax = min(sr,max(r));
             rmin = max(1,min(r));
             cmax = min(sc,max(c));
-            cmin = max(1,min(c));
-            BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+            cmin = max(1,min(c)); 
+            BWim = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImage(rmin:rmax,cmin:cmax);
-
-            %%% Get perimeter in order to calculate edge features
-            perim = bwperim(BWim);
-            perim = Greyim(find(perim)); %#ok Ignore MLint
+            Boundaryim = LabelBoundaryImage(rmin:rmax,cmin:cmax) == Object;
+            perim = Greyim(find(Boundaryim));
             Basic(Object,6)  = sum(perim);
             Basic(Object,7)  = mean(perim);
             Basic(Object,8)  = std(perim);
             Basic(Object,9)  = min(perim);
             Basic(Object,10) = max(perim);
-
+          
+            %%% Kyungnam, 2007-Aug-06: the original old code left commented below
+            %%%                        'bwperim' is slow!                         
+            %             %%% Get perimeter in order to calculate edge features
+            %             perim = bwperim(BWim);
+            %             perim = Greyim(find(perim)); %#ok Ignore MLint
+            %             Basic(Object,6)  = sum(perim);
+            %             Basic(Object,7)  = mean(perim);
+            %             Basic(Object,8)  = std(perim);
+            %             Basic(Object,9)  = min(perim);
+            %             Basic(Object,10) = max(perim);   
+           
             %%% Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
             %%% the center of gravity in the gray level image and the binary
             %%% image.

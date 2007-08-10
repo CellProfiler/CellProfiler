@@ -203,7 +203,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
                                 return;
                             end                                
 
-                            Ymatrix = zeros(length(handles.Current.NumberOfImageSets),length(MeasureFeatures));
+                            Ymatrix = zeros(handles.Current.NumberOfImageSets,length(MeasureFeatures));
                             for k = 1:handles.Current.NumberOfImageSets
                                 for l = 1:length(MeasureFeatures)
                                     if isempty(handles.Measurements.(ObjectName).(MeasureName){k})

@@ -98,8 +98,9 @@ ParentList(OverlapCounts(end, :) == 0) = 0;
 ParentList = ParentList'
 
 %%% Now we need the number of children for each parent.  We can get
-%%% this as a histogram, again.
-ChildCounts = full(sparse(ParentList, 1, 1, NumberOfParents, 1));
+%%% this as a histogram, again.  Must only use children that actually
+%%% have a parent.
+ChildCounts = full(sparse(ParentList(ParentList > 0), 1, 1, NumberOfParents, 1));
 
 %%% Add the new measurements to the handles
 handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,ParentList);

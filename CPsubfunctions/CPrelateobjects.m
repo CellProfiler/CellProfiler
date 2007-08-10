@@ -86,9 +86,16 @@ ParentChildLabelHistogram = full(sparse(ParentLabelMatrix(BothForegroundMask), C
 %%% this by maximum overlap, which in this case is maximum value in
 %%% the child's column in the histogram.  sort() will give us the
 %%% necessary parent (row) index as its second return argument.
-[ignore, ParentIndexes] = sort(ParentChildLabelHistogram);
-% transpose to a column vector.
-ParentList = ParentIndexes(end, :)';
+[OverlapCounts, ParentIndexes] = sort(ParentChildLabelHistogram);
+
+% Get the parent list.
+ParentList = ParentIndexes(end, :);
+
+% handle the case of a zero overlap -> no parent
+ParentList(OverlapCounts(end, :) == 0) = 0;
+
+% transpose to a column vector
+ParentList = ParentList'
 
 %%% Now we need the number of children for each parent.  We can get
 %%% this as a histogram, again.

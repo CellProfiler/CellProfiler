@@ -95,7 +95,7 @@ ParentList = ParentIndexes(end, :);
 ParentList(OverlapCounts(end, :) == 0) = 0;
 
 % transpose to a column vector
-ParentList = ParentList'
+ParentList = ParentList';
 
 %%% Now we need the number of children for each parent.  We can get
 %%% this as a histogram, again.  Must only use children that actually

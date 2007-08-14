@@ -88,7 +88,7 @@ if any(ParentChildLabelHistogram(:)),
     %%% this by maximum overlap, which in this case is maximum value in
     %%% the child's column in the histogram.  sort() will give us the
     %%% necessary parent (row) index as its second return argument.
-    [OverlapCounts, ParentIndexes] = sort(ParentChildLabelHistogram);
+    [OverlapCounts, ParentIndexes] = sort(ParentChildLabelHistogram,1);
     
     % Get the parent list.
     ParentList = ParentIndexes(end, :);

@@ -110,5 +110,10 @@ else
 end
 
 %%% Add the new measurements to the handles
-handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,ParentList);
-handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildCounts);
+if NumberOfSubobjects > 0,
+    handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,ParentList);
+end
+
+if NumberOfParents > 0,
+    handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildCounts);
+end

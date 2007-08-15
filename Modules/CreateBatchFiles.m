@@ -12,7 +12,7 @@ function handles = CreateBatchFiles(handles)
 % cluster for faster processing. This module should be placed at the end of
 % an image processing pipeline.
 %
-% Before using this module, you should read Help -> Getting Started ->
+% Before using this module, you should read Help -> General Help ->
 % Batch Processing. That help file also will instruct you on how to
 % actually run the batch files that are created by this module.
 %
@@ -22,7 +22,7 @@ function handles = CreateBatchFiles(handles)
 % version) or the CPCluster MATLAB source code. If you do not have MATLAB
 % licenses for every node of your cluster, you can use the Compiled version
 % of CPCluster. These versions are available at www.cellprofiler.org. For
-% more information, please read Help -> Getting Started -> Batch
+% more information, please read Help -> General Help -> Batch
 % Processing.
 %
 % Batch Size: This determines how many images will be analyzed in each set.

@@ -609,10 +609,13 @@ if strcmp(TestMode,'Yes')
     LocalMaximaTypeList = {'Intensity' 'Shape'};
     WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
 else
-    LocalMaximaTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,11})};
-    WatershedTransformImageTypeList = {char(handles.Settings.VariableValues{CurrentModuleNum,12})};
+    %%% Not looping, but use code for looping below.
+    LocalMaximaTypeList = {OriginalLocalMaximaType};
+    WatershedTransformImageTypeList = {OriginalWatershedTransformImageType};
 end
 
+
+%%% These loops are necessary for Testing Mode, but otherwise there is only one of each.
 for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
     for WatershedTransformImageTypeNumber = 1:length(WatershedTransformImageTypeList)
 

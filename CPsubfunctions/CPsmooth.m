@@ -4,6 +4,9 @@ function [SmoothedImage RealFilterLength] = CPsmooth(OrigImage,SmoothingMethod,S
 % CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE,
 % IDENTIFYPRIMAUTOMATIC
 %
+% SizeOfSmoothingFilter = Diameter of the Filter Window (Box).
+%                       ~ roughly equal to object diameter
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -58,6 +61,13 @@ if islogical(OrigImage)
     %OrigImage = im2single(OrigImage);
 end
 
+% %%% If the SizeOfSmoothingFilter is greather than
+% %%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
+% if (SizeOfSmoothingFilter > 50)
+%     OrigImage = imresize(OrigImage, 51/SizeOfSmoothingFilter);
+%     SizeOfSmoothingFilter = 
+% end
+
 switch lower(SmoothingMethod)
     case {'fit polynomial','p'}
         %%% The following is used to fit a low-dimensional polynomial to
@@ -107,7 +117,7 @@ switch lower(SmoothingMethod)
     case {'median filtering','m'}
         %%% We leave this SmoothingMethod to be compatible with previous
         %%% pipelines that used 'median filtering'
-        error('The smoothing method ''Median Filtering'' is not valid any more. Please replace it with ''Gaussian Filtering'' if you still want to make your pipeline working as it was. Or use ''Median Filter'' which was re-implemented.');
+        CPwarndlg('The smoothing method ''Median Filtering'' is not valid any more. Please replace it with ''Gaussian Filtering'' if you still want to make your pipeline working as it was. Or use ''Median Filter'' which was re-implemented.');
     case 'gaussian filter'
         %%% The following is used for the Gaussian lowpas filtering method.
         if WidthFlg
@@ -139,6 +149,15 @@ switch lower(SmoothingMethod)
 %       [Kyungnam Jul-30-2007: If you want to use the traditional averaging filter, use the following]
 %        h = fspecial('average', [SizeOfSmoothingFilter SizeOfSmoothingFilter]);
 %        SmoothedImage = imfilter(OrigImage, h, 'replicate');
+    case 'remove brightroundspeckles'
+        %%% It does a grayscle open morphological operation. Effectively, 
+        %%% it removes speckles of SizeOfSmoothingFilter brighter than its
+        %%% surroundings. If comebined with the 'Subtract' module, it
+        %%% behaves like a tophat filter        
+        SPECKLE_RADIUS = round(SizeOfSmoothingFilter/2);
+        disk_radus = round(SPECKLE_RADIUS);
+        SE = strel('disk', disk_radus);
+        SmoothedImage = imopen(OrigImage, SE);
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

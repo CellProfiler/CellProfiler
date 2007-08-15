@@ -18,6 +18,14 @@ function handles = Smooth(handles)
 % median filtering method. Width of artifacts over ~50 take substantial
 % amounts of time to process.
 %
+% BRIGHT SPECKLE DETECTION: If you use 'Remove BrightRoundSpeckles', 
+% you may want to use the Subtract module subsequently to subtract the 
+% smoothed image from the original image in order to leave bright 
+% round-shaped speckles. Effectlive, this will do tophat filtering. 
+% Then, you can use the ApplyThreshold module to make a binary 
+% speckles/non-speckles image. Furthermore, the IdentifyPrimAutomatic can 
+% be used on the thresholded image to label each speckles for your analysis.
+%
 % Special note on saving images: If you want to save the smoothed image to
 % use it for later analysis, you should save the smoothed image in '.mat'
 % format to prevent degradation of the data.
@@ -77,10 +85,11 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Gaussian Filter
 %choiceVAR03 = Sum of Squares
 %choiceVAR03 = Square of Sum
+%choiceVAR03 = Remove BrightRoundSpeckles
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you choose Median Filtering, Sum of squares, or Square of sum as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%textVAR04 = If you choose Sum of Squares, Square of Sum, Median Filter, Gaussian Filter, or Remove BrightRoundSpeckles as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
 %defaultVAR04 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
 

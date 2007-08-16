@@ -3717,7 +3717,9 @@ else
             while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets
                 setbeinganalyzed = handles.Current.SetBeingAnalyzed;
                 NumberofWindows = 0;
-                for SlotNumber = 1:handles.Current.NumberOfModules
+                %%% This is written as a while loop (rather than a for loop) to allow fixes and restarts.
+                SlotNumber = 1;
+                while SlotNumber <= handles.Current.NumberOfModules
                     %%% If a module is not chosen in this slot, continue on to the next.
                     ModuleNumberAsString = TwoDigitString(SlotNumber);
                     ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
@@ -3762,6 +3764,10 @@ else
                             %%% argument.
                             handles.Measurements.Image.ModuleErrorFeatures(str2double(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
+                            %%% If the call to feval succeeded, then the module succeeded and we can move to the next module.
+                            %%% (if there is an error, it will be caught below, at the point marked MODULE ERROR
+                            SlotNumber = SlotNumber + 1;
+                            %%% Store the handles back to the figure.
                             guidata(handles.figure1,handles);
                             try
                                 TimerData = get(timer_handle,'UserData');
@@ -3769,6 +3775,7 @@ else
                                 TimerData.StartingImageSet = handles.Current.StartingImageSet;
                                 set(timer_handle,'UserData',TimerData);
                             end
+                            FigHandle = -1;
                             try
                                 FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
                             end
@@ -3787,13 +3794,41 @@ else
                                     if exist([ModuleName,'.m'],'file') ~= 2,
                                         CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);
                                     else
+                                        %%% MODULE ERROR
                                         %%% Runs the errorfunction function that catches errors and
                                         %%% describes to the user what to do.
                                         errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
+                                        %%% Give the user a chance to fix the bug and retry the module.
+                                        if strcmp(CPquestdlg('Edit code and retry module?  (note: breakpoints will be lost)', 'Retry pipeline?', 'Yes', 'No', 'Yes'), 'Yes'),
+                                            %%% If we get an error in the retry code, below, we skip the retry.
+                                            give_up = 0;
+                                            try
+                                                %%% To force code to be reloaded, we clear functions on the error stack, up to the called module.
+                                                err = lasterror;
+                                                stack = err.stack;
+                                                for i = 1:length(stack),
+                                                    clear(stack(i).name);
+                                                    %%% Stop at the called module.  (Hopefully none of them recurse.(?))
+                                                    if strcmp(stack(i).name, ModuleName),
+                                                        break;
+                                                    end
+                                                end
+                                            catch
+                                                %%% If there was an error in the retry code, report it, then revert to not retrying.
+                                                CPerrordlg(['Could not retry: (' lasterr ')']);
+                                                give_up = 1;
+                                            end
+                                            if ~ give_up,
+                                                %%% This continue binds to the while loop over SlotNumber.
+                                                continue;
+                                            end
+                                            %%% The implicit else clause is to fall through to the break below.
+                                        end
+                                        %%% This will cause the image analysis loop to break out of the loop over images.
+                                        break_outer_loop = 1;
                                     end
                                 end
-                                %%% Causes break out of the image analysis loop (see below)
-                                break_outer_loop = 1;
+                                %%% Got to here with an error, so break outer loop.
                                 break;
                             else
                                 errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
@@ -4013,29 +4048,14 @@ function errorfunction(CurrentModuleNumber,FontSize,ModuleName)
 Error = lasterr;
 %%% If an error occurred in an image analysis module, the error message
 %%% should begin with "Error using ==> ", which will be recognized here.
-
-ExtraInfo = '';
-errorinfo = lasterror;
-if isfield(errorinfo, 'stack'),
-    try
-        stackinfo = errorinfo.stack(1,1);
-        ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
-    catch
-        %%% The line stackinfo = errorinfo.stack(1,1); will fail if the
-        %%% errorinfo.stack is empty, which sometimes happens during
-        %%% debugging, I think. So we catch it here.
-        ExtraInfo = ['No specific error information was produced by MATLAB.'];
-    end
-end
-
 if strncmp(Error,'Error using ==> ',16)
-    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '. ', Error, ExtraInfo];
+    ErrorExplanation = ['There was a problem running the analysis module ',ModuleName,' which is number ',CurrentModuleNumber, '. ', Error];
     %%% The following are errors that may have occured within the analyze all
     %%% images callback itself.
 elseif ~isempty(strfind(Error,'bad magic'))
-    ErrorExplanation = ['There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.', ExtraInfo];
+    ErrorExplanation = ['There was a problem running the image analysis. It seems likely that there are files in your image directory that are not images or are not the image format that you indicated. Probably the data for the cycles up to the one which generated this error are OK in the output file.'];
 else
-    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.', ExtraInfo];
+    ErrorExplanation = ['There was a problem running the image analysis. Sorry, it is unclear what the problem is. It would be wise to close the entire CellProfiler program in case something strange has happened to the settings. The output file may be unreliable as well. Matlab says the error is: ', Error, ' in the ', ModuleName, ' module, which is module #', CurrentModuleNumber, ' in the pipeline.'];
 end
 CPerrordlg(ErrorExplanation);
 

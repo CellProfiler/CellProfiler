@@ -58,7 +58,7 @@ function MergeOutputFiles(handles)
 % $Revision$
 
 %%% Let the user select one output file to indicate the directory
-[BatchFile, BatchPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the first batch CellProfiler output file, which ends in data.mat');
+[BatchFile, BatchPath] = CPuigetfile('*.mat', 'Select the first batch CellProfiler output file, which ends in data.mat', handles.Current.DefaultOutputDirectory);
 if ~BatchPath
     return
 end
@@ -128,6 +128,7 @@ for i = 1:length(FileList)
         % Some fields should not be merged, remove these from the list of fields
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Pathname')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'SubObjectFlag')));   % Don't merge cell arrays with SubObjectFlag (to play nicely with Relate module)
         for j = 1:length(secondfields)
             idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));
             idxs(1) = 0;

@@ -45,13 +45,7 @@ function ExportData(handles)
 
 
 %%% Ask the user to choose the file from which to extract measurements.
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
-    PathToSave = handles.Current.DefaultOutputDirectory;
-else
-    [RawFileName, RawPathname] = uigetfile('*.mat','Select the raw measurements file');
-    PathToSave = RawPathname;
-end
+[RawFileName, RawPathname] = CPuigetfile('*.mat','Select the raw measurements file', handles.Current.DefaultOutputDirectory);
 
 if RawFileName == 0
     return
@@ -123,11 +117,11 @@ if isfield(ExportInfo, 'ExportProcessInfo')
 
     %%% Done!
     if strcmp(ExportInfo.ExportProcessInfo, 'Yes') && isempty(ExportInfo.ObjectNames)
-        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', PathToSave, '.'])
+        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.'])
     elseif strcmp(ExportInfo.ExportProcessInfo, 'Yes')
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', PathToSave, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.'])
     else
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', PathToSave, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', RawPathname, '.'])
     end
 end
 

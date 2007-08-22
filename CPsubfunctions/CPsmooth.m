@@ -66,12 +66,14 @@ if islogical(OrigImage)
     %OrigImage = im2single(OrigImage);
 end
 
+%%% For faster smoothing with a large filter size:
 %%% If the SizeOfSmoothingFilter is greather than
 %%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
+%%% Tip: Smoothing with filter size LARGESIZE_OF_SMOOTHINGFILTER is the slowest.
 if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
     ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER/SizeOfSmoothingFilter;
     OrigImage = imresize(OrigImage, ResizingFactor);    
-    SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER % equal to SizeOfSmoothingFilter * ResizingFactor;
+    SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER; % equal to SizeOfSmoothingFilter * ResizingFactor;
 end
 
 switch lower(SmoothingMethod)

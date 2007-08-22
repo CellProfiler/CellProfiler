@@ -109,6 +109,18 @@ function HelpDeveloperInfo
 % settings when loading a saved pipeline if it is located after
 % infotypeVAR01 or inputtypeVAR01.
 % 
+% When loading the settings of pipeline modules, CellProfiler trys to find
+%       handles.Settings.VariableValues{ModuleNums,i} from the list of 
+%       handles.VariableBox{ModuleNums}(i), 
+% for example, 
+%       the pipeline-specified 'Gaussian Filter' from the list of 
+%       available Smoothing methods in the loaded module. 
+% It is searched and set in CellProfiler.m, exactly starting
+% with this line of code:
+%       PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
+% You may want to add your own action code here when a certain setting is 
+% found in a loaded module.
+%
 % * CellProfiler uses VariableRevisionNumbers to help programmers notify
 % users when something significant has changed about the variables.
 % For example, if you have switched the position of two variables,

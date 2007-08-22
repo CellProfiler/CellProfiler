@@ -35,6 +35,11 @@ function [SmoothedImage RealFilterLength] = CPsmooth(OrigImage,SmoothingMethod,S
 %
 % $Revision$
 
+%%% If SizeOfSmoothingFilter(S) >= LARGESIZE_OF_SMOOTHINGFILTER (L), 
+%%% then rescale the original image by L/S, and rescale S to L.
+%%% It is a predefined effective maximum filter size (diameter).
+LARGESIZE_OF_SMOOTHINGFILTER = 50; 
+
 SmoothedImage = OrigImage;
 RealFilterLength = 0;
 
@@ -61,12 +66,13 @@ if islogical(OrigImage)
     %OrigImage = im2single(OrigImage);
 end
 
-% %%% If the SizeOfSmoothingFilter is greather than
-% %%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
-% if (SizeOfSmoothingFilter > 50)
-%     OrigImage = imresize(OrigImage, 51/SizeOfSmoothingFilter);
-%     SizeOfSmoothingFilter = 
-% end
+%%% If the SizeOfSmoothingFilter is greather than
+%%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
+if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
+    ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER/SizeOfSmoothingFilter;
+    OrigImage = imresize(OrigImage, ResizingFactor);    
+    SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER % equal to SizeOfSmoothingFilter * ResizingFactor;
+end
 
 switch lower(SmoothingMethod)
     case {'fit polynomial','p'}
@@ -161,5 +167,11 @@ switch lower(SmoothingMethod)
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');
-        end
+        end       
+end
+
+%%% Resize back to original if resized earlier due to the large filter size
+if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
+    SmoothedImage = imresize(SmoothedImage, 1/ResizingFactor);  
+    RealFilterLength = RealFilterLength * ResizingFactor;
 end

@@ -120,8 +120,10 @@ switch lower(SmoothingMethod)
         %%% So, pad the image with 'replicate' values, and then median-filters.
         FiltLength = SizeOfSmoothingFilter;
         PaddedImage = padarray(OrigImage,[FiltLength FiltLength],'replicate');
-        SmoothedImage = medfilt2(PaddedImage,[SizeOfSmoothingFilter SizeOfSmoothingFilter]);
-        SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
+        % medfilt2 on double images is too slow. Let's covert it to uint16
+        % which is very much fast!
+        SmoothedImage = medfilt2(im2uint16(PaddedImage),[SizeOfSmoothingFilter SizeOfSmoothingFilter]);
+        SmoothedImage = im2double(SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength));
     case {'median filtering','m'}
         %%% We leave this SmoothingMethod to be compatible with previous
         %%% pipelines that used 'median filtering'
@@ -174,6 +176,6 @@ end
 
 %%% Resize back to original if resized earlier due to the large filter size
 if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
-    SmoothedImage = imresize(SmoothedImage, 1/ResizingFactor);  
+    SmoothedImage = imresize(SmoothedImage, [size(OrigImage,1) size(OrigImage,2)]);  
     RealFilterLength = RealFilterLength * ResizingFactor;
 end

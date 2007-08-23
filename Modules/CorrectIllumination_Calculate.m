@@ -194,13 +194,11 @@ SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum
 %choiceVAR09 = Fit Polynomial
 %choiceVAR09 = Median Filter
 %choiceVAR09 = Gaussian Filter
-%choiceVAR09 = Sum of Squares
-%choiceVAR09 = Square of Sum
 %choiceVAR09 = Smooth to Average
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = For MEDIAN FILTER, GAUSSIAN FILTER, SUM OF SQUARES, or SQUARE OF SUM, specify the approximate width of the artifacts to be smoothed (in pixels), or leave the word 'Automatic'.
+%textVAR10 = For MEDIAN FILTER or GAUSSIAN FILTER, specify the approximate width of the artifacts to be smoothed (in pixels), or leave the word 'Automatic'.
 %defaultVAR10 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,10};
 

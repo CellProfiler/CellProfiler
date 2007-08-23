@@ -75,7 +75,7 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the smoothed image?
-%defaultVAR02 = CorrBlue
+%defaultVAR02 = CorrBluef
 %infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -83,13 +83,11 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Fit Polynomial
 %choiceVAR03 = Median Filter
 %choiceVAR03 = Gaussian Filter
-%choiceVAR03 = Sum of Squares
-%choiceVAR03 = Square of Sum
 %choiceVAR03 = Remove BrightRoundSpeckles
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If you choose Sum of Squares, Square of Sum, Median Filter, Gaussian Filter, or Remove BrightRoundSpeckles as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
+%textVAR04 = If you choose Median Filter, Gaussian Filter, or Remove BrightRoundSpeckles as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.
 %defaultVAR04 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
 

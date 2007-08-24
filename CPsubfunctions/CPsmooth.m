@@ -116,16 +116,21 @@ switch lower(SmoothingMethod)
         RealFilterLength=2*FiltLength;
     case 'median filter'
         %%% The following is used for the Median Filtering smoothing method
-        %%% [Kyungnam 2007-Aug-3] 
-        %%% 'medfilt2' pads the image with 0's on the edges, so the median
-        %%% values for the points within [m n]/2 of the edges might appear distorted (to 0).
-        %%% So, pad the image with 'replicate' values, and then median-filters.
+        %%% medfilt2 on double images is too slow. Let's covert it to uint16 which is very much fast!
+        %%% Let's get pixel values stretched from [min,max] to [0,1] for the best precision/accuracy
         FiltLength = SizeOfSmoothingFilter;
-        PaddedImage = padarray(OrigImage,[FiltLength FiltLength],'replicate');
-        % medfilt2 on double images is too slow. Let's covert it to uint16
-        % which is very much fast!
-        SmoothedImage = medfilt2(im2uint16(PaddedImage),[SizeOfSmoothingFilter SizeOfSmoothingFilter]);
-        SmoothedImage = im2double(SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength));
+        maxval = max(OrigImage(:));
+        minval = min(OrigImage(:));
+        range = maxval - minval;
+        RESCALE_FLAG = maxval ~= minval;
+        if (RESCALE_FLAG) % stretch the range to [0,1] for best precision
+            OrigImage = (OrigImage-minval)./range;
+        end        
+        SmoothedImage = medfilt2(im2uint16(OrigImage),[SizeOfSmoothingFilter SizeOfSmoothingFilter],'symmetric');
+        SmoothedImage = im2double(SmoothedImage);
+        if (RESCALE_FLAG) % return to the original range of OrigImage;
+            SmoothedImage = SmoothedImage.*range + minval;
+        end
     case {'median filtering','m'}
         %%% We leave this SmoothingMethod to be compatible with previous
         %%% pipelines that used 'median filtering'

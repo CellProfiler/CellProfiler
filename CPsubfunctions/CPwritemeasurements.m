@@ -238,13 +238,13 @@ for Object = 1:length(ExportInfo.ObjectNames)
             if ExportInfo.IgnoreNaN == 1
                 for imageset = 1:length(Measurements)
                     if strcmp(ExportInfo.DataParameter,'std')
-                        Measurements{imageset} = cat(2,Measurements{imageset},CPnanstd(tmpMeasurements{imageset},1));
+                        Measurements{imageset} = cat(2,Measurements{imageset},CPnanstd(tmpMeasurements{imageset}));
                     else
                         if strcmp(ExportInfo.DataParameter,'mean')
-                            Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset},1));
+                            Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset}));
                         else
                             if strcmp(ExportInfo.DataParameter,'median')
-                                Measurements{imageset} = cat(2,Measurements{imageset},CPnanmedian(tmpMeasurements{imageset},1));
+                                Measurements{imageset} = cat(2,Measurements{imageset},CPnanmedian(tmpMeasurements{imageset}));
                             end
                         end
                     end

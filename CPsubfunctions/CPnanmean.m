@@ -1,17 +1,13 @@
-function m = CPnanmean(x,dim)
-%NANMEAN Mean value, ignoring NaNs.
-%   M = NANMEAN(X) returns the sample mean of X, treating NaNs as missing
-%   values.  For vector input, M is the mean value of the non-NaN elements
-%   in X.  For matrix input, M is a row vector containing the mean value of
-%   non-NaN elements in each column.  For N-D arrays, NANMEAN operates
-%   along the first non-singleton dimension.
+function m = CPnanmean(x)
+%CPNANMEAN Mean value, ignoring NaNs.
+%   M = CPNANMEAN(X) returns the sample mean of X, treating NaNs as
+%   missing values.  For vector input, M is the mean value of the non-NaN
+%   elements in X.  For matrix input, M is a row vector containing the
+%   mean value of non-NaN elements in each column. 
 %
-%   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
-%
-%   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
-
-%   Copyright 1993-2004 The MathWorks, Inc.
-%   $Revision$  $Date$
+%   This function will need rewriting if it needs to take means
+%   along any dimension other than the first.  Also, it only accepts
+%   vectors and 2D matrices at this time.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -38,21 +34,26 @@ function m = CPnanmean(x,dim)
 %
 % $Revision$
 
-% Find NaNs and set them to zero
-nans = isnan(x);
-x(nans) = 0;
 
-if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    n = sum(~nans);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x) ./ n;
+
+assert(length(size(x)) <= 2, 'CPnanmean can only operate on vectors and 2D matrices.');
+    
+if ~ any(isnan(x(:))),
+    m = mean(x);
 else
-    % Count up non-NaNs.
-    n = sum(~nans,dim);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x,dim) ./ n;
-end
+    % If it's a row vector, just return the mean of that vector
+    if size(x, 1) == 1,
+        m = mean(x(~ isnan(x)));
+    else
+        % 2D matrix 
 
+        % preallocate
+        m = zeros(1, size(x, 2));
+        
+        % work by columns
+        for i = 1:size(x, 2),
+            col = x(:, i);
+            m(i) = mean(col(~ isnan(col)));
+        end
+    end
+end

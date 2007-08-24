@@ -381,8 +381,8 @@ try
             OutputMeasurementsForStats = OutputMeasurements{1,1};
             OutputMeasurementsForStats(OutputMeasurementsForStats==-Inf) = NaN;
             OutputMeasurementsForStats(OutputMeasurementsForStats==Inf) = NaN;            
-            Mean = CPnanmean(OutputMeasurementsForStats,1);
-            Median = CPnanmedian(OutputMeasurementsForStats,1);
+            Mean = CPnanmean(OutputMeasurementsForStats);
+            Median = CPnanmedian(OutputMeasurementsForStats);
             %%% pObject is the percentage of image covered by objects. We will
             %%% set to 50% for now
             pObject = '50';

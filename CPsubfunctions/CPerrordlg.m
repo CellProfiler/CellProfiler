@@ -1,21 +1,12 @@
 function varargout = CPerrordlg(ErrorString,DlgName,Replace)
-%ERRORDLG Error dialog box.
-%  HANDLE = ERRORDLG(ErrorString,DlgName,CREATEMODE) creates an 
+%CPERRORDLG Error dialog box.
+%  HANDLE = CPERRORDLG(ErrorString,DlgName,CREATEMODE) creates an 
 %  error dialog box which displays ErrorString in a window 
 %  named DlgName.  A pushbutton labeled OK must be pressed 
 %  to make the error box disappear.  
 %
-%  ErrorString will accept any valid string input but a cell 
-%  array is preferred.
-%
-%  ERRORDLG uses MSGBOX.  Please see the help for MSGBOX for a
-%  full description of the input arguments to ERRORDLG.
-%  
-%  See also MSGBOX, HELPDLG, QUESTDLG, WARNDLG.
-
-%  Author: L. Dean
-%  Copyright 1984-2002 The MathWorks, Inc.
-%  $Revision$  $Date$
+%  CPERRORDLG uses CPMSGBOX.  Please see the help for CPMSGBOX for a
+%  full description of the input arguments to CPERRORDLG.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -47,45 +38,31 @@ if NumArgIn==0,
    ErrorString = {'This is the default error string.'};
 end
 
-if NumArgIn<2,  DlgName = 'Error Dialog'; end
+if NumArgIn<2,  DlgName='Error Dialog'; end
 if NumArgIn<3,  Replace='non-modal'     ; end
 
-% copied from CellProfiler.m errofunction()
 errorinfo = lasterror;
 if isfield(errorinfo, 'stack'),
     try
-        stackinfo = errorinfo.stack(1,1);
-        ExtraInfo = [' (file: ', stackinfo.file, ' function: ', stackinfo.name, ' line: ', num2str(stackinfo.line), ')'];
+        stack = errorinfo.stack;
     catch
         %%% The line stackinfo = errorinfo.stack(1,1); will fail if the
         %%% errorinfo.stack is empty, which sometimes happens during
         %%% debugging, I think. So we catch it here.
-        ExtraInfo = '';
+        stack = {};
     end
 end
 
-ErrorString = [ErrorString ExtraInfo];
+ErrorCells = {ErrorString};
 
-% Backwards Compatibility
-if ischar(Replace),
-  if strcmp(Replace,'on'),
-    Replace='replace';
-  elseif strcmp(Replace,'off'),
-    Replace='non-modal';
-  end
+if size(stack, 1) > 0,
+    ErrorCells{end+1} = '';
+    ErrorCells{end+1} = 'Stack:';
+    for index = 1:size(stack, 1),
+        stackinfo = stack(index, 1);
+        ErrorCells{end+1} = [stackinfo.name, ' in ', stackinfo.file, ' (', num2str(stackinfo.line) ')'];
+    end
 end
 
-if ischar(ErrorString) & ~iscellstr(ErrorString)
-    ErrorString = cellstr(ErrorString);
-end
-if ~iscellstr(ErrorString)
-    error('Errorstring should be a string or cell array of strings');
-end
-
-ErrorStringCell = cell(0);
-for i = 1:length(ErrorString)
-    ErrorStringCell{end+1} = xlate(ErrorString{i});
-end
-
-handle = CPmsgbox(ErrorStringCell,DlgName,'error',Replace);
+handle = CPmsgbox(ErrorCells,DlgName,'error',Replace);
 if nargout==1,varargout(1)={handle};end

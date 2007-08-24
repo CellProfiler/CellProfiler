@@ -3799,30 +3799,32 @@ else
                                         %%% describes to the user what to do.
                                         errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
                                         %%% Give the user a chance to fix the bug and retry the module.
-                                        if strcmp(CPquestdlg('Edit code and retry module?  (note: breakpoints will be lost)', 'Retry pipeline?', 'Yes', 'No', 'Yes'), 'Yes'),
-                                            %%% If we get an error in the retry code, below, we skip the retry.
-                                            give_up = 0;
-                                            try
-                                                %%% To force code to be reloaded, we clear functions on the error stack, up to the called module.
-                                                err = lasterror;
-                                                stack = err.stack;
-                                                for i = 1:length(stack),
-                                                    clear(stack(i).name);
-                                                    %%% Stop at the called module.  (Hopefully none of them recurse.(?))
-                                                    if strcmp(stack(i).name, ModuleName),
-                                                        break;
+                                        if strcmp(getenv('CPDEBUG'), 'yes'),
+                                            if strcmp(CPquestdlg('Edit code and retry module?  (note: breakpoints will be lost)', 'Retry pipeline?', 'Yes', 'No', 'Yes'), 'Yes'),
+                                                %%% If we get an error in the retry code, below, we skip the retry.
+                                                give_up = 0;
+                                                try
+                                                    %%% To force code to be reloaded, we clear functions on the error stack, up to the called module.
+                                                    err = lasterror;
+                                                    stack = err.stack;
+                                                    for i = 1:length(stack),
+                                                        clear(stack(i).name);
+                                                        %%% Stop at the called module.  (Hopefully none of them recurse.(?))
+                                                        if strcmp(stack(i).name, ModuleName),
+                                                            break;
+                                                        end
                                                     end
+                                                catch
+                                                    %%% If there was an error in the retry code, report it, then revert to not retrying.
+                                                    CPerrordlg(['Could not retry: (' lasterr ')']);
+                                                    give_up = 1;
                                                 end
-                                            catch
-                                                %%% If there was an error in the retry code, report it, then revert to not retrying.
-                                                CPerrordlg(['Could not retry: (' lasterr ')']);
-                                                give_up = 1;
+                                                if ~ give_up,
+                                                    %%% This continue binds to the while loop over SlotNumber.
+                                                    continue;
+                                                end
+                                                %%% The implicit else clause is to fall through to the break below.
                                             end
-                                            if ~ give_up,
-                                                %%% This continue binds to the while loop over SlotNumber.
-                                                continue;
-                                            end
-                                            %%% The implicit else clause is to fall through to the break below.
                                         end
                                         %%% This will cause the image analysis loop to break out of the loop over images.
                                         break_outer_loop = 1;

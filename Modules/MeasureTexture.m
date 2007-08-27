@@ -25,7 +25,7 @@ function handles = MeasureTexture(handles)
 % higher number for the scale of texture measures larger patterns of
 % texture whereas smaller numbers measure more localized patterns of
 % texture. It is best to measure texture on a scale smaller than your
-% objects sizes, so be sure that the value entered for scale of texture is
+% objects' sizes, so be sure that the value entered for scale of texture is
 % smaller than most of your objects. For very small objects (smaller than
 % the scale of texture you are measuring), the texture cannot be measured
 % and will result in a value of NaN (Not a Number) in the output file.

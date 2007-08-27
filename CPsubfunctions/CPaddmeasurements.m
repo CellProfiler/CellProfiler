@@ -25,6 +25,11 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision$
 
+
+%%% It's a little unclear under what circumstances this subfunction should
+%%% be used, as opposed to naming substructures with the exact name of the
+%%% feature (like handles.Measurements.Nuclei.AreaShape =
+%%% {'area','perimeter'} etc). Someone should resolve this someday.
 FeaturesField = [Measure,'Features'];
 
 if isfield(handles.Measurements.(Object),FeaturesField)

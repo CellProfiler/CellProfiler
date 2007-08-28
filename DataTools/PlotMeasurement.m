@@ -43,12 +43,20 @@ function PlotMeasurement(handles)
 
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-[RawFileName, RawPathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
+[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
+
 %%% Allows canceling.
-if RawFileName == 0
+if FileName == 0
     return
 end
-load(fullfile(RawPathname, RawFileName));
+
+%%% Load the specified CellProfiler output file
+try
+    load(fullfile(Pathname, FileName));
+catch
+    CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
+    return
+end
 
 PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],...
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});

@@ -40,11 +40,7 @@ function ViewData(handles)
 % $Revision$
 
 %%% Ask the user to choose the file from which to extract measurements.
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [FileName, Pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select the raw measurements file');
-else
-    [FileName, Pathname] = uigetfile('*.mat','Select the raw measurements file');
-end
+[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
 if FileName == 0
     return
 end

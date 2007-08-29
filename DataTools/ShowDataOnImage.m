@@ -107,7 +107,7 @@ if isempty(PotentialImageNames)
     h = CPmsgbox(PromptMessage);
     %%% Opens a user interface window which retrieves a file name and path
     %%% name for the image to be displayed.
-    [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+    [FileName,Pathname] = CPuigetfile('*.*', 'Select the image to view', handles.Current.DefaultImageDirectory);
     %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
     if FileName == 0,return,end
     try delete(h), end
@@ -130,7 +130,7 @@ else
 
         %%% Opens a user interface window which retrieves a file name and path
         %%% name for the image to be displayed.
-        [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+        [FileName,Pathname] = CPuigetfile('*.*', 'Select the image to view', handles.Current.DefaultImageDirectory);
         %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
         if FileName == 0,return,end
         try delete(h), end
@@ -146,7 +146,7 @@ else
 
             %%% Opens a user interface window which retrieves a file name and path
             %%% name for the image to be displayed.
-            [FileName,Pathname] = uigetfile(fullfile(handles.Current.DefaultImageDirectory,'.','*.*'),'Select the image to view');
+            [FileName,Pathname] = CPuigetfile('*.*', 'Select the image to view', handles.Current.DefaultImageDirectory);
             %%% If the user presses "Cancel", the FileName will = 0 and nothing will happen.
             if FileName == 0,return,end
             try delete(h), end

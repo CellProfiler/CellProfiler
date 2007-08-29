@@ -73,7 +73,7 @@ function AddData(handles)
 % $Revision$
 
 %%% Select file with text information to be added
-[filename, pathname] = CPuigetfile('*.*', 'Choose the file containing the data');
+[filename, pathname] = CPuigetfile('*.*', 'Choose the file containing the data',handles.Current.DefaultOutputDirectory);
 if filename == 0 %User canceled
     return;
 end

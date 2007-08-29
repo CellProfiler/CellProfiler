@@ -51,7 +51,7 @@ function CalculateRatiosDataTool(handles)
 %
 % $Revision$
 
-[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
+[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 
 if FileName == 0
     return

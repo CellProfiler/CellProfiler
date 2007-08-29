@@ -73,12 +73,7 @@ function AddData(handles)
 % $Revision$
 
 %%% Select file with text information to be added
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [filename, pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.*'),'Choose the file containing the data');
-else
-    [filename, pathname] = uigetfile('*.*','Choose the file containing the data');
-end
-
+[filename, pathname] = CPuigetfile('*.*', 'Choose the file containing the data');
 if filename == 0 %User canceled
     return;
 end

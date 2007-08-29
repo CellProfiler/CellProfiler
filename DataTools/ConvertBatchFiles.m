@@ -57,7 +57,7 @@ function ConvertBatchFiles(handles)
 % $Revision$
 
 %%% Let the user select one output file to indicate the directory
-[ExampleFile, Pathname] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select one Batch output file');
+[ExampleFile, Pathname] = CPuigetfile('*.mat', 'Select one Batch output file');
 if ~Pathname,return,end
 
 %%% Get all files with .mat extension in the chosen directory.

@@ -65,11 +65,7 @@ ModuleCall = 0;
 
 %%% Let the user select one output file to indicate the directory and how the
 %%% filename is constructed
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [ExampleFile, DataPath] = uigetfile(fullfile(handles.Current.DefaultOutputDirectory,'.','*.mat'),'Select one CellProfiler output file');
-else
-    [ExampleFile, DataPath] = uigetfile('*.mat','Select one CellProfiler output file');
-end
+[ExampleFile, DataPath] = CPuigetfile('*.mat', 'Select one CellProfiler output file');
 if ~DataPath;return;end
 %CurrentDataPath = handles.Current.DefaultOutputDirectory %current dir
 

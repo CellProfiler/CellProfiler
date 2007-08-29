@@ -43,7 +43,7 @@ function PlotMeasurement(handles)
 
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
+[FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 
 %%% Allows canceling.
 if FileName == 0

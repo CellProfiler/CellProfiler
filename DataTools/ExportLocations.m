@@ -37,7 +37,7 @@ function ExportLocations(handles)
 
 %%% Ask the user to choose the file from which to extract
 %%% measurements. The window opens in the default output directory.
-[RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
+[RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 %%% Allows canceling.
 if RawFileName == 0
     return

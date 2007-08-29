@@ -39,7 +39,7 @@ function DataLayout(handles)
 % $Revision$
 
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file');
+[RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 if RawFileName == 0
     return
 end

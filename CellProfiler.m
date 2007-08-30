@@ -3759,14 +3759,20 @@ else
                                     FigHandleList(SlotNumber) = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]); %#ok
                                 end
                             end
+                            %%% This is used to check for errors and allow restart.
+                            CanMoveToNextModule = false;
+                            
+
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
                             handles.Measurements.Image.ModuleErrorFeatures(str2double(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
+
                             %%% If the call to feval succeeded, then the module succeeded and we can move to the next module.
-                            %%% (if there is an error, it will be caught below, at the point marked MODULE ERROR
-                            SlotNumber = SlotNumber + 1;
+                            %%% (if there is an error, it will be caught below, at the point marked MODULE ERROR)
+                            CanMoveToNextModule = true;
+
                             %%% Store the handles back to the figure.
                             guidata(handles.figure1,handles);
                             try
@@ -3898,6 +3904,11 @@ else
                     if ~isempty(findobj('Tag','DetailWindow'))
                         eval(get(DetailButton,'callback'));
                     end
+
+                    %%% if we can move to the next module, do so
+                    if CanMoveToNextModule,
+                        SlotNumber = SlotNumber + 1;
+                    end
                 end %%% ends loop over slot number
 
                 %%% Completes the breakout to the image loop.
@@ -3969,6 +3980,7 @@ else
                 TimerData.SetBeingAnalyzed = setbeinganalyzed;
                 set(timer_handle,'UserData',TimerData);
                 guidata(gcbo, handles)
+
             end %%% This "end" goes with the "while" loop (going through the cycles).
 
 

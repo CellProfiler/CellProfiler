@@ -266,7 +266,8 @@ for i = 1:length(ObjectNameList)
                     % already done above.
                     continue;
                 end
-                diameter = max((max(xcord)-min(xcord)),(max(ycord)-min(ycord)));
+                diameter = max((max(xcord)-min(xcord)+1),(max(ycord)-min(ycord)+1));
+
                 if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
 
                 % Calculate the Zernike basis functions
@@ -275,7 +276,12 @@ for i = 1:length(ObjectNameList)
                 phi = atan(y./(x+eps));
                 % It is necessary to normalize the bases by area.
                 normalization = sum(r(:) <= 1);
-                Zf = zeros(size(x,1),size(x,2),size(Zernikeindex,1));
+                % this happens for diameter == 1
+                if (normalization == 0.0),
+                    normalization = 1.0;
+                end
+
+                Zf = zeros(diameter,diameter,size(Zernikeindex,1));
 
                 for k = 1:size(Zernikeindex,1)
                     n = Zernikeindex(k,1);
@@ -288,22 +294,13 @@ for i = 1:length(ObjectNameList)
                     Zf(:,:,k) = s / normalization;
                 end
 
-                % Get image patch
-                rmax = max(xcord);
-                rmin = max(xcord)-diameter+1;
-                if rmin < 1
-                    rmin = 1;
-                    rmax = min(diameter,size(LabelMatrixImage,1));
-                end
-
-                cmax = max(ycord);
-                cmin = max(ycord)-diameter+1;
-                if cmin < 1
-                    cmin = 1;
-                    cmax = min(diameter,size(LabelMatrixImage,2));
-                end
-
-                BWpatch   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+                % Get image patch, with offsets to center relative to the Zernike bases
+                BWpatch = zeros(diameter, diameter);
+                height = max(xcord) - min(xcord) + 1;
+                width = max(ycord) - min(ycord) + 1;
+                row_offset = floor((diameter - height) / 2) + 1;
+                col_offset = floor((diameter - width) / 2) + 1;
+                BWpatch(row_offset:(row_offset+height-1), col_offset:(col_offset+width-1)) = (LabelMatrixImage(min(xcord):max(xcord), min(ycord):max(ycord)) == Object);
                 
                 % Apply Zernike functions
                 try

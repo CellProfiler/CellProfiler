@@ -16,3 +16,22 @@ Step 6: Unzip the contents of MCRInstaller (should be one folder, v73) into a fo
 To test that the compiled version is working, open the CPCluster folder and run CPCluster.command. The first time it is run, it should say it is unzipping a CTF file, and then it should fail because it cannot find the batch or cluster file.
 
 If compiling CPCluster worked, you can move the entire folder to somewhere on your cluster where all nodes can see it.
+
+Martha's notes:
+
+*On gold, you can find Matlab 2007a here:
+/broad/tools/apps/matlab74/bin/matlab
+
+For CPCluster v1.0.4818
+>> addpath('/imaging/analysis/People/Martha/CPCluster');
+>> mcc -m CPCluster.m
+
+on command line (out of matlab): 
+cp * /imaging/analysis/People/Martha/CPCluster
+
+For CPClusterSingle (not for release, for for IP use only!)
+>> addpath('/imaging/analysis/People/Martha/CPClusterSingle4818');
+>> mcc -m CPClusterSingle.m    
+
+on command line (out of matlab): 
+cp * /imaging/analysis/People/Martha/CPClusterSingle4818

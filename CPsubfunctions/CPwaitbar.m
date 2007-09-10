@@ -21,4 +21,10 @@ catch
     set(ax, 'FontSize', 12);
     set(ttl, 'FontSize', 12);
 end
+
+p = findobj(fout,'Type','patch');
+l = findobj(fout,'Type','line');
+set(p, 'FaceColor', [0.3 0.3 0.5]);
+set(l, 'Color', [0.3 0.3 0.5]);
+
 return;

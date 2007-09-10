@@ -137,6 +137,9 @@ try
     end
 end
 
+%%% Set the default color for CP dialogs.
+set(0, 'defaultuicontrolbackgroundcolor', [0.7 0.7 0.9]);
+
 if ~isdeployed
     %%% If the Default Module Directory has not yet been successfully
     %%% identified (i.e., it is not present in the loaded preferences or
@@ -252,6 +255,10 @@ for k = 1:length(names)
         set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Preferences.FontSize,'FontName','helvetica')
     end
 end
+
+%%% Set the default font size for CP dialogs, based on the preferences.
+set(0, 'defaultuicontrolfontsize', handles.Preferences.FontSize);
+set(0, 'defaultuicontrolfontname', 'helvetica');
 
 %%% Checks whether the user has the Image Processing Toolbox.
 Answer = license('test','image_toolbox');
@@ -4527,13 +4534,17 @@ if exist('EnteredPreferences','var')
             addpath(handles.Preferences.DefaultModuleDirectory)
         end
 
-        %%% Set new fontsize
+        %%% Set new fontsize...
         names = fieldnames(handles);
         for k = 1:length(names)
             if ishandle(handles.(names{k}))
                 set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Preferences.FontSize,'FontName','helvetica');
             end
         end
+        %%% ... and make it the new default.
+        set(0, 'defaultuicontrolfontsize', handles.Preferences.FontSize);
+        set(0, 'defaultuicontrolfontname', 'helvetica');
+
         %%% Updates the handles structure to incorporate all the changes.
         guidata(gcbo, handles);
     end

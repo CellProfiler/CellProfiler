@@ -137,7 +137,7 @@ fwrite(fid, tex_onecolumn());
 
 % 3. Extract 'help' lines from CellProfiler.m where there is a
 % description of CellProfiler and the Example image analysis.
-% Screenshot of CellProfiler (within Promotional/ImagesForManual). Would be nice to
+% Screenshot of CellProfiler (within ImagesForManual). Would be nice to
 % have this automatically generated.
 % fwrite(fid, tex_page(tex_preformatted(help('CellProfiler.m'))));
 heading = tex_center(tex_huge(['Introduction \\']));
@@ -195,7 +195,7 @@ end
 % bold font at the top of the page. Extract the lines after "Help for
 % ...." and before the license begins, using the MATLAB 'help'
 % function. Print this below the module name. Open the corresponding
-% image file (in the Promotional/ImagesForManual folder, these always have the exact
+% image file (in the ImagesForManual folder, these always have the exact
 % name as the algorithm), if it exists, and place this at the bottom
 % of the page.
 filelist = dir('Modules/*.m');
@@ -207,7 +207,7 @@ for i=1:length(filelist),
   heading = tex_center(tex_huge(['Module: ' base '\\']));
   body = [tex_label(['Module:' base]) tex_preformatted(help(filelist(i).name))];
   im = '';
-  if (length(dir(['Promotional/ImagesForManual/' base '.*'])) > 0),
+  if (length(dir(['ImagesForManual/' base '.*'])) > 0),
     im = tex_center(tex_image(base, '1.0\textwidth'));
   end
   fwrite(fid,tex_page([heading body im]));
@@ -248,7 +248,7 @@ function sout = tex_center(sin)
 sout = ['\begin{center}' sin '\end{center}'];
 
 function sout = tex_image(sin, width)
-sout = ['\includegraphics[width=' width ']{Promotional/ImagesForManual/' sin '}'];
+sout = ['\includegraphics[width=' width ']{ImagesForManual/' sin '}'];
 
 function sout = tex_huge(sin)
 sout = ['{\huge ' sin '}'];

@@ -33,11 +33,6 @@ function handles = SpeedUpCellProfiler(handles)
 % Note: currently, this option will remove everything in the memory, which 
 % may not be compatible with some modules, which often store non-image 
 % information in memory to be re-used during every cycle.
-%
-% * Do you want to pack the memory?
-% If yes, CellProfiler will perform memory garbage collection. All needed
-% variables will be saved on the disk, the memory will be completely
-% cleared, and then the saved variables will be reloaded for use.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -81,16 +76,16 @@ SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ClearMemory = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Do you want to pack the memory?
-%choiceVAR03 = Yes
-%choiceVAR03 = No
-PackMemory = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = If yes, which images would you like to remain in memory?
+%choiceVAR03 = Do not use
+%infotypeVAR03 = imagegroup
+ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = If yes, which images would you like to remain in memory?
+%textVAR04 =
 %choiceVAR04 = Do not use
 %infotypeVAR04 = imagegroup
-ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 =
@@ -167,11 +162,6 @@ if strcmpi(ClearMemory,'Yes')
         end
     end
 end
-
-if strcmpi(PackMemory,'Yes')
-    pack;
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

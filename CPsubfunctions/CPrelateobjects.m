@@ -105,8 +105,8 @@ if any(ParentChildLabelHistogram(:)),
     ChildCounts = full(sparse(ParentList(ParentList > 0), 1, 1, NumberOfParents, 1));
 else
     %%% No overlapping parents or children.
-    ChildCounts = zeros(1, NumberOfParents);
-    ParentList = zeros(1, NumberOfSubobjects);
+    ChildCounts = zeros(NumberOfParents, 1);
+    ParentList = zeros(NumberOfSubobjects, 1);
 end
 
 %%% Add the new measurements to the handles

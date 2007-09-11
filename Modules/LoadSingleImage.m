@@ -71,7 +71,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = This module loads one image for *all* cycles that will be processed. Normally, use the Load Images module to load new sets of images during each cycle of processing.
+%textVAR01 = This module loads one image for *all* cycles that will be processed. Typically, however, a different module (LoadImages) is used to load new sets of images during each cycle of processing.
 
 %pathnametextVAR02 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for the default image folder.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});

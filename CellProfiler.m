@@ -1698,6 +1698,9 @@ if ModuleNamedotm ~= 0,
                             set(handles.VariableBox{ModuleNums}(i),'String',[OptList;handles.Settings.VariableValues(ModuleNums,i)]);                            
                         end                                            
                         PPos = find(strcmp(handles.Settings.VariableValues{ModuleNums,i},OptList));
+                        if (isempty(PPos)),
+                            PPos = 1;
+                        end
                         set(handles.VariableBox{ModuleNums}(i),'Value',PPos);
                     end
                 else
@@ -2347,6 +2350,9 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                     else
                         if ischar(UserEntry)
                             set(ModList(i),'String',cat(1,CurrentString(1:(MatchedIndice-1)),{UserEntry},CurrentString((MatchedIndice+1):end)));
+                            if isempty(get(ModList(i), 'value')),
+                               set(ModList(i), 'Value', MatchedIndice);
+                            end
                             VarVal = get(ModList(i),'value');
                             SetStr = get(ModList(i),'string');
                             handles.Settings.VariableValues(ModNum,BoxNum) = SetStr(VarVal);

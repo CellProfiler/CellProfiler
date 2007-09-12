@@ -475,7 +475,7 @@ MaximaSuppressionSize = char(handles.Settings.VariableValues{CurrentModuleNum,14
 UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%textVAR16 = Enter the following information, separated by commas, if you would like to use the Laplacian of Gaussian method for identifying objects instead of using the above settings: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Weiner Filter(height,width),Threshold
+%textVAR16 = Enter the following information, separated by commas, if you would like to use the Laplacian of Gaussian method for identifying objects instead of using the above settings: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Wiener Filter(height,width),Threshold
 %defaultVAR16 = /
 LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
@@ -875,7 +875,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             rgLoG=fspecial('log',NeighborhoodSize,Sigma);
             %%% Filters the image.
             imLoGout=imfilter(double(OrigImage),rgLoG);
-            %%% Removes noise using the weiner filter.
+            %%% Removes noise using the wiener filter.
             imLoGoutW=wiener2(imLoGout,WienerSize);
 
             rgNegCurve = imLoGoutW < LaplaceThreshold;

@@ -5,7 +5,7 @@ Step 1: Unzip CPCluster files into folder (this is probably done already! e.g. /
 
 Step 2: In MatLab, go to File -> Set Path -> Add With Subfolders and choose the CPCluster folder you just created
 
-Step 3: In MatLab, type "mcc -m CPCluster.m" This will create the CPCluster executable file. However, to work independently of MatLab, you must provide it with the MatLab library files
+Step 3: In MatLab, type "mcc -m -R -nodisplay CPCluster.m" This will create the CPCluster executable file. However, to work independently of MatLab, you must provide it with the MatLab library files
 
 Step 4: In MatLab, type "buildmcr" and hit enter. This will take some time.
 

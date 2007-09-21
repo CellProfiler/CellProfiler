@@ -108,14 +108,18 @@ for FileNbr = 1:length(SelectedFiles)
         continue
     end
 
+    %% Save temp values that LoadText needs 
     tempVarValues=handles.Settings.VariableValues;
     tempCurrentField = handles.Current;
+    %% Change handles that LoadText requires 
     handles.Settings.VariableValues{1,1}=filename;
     handles.Settings.VariableValues{1,2}=FieldName;
     handles.Settings.VariableValues{1,3}=pathname;
     handles.Current.CurrentModuleNumber='01';
     handles.Current.SetBeingAnalyzed=1;
+    %% Load Text
     handles = LoadText(handles);
+    %% Return previous values 
     handles.Settings.VariableValues=tempVarValues;
     handles.Current=tempCurrentField;
 

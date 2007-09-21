@@ -177,11 +177,14 @@ function handles = IdentifyPrimAutomatic(handles)
 % values that are mostly background pixels. It then calculates the mean and
 % standard deviation of the remaining pixels and calculates the threshold
 % as the mean + 2 times the standard deviation. The Ridler-Calvard method
-% is simple and its results are often very similar to Otsu's. It chooses an
-% initial threshold, and then iteratively calculates the next one by taking
-% the mean of the average intensities of the background and foreground
-% pixels determined by the first threshold, repeating this until the
-% threshold converges.
+% is simple and its results are often very similar to Otsu's - according to
+% Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
+% overall quality on testing 40 nondestructive testing images is slightly 
+% better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
+% It chooses an initial threshold, and then iteratively calculates the next 
+% one by taking the mean of the average intensities of the background and 
+% foreground pixels determined by the first threshold, repeating this until 
+% the threshold converges.
 %    You can also choose between Global, Adaptive, and Per object
 % thresholding:
 % Global: one threshold is used for the entire image (fast).

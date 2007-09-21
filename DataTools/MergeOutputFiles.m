@@ -112,7 +112,7 @@ FileList = dir(BatchPath);
 Matches = ~cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
 FileList = FileList(Matches);
 
-waitbarhandle = CPwaitbar(0,'Merging files');
+waitbarhandle = CPwaitbar(0,'Merging files...');
 for i = 1:length(FileList)
     SubsetData = load(fullfile(BatchPath,FileList(i).name));
     FileList(i).name
@@ -154,6 +154,6 @@ end
 handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleError');
 handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
 
+save(fullfile(BatchPath,OutputFileName),'handles');
 close(waitbarhandle);
 CPmsgbox('Merging is completed.');
-save(fullfile(BatchPath,OutputFileName),'handles');

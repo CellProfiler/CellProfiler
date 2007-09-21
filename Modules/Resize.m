@@ -94,7 +94,7 @@ if ResizingFactor == 1
         end
         ResizeData = [100 100];
     else
-        ResizeData = SpecificSize';
+        ResizeData = SpecificSize;
     end
 elseif (ResizingFactor <= 0) || isnan(ResizingFactor)
     ResizingFactor=0.25;

@@ -103,12 +103,12 @@ drawnow
 %textVAR01 = What did you call the images you want to save? If you would like to save an entire figure, enter the module number here
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu custom
+%inputtypeVAR01 = popupmenu
 
 %textVAR02 = Which images' original filenames do you want use as a base for these new images' filenames? Your choice MUST be images loaded directly with a Load module. Alternately, type N to use sequential numbers for the file names, or type =DesiredFilename to use the single file name you specify (replace DesiredFilename with the name you actually want) for all files (this is *required* when saving an avi movie).
 %infotypeVAR02 = imagegroup
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu custom
+%inputtypeVAR02 = popupmenu
 
 %textVAR03 = Enter text to append to the image name, type N to use sequential numbers, or leave "\" to not append anything.
 %defaultVAR03 = \

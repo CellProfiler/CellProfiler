@@ -28,6 +28,11 @@ ZeroBoundaries = ((ZerosMaxima ~= 0) & (ZeroRegions ~= 0));
 %%% Now, build a map from zero region labels to object labels, based
 %%% on ZerosMaxima
 ZeroLocations = find(ZeroBoundaries);
+%%% Check for no holes and return
+if length(ZeroLocations) == 0,
+    FilledLabelMatrix = LabelMatrix;
+    return;
+end
 LocationsZerosAndMaxima = sparse(ZeroLocations, ZeroRegions(ZeroLocations), ZerosMaxima(ZeroLocations));
 LZMaxSorted = sort(LocationsZerosAndMaxima);
 ZeroRemapperMax = LZMaxSorted(end, :);

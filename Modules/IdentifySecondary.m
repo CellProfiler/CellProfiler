@@ -396,69 +396,35 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         PropagatedImage = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,RegularizationFactor);
         drawnow
 
-        %%% STEP 3: Remove objects that are not desired, edited objects.  The
-        %%% edited primary object image is used rather than the preliminary one, so
-        %%% that objects whose nuclei are on the edge of the image and who are
-        %%% larger or smaller than the specified size are discarded.
-        %%% Converts the EditedPrimaryBinaryImage to binary.
-        EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
-        %%% Finds the locations and labels for different regions.
-        area_locations2 = find(PropagatedImage);
-        area_labels2 = PropagatedImage(area_locations2);
-        drawnow
-        %%% Creates a sparse matrix with column as label and row as location,
-        %%% with the value of the center at (I,J) if location I has label J.
-        %%% Taking the maximum of this matrix gives the largest valued center
-        %%% overlapping a particular label.  Tacking on a zero and pushing
-        %%% labels through the resulting map removes any background regions.
-        map2 = [0 full(max(sparse(area_locations2, area_labels2, EditedPrimaryLabelMatrixImage(area_locations2))))];
-        HoleyPrelimLabelMatrixImage = map2(PropagatedImage + 1);
-        %%% Fills in holes in the HoleyPrelimLabelMatrixImage image.
-        %%% Filters the image for maxima (Plus sign neighborhood, ignoring zeros).
-        MaximaImage = ordfilt2(HoleyPrelimLabelMatrixImage, 5, [0 1 0; 1 1 1 ; 0 1 0]);
-        %%% This is a pain.  On sparse matrices, min returns zero almost always
-        %%% (because the matrices are mostly zero, of course).  So we need to invert
-        %%% the labels so we can use max to find the minimum adjacent label as well,
-        %%% below.  This also takes care of boundaries, which otherwise return zero
-        %%% in the min filter.
-        LargestLabelImage = max(HoleyPrelimLabelMatrixImage(:));
-        TempImage = HoleyPrelimLabelMatrixImage;
-        TempImage(HoleyPrelimLabelMatrixImage > 0) = LargestLabelImage - TempImage(HoleyPrelimLabelMatrixImage > 0) + 1;
-        %%% Filters the image for minima (Plus sign neighborhood).
-        MinimaImage = ordfilt2(TempImage, 5, [0 1 0; 1 1 1 ; 0 1 0]);
-        %%% Marks and labels the zero regions.
-        ZeroRegionImage = CPclearborder(bwlabel(HoleyPrelimLabelMatrixImage==0, 4));
-        drawnow
-        %%% Uses sparse matrices to find the minimum and maximum label adjacent
-        %%% to each zero-region.
-        ZeroLocations = find(ZeroRegionImage);
-        ZeroLabels = ZeroRegionImage(ZeroLocations);
-        MinByRegion = full(max(sparse(ZeroLocations, ZeroLabels, MinimaImage(ZeroLocations))));
-        %%% Remaps to correct order (see above).
-        MinByRegion = LargestLabelImage - MinByRegion + 1;
-        MaxByRegion = full(max(sparse(ZeroLocations, ZeroLabels, MaximaImage(ZeroLocations))));
-        %%% Anywhere the min and max are the same is a region surrounded by a
-        %%% single value.
-        Surrounded = (MinByRegion == MaxByRegion);
-        %%% Creates a map that turns a labelled zero-region into the surrounding
-        %%% label if it's surrounded, and into zero if it's not surrounded.
-        %%% (Pad by a leading zero so 0 maps to 0 when 1 is added.)
-        Remap = [ 0 (Surrounded .* MinByRegion)];
-        ZeroRegionImage = Remap(ZeroRegionImage + 1);
-        %%% Now all surrounded zeroregions should have been remapped to their
-        %%% new value, or zero if not surrounded.
-        PrelimLabelMatrixImage = max(HoleyPrelimLabelMatrixImage, ZeroRegionImage);
-        drawnow
+        %%% STEP 3: We used the PrelimPrimaryLabelMatrixImage as the
+        %%% source for primary objects, but that label-matrix is built
+        %%% before small/large objects and objects touching the
+        %%% boundary are removed.  We need to filter the label matrix
+        %%% from propagate to make the labels match, and remove any
+        %%% secondary objects that correspnd to size- or
+        %%% boundary-filtered primaries.
+        %%%
+        %%% Map preliminary labels to edited labels based on maximum
+        %%% overlap from prelim to edited.  We can probably assume
+        %%% that no borders are adjusted during editing (i.e., any
+        %%% changes from Prelim to Edited only involves removing
+        %%% entire objects), but this is safer.
+        %%% 
+        %%% (add one so that zeros are remapped correctly.)
+        PrelimToEditedHist = sparse(EditedPrimaryLabelMatrixImage(:) + 1, PrelimPrimaryLabelMatrixImage(:) + 1, 1);
+        [ignore, PrelimToEditedRemap] = sort(PrelimToEditedHist, 1);
+        PrelimToEditedRemap = PrelimToEditedRemap(end, :) - 1;
+        %%% make sure zeros map to zeros (note the off-by-one for the
+        %%% index because Matlab doesn't do 0-indexing).
+        PrelimToEditedRemap(1) = 0;
+        EditedLabelMatrixImage = PrelimToEditedRemap(PropagatedImage + 1);
 
-        %%% STEP 4: Relabels the final objects so that their numbers
-        %%% correspond to the numbers used for nuclei.
-        %%% For each object, one label and one label location is acquired and
-        %%% stored.
-        [LabelsUsed,LabelLocations] = unique(EditedPrimaryLabelMatrixImage);
-        %%% The +1 increment accounts for the fact that there are zeros in the
-        %%% image, while the LabelsUsed starts at 1.
-        LabelsUsed(PrelimLabelMatrixImage(LabelLocations(2:end))+1) = EditedPrimaryLabelMatrixImage(LabelLocations(2:end));
-        FinalLabelMatrixImage = LabelsUsed(PrelimLabelMatrixImage+1);
+        %%% STEP 4:
+        %%%
+        %%% Fill holes (any contiguous, all-0 regions that are
+        %%% surrounded by a single value).
+        FinalLabelMatrixImage = CPfill_holes(EditedLabelMatrixImage);
+        
     elseif strcmp(IdentChoice,'Watershed')
         %%% In order to use the watershed transform to find dividing lines between
         %%% the secondary objects, it is necessary to identify the foreground

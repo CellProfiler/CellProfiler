@@ -94,7 +94,7 @@ XvalueAt50thPercentile = PairedValues(LocationOfNearest(1),2);
 if XvalueAt50thPercentile == min(x) || XvalueAt50thPercentile == max(x)
     init_params(3) = (min(x)+max(x))/2;
 else
-    init_params(3) = XvalueAt50thPercentile;
+    init_params(3) = XvalueAt50thPercentile;    %% OLD- always did this
 end
 
 %%% Parameter 4
@@ -103,7 +103,7 @@ end
 %% zeros.
 %% The NEW way just checks to see whether the depenmdent var is increasing (note
 %% negative hillc) or descreasing (positive hillc) and sets them initally
-%% to +/-1.  This could be smarter about how to initialize hillc, but +/-1 is ok for now
+%% to +/-1.  This could be smarter about how to initialize hillc, but +/-1 seems ok for now
 %%  DL 2007.09.25
 
 % % OLD

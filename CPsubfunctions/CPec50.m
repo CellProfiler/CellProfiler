@@ -72,19 +72,51 @@ function init_params = calc_init_params(x,y)
 %%% Parameters 1&2
 init_params(1) = min(y);
 init_params(2) = max(y);
+
 %%% Parameter 3
 % OLD:  parms(3)=(min(x)+max(x))/2;
+%% This is an estimate of the EC50, i.e. the half maximal effective
+%% concentration (here denoted as x-value)
+%%
+%% Note: this was originally simply mean([max(x); min(x)]).  This does not
+%% take into account the y-values though, so it was changed to be the 
+%% x-value that corresponded to the y-value closest to the mean([max(y); min(y)]).
+%% Unfortunately, for x-values with only two categories e.g. [0 1], this results in
+%% an initial EC50 of either 0 or 1 (min(x) or max(x)), which seems a bad estimate.  
+%5 We will take a two-pronged approach: Use the estimate from this latter approach, 
+%% unless the parameter will equal either the max(x) or min(x).  In this case, we will use the
+%% former approach, namely (mean([max(x); min(x)]).  DL 2007.09.24
 YvalueAt50thPercentile = (min(y)+max(y))/2;
 PairedValues = [y,x];
 DistanceToCentralYValue = abs(PairedValues(:,1) - YvalueAt50thPercentile);
 LocationOfNearest = find(DistanceToCentralYValue == min(DistanceToCentralYValue));
 XvalueAt50thPercentile = PairedValues(LocationOfNearest(1),2);
-init_params(3) = XvalueAt50thPercentile;
-%%% Parameter 4
-sizey=size(y);
-sizex=size(x);
-if (y(1)-y(sizey))./(x(2)-x(sizex))>0
-    init_params(4)=(y(1)-y(sizey))./(x(2)-x(sizex));
+if XvalueAt50thPercentile == min(x) || XvalueAt50thPercentile == max(x)
+    init_params(3) = (min(x)+max(x))/2;
 else
-    init_params(4)=1;
+    init_params(3) = XvalueAt50thPercentile;
+end
+
+%%% Parameter 4
+%% The OLD way used 'size' oddly - perhaps meant 'length'?  It would cause
+%% divide-by-zero warnings since 'x(2)-x(sizex)' would necessarily have
+%% zeros.
+%% The NEW way just checks to see whether the depenmdent var is increasing (note
+%% negative hillc) or descreasing (positive hillc) and sets them initally
+%% to +/-1.  This could be smarter about how to initialize hillc, but +/-1 is ok for now
+%%  DL 2007.09.25
+
+% % OLD
+% sizey=size(y);
+% sizex=size(x);
+% if (y(1)-y(sizey))./(x(2)-x(sizex))>0
+%     init_params(4)=(y(1)-y(sizey))./(x(2)-x(sizex));
+% else
+%     init_params(4)=1;
+% end
+
+if (y(end) - y(1) / (x(end) - x(1))) > 0
+    init_params(4) = -1;
+else
+    init_params(4) = 1;
 end

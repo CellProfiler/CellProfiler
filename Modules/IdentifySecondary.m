@@ -288,6 +288,9 @@ PrelimPrimaryLabelMatrixImage = CPretrieveimage(handles,['SmallRemovedSegmented'
 %%% limits. Checks first to see whether the appropriate image exists.
 EditedPrimaryLabelMatrixImage = CPretrieveimage(handles,['Segmented', PrimaryObjectName],ModuleName,'DontCheckColor','DontCheckScale',size(OrigImage));
 
+%%% Converts the EditedPrimaryBinaryImage to binary.
+EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
+
 %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
 ThresholdMethod = strtok(Threshold);
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
@@ -335,6 +338,7 @@ else
 end
 Threshold = mean(Threshold(:));       % Use average threshold downstreams
 
+
 for IdentChoiceNumber = 1:length(IdentChoiceList)
 
     IdentChoice = IdentChoiceList{IdentChoiceNumber};
@@ -371,7 +375,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             RelabeledDilatedPrelimSecObjectImage = labels_out;
         end
 
-        EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
 
         %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
         LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
@@ -621,8 +624,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% on the edge of the image and who are larger or smaller than the
         %%% specified size are discarded.
 
-        %%% Converts the EditedPrimaryBinaryImage to binary.
-        EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
         %%% Finds the locations and labels for different regions.
         area_locations2 = find(SecondWatershed);
         area_labels2 = SecondWatershed(area_locations2);

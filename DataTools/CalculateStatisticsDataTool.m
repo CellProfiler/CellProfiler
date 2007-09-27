@@ -62,21 +62,37 @@ end
 
 promptLoop = 0;
 while promptLoop == 0
-    %% This could be smarter, in case you already used a LoadText Module in
-    %% your original pipeline.  
-    [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
-        'Select the text file with the grouping values you loaded for each image cycle', ...
-        handles.Current.DefaultImageDirectory);
-    if TextFileName == 0, return, end %% CPuigetfile canceled
-            
-    Answers = CPinputdlg({'What name would you like to give this data (what column heading)? You can leave this empty if a LoadText Module was already run',...
-        'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
-        'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
-        'Operation', 1, {'positives','Yes', 'Do not save'}); 
-    if isempty(Answers), return, end %% Inputdlg canceled
-    DataName = Answers{1};
-    LogOrLinear = Answers{2};
-    FigureName = Answers{3};
+    oldLoadTextModNum = find(strcmp(handles.Settings.ModuleNames,'LoadText'), 1);
+    if ~isempty(oldLoadTextModNum) %% If user already used a LoadText Module in their original pipeline
+        %% *NOTE* IF LoadText changes the order or composition of its
+        %% queries, the '1' and '3' below may need to be changed!
+        TextFileName = handles.Settings.VariableValues{oldLoadTextModNum,1};
+        DataName = handles.Settings.VariableValues{oldLoadTextModNum,2};
+        TextFilePathname = handles.Settings.VariableValues{oldLoadTextModNum,3};
+        
+        Answers = CPinputdlg({'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
+            'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
+            'Operation', 1, {'Yes', 'Do not save'});
+        if isempty(Answers), return, end %% Inputdlg canceled
+        LogOrLinear = Answers{1};
+        FigureName = Answers{2};
+
+    else 
+        %% If no Loadtext Module used previously
+        [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
+            'Select the text file with the grouping values you loaded for each image cycle', ...
+            handles.Current.DefaultImageDirectory);
+        if TextFileName == 0, return, end %% CPuigetfile canceled
+
+        Answers = CPinputdlg({'What name would you like to give this data (what column heading)? You can leave this empty if a LoadText Module was already run',...
+            'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
+            'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
+            'Operation', 1, {'positives','Yes', 'Do not save'});
+        if isempty(Answers), return, end %% Inputdlg canceled
+        DataName = Answers{1};
+        LogOrLinear = Answers{2};
+        FigureName = Answers{3};
+    end
 
     %% Check 'DataName'
     if isempty(DataName) || ~isfield(handles.Measurements.Image,DataName)

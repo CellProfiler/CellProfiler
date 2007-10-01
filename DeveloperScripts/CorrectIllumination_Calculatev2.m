@@ -8,11 +8,11 @@ function handles = CorrectIllumination_Calculatev2(handles)
 % illumination/lighting/shading or to reduce uneven background in images.
 % *************************************************************************
 %
-% This module calculates an illumination function which can be saved to the
-% hard drive for later use (you should save in .mat format using the Save
-% Images module), or it can be immediately applied to images later in the
-% pipeline (using the CorrectIllumination_Apply module). This will correct
-% for uneven illumination of each image.
+% This module calculates an illumination function which can be saved
+% later use (you should save in .mat format using the Save Images
+% module), or it can be immediately applied to images later in the
+% pipeline (using the CorrectIllumination_Apply module). This will
+% correct for uneven illumination of each image.
 %
 % Illumination correction is challenging and we are writing a paper on it
 % which should help clarify it (TR Jones, AE Carpenter, P Golland, in
@@ -21,96 +21,7 @@ function handles = CorrectIllumination_Calculatev2(handles)
 %
 % Settings:
 %
-% * Regular or Background intensities?
-%
-% Regular intensities:
-% If you have objects that are evenly dispersed across your image(s) and
-% cover most of the image, then you can choose Regular intensities. Regular
-% intensities makes the illumination function based on the intensity at
-% each pixel of the image (or group of images if you are in All mode) and
-% is most often rescaled (see below) and applied by division using
-% CorrectIllumination_Apply. Note that if you are in Each mode or using a
-% small set of images with few objects, there will be regions in the
-% average image that contain no objects and smoothing by median filtering
-% is unlikely to work well.
-% Note: it does not make sense to choose (Regular + no smoothing + Each)
-% because the illumination function would be identical to the original
-% image and applying it will yield a blank image. You either need to smooth
-% each image or you need to use All images.
-%
-% Background intensities:
-% If you think that the background (dim points) between objects show the
-% same pattern of illumination as your objects of interest, you can choose
-% Background intensities. Background intensities finds the minimum pixel
-% intensities in blocks across the image (or group of images if you are in
-% All mode) and is most often applied by subtraction using the
-% CorrectIllumination_Apply module.
-% Note: if you will be using the Subtract option in the
-% CorrectIllumination_Apply module, you almost certainly do NOT want to
-% Rescale! See below!!
-%
-% * Each or All?
-% Enter Each to calculate an illumination function for each image
-% individually, or enter All to calculate the illumination function from
-% all images at each pixel location. All is more robust, but depends on the
-% assumption that the illumination patterns are consistent across all the
-% images in the set and that the objects of interest are randomly
-% positioned within each image. Applying illumination correction on each
-% image individually may make intensity measures not directly comparable
-% across different images.
-%
-% * Pipeline or Load Images?
-% If you choose Load Images, the module will calculate the illumination
-% correction function the first time through the pipeline by loading every
-% image of the type specified in the Load Images module. It is then
-% acceptable to use the resulting image later in the pipeline. If you
-% choose Pipeline, the module will allow the pipeline to cycle through all
-% of the cycles. With this option, the module does not need to follow a
-% Load Images module; it is acceptable to make the single, averaged image
-% from images resulting from other image processing steps in the pipeline.
-% However, the resulting average image will not be available until the last
-% cycle has been processed, so it cannot be used in subsequent modules
-% unless they are instructed to wait until the last cycle.
-%
-% * Dilation:
-% For some applications, the incoming images are binary and each object
-% should be dilated with a gaussian filter in the final averaged
-% (projection) image. This is for a sophisticated method of illumination
-% correction where model objects are produced.
-%
-% * Smoothing Method:
-% If requested, the resulting image is smoothed. See the help for the
-% Smooth module for more details. If you are using Each mode, this is
-% almost certainly necessary. If you have few objects in each image or a
-% small image set, you may want to smooth. The goal is to smooth to the
-% point where the illumination function resembles a believable pattern.
-% That is, if it is a lamp illumination problem you are trying to correct,
-% you would apply smoothing until you obtain a fairly smooth pattern
-% without sharp bright or dim regions.  Note that smoothing is a
-% time-consuming process, and fitting a polynomial is fastest but does not
-% allow a very tight fit as compared to the slower median filtering method.
-% Another option is to *completely* smooth the entire image by choosing
-% "Smooth to average", which will create a flat, smooth image where every
-% pixel of the image is the average of what the illumination function would
-% otherwise have been.
-%
-% * Approximate width of objects:
-% For certain smoothing methods, this will be used to calculate an adequate
-% filter size. If you don't know the width of your objects, you can use the
-% ShowOrHidePixelData image tool to find out or leave the word 'Automatic'
-% to calculate a smoothing filter simply based on the size of the image.
-%
-%
-% Rescaling:
-% The illumination function can be rescaled so that the pixel intensities
-% are all equal to or greater than one. This is recommended if you plan to
-% use the division option in CorrectIllumination_Apply so that the
-% corrected images are in the range 0 to 1. It is NOT recommended if you
-% plan to use the Subtract option in CorrectIllumination_Apply! Note that
-% as a result of the illumination function being rescaled from 1 to
-% infinity, if there is substantial variation across the field of view, the
-% rescaling of each image might be dramatic, causing the corrected images
-% to be very dark.
+% XXXX - needs to be written
 %
 % See also Average, CorrectIllumination_Apply, and Smooth modules.
 
@@ -147,62 +58,292 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What type of images are being corrected?
-%choiceVAR01 = Fluorescent
-%choiceVAR01 = Brightfield
-%choiceVAR01 = Phase Contrast
-%choiceVAR01 = Other (see below)
-Modality = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = Are you correcting Each image independently, or All images together?  See the help for details.
+%choiceVAR01 = Each
+%choiceVAR01 = All
+EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = If "Other"                               ...
+%textVAR02 = How smooth should the correction image be (filter diameter in pixels)?
+%defaultVAR02 = 50
+SmoothingDiameter = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%textVAR03 =      ... should the images be inverted before correcting?
-%choiceVAR03 = No (do not invert)
-%choiceVAR03 = Yes (invert)
-Invert = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu
+%textVAR03 = 
 
-%textVAR04 =      ... should the images be log-transformed before correcting?
-%choiceVAR04 = No (do not log-transform)
-%choiceVAR04 = Yes (log-transform)
-LogTransform = char(handles.Settings.VariableValues{CurrentModuleNum,4});
-%inputtypeVAR04 = popupmenu
+%textVAR04 = What is the first image (aka channel) to be corrected?
+%infotypeVAR04 = imagegroup
+ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu custom
 
-%textVAR05 = How smooth should the correction image be (filter radius in pixels)?
-%defaultVAR05 = 50
-SmoothingDiameter = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+%textVAR05 = What type is the first image?
+%choiceVAR05 = Fluorescent
+%choiceVAR05 = Brightfield
+%choiceVAR05 = Phase Contrast
+%choiceVAR05 = DIC
+%choiceVAR05 = Linear
+%choiceVAR05 = Multiplicative
+Modality1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu
 
-%textVAR06 = Enter Each to calculate an illumination correction for Each image individually or All to calculate an illumination correction based on All images to be corrected. See the help for details.
-%choiceVAR06 = Each
-%choiceVAR06 = All
-EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,6});
-%inputtypeVAR06 = popupmenu
+%textVAR06 = What do you want to call the first illumination correction image?
+%defaultVAR06 = IllumCorrection
+%infotypeVAR06 = imagegroup indep
+IlluminationImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What is the first image (aka channel) to be corrected?
-%infotypeVAR07 = imagegroup
-ImageName1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR07 = 
 
-%textVAR08 = What is the second image (aka channel) to be corrected (or "None")?
-%infotypeVAR08 = imagegroup
+%textVAR08 = What is the second image (aka channel) to be corrected?
 %choiceVAR08 = None
+%infotypeVAR08 = imagegroup
 ImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%inputtypeVAR08 = popupmenu custom
 
-%textVAR09 = What is the third image (aka channel) to be corrected (or "None")?
-%infotypeVAR09 = imagegroup
-%choiceVAR09 = None
-ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = What type is the second image?
+%choiceVAR09 = Fluorescent
+%choiceVAR09 = Brightfield
+%choiceVAR09 = Phase Contrast
+%choiceVAR09 = DIC
+%choiceVAR09 = Linear
+%choiceVAR09 = Multiplicative
+Modality2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = What is the third image (aka channel) to be corrected (or "None")?
-%infotypeVAR10 = imagegroup
-%choiceVAR10 = None
-ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%textVAR10 = What do you want to call the second illumination correction image?
+%defaultVAR10 = Do not save
+%infotypeVAR10 = imagegroup indep
+IlluminationImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = What do you want to call the illumination correction image? (note: can only be saved in .mat format)
-%defaultVAR11 = IllumCorrection
-%infotypeVAR11 = imagegroup indep
-IlluminationImageName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = 
+
+%textVAR12 = What is the third image (aka channel) to be corrected?
+%infotypeVAR12 = imagegroup
+%choiceVAR12 = None
+ImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
+
+%textVAR13 = What type is the third image?
+%choiceVAR13 = Fluorescent
+%choiceVAR13 = Brightfield
+%choiceVAR13 = Phase Contrast
+%choiceVAR13 = DIC
+%choiceVAR13 = Linear
+%choiceVAR13 = Multiplicative
+Modality3 = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+%textVAR14 = What do you want to call the third illumination correction image?
+%defaultVAR14 = Do not save
+%infotypeVAR14 = imagegroup indep
+IlluminationImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+
+%textVAR15 = 
+
+%textVAR16 = What is the fourth image (aka channel) to be corrected?
+%infotypeVAR16 = imagegroup
+%choiceVAR16 = None
+ImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu custom
+
+%textVAR17 = What type is the fourth image?
+%choiceVAR17 = Fluorescent
+%choiceVAR17 = Brightfield
+%choiceVAR17 = Phase Contrast
+%choiceVAR17 = DIC
+%choiceVAR17 = Linear
+%choiceVAR17 = Multiplicative
+Modality4 = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu
+
+%textVAR18 = What do you want to call the fourth illumination correction image?
+%defaultVAR18 = Do not save
+%infotypeVAR18 = imagegroup indep
+IlluminationImageName4 = Char(handles.Settings.VariableValues{CurrentModuleNum,18});
+
+
+%%%VariableRevisionNumber = 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% fetch the images
+Image(:,:,1) = PreTreatImage(CPretrieveimage(handles,ImageName1,ModuleName,'MustBeGray','CheckScale'), Modality1);
+
+
+if ~ strcmp(ImageName2, 'None'),
+    Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName2,ModuleName,'MustBeGray','CheckScale'), Modality2);
+end
+
+if ~ strcmp(ImageName3, 'None'),
+    Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName3,ModuleName,'MustBeGray','CheckScale'), Modality3);
+end
+
+if ~ strcmp(ImageName4, 'None'),
+    Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName4,ModuleName,'MustBeGray','CheckScale'), Modality4);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Get the pixel locations
+[i, j] = meshgrid(1:size(Image, 2), 1:size(Image, 1));
+Locations = [j(:) i(:)];
+
+%%% linearize the image data in columns
+Samples = reshape(Image, size(Image, 1) * size(Image, 2), size(Image, 3));
+
+%%% Remove any samples that are NaN or inf
+GoodData = all(isfinite(Samples), 2);
+Samples = Samples(GoodData, :);
+Locations = Locations(GoodData, :);
+
+%%% Get the image dimensions.
+ImageSize = [size(Image, 1) size(Image, 2)];
+
+%%% We just use 10 components.
+NumberOfComponents = 10;
+
+%%% Now there are two possiblities, depending on Each or All.  
+if strcmp(EachOrAll, 'Each'),
+    %%% If Each, we don't sample, we just pass the whole image into
+    %%% the correction calculation.
+    IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize);
+else
+    %%% Otherwise, we sample randomly.  We want to keep a few
+    %%% image-worths of pixels in the sample buffer.  The correction
+    %%% algorithm can easily handle a few million pixels, so we'll use
+    %%% 5x the size of the image.
+    if (handles.Current.SetBeingAnalyzed == 1),
+        handles.Pipeline.(IlluminationImageName).Samples = Samples;
+        handles.Pipeline.(IlluminationImageName).Locations = Locations;
+    elseif handles.Current.SetBeingAnalyzed <= 5),
+        handles.Pipeline.(IlluminationImageName).Samples = [handles.Pipeline.(IlluminationImageName).Samples; Samples];
+        handles.Pipeline.(IlluminationImageName).Locations = [handles.Pipeline.(IlluminationImageName).Locations ; Locations];
+    else
+        %%% We need to randomly sample the right fraction of pixels
+        %%% from this image and replace the corresponding number
+        %%% randomly within the sample buffer.
+        
+        %%% Get the old samples
+        SampleBuffer = handles.Pipeline.(IlluminationImageName).Samples;
+        LocationBuffer = handles.Pipeline.(IlluminationImageName).Locations;
+
+        %%% Seed the random number generator so this code is repeatable.
+        RandState = rand('state');
+        rand('state', handles.Current.SetBeingAnalyzed);
+        
+        %%% get a random ordering of the data
+        [ignore, Order] = sort(rand(size(Samples, 1), 1));
+        
+        %%% Drop all but the fraction of the ordering we care about
+        FractionToKeep = 5 / handles.Current.NumberOfImageSets;
+        NewData = Order(1:ceil(FractionToKeep * length(Order)));
+
+        %%% Sample the new data
+        NewSamples = Samples(NewData, :);
+        NewLocations = Locations(NewData, :);
+
+        %%% Now choose random locations to replace in the sample buffer.
+        [ignore, BufferOrder] = sort(rand(size(SampleBuffer, 1), 1));
+        
+        %%% Keep only how many we want to replace.
+        OldData = BufferOrder(1:size(NewSamples, 1));
+        
+        %%% Replace the old data with new values.
+        SampleBuffer(OldData, :) = Samples(NewData, :);
+        LocationBuffer(OldData, :) = Locations(NewData, :);
+        
+        %%% Put the new buffers back into place
+        handles.Pipeline.(IlluminationImageName).Samples = SampleBuffer;
+        handles.Pipeline.(IlluminationImageName).Locations = LocationBuffer;
+
+        %%% restore the random state
+        rand('state', RandState);
+    end
+    
+    %%% Is this the last image set?
+    if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets,
+        %%% Get the samples
+        SampleBuffer = handles.Pipeline.(IlluminationImageName).Samples;
+        LocationBuffer = handles.Pipeline.(IlluminationImageName).Locations;
+
+        %%% This could happen if the images are all bad.
+        assert(size(SampleBuffer, 1) > 0);
+
+        %%% Calculate the illumination correction
+        IlluminationField = CPcalc_illum_corrxn(SampleBuffer, LocationBuffer, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize);
+
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
+    handles.Pipeline.(IlluminationImageName1) = PostTreatImage(IlluminationImageName1(:,:,1), Modality1);
+
+    %%% We need this count variable because of the code above that fetches
+    %%% images (see PRELIMINARY CALCULATIONS above)
+    count = 2;
+    
+    if ~ strcmp(ImageName2, 'None')
+        if (~ strcmp(IlluminationImageName2, 'Do not save')) ,
+            handles.Pipeline.(IlluminationImageName2) = PostTreatImage(IlluminationImageName1(:,:,count), Modality2);
+        end
+        count = count + 1;
+    end
+    
+    
+    if ~ strcmp(ImageName3, 'None')
+        if (~ strcmp(IlluminationImageName3, 'Do not save')) ,
+            handles.Pipeline.(IlluminationImageName3) = PostTreatImage(IlluminationImageName1(:,:,count), Modality3);
+        end
+        count = count + 1;
+    end
+    
+    if ~ strcmp(ImageName4, 'None')
+        if (~ strcmp(IlluminationImageName4, 'Do not save')) ,
+            handles.Pipeline.(IlluminationImageName4) = PostTreatImage(IlluminationImageName1(:,:,count), Modality4);
+        end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        %%% Activates the appropriate figure window.
+        CPfigure(handles,'Correction',ThisModuleFigureNumber);
+        imagesc(handles.Pipeline.(IlluminationImageName1));
+        colorbar;
+        drawnow;
+    end
+end
+   
+
+%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTIONS %%%
+%%%%%%%%%%%%%%%%%%%%
+
+function TreatedImage = PreTreatImage(Image, Modality)
+switch Modality,
+    case {'Fluorescent', 'Brightfield', 'Multiplicative'},
+        TreatedImage = log(Image);
+    case {'Phase Contrast', 'DIC', 'Linear'}
+        TreatedImage = Image;
+end
+
+function TreatedImage = PostTreatImage(Image, Modality)
+switch Modality,
+    case {'Fluorescent', 'Brightfield', 'Multiplicative'},
+        TreatedImage = exp(Image);
+        TreatedImage = TreatedImage / min(TreatedImage(:));
+    case {'Phase Contrast', 'DIC', 'Linear'}
+        TreatedImage = Image;
+end

@@ -40,14 +40,6 @@ function IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingRa
 %
 % $Revision$
 
-%%% drop any zeros from the samples
-[row, col] = find(Samples <= 0.0);
-Samples(row, :) = [];
-Locations(row, :) = [];
-
-%%% log-transform the pixel values
-LogSamples = log(Samples);
-
 %%% find the number of channels in the pixels, and the number of samples
 NumberOfSamples = size(Samples, 1);
 NumberOfChannels = size(Samples, 2);
@@ -68,10 +60,6 @@ ClassCovariances = repmat(cov(LogSamples), [1, 1, NumberOfComponents]);
 
 %%% Set the Class Priors to uniform
 ClassPriors = ones(NumberOfComponents, 1) / NumberOfComponents;
-
-figure(2);
-density_plot(LogSamples(:,1), LogSamples(:,2));hold('on');
-
 
 %%% Fit the data
 for loopcount = 1:150,
@@ -110,19 +98,12 @@ for loopcount = 1:150,
 
 
     %%% Recompute means and covariances
-    figure(2);
-    density_plot(CorrectedSamples(:,1), CorrectedSamples(:,2));hold('on');
-    hold('on')
     for i = 1:NumberOfComponents,
         ClassMeans(i, :) = sum(CorrectedSamples .* repmat(Weights(:, i), 1, NumberOfChannels)) / sum(Weights(:, i));
         % (yes, this next line should use the just updated class means...)
         WeightedDeltas = (CorrectedSamples - repmat(ClassMeans(i, :), NumberOfSamples, 1)) .* repmat(Weights(:, i), 1, NumberOfChannels);
         ClassCovariances(:, :, i) = WeightedDeltas' * WeightedDeltas / sum(Weights(:, i));
-        error_ellipse(ClassCovariances(:, :, i), ClassMeans(i, :));
     end
-    drawnow
-    hold('off')
-
 
     %%%%%%%%%%%%%%%%%%%%
     %%% Second pass: estimate bias field using means/covariances
@@ -188,21 +169,6 @@ for loopcount = 1:150,
     %%% samples, so we adjust the field relative to its previous
     %%% value.
     IlluminationField = IlluminationField + SmoothResiduals ./ SmoothNormalizers;
-
-
-    figure(3);
-    imagesc(IlluminationField(:, :, 1));
-    title('red');
-    colorbar
-    figure(4);
-    imagesc(IlluminationField(:, :, 2));
-    title('green');
-    colorbar
-    drawnow
-    if any(isnan(IlluminationField(:))) | any(isinf(IlluminationField(:))),
-        'foo'
-        keyboard
-    end
 end
 
 
@@ -233,23 +199,3 @@ function SmoothedImage = Smoother(Image, SmoothingRadius)
 % we need to preserve zeros at the boundaries.
 Filter = fspecial('gaussian', 2*SmoothingRadius, SmoothingRadius);
 SmoothedImage = imfilter(Image, Filter, 0);
-
-
-function density_plot(xvals, yvals)
-minx = min(xvals);
-maxx = max(xvals);
-xedges = linspace(minx, maxx, 100);
-xvals = (xvals - minx) / (maxx - minx);
-
-miny = min(yvals);
-maxy = max(yvals);
-yedges = linspace(miny, maxy, 100);
-yvals = (yvals - miny) / (maxy - miny);
-
-counts = full(sparse(round(99 * yvals + 1), round(99 * xvals + 1), 1, 100, 100));
-ax = newplot;
-surf(xedges, yedges, zeros(numel(xedges), numel(yedges)), counts, 'EdgeColor','none', 'FaceColor','interp');
-view(ax,2);
-colormap(ax,flipud(gray(256)))
-grid(ax,'off');
-drawnow

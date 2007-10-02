@@ -656,10 +656,6 @@ for n = 1:length(ImageName)
     else
         %%% This try/catch will catch any problems in the load movies module.
         try
-
-            if(SetBeingAnalyzed == 10)
-               blah=1; 
-            end
             %%% Determines which movie to analyze.
             fieldname = ['FileList', ImageName{n}];
             FileList = handles.Pipeline.(fieldname);
@@ -679,7 +675,7 @@ for n = 1:length(ImageName)
                 LoadedImage = im2double(LoadedRawImage.cdata);
                 else
                 LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), (IndexLocation-1));
-                LoadedImage = im2double(LoadedRawImage.cdata)
+                LoadedImage = im2double(LoadedRawImage.cdata);
                 end
             elseif strcmpi(FileFormat,'stk') == 1
                 LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));

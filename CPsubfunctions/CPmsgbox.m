@@ -4,6 +4,9 @@ h = msgbox(varargin{:});
 %%% I think we need to render for the following code to work.
 drawnow;
 
+%% This allows message boxes to be closed with 'Windows -> Close All'
+userData.Application = 'CellProfiler';
+set(h,'UserData',userData);
 
 try
     % Find the ui elements (not the most portable way to do this, hence the "try"

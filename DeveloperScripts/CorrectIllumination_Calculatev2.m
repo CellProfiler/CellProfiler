@@ -61,6 +61,7 @@ drawnow
 %textVAR01 = Are you correcting Each image independently, or All images together?  See the help for details.
 %choiceVAR01 = Each
 %choiceVAR01 = All
+%defaultVAR01 = All
 EachOrAll = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
@@ -157,7 +158,7 @@ Modality4 = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %textVAR18 = What do you want to call the fourth illumination correction image?
 %defaultVAR18 = Do not save
 %infotypeVAR18 = imagegroup indep
-IlluminationImageName4 = Char(handles.Settings.VariableValues{CurrentModuleNum,18});
+IlluminationImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 
 %%%VariableRevisionNumber = 1
@@ -208,26 +209,26 @@ NumberOfComponents = 10;
 if strcmp(EachOrAll, 'Each'),
     %%% If Each, we don't sample, we just pass the whole image into
     %%% the correction calculation.
-    IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize);
+    IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize, false);
 else
     %%% Otherwise, we sample randomly.  We want to keep a few
     %%% image-worths of pixels in the sample buffer.  The correction
     %%% algorithm can easily handle a few million pixels, so we'll use
     %%% 5x the size of the image.
     if (handles.Current.SetBeingAnalyzed == 1),
-        handles.Pipeline.(IlluminationImageName).Samples = Samples;
-        handles.Pipeline.(IlluminationImageName).Locations = Locations;
-    elseif handles.Current.SetBeingAnalyzed <= 5),
-        handles.Pipeline.(IlluminationImageName).Samples = [handles.Pipeline.(IlluminationImageName).Samples; Samples];
-        handles.Pipeline.(IlluminationImageName).Locations = [handles.Pipeline.(IlluminationImageName).Locations ; Locations];
+        handles.Pipeline.(IlluminationImageName1).Samples = Samples;
+        handles.Pipeline.(IlluminationImageName1).Locations = Locations;
+    elseif (handles.Current.SetBeingAnalyzed <= 5),
+        handles.Pipeline.(IlluminationImageName1).Samples = [handles.Pipeline.(IlluminationImageName1).Samples; Samples];
+        handles.Pipeline.(IlluminationImageName1).Locations = [handles.Pipeline.(IlluminationImageName1).Locations ; Locations];
     else
         %%% We need to randomly sample the right fraction of pixels
         %%% from this image and replace the corresponding number
         %%% randomly within the sample buffer.
         
         %%% Get the old samples
-        SampleBuffer = handles.Pipeline.(IlluminationImageName).Samples;
-        LocationBuffer = handles.Pipeline.(IlluminationImageName).Locations;
+        SampleBuffer = handles.Pipeline.(IlluminationImageName1).Samples;
+        LocationBuffer = handles.Pipeline.(IlluminationImageName1).Locations;
 
         %%% Seed the random number generator so this code is repeatable.
         RandState = rand('state');
@@ -255,8 +256,8 @@ else
         LocationBuffer(OldData, :) = Locations(NewData, :);
         
         %%% Put the new buffers back into place
-        handles.Pipeline.(IlluminationImageName).Samples = SampleBuffer;
-        handles.Pipeline.(IlluminationImageName).Locations = LocationBuffer;
+        handles.Pipeline.(IlluminationImageName1).Samples = SampleBuffer;
+        handles.Pipeline.(IlluminationImageName1).Locations = LocationBuffer;
 
         %%% restore the random state
         rand('state', RandState);
@@ -265,14 +266,22 @@ else
     %%% Is this the last image set?
     if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets,
         %%% Get the samples
-        SampleBuffer = handles.Pipeline.(IlluminationImageName).Samples;
-        LocationBuffer = handles.Pipeline.(IlluminationImageName).Locations;
+        SampleBuffer = handles.Pipeline.(IlluminationImageName1).Samples;
+        LocationBuffer = handles.Pipeline.(IlluminationImageName1).Locations;
 
         %%% This could happen if the images are all bad.
         assert(size(SampleBuffer, 1) > 0);
 
+        ShowComputation = false;
+        ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+        if any(findobj == ThisModuleFigureNumber)
+            CPfigure(handles,'Correction',ThisModuleFigureNumber);
+            ShowComputation = true;
+        end
+
+
         %%% Calculate the illumination correction
-        IlluminationField = CPcalc_illum_corrxn(SampleBuffer, LocationBuffer, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize);
+        IlluminationField = CPcalc_illum_corrxn(SampleBuffer, LocationBuffer, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize, ShowComputation);
 
     end
 end
@@ -283,7 +292,7 @@ end
 
 
 if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
-    handles.Pipeline.(IlluminationImageName1) = PostTreatImage(IlluminationImageName1(:,:,1), Modality1);
+    handles.Pipeline.(IlluminationImageName1) = PostTreatImage(IlluminationField(:,:,1), Modality1);
 
     %%% We need this count variable because of the code above that fetches
     %%% images (see PRELIMINARY CALCULATIONS above)
@@ -291,7 +300,7 @@ if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Curr
     
     if ~ strcmp(ImageName2, 'None')
         if (~ strcmp(IlluminationImageName2, 'Do not save')) ,
-            handles.Pipeline.(IlluminationImageName2) = PostTreatImage(IlluminationImageName1(:,:,count), Modality2);
+            handles.Pipeline.(IlluminationImageName2) = PostTreatImage(IlluminationField(:,:,count), Modality2);
         end
         count = count + 1;
     end
@@ -299,14 +308,14 @@ if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Curr
     
     if ~ strcmp(ImageName3, 'None')
         if (~ strcmp(IlluminationImageName3, 'Do not save')) ,
-            handles.Pipeline.(IlluminationImageName3) = PostTreatImage(IlluminationImageName1(:,:,count), Modality3);
+            handles.Pipeline.(IlluminationImageName3) = PostTreatImage(IlluminationField(:,:,count), Modality3);
         end
         count = count + 1;
     end
     
     if ~ strcmp(ImageName4, 'None')
         if (~ strcmp(IlluminationImageName4, 'Do not save')) ,
-            handles.Pipeline.(IlluminationImageName4) = PostTreatImage(IlluminationImageName1(:,:,count), Modality4);
+            handles.Pipeline.(IlluminationImageName4) = PostTreatImage(IlluminationField(:,:,count), Modality4);
         end
     end
 end

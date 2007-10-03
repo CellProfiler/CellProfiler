@@ -1,5 +1,5 @@
-function IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingRadius, NumberOfComponents, ImageSize)
-% function IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingRadius, NumberOfComponents, ImageSize)
+function IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingRadius, NumberOfComponents, ImageSize, ShowComputation)
+% function IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingRadius, NumberOfComponents, ImageSize, ShowComputation)
 %
 % This function calculates the illumination correction images given
 % randomly sampled pixels (in SAMPLES, NxK where K is number of
@@ -49,20 +49,25 @@ IlluminationField = repmat(zeros(ImageSize), [1, 1, NumberOfChannels]);
 
 %%% make an initial guess for the class means (for lack of anything
 %%% better, space them by quantile in each channel)
-SortedLogSamples = sort(LogSamples);
+SortedSamples = sort(Samples);
 for class = 1:NumberOfComponents,
     offset = round(NumberOfSamples * class / (NumberOfComponents + 1));
-    ClassMeans(class, :) = SortedLogSamples(offset, :);
+    ClassMeans(class, :) = SortedSamples(offset, :);
 end
 
 %%% And set each covariance to the full data covariance
-ClassCovariances = repmat(cov(LogSamples), [1, 1, NumberOfComponents]);
+ClassCovariances = repmat(cov(Samples), [1, 1, NumberOfComponents]);
 
 %%% Set the Class Priors to uniform
 ClassPriors = ones(NumberOfComponents, 1) / NumberOfComponents;
 
 %%% Fit the data
-for loopcount = 1:150,
+for loopcount = 1:40,
+
+    if ShowComputation,
+        title(sprintf('%d loop of %d', loopcount, 20));
+        drawnow;
+    end
     
     %%%%%%%%%%%%%%%%%%%%
     %%% First pass: estimate means/covariances of components using bias field
@@ -71,7 +76,7 @@ for loopcount = 1:150,
     %%% Correct data by bias field
     for i = 1:NumberOfChannels,
         Correction = IlluminationField(:, :, i);
-        CorrectedSamples(:, i) = LogSamples(:, i) - Correction(sub2ind(ImageSize, Locations(:, 1), Locations(:, 2)));
+        CorrectedSamples(:, i) = Samples(:, i) - Correction(sub2ind(ImageSize, Locations(:, 1), Locations(:, 2)));
     end
 
     %%% Compute weights
@@ -85,10 +90,10 @@ for loopcount = 1:150,
 
     %%% Recompute Class Priors
     ClassPriors = sum(Weights) / NumberOfSamples;
-    ClassPriors = ClassPriors / sum(ClassPriors)
+    ClassPriors = ClassPriors / sum(ClassPriors);
     
     %%% remove anything that drops below a threshold of 0.01
-    ToRemove = find(ClassPriors < 0.01)
+    ToRemove = find(ClassPriors < 0.01);
     ClassPriors(ToRemove) = [];
     ClassMeans(ToRemove, :) = [];
     ClassCovariances(:, :, ToRemove) = [];
@@ -112,7 +117,7 @@ for loopcount = 1:150,
     %%% Correct data by bias field
     for i = 1:NumberOfChannels,
         Correction = IlluminationField(:, :, i);
-        CorrectedSamples(:,i) = LogSamples(:, i) - Correction(sub2ind(ImageSize, Locations(:, 1), Locations(:, 2)));
+        CorrectedSamples(:,i) = Samples(:, i) - Correction(sub2ind(ImageSize, Locations(:, 1), Locations(:, 2)));
     end
 
     %%% Compute weights
@@ -169,6 +174,11 @@ for loopcount = 1:150,
     %%% samples, so we adjust the field relative to its previous
     %%% value.
     IlluminationField = IlluminationField + SmoothResiduals ./ SmoothNormalizers;
+
+    if ShowComputation,
+        imagesc(IlluminationField(:,:,1));
+        drawnow
+    end
 end
 
 

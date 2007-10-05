@@ -12,6 +12,13 @@ function handles = Relate(handles)
 % object will be considered a child even if the edge is the only part
 % touching a parent object. If an object is touching two parent objects,
 % the objects parent will be the higher numbered parent.
+%
+% The minimum distances of each child to its parent are also calculated.
+% These values are associated the child objects.
+% If an "Other" object is defined (e.g. Nuclei), then distances are
+% calculated to this object too, as well as normalized distances.  Normalized
+% distances for each child have a range [0 1] and are calculated as:
+% (distance to the Parent) / sum(distances to parent and Other object)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -53,9 +60,17 @@ SubObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = What are the parent objects?
 %infotypeVAR02 = objectgroup
 %inputtypeVAR02 = popupmenu
-ParentName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ParentName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%%VariableRevisionNumber = 1
+%textVAR03 = What other object do you want to find distances to? (Must be one object per parent object, e.g. Nuclei)
+%infotypeVAR03 = objectgroup
+%choiceVAR03 = None
+%inputtypeVAR03 = popupmenu
+ParentName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -68,17 +83,81 @@ SubObjectLabelMatrix = CPretrieveimage(handles,['Segmented', SubObjectName],Modu
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName],ModuleName,'MustBeGray','DontCheckScale');
+ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{1}],ModuleName,'MustBeGray','DontCheckScale');
+
+%%% Retrieves the label matrix image that contains the edited primary
+%%% segmented objects.
+if ~strcmp(ParentName{2},'None')
+    StepParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{2}],ModuleName,'MustBeGray','DontCheckScale');
+else
+    ParentName = {ParentName{1}};
+end
+
+%% Settings sanity checks
+if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
+    CPwarndlg('The Children and at least one of the Parent objects are the same.  Your results may be erroneous.','Relate module')
+end
+if strcmp(ParentName{1},ParentName{2})
+    CPwarndlg('The Parent and Other Object are the same.  Your results may be erroneous.','Relate module')
+end
+assert(max(ParentObjectLabelMatrix(:)) == max(StepParentObjectLabelMatrix(:)),...
+    'The number of parents does not equal the number of Other objects in the Relate Module')
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-[handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName,SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
-
+[handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
+    SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
 handles.Measurements.(SubObjectName).SubObjectFlag=1;
 
+%% Save Distance 'Features'
+handles.Measurements.(SubObjectName).DistanceFeatures = ParentName;
+
+%% Initialize Distance
+handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = ...
+    NaN .* ones(length(ParentsOfChildren),length(ParentName));
+
+%% Calcuate the smallest distance from each Child to their Parent
+%% If no parent exists, then Distance = NaN
+if isfield(handles.Measurements.(SubObjectName),'Location')
+    iObj = 0;
+    for thisParent = ParentName %% Will need to change if we add more StepParents
+        iObj = iObj + 1;
+
+        for iParent = 1:max(ParentsOfChildren)
+            %% Calculate distance transform of SubObjects to perimeter of Parent objects
+            DistTrans = bwdist(bwperim(handles.Pipeline.(['Segmented' ParentName{iObj}]) == iParent));
+
+            ChList = find(ParentsOfChildren == iParent);
+            ChildrenLocations = handles.Measurements.(SubObjectName).Location{handles.Current.SetBeingAnalyzed}(ChList,:);
+
+            roundedChLoc = round(ChildrenLocations);
+            idx = sub2ind(size(DistTrans),roundedChLoc(:,2), roundedChLoc(:,1));
+            Dist = DistTrans(idx);
+
+            %% SAVE Distance to 'handles'
+            handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+        end
+    end
+else
+    warning('There is no ''Location'' field with which to find subObj to Parent distances')
+end
+
+%% Calculate normalized distances
+%% All distances are relative to the *first* parent.
+if length(ParentName) > 1
+    Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
+    NormDist = Dist(:,1) ./ sum(Dist,2);
+
+    %% Save Normalized Distances
+    handles.Measurements.(SubObjectName).NormDistanceFeatures = {ParentName{1}}; %% outer curly brackets needed for correct length(MeasurementFeatures) calculation in inner loop below
+    handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = NormDist;
+end
+
+%% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
+%% which finds the mean measurements of all the subObjects that relate to each parent object
 MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
 NewObjectName=['Mean',SubObjectName];
 if isfield(handles.Measurements.(SubObjectName),'Parent')

@@ -19,6 +19,8 @@ function handles = Relate(handles)
 % calculated to this object too, as well as normalized distances.  Normalized
 % distances for each child have a range [0 1] and are calculated as:
 % (distance to the Parent) / sum(distances to parent and Other object)
+%
+% NOTE: This module should be placed *after* all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -108,92 +110,96 @@ assert(max(ParentObjectLabelMatrix(:)) == max(StepParentObjectLabelMatrix(:)),..
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-[handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
-    SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
-handles.Measurements.(SubObjectName).SubObjectFlag=1;
+try
+    [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
+        SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
+    handles.Measurements.(SubObjectName).SubObjectFlag=1;
 
-%% Save Distance 'Features'
-handles.Measurements.(SubObjectName).DistanceFeatures = ParentName;
+    %% Save Distance 'Features'
+    handles.Measurements.(SubObjectName).DistanceFeatures = ParentName;
 
-%% Initialize Distance
-handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = ...
-    NaN .* ones(length(ParentsOfChildren),length(ParentName));
+    %% Initialize Distance
+    handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = ...
+        NaN .* ones(length(ParentsOfChildren),length(ParentName));
 
-%% Calcuate the smallest distance from each Child to their Parent
-%% If no parent exists, then Distance = NaN
-if isfield(handles.Measurements.(SubObjectName),'Location')
-    iObj = 0;
-    for thisParent = ParentName %% Will need to change if we add more StepParents
-        iObj = iObj + 1;
+    %% Calcuate the smallest distance from each Child to their Parent
+    %% If no parent exists, then Distance = NaN
+    if isfield(handles.Measurements.(SubObjectName),'Location')
+        iObj = 0;
+        for thisParent = ParentName %% Will need to change if we add more StepParents
+            iObj = iObj + 1;
 
-        for iParent = 1:max(ParentsOfChildren)
-            %% Calculate distance transform of SubObjects to perimeter of Parent objects
-            DistTrans = bwdist(bwperim(handles.Pipeline.(['Segmented' ParentName{iObj}]) == iParent));
+            for iParent = 1:max(ParentsOfChildren)
+                %% Calculate distance transform of SubObjects to perimeter of Parent objects
+                DistTrans = bwdist(bwperim(handles.Pipeline.(['Segmented' ParentName{iObj}]) == iParent));
 
-            ChList = find(ParentsOfChildren == iParent);
-            ChildrenLocations = handles.Measurements.(SubObjectName).Location{handles.Current.SetBeingAnalyzed}(ChList,:);
+                ChList = find(ParentsOfChildren == iParent);
+                ChildrenLocations = handles.Measurements.(SubObjectName).Location{handles.Current.SetBeingAnalyzed}(ChList,:);
 
-            roundedChLoc = round(ChildrenLocations);
-            idx = sub2ind(size(DistTrans),roundedChLoc(:,2), roundedChLoc(:,1));
-            Dist = DistTrans(idx);
+                roundedChLoc = round(ChildrenLocations);
+                idx = sub2ind(size(DistTrans),roundedChLoc(:,2), roundedChLoc(:,1));
+                Dist = DistTrans(idx);
 
-            %% SAVE Distance to 'handles'
-            handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+                %% SAVE Distance to 'handles'
+                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+            end
         end
+    else
+        warning('There is no ''Location'' field with which to find subObj to Parent distances')
     end
-else
-    warning('There is no ''Location'' field with which to find subObj to Parent distances')
-end
 
-%% Calculate normalized distances
-%% All distances are relative to the *first* parent.
-if length(ParentName) > 1
-    Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
-    NormDist = Dist(:,1) ./ sum(Dist,2);
+    %% Calculate normalized distances
+    %% All distances are relative to the *first* parent.
+    if length(ParentName) > 1
+        Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
+        NormDist = Dist(:,1) ./ sum(Dist,2);
 
-    %% Save Normalized Distances
-    handles.Measurements.(SubObjectName).NormDistanceFeatures = {ParentName{1}}; %% outer curly brackets needed for correct length(MeasurementFeatures) calculation in inner loop below
-    handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = NormDist;
-end
+        %% Save Normalized Distances
+        handles.Measurements.(SubObjectName).NormDistanceFeatures = {ParentName{1}}; %% outer curly brackets needed for correct length(MeasurementFeatures) calculation in inner loop below
+        handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = NormDist;
+    end
 
-%% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
-%% which finds the mean measurements of all the subObjects that relate to each parent object
-MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
-NewObjectName=['Mean',SubObjectName];
-if isfield(handles.Measurements.(SubObjectName),'Parent')
+    %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
+    %% which finds the mean measurements of all the subObjects that relate to each parent object
+    MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
+    NewObjectName=['Mean',SubObjectName];
+    if isfield(handles.Measurements.(SubObjectName),'Parent')
 
-    % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
-    if length(handles.Measurements.(SubObjectName).Parent) >= handles.Current.SetBeingAnalyzed
-        Parents=handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed};
-        for RemainingMeasurementFieldnames = MeasurementFieldnames
-            if isempty(strfind(char(RemainingMeasurementFieldnames),'Features')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Parent')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Children'))
-                continue
-            else
-                FieldName=char(RemainingMeasurementFieldnames);
-                MeasurementFeatures=handles.Measurements.(SubObjectName).(FieldName);
-                handles.Measurements.(NewObjectName).(FieldName)=MeasurementFeatures;
-                Measurements=handles.Measurements.(SubObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed};
-                % The loop over 'j' below will never be entered if
-                % there are no parents in the image, leading to a bug
-                % where the data is truncated if the last few images
-                % don't contain parents.  This next statement handles
-                % that case by ensuring that at least something is
-                % written at the correction location in the
-                % Measurements structure.
-                handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed} = [];
-                for i=1:length(MeasurementFeatures)
-                    for j=1:max(max(ParentObjectLabelMatrix))
-                        index=find(Parents==j);
-                        if isempty(index)
-                            handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
-                        else
-                            handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
+        % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
+        if length(handles.Measurements.(SubObjectName).Parent) >= handles.Current.SetBeingAnalyzed
+            Parents=handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed};
+            for RemainingMeasurementFieldnames = MeasurementFieldnames
+                if isempty(strfind(char(RemainingMeasurementFieldnames),'Features')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Parent')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Children'))
+                    continue
+                else
+                    FieldName=char(RemainingMeasurementFieldnames);
+                    MeasurementFeatures=handles.Measurements.(SubObjectName).(FieldName);
+                    handles.Measurements.(NewObjectName).(FieldName)=MeasurementFeatures;
+                    Measurements=handles.Measurements.(SubObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed};
+                    % The loop over 'j' below will never be entered if
+                    % there are no parents in the image, leading to a bug
+                    % where the data is truncated if the last few images
+                    % don't contain parents.  This next statement handles
+                    % that case by ensuring that at least something is
+                    % written at the correction location in the
+                    % Measurements structure.
+                    handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed} = [];
+                    for i=1:length(MeasurementFeatures)
+                        for j=1:max(max(ParentObjectLabelMatrix))
+                            index=find(Parents==j);
+                            if isempty(index)
+                                handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
+                            else
+                                handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
+                            end
                         end
                     end
                 end
             end
         end
     end
+catch
+    error('The Relate Module errored.  This may be fixed by ensuring that all Relate Modules occur *after* all Measure Modules, and that two Relate Modules are not relating the same objects.')
 end
 
 %%% Since the label matrix starts at zero, we must include this value in

@@ -29,6 +29,7 @@ function varargout = CellProfiler(varargin)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -793,6 +794,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
     elseif strcmp('WriteSQLFiles',CurrentModuleName)
         handles.Settings.ModuleNames(ModuleNum-Skipped) = {'ExportToDatabase'};
     end
+    
     %%% Load the module's settings
 
     try
@@ -804,12 +806,32 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         else
             SavedVarRevNum = 0;
         end
+        
+        %%% Adjust old 'LoadImages' variables to new ones. This is applied to 
+        %%% the pipelines saved with the LoadImages variable revision number less than 2
+        %%% VariableValues is a cell structure, please use {} rather than ().
+        if strcmp('LoadImages',CurrentModuleName) && (SavedVarRevNum < 2)
+            ImageOrMovie = Settings.VariableValues{ModuleNum-Skipped,11};
+            if strcmp(ImageOrMovie,'Image')
+                new_variablevalue = 'individual images';
+            else
+                if strcmp(Settings.VariableValues{ModuleNum-Skipped,12},'avi')
+                    new_variablevalue = 'avi movies';
+                elseif strcmp(Settings.VariableValues{ModuleNum-Skipped,12},'stk')
+                    new_variablevalue = 'stk movies';
+                end
+            end
+            Settings.VariableValues{ModuleNum-Skipped,11} = new_variablevalue;
+            Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,13};
+            Settings.VariableValues{ModuleNum-Skipped,13} = Settings.VariableValues{ModuleNum-Skipped,14};   
+            SavedVarRevNum = 2;
+        end
 
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
         %%% load is the same
         if SavedVarRevNum == DefVarRevNum && handles.Settings.NumbersOfVariables(ModuleNum-Skipped) == Settings.NumbersOfVariables(ModuleNum-Skipped)
-            %%% If so, replace the default settings with the saved ones
+            %%% If so, replace the default settings with the saved ones            
             handles.Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped)) = Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped));
             %%% save module revision number
             handles.Settings.ModuleRevisionNumbers(ModuleNum-Skipped) = ModuleRevNum;
@@ -3741,7 +3763,8 @@ else
                     ModuleName = char(handles.Settings.ModuleNames(SlotNumber));
                     if ~iscellstr(handles.Settings.ModuleNames(SlotNumber))
                     else
-                        %%% Saves the current module number in the handles structure.
+                        %%% Saves the current module number in the handles
+                        %%% structure.
                         handles.Current.CurrentModuleNumber = ModuleNumberAsString;
                         %%% The try/catch/end set catches any errors that occur during the
                         %%% running of module 1, notifies the user, breaks out of the image

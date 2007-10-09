@@ -224,6 +224,7 @@ function handles = LoadImages(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -287,33 +288,51 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 3
 ImagesPerSet = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = Are you loading image or movie files?
-%choiceVAR11 = Image
-%choiceVAR11 = Movie
-ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = What type of files are you loading?
+%choiceVAR11 = individual images
+%choiceVAR11 = stk movies
+%choiceVAR11 = avi movies
+%choiceVAR11 = tif,tiff,flex movies
+FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%textVAR12 = If you are loading a movie, what is the extension?
-%choiceVAR12 = avi
-%choiceVAR12 = stk
-FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+% %textVAR11 = Are you loading image or movie files?
+% %choiceVAR11 = Image
+% %choiceVAR11 = Movie
+% ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+% %inputtypeVAR11 = popupmenu
+% 
+% %textVAR12 = If you are loading a movie, what is the extension?
+% %choiceVAR12 = avi
+% %choiceVAR12 = stk
+% %choiceVAR12 = tif,tiff,flex
+% FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+% %inputtypeVAR12 = popupmenu
+
+%textVAR12 = Analyze all subfolders within the selected folder?
+%choiceVAR12 = No
+%choiceVAR12 = Yes
+AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = Analyze all subfolders within the selected folder?
-%choiceVAR13 = No
-%choiceVAR13 = Yes
-AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-%inputtypeVAR13 = popupmenu
+%pathnametextVAR13 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
+%defaultVAR13 = .
+Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
-Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%textVAR14 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+if strcmp(FileFormat,'individual images')
+    ImageOrMovie = 'Image';
+else
+    ImageOrMovie = 'Movie';
+end
 
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -424,7 +443,7 @@ if SetBeingAnalyzed == 1
                 StartingPositionForThisMovie = 0;
                 for MovieFileNumber = 1:length(FileList)
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
-                    if strcmpi(FileFormat,'avi') == 1
+                    if strcmpi(FileFormat,'avi movies') == 1
                         try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
                         catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
@@ -435,7 +454,7 @@ if SetBeingAnalyzed == 1
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                         end
-                    elseif strcmpi(FileFormat,'stk') == 1
+                    elseif strcmpi(FileFormat,'stk movies') == 1
                         try
                             %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
                             [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
@@ -447,6 +466,19 @@ if SetBeingAnalyzed == 1
                             end
                         catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
                         end
+                    elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
+                        try MultiTifAttributes = imfinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
+                        end
+                        NumFrames = length(MultiTifAttributes);
+                        for FrameNumber = 1:NumFrames
+                            %%% Puts the file name into the FrameByFrameFileList in the first row.
+                            FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
+                            %%% Puts the frame number into the FrameByFrameFileList in the second row.
+                            FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                        end  
+                    else
+                        error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi, stk, tif, tiff, or flex movie files.'])
                     end
                     StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
                 end
@@ -454,6 +486,8 @@ if SetBeingAnalyzed == 1
                 %%% Saves the File Lists and Path Names to the handles structure.
                 fieldname = ['FileList', ImageName{n}];
                 handles.Pipeline.(fieldname) = FrameByFrameFileList{n};
+                fieldname = ['FileFormat', ImageName{n}];
+                handles.Pipeline.(fieldname) = FileFormat;
                 fieldname = ['Pathname', ImageName{n}];
                 handles.Pipeline.(fieldname) = SpecifiedPathname;
                 NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
@@ -526,7 +560,7 @@ if SetBeingAnalyzed == 1
                 StartingPositionForThisMovie = 0;
                 for MovieFileNumber = 1:length(FileList)
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
-                    if strcmpi(FileFormat,'avi') == 1
+                    if strcmpi(FileFormat,'avi movies') == 1
                         try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
                         catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
@@ -537,7 +571,7 @@ if SetBeingAnalyzed == 1
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                         end
-                    elseif strcmpi(FileFormat,'stk') == 1
+                    elseif strcmpi(FileFormat,'stk movies') == 1
                         %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
                         [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
                         for FrameNumber = 1:NumFrames
@@ -546,14 +580,27 @@ if SetBeingAnalyzed == 1
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                         end
+                    elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
+                        try MultiTifAttributes = imfinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
+                        end
+                        NumFrames = length(MultiTifAttributes);
+                        for FrameNumber = 1:NumFrames
+                            %%% Puts the file name into the FrameByFrameFileList in the first row.
+                            FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
+                            %%% Puts the frame number into the FrameByFrameFileList in the second row.
+                            FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                        end
                     else
-                        error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi or stk movie files.'])
+                        error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi, stk, tif, tiff, or flex movie files.'])
                     end
                     StartingPositionForThisMovie = StartingPositionForThisMovie + NumFrames;
 
                     %%% Saves the File Lists and Path Names to the handles structure.
                     fieldname = ['FileList', ImageName{n}];
                     handles.Pipeline.(fieldname) = FrameByFrameFileList{n};
+                    fieldname = ['FileFormat', ImageName{n}];
+                    handles.Pipeline.(fieldname) = FileFormat;                    
                     fieldname = ['Pathname', ImageName{n}];
                     handles.Pipeline.(fieldname) = SpecifiedPathname;
                     %% for reference in saved files
@@ -664,7 +711,7 @@ for n = 1:length(ImageName)
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            if strcmpi(FileFormat,'avi') == 1
+            if strcmpi(FileFormat,'avi movies') == 1
                 %%%If you do not subtract 1 from the index, as specified 
                 %%%in aviread.m, the  movie will fail to load.  However,
                 %%%the first frame will fail if the index=0.  
@@ -677,9 +724,12 @@ for n = 1:length(ImageName)
                 LoadedRawImage = aviread(fullfile(Pathname, char(CurrentFileName(1))), (IndexLocation-1));
                 LoadedImage = im2double(LoadedRawImage.cdata);
                 end
-            elseif strcmpi(FileFormat,'stk') == 1
+            elseif strcmpi(FileFormat,'stk movies') == 1
                 LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
                 LoadedImage = im2double(LoadedRawImage.data);
+            elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
+                LoadedRawImage = imread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+                LoadedImage = im2double(LoadedRawImage);                
             end
             %%% Saves the original movie file name to the handles
             %%% structure.  The field is named appropriately based on

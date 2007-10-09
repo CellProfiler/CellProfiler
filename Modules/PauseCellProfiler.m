@@ -1,9 +1,9 @@
 function handles = PauseCellProfiler(handles)
 % Help for the PauseCP module:
-% Category: Other
+% Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Pauses Cellprofiler interactively.
+% Pauses CellProfiler interactively.
 % *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -47,7 +47,10 @@ drawnow
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-ButtonName = CPquestdlg('Continue CellProfiler?','PauseCP','Yes','Cancel','Yes');
+%% ButtonName = questdlg(Question, Title, Btn1, Btn2,..., DEFAULT);
+ButtonName = CPquestdlg('Continue previous module?','PauseCP','Continue','Cancel','Continue');
+%% TODO - add Modify
+% ButtonName = CPquestdlg('Continue or Modilfy previous module?','PauseCP','Continue','Modify','Cancel','Continue');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -61,14 +64,21 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 %%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
+        close(ThisModuleFigureNumber)
     end
 end
 
 switch ButtonName
-    case 'Yes'
+    case 'Continue'
         return
+        %% TODO - add Modify
+%     case 'Modify'
+%         handles.Current.CurrentModuleNumber = num2str(str2num(handles.Current.CurrentModuleNumber) - 1);
+%         set(cat(2,handles.VariableBox{:}),'enable','on','foregroundcolor','black'); %% re-enable variable boxes
+%         
+%         XX adding this feature
+        
     case 'Cancel'
         %% TODO: This should simply stop processing, not error.
-        CPerrordlg('CellProfiler stopped by user.');
+        error('CellProfiler stopped by user.');
 end

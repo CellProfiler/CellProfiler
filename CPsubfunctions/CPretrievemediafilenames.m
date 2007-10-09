@@ -20,6 +20,7 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -45,10 +46,10 @@ else
     if strncmpi(ImageOrMovie,'I',1)
         MediaExtensions = CPimread;
     elseif strncmpi(ImageOrMovie,'M',1)
-        MediaExtensions = {'avi' 'stk'};
+        MediaExtensions = {'avi' 'stk' 'tif' 'tiff' 'flex'};
     elseif strncmpi(ImageOrMovie,'B',1)
         MediaExtensions = CPimread;
-        MediaExtensions = [MediaExtensions, {'avi'}, {'stk'}];
+        MediaExtensions = [MediaExtensions, {'avi'}, {'stk'}, {'tif'} {'tiff'} {'flex'}];
     else
         error('You have selected an invalid entry for ImageOrMovie.  It can only be something that starts with an M (Movie) or I (Image) or B (Both).');
     end

@@ -186,10 +186,10 @@ if handles.Current.SetBeingAnalyzed == 1
     if isfield(handles.Measurements.Image,'IntensityToShiftFeatures')
         NewPos = length(handles.Measurements.Image.IntensityToShiftFeatures)+1;
         handles.Measurements.Image.IntensityToShiftFeatures(1,NewPos) = {ImageName};
-        handles.Measurements.Image.IntensityToShift(:,NewPos) = MinimumTenthMinimumPixelValue;
+        handles.Measurements.Image.IntensityToShift{handles.Current.SetBeingAnalyzed}(:,NewPos) = MinimumTenthMinimumPixelValue;
     else
         handles.Measurements.Image.IntensityToShiftFeatures = {ImageName};
-        handles.Measurements.Image.IntensityToShift = MinimumTenthMinimumPixelValue;
+        handles.Measurements.Image.IntensityToShift{handles.Current.SetBeingAnalyzed} = MinimumTenthMinimumPixelValue;
     end
     fieldname = ['IntensityToShift',ImageName];
     handles.Pipeline.(fieldname) = MinimumTenthMinimumPixelValue;

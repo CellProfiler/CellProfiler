@@ -75,10 +75,10 @@ switch ButtonName
 %     case 'Modify'
 %         handles.Current.CurrentModuleNumber = num2str(str2num(handles.Current.CurrentModuleNumber) - 1);
 %         set(cat(2,handles.VariableBox{:}),'enable','on','foregroundcolor','black'); %% re-enable variable boxes
-%         
-%         XX adding this feature
         
     case 'Cancel'
-        %% TODO: This should simply stop processing, not error.
-        error('CellProfiler stopped by user.');
+
+        %%% This should cause a cancel so no further processing is done
+        %%% on this machine.
+        set(handles.timertexthandle,'string','Cancel')
 end

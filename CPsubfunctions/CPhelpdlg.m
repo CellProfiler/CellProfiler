@@ -5,7 +5,11 @@ function varargout = CPhelpdlg(varargin)
 
 if nargout > 0,
     varargout = helpdlg(varargin{:});
+    h = varargout{1};
 else
-    helpdlg(varargin{:});
+    h = helpdlg(varargin{:});
 end
 
+%% This allows message boxes to be closed with 'Windows -> Close All'
+userData.Application = 'CellProfiler';
+set(h,'UserData',userData);

@@ -4,7 +4,7 @@ function varargout = CPhelpdlg(varargin)
 % helpdlg if necessary.  See documentation for helpdlg for usage.
 
 if nargout > 0,
-    varargout = helpdlg(varargin{:});
+    varargout = {helpdlg(varargin{:})};
     h = varargout{1};
 else
     h = helpdlg(varargin{:});

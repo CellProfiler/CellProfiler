@@ -4,7 +4,13 @@ function handles = GroupMovieFrames(handles)
 % Category: File Processing
 %
 % SHORT DESCRIPTION:
-% Blah blah
+%
+% GroupMovieFrames handle a movie to group movie frames to be processed
+% within a cycle. The position of a frame within a group can be specified
+% with its ImageName to be used downstream. 
+%
+% Each loaded movie frame will be treated as an individual image with its
+% own ImageName.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -308,7 +314,7 @@ for n = 1:length(ImageName)
         %%% Saves the loaded image to the handles structure.  The field is named
         %%% appropriately based on the user's input, and put into the Pipeline
         %%% substructure so it will be deleted at the end of the analysis batch.
-        handles.Pipeline.(fieldname)((SetBeingAnalyzed-1)*nGroupFrames+str2num(Position{n})) = {CurrentFileNameWithFrame};
+        handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
         handles.Pipeline.(ImageName{n}) = LoadedImage;
     catch ErrorMessage = lasterr;
         ErrorNumber = {'first','second','third'};

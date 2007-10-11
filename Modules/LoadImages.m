@@ -42,6 +42,11 @@ function handles = LoadImages(handles)
 % you can change the Load Images module to recognize all images in your
 % folder.
 %
+% (Update: 10-11-2007) The settings in LoadImages has been slightly changed
+% and the pipeline with old settings will be automatically converted to one
+% with new settings. If you save the old pipeline, it will be saved with
+% new settings.
+%
 % Settings:
 %
 % How do you want to load these files?
@@ -135,6 +140,10 @@ function handles = LoadImages(handles)
 % 12-bit depth using a 16-bit file format.
 %
 % Notes about loading movies:
+%
+% (Update 10-11-2007) CellProfiler can read tif,tiff,flex multi-page
+% tif file in addition to those formats specified below.
+%
 % Movies can be avi-formatted movies (must be uncompressed avi format on
 % UNIX and Mac platforms) or stk-format movies (stacks of tif images
 % produced by MetaMorph or NIHImage/ImageJ; The ability to read stk files

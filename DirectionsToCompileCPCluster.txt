@@ -24,7 +24,7 @@ Martha's notes:
 
 For CPCluster v1.0.4818
 >> addpath('/imaging/analysis/People/Martha/CPCluster');
->> mcc -m CPCluster.m
+>> mcc -m -R -nodisplay CPCluster.m
 
 on command line (out of matlab): 
 cp * /imaging/analysis/People/Martha/CPCluster

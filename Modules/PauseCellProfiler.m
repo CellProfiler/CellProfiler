@@ -80,5 +80,5 @@ switch ButtonName
 
         %%% This should cause a cancel so no further processing is done
         %%% on this machine.
-        set(handles.timertexthandle,'string','Cancel')
+        set(handles.timertexthandle,'string','Canceling after current module')
 end

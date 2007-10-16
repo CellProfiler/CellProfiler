@@ -124,6 +124,7 @@ function handles = MeasureObjectAreaShape(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -243,6 +244,7 @@ for i = 1:length(ObjectNameList)
                 end
             end
         end
+        lut = construct_lookuptable_Zernike(Zernikeindex);
     end
 
     NumObjects = max(LabelMatrixImage(:));
@@ -255,6 +257,10 @@ for i = 1:length(ObjectNameList)
         if strcmp(ZernikeChoice,'Yes')
             Zernike = zeros(NumObjects,size(Zernikeindex,1));
 
+%{
+        %%% Please note that the commented blocks with are for the on-going Zernike optimization project.
+            accum_error = 0;
+%}            
             for Object = 1:NumObjects
                 %%% Calculate Zernike shape features
                 [xcord,ycord] = find(LabelMatrixImage==Object);
@@ -280,16 +286,34 @@ for i = 1:length(ObjectNameList)
                 if (normalization == 0.0),
                     normalization = 1.0;
                 end
-
+ 
                 Zf = zeros(diameter,diameter,size(Zernikeindex,1));
 
                 for k = 1:size(Zernikeindex,1)
                     n = Zernikeindex(k,1);
-                    m = Zernikeindex(k,2);
+                    m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
+
+%{                    
+                    % Un-optimized
                     s = zeros(size(x));
-                    for l = 0:(n-m)/2;
-                        s  = s + (-1)^l*fak(n-l)/( fak(l) * fak((n+m)/2-l) * fak((n-m)/2-l)) * r.^(n-2*l).*exp(sqrt(-1)*m*phi);
+                    for lv = 0:(n-m)/2; % (n-m)/2 could be 0, 1, 2, 3, or 4
+                        s  = s + (-1)^lv*fak(n-lv)/( fak(lv) * fak((n+m)/2-lv) * fak((n-m)/2-lv)) * r.^(n-2*lv).*exp(sqrt(-1)*m*phi);                        
                     end
+%}
+                    % Optimized
+                    s_new = zeros(size(x));
+                    exp_term = exp(sqrt(-1)*m*phi);
+                    lv_index = [0 : (n-m)/2];
+                    for i = 1: length(lv_index)                        
+                        lv = lv_index(i);
+                        s_new = s_new + lut(k,i) * r.^(n-2*lv).*exp_term; 
+                    end
+                    s = s_new;
+                    
+%{                    
+                    s_diff = s - s_new;
+                    accum_error = accum_error + sum(s_diff(:));
+%}                    
                     s(r>1) = 0;
                     Zf(:,:,k) = s / normalization;
                 end
@@ -311,6 +335,9 @@ for i = 1:length(ObjectNameList)
                 end
             end
         end
+%{        
+        debug_error = accum_error  % To verify if debug_error = 0, i.e., the optimized Zernike version gives the same results.
+%}        
         % FormFactor
         FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
@@ -415,9 +442,84 @@ for i = 1:length(ObjectNameList)
     end
 end
 
+% For un-opimized Zernike
+
 function f = fak(n)
 if n==0
     f = 1;
 else
     f = prod(1:n);
+end
+
+% For optimized Zernike (subfunctions below)
+
+%function previousely_calculated_value = lookuptable(lv,m,n) 
+%previousely_calculated_value = (-1)^lv*fak_table(n-lv)/( fak_table(lv) * fak_table((n+m)/2-lv) * fak_table((n-m)/2-lv));
+
+% Zernikeindex =
+%      0     0
+%      1     1
+%      2     0
+%      2     2
+%      3     1
+%      3     3
+%      4     0
+%      4     2
+%      4     4
+%      5     1
+%      5     3
+%      5     5
+%      6     0
+%      6     2
+%      6     4
+%      6     6
+%      7     1
+%      7     3
+%      7     5
+%      7     7
+%      8     0
+%      8     2
+%      8     4
+%      8     6
+%      8     8
+%      9     1
+%      9     3
+%      9     5
+%      9     7
+%      9     9
+function lut = construct_lookuptable_Zernike(Zernikeindex)
+for k = 1:size(Zernikeindex,1)
+    n = Zernikeindex(k,1);
+    m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
+    lv_index = [0 : (n-m)/2];
+    for i = 1 : length(lv_index)
+        lv = lv_index(i);
+        lut(k, i) = (-1)^lv*fak_table(n-lv)/( fak_table(lv) * fak_table((n+m)/2-lv) * fak_table((n-m)/2-lv));
+    end
+end
+
+function f = fak_table(n)
+switch n
+    case 0
+        f = 1;
+    case 1 
+        f = 1;
+    case 2 
+        f = 2;
+    case 3 
+        f = 6;
+    case 4 
+        f = 24;
+    case 5 
+        f = 120;
+    case 6 
+        f = 720;
+    case 7 
+        f = 5040;
+    case 8 
+        f = 40320;
+    case 9 
+        f = 362880;
+    otherwise        
+        f = NaN; % 
 end

@@ -90,20 +90,24 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{1}],M
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
 if ~strcmp(ParentName{2},'None')
+    
+    %% Sanity checks
+    if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
+        CPwarndlg('The Children and at least one of the Parent objects are the same.  Your results may be erroneous.','Relate module')
+    end
+    if strcmp(ParentName{1},ParentName{2})
+        CPwarndlg('The Parent and Other Object are the same.  Your results may be erroneous.','Relate module')
+    end
+
     StepParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{2}],ModuleName,'MustBeGray','DontCheckScale');
+   
+    %% Sanity check
+    if max(ParentObjectLabelMatrix(:)) ~= max(StepParentObjectLabelMatrix(:))
+        Cperrdlg('The number of parents does not equal the number of Other objects in the Relate Module')
+    end
 else
     ParentName = {ParentName{1}};
 end
-
-%% Settings sanity checks
-if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
-    CPwarndlg('The Children and at least one of the Parent objects are the same.  Your results may be erroneous.','Relate module')
-end
-if strcmp(ParentName{1},ParentName{2})
-    CPwarndlg('The Parent and Other Object are the same.  Your results may be erroneous.','Relate module')
-end
-assert(max(ParentObjectLabelMatrix(:)) == max(StepParentObjectLabelMatrix(:)),...
-    'The number of parents does not equal the number of Other objects in the Relate Module')
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

@@ -881,7 +881,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
                 Abort = 1;
         end
         if Skipped+1 == length(handles.Settings.ModuleNames)
-            CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.','Loading Pipeline Error')
+            CPerrordlg('All modules in this pipeline were skipped. Loading will be canceled.  Your preferences may not be set correctly.  Click File >> Set Preferences to be sure that the module path is correct.','Loading Pipeline Error')
             Abort = 1;
         else
             %%% Remove module info from the settings and handles

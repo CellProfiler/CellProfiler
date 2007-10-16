@@ -17,6 +17,15 @@ function handles = MeasureImageSaturationBlur(handles)
 % intensity value is equal to the maximum possible intensity value for that
 % image type.
 %
+% Update [Oct-11-2007]
+% Because the saturated pixels may not reach to the maximum possible
+% intensity value of the image type for some reasons such as CCDs saturate
+% before 255 in graylevel, we also calculate the percentage of the maximal
+% intensity value.  Even though we may capture the maximal intensity
+% percentage of 'dark' images, the maximal percentage is mostly very minimal or
+% ignorable. So, PercentMaximal is another good indicator for saturation
+% detection.
+%
 % The module can also measure blur by calculating a focus score (higher =
 % better focus). This calculation takes much longer than the saturation
 % checking, so it is optional. We are calculating the focus using the
@@ -32,6 +41,23 @@ function handles = MeasureImageSaturationBlur(handles)
 % SquaredNormalizedImage = (Image-MeanImageValue).^2;
 % FocusScore{ImageNumber} = ...
 %    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
+%
+% Update [Oct-11-2007]
+%
+% The above score is to measure a relative score given a focus setting of 
+% a certain microscope. Using this, one can calibrrate the microscope's
+% focus setting. However it doesn't necessarily tell you how well an image
+% was focused when taken. That means these scores obtained from many different
+% images probably taken in different situations and with different cell
+% contents can not be used for focus comparison.
+% 
+% The newly added LocalFocusScore is a local version of the original 
+% FocusScore. LocalFocusScore was just named after the original one to be
+% consistent with naming. Note that these focus scores do not necessarily 
+% represent the qualities of focusing between different images. 
+% LocalFocusScore was added to differentiate good segmentation and bad 
+% segmentation images in the cases when bad segmentation images usually 
+% contain no cell objects with high background noise.
 %
 % Example Output:
 %
@@ -65,6 +91,7 @@ function handles = MeasureImageSaturationBlur(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -113,14 +140,18 @@ NameImageToCheck{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 NameImageToCheck{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 =  Do you want to also check the above images for blur?
+%textVAR07 =  Do you want to also check the above images for image quality (called blur earlier)?
 %choiceVAR07 = No
 %choiceVAR07 = Yes
 BlurCheck = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 BlurCheck = BlurCheck(1);
 %inputtypeVAR07 = popupmenu
 
-%%%VariableRevisionNumber = 3
+%textVAR08 = If you chose to check images for image quality above, enter the window size of LocalFocusScore measurement (A suggested value is 2 times ObjectSize)?
+%defaultVAR08 = 20
+WindowSize = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS, FILE HANDLING, IMAGE ANALYSIS, STORE DATA IN HANDLES STRUCTURE %%%
@@ -143,12 +174,14 @@ for ImageNumber = 1:length(NameImageToCheck);
     %%% Reads (opens) the images you want to analyze and assigns them to
     %%% variables.
     ImageToCheck{ImageNumber} = CPretrieveimage(handles,NameImageToCheck{ImageNumber},ModuleName,'MustBeGray','CheckScale'); %#ok Ignore MLint
-
+   
     NumberPixelsSaturated = sum(sum(ImageToCheck{ImageNumber} == 1));
+    NumberPixelsMaximal = sum(sum(ImageToCheck{ImageNumber} == max(ImageToCheck{ImageNumber}(:))));
     [m,n] = size(ImageToCheck{ImageNumber});
     TotalPixels = m*n;
     PercentPixelsSaturated = 100*NumberPixelsSaturated/TotalPixels;
     PercentSaturation{ImageNumber} = PercentPixelsSaturated;  %#ok Ignore MLint
+    PercentMaximal{ImageNumber} = 100*NumberPixelsMaximal/TotalPixels;
 
     Measurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber}];
     Featurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber},'Features'];
@@ -175,14 +208,47 @@ for ImageNumber = 1:length(NameImageToCheck);
         else
             FocusScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
         end
-        Featurenames = {'FocusScore','PercentSaturated'};
+
+        GlobalFocusScore = FocusScore{ImageNumber};       
+        %%% Local normalized variance 
+        WindowSize = 15;
+        m_numblocks = floor(m/WindowSize);
+        n_numblocks = floor(n/WindowSize);        
+        for i = 1 : m_numblocks
+            for j = 1 : n_numblocks
+                SubImage = Image((i-1)*WindowSize+1:i*WindowSize,(j-1)*WindowSize+1:j*WindowSize);
+                    SubMeanImageValue = mean(SubImage(:));
+                    SubSquaredNormalizedImage = (SubImage-SubMeanImageValue).^2;
+                if SubMeanImageValue == 0
+                    LocalNormVar(i,j) = 0;  %#ok Ignore MLint
+                else
+                    LocalNormVar(i,j) = sum(SubSquaredNormalizedImage(:))/(WindowSize*WindowSize*SubMeanImageValue);
+                end
+            end
+        end      
+        %%% Different statistics testing and chose normvarLocalNormVar 
+        %meanLocalNormVar{ImageNumber} = mean(LocalNormVar(:));
+        %medianLocalNormVar{ImageNumber} = median(LocalNormVar(:));
+        %minLocalNormVar{ImageNumber} = min(LocalNormVar(:));
+        %maxLocalNormVar{ImageNumber} = max(LocalNormVar(:));
+        %modeLocalNormVar{ImageNumber} = mode(LocalNormVar(:));
+        %varLocalNormVar{ImageNumber} = var(LocalNormVar(:));
+        %normvarLocalNormVar{ImageNumber} = var(LocalNormVar(:))/mean(LocalNormVar(:));
+        normvarLocalNormVar2{ImageNumber} = var(LocalNormVar(:))/median(LocalNormVar(:));
+        LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
+        
+        Featurenames = {'FocusScore','LocalFocusScore','WindowSize_LocalFocusScore','PercentSaturated','PercentMaximal'};
         handles.Measurements.Image.(Featurefieldname) = Featurenames;
         handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = FocusScore{ImageNumber};
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = PercentSaturation{ImageNumber};
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = LocalFocusScore{ImageNumber};
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,3) = WindowSize;
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,4) = PercentSaturation{ImageNumber};
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,5) = PercentMaximal{ImageNumber};
     else
-        Featurenames = {'PercentSaturated'};
+        Featurenames = {'PercentSaturated', 'PercentMaximal'};
         handles.Measurements.Image.(Featurefieldname) = Featurenames;
         handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = PercentSaturation{ImageNumber};
+        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = PercentMaximal{ImageNumber};
     end
 end
 
@@ -213,6 +279,16 @@ if any(findobj == ThisModuleFigureNumber)
             end
         end
     end
+    DisplayText = strvcat(DisplayText,'      ',...
+        'Percent of pixels that are in the Maximal Intensity:');
+    for ImageNumber = 1:length(PercentMaximal)
+        if ~isempty(PercentMaximal{ImageNumber})
+            try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
+                    [NameImageToCheck{ImageNumber}, ':    ', num2str(PercentMaximal{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
+            end
+        end
+    end
+
     if strcmp(upper(BlurCheck), 'N') ~= 1
         DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
         for ImageNumber = 1:length(FocusScore)
@@ -223,5 +299,16 @@ if any(findobj == ThisModuleFigureNumber)
             end
         end
     end
+    if strcmp(upper(BlurCheck), 'N') ~= 1
+        DisplayText = strvcat(DisplayText, '      ','Local Focus Score:'); %#ok We want to ignore MLint error checking for this line.
+        for ImageNumber = 1:length(LocalFocusScore)
+            if ~isempty(LocalFocusScore{ImageNumber})
+                try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
+                        [NameImageToCheck{ImageNumber}, ':    ', num2str(LocalFocusScore{ImageNumber})]);%#ok We want to ignore MLint error checking for this line.
+                end
+            end
+        end
+    end  
+   
     set(displaytexthandle,'string',DisplayText)
 end

@@ -218,8 +218,6 @@ if handles.Current.SetBeingAnalyzed == 1
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
     TotalHeight = NumberRows*ImageHeight;
-    %%% Packs the workspace to free up memory since a large variable is about to be produced.
-    pack;
     %%% Preallocates the array to improve speed. The data class for
     %%% the tiled image is set to match the incoming image's class.
     TiledImage = zeros(TotalHeight,TotalWidth,size(LoadedImage,3),class(LoadedImage));
@@ -271,7 +269,7 @@ if strcmp(LeftOrRight,'Right')
     HorzPos = NumberColumns - HorzPos-1;
 end
 
-% pack
+
 %%% Memory errors can occur here if the tiled image is too big.
 handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
 

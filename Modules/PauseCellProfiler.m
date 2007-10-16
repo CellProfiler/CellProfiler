@@ -48,9 +48,9 @@ drawnow
 drawnow
 
 %% ButtonName = questdlg(Question, Title, Btn1, Btn2,..., DEFAULT);
-ButtonName = CPquestdlg('Continue previous module?','PauseCP','Continue','Cancel','Continue');
+ButtonName = CPquestdlg('Continue processing?','PauseCP','Continue','Cancel','Continue');
 %% TODO - add Modify
-% ButtonName = CPquestdlg('Continue or Modilfy previous module?','PauseCP','Continue','Modify','Cancel','Continue');
+% ButtonName = CPquestdlg('Continue or Modify previous module?','PauseCP','Continue','Modify','Cancel','Continue');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

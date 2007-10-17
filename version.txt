@@ -1,4 +1,18 @@
-Version 1.04684
+Version 1.0.4884
+-New distance measurement in the Relate module.
+-Updated LoadImages module to handle more movie files.  
+-New DataTool for CalculateStatistics.
+-Optimized Zernike calculations optimization by 30-50% less computational time.
+
+Version 1.0.4828
+-Created Stack for troubleshooting problems in the error messages.
+-Fixed "*/.mat" in openning files.
+-Normalized Zernike measurements by area.
+-CPSmooth and related smoothing modules (IdentifyPrimAutomatic and Smooth)--fixed median filtering to be median.  Added Gaussian filtering.
+-CellProfiler optimization in MeasureObjectIntensity.
+-Removed 'Pack' as an option in CellProfiler.  Pack will only work in commandline.
+
+Version 1.0.4684
 - Fixed bug for loading a pipeline from a previous version
 
 Version 1.0.4666

@@ -30,8 +30,12 @@ on command line (out of matlab):
 cp * /imaging/analysis/People/Martha/CPCluster
 
 For CPClusterSingle (not for release, for for IP use only!)
->> addpath('/imaging/analysis/People/Martha/CPClusterSingle4818');
->> mcc -m CPClusterSingle.m    
+ addpath('/imaging/analysis/People/Martha/CPClusterSingle4877');
+ addpath('/imaging/analysis/People/Martha/CPClusterSingle4877');
+ addpath('/imaging/analysis/People/Martha/CPClusterSingle4877');
+ addpath('/imaging/analysis/People/Martha/CPClusterSingle4877');
+ addpath('/imaging/analysis/People/Martha/CPClusterSingle4877');
+ mcc -m -R -nodisplay CPClusterSingle.m    
 
 on command line (out of matlab): 
 cp * /imaging/analysis/People/Martha/CPClusterSingle4818

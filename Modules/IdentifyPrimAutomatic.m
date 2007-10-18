@@ -422,6 +422,9 @@ ExcludeBorderObjects = char(handles.Settings.VariableValues{CurrentModuleNum,6})
 %choiceVAR07 = RidlerCalvard Global
 %choiceVAR07 = RidlerCalvard Adaptive
 %choiceVAR07 = RidlerCalvard PerObject
+%choiceVAR07 = Kapur Global
+%choiceVAR07 = Kapur Adaptive
+%choiceVAR07 = Kapur PerObject
 %choiceVAR07 = All
 %choiceVAR07 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,7});
@@ -514,8 +517,7 @@ OrigImage = double(CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','Ch
 %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
 ThresholdMethod = strtok(Threshold);
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
-if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','All','Set'},'exact'))
-    %if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Threshold,'Background') ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur','All','Set'},'exact'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');

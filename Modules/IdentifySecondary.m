@@ -217,6 +217,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %choiceVAR05 = RobustBackground Adaptive
 %choiceVAR05 = RidlerCalvard Global
 %choiceVAR05 = RidlerCalvard Adaptive
+%choiceVAR05 = Kapur Global
+%choiceVAR05 = Kapur Adaptive
 %choiceVAR05 = All
 %choiceVAR05 = Set interactively
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -294,8 +296,7 @@ EditedPrimaryBinaryImage = im2bw(EditedPrimaryLabelMatrixImage,.5);
 %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
 ThresholdMethod = strtok(Threshold);
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
-if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','All','Set'},'exact'))
-    %if ~(strncmp(Threshold,'Otsu',4) || strncmp(Threshold,'MoG',3) || strfind(Threshold,'Background') ||strncmp(Threshold,'RidlerCalvard',13) || strcmp(Threshold,'All') || strcmp(Threshold,'Set interactively'))
+if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur','All','Set'},'exact'))
     if isnan(str2double(Threshold))
         GetThreshold = 0;
         BinaryInputImage = CPretrieveimage(handles,Threshold,ModuleName,'MustBeGray','CheckScale');

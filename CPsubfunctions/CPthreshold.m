@@ -120,7 +120,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive' or 'PerObject').
     ThresholdMethod = strtok(Threshold);
     %%% Makes sure we are using an existing thresholding method.
-    if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard'},'exact'))
+    if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur'},'exact'))
         error(['The method chosen for thresholding, ',Threshold,', in the ',ModuleName,' module was not recognized by the CPthreshold subfunction. Adjustment to the code of CellProfiler is needed; sorry for the inconvenience.'])
     end
     
@@ -755,3 +755,86 @@ else
     end
     level = exp(MinVal + (MaxVal-MinVal)*NewThresh);
 end
+
+
+function level = Kapur(im,handles,ImageName,pObject)
+%%% This is the Kapur, Sahoo, & Wong method of thresholding, adapted to log-space.
+
+%%% The following is needed for the adaptive cases where there the image
+%%% has been cropped. This must be done within this subfunction, rather
+%%% than in the main code prior to sending to this function via blkproc,
+%%% because the blkproc function takes a single image as input, so we have
+%%% to store the image and its cropmask in a single image variable.
+if ndims(im) == 3
+    Image = im(:,:,1);
+    CropMask = im(:,:,2);
+    clear im
+    im = Image(CropMask==1);
+else im = im(:);
+end
+
+if max(im) == min(im)
+    level = im(1);
+elseif isempty(im)
+    %%% im will be empty if the entire image is cropped away by the
+    %%% CropMask. I am not sure whether it is better to then set the level
+    %%% to 0 or 1. Setting the level to empty causes problems downstream.
+    %%% Presumably setting the level to 1 will not cause major problems
+    %%% because the other blocks will average it out as we get closer to
+    %%% real objects?
+    level = 1;
+else
+    %%% Limit the dynamic range to 8 bits
+    minval = max(im)/256;
+    im(im < minval) = minval;
+    level = Threshold_Kapur(im, 8);
+end
+
+
+%%% This function computes the threshold of an image by
+%%% log-transforming its values, then searching for the threshold that
+%%% maximizes the sum of entropies of the foreground and background
+%%% pixel values, when treated as separate distributions.
+function thresh = Threshold_Kapur(Image, bits)
+% Find the smoothed log histogram.
+[N, X] = hist(log2(smooth_log_histogram(Image(:), bits)), 256);
+
+% drop any zero bins
+drop = (N == 0);
+N(drop) = [];
+X(drop) = [];
+
+% check for corner cases
+if length(X) == 1,
+    thresh = X(1);
+    return;
+end
+
+% Normalize to probabilities
+P = N / sum(N);
+
+% Find the probabilities totals up to and above each possible threshold.
+loSum = cumsum(P);
+hiSum = loSum(end) - loSum;
+loE = cumsum(P .* log2(P));
+hiE = loE(end) - loE;
+
+% compute the entropies
+s = warning('off', 'MATLAB:divideByZero');
+loEntropy = loE ./ loSum - log2(loSum);
+hiEntropy = hiE ./ hiSum - log2(hiSum);
+warning(s);
+
+sumEntropy = loEntropy(1:end-1) + hiEntropy(1:end-1);
+sumEntropy(~ isfinite(sumEntropy)) = Inf;
+entry = min(find(sumEntropy == min(sumEntropy)));
+thresh = 2^((X(entry) + X(entry+1)) / 2);
+
+
+%%% This function smooths a log-transformed histogram, using noise
+%%% proportional to the histogram value.
+function Q = smooth_log_histogram(R, bits)
+R(R == 0) = 1 / (2^bits);
+Q = exp(log(R) + 0.5*randn(size(R)).*(-log(R)/log(2))/bits);
+Q(Q > 1) = 1.0;
+Q(Q < 0) = 0.0;

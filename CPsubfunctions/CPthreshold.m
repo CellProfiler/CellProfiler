@@ -1,5 +1,9 @@
-function [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,ObjectVar)
-
+function [handles,Threshold,varargout] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,ObjectVar)
+%
+% Returns an automatically computed threshold, and if requested in
+% varargout, the Otsu and Kapur measures of thresholding quality
+% (weighted variance and sum of entropies, resp.).
+%
 % CellProfiler is distributed under the GNU General Public License. See the
 % accompanying file LICENSE for details.
 %
@@ -128,6 +132,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     %%% calculate the global threshold. Sends the linear masked image to
     %%% the appropriate thresholding subfunction.
     eval(['Threshold = ',ThresholdMethod,'(LinearMaskedImage,handles,ImageName,pObject);']);
+
     %%% This evaluates to something like: Threshold =
     %%% Otsu(LinearMaskedImage,handles,ImageName,pObject);
 
@@ -258,6 +263,8 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
             %%% This evaluates to something like: Threshold =
             %%% Otsu(Intensities,handles,ImageName,pObject);
 
+            
+
             %%% Sets the pixels corresponding to object i to equal the
             %%% calculated threshold.
             Threshold(RetrievedCropMask == i) = CalculatedThreshold;
@@ -366,6 +373,23 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
 handles = CPaddmeasurements(handles,'Image','OrigThreshold',[ObjectVar,ImageName],mean(mean(Threshold)));
+
+if (nargout >= 3),
+    if ~ exist('BinaryCropMask', 'var')
+        varargout(1) = {WeightedVariance(OrigImage, true(size(OrigImage)), Threshold)};
+    else
+        varargout(1) = {WeightedVariance(OrigImage, BinaryCropMask~=0, Threshold)};
+    end
+end
+if (nargout >= 4),
+    if ~ exist('BinaryCropMask', 'var')
+        varargout(2) = {SumOfEntropies(OrigImage, true(size(OrigImage)), Threshold)};
+    else
+        varargout(2) = {SumOfEntropies(OrigImage, BinaryCropMask~=0, Threshold)};
+    end
+end
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%
@@ -834,7 +858,91 @@ thresh = 2^((X(entry) + X(entry+1)) / 2);
 %%% This function smooths a log-transformed histogram, using noise
 %%% proportional to the histogram value.
 function Q = smooth_log_histogram(R, bits)
+%%% seed random state
+state = randn('state');
+randn('state', 0);
 R(R == 0) = 1 / (2^bits);
 Q = exp(log(R) + 0.5*randn(size(R)).*(-log(R)/log(2))/bits);
 Q(Q > 1) = 1.0;
 Q(Q < 0) = 0.0;
+randn('state', state);
+
+%%% Weighted variances of the foreground and background.
+function  wv = WeightedVariance(Image, CropMask, Threshold)
+if isempty(Image(CropMask)),
+    wv = 0;
+    return;
+end
+
+%%% clamp dynamic range
+minval = max(Image(CropMask))/256;
+if minval == 0.0,
+    wv = 0;
+    return;
+end
+Image(Image < minval) = minval;
+
+%%% Log transform
+Image = log2(Image);
+
+%%% Compute the weighted variance
+FG = Image((Image >= Threshold) & CropMask);
+BG = Image((Image < Threshold) & CropMask);
+if isempty(FG),
+    wv = var(BG);
+elseif isempty(BG);
+    wv = var(FG);
+else
+    wv = (length(FG) * var(FG) + length(BG) * var(BG)) / (length(FG) + length(BG));
+end
+
+
+
+%%% Sum of entropies of foreground and background as separate distributions.
+function  soe = SumOfEntropies(Image, CropMask, Threshold)
+if isempty(Image(CropMask)),
+    wv = 0;
+    return;
+end
+
+%%% clamp dynamic range
+minval = max(Image(CropMask))/256;
+if minval == 0.0,
+    wv = 0;
+    return;
+end
+Image(Image < minval) = minval;
+
+%%% Smooth the histogram
+Image = smooth_log_histogram(Image, 8);
+
+%%% Log transform
+Image = log2(Image);
+
+%%% Find bin locations
+[N, X] = hist(log2(Image(CropMask)), 256);
+
+%%% Find counts for FG and BG
+FG = Image((Image >= Threshold) & CropMask);
+BG = Image((Image < Threshold) & CropMask);
+NFG = hist(log2(FG), X);
+NBG = hist(log2(BG), X);
+
+%%% drop empty bins
+NFG = NFG(NFG > 0);
+NBG = NBG(NBG > 0);
+
+if isempty(NFG)
+    NFG = [1];
+end
+
+if isempty(NBG)
+    NBG = [1];
+end
+
+% normalize
+NFG = NFG / sum(NFG);
+NBG = NBG / sum(NBG);
+
+%%% compute sum of entropies
+soe = sum(NFG .* log2(NFG)) + sum(NBG .* log2(NBG));

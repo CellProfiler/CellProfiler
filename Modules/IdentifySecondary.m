@@ -324,7 +324,7 @@ drawnow
 %%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
 if GetThreshold
-    [handles,Threshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,SecondaryObjectName);
+    [handles,Threshold,WeightedVariance,SumOfEntropies] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,SecondaryObjectName);
 else Threshold = 0; % should never be used
 end
 %%% ANNE REPLACED THIS LINE 11-06-05.
@@ -792,6 +792,25 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
                 column = length(handles.Measurements.Image.ThresholdFeatures);
             end
             handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+
+            %%% Also add the thresholding quality metrics to the measurements
+            if exist('WeightedVariance', 'var')
+                FeatureName = [SecondaryObjectName '_WeightedVariance'];
+                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
+                if isempty(column),
+                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
+                    column = length(handles.Measurements.Image.ThresholdFeatures);
+                end
+                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = WeightedVariance;
+
+                FeatureName = [SecondaryObjectName '_SumOfEntropies'];
+                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
+                if isempty(column),
+                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
+                    column = length(handles.Measurements.Image.ThresholdFeatures);
+                end
+                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = SumOfEntropies;
+            end
         end
 
         %%% Saves the ObjectCount, i.e. the number of segmented objects.

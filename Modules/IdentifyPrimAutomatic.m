@@ -604,7 +604,7 @@ end
 drawnow
 
 if GetThreshold
-    [handles,OrigThreshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,ObjectName);
+    [handles,OrigThreshold,WeightedVariance,SumOfEntropies] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,ObjectName);
 else
     OrigThreshold = 0;
 end
@@ -1143,6 +1143,27 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 column = length(handles.Measurements.Image.ThresholdFeatures);
             end
             handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+            
+            %%% Also add the thresholding quality metrics to the measurements
+            if exist('WeightedVariance', 'var'),
+                FeatureName = [ObjectName '_WeightedVariance'];
+                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
+                if isempty(column),
+                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
+                    column = length(handles.Measurements.Image.ThresholdFeatures);
+                end
+                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = WeightedVariance;
+                
+                FeatureName = [ObjectName '_SumOfEntropies'];
+                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
+                if isempty(column),
+                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
+                    column = length(handles.Measurements.Image.ThresholdFeatures);
+                end
+                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = SumOfEntropies;
+            end
+
+
 
             %%% Saves the ObjectCount, i.e., the number of segmented objects.
             %%% See comments for the Threshold saving above

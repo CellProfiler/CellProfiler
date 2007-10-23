@@ -42,7 +42,7 @@ MovieName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 NumGroupFrames = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %--
-%textVAR03 = What's the position of the frame (within the group) that you want to load?
+%textVAR03 = 1. What's the position of the frame (within the group) that you want to load?
 %defaultVAR03 = 1
 Position{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -52,7 +52,7 @@ Position{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %--
-%textVAR05 = What's the position of the frame (within the group) that you want to load?
+%textVAR05 = 2. What's the position of the frame (within the group) that you want to load?
 %defaultVAR05 = /
 Position{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -62,7 +62,7 @@ Position{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %--
-%textVAR07 = What's the position of the frame (within the group) that you want to load?
+%textVAR07 = 3. What's the position of the frame (within the group) that you want to load?
 %defaultVAR07 = /
 Position{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
@@ -72,7 +72,7 @@ Position{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %--
-%textVAR09 = What's the position of the frame (within the group) that you want to load?
+%textVAR09 = 4. What's the position of the frame (within the group) that you want to load?
 %defaultVAR09 = /
 Position{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -82,7 +82,7 @@ Position{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %--
-%textVAR11 = What's the position of the frame (within the group) that you want to load?
+%textVAR11 = 5. What's the position of the frame (within the group) that you want to load?
 %defaultVAR11 = /
 Position{5} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
@@ -92,7 +92,7 @@ Position{5} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 ImageName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %--
-%textVAR13 = What's the position of the frame (within the group) that you want to load?
+%textVAR13 = 6. What's the position of the frame (within the group) that you want to load?
 %defaultVAR13 = /
 Position{6} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
@@ -102,7 +102,7 @@ Position{6} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
 %--
-%textVAR15 = What's the position of the frame (within the group) that you want to load?
+%textVAR15 = 7. What's the position of the frame (within the group) that you want to load?
 %defaultVAR15 = /
 Position{7} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 
@@ -112,7 +112,7 @@ Position{7} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 ImageName{7} = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
 %--
-%textVAR17 = What's the position of the frame (within the group) that you want to load?
+%textVAR17 = 8. What's the position of the frame (within the group) that you want to load?
 %defaultVAR17 = /
 Position{8} = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
@@ -122,7 +122,7 @@ Position{8} = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 ImageName{8} = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
 %--
-%textVAR19 = What's the position of the frame (within the group) that you want to load?
+%textVAR19 = 9. What's the position of the frame (within the group) that you want to load?
 %defaultVAR19 = /
 Position{9} = char(handles.Settings.VariableValues{CurrentModuleNum,19});
 
@@ -132,7 +132,7 @@ Position{9} = char(handles.Settings.VariableValues{CurrentModuleNum,19});
 ImageName{9} = char(handles.Settings.VariableValues{CurrentModuleNum,20});
 
 %--
-%textVAR21 = What's the position of the frame (within the group) that you want to load?
+%textVAR21 = 10. What's the position of the frame (within the group) that you want to load?
 %defaultVAR21 = /
 Position{10} = char(handles.Settings.VariableValues{CurrentModuleNum,21});
 
@@ -142,7 +142,7 @@ Position{10} = char(handles.Settings.VariableValues{CurrentModuleNum,21});
 ImageName{10} = char(handles.Settings.VariableValues{CurrentModuleNum,22});
 
 %--
-%textVAR23 = What's the position of the frame (within the group) that you want to load?
+%textVAR23 = 11. What's the position of the frame (within the group) that you want to load?
 %defaultVAR23 = /
 Position{11} = char(handles.Settings.VariableValues{CurrentModuleNum,23});
 
@@ -152,7 +152,7 @@ Position{11} = char(handles.Settings.VariableValues{CurrentModuleNum,23});
 ImageName{11} = char(handles.Settings.VariableValues{CurrentModuleNum,24});
 
 %--
-%textVAR25 = What's the position of the frame (within the group) that you want to load?
+%textVAR25 = 12. What's the position of the frame (within the group) that you want to load?
 %defaultVAR25 = /
 Position{12} = char(handles.Settings.VariableValues{CurrentModuleNum,25});
 
@@ -162,7 +162,7 @@ Position{12} = char(handles.Settings.VariableValues{CurrentModuleNum,25});
 ImageName{12} = char(handles.Settings.VariableValues{CurrentModuleNum,26});
 
 %--
-%textVAR27 = What's the position of the frame (within the group) that you want to load?
+%textVAR27 = 13. What's the position of the frame (within the group) that you want to load?
 %defaultVAR27 = /
 Position{13} = char(handles.Settings.VariableValues{CurrentModuleNum,27});
 
@@ -172,7 +172,7 @@ Position{13} = char(handles.Settings.VariableValues{CurrentModuleNum,27});
 ImageName{13} = char(handles.Settings.VariableValues{CurrentModuleNum,28});
 
 %--
-%textVAR29 = What's the position of the frame (within the group) that you want to load?
+%textVAR29 = 14. What's the position of the frame (within the group) that you want to load?
 %defaultVAR29 = /
 Position{14} = char(handles.Settings.VariableValues{CurrentModuleNum,29});
 
@@ -181,65 +181,65 @@ Position{14} = char(handles.Settings.VariableValues{CurrentModuleNum,29});
 %infotypeVAR30 = imagegroup indep
 ImageName{14} = char(handles.Settings.VariableValues{CurrentModuleNum,30});
 
-% %--
-% %textVAR031 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR31 = /
-% Position{15} = char(handles.Settings.VariableValues{CurrentModuleNum,31});
-% 
-% %textVAR32 = What do you want to call this frame within CellProfiler?
-% %defaultVAR32 = /
-% %infotypeVAR32 = imagegroup indep
-% ImageName{15} = char(handles.Settings.VariableValues{CurrentModuleNum,32});
-% 
-% %--
-% %textVAR33 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR33 = /
-% Position{16} = char(handles.Settings.VariableValues{CurrentModuleNum,33});
-% 
-% %textVAR34 = What do you want to call this frame within CellProfiler?
-% %defaultVAR34 = /
-% %infotypeVAR34 = imagegroup indep
-% ImageName{16} = char(handles.Settings.VariableValues{CurrentModuleNum,34});
-% 
-% %--
-% %textVAR35 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR35 = /
-% Position{17} = char(handles.Settings.VariableValues{CurrentModuleNum,35});
-% 
-% %textVAR36 = What do you want to call this frame within CellProfiler?
-% %defaultVAR36 = /
-% %infotypeVAR36 = imagegroup indep
-% ImageName{17} = char(handles.Settings.VariableValues{CurrentModuleNum,36});
-% 
-% %--
-% %textVAR37 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR37 = /
-% Position{18} = char(handles.Settings.VariableValues{CurrentModuleNum,37});
-% 
-% %textVAR38 = What do you want to call this frame within CellProfiler?
-% %defaultVAR38 = /
-% %infotypeVAR38 = imagegroup indep
-% ImageName{18} = char(handles.Settings.VariableValues{CurrentModuleNum,38});
-% 
-% %--
-% %textVAR39 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR39 = /
-% Position{19} = char(handles.Settings.VariableValues{CurrentModuleNum,39});
-% 
-% %textVAR40 = What do you want to call this frame within CellProfiler?
-% %defaultVAR40 = /
-% %infotypeVAR40 = imagegroup indep
-% ImageName{19} = char(handles.Settings.VariableValues{CurrentModuleNum,40});
-% 
-% %--
-% %textVAR41 = What's the position of the frame (within the group) that you want to load?
-% %defaultVAR41 = /
-% Position{20} = char(handles.Settings.VariableValues{CurrentModuleNum,41});
-% 
-% %textVAR42 = What do you want to call this frame within CellProfiler?
-% %defaultVAR42 = /
-% %infotypeVAR42 = imagegroup indep
-% ImageName{20} = char(handles.Settings.VariableValues{CurrentModuleNum,42});
+%--
+%textVAR31 = 15. What's the position of the frame (within the group) that you want to load?
+%defaultVAR31 = /
+Position{15} = char(handles.Settings.VariableValues{CurrentModuleNum,31});
+
+%textVAR32 = What do you want to call this frame within CellProfiler?
+%defaultVAR32 = /
+%infotypeVAR32 = imagegroup indep
+ImageName{15} = char(handles.Settings.VariableValues{CurrentModuleNum,32});
+
+%--
+%textVAR33 = 16. What's the position of the frame (within the group) that you want to load?
+%defaultVAR33 = /
+Position{16} = char(handles.Settings.VariableValues{CurrentModuleNum,33});
+
+%textVAR34 = What do you want to call this frame within CellProfiler?
+%defaultVAR34 = /
+%infotypeVAR34 = imagegroup indep
+ImageName{16} = char(handles.Settings.VariableValues{CurrentModuleNum,34});
+
+%--
+%textVAR35 = 17. What's the position of the frame (within the group) that you want to load?
+%defaultVAR35 = /
+Position{17} = char(handles.Settings.VariableValues{CurrentModuleNum,35});
+
+%textVAR36 = What do you want to call this frame within CellProfiler?
+%defaultVAR36 = /
+%infotypeVAR36 = imagegroup indep
+ImageName{17} = char(handles.Settings.VariableValues{CurrentModuleNum,36});
+
+%--
+%textVAR37 = 18. What's the position of the frame (within the group) that you want to load?
+%defaultVAR37 = /
+Position{18} = char(handles.Settings.VariableValues{CurrentModuleNum,37});
+
+%textVAR38 = What do you want to call this frame within CellProfiler?
+%defaultVAR38 = /
+%infotypeVAR38 = imagegroup indep
+ImageName{18} = char(handles.Settings.VariableValues{CurrentModuleNum,38});
+
+%--
+%textVAR39 = 19. What's the position of the frame (within the group) that you want to load?
+%defaultVAR39 = /
+Position{19} = char(handles.Settings.VariableValues{CurrentModuleNum,39});
+
+%textVAR40 = What do you want to call this frame within CellProfiler?
+%defaultVAR40 = /
+%infotypeVAR40 = imagegroup indep
+ImageName{19} = char(handles.Settings.VariableValues{CurrentModuleNum,40});
+
+%--
+%textVAR41 = 20. What's the position of the frame (within the group) that you want to load?
+%defaultVAR41 = /
+Position{20} = char(handles.Settings.VariableValues{CurrentModuleNum,41});
+
+%textVAR42 = What do you want to call this frame within CellProfiler?
+%defaultVAR42 = /
+%infotypeVAR42 = imagegroup indep
+ImageName{20} = char(handles.Settings.VariableValues{CurrentModuleNum,42});
 
 %%%VariableRevisionNumber = 1
 

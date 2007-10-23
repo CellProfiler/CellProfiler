@@ -882,12 +882,9 @@ if minval == 0.0,
 end
 Image(Image < minval) = minval;
 
-%%% Log transform
-Image = log2(Image);
-
 %%% Compute the weighted variance
-FG = Image((Image >= Threshold) & CropMask);
-BG = Image((Image < Threshold) & CropMask);
+FG = log2(Image((Image >= Threshold) & CropMask));
+BG = log2(Image((Image < Threshold) & CropMask));
 if isempty(FG),
     wv = var(BG);
 elseif isempty(BG);
@@ -915,9 +912,6 @@ Image(Image < minval) = minval;
 
 %%% Smooth the histogram
 Image = smooth_log_histogram(Image, 8);
-
-%%% Log transform
-Image = log2(Image);
 
 %%% Find bin locations
 [N, X] = hist(log2(Image(CropMask)), 256);

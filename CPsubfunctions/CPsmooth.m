@@ -93,6 +93,10 @@ switch lower(SmoothingMethod)
         Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
         drawnow
         SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
+    %%% Note: we decided that sum of squares and square of sums are rarely
+    %%% used for anything (they were historically used for an undergrad
+    %%% project implementing a published method for worm-finding) so most
+    %%% modules don't directly allow choosing these methods.
     case {'sum of squares','s'}
         %%% The following is used for the Sum of squares method.
         FiltLength = SizeOfSmoothingFilter;
@@ -158,6 +162,8 @@ switch lower(SmoothingMethod)
 %         % I think this is wrong, but we should ask Ray.
 %         % RealFilterLength = 2*FiltLength+1;
 %         RealFilterLength = FiltLength;
+    %%% Note: many modules currently aren't allowing this method to be
+    %%% chosen. We should change that!
     case {'smooth to average','a'}
         %%% The following is used for the Smooth to average method.
         %%% Creates an image where every pixel has the value of the mean of the original

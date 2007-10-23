@@ -808,9 +808,6 @@ elseif isempty(im)
     %%% real objects?
     level = 1;
 else
-    %%% Limit the dynamic range to 8 bits
-    minval = max(im)/256;
-    im(im < minval) = minval;
     level = Threshold_Kapur(im, 8);
 end
 

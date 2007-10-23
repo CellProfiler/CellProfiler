@@ -325,7 +325,11 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % Laplacian of Gaussian method:
 % This is a specialized method to find objects and will override the above
-% settings in this module.
+% settings in this module. The code was kindly donated by Zach Perlman and 
+% was used in this published work:
+% Multidimensional drug profiling by automated microscopy.
+% Science. 2004 Nov 12;306(5699):1194-8.  PMID: 15539606
+% Regrettably, we have no further description of its variables.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved

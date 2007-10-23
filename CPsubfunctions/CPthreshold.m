@@ -503,6 +503,7 @@ else
     %%% in the image.
     % im = im(:);
     if length(im) > 512^2
+        rand('seed',0);
         indexes = randperm(length(im));
         im = im(indexes(1:512^2));
     end

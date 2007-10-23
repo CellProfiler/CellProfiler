@@ -205,9 +205,6 @@ function handles = IdentifyPrimAutomatic(handles)
 % is the name of the parent objects (e.g., Nuclei). Then, set this
 % IdentifyPrimAutomatic module to identify objects within the
 % CroppedChildrenStainedImage.
-%    The Mixture of Gaussian (MoG) method uses random permutation, which
-% may cause the resulting threshold to be not deterministic but slightly
-% different at every run.
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be
@@ -254,9 +251,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % de-clumping results of this method are affected by the thresholding
 % method you choose. Technical description: The binary thresholded image is
 % distance-transformed and object centers are defined as peaks in this
-% image.  When finding local maxima points, random noise is added to  the 
-% distance-transformed image.  This may cause a slightly different set of 
-% local maxima points at every run.
+% image. 
+%
 % * None (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped objects.
 % Using the 'None' option, a simple threshold will be used to identify

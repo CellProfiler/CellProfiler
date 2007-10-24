@@ -3276,6 +3276,10 @@ if strcmp(get(gcf,'SelectionType'),'open')
     end
     FileName = char(String(Val));
     PathName = get(handles.DefaultImageDirectoryEditBox,'string');
+    if (~isdir(PathName))
+        CPerrordlg('The selected directory could not be found. Please make sure the directory exists.');
+        return
+    end 
     if strcmpi(FileName(end-3:end),'.mat')
         test = load(fullfile(PathName,FileName));
         if isfield(test,'Settings') || isfield(test,'handles')

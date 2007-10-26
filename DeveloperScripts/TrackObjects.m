@@ -9,10 +9,10 @@ function handles = TrackObjects(handles)
 % *************************************************************************
 % Note: this module is beta-version. It is very simple and has not
 % been thoroughly checked. Improvements to the code are welcome!
-% 
+%
 % This module must be run after objects have been identified using an
 % identify module.
-% 
+%
 % Settings:
 %
 % Tracking Method:
@@ -82,7 +82,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the objects you want to track? 
+%textVAR01 = What did you call the objects you want to track?
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -132,12 +132,12 @@ try
 end
 
 %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
-    handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipeline.(ImageName);
+handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipeline.(ImageName);
 %%% Saves the final segmented label matrix image to the handles structure.
 SegmentedObjectName = ['Segmented' ObjectName];
 handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage = handles.Pipeline.(SegmentedObjectName);
 %%% Saves the location of each segmented object
-handles.Pipeline.TrackObjects.(ObjectName).Current.Locations = handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}; 
+handles.Pipeline.TrackObjects.(ObjectName).Current.Locations = handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed};
 
 % ObjectProperties = handles.Pipeline.TrackObjects.(ObjectName);
 CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
@@ -145,18 +145,18 @@ CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage
 
 if ~(handles.Current.SetBeingAnalyzed == 1)
     %%% Extracts data from the handles structure
-%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
+    %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     PrevImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.(ImageName);
     PrevLocations = handles.Pipeline.TrackObjects.(ObjectName).Previous.Locations;
     PrevLabels = handles.Pipeline.TrackObjects.(ObjectName).Previous.Labels;
     PrevSegImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.SegmentedImage;
-    
-%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
+
+    %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     CurrImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
 
     CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
     CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage;
-    
+
     switch TrackMethod
         case 'Distance'
             CurrLabels = ClosestXY(PrevLocations, CurrLocations, PrevLabels);
@@ -164,7 +164,7 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
             ObjectsToEval = FindObjectsToEval(PrevLocations, CurrLocations, PixelRadius);
             CurrLabels = CompareImages( handles.Pipeline.TrackObjects.(ObjectName), ObjectsToEval, ImageName, TrackMethod, PixelRadius, PrevLabels);
     end
-    
+
     if strcmp(Stats, 'Yes')
         PrevNumObj = max(PrevSegImage(:));
         CurrSegObj = max(CurrSegImage(:));
@@ -175,7 +175,7 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
             CellsExited = PrevNumObj - CurrSegObj;
             handles.TrackObjects.(ObjectName).CellsExitedCount = CellsExited + handles.TrackObjects.(ObjectName).CellsExitedCount;
         end
-        
+
         if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             for i = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize)
                 a = find(CurrLabels == i);
@@ -191,25 +191,20 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
             ObjectSizeChange = FirstIsolatedObjSize./LastIsolatedObjSize;
         end
     end
-    
+
 else
     CurrLabels = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations);
     if strcmp(Stats, 'Yes')
         handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsEnteredCount = 0;
         handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsExitedCount = 0;
-        
+
         for i = 1:max(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage(:))
             [IsolatedObject, border] = IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, i);
             IsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
         end
-        handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize = IsolatedObjSize;      
+        handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize = IsolatedObjSize;
     end
 end
-   
-
-CStringOfMeas = cellstr(num2str((CurrLabels)'));
-TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
-    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
 
 %Create colored image
 ColoredImage = LabelByColor(handles.Pipeline.TrackObjects.(ObjectName), CurrLabels);
@@ -233,6 +228,10 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(DisplayImage, handles);
     title('Tracked Objects');
 end
+
+CStringOfMeas = cellstr(num2str((CurrLabels)'));
+TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
+    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -274,16 +273,16 @@ for i = 1:Size(1)
     for j = 1:Size(2)
         if EvalArray(i,j) == 1
             [CurrMaskedObj, CurrObjLoc] = IsolateImage(CurrentMaskedImage, j);
-            
+
             [NormPrevMask, NormCurrMask] = NormalizeSizes(PrevMaskedObj, CurrMaskedObj);
-    
+
             %only when you need the orig isolatedimage
-%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
+            %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
             PrevIsoObj= PrevOrigImage(PrevObjLoc(1):PrevObjLoc(2), PrevObjLoc(3):PrevObjLoc(4));
-%%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
+            %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
             CurrIsoObj= CurrOrigImage(CurrObjLoc(1):CurrObjLoc(2), CurrObjLoc(3):CurrObjLoc(4));
 
-[NormPrevIso, NormCurrIso] = NormalizeSizes(PrevIsoObj, CurrIsoObj);
+            [NormPrevIso, NormCurrIso] = NormalizeSizes(PrevIsoObj, CurrIsoObj);
             NormPrevIso(NormPrevMask==0) = 0;
             NormCurrIso(NormCurrMask==0) = 0;
 
@@ -343,9 +342,9 @@ for i= 1:PrevNumOfObjects
     counter = 0;
     ShortestDistance = Inf;
     for j = 1:CurrNumOfObjects
-        
+
         Distance = sqrt((abs(CurrXLocations(j)-PrevXLocations(i)))^2+(abs(CurrYLocations(j)-PrevYLocations(i)))^2);
-        
+
         if Distance < ShortestDistance
             ShortestDistance = Distance;
             ClosestCellArray = zeros(1,CurrNumOfObjects);
@@ -454,9 +453,9 @@ else
 end
 if padsize(2)<0
     NormPrev = padarray(NormPrev, [0 abs(padsize(2))]);
-else 
+else
     NormCurr = padarray(NormCurr, [0 abs(padsize(2))]);
-end      
+end
 
 function UpdatedLabels = AssignLabels(DataArray, PrevLabels)
 % Assigns each object the label corresponding to its previous label
@@ -495,20 +494,20 @@ for k = 1:NumberOfObjects
 end
 
 function [im, handles] = TrackCPlabel2rgb(handles, image)
-    numregion = double(max(image(:)));
-    cmap = eval([handles.Preferences.LabelColorMap '(255)']);
-    try
-        if numregion>length(handles.newcmap)
-            newregions = numregions-length(handles.newcmap);
-            newindex = round(rand(1,newregions)*255);
-            index = [index newindex];
-            handles.newcmap = cmap(index,:,:);
-        end
-    catch
-        S = rand('state');
-        rand('state', 0);
-        index = round(rand(1,numregion)*255);
-        handles.Pipeline.TrackObjects.Colormap = cmap(index,:,:);
-        rand('state', S);
+numregion = double(max(image(:)));
+cmap = eval([handles.Preferences.LabelColorMap '(255)']);
+try
+    if numregion>length(handles.newcmap)
+        newregions = numregions-length(handles.newcmap);
+        newindex = round(rand(1,newregions)*255);
+        index = [index newindex];
+        handles.newcmap = cmap(index,:,:);
     end
-    im = label2rgb(image, handles.Pipeline.TrackObjects.Colormap, 'k', 'noshuffle');
+catch
+    S = rand('state');
+    rand('state', 0);
+    index = round(rand(1,numregion)*255);
+    handles.Pipeline.TrackObjects.Colormap = cmap(index,:,:);
+    rand('state', S);
+end
+im = label2rgb(image, handles.Pipeline.TrackObjects.Colormap, 'k', 'noshuffle');

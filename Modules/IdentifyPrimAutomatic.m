@@ -1380,7 +1380,7 @@ while ~isempty(MergeIndex)
     end
 
     %%% OK, we are done with the current object, let's go to the next
-    MergeIndex = MergeIndex(2:end-1);
+    MergeIndex = MergeIndex(2:end);
 end
 
 %%% Finally, relabel the objects

@@ -231,7 +231,8 @@ end
 
 CStringOfMeas = cellstr(num2str((CurrLabels)'));
 TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
-    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
+    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize,...
+    'visible','off');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -245,6 +246,9 @@ Info = handles.Pipeline.TrackObjects.(DataImage).Info;
 
 handles.Pipeline.TrackObjects.(ObjectName).Current.Labels = CurrLabels;
 handles.Pipeline.(DataImage)=DisplayImage;
+
+handles.Pipeline.TrackObjects.Locations{handles.Current.SetBeingAnalyzed} = CurrLocations;
+handles.Pipeline.TrackObjects.Labels{handles.Current.SetBeingAnalyzed} = CurrLabels;
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%%% SUBFUNCTIONS %%%%

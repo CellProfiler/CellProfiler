@@ -45,12 +45,7 @@ drawnow
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
-%% ButtonName = questdlg(Question, Title, Btn1, Btn2,..., DEFAULT);
-ButtonName = CPquestdlg('Continue processing?','PauseCP','Continue','Cancel','Continue');
-%% TODO - add Modify
-% ButtonName = CPquestdlg('Continue or Modify previous module?','PauseCP','Continue','Modify','Cancel','Continue');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -67,6 +62,14 @@ if any(findobj == ThisModuleFigureNumber)
         close(ThisModuleFigureNumber)
     end
 end
+
+drawnow
+
+%% ButtonName = questdlg(Question, Title, Btn1, Btn2,..., DEFAULT);
+ButtonName = CPquestdlg('Continue processing?','PauseCP','Continue','Cancel','Continue');
+%% TODO - add Modify
+% ButtonName = CPquestdlg('Continue or Modify previous
+% module?','PauseCP','Continue','Modify','Cancel','Continue');
 
 switch ButtonName
     case 'Continue'

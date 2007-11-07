@@ -7,6 +7,11 @@ ObjectFields = fieldnames(handles.Measurements);
 GroupingStrings = handles.Measurements.Image.(DataName);
 %%% Need column vector
 GroupingValues = str2num(char(GroupingStrings')); %#ok Ignore MLint
+
+%%% Get the handle to the waitbar and update the text in the waitbar
+waitbarhandle = CPwaitbar(0,'');
+CPwaitbar(0,waitbarhandle,'CPcalculateStatistics Progress');
+
 for i = 1:length(ObjectFields)
     ObjectName = char(ObjectFields(i));
     %%% Filter out Experiment and Image fields
@@ -102,4 +107,7 @@ for i = 1:length(ObjectFields)
             end
         end
     end
+    %%% Update waitbar
+    CPwaitbar(i./length(ObjectFields),waitbarhandle);
 end
+close(waitbarhandle)

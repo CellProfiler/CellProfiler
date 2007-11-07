@@ -103,7 +103,9 @@ if ~strcmp(ParentName{2},'None')
    
     %% Sanity check
     if max(ParentObjectLabelMatrix(:)) ~= max(StepParentObjectLabelMatrix(:))
-        Cperrdlg('The number of parents does not equal the number of Other objects in the Relate Module')
+        CPwarndlg(['The number of Parent Objects (' num2str(max(ParentObjectLabelMatrix(:))) ...
+            ') does not equal the number of Other objects (' num2str(max(StepParentObjectLabelMatrix(:))) ...
+            ') in the Relate Module, Cycle#' num2str(handles.Current.SetBeingAnalyzed) '.  If the difference is large, this may cause the Relate Module output to be suspect.'],'Relate module')
     end
 else
     ParentName = {ParentName{1}};

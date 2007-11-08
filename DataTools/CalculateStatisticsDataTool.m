@@ -95,7 +95,7 @@ while promptLoop == 0
     end
 
     %% Check 'DataName'
-    if isempty(DataName) || ~isfield(handles.Measurements.Image,DataName)
+    if isempty(DataName) && ~isfield(handles.Measurements.Image,DataName)
         uiwait(CPerrordlg('Error: there was a problem with your choice of grouping values'));
         continue
     end

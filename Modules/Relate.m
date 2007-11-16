@@ -105,7 +105,8 @@ if ~strcmp(ParentName{2},'None')
     if max(ParentObjectLabelMatrix(:)) ~= max(StepParentObjectLabelMatrix(:))
         CPwarndlg(['The number of Parent Objects (' num2str(max(ParentObjectLabelMatrix(:))) ...
             ') does not equal the number of Other objects (' num2str(max(StepParentObjectLabelMatrix(:))) ...
-            ') in the Relate Module, Cycle#' num2str(handles.Current.SetBeingAnalyzed) '.  If the difference is large, this may cause the Relate Module output to be suspect.'],'Relate module')
+            ') in the Relate Module, Cycle#' num2str(handles.Current.SetBeingAnalyzed) ...
+            '.  If the difference is large, this may cause the Relate Module output to be suspect.'],'Relate module')
     end
 else
     ParentName = {ParentName{1}};
@@ -120,14 +121,14 @@ try
     [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
         SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
     handles.Measurements.(SubObjectName).SubObjectFlag=1;
-
+    
     %% Save Distance 'Features'
     handles.Measurements.(SubObjectName).DistanceFeatures = ParentName;
 
     %% Initialize Distance
     handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = ...
-        NaN .* ones(length(ParentsOfChildren),length(ParentName));
-
+        zeros(max([length(ParentsOfChildren) 1]),length(ParentName));
+    
     %% Calcuate the smallest distance from each Child to their Parent
     %% If no parent exists, then Distance = NaN
     if isfield(handles.Measurements.(SubObjectName),'Location')
@@ -153,7 +154,7 @@ try
     else
         warning('There is no ''Location'' field with which to find subObj to Parent distances')
     end
-
+    
     %% Calculate normalized distances
     %% All distances are relative to the *first* parent.
     if length(ParentName) > 1

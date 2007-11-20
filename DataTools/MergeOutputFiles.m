@@ -12,7 +12,7 @@ function MergeOutputFiles(handles)
 % After a batch run has completed (using batch files created by the Create
 % Batch Files module), the individual output files contain results from a
 % subset of images and can be merged into a single output file. This module
-% assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*.mat is a
+% assumes anything matching the pattern of Prefix[0-9]*_to_[0-9]*_OUT.mat is a
 % batch output file. The combined output is written to the output filename
 % you specify. Once merged, this output file should be compatible with data
 % tools.

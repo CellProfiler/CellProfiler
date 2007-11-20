@@ -166,11 +166,9 @@ PercentFlag = 0;
 CustomFlag = 0;
 try
     if strncmpi(NbrOfBins,'P',1)
-%         LowerBinMin = min(Measurements)-eps;
         LowerBinMin = min(Measurements(~isinf(Measurements)))-eps;
-%         UpperBinMax = max(Measurements)+eps;
         UpperBinMax = max(Measurements(~isinf(Measurements)))+eps;
-        MidPointToUse = (UpperBinMax - LowerBinMin) .* str2double(NbrOfBins(3:end)) + LowerBinMin;
+        MidPointToUse = str2double(NbrOfBins(3:end));
         PercentFlag = 1;
     elseif strncmpi(NbrOfBins,'C',1)
         NbrOfBins = str2num(NbrOfBins(3:end)); %#ok Ignore MLint

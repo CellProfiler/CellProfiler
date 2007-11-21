@@ -133,17 +133,17 @@ for i = 1:length(FileList)
     for fieldnum=1:length(Fieldnames)
         secondfields = fieldnames(handles.Measurements.(Fieldnames{fieldnum}));
         % Some fields should not be merged, remove these from the list of fields
-        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Pathname')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'PathName')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
         secondfields = secondfields(cellfun('isempty',strfind(secondfields,'SubObjectFlag')));   % Don't merge cell arrays with SubObjectFlag (to play nicely with Relate module)
         for j = 1:length(secondfields)
             idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));
-            idxs(1) = 0;
-            if (fieldnum == 1),
-                lo = min(find(idxs(2:end))+1);
-                hi = max(find(idxs(2:end))+1);
-                disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
-            end
+            idxs(1) = 0; %% Protects the first/main 'Batch' file
+%             if (fieldnum == 1),
+%                 lo = min(find(idxs(2:end))+1);
+%                 hi = max(find(idxs(2:end))+1);
+%                 disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
+%             end
             handles.Measurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs) = SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs);
         end
     end

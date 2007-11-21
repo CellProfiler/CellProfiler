@@ -51,7 +51,7 @@ if FileName == 0, return, end   %% CPuigetfile canceled
 %% may have the denoted the path as on the cluster if CreatebatchFiles 
 %% was used to generate the raw measurements file
 origDefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
-
+origDefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
 %%% Load the specified CellProfiler output file
 try
     load(fullfile(Pathname, FileName));
@@ -122,6 +122,7 @@ handles.Settings.VariableValues{1,2}=DataName;
 handles.Settings.VariableValues{1,3}=TextFilePathname;
 handles.Current.CurrentModuleNumber='01';
 handles.Current.SetBeingAnalyzed=1;
+handles.Current.DefaultImageDirectory = origDefaultImageDirectory; %% In case cluster path is different
 %% Load Text
 handles = LoadText(handles);
 %% Return previous values
@@ -137,6 +138,7 @@ OutputFileName = Answer{1};
 %% may have the denoted the path as on the cluster if CreatebatchFiles 
 %% was used to generate the raw measurements file
 handles.Current.DefaultOutputDirectory = origDefaultOutputDirectory;
+handles.Current.DefaultImageDirectory = origDefaultImageDirectory;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

@@ -111,11 +111,18 @@ Fieldnames = fieldnames(handles.Measurements);
 FileList = dir(BatchPath);
 Matches = ~cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
 FileList = FileList(Matches);
+if ~any(Matches)
+   CPwarndlg('MergeOutputFiles cannot find any files that match [0-9]*_to_[0-9]*_OUT.mat.  Be sure that the ''...data.mat'' file is in the same directory as the ''...OUT.mat'' files') 
+end
 
-waitbarhandle = CPwaitbar(0,'Merging files...');
+waitbarhandle = CPwaitbar(0,['Merging ' num2str(length(FileList) + 1) ' files ...']);
 for i = 1:length(FileList)
+    %% Something about the loaded 'X_data.mat' file is causing this
+    %% warning, perhaps a cluster vs. local named function?  Seems OK, so turning it off. David 2007.11.21
+    LoadWarning = warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle');
     SubsetData = load(fullfile(BatchPath,FileList(i).name));
-    FileList(i).name
+    warning(LoadWarning)
+    disp(FileList(i).name)
 
     if (isfield(SubsetData.handles, 'BatchError')),
         error(['Image processing was canceled in the ', ModuleName, ' module because there was an error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
@@ -154,6 +161,7 @@ end
 handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleError');
 handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
 
+CPwaitbar(1,waitbarhandle,'Saving Output...')
 save(fullfile(BatchPath,OutputFileName),'handles');
 close(waitbarhandle);
 CPmsgbox('Merging is completed.');

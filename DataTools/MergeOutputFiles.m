@@ -122,7 +122,7 @@ for i = 1:length(FileList)
     LoadWarning = warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle');
     SubsetData = load(fullfile(BatchPath,FileList(i).name));
     warning(LoadWarning)
-    disp(FileList(i).name)
+%     disp(FileList(i).name)
 
     if (isfield(SubsetData.handles, 'BatchError')),
         error(['Image processing was canceled in the ', ModuleName, ' module because there was an error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);

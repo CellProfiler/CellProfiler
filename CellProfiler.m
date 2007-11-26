@@ -1804,7 +1804,7 @@ function RemoveModule_Helper(ModuleHighlighted, hObject, eventdata, handles, Con
 
 if strcmp(ConfirmOrNot, 'Confirm') == 1
     %%% Confirms the choice to clear the module.
-    Answer = CPquestdlg('Are you sure you want to clear this analysis module and its settings?','Confirm','Yes','No','Yes');
+    Answer = CPquestdlg('Are you sure you want to delete this analysis module from the image analysis pipeline?','Confirm','Yes','No','Yes');
     if strcmp(Answer,'No')
         return
     end

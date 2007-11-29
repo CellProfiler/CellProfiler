@@ -93,12 +93,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
      pmask = rwalkpthread(image, seed, (int)mxGetScalar(NWALKS_IN), 0, 
                           restart_prob, nworkers);
 
+#if 0
      /* Threshold at the minimum stationary probability within the seeds. */
      for (i = 0; i < seed->size; i++) {
           value = pgm_pixel(pmask, seed->points[i].x, seed->points[i].y);
           if (i == 0 || value < threshold)
                threshold = value;
      }
+#endif
+#if 1
+     /* Global normalization. */
+     threshold = 0;
+     for (i = 0; i < m; i++)
+          for (j = 0; j < n; j++)
+               if (pgm_pixel(pmask, j, i) > threshold)
+                    threshold = pgm_pixel(pmask, j, i);
+#endif
 
      /* Prepare output matrix. */
      PMASK_OUT = mxCreateDoubleMatrix(m, n, mxREAL);

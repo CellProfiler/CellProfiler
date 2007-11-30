@@ -896,14 +896,14 @@ end
 %%% Sum of entropies of foreground and background as separate distributions.
 function  soe = SumOfEntropies(Image, CropMask, Threshold)
 if isempty(Image(CropMask)),
-    wv = 0;
+    soe = 0;
     return;
 end
 
 %%% clamp dynamic range
 minval = max(Image(CropMask))/256;
 if minval == 0.0,
-    wv = 0;
+    soe = 0;
     return;
 end
 Image(Image < minval) = minval;

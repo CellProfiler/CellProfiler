@@ -25,6 +25,10 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision$
 
+%% Added because empty Data mess up the Export modules 
+if isempty(Data)
+    Data = 0;
+end
 
 %%% It's a little unclear under what circumstances this subfunction should
 %%% be used, as opposed to naming substructures with the exact name of the

@@ -158,9 +158,12 @@ try
     %% Calculate normalized distances
     %% All distances are relative to the *first* parent.
     if length(ParentName) > 1
-        Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
+        Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};   
+        %% Initialize NormDistance
+        handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = zeros(size(Dist,1),1);
         NormDist = Dist(:,1) ./ sum(Dist,2);
-
+        NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
+        
         %% Save Normalized Distances
         handles.Measurements.(SubObjectName).NormDistanceFeatures = {ParentName{1}}; %% outer curly brackets needed for correct length(MeasurementFeatures) calculation in inner loop below
         handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = NormDist;

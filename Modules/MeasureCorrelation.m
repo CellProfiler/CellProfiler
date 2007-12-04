@@ -220,7 +220,7 @@ for ObjectNameNbr = 1:ObjectNameCount
 
     %%% Calculate the correlation in all objects for all pairwise image combinations
     NbrOfObjects = max(LabelMatrixImage{ObjectNameNbr}(:));          % Get number of segmented objects
-    Correlation = zeros(NbrOfObjects,length(CorrelationFeatures));   % Pre-allocate memory
+    Correlation = zeros(max([NbrOfObjects 1]),length(CorrelationFeatures));   % Pre-allocate memory
     for ObjectNbr = 1:NbrOfObjects                                   % Loop over objects
         FeatureNbr = 1;                                              % Easiest way to keep track of the feature number, i.e. which combination of images
         for i = 1:ImageCount-1                                       % Loop over all combinations of images

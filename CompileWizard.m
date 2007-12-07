@@ -22,19 +22,19 @@ assert(~ exist('CompileWizardText_help.m','file'), 'CompileWizardText_help.m sho
 fid = fopen('CompileWizardText_help.m','w');
 
 ImageToolfilelist = dir('ImageTools/*.m');
-fprintf(fid,'%%%%%% IMAGE TOOL HELP\n');
-fprintf(fid,'ToolHelpInfo = ''Help information for individual image tools:'';\n\n');
+fprintf(fid,'%%%%%% IMAGE TOOL HELP\r\n');
+fprintf(fid,'ToolHelpInfo = ''Help information for individual image tools:'';\r\n\r\n');
 for i=1:length(ImageToolfilelist)
     ToolName = ImageToolfilelist(i).name;
-    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
+    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\r\n']);
     body = char(strread(help(ImageToolfilelist(i).name),'%s','delimiter','','whitespace',''));
     for j = 1:size(body,1)
         fixedtext = fixthistext(body(j,:));
-        newtext = ['''',fixedtext,'\\n''...\n'];
+        newtext = ['''',fixedtext,'\\r\n''...\r\n'];
         fprintf(fid,newtext);
     end
-    fprintf(fid,']);\n\n');
-    fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
+    fprintf(fid,']);\r\n\r\n');
+    fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\r\n\r\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
     else
@@ -46,25 +46,25 @@ for i=1:length(ImageToolfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.ImageToolsFilenames = {''Image tools'' ',ToolList,'};\n']);
-fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\n\n');
+fprintf(fid,['handles.Current.ImageToolsFilenames = {''Image tools'' ',ToolList,'};\r\n']);
+fprintf(fid,'handles.Current.ImageToolHelp = ToolHelp;\r\n\r\n');
 
 clear ToolList
 
 DataToolfilelist = dir('DataTools/*.m');
-fprintf(fid,'%%%%%% DATA TOOL HELP\n');
-fprintf(fid,'ToolHelpInfo = ''Help information for individual data tools:'';\n\n');
+fprintf(fid,'%%%%%% DATA TOOL HELP\r\n');
+fprintf(fid,'ToolHelpInfo = ''Help information for individual data tools:'';\r\n\r\n');
 for i=1:length(DataToolfilelist)
     ToolName = DataToolfilelist(i).name;
-    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
+    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\r\n']);
     body = char(strread(help(DataToolfilelist(i).name),'%s','delimiter','','whitespace',''));
     for j = 1:size(body,1)
         fixedtext = fixthistext(body(j,:));
-        newtext = ['''',fixedtext,'\\n''...\n'];
+        newtext = ['''',fixedtext,'\\r\n''...\r\n'];
         fprintf(fid,newtext);
     end
-    fprintf(fid,']);\n\n');
-    fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\n\n']);
+    fprintf(fid,']);\r\n\r\n');
+    fprintf(fid,['ToolHelp{',num2str(i),'} = [ToolHelpInfo, ''-----------'' 10 ',[ToolName(1:end-2),'Help'],'];\r\n\r\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
     else
@@ -76,24 +76,24 @@ for i=1:length(DataToolfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.DataToolsFilenames = {''Data tools'' ',ToolList,'};\n']);
-fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\n\n');
+fprintf(fid,['handles.Current.DataToolsFilenames = {''Data tools'' ',ToolList,'};\r\n']);
+fprintf(fid,'handles.Current.DataToolHelp = ToolHelp;\r\n\r\n');
 
 clear ToolList
 
 Modulesfilelist = dir('Modules/*.m');
-fprintf(fid,'%%%%%% MODULES HELP\n');
+fprintf(fid,'%%%%%% MODULES HELP\r\n');
 for i=1:length(Modulesfilelist)
     ToolName = Modulesfilelist(i).name;
-    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\n']);
+    fprintf(fid,[ToolName(1:end-2),'Help = sprintf([...\r\n']);
     body = char(strread(help(Modulesfilelist(i).name),'%s','delimiter','','whitespace',''));
     for j = 1:size(body,1)
         fixedtext = fixthistext(body(j,:));
-        newtext = ['''',fixedtext,'\\n''...\n'];
+        newtext = ['''',fixedtext,'\\r\n''...\r\n'];
         fprintf(fid,newtext);
     end
-    fprintf(fid,']);\n\n');
-    fprintf(fid,['ToolHelp{',num2str(i),'} = ',ToolName(1:end-2),'Help;\n\n']);
+    fprintf(fid,']);\r\n\r\n');
+    fprintf(fid,['ToolHelp{',num2str(i),'} = ',ToolName(1:end-2),'Help;\r\n\r\n']);
     if exist('ToolList','var')
         ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
     else
@@ -105,46 +105,46 @@ for i=1:length(Modulesfilelist)
         ToolListNoQuotes = ToolName(1:end-2);
     end
 end
-fprintf(fid,['handles.Current.ModulesFilenames = {',ToolList,'};\n']);
-fprintf(fid,'handles.Current.ModulesHelp = ToolHelp;\n\n');
+fprintf(fid,['handles.Current.ModulesFilenames = {',ToolList,'};\r\n']);
+fprintf(fid,'handles.Current.ModulesHelp = ToolHelp;\r\n\r\n');
 
 clear ToolList
 
 Helpfilelist = dir('Help/*.m');
-fprintf(fid,'%%%%%% HELP\n');
+fprintf(fid,'%%%%%% HELP\r\n');
 ToolCount=1;
 GSToolCount=1;
 for i=1:length(Helpfilelist)
     ToolName = Helpfilelist(i).name;
     if strncmp(ToolName,'GS',2)
-        fprintf(fid,['GSToolHelp{',num2str(GSToolCount),'} = sprintf([...\n']);
+        fprintf(fid,['GSToolHelp{',num2str(GSToolCount),'} = sprintf([...\r\n']);
         GSToolCount=GSToolCount+1;
         body = char(strread(help(Helpfilelist(i).name),'%s','delimiter','','whitespace',''));
         for j = 1:size(body,1)
             fixedtext = strrep(body(j,:),'''','''''');
             fixedtext = strrep(fixedtext,'\','\\\\');
             fixedtext = strrep(fixedtext,'%','%%%%');
-            newtext = ['''',fixedtext,'\\n''...\n'];
+            newtext = ['''',fixedtext,'\\r\n''...\r\n'];
             fprintf(fid,newtext);
         end
-        fprintf(fid,']);\n\n');
+        fprintf(fid,']);\r\n\r\n');
         if exist('GSToolList','var')
             GSToolList = [GSToolList, ' ''',ToolName(1:end-2),''''];
         else
             GSToolList = ['''',ToolName(1:end-2),''''];
         end
     else
-        fprintf(fid,['ToolHelp{',num2str(ToolCount),'} = sprintf([...\n']);
+        fprintf(fid,['ToolHelp{',num2str(ToolCount),'} = sprintf([...\r\n']);
         ToolCount=ToolCount+1;
         body = char(strread(help(Helpfilelist(i).name),'%s','delimiter','','whitespace',''));
         for j = 1:size(body,1)
             fixedtext = strrep(body(j,:),'''','''''');
             fixedtext = strrep(fixedtext,'\','\\\\');
             fixedtext = strrep(fixedtext,'%','%%%%');
-            newtext = ['''',fixedtext,'\\n''...\n'];
+            newtext = ['''',fixedtext,'\\r\n''...\r\n'];
             fprintf(fid,newtext);
         end
-        fprintf(fid,']);\n\n');
+        fprintf(fid,']);\r\n\r\n');
         if exist('ToolList','var')
             ToolList = [ToolList, ' ''',ToolName(1:end-2),''''];
         else
@@ -152,11 +152,11 @@ for i=1:length(Helpfilelist)
         end
     end
 end
-fprintf(fid,['handles.Current.HelpFilenames = {''Help'' ',ToolList,'};\n']);
-fprintf(fid,'handles.Current.Help = ToolHelp;\n\n');
+fprintf(fid,['handles.Current.HelpFilenames = {''Help'' ',ToolList,'};\r\n']);
+fprintf(fid,'handles.Current.Help = ToolHelp;\r\n\r\n');
 
-fprintf(fid,['handles.Current.GSFilenames = {''Help'' ',GSToolList,'};\n']);
-fprintf(fid,'handles.Current.GS = GSToolHelp;\n\n');
+fprintf(fid,['handles.Current.GSFilenames = {''Help'' ',GSToolList,'};\r\n']);
+fprintf(fid,'handles.Current.GS = GSToolHelp;\r\n\r\n');
 
 clear ToolList
 
@@ -171,7 +171,7 @@ assert(~ exist('CompileWizardText_listbox.m','file'), 'CompileWizardText_listbox
 fid = fopen('CompileWizardText_listbox.m','w');
 
 Modulefilelist = dir('Modules/*.m');
-fprintf(fid,'%%%%%% load_listbox code (replace function in CellProfiler.m)\n\n');
+fprintf(fid,'%%%%%% load_listbox code (replace function in CellProfiler.m)\r\n\r\n');
 FileProcessingFiles ={};
 PreProcessingFiles={};
 ObjectProcessingFiles={};
@@ -198,67 +198,67 @@ for i=1:length(Modulefilelist)
     while 1;
         output = fgetl(fid2); if ~ischar(output); break; end;
         if strncmp(output,'%defaultVAR',11)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%choiceVAR',10)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%textVAR',8)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%pathnametextVAR',16)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%filenametextVAR',16)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%infotypeVAR',12)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%inputtypeVAR',13)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         elseif strncmp(output,'%%%VariableRevisionNumber',25)
-            fprintf(fid3,[fixthistext2(output),'\n']);
+            fprintf(fid3,[fixthistext2(output),'\r\n']);
         end
     end
     fclose(fid2);
     fclose(fid3);
     %%% END CODE TO WRITE TEXT FILES OF MODULES
 end
-fprintf(fid,'CategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\n');
+fprintf(fid,'CategoryList = {''File Processing'' ''Image Processing'' ''Object Processing'' ''Measurement'' ''Other''};\r\n');
 
 fprintf(fid,'FileProcessingFiles = {');
 for i=1:length(FileProcessingFiles)
     fprintf(fid,['''',FileProcessingFiles{i},''' ']);
 end
-fprintf(fid,'};\n');
+fprintf(fid,'};\r\n');
 
 fprintf(fid,'PreProcessingFiles = {');
 for i=1:length(PreProcessingFiles)
     fprintf(fid,['''',PreProcessingFiles{i},''' ']);
 end
-fprintf(fid,'};\n');
+fprintf(fid,'};\r\n');
 
 fprintf(fid,'ObjectProcessingFiles = {');
 for i=1:length(ObjectProcessingFiles)
     fprintf(fid,['''',ObjectProcessingFiles{i},''' ']);
 end
-fprintf(fid,'};\n');
+fprintf(fid,'};\r\n');
 
 fprintf(fid,'MeasurementFiles = {');
 for i=1:length(MeasurementFiles)
     fprintf(fid,['''',MeasurementFiles{i},''' ']);
 end
-fprintf(fid,'};\n');
+fprintf(fid,'};\r\n');
 
 fprintf(fid,'OtherFiles = {');
 for i=1:length(OtherFiles)
     fprintf(fid,['''',OtherFiles{i},''' ']);
 end
-fprintf(fid,'};\n');
+fprintf(fid,'};\r\n');
 
-fprintf(fid,'set(AddModuleWindowHandles.ModuleCategoryListBox,''String'',CategoryList,''Value'',[])\n');
-fprintf(fid,'set(AddModuleWindowHandles.ModulesListBox,''String'',FileProcessingFiles,''Value'',[])\n');
-fprintf(fid,'AddModuleWindowHandles.ModuleStrings{1} = FileProcessingFiles;\n');
-fprintf(fid,'AddModuleWindowHandles.ModuleStrings{2} = PreProcessingFiles;\n');
-fprintf(fid,'AddModuleWindowHandles.ModuleStrings{3} = ObjectProcessingFiles;\n');
-fprintf(fid,'AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;\n');
-fprintf(fid,'AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;\n');
-fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\n\n');
+fprintf(fid,'set(AddModuleWindowHandles.ModuleCategoryListBox,''String'',CategoryList,''Value'',[])\r\n');
+fprintf(fid,'set(AddModuleWindowHandles.ModulesListBox,''String'',FileProcessingFiles,''Value'',[])\r\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{1} = FileProcessingFiles;\r\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{2} = PreProcessingFiles;\r\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{3} = ObjectProcessingFiles;\r\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{4} = MeasurementFiles;\r\n');
+fprintf(fid,'AddModuleWindowHandles.ModuleStrings{5} = OtherFiles;\r\n');
+fprintf(fid,'guidata(AddModuleWindowHandles.AddModuleWindow,AddModuleWindowHandles);\r\n\r\n');
 
 %%% AUTOMATIC EDITING CHANGES
 fclose(fid);
@@ -279,8 +279,8 @@ end
 assert(~ exist('CompileWizardText_function.m','file'), 'CompileWizardText_function.m should not exist.');
 fid = fopen('CompileWizardText_function.m','w');
 
-fprintf(fid,'%%%%%% FUNCTIONS TO ADD (place before first line of code in CellProfiler.m)\n');
-fprintf(fid,['%%#function ',ToolListNoQuotes, '\n']);
+fprintf(fid,'%%%%%% FUNCTIONS TO ADD (place before first line of code in CellProfiler.m)\r\n');
+fprintf(fid,['%%#function ',ToolListNoQuotes, '\r\n']);
 
 fclose(fid);
 

@@ -139,6 +139,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the staining measured by this module?
 %defaultVAR02 = CellStain
+%infotypeVAR02 = imagegroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold to determine what will work well.
@@ -264,3 +265,6 @@ fieldname = ['AreaOccupied_',ObjectName];
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = TotalImageArea;
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,3) = Threshold;
+
+%% Save the thresholded image in handles.Pipeline for later use.
+handles.Pipeline.(ObjectName) = ThresholdedOrigImage;

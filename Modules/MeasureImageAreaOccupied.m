@@ -139,7 +139,6 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = What do you want to call the staining measured by this module?
 %defaultVAR02 = CellStain
-%infotypeVAR02 = objectgroup indep
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold to determine what will work well.

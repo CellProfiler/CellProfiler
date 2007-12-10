@@ -327,7 +327,7 @@ assert(length(listbox_endidx) == 1, 'Could not find end of load_listbox function
 CPcode = [CPcode(1:listbox_startidx-1) Listboxcode CPcode(listbox_endidx:end)];
 
 % write out the result
-fid = fopen('CompileWizard_CellProfiler.m', 'wt');
+fid = fopen('CompileWizard_CellProfiler.m', 'w');
 fprintf(fid, '%s', CPcode);
 fclose(fid);
 

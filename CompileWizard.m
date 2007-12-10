@@ -168,7 +168,7 @@ fclose(fid);
 %%% AUTOMATIC EDITING CHANGES
 % Next, the listbox code.
 assert(~ exist('CompileWizardText_listbox.m','file'), 'CompileWizardText_listbox.m should not exist.');
-fid = fopen('CompileWizardText_listbox.m','w');
+fid = fopen('CompileWizardText_listbox.m','wt');
 
 Modulefilelist = dir('Modules/*.m');
 fprintf(fid,'%%%%%% load_listbox code (replace function in CellProfiler.m)\n\n');
@@ -194,7 +194,7 @@ for i=1:length(Modulefilelist)
 
     %%% CODE TO WRITE TEXT FILES OF MODULES
     fid2=fopen(fullfile(pwd,'Modules',Modulefilelist(i).name));
-    fid3=fopen(fullfile(pwd,'Modules',[name,'.txt']),'w');
+    fid3=fopen(fullfile(pwd,'Modules',[name,'.txt']),'wt');
     while 1;
         output = fgetl(fid2); if ~ischar(output); break; end;
         if strncmp(output,'%defaultVAR',11)
@@ -277,7 +277,7 @@ end
 %%% AUTOMATIC EDITING CHANGES
 % Finally, the "%%#function" code.
 assert(~ exist('CompileWizardText_function.m','file'), 'CompileWizardText_function.m should not exist.');
-fid = fopen('CompileWizardText_function.m','w');
+fid = fopen('CompileWizardText_function.m','wt');
 
 fprintf(fid,'%%%%%% FUNCTIONS TO ADD (place before first line of code in CellProfiler.m)\n');
 fprintf(fid,['%%#function ',ToolListNoQuotes, '\n']);
@@ -327,7 +327,7 @@ assert(length(listbox_endidx) == 1, 'Could not find end of load_listbox function
 CPcode = [CPcode(1:listbox_startidx-1) Listboxcode CPcode(listbox_endidx:end)];
 
 % write out the result
-fid = fopen('CompileWizard_CellProfiler.m', 'w');
+fid = fopen('CompileWizard_CellProfiler.m', 'wt');
 fprintf(fid, '%s', CPcode);
 fclose(fid);
 

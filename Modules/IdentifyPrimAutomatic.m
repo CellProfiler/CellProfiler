@@ -1168,29 +1168,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = SumOfEntropies;
             end
 
-
-
-            %%% Saves the ObjectCount, i.e., the number of segmented objects.
-            %%% See comments for the Threshold saving above
-            if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-                handles.Measurements.Image.ObjectCountFeatures = {};
-                handles.Measurements.Image.ObjectCount = {};
-            end
-            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,ObjectName)));
-            if isempty(column)
-                handles.Measurements.Image.ObjectCountFeatures(end+1) = {ObjectName};
-                column = length(handles.Measurements.Image.ObjectCountFeatures);
-            end
-            handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
-            %%% Saves the location of each segmented object
-            handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
-            tmp = regionprops(FinalLabelMatrixImage,'Centroid');
-            Centroid = cat(1,tmp.Centroid);
-            if isempty(Centroid)
-                Centroid = [0 0];
-            end
-            handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+	    handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
+	    handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
         end
 
         if strcmp(TestMode,'Yes')

@@ -813,27 +813,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             end
         end
 
-        %%% Saves the ObjectCount, i.e. the number of segmented objects.
-        if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-            handles.Measurements.Image.ObjectCountFeatures = {};
-            handles.Measurements.Image.ObjectCount = {};
-        end
-        column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SecondaryObjectName)));
-        if isempty(column)
-            handles.Measurements.Image.ObjectCountFeatures(end+1) = {SecondaryObjectName};
-            column = length(handles.Measurements.Image.ObjectCountFeatures);
-        end
-        handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
-        %%% Saves the location of each segmented object
-        handles.Measurements.(SecondaryObjectName).LocationFeatures = {'CenterX','CenterY'};
-        tmp = regionprops(FinalLabelMatrixImage,'Centroid');
-        Centroid = cat(1,tmp.Centroid);
-        if isempty(Centroid)
-            Centroid = [0 0];
-        end
-        handles.Measurements.(SecondaryObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-
+	handles = CPsaveObjectCount(handles, SecondaryObjectName, FinalLabelMatrixImage);
+	handles = CPsaveObjectLocations(handles, SecondaryObjectName, FinalLabelMatrixImage);
+	
         %%% Saves images to the handles structure so they can be saved to the hard
         %%% drive, if the user requested.
         try

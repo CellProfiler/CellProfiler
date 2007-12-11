@@ -75,11 +75,19 @@ for Object = 1:length(ExportInfo.ObjectNames)
                 end
             end
             if isempty(Measurements)
-                Measurements = CellArray;
+                if isempty(CellArray)
+                    Measurements = NaN;
+                else
+                    Measurements = CellArray;
+                end
             else
                 % Loop over the image sets
                 for j = 1:length(CellArray)
-                    Measurements{j} = cat(2,Measurements{j},CellArray{j});
+                    if isempty(CellArray{j})
+                        Measurements{j} = cat(2,Measurements{j},NaN);
+                    else
+                        Measurements{j} = cat(2,Measurements{j},CellArray{j});
+                    end
                 end
             end
 
@@ -212,7 +220,11 @@ for Object = 1:length(ExportInfo.ObjectNames)
                         else
                             % Loop over the image sets
                             for j = 1:length(CellArray)
-                                AllMeasurements{j} = cat(2,AllMeasurements{j},CellArray{j});
+                                if isempty(CellArray{j})
+                                    AllMeasurements{j} = cat(2,AllMeasurements{j},NaN);
+                                else
+                                    AllMeasurements{j} = cat(2,AllMeasurements{j},CellArray{j});
+                                end
                             end
                         end
                         % Construct informative feature names

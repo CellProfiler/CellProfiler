@@ -82,11 +82,24 @@ handles.Pipeline.(['CropMask',MaskedImageName])=ObjectLabelMatrix;
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The figure window display is unnecessary for this module, so it is
-%%% closed during the starting image cycle.
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    if any(findobj == ThisModuleFigureNumber)
-        close(ThisModuleFigureNumber)
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+%%% Check whether that figure is open. This checks all the figure handles
+%%% for one whose handle is equal to the figure number for this module.
+if any(findobj == ThisModuleFigureNumber)
+    %%% Activates the appropriate figure window.
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
     end
+    
+    %%% A subplot of the Original image.
+    subplot(2,1,1)
+    CPimagesc(OrigImage,handles);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+
+    %%% A subplot of the Masked image.
+    subplot(2,1,2)
+    CPimagesc(ObjectLabelMatrix,handles);
+    title('Image Mask');
 end

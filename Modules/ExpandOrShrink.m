@@ -22,15 +22,17 @@ function handles = ExpandOrShrink(handles)
 % outlines can be passed along to the module OverlayOutlines and then saved
 % with the SaveImages module. Objects themselves can be passed along to the
 % object processing module ConvertToImage and then saved with the
-% SaveImages module. This module produces several additional types of
-% objects with names that are automatically passed along with the following
-% naming structure: (1) The unedited segmented image, which includes
-% objects on the edge of the image and objects that are outside the size
+% SaveImages module.
+%
+% This module produces several additional types of objects with names
+% that are automatically passed along with the following naming
+% structure: (1) The unedited segmented image, which includes objects
+% on the edge of the image and objects that are outside the size
 % range, can be saved using the name: UneditedSegmented + whatever you
 % called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
-% image which excludes objects smaller than your selected size range can be
-% saved using the name: SmallRemovedSegmented + whatever you called the
-% objects (e.g. SmallRemovedSegmented Nuclei).
+% image which excludes objects smaller than your selected size range
+% can be saved using the name: SmallRemovedSegmented + whatever you
+% called the objects (e.g. SmallRemovedSegmented Nuclei).
 %
 % See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
 
@@ -79,6 +81,7 @@ ShrunkenObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = Were the objects identified using an Identify Primary or Identify Secondary module (note: shrinking results are not perfect with Secondary objects)?
 %choiceVAR03 = Primary
 %choiceVAR03 = Secondary
+%choiceVAR03 = Other
 %inputtypeVAR03 = popupmenu
 ObjectChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -150,7 +153,7 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
     %%% "shrink" option is used; otherwise, the "thin" option is used.
     if strcmp(ShrinkingNumber,'Inf') == 1
         if strcmp(ObjectChoice,'Primary')
-            ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'shrink', Inf);
+	    ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'shrink', Inf);
             ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'shrink', Inf);
         end
         ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'shrink', Inf);
@@ -158,7 +161,7 @@ if strcmp(ShrinkOrExpand,'Shrink') == 1
         try
             ShrinkingNumber = str2double(ShrinkingNumber);
             if strcmp(ObjectChoice,'Primary')
-                ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thin', ShrinkingNumber);
+	        ShrunkenUneditedSegmentedImage = bwmorph(UneditedSegmentedImage, 'thin', ShrinkingNumber);
                 ShrunkenSmallRemovedSegmentedImage = bwmorph(SmallRemovedSegmentedImage, 'thin', ShrinkingNumber);
             end
             ShrunkenSegmentedImage = bwmorph(SegmentedImage, 'thin', ShrinkingNumber);
@@ -195,14 +198,14 @@ if strcmp(ShrinkOrExpand,'Shrink')
 elseif strcmp(ShrinkOrExpand,'Expand')
     if strcmp(ObjectChoice,'Primary')
         [L,num] = bwlabel(ShrunkenUneditedSegmentedImage);     % Generate new temporal labeling of the expanded objects
-        FinalShrunkenUneditedSegmentedImage = zeros(size(ShrunkenUneditedSegmentedImage));
-        for k = 1:num                                          % Loop over the objects to give them a new label
-            index = find(L==k);                                % Get index for expanded object temporarily numbered k
-            OriginalLabel = UneditedSegmentedImage(index);       % In the original labeled image, index indexes either zeros or the original label
-            fooindex = find(OriginalLabel);                    % Find index to a nonzero element, i.e. to the original label number
-            FinalShrunkenUneditedSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
-        end
-
+	FinalShrunkenUneditedSegmentedImage = zeros(size(ShrunkenUneditedSegmentedImage));
+	for k = 1:num                                          % Loop over the objects to give them a new label
+	  index = find(L==k);                                % Get index for expanded object temporarily numbered k
+	  OriginalLabel = UneditedSegmentedImage(index);       % In the original labeled image, index indexes either zeros or the original label
+	  fooindex = find(OriginalLabel);                    % Find index to a nonzero element, i.e. to the original label number
+	  FinalShrunkenUneditedSegmentedImage(index) = OriginalLabel(fooindex(1)); % Put new label on expanded object
+	end
+	  
         [L,num] = bwlabel(ShrunkenSmallRemovedSegmentedImage);
         FinalShrunkenSmallRemovedSegmentedImage = zeros(size(ShrunkenSmallRemovedSegmentedImage));
         for k = 1:num

@@ -214,24 +214,8 @@ drawnow
 fieldname = ['Segmented', SubregionObjectName];
 handles.Pipeline.(fieldname) = SubregionObjectImage;
 
-%%% Saves the ObjectCount, i.e. the number of segmented objects.
-%%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-    handles.Measurements.Image.ObjectCountFeatures = {};
-    handles.Measurements.Image.ObjectCount = {};
-end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,SubregionObjectName)));
-if isempty(column)
-    handles.Measurements.Image.ObjectCountFeatures(end+1) = {SubregionObjectName};
-    column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(SubregionObjectImage(:));
-
-%%% Saves the location of each segmented object
-handles.Measurements.(SubregionObjectName).LocationFeatures = {'CenterX','CenterY'};
-tmp = regionprops(SubregionObjectImage,'Centroid');
-Centroid = cat(1,tmp.Centroid);
-handles.Measurements.(SubregionObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+handles = CPsaveObjectCount(handles, SubregionObjectName, SubregionObjectImage);
+handles = CPsaveObjectLocations(handles, SubregionObjectName, SubregionObjectImage);
 
 if ~strcmpi(SaveOutlines,'Do not save')
     handles.Pipeline.(SaveOutlines) = FinalOutline;

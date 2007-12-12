@@ -6,7 +6,7 @@ if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
 end
 column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures, objectName)));
 if isempty(column)
-  handles.Measurements.Image.ObjectCountFeatures(end+1) = { objectName };
+  handles.Measurements.Image.ObjectCountFeatures(end+1) = { ['ObjectCount ' objectName] };
   column = length(handles.Measurements.Image.ObjectCountFeatures);
 end
 handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1, column) = max(labels(:));

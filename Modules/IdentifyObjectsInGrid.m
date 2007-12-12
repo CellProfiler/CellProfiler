@@ -341,24 +341,8 @@ handles.Pipeline.(['Segmented',NewObjectName]) = FinalLabelMatrixImage;
 handles.Pipeline.(['UneditedSegmented',NewObjectName]) = FinalLabelMatrixImage;
 handles.Pipeline.(['SmallRemovedSegmented',NewObjectName]) = FinalLabelMatrixImage;
 
-%%% Saves the ObjectCount, i.e. the number of segmented objects.
-%%% See comments for the Threshold saving above
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-    handles.Measurements.Image.ObjectCountFeatures = {};
-    handles.Measurements.Image.ObjectCount = {};
-end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures,NewObjectName)));
-if isempty(column)
-    handles.Measurements.Image.ObjectCountFeatures(end+1) = {['ObjectCount ', NewObjectName]};
-    column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(FinalLabelMatrixImage(:));
-
-%%% Saves the location of each segmented object
-handles.Measurements.(NewObjectName).LocationFeatures = {'CenterX','CenterY'};
-tmp = regionprops(FinalLabelMatrixImage,'Centroid');
-Centroid = cat(1,tmp.Centroid);
-handles.Measurements.(NewObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
+handles = CPsaveObjectCount(handles, NewObjectName, FinalLabelMatrixImage);
+handles = CPsaveObjectLocations(handles, NewObjectName, FinalLabelMatrixImage);
 
 if ~strcmpi(SaveOutlines,'Do not save')
     handles.Pipeline.(SaveOutlines) = FinalOutline;

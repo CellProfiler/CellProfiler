@@ -80,3 +80,30 @@ Version 1.0.3215
  - ClassifyObjects can now handle no objects
  - MeasureCorrelation white background has been changed to CP colors
  - CPhistbins can now handle data sets with zeroes
+
+Version 1.0.4818
+ - Smoothing has been updated. Previously, 'median filtering' was really 'Gaussian filtering.'  We have added Gaussian Filtering and fixed Median Filtering.  To achieve similar results, you will need to use the 'Gaussian Filter' setting.  Modules where you may notice this change: CorrectIllumination_Calculate, CPSmooth, IdentifyPrimAutomatic, and FindEdges.
+ - CPSmooth speed optimization.
+ - Fixed */.mat bug when selecting or saving a pipeline.
+ - Normalized Zernike measurements by area.
+
+Version 1.0.4828
+- Added distance measurement to be calculated when using the Relate module (and fixed several related bugs).
+- Fixed wait bar color issue
+- Removed 'Pack' as an option in SpeedUpCellProfiler
+
+Version 1.0.4884
+- Modified Z factors,V factors,CPec50 to be used by the CalcuateStatistics Data Tool.
+- Memory usage now reported in the 'Details'window.
+- PauseCellProfiler module is released. 
+- GroupMovieFrames module is released for grouping specific frames of movie files. 
+- Relate module changes: (1) Minimum distances between Child and Parent are now calculated, (2) a second Parent object can be defined ('Other Object'), (3) and if so, normalized distances are also calculated, (4) some sanity checks on these new settings.
+- LoadImages changes: add a capability to load tif,tiff,flex multi-page files.
+
+Version 1.0.4942
+- Fixed minor bugs in exporting data after using the Relate module.
+- Allow user to save the image created from MeasureImageAreaOccupied.
+- Display window for MaskImage module.
+- Released new modules: KeepLargestObject and UnifyObjects.
+
+

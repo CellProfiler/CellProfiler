@@ -1,6 +1,6 @@
 function handles = PauseCellProfiler(handles)
 % Help for the PauseCP module:
-% Category: File Processing
+% Category: Other
 %
 % SHORT DESCRIPTION:
 % Pauses CellProfiler interactively.

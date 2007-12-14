@@ -131,16 +131,21 @@ try
     
     %% Calcuate the smallest distance from each Child to their Parent
     %% If no parent exists, then Distance = NaN
+        
     if isfield(handles.Measurements.(SubObjectName),'Location')
         iObj = 0;
         for thisParent = ParentName %% Will need to change if we add more StepParents
             iObj = iObj + 1;
-
-            for iParent = 1:max(ParentsOfChildren)
-                %% Calculate distance transform of SubObjects to perimeter of Parent objects
-                DistTrans = bwdist(bwperim(handles.Pipeline.(['Segmented' ParentName{iObj}]) == iParent));
-
-                ChList = find(ParentsOfChildren == iParent);
+            
+            %% Calculate perimeters for all parents simultaneously
+            DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' ParentName{iObj}]));
+            
+            for iParentsOfChildren = 1:max(ParentsOfChildren)
+                %% Calculate distance transform to perimeter of Parent objects
+                DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
+                
+                %% Get location of each child object
+                ChList = find(ParentsOfChildren == iParentsOfChildren);
                 ChildrenLocations = handles.Measurements.(SubObjectName).Location{handles.Current.SetBeingAnalyzed}(ChList,:);
 
                 roundedChLoc = round(ChildrenLocations);

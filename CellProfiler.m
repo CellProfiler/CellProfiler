@@ -3960,11 +3960,11 @@ else
 
                 %%% Completes the breakout to the image loop.
                 if (setbeinganalyzed < startingImageSet)
-                    if startingImageSet ==2
-                        handles.Current.StartingImageSet = 1;
-                        guidata(gcbo,handles);
-                    end
-                    continue;
+%                     if startingImageSet ==2
+%                         handles.Current.StartingImageSet = 1;
+%                         guidata(gcbo,handles);
+%                     end
+                     continue;
                 end;
 
                 if (break_outer_loop),

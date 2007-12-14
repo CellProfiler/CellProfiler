@@ -683,7 +683,7 @@ for n = 1:length(ImageName)
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            [LoadedImage, handles] = CPimread(fullfile(Pathname,CurrentFileName{1}), handles);
+            LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}));
             %%% Note, we are not using the CPretrieveimage subfunction because we are
             %%% here retrieving the image from the hard drive, not from the handles
             %%% structure.

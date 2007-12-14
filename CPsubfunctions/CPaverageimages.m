@@ -43,7 +43,7 @@ if strcmpi(Mode,'DoNow') == 1
         error(['Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) could not find the input image. CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the CPaverageimages subfunction.'])
     end
     %%% Calculates the mean image. Initializes the variable.
-    TotalImage = CPimread(fullfile(Pathname,char(FileList(1))), handles);
+    TotalImage = CPimread(fullfile(Pathname,char(FileList(1))));
     %%% Waitbar shows the percentage of image sets remaining.
     WaitbarHandle = waitbar(0,'');
     %%% Obtains the screen size and determines where the wait bar will
@@ -69,7 +69,7 @@ if strcmpi(Mode,'DoNow') == 1
         if ndims(OrigImage) ~= 2
             error('Image processing was canceled because calculating the average image (which is used by the Average and Correct Illumination modules) requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
-        TotalImage = TotalImage + CPimread(OrigImage, handles);
+        TotalImage = TotalImage + CPimread(OrigImage);
         CurrentTime = clock;
         TimeSoFar = etime(CurrentTime,TimeStart);
         TimePerSet = TimeSoFar/i;

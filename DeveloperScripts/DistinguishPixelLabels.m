@@ -203,7 +203,7 @@ if handles.Current.SetBeingAnalyzed == 1
         handle1 = CPhelpdlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles skip this step and will run much more quickly.  Initial calculations are complete when this window closes.']);
 
         %%% initialize image log stores
-        [PeekedAtNucleiImage,handles] = CPimread(fullfile(NucleiPathname,char(NucleiFileList(1))),handles);
+        PeekedAtNucleiImage = CPimread(fullfile(NucleiPathname,char(NucleiFileList(1))));
         AllNucleiImages = zeros(min(20,length(NucleiFileList)),numel(PeekedAtNucleiImage));
         AllCellsImages = zeros(min(20,length(NucleiFileList)),numel(PeekedAtNucleiImage));
 
@@ -211,8 +211,8 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% there are fewer than 20)
         if length(NucleiFileList) <= 20
             for i=1:length(NucleiFileList)
-                [LoadedNucleiImage, handles] = CPimread(fullfile(NucleiPathname,char(NucleiFileList(i))),handles);
-                [LoadedCellsImage, handles] = CPimread(fullfile(CellsPathname,char(CellsFileList(i))),handles);
+                LoadedNucleiImage = CPimread(fullfile(NucleiPathname,char(NucleiFileList(i))));
+                LoadedCellsImage = CPimread(fullfile(CellsPathname,char(CellsFileList(i))));
                 AllNucleiImages(i,:) = imageLog(LoadedNucleiImage(:));
                 AllCellsImages(i,:) = imageLog(LoadedCellsImage(:));
             end
@@ -220,8 +220,8 @@ if handles.Current.SetBeingAnalyzed == 1
             counter = 0;
             factor = floor(length(NucleiFileList) / 20);
             while counter < 20
-                [LoadedNucleiImage, handles] = CPimread(fullfile(NucleiPathname,char(NucleiFileList(counter*factor))),handles);
-                [LoadedCellsImage, handles] = CPimread(fullfile(CellsPathname,char(CellsFileList(counter*factor))),handles);
+                LoadedNucleiImage = CPimread(fullfile(NucleiPathname,char(NucleiFileList(counter*factor))));
+                LoadedCellsImage = CPimread(fullfile(CellsPathname,char(CellsFileList(counter*factor))));
                 AllNucleiImages(counter,:) = imageLog(LoadedNucleiImage(:));
                 AllCellsImages(counter,:) = imageLog(LoadedCellsImage(:));
             end

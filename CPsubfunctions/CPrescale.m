@@ -89,7 +89,7 @@ elseif strncmpi(RescaleOption,'E',1) == 1
                 maxPixelValue = -inf;
                 minPixelValue = inf;
                 for i=1:length(FileList)
-                    [Image, handles] = CPimread(fullfile(Pathname,char(FileList(i))), handles);
+                    Image = CPimread(fullfile(Pathname,char(FileList(i))));
                     if(max(max(Image)) > maxPixelValue)
                         maxPixelValue = max(max(Image));
                     end

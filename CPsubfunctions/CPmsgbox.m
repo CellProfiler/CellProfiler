@@ -13,21 +13,22 @@ try
     children = get(h, 'Children');
     ax = children(1);
     okbutton = children(2);
-    textui = get(ax, 'Children');
+    oldtext = get(ax, 'Children');
     
     % Compute the rescaling
-    oldfontsize = get(textui, 'FontSize');
+    oldfontsize = get(ax, 'FontSize');
     newfontsize = get(0, 'defaultuicontrolfontsize');
-    ratio = newfontsize / oldfontsize;
-    
+    ratio = (newfontsize+1) / oldfontsize;
+
     % change fonts, and switch everything to normalized layout
-    set(ax, 'units', 'normalized');
     set(okbutton, 'FontSize', newfontsize, 'units', 'normalized');
-    set(textui, 'FontSize', newfontsize, 'units', 'normalized');
-    
+    set(ax, 'units', 'normalized', 'FontSize', newfontsize);
+
     % resize the msgbox
     oldPos = get(h, 'Position');
-    set(h, 'Position', [oldPos(1:2), oldPos(3:4)*ratio]);
+    set(h, 'Position', [oldPos(1:2), oldPos(3:4)*ratio], 'Resize', 'on', 'Units', 'characters');
+
+
     % why are both of these necessary? (I hate matlab gui)
     drawnow;
     refresh(h);

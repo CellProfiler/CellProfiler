@@ -1,5 +1,4 @@
 function [LoadedImage, handles] = CPimread(varargin)
-global A;
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

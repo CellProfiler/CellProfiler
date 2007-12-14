@@ -1,4 +1,4 @@
-function [LoadedImage, handles] = CPimread(varargin)
+function [LoadedImage, handles] = CPimread(CurrentFileName, handles)
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -29,7 +29,6 @@ if nargin == 0 %returns the vaild image extensions
     LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin >= 1,
-    CurrentFileName = varargin{1};
     %%% Handles a non-Matlab readable file format.
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
     if strcmp('.DIB', upper(ext)),

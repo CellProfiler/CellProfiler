@@ -75,7 +75,7 @@ elseif nargin == 2,
             %%% Opens Matlab-readable file formats.
             LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     else
         try
@@ -92,7 +92,7 @@ elseif nargin == 2,
                 LoadedImage = im2double(imread(char(CurrentFileName)));
             end
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     end
 else
@@ -112,7 +112,6 @@ else
         % file format have 12-bit cameras, so it's best to hard-code 12-bits and
         % change it later if we ever encounter other depth DIB images.
         %        BitDepth = toDec2(A(15:16));
-        BitDepth = 12;
         Channels = toDec2(A(13:14));
         LoadedImage = zeros(Height,Width,Channels);
         for c=1:Channels,
@@ -139,7 +138,7 @@ else
             %%% Opens Matlab-readable file formats.
             LoadedImage = im2double(imreadZVI(char(CurrentFileName)));
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     elseif strcmp('.AVI',upper(ext))
         try
@@ -148,7 +147,7 @@ else
             mov = aviread(CurrentFileName,1);
             LoadedImage = im2double(mov.cdata);
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     else
         try
@@ -165,7 +164,7 @@ else
                 LoadedImage = im2double(imread(char(CurrentFileName)));
             end
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'.  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     end
 end

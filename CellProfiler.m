@@ -3832,9 +3832,7 @@ else
                                 FigHandle = handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]);
                             end
                             if ishandle(FigHandle)
-                                OldText = get(FigHandle,'name');
-                                NewNum = handles.Current.SetBeingAnalyzed;
-                                set(FigHandle,'name',[OldText(1:(end-length(num2str(NewNum-1)))) num2str(NewNum)]);
+                                CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,FigHandle);
                             end
                             handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2double(ModuleNumberAsString)) = 0;
                         catch

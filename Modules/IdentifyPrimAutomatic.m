@@ -1204,12 +1204,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 if ~isempty(IdPrimTestModeSegmentedFigureNumber)
                     %%% Makes the window active.
                     CPfigure(IdPrimTestModeSegmentedFigureNumber(1));
-                    OldText = get(IdPrimTestModeSegmentedFigureNumber,'name');
-                    NumberSignIndex = find(OldText=='#');
-                    OldTextUpToNumberSign = OldText(1:NumberSignIndex(1));
-                    NewNum = handles.Current.SetBeingAnalyzed;
-                    set(IdPrimTestModeSegmentedFigureNumber,'name',[OldTextUpToNumberSign,num2str(NewNum)]);
-
+                    %%% Updates the cycle number on the window.
+                    CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeSegmentedFigureNumber);
+                    
                     subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                     im = CPlabel2rgb(handles,Objects);
                     CPimagesc(im,handles);
@@ -1236,11 +1233,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
                 if ~isempty(IdPrimTestModeOutlinedFigureNumber)
                     CPfigure(IdPrimTestModeOutlinedFigureNumber(1));
-                    OldText = get(IdPrimTestModeOutlinedFigureNumber,'name');
-                    NumberSignIndex = find(OldText=='#');
-                    OldTextUpToNumberSign = OldText(1:NumberSignIndex(1));
-                    NewNum = handles.Current.SetBeingAnalyzed;
-                    set(IdPrimTestModeOutlinedFigureNumber,'name',[OldTextUpToNumberSign,num2str(NewNum)]);
+                    CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeOutlinedFigureNumber);
 
                     tmp = OrigImage/max(OrigImage(:));
                     OutlinedObjectsR = tmp;

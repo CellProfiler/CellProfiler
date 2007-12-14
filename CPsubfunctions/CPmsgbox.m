@@ -7,11 +7,15 @@ drawnow;
 %% This allows message boxes to be closed with 'Windows -> Close All'
 userData.Application = 'CellProfiler';
 tempstring = varargin{1};
-for i=1:length(tempstring),
-    % add a newline to each line of the input
-    tempstring{i} = [tempstring{i} 10];
+if iscell(tempstring),
+    for i=1:length(tempstring),
+        % add a newline to each line of the input
+        tempstring{i} = [tempstring{i} 10];
+    end
+    userData.WarningText = [tempstring{:}];
+else
+    userData.WarningText = tempstring;
 end
-userData.WarningText = [tempstring{:}];
 set(h,'UserData',userData);
 
 try

@@ -371,7 +371,9 @@ function HelpDeveloperInfo
 % than one figure window per module. We work around this in the case of
 % IdPrimAutomatic when run in "test mode", for example, by creating a new
 % window with a special 'Tag' property that allows you to find it again in
-% subsequent cycles.
+% subsequent cycles. Having the 'Name' property of the figure window
+% containing "cycle #" at the end allows CellProfiler to recognize it and
+% list it in the Windows menu.
 %
 % STEP 3: (only during starting image cycle) Make the figure the proper
 % size:

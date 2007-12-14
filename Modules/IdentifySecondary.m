@@ -698,20 +698,39 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     PrimaryObjectOutlines = DilatedPrimaryBinaryImage - EditedPrimaryBinaryImage;
     BothOutlinesOnOrigImage = ObjectOutlinesOnOrigImage;
     BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
-
+    
     if strcmp(TestMode,'Yes')
-        SecondaryTestFig = findobj('Tag','SecondaryTestFigure');
-        if isempty(SecondaryTestFig)
-            SecondaryTestFig = CPfigure(handles,'Image','Tag','SecondaryTestFigure','Name','Secondary Test Figure');
-        else
-            CPfigure(handles,'Image',SecondaryTestFig);
+        drawnow;
+        %%% If the test mode window does not exist, it is created, but only
+        %%% if it's at the starting image set (if the user closed the window
+        %%% intentionally, we don't want to pop open a new one).
+        SecondaryTestFigureNumber = findobj('Tag','IdSecondaryTestModeFigure');
+        if isempty(SecondaryTestFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+            %%% Creates the window, sets its tag, and puts some
+            %%% text in it. The first lines are meant to find a suitable
+            %%% figure number for the window, so we don't choose a
+            %%% figure number that is being used by another module.
+            %%% The integer 9 is arbitrary. Didn't want to
+            %%% add 1 and 2 because other modules might be creating
+            %%% a few windows.
+            SecondaryTestFigureNumber = CPfigurehandle(handles)+9;
+            CPfigure(handles,'Image',SecondaryTestFigureNumber);
+            set(SecondaryTestFigureNumber,'Tag','IdSecondaryTestModeFigure',...
+                'name',['IdentifySecondary Test Display, cycle # ']);
+            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',SecondaryTestFigureNumber);
         end
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',SecondaryTestFig);
+        %%% If the figure window DOES exist now, then calculate and display items
+        %%% in it.
+        if ~isempty(SecondaryTestFigureNumber)
+            %%% Makes the figure window active.
+            CPfigure(handles,'Image',SecondaryTestFigureNumber);
+            %%% Updates the cycle number on the window.
+            CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,SecondaryTestFigureNumber);
+
+            subplot(2,2,IdentChoiceNumber);
+            CPimagesc(ObjectOutlinesOnOrigImage,handles);
+            title(IdentChoiceList(IdentChoiceNumber));
         end
-        subplot(2,2,IdentChoiceNumber);
-        CPimagesc(ObjectOutlinesOnOrigImage,handles);
-        title(IdentChoiceList(IdentChoiceNumber));
     end
 
     if strcmp(OriginalIdentChoice,IdentChoice)

@@ -1,5 +1,5 @@
 function [LoadedImage, handles] = CPimread(varargin)
-
+global A;
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -29,37 +29,57 @@ if nargin == 0 %returns the vaild image extensions
     formats = imformats;
     LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'}]; %LoadedImage is not a image here, but rather a set
     return
-elseif nargin == 2,
+elseif nargin >= 1,
     CurrentFileName = varargin{1};
-    handles = varargin{2};
     %%% Handles a non-Matlab readable file format.
     [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
     if strcmp('.DIB', upper(ext)),
-        %%% Opens this non-Matlab readable file format.
+        %%% Opens this non-Matlab readable file format.  Compare to
+        %%% Matlab Central file id 11096, which does the same thing.
+	%%% The DIB (Device Independent Bitmap) format is a format %%
+        %%% used (mostly internally) by MS Windows.  Cellomics has
+        %%% adopted it for their instruments.
         fid = fopen(char(CurrentFileName), 'r');
         if (fid == -1),
             error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
-        A = fread(fid, 52, 'uchar');
-        Width = toDec2(A(5:8));
-        Height = toDec2(A(9:12));
-        % The image file format is 16-bit, strictly speaking, so this is what will
-        % be read out of the header. However, all instruments we know that use this
-        % file format have 12-bit cameras, so it's best to hard-code 12-bits and
-        % change it later if we ever encounter other depth DIB images.
-        %        BitDepth = toDec2(A(15:16));
-        BitDepth = 12;
-        Channels = toDec2(A(13:14));
+        A = fread(fid, 52, 'uint8=>uint8');
+	HeaderLength = from_little_endian(A(1:4));
+	if HeaderLength ~= 40
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with header length other than %d', char(CurrentFileName), HeaderLength));
+	end
+        Width = from_little_endian(A(5:8));
+        Height = from_little_endian(A(9:12));
+        % All Cellomics DIB files we have seen have had a bit depth of
+        % 16.  However, all instruments we know that use this file
+        % format have 12-bit cameras, so we hard-code 12-bits.  This
+        % may change in the future if we encounter images of a
+        % different bit depth.
+	BitDepth = from_little_endian(A(15:16));
+	if BitDepth == 16
+	  BitDepth = 12;
+	else
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with bit depth %d', char(CurrentFileName), BitDepth));
+	end
 
+        Channels = from_little_endian(A(13:14));
+	Compression = from_little_endian(A(17:20));
+	if Compression ~= 0
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB compression of type %d', char(CurrentFileName), Compression));
+	end
+	% We have never seen a DIB file with more than one channel.
+        % It seems reasonable to assume that the second channel would
+        % follow the first, but this needs to be verified.
         LoadedImage = zeros(Height,Width,Channels);
-        for c=1:Channels,
-            [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
-            if Count < (Width * Height),
-                fclose(fid);
-                error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
-            end
-            LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
-        end
+	for c=1:Channels,
+	  % The 'l' causes convertion from little-endian byte order.
+	  [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+	  if Count < (Width * Height),
+	    fclose(fid);
+	    error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+	  end
+	  LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+	end
         fclose(fid);
     elseif strcmp('.MAT',upper(ext))
         load(CurrentFileName);
@@ -74,78 +94,6 @@ elseif nargin == 2,
             %%% "LoadedImage".
             %%% Opens Matlab-readable file formats.
             LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
-        catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
-        end
-    else
-        try
-            Header = imfinfo(CurrentFileName);
-            if isfield(Header,'Model') & any(strfind(Header(1).Model,'GenePix'))
-                PreLoadedImage = imreadGP([FileName,ext],Pathname);
-                LoadedImage(:,:,1)=double(PreLoadedImage(:,:,1))/65535;
-                LoadedImage(:,:,2)=double(PreLoadedImage(:,:,1))/65535;
-                LoadedImage(:,:,3)=zeros(size(PreLoadedImage,1),size(PreLoadedImage,2));
-            else
-                %%% Read (open) the image you want to analyze and assign it to a variable,
-                %%% "LoadedImage".
-                %%% Opens Matlab-readable file formats.
-                LoadedImage = im2double(imread(char(CurrentFileName)));
-            end
-        catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
-        end
-    end
-else
-    CurrentFileName = varargin{1};
-    [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
-    if strcmp('.DIB', upper(ext)),
-        %%% Opens this non-Matlab readable file format.
-        fid = fopen(char(CurrentFileName), 'r');
-        if (fid == -1),
-            error(['The file ', FileName, ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
-        end
-        A = fread(fid, 52, 'uchar');
-        Width = toDec2(A(5:8));
-        Height = toDec2(A(9:12));
-        % The image file format is 16-bit, strictly speaking, so this is what will
-        % be read out of the header. However, all instruments we know that use this
-        % file format have 12-bit cameras, so it's best to hard-code 12-bits and
-        % change it later if we ever encounter other depth DIB images.
-        %        BitDepth = toDec2(A(15:16));
-        Channels = toDec2(A(13:14));
-        LoadedImage = zeros(Height,Width,Channels);
-        for c=1:Channels,
-            [Data, Count] = fread(fid, inf, 'uint16', 0, 'l');
-            Data = Data(1:Width * Height);
-            if Count < (Width * Height),
-                fclose(fid);
-                error(['End-of-file encountered while reading ', FileName, '. Have you entered the proper size and number of channels for these images?']);
-            end
-            LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
-        end
-        fclose(fid);
-    elseif strcmp('.MAT',upper(ext))
-        load(CurrentFileName);
-        if exist('Image')
-            LoadedImage = Image;
-        else
-            error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
-        end
-    elseif strcmp('.ZVI',upper(ext))
-        try
-            %%% Read (open) the image you want to analyze and assign it to a variable,
-            %%% "LoadedImage".
-            %%% Opens Matlab-readable file formats.
-            LoadedImage = im2double(imreadZVI(char(CurrentFileName)));
-        catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
-        end
-    elseif strcmp('.AVI',upper(ext))
-        try
-            %%% Read (open) the movie you want to analyze and assign the
-            %%% first image in it to a variable, "LoadedImage"
-            mov = aviread(CurrentFileName,1);
-            LoadedImage = im2double(mov.cdata);
         catch
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
@@ -219,9 +167,9 @@ PixelType = A(newpos+16:newpos+19);
 newpos = newpos+24;
 
 %Get decimal values of the width and height
-Width = toDec(Width);
-Height = toDec(Height);
-BytesPixel = toDec(BytesPixel);
+Width = from_little_endian(Width);
+Height = from_little_endian(Height);
+BytesPixel = from_little_endian(BytesPixel);
 
 %Finds and stores the data vector
 NumPixels = Width*Height*BytesPixel;
@@ -237,29 +185,23 @@ ImageData = A(newpos:newpos+NumPixels-1);
 %Stores and returns Image Array
 ImageArray=reshape(ImageData, Width, Height)';
 
-%converts byte array information to decimal values
-function Dec = toDec(ByteArray)
-for i=1:4
-    Hex(i) = {dec2hex(ByteArray(i))};
+function i = from_little_endian(byte_array)
+is_little_endian = typecast(uint8([1 0]), 'uint16') == 1;
+if size(byte_array,2) == 1
+  byte_array = byte_array';
 end
-
-HexString = [Hex{4}, Hex{3}, Hex{2}, Hex{1}];
-Dec = hex2dec(HexString);
-
-function Dec = toDec2(ByteArray)
-numBytes = size(ByteArray);
-if numBytes(1) == 2
-    for i=1:2
-        Hex(i) = {dec2hex(ByteArray(i))};
-    end
-    HexString = [Hex{2}, Hex{1}];
-    Dec = hex2dec(HexString);
+switch size(byte_array,2)
+ case 2
+  type = 'uint16';
+ case 4
+  type = 'uint32';
+ otherwise
+  error('Don''t know what to do with a byte array of this length.')
+end
+if is_little_endian
+  i = double(typecast(byte_array, type));
 else
-    for i=1:4
-        Hex(i) = {dec2hex(ByteArray(i))};
-    end
-    HexString = [Hex{1}, Hex{2}, Hex{3}, Hex{4}];
-    Dec = hex2dec(HexString);
+  i = double(swapbytes(typecast(byte_array, type)));
 end
 
 function [Image Header] = imreadGP(filename,filedir)

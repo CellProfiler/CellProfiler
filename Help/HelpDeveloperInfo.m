@@ -350,7 +350,7 @@ function HelpDeveloperInfo
 % problematic when running on a cluster of computers with no displays. If
 % you plan to save images which are normally produced for display only, the
 % corresponding lines should be moved outside this if statement. Also, any
-% additional uicontrol's (popupmenu's, pushbutton's) should be designed
+% additional uicontrols (popupmenus, pushbuttons) should be designed
 % using the unit of pixels, since this is standard across platforms unlike
 % other units such as inches and points.
 %
@@ -367,6 +367,12 @@ function HelpDeveloperInfo
 % displaying individual channels and they will also have the
 % InteractiveZoom and CellProfiler Image Tools menu items.
 %
+% Note: unfortunately there is no convenient way right now to have more
+% than one figure window per module. We work around this in the case of
+% IdPrimAutomatic when run in "test mode", for example, by creating a new
+% window with a special 'Tag' property that allows you to find it again in
+% subsequent cycles.
+%
 % STEP 3: (only during starting image cycle) Make the figure the proper
 % size:
 %   if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -379,6 +385,12 @@ function HelpDeveloperInfo
 %   if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
 %     close(ThisModuleFigureNumber)
 %   end
+%
+% Note that in the above we do not use this:
+%   if handles.Current.SetBeingAnalyzed == 1
+% ... because if the user has chosen the Restart module to resume analysis,
+% the first image set being processed will not be #1, and yet we want the
+% figure window to be sized properly.
 %
 % STEP 4: Display your image:
 %   ImageHandle = CPimagesc(Image,handles);

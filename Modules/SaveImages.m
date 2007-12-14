@@ -142,7 +142,7 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%% special code for handling.
 %%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
 
-%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory.
+%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory or ampersand (&) for the directory of the original image.
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the bit depth at which to save the images (Note: some image formats do not support saving at a bit depth of 12 or 16; see Matlab's imwrite function for more details.)
@@ -270,7 +270,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             else
                 FileName = handles.Pipeline.(['Filename', ImageFileName]);
             end
-            [temp FileName] = fileparts(FileName); %#ok Ignore MLint
+            [Subdirectory FileName] = fileparts(FileName); %#ok Ignore MLint
         catch
             %%% If the user has selected an image name that is not straight from a load
             %%% images module, the filenames will not be found in the handles structure.
@@ -293,11 +293,18 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     FileName = [FileName '.' FileFormat];
 
     if strncmp(FileDirectory,'.',1)
-        if strcmp(FileDirectory,'.')
-            PathName = handles.Current.DefaultOutputDirectory;
-        else
-            PathName = fullfile(handles.Current.DefaultOutputDirectory,FileDirectory(2:end));
+        PathName = handles.Current.DefaultOutputDirectory;
+	if length(FileDirectory) > 1
+            PathName = fullfile(PathName, FileDirectory(2:end));
         end
+    elseif strncmp(FileDirectory, '&', 1)
+        PathName = handles.Pipeline.(['Pathname', ImageFileName]);
+	if length(Subdirectory) > 0
+	  PathName = fullfile(PathName, Subdirectory);
+	end
+	if length(FileDirectory) > 1
+	  PathName = fullfile(PathName, FileDirectory(2:end));
+	end
     else
         PathName = FileDirectory;
     end

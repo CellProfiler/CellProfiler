@@ -41,6 +41,10 @@ drawnow
 % figure which is active is not necessarily the correct one. This
 % results in strange things like the subplots appearing in the timer
 % window or in the wrong figure window, or in help dialog boxes.
+
+% SEE HelpDeveloperInfo.m FOR MORE INFORMATION ON HOW TO USE THIS
+% SUBFUNCTION.
+
 userData.Application = 'CellProfiler';
 userData.ImageFlag = 0;
 if nargin>0 && isfield(varargin{1},'Pipeline')

@@ -374,6 +374,10 @@ function HelpDeveloperInfo
 % subsequent cycles. Having the 'Name' property of the figure window
 % containing "cycle #" at the end allows CellProfiler to recognize it and
 % list it in the Windows menu.
+% Also note: In general, you should not change figure properties like this:
+% CPfigure('Tag', 'My figure name')
+% ...because it messes up the menus in the figure window. Use this instead:
+% set(FigureHandle,'Tag','My figure name');
 %
 % STEP 3: (only during starting image cycle) Make the figure the proper
 % size:

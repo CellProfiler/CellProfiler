@@ -5,7 +5,7 @@ function handles = IdentifyPrimBasedOnOutlines(handles)
 
 % Help for the Process Outlines module:
 % Category: Object Processing
-% 
+%
 % SHORT DESCRIPTION:
 % Sorry, this module is not documented... yet
 % *************************************************************************
@@ -307,13 +307,13 @@ end
 %%% Start loop for test mode, fit for normal use too
 for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
     for WatershedTransformImageTypeNumber = 1:length(WatershedTransformImageTypeList)
-        
+
         %%% Get in-loop variables
         LocalMaximaType = LocalMaximaTypeList{LocalMaximaTypeNumber};
         WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
 
         %%% Start image processing
-        
+
         %%% First, process the bare outlines, regardless of whether they are binary or grayscale
         if strcmp(CloseGaps,'Yes')
             warning off MATLAB:intConvertOverflow                          % For binary images
@@ -328,11 +328,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
         %%% Get threshold if the image is not already binary
         if LocalMaximaTypeNumber == 1  % We only want to get the threshold once
-%             if ~islogical(OrigImage)
-                [handles,OrigThreshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,ImageToThreshold,ImageName,ModuleName);
-%             else
-%                 OrigThreshold = 0;
-%             end
+            %             if ~islogical(OrigImage)
+            [handles,OrigThreshold] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,ImageToThreshold,ImageName,ModuleName);
+            %             else
+            %                 OrigThreshold = 0;
+            %             end
         end
 
         Threshold = OrigThreshold;
@@ -362,10 +362,10 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         end
 
         %%%% Look in to BWMORPH for nice ways of making the thresholded image better
-        
+
         %%% Threshold image
         PrelimObjects = BlurredImage > Threshold;
-        
+
         %%% Correct depending on original image. When processing binary
         %%% images, it is often good to blur, threshold, and then close
         %%% gaps again with a smaller range. When processing grayscale
@@ -376,7 +376,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             PrelimObjects = imclose(double(PrelimObjects),StructEl2);
         end
         PrelimObjects = imfill(double(PrelimObjects),'holes');
-        
+
         %%% This should probably go after the objects have been identified (thresholded)
         if strcmp(RemoveOutlines,'Yes')
             %%% Recommended only if the outlines are very thin, and binary
@@ -403,7 +403,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         %%% could estimate the amount of objects by just dividing the total
         %%% area by the average object area.
         if strcmp(Estimate,'Just Count')
-%             figure,imshow(Objects)
+            %             figure,imshow(Objects)
             props = regionprops(double(Objects),'Area');
             Area = cat(1,props.Area);
             TotalArea = floor(sum(Area)/100);
@@ -411,8 +411,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             MaxArea = pi*(MaxDiameter.^2)/400;
             MeanArea = ceil(mean([MinArea,MaxArea]));
             EstimatedNumberOfObjects = TotalArea/MeanArea;
-%             disp(EstimatedNumberOfObjects);
-%             disp(2);
+            %             disp(EstimatedNumberOfObjects);
+            %             disp(2);
         end
 
         %%% OR, we could try skeletonizing the object mask, figure out a
@@ -420,7 +420,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         %%% method to separate the objects were we want them to be
         %%% separated. This could be added as another de-clumping method,
         %%% but for now let's keep it separate.
-        
+
         %%% From here on, most of this code is from IdPrimAuto. I didn't
         %%% have time to check the 'saving to handles structure' part and
         %%% some of the 'display results' part.
@@ -454,7 +454,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             %%% circular with local maxima in the center. In practice, the
             %%% MinDiameter is divided by 1.5 because this allows the local
             %%% maxima to be shifted somewhat from the center of the object.
-            
+
             %%% Calculate ImageResizeFactor, MaximaSuppressionSize, MaximaMask
             if strcmp(UseLowRes,'Yes') && MinDiameter > 10
                 ImageResizeFactor = 10/MinDiameter;
@@ -566,7 +566,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             end
         end
         drawnow
-        
+
         %%% Label the objects
         Objects = bwlabel(Objects);
 
@@ -636,12 +636,12 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         %%% Relabel the objects
         [Objects,NumOfObjects] = bwlabel(Objects > 0);
         FinalLabelMatrixImage = Objects;
-        
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+
+        %%%%%%%%%%%%%%%%%%%%%%%
+        %%% DISPLAY RESULTS %%%
+        %%%%%%%%%%%%%%%%%%%%%%%
+        drawnow
 
         if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
@@ -712,7 +712,7 @@ drawnow
         %%% SAVE DATA TO HANDLES STRUCTURE %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         drawnow
-        
+
         %%% Saves the segmented image, not edited for objects along the edges or
         %%% for size, to the handles structure.
         fieldname = ['UneditedSegmented',ObjectName];
@@ -726,7 +726,7 @@ drawnow
         %%% Saves the final segmented label matrix image to the handles structure.
         fieldname = ['Segmented',ObjectName];
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
-        
+
         %%% Saves images to the handles structure so they can be saved to the hard
         %%% drive, if the user requested.
         if ~strcmpi(SaveOutlines,'Do not save')
@@ -793,41 +793,69 @@ drawnow
     if strcmp(TestMode,'Yes')
         if ~(LocalMaximaTypeNumber == 2 && WatershedTransformImageTypeNumber == 3)
             drawnow;
-            SegmentedFigures = findobj('Tag','SegmentedFigure');
-            if isempty(SegmentedFigures)
-                CPfigure('Tag','SegmentedFigure');
-                uicontrol('style','text','units','normalized','string','IDENTIFIED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
-            else
-                CPfigure(SegmentedFigures(1));
+            %%% If the test mode window does not exist, it is created, but only
+            %%% if it's at the starting image set (if the user closed the window
+            %%% intentionally, we don't want to pop open a new one).
+            IdPrimTestModeSegmentedFigureNumber = findobj('Tag','IdPrimTestModeSegmentedFigure');
+            if isempty(IdPrimTestModeSegmentedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                %%% Creates the window, sets its tag, and puts some
+                %%% text in it. The first lines are meant to find a suitable
+                %%% figure number for the window, so we don't choose a
+                %%% figure number that is being used by another module.
+                %%% The integer 7 is arbitrary. Didn't want to
+                %%% add 1 and 2 because other modules might be creating
+                %%% a few windows.
+                IdPrimTestModeSegmentedFigureNumber = CPfigurehandle(handles) + 7;
+                CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
+                set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
+                    'name',['IdentifyPrimAutomatic Test Objects Display, cycle # ']);
+                uicontrol(IdPrimTestModeSegmentedFigureNumber,'style','text','units','normalized','string','Identified objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+            end
+            %%% If the figure window DOES exist now, then calculate and display items
+            %%% in it.
+            if ~isempty(IdPrimTestModeSegmentedFigureNumber)
+                %%% Makes the window active.
+                CPfigure(IdPrimTestModeSegmentedFigureNumber(1));
+                %%% Updates the cycle number on the window.
+                CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeSegmentedFigureNumber);
+
+                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                im = CPlabel2rgb(handles,Objects);
+                CPimagesc(im,handles);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
             end
 
-            subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-            im = CPlabel2rgb(handles,Objects);
-            CPimagesc(im,handles);
-            title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
-            OutlinedFigures = findobj('Tag','OutlinedFigure');
-            if isempty(OutlinedFigures)
-                CPfigure('Tag','OutlinedFigure');
-                uicontrol('style','text','units','normalized','string','Outlined Objects: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
-            else
-                CPfigure(OutlinedFigures(1));
+            %%% Repeat what we've done for the segmented test mode window, now
+            %%% for the outlined test mode window.
+            IdPrimTestModeOutlinedFigureNumber = findobj('Tag','IdPrimTestModeOutlinedFigure');
+            if isempty(IdPrimTestModeOutlinedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                IdPrimTestModeOutlinedFigureNumber = CPfigurehandle(handles) + 8;
+                CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
+                set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
+                    'name',['IdentifyPrimAutomatic Test Outlines Display, cycle # ']);
+                uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
             end
 
-            tmp = OrigImage/max(OrigImage(:));
-            OutlinedObjectsR = tmp;
-            OutlinedObjectsG = tmp;
-            OutlinedObjectsB = tmp;
-            PerimObjects = bwperim(Objects > 0);
-            PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-            PerimBorder = bwperim(BorderObjects > 0);
-            OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-            OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-            OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+            if ~isempty(IdPrimTestModeOutlinedFigureNumber)
+                CPfigure(IdPrimTestModeOutlinedFigureNumber(1));
+                CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeOutlinedFigureNumber);
 
-            subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-            OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-            CPimagesc(OutlinedObjects,handles);
-            title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                tmp = OrigImage/max(OrigImage(:));
+                OutlinedObjectsR = tmp;
+                OutlinedObjectsG = tmp;
+                OutlinedObjectsB = tmp;
+                PerimObjects = bwperim(Objects > 0);
+                PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+                PerimBorder = bwperim(BorderObjects > 0);
+                OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+                OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+                OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+
+                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+                CPimagesc(OutlinedObjects,handles);
+                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+            end
         end
     end
 end
@@ -838,13 +866,13 @@ end
 % tmp = regionprops(Objects,'Centroid');
 % Centroid = cat(1,tmp.Centroid);
 % handles.Measurements.(ObjectName).Location(handles.Current.SetBeingAnalyzed) = {Centroid};
-% 
-% 
+%
+%
 % %%%%%%%%%%%%%%%%%%%%%%%
 % %%% DISPLAY RESULTS %%%
 % %%%%%%%%%%%%%%%%%%%%%%%
 % drawnow
-% 
+%
 % ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 % if any(findobj == ThisModuleFigureNumber) == 1;
 %     drawnow
@@ -862,19 +890,19 @@ end
 %     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 %     %%% A subplot of the figure window is set to display the colored label
 %     %%% matrix image.
-%     subplot(2,1,2); CPimagesc(ObjectsIdentifiedImage,handles); 
+%     subplot(2,1,2); CPimagesc(ObjectsIdentifiedImage,handles);
 %     title(['Processed ',ObjectName]);
 % end
-% 
+%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %%% SAVE DATA TO HANDLES STRUCTURE %%%
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % drawnow
-% 
+%
 % %%% Saves the processed image to the handles structure.
 % fieldname = ['Segmented',ObjectName];
 % handles.Pipeline.(fieldname) = ObjectsIdentifiedImage;
-% 
+%
 % %%% Saves the ObjectCount, i.e., the number of segmented objects.
 % %%% See comments for the Threshold saving above
 % if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
@@ -887,7 +915,7 @@ end
 %     column = length(handles.Measurements.Image.ObjectCountFeatures);
 % end
 % handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1,column) = max(Objects(:));
-% 
+%
 % %%% Saves the Threshold value to the handles structure.
 % %%% Storing the threshold is a little more complicated than storing other measurements
 % %%% because several different modules will write to the handles.Measurements.Image.Threshold
@@ -907,8 +935,8 @@ end
 %     column = length(handles.Measurements.Image.ThresholdFeatures);
 % end
 % handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
-% 
-% 
+%
+%
 % %%% Saves the location of each segmented object
 % handles.Measurements.(ObjectName).LocationFeatures = {'CenterX','CenterY'};
 % tmp = regionprops(Objects,'Centroid');

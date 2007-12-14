@@ -341,7 +341,7 @@ if RecalculateFlag == 1
         if strcmp(CropMethod,'Mouse')
             %%% Displays the image and asks the user to choose points for the
             %%% ellipse.
-            CroppingFigureHandle = CPfigure(handles);
+            CroppingFigureHandle = CPfigure(handles,'Image');
             %%% OK to use imagesc rather than CPimagesc, because the
             %%% imagetoolbar is not needed.
             CroppingImageHandle = imagesc(ImageToBeCropped);

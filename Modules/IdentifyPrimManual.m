@@ -115,7 +115,7 @@ end
 drawnow
 
 %%% Displays the image in a new figure window.
-FigureHandle = CPfigure;
+FigureHandle = CPfigure(handles,'Image');
 % ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% We are making it large so it's easier to outline the object of
 %%% interest.

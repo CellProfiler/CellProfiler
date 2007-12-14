@@ -114,8 +114,6 @@ guidata(gcbo,handles);
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
-return;
 end
 
 %%% SUBFUNCTION %%%

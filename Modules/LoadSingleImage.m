@@ -169,7 +169,7 @@ for n = 1:length(ImageName)
         handles.Pipeline.(fieldname) =  Pathname;
 
         FileAndPathname = fullfile(Pathname, CurrentFileName);
-        [LoadedImage, handles] = CPimread(FileAndPathname,handles);
+        LoadedImage = CPimread(FileAndPathname);
         %%% Saves the image to the handles structure.
         handles.Pipeline.(ImageName{n}) = LoadedImage;
 

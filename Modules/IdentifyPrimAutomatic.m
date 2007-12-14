@@ -1187,13 +1187,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% The integer 7 is arbitrary. Didn't want to
                     %%% add 1 and 2 because other modules might be creating
                     %%% a few windows.
-                    NumberOfModules = handles.Current.NumberOfModules;
-                    for ModuleNumber = 1:NumberOfModules
-                        FieldName = sprintf('FigureNumberForModule%02d', ModuleNumber);
-                        ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
-                    end
-                    HighestFigureNumber = max(ListOfFigureNumbers);
-                    IdPrimTestModeSegmentedFigureNumber = HighestFigureNumber + 7;
+                    IdPrimTestModeSegmentedFigureNumber = CPfigurehandle(handles) + 7;
                     CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
                     set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
                         'name',['IdentifyPrimAutomatic Test Objects Display, cycle # ']);
@@ -1217,15 +1211,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% for the outlined test mode window.
                 IdPrimTestModeOutlinedFigureNumber = findobj('Tag','IdPrimTestModeOutlinedFigure');
                 if isempty(IdPrimTestModeOutlinedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
-                    NumberOfModules = handles.Current.NumberOfModules;
-                    for ModuleNumber = 1:NumberOfModules
-                        FieldName = sprintf('FigureNumberForModule%02d', ModuleNumber);
-                        ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
-                    end
-                    HighestFigureNumber = max(ListOfFigureNumbers);
-                    IdPrimTestModeOutlinedFigureNumber = HighestFigureNumber + 8;
+                    IdPrimTestModeOutlinedFigureNumber = CPfigurehandle(handles) + 8;
                     CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
-
                     set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
                         'name',['IdentifyPrimAutomatic Test Outlines Display, cycle # ']);
                     uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);

@@ -1171,45 +1171,93 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 	    handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
 	    handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
         end
-
+        
         if strcmp(TestMode,'Yes')
             if ~(LocalMaximaTypeNumber == 2 && WatershedTransformImageTypeNumber == 3)
                 drawnow;
-                SegmentedFigures = findobj('Tag','SegmentedFigure');
-                if isempty(SegmentedFigures)
-                    CPfigure('Tag','SegmentedFigure');
-                    uicontrol('style','text','units','normalized','string','IDENTIFIED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
-                else
-                    CPfigure(SegmentedFigures(1));
+                %%% If the test mode window does not exist, it is created, but only
+                %%% if it's at the starting image set (if the user closed the window
+                %%% intentionally, we don't want to pop open a new one).
+                IdPrimTestModeSegmentedFigureNumber = findobj('Tag','IdPrimTestModeSegmentedFigure');
+                if isempty(IdPrimTestModeSegmentedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                    %%% Creates the window, sets its tag, and puts some
+                    %%% text in it. The first lines are meant to find a suitable
+                    %%% figure number for the window, so we don't choose a
+                    %%% figure number that is being used by another module.
+                    %%% The integer 7 is arbitrary. Didn't want to
+                    %%% add 1 and 2 because other modules might be creating
+                    %%% a few windows.
+                    NumberOfModules = handles.Current.NumberOfModules;
+                    for ModuleNumber = 1:NumberOfModules
+                        FieldName = sprintf('FigureNumberForModule%02d', ModuleNumber);
+                        ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
+                    end
+                    HighestFigureNumber = max(ListOfFigureNumbers);
+                    IdPrimTestModeSegmentedFigureNumber = HighestFigureNumber + 7;
+                    CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
+                    set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
+                        'name',['IdentifyPrimAutomatic Test Objects Display, cycle # ']);
+                    uicontrol(IdPrimTestModeSegmentedFigureNumber,'style','text','units','normalized','string','Identified objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                end
+                %%% If the figure window DOES exist now, then calculate and display items
+                %%% in it.
+                if ~isempty(IdPrimTestModeSegmentedFigureNumber)
+                    %%% Makes the window active.
+                    CPfigure(IdPrimTestModeSegmentedFigureNumber(1));
+                    OldText = get(IdPrimTestModeSegmentedFigureNumber,'name');
+                    NumberSignIndex = find(OldText=='#');
+                    OldTextUpToNumberSign = OldText(1:NumberSignIndex(1));
+                    NewNum = handles.Current.SetBeingAnalyzed;
+                    set(IdPrimTestModeSegmentedFigureNumber,'name',[OldTextUpToNumberSign,num2str(NewNum)]);
+
+                    subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                    im = CPlabel2rgb(handles,Objects);
+                    CPimagesc(im,handles);
+                    title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
                 end
 
-                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-                im = CPlabel2rgb(handles,Objects);
-                CPimagesc(im,handles);
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
-                OutlinedFigures = findobj('Tag','OutlinedFigure');
-                if isempty(OutlinedFigures)
-                    CPfigure('Tag','OutlinedFigure');
-                    uicontrol('style','text','units','normalized','string','Outlined Objects: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
-                else
-                    CPfigure(OutlinedFigures(1));
+                %%% Repeat what we've done for the segmented test mode window, now
+                %%% for the outlined test mode window.
+                IdPrimTestModeOutlinedFigureNumber = findobj('Tag','IdPrimTestModeOutlinedFigure');
+                if isempty(IdPrimTestModeOutlinedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                    NumberOfModules = handles.Current.NumberOfModules;
+                    for ModuleNumber = 1:NumberOfModules
+                        FieldName = sprintf('FigureNumberForModule%02d', ModuleNumber);
+                        ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
+                    end
+                    HighestFigureNumber = max(ListOfFigureNumbers);
+                    IdPrimTestModeOutlinedFigureNumber = HighestFigureNumber + 8;
+                    CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
+
+                    set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
+                        'name',['IdentifyPrimAutomatic Test Outlines Display, cycle # ']);
+                    uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
                 end
 
-                tmp = OrigImage/max(OrigImage(:));
-                OutlinedObjectsR = tmp;
-                OutlinedObjectsG = tmp;
-                OutlinedObjectsB = tmp;
-                PerimObjects = bwperim(Objects > 0);
-                PerimDiameter = bwperim(DiameterExcludedObjects > 0);
-                PerimBorder = bwperim(BorderObjects > 0);
-                OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
-                OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
-                OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+                if ~isempty(IdPrimTestModeOutlinedFigureNumber)
+                    CPfigure(IdPrimTestModeOutlinedFigureNumber(1));
+                    OldText = get(IdPrimTestModeOutlinedFigureNumber,'name');
+                    NumberSignIndex = find(OldText=='#');
+                    OldTextUpToNumberSign = OldText(1:NumberSignIndex(1));
+                    NewNum = handles.Current.SetBeingAnalyzed;
+                    set(IdPrimTestModeOutlinedFigureNumber,'name',[OldTextUpToNumberSign,num2str(NewNum)]);
 
-                subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
-                OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                CPimagesc(OutlinedObjects,handles);
-                title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                    tmp = OrigImage/max(OrigImage(:));
+                    OutlinedObjectsR = tmp;
+                    OutlinedObjectsG = tmp;
+                    OutlinedObjectsB = tmp;
+                    PerimObjects = bwperim(Objects > 0);
+                    PerimDiameter = bwperim(DiameterExcludedObjects > 0);
+                    PerimBorder = bwperim(BorderObjects > 0);
+                    OutlinedObjectsR(PerimObjects) = 0; OutlinedObjectsG(PerimObjects) = 1; OutlinedObjectsB(PerimObjects) = 0;
+                    OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
+                    OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
+
+                    subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                    OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
+                    CPimagesc(OutlinedObjects,handles);
+                    title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                end
             end
         end
     end

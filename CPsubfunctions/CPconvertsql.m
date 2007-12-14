@@ -117,6 +117,31 @@ for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
     end %end of substrucfield
 end %end of remainfield
 
+%%% We need to find the maximum width of the paths and image
+%%% filenames.  Unfortunately, this function can be called with an
+%%% incomplete measurement set, usually because of being split up into
+%%% cluster jobs.  For this reason, we have to go to handles.Pipeline
+%%% to find these widths, and rely on the modules not changing their
+%%% output values too far from what's in handles.Pipeline.
+
+% set a reasonable minimum
+FileNameWidth = 128;
+for fld=fieldnames(handles.Pipeline)',
+    if strfind(fld{1}, 'FileList'),
+        for str=handles.Pipeline.(fld{1}),
+            FileNameWidth = max(FileNameWidth, length(str{1}));
+        end
+    end
+end
+
+% set a reasonable minimum
+PathNameWidth = 128;
+for fld=fieldnames(handles.Pipeline)',
+    if strfind(fld{1}, 'Pathname'),
+        PathNameWidth = max(PathNameWidth, length(handles.Pipeline.(fld{1})));
+    end
+end
+
 if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
 
     if strcmp(SQLchoice,'MySQL')
@@ -130,9 +155,9 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
 
         for i = per_image_names,
             if strfind(i{1}, 'FileNames')
-                fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
+                fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, FileNameWidth);
             elseif  strfind(i{1}, 'Path'),
-                fprintf(fmain, ',\n%s VARCHAR(128)', i{1});
+                fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, PathNameWidth);
             else
                 fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
             end
@@ -197,9 +222,9 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         for i = per_image_names,
             p=p+1;
             if strfind(i{1}, 'Filename')
-                fprintf(fsetup, ',\n%s VARCHAR2(128)', ['col',num2str(p)]);
+                fprintf(fsetup, ',\n%s VARCHAR2(%d)', ['col',num2str(p)], FileNameWidth);
             elseif  strfind(i{1}, 'Path'),
-                fprintf(fsetup, ',\n%s VARCHAR2(128)', ['col',num2str(p)]);
+                fprintf(fsetup, ',\n%s VARCHAR2(%d)', ['col',num2str(p)], PathNameWidth);
             else
                 fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
             end
@@ -442,21 +467,20 @@ for img_idx = FirstSet:LastSet
 
     end
     %print mean, stdev for all measurements per image
-
-    fprintf(fimage,',');
     formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
     if size(perobjectvals_mean,1)==1
+        fprintf(fimage,',');
         fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
         for i= 1:size(perobjectvals_mean,2),
             fprintf(fimage,',0'); %ignore NaN
         end
-        fprintf(fimage,'\n');
-    else
+    elseif size(perobjectvals_mean, 1) > 0,  % don't write anything if there are no measurements
+        fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
         fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
-        fprintf(fimage, '\n');
     end
+    fprintf(fimage,'\n');
 end
 
 formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];

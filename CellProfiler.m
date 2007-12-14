@@ -3177,18 +3177,21 @@ if exist(pathname,'dir')
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
     FileNames = CPretrievemediafilenames(pathname,'','No','Exact','Both');
-    %%% Test whether this is during CellProfiler launching or during
-    %%% the image analysis run itself (by looking at some of the GUI
-    %%% elements). If either is the case, the message is NOT
-    %%% shown.
     handles.Current.FilenamesInImageDir = FileNames;
-    ListBoxContents = get(handles.FilenamesListBox,'String');
-    IsStartup = strcmp(ListBoxContents(1),'Listbox');
-    IsAnalysisRun = strcmp(get(handles.AnalyzeImagesButton,'enable'),'off');
-    if any([IsStartup, IsAnalysisRun]) == 0 && isempty(handles.Current.FilenamesInImageDir) == 1;
-        CPmsgbox('Please note: there are no recognizable files in the default image folder.','Default Image Folder');
-    end
-    guidata(hObject, handles);
+%%% We decided that the following is annoying to have pop up all the time. It is
+%%% sufficient for the listbox displaying the files in the default image
+%%% folder to say 'No image files recognized' (see below).
+%    %%% Test whether this is during CellProfiler launching or during
+%    %%% the image analysis run itself (by looking at some of the GUI
+%    %%% elements). If either is the case, the message is NOT
+%    %%% shown.
+%     ListBoxContents = get(handles.FilenamesListBox,'String');
+%     IsStartup = strcmp(ListBoxContents(1),'Listbox');
+%     IsAnalysisRun = strcmp(get(handles.AnalyzeImagesButton,'enable'),'off');
+%     if any([IsStartup, IsAnalysisRun]) == 0 && isempty(handles.Current.FilenamesInImageDir) == 1;
+%         CPmsgbox('Please note: there are no recognizable files in the default image folder.','Default Image Folder');
+%     end
+%    guidata(hObject, handles);
     %%% If the directory entered in the box does not exist, give an error
     %%% message, change the contents of the edit box back to the
     %%% previously selected directory, and change the contents of the
@@ -3197,7 +3200,7 @@ else
     CPerrordlg('A directory with that name does not exist');
 end
 %%% Whether or not the directory exists and was updated, we want to
-%%% update the GUI display to show the currrently stored information.
+%%% update the GUI display to show the currently stored information.
 %%% Display the path in the edit box.
 set(handles.DefaultImageDirectoryEditBox,'String',handles.Current.DefaultImageDirectory);
 if isempty(handles.Current.FilenamesInImageDir)

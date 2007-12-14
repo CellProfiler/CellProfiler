@@ -702,9 +702,8 @@ for n = 1:length(ImageName)
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             handles.Pipeline.(ImageName{n}) = LoadedImage;
-        catch ErrorMessage = lasterr;
-            ErrorNumber = {'first','second','third','fourth'};
-            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
+        catch
+	    CPerrorImread(ModuleName, n);
         end % Goes with: catch
 
         % Create a cell array with the filenames
@@ -753,9 +752,8 @@ for n = 1:length(ImageName)
             %%% substructure so it will be deleted at the end of the analysis batch.
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
             handles.Pipeline.(ImageName{n}) = LoadedImage;
-        catch ErrorMessage = lasterr;
-            ErrorNumber = {'first','second','third','fourth'};
-            error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of movies. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze, or that the image file is not in uncompressed avi format. Matlab says the problem is: ', ErrorMessage])
+        catch 
+	    CPerrorImread(ModuleName, n);
         end % Goes with: catch
         FileNames(n) = {CurrentFileNameWithFrame};
     end

@@ -173,9 +173,8 @@ for n = 1:length(ImageName)
         %%% Saves the image to the handles structure.
         handles.Pipeline.(ImageName{n}) = LoadedImage;
 
-    catch ErrorMessage = lasterr;
-        ErrorNumber = {'first','second','third','fourth'};
-        error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' set of images. Please check the settings. A common problem is that there are non-image files in the directory you are trying to analyze. Matlab says the problem is: ', ErrorMessage])
+    catch
+        CPerrorImread(ModuleName, n);
     end % Goes with: catch
 
     % Create a cell array with the filenames
@@ -187,11 +186,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The figure window display is unnecessary for this module, so the figure
-%%% window is closed the first time through the module.
-%%% Determines the figure number.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-%%% Closes the window if it is open.
 if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure('','NarrowText',ThisModuleFigureNumber)

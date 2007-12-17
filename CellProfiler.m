@@ -1147,11 +1147,7 @@ if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.Module
 end
 
 %%% The "Settings" variable is saved to the file name the user chooses.
-if exist(handles.Current.DefaultOutputDirectory, 'dir')
-    [FileName,Pathname] = uiputfile(fullfile(handles.Current.DefaultOutputDirectory,'*.mat'), 'Save Pipeline As...');
-else
-    [FileName,Pathname] = uiputfile('*.mat', 'Save Pipeline As...');
-end
+[FileName,Pathname] = CPuiputfile('*.mat', 'Save Pipeline As...',handles.Current.DefaultOutputDirectory);
 %%% Allows canceling.
 if FileName ~= 0
     [Temp,FileNom,FileExt] = fileparts(FileName); %#ok Ignore MLint
@@ -2602,7 +2598,7 @@ function SaveButton_Callback (hObject, eventdata, handles)  %#ok Ignore MLint
 
 Answer = CPquestdlg('Do you want to save these as the default preferences? If not, you will be asked to name your preferences file, which can be loaded by File -> Load Preferences.','Save as default?','Yes','No','Yes');
 if strcmp(Answer, 'No')
-    [FileName,Pathname] = uiputfile(fullfile(matlabroot,'*.mat'), 'Save Preferences As...');
+    [FileName,Pathname] = CPuiputfile('*.mat', 'Save Preferences As...',matlabroot);
     if isequal(FileName,0) || isequal(Pathname,0)
         Pathname = matlabroot;
         FileName = 'CellProfilerPreferences.mat';

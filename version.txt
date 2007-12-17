@@ -1,3 +1,14 @@
+Version 1.0.4942
+- MeasureObjectAreaShape:Zernike optimization: 30% - 50% reduced computation time.
+- MeasureImageSaturationBlur: added two more measurements: PercentMaximal and LocalFocusScore (actually NormVar of Local NormVariances).
+- CPthreshold, IdentifyPrimAutomatic,IdentifySecondary,MeasureImageAreaOccupied:Added Kapur entropy-based threshold method and added two thresholding quality metrics.
+- CPthreshold, IdentifyPrimAutomatic:Adjusted MoG to give precisely the same answer each time by setting rand seed to zero.
+- CellProfiler.m:added a check to make sure the directory exists when user tries to open a file from the file listbox in the main window.
+-Relate: Bug fix: Fixes exporting problem when no parents are found.  Now initializes every handles.Measurements.(SubObjectName).Distance to have at least one zero, which was causing problems when exporting.  Also added clarification to a warning dialog.
+- CPrelateobjects: add features even when objects are missing.
+CPthreshold: Bugfix: a couple wv -> soe in SumOfEntropies subfunction.
+- ClassifyObjects: Two bug fixes: (1) Now guards against Inf's in lower or upper Bin bounds, and (2) colormap is now correctly set for data ranges smaller than the default colormap (plots for were blank previously).
+- MaskImage: now a figure window is displayed.
 Version 1.0.4884
 -New distance measurement in the Relate module.
 -Updated LoadImages module to handle more movie files.  

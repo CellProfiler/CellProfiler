@@ -99,12 +99,12 @@ for l = 1:length(MeasurementsMean)
     set(FigureHandle,'Color','w')
 
     if l==1
-        [filename,pathname] = uiputfile('*.avi');
+        [filename,pathname] = CPuiputfile('*.avi', 'Save Movie As...',handles.Current.DefaultOutputDirectory);
         Xmo=avifile(fullfile(pathname,filename));
     end
     Xmo=addframe(Xmo,FigureHandle);
-    l %#ok Ignore MLint We want to see which frame we are at.
+    disp(l) %#ok Ignore MLint We want to see which frame we are at.
     close
 end
 
-close(Xmo);
+Xmo = close(Xmo);

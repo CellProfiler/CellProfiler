@@ -80,6 +80,7 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = Which category of measurements would you want to filter by?
 %choiceVAR03 = AreaShape
 %choiceVAR03 = Children
+%choiceVAR03 = Parent
 %choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
 %choiceVAR03 = Neighbors

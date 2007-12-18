@@ -6,6 +6,12 @@ function FigureHandle = CPfigurehandle(handles)
 NumberOfModules = handles.Current.NumberOfModules;
 for ModuleNumber = 1:NumberOfModules
     FieldName = sprintf('FigureNumberForModule%02d', ModuleNumber);
-    ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
+    %%% We have a 'try' here, because if we have just started a pipeline
+    %%% and haven't gotten to the end yet, some figure windows may not yet
+    %%% be assigned.
+    try ListOfFigureNumbers(ModuleNumber) = handles.Current.(FieldName);
+    end
 end
-FigureHandle = max(ListOfFigureNumbers) + 1;
+NextAvailableFigureHandle = CPfigure;
+close(NextAvailableFigureHandle);
+FigureHandle = max([ListOfFigureNumbers + 1, NextAvailableFigureHandle]);

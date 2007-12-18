@@ -1184,10 +1184,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% text in it. The first lines are meant to find a suitable
                     %%% figure number for the window, so we don't choose a
                     %%% figure number that is being used by another module.
-                    %%% The integer 7 is arbitrary. Didn't want to
-                    %%% add 1 and 2 because other modules might be creating
-                    %%% a few windows.
-                    IdPrimTestModeSegmentedFigureNumber = CPfigurehandle(handles) + 7;
+                    IdPrimTestModeSegmentedFigureNumber = CPfigurehandle(handles);
                     CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
                     set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
                         'name',['IdentifyPrimAutomatic Test Objects Display, cycle # ']);
@@ -1211,7 +1208,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% for the outlined test mode window.
                 IdPrimTestModeOutlinedFigureNumber = findobj('Tag','IdPrimTestModeOutlinedFigure');
                 if isempty(IdPrimTestModeOutlinedFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
-                    IdPrimTestModeOutlinedFigureNumber = CPfigurehandle(handles) + 8;
+                    IdPrimTestModeOutlinedFigureNumber = CPfigurehandle(handles);
                     CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
                     set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
                         'name',['IdentifyPrimAutomatic Test Outlines Display, cycle # ']);

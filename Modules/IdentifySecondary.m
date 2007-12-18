@@ -710,10 +710,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% text in it. The first lines are meant to find a suitable
             %%% figure number for the window, so we don't choose a
             %%% figure number that is being used by another module.
-            %%% The integer 9 is arbitrary. Didn't want to
-            %%% add 1 and 2 because other modules might be creating
-            %%% a few windows.
-            SecondaryTestFigureNumber = CPfigurehandle(handles)+9;
+            SecondaryTestFigureNumber = CPfigurehandle(handles);
             CPfigure(handles,'Image',SecondaryTestFigureNumber);
             set(SecondaryTestFigureNumber,'Tag','IdSecondaryTestModeFigure',...
                 'name',['IdentifySecondary Test Display, cycle # ']);

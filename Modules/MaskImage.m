@@ -9,8 +9,8 @@ function handles = MaskImage(handles)
 %
 % This module masks an image and saves it in the handles structure for
 % future use. The masked image is based on the original image and the
-% object selected. No display will be shown.
-%
+% object selected.
+
 % See also IdentifyPrimAutomatic, IdentifyPrimManual.
 
 % CellProfiler is distributed under the GNU General Public License.

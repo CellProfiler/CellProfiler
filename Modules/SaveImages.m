@@ -412,7 +412,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             end
             if strcmpi(Answer,'Cancel')
                 %%% This should cause a cancel so no further processing is done
-                set(handles.timertexthandle,'string',['Canceling after current module'])
+                set(handles.timertexthandle,'string','Canceling after current module')
                 CPmsgbox(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
                 CPclosefigure(handles,CurrentModule)
                 return

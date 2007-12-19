@@ -264,6 +264,8 @@ handles.Measurements.Image.(fieldname) = FeatureNames;
 fieldname = ['AreaOccupied_',ObjectName];
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = TotalImageArea;
+
+Threshold = mean(Threshold(:)); %% Use average threshold, namely for adaptive threshold methods
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,3) = Threshold;
 
 %% Save the thresholded image in handles.Pipeline for later use.

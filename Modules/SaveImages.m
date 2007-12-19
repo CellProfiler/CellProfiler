@@ -411,7 +411,12 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                 return;
             end
             if strcmpi(Answer,'Cancel')
-                error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+                %%% This should cause a cancel so no further processing is done
+                set(handles.timertexthandle,'string',['Canceling after current module'])
+                CPmsgbox(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+                CPclosefigure(handles,CurrentModule)
+                return
+                % error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
             end
         end
     end
@@ -470,7 +475,11 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                     error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
                 end
                 if strcmpi(Answer,'Cancel')
-                    error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+                    
+                    %%% This should cause a cancel so no further processing is done
+                    %%% on this machine.
+                    set(handles.timertexthandle,'string','Canceling after current module')
+%                     error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
                 end
             end
         end
@@ -574,12 +583,7 @@ drawnow
 
 %%% The figure window display is unnecessary for this module, so it is
 %%% closed during the starting image cycle.
-if SetBeingAnalyzed == handles.Current.StartingImageSet
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    if any(findobj == ThisModuleFigureNumber)
-        close(ThisModuleFigureNumber)
-    end
-end
+CPclosefigure(handles,CurrentModule)
 
 function twodigit = DigitString(LastImageSet,val)
 %TwoDigitString is a function like num2str(int) but it returns a two digit

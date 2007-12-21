@@ -55,12 +55,12 @@ drawnow
 %textVAR01 = Subtract this image:
 %infotypeVAR01 = imagegroup
 SubtractImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
+%inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = From this image:
 %infotypeVAR02 = imagegroup
 BasicImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
+%inputtypeVAR02 = popupmenu custom
 
 %textVAR03 = What do you want to call the resulting image?
 %defaultVAR03 = SubtractedCellStain

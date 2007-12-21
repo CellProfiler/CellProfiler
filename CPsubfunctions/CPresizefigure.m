@@ -37,7 +37,8 @@ if strcmp(Layout,'NarrowText') && (FigPos(3) ~= 280)
 end
 
 ImagePos = size(OrigImage);
-ScSize = get(0,'ScreenSize');
+MonPos = get(0,'MonitorPositions');
+ScSize = MonPos(1,:);
 FigureWidth = FigPosOrig(3);
 FigureHeight = FigPosOrig(4);
 ScreenWidth = ScSize(3);

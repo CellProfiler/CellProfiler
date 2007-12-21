@@ -9,7 +9,12 @@ function handles = MaskImage(handles)
 %
 % This module masks an image and saves it in the handles structure for
 % future use. The masked image is based on the original image and the
-% object selected.
+% object selected. 
+% 
+% Note that the image saved for further processing downstream is grayscale.
+% If a binary mask is desired in subsequent modules, you might be able to 
+% access ['CropMask',MaskedImageName] (e.g. 'CropMaskMaskBlue'), or simply
+% use the ApplyThreshold module instead of MaskImage.
 
 % See also IdentifyPrimAutomatic, IdentifyPrimManual.
 

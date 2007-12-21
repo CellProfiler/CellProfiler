@@ -3786,10 +3786,7 @@ else
                                 else
                                     NumberofWindows = NumberofWindows+1;
                                     if iscellstr(handles.Settings.ModuleNames(SlotNumber))
-                                        LeftPos = (ScreenWidth*((NumberofWindows-1)/12));
-                                        if LeftPos >= ScreenWidth
-                                            LeftPos = LeftPos - ScreenWidth;
-                                        end
+                                        LeftPos = ScreenWidth*rem((NumberofWindows-1),12)/12;
                                         handles.Current.(['FigureNumberForModule' TwoDigitString(SlotNumber)]) = ...
                                             CPfigure(handles,'','name',[char(handles.Settings.ModuleNames(SlotNumber)), ' Display, cycle # '],...
                                             'Position',[LeftPos (ScreenHeight-522) 560 442]);
@@ -3915,10 +3912,7 @@ else
                     for i=1:length(openFig),
                         ModuleNumber = openFig(i);
                         try
-                            LeftPos = (ScreenWidth*((ModuleNumber-1)/12));
-                            if LeftPos >= ScreenWidth
-                                LeftPos = LeftPos - ScreenWidth;
-                            end
+                            LeftPos = ScreenWidth*rem((NumberofWindows-1),12)/12;
                             handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]) = ...
                                 CPfigure(handles,'','name',[char(handles.Settings.ModuleNames(ModuleNumber)), ' Display, cycle # '],...
                                 'Position',[LeftPos (ScreenHeight-522) 560 442]);

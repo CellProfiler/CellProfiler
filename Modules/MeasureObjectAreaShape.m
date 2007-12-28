@@ -99,7 +99,57 @@ function handles = MeasureObjectAreaShape(handles)
 % In addition, the following feature is calculated:
 %
 % FormFactor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
-% object
+% object%
+%
+% HERE IS MORE DETAILED INFORMATION ABOUT THE MEASUREMENTS FOR YOUR
+% REFERENCE
+%
+% 'Area' ? Scalar; the actual number of pixels in the region. (This value 
+% might differ slightly from the value returned by bwarea, which weights 
+% different patterns of pixels differently.)
+%
+% 'Eccentricity' ? Scalar; the eccentricity of the ellipse that has the 
+% same second-moments as the region. The eccentricity is the ratio of the 
+% distance between the foci of the ellipse and its major axis length. The 
+% value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
+% eccentricity is 0 is actually a circle, while an ellipse whose eccentricity 
+% is 1 is a line segment.) This property is supported only for 2-D input 
+% label matrices.
+%
+% 'Solidity' -? Scalar; the proportion of the pixels in the convex hull that
+% are also in the region. Computed as Area/ConvexArea. This property is 
+% supported only for 2-D input label matrices.
+%
+% 'Extent' ? Scalar; the proportion of the pixels in the bounding box that
+% are also in the region. Computed as the Area divided by the area of the 
+% bounding box. This property is supported only for 2-D input label matrices.
+%
+% 'EulerNumber' ? Scalar; equal to the number of objects in the region 
+% minus the number of holes in those objects. This property is supported 
+% only for 2-D input label matrices. regionprops uses 8-connectivity to 
+% compute the EulerNumber measurement. To learn more about connectivity, 
+% see Pixel Connectivity.
+%
+% 'perimeter' ? p-element vector containing the distance around the boundary
+% of each contiguous region in the image, where p is the number of regions. 
+% regionprops computes the perimeter by calculating the distance between 
+% each adjoining pair of pixels around the border of the region. If the 
+% image contains discontiguous regions, regionprops returns unexpected 
+% results. The following figure shows the pixels included in the perimeter 
+% calculation for this object
+% 
+% 'MajorAxisLength' ? Scalar; the length (in pixels) of the major axis of 
+% the ellipse that has the same normalized second central moments as the
+% region. This property is supported only for 2-D input label matrices.
+%
+% 'MinorAxisLength' ? Scalar; the length (in pixels) of the minor axis of
+% the ellipse that has the same normalized second central moments as the 
+% region. This property is supported only for 2-D input label matrices.
+%
+% 'Orientation' ? Scalar; the angle (in degrees ranging from -90 to 90 
+% degrees) between the x-axis and the major axis of the ellipse that has the
+% same second-moments as the region. This property is supported only for 
+% 2-D input label matrices.
 %
 % See also MeasureImageAreaOccupied.
 

@@ -3509,20 +3509,15 @@ else
             %%% If multiple monitors are used, then get the ScreenSize data
             %%% from the main monitor. It can be enhanced to intelligently
             %%% calculate all the monitors' positions.
-            %ScreenSize = get(0,'ScreenSize');
-            %ScreenWidth = ScreenSize(3);
-            %ScreenHeight = ScreenSize(4);
             ScreenSize = get(0,'MonitorPositions');
             ScreenWidth = ScreenSize(1,3);
             ScreenHeight = ScreenSize(1,4);            
-
+%=======
 %            MonPos = get(0,'MonitorPositions');
 %            ScreenSize = MonPos(1,:);
-%             ScreenSize = get(0,'ScreenSize');
 %            ScreenWidth = ScreenSize(3);
 %            ScreenHeight = ScreenSize(4);
-
-
+%>>>>>>> .r4997
             %%% Determines where to place the timer window: We want it below the image
             %%% windows, which means at about 800 pixels from the top of the screen,
             %%% but in case the screen doesn't have that many pixels, we don't want it
@@ -3633,11 +3628,7 @@ else
                 'TimerData = get(Timers(1),''UserData'');',...
                 'DetWin = findobj(''tag'',''DetailWindow'');',...
                 'if isempty(DetWin),',...
-%<<<<<<< .mine
                 'DetWin = CPfigure(''tag'',''DetailWindow'',''Name'',''Status Details'',''NumberTitle'',''off'',''menubar'',''none'',''position'',[400 100 330 13*(TimerData.NumberOfModules+7)+30]);',...
-%=======
-%                'DetWin = CPfigure(''tag'',''DetailWindow'',''Name'',''Details For This Cycle'',''NumberTitle'',''off'',''menubar'',''none'',''position'',[400 100 250 13*(TimerData.NumberOfModules+7)+50]);',...
-%>>>>>>> .r4997
                 'pos = get(DetWin,''Position'');',...
                 'DetWinheight = pos(4);',...
                 'uicontrol(DetWin, ''Tag'', ''DetailWindowHeader'', ''Style'', ''text'', ''Position'', [10 DetWinheight-17 150 13],', ...

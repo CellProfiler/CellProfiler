@@ -170,8 +170,12 @@ if isempty(tmp)
 end
 
 TextFlag = 0;
-if iscell(tmp)
-    StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+if iscell(tmp)    
+    if FeatureType == 'Tracking'
+        StringListOfMeasurements = tmp(:,FeatureNo);
+    else
+        StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+    end    
     ListOfMeasurements = StringListOfMeasurements;
     TextFlag = 1;
 else

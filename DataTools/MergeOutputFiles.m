@@ -80,7 +80,7 @@ while valid == 0
         uiwait(msg);
         continue
     elseif isempty(strfind(Answers{2},'OUT'))
-        msg = CPmsgbox('The filename must contain an ''OUT'' to indicated that it is a CellProfiler file.');
+        msg = CPmsgbox('The filename must contain an ''OUT'' to indicate that it is a CellProfiler file.');
         uiwait(msg);
         continue
     end
@@ -100,11 +100,14 @@ BatchFilePrefix = Answers{1};
 clear handles
 
 %%% Load the data file and check that it contains handles
+MsgBoxLoad = CPmsgbox('Loading first file.  Please wait...');
 load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
 if ~exist('handles','var')
     CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',[BatchFilePrefix,'data.mat']))
+    close(MsgBoxLoad)
     return
 end
+close(MsgBoxLoad)
 
 Fieldnames = fieldnames(handles.Measurements);
 

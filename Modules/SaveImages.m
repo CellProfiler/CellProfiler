@@ -427,15 +427,19 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     drawnow
 
     FileSavingParameters = [];
-    if ~strcmp(BitDepth,'8') && (strcmpi(FileFormat,'jpg') || strcmpi(FileFormat,'jpeg') || strcmpi(FileFormat,'png'))
+    if ~strcmp(BitDepth,'8') && (strcmpi(FileFormat,'jpg') || strcmpi(FileFormat,'jpeg') || strcmpi(FileFormat,'png'))        
         FileSavingParameters = [',''bitdepth'', ', BitDepth,''];
         %%% In jpeg format at 12 and 16 bits, the mode must be set to
         %%% lossless to avoid failure of the imwrite function.
         if strcmpi(FileFormat,'jpg') || strcmpi(FileFormat,'jpeg')
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
-        end
+        end        
+    elseif strcmp(BitDepth, '16') && (strcmp(FileFormat,'tif') || strcmp(FileFormat,'tiff'))
+        %%% http://www.mathworks.com/support/solutions/data/1-19QIN.html?solution=1-19QIN
+        Image2 = uint16(255 * Image);
+        Image = bitshift(Image2, 8);        
     end
-
+     
     if ~strcmp(OptionalParameters,'/')
         FileSavingParameters = [',',OptionalParameters,FileSavingParameters];
     end

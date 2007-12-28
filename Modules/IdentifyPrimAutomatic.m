@@ -461,6 +461,8 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %textVAR11 = Method to distinguish clumped objects (see help for details):
 %choiceVAR11 = Intensity
 %choiceVAR11 = Shape
+%choiceVAR11 = Manual
+%choiceVAR11 = Manual_for_IdSecondary
 %choiceVAR11 = None
 OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
@@ -770,6 +772,21 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     MaximaImage(~Objects) = 0;
                     %%% Shrink to points (needed because of the resizing)
                     MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+                elseif strcmp(LocalMaximaType, 'Manual') || strcmp(LocalMaximaType, 'Manual_for_IdSecondary')
+                    %%% Do the manual clicking for local maximas
+                    FigureHandle = CPfigure;
+                    CPimagesc(OrigImage,handles);
+                    AxisHandle = gca;
+                    title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),...
+                        '. Click on approximate cell center points to outline the region of interest.']},...
+                        {'The backspace key or right mouse button will erase the last clicked point.'},...
+                        {'Use Edit > Colormap to adjust the contrast of the image if needed.'},...
+                        {'Press enter when finished.'},...
+                        {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
+                    [xpts,ypts] = getpoints(AxisHandle);
+                    MaximaImage = zeros(size(OrigImage,1), size(OrigImage, 2));
+                    point_idx = sub2ind(size(OrigImage), ypts, xpts);
+                    MaximaImage(point_idx) = 1;
                 end
 
                 %%% Overlay the maxima on either the original image or a distance
@@ -790,9 +807,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     Overlaid = imimposemin(-DistanceTransformedImage,MaximaImage);
                     % figure, imagesc(Overlaid), title('overlaid');
                     % figure, imagesc(-DistanceTransformedImage), title('-DistanceTransformedImage');
-
                 end
-
+                
                 %%% Calculate the watershed transform and cut objects along the boundaries
                 WatershedBoundaries = watershed(Overlaid) > 0;
                 Objects = Objects.*WatershedBoundaries;
@@ -811,6 +827,10 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 end
             end
             drawnow
+            
+            if strcmp(LocalMaximaType, 'Manual_for_IdSecondary')
+               Objects = MaximaImage;
+            end
 
             %%% Label the objects
             Objects = bwlabel(Objects);
@@ -1389,3 +1409,92 @@ end
 
 %%% Finally, relabel the objects
 Objects = bwlabel(Objects > 0);
+
+
+%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION %%%
+%%%%%%%%%%%%%%%%%%%
+
+function [xpts,ypts] = getpoints(AxisHandle)
+
+Position = get(AxisHandle,'Position');
+FigureHandle = (get(AxisHandle, 'Parent'));
+PointHandles = [];
+xpts = [];
+ypts = [];
+NbrOfPoints = 0;
+done = 0;
+%%% Turns off the CPimagetool function because it interferes with getting
+%%% points.
+ImageHandle = get(AxisHandle,'children');
+set(ImageHandle,'ButtonDownFcn','');
+
+hold on
+while ~done;
+
+    UserInput = waitforbuttonpress;                            % Wait for user input
+    SelectionType = get(FigureHandle,'SelectionType');         % Get information about the last button press
+    CharacterType = get(FigureHandle,'CurrentCharacter');      % Get information about the character entered
+
+    % Left mouse button was pressed, add a point
+    if UserInput == 0 && strcmp(SelectionType,'normal')
+
+        % Get the new point and store it
+        CurrentPoint  = get(AxisHandle, 'CurrentPoint');
+        xpts = [xpts CurrentPoint(2,1)];
+        ypts = [ypts CurrentPoint(2,2)];
+        NbrOfPoints = NbrOfPoints + 1;
+
+        % Plot the new point
+        h = plot(CurrentPoint(2,1),CurrentPoint(2,2),'r.');
+        set(AxisHandle,'Position',Position)                   % For some reason, Matlab moves the Title text when the first point is plotted, which in turn resizes the image slightly. This line restores the original size of the image
+        PointHandles = [PointHandles h];
+
+        % If there are any points, and the right mousebutton or the backspace key was pressed, remove a points
+    elseif NbrOfPoints > 0 && ((UserInput == 0 && strcmp(SelectionType,'alt')) || (UserInput == 1 && CharacterType == char(8)))   % The ASCII code for backspace is 8
+
+        NbrOfPoints = NbrOfPoints - 1;
+        xpts = xpts(1:end-1);
+        ypts = ypts(1:end-1);
+        delete(PointHandles(end));
+        PointHandles = PointHandles(1:end-1);
+
+        % Enter key was pressed, manual outlining done, and the number of points are at least 3
+    elseif NbrOfPoints >= 3 && UserInput == 1 && CharacterType == char(13)
+
+        % Indicate that we are done
+        done = 1;
+%{
+        % Close the curve by making the first and last points the same
+        xpts = [xpts xpts(1)];
+        ypts = [ypts ypts(1)];
+%}
+        % Remove plotted points
+        if ~isempty(PointHandles)
+            delete(PointHandles)
+        end
+
+    end
+    %{
+    % Remove old spline and draw new
+    if exist('SplineCurve','var')
+        delete(SplineCurve)                                % Delete the graphics object
+        clear SplineCurve                                  % Clear the variable
+    end
+    if NbrOfPoints > 1
+        q = 0:length(xpts)-1;
+        qq = 0:0.1:length(xpts)-1;                          % Increase the number of points 10 times using spline interpolation
+        xpts_spline = spline(q,xpts,qq);
+        ypts_spline = spline(q,ypts,qq);
+        SplineCurve = plot(xpts_spline,ypts_spline,'r');
+        drawnow
+    else
+        xpts_spline = xpts;
+        ypts_spline = ypts;
+    end
+    %}
+end
+xpts = round(xpts);
+ypts = round(ypts);
+hold off
+set(ImageHandle,'ButtonDownFcn','CPimagetool');

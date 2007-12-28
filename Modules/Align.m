@@ -50,6 +50,7 @@ function handles = Align(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -105,8 +106,29 @@ AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
+%textVAR09 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR09 = Do not use
+%infotypeVAR09 = imagegroup
+MoreImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR10 = What do you want to call the subsequently aligned first image?
+%defaultVAR10 = /
+%infotypeVAR10 = imagegroup indep
+MoreAlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%textVAR11 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR11 = Do not use
+%infotypeVAR11 = imagegroup
+MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 = What do you want to call the subsequently aligned second image?
+%defaultVAR12 = /
+%infotypeVAR12 = imagegroup indep
+MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -125,6 +147,16 @@ if ~strcmpi(Image3Name,'Do not use')
     Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'DontCheckColor','CheckScale');
     [M3 N3 P3] = size(Image3);
 end
+%%% Same for More Image 1,2.
+if ~strcmpi(MoreImage1Name,'Do not use')
+    MoreImage1 = CPretrieveimage(handles,MoreImage1Name,ModuleName,'DontCheckColor','CheckScale');
+    [M3 N3 P3] = size(MoreImage1);
+end
+if ~strcmpi(MoreImage2Name,'Do not use')
+    MoreImage2 = CPretrieveimage(handles,MoreImage1Name,ModuleName,'DontCheckColor','CheckScale');
+    [M3 N3 P3] = size(MoreImage2);
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -264,9 +296,20 @@ else %%% Aligns two input images.
              AlignedImage2(:,:,1) = AlignR2;
              AlignedImage2(:,:,2) = AlignG2; 
              AlignedImage2(:,:,3) = AlignB2;
-       else    
-            AlignedImage1 = subim(Image1, sx, sy);
-            AlignedImage2 = subim(Image2, -sx, -sy);
+       else  
+            % Kyungnam temporarily modified 2007-08-28
+            %%% Chopped and aligned sub-images
+            % AlignedImage1 = subim(Image1, sx, sy);
+            % AlignedImage2 = subim(Image2, -sx, -sy);
+            %%% Shifted and padded registered images
+            AlignedImage1 = registered_im(Image1, sx, sy);
+            AlignedImage2 = Image2;            
+            if ~strcmpi(MoreImage1Name,'Do not use')
+                MoreAlignedImage1 = registered_im(MoreImage1, sx, sy);
+            end
+            if ~strcmpi(MoreImage2Name,'Do not use')
+                MoreAlignedImage2 = registered_im(MoreImage2, sx, sy); 
+            end
        end
     end
 end
@@ -345,6 +388,12 @@ if strcmp(AdjustImage,'Yes')
     if strcmpi(Image3Name,'Do not use') ~= 1
         handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
     end
+    if ~strcmpi(MoreImage1Name,'Do not use')
+        handles.Pipeline.(MoreAlignedImage1Name) = MoreAlignedImage1;
+    end
+    if ~strcmpi(MoreImage2Name,'Do not use')
+        handles.Pipeline.(MoreAlignedImage2Name) = MoreAlignedImage2;
+    end    
 end
 
 %%% Stores the shift in alignment as a measurement for quality control
@@ -360,7 +409,7 @@ else
     fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'Features'];
     handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign'};
     fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name];
-    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy];
+    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy];    
 end
 
 % fieldname = ['ImageXAlign', AlignedImage1Name,AlignedImage2Name];
@@ -459,6 +508,20 @@ if (dy > 0),
     sub = sub(dy+1:end,:);
 else
     sub = sub(1:end+dy,:);
+end
+
+function regim = registered_im (im, dx, dy)
+%%% Registeredimage with positive or negative offsets
+regim = mean(im(:))*ones(size(im));
+if (dx > 0),
+    regim(:,1:end-dx) = im(:,1+dx:end);
+else
+    regim(:,1-dx:end) = im(:,1:end+dx);
+end
+if (dy > 0),
+    regim(1:end-dy,:) = regim(1+dy:end,:);
+else
+    regim(1-dy:end,:) = regim(1:end+dy,:);
 end
 
 function H = entropy(X)

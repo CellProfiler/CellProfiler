@@ -70,6 +70,7 @@ function handles = TrackObjects(handles)
 %   Vicky Lay
 %   Jun Liu
 %   Chris Gang
+%   Kyungnam Kim
 %
 % Website: http://www.cellprofiler.org
 %
@@ -100,7 +101,7 @@ DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 TrackMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For SIZE or INTENSITY, choose the neighborhood (in pixels) within which objects will be evaluated to find a potential match.
-%defaultVAR04 = 100
+%defaultVAR04 = 50
 PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
 %textVAR05 = For INTENSITY, what did you call the intensity image you want to use for tracking?
@@ -115,12 +116,19 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Do you want to calculate statistics? (SORRY, THIS OPTION IS NOT AVAILABLE YET)
-%choiceVAR07 = No
-%choiceVAR07 = Yes
+%choiceVAR07 = Not available yet
+%%% %choiceVAR07 = No
+%%% %choiceVAR07 = Yes
 %inputtypeVAR07 = popupmenu
 Stats = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%%%VariableRevisionNumber = 2
+%textVAR08 = Choose a text-labeling method for displaying tracked obejcts:
+%choiceVAR08 = Object ID
+%choiceVAR08 = Progeny ID
+%inputtypeVAR08 = popupmenu
+LabelMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -150,6 +158,7 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
     PrevLocations = handles.Pipeline.TrackObjects.(ObjectName).Previous.Locations;
     PrevLabels = handles.Pipeline.TrackObjects.(ObjectName).Previous.Labels;
     PrevSegImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.SegmentedImage;
+    PrevHeaders = handles.Pipeline.TrackObjects.(ObjectName).Previous.Headers;
 
     %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     CurrImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
@@ -159,51 +168,57 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
 
     switch TrackMethod
         case 'Distance'
-            CurrLabels = ClosestXY(PrevLocations, CurrLocations, PrevLabels);
+            [CurrLabels, CurrHeaders] = ClosestXY(PrevLocations, CurrLocations, PrevLabels, PrevHeaders);
         otherwise
-            ObjectsToEval = FindObjectsToEval(PrevLocations, CurrLocations, PixelRadius);
-            CurrLabels = CompareImages( handles.Pipeline.TrackObjects.(ObjectName), ObjectsToEval, ImageName, TrackMethod, PixelRadius, PrevLabels);
+            % For the choices of 'Intensity' and 'Size', PixelRadius doesn't seem to work properly - fix it! 
+           ObjectsToEval = FindObjectsToEval(PrevLocations, CurrLocations, PixelRadius);
+           [CurrLabels, CurrHeaders] = CompareImages( handles.Pipeline.TrackObjects.(ObjectName), ObjectsToEval, ImageName, TrackMethod, PixelRadius, PrevLabels, PrevHeaders);
     end
-
-    if strcmp(Stats, 'Yes')
-        PrevNumObj = max(PrevSegImage(:));
-        CurrSegObj = max(CurrSegImage(:));
-        if PrevNumObj < CurrSegObj
-            CellsEntered = CurrSegObj - PrevNumObj;
-            handles.TrackObjects.(ObjectName).CellsEnteredCount = CellsEntered + handles.TrackObjects.(ObjectName).CellsEnteredCount;
-        elseif PrevNumObj > CurrSegObj
-            CellsExited = PrevNumObj - CurrSegObj;
-            handles.TrackObjects.(ObjectName).CellsExitedCount = CellsExited + handles.TrackObjects.(ObjectName).CellsExitedCount;
-        end
-
-        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-            for i = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize)
-                a = find(CurrLabels == i);
-                if isempty(a)
-                    LastIsolatedObjSize(i) = NaN;
-                else
-                    [IsolatedObject, border]=IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, a);
-                    LastIsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
-                end
-            end
-            %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%%
-            FirstIsolatedObjSize = handles.Pipeline.TrackObject.(ObjectName).Stats.FirstObjSize;
-            ObjectSizeChange = FirstIsolatedObjSize./LastIsolatedObjSize;
-        end
-    end
+      %%% Make Stats work and uncomment the following code
+%     if strcmp(Stats, 'Yes')
+%         PrevNumObj = max(PrevSegImage(:));
+%         CurrSegObj = max(CurrSegImage(:));
+%         if PrevNumObj < CurrSegObj
+%             CellsEntered = CurrSegObj - PrevNumObj;
+%             handles.TrackObjects.(ObjectName).CellsEnteredCount = CellsEntered + handles.TrackObjects.(ObjectName).CellsEnteredCount;
+%         elseif PrevNumObj > CurrSegObj
+%             CellsExited = PrevNumObj - CurrSegObj;
+%             handles.TrackObjects.(ObjectName).CellsExitedCount = CellsExited + handles.TrackObjects.(ObjectName).CellsExitedCount;
+%         end
+% 
+%         if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+%             for i = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize)
+%                 a = find(CurrLabels == i);
+%                 if isempty(a)
+%                     LastIsolatedObjSize(i) = NaN;
+%                 else
+%                     [IsolatedObject, border]=IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, a);
+%                     LastIsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
+%                 end
+%             end
+%             %%%%%%%%%%%%SOMETHING HERE IS WRONG%%%%%%%%%%%%%%%%%
+%             FirstIsolatedObjSize = handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize;
+%             ObjectSizeChange = FirstIsolatedObjSize./LastIsolatedObjSize;
+%         end
+%     end
 
 else
-    CurrLabels = 1:length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations);
-    if strcmp(Stats, 'Yes')
-        handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsEnteredCount = 0;
-        handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsExitedCount = 0;
-
-        for i = 1:max(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage(:))
-            [IsolatedObject, border] = IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, i);
-            IsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
-        end
-        handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize = IsolatedObjSize;
-    end
+    len = length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations);
+    CurrLabels = 1:len;
+    for i = 1:len
+        CurrHeaders{i} = '';
+    end 
+      %%% Make Stats work and uncomment the following code
+%     if strcmp(Stats, 'Yes')
+%         handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsEnteredCount = 0;
+%         handles.Pipeline.TrackObjects.(ObjectName).Stats.CellsExitedCount = 0;
+% 
+%         for i = 1:max(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage(:))
+%             [IsolatedObject, border] = IsolateImage(handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage, i);
+%             IsolatedObjSize(i) = length(find(~(IsolatedObject == 0)));
+%         end
+%         handles.Pipeline.TrackObjects.(ObjectName).Stats.FirstObjSize = IsolatedObjSize;
+%     end
 end
 
 %Create colored image
@@ -229,10 +244,19 @@ if any(findobj == ThisModuleFigureNumber)
     title('Tracked Objects');
 end
 
-CStringOfMeas = cellstr(num2str((CurrLabels)'));
+CStringObjectID = cellstr(num2str((CurrLabels)'));
+CStringProgenyID = strcat(CurrHeaders', cellstr(num2str((CurrLabels)')));
+if strcmp(LabelMethod, 'Object ID') 
+    CStringOfMeas = CStringObjectID;
+elseif strcmp(LabelMethod, 'Progeny ID')
+    CStringOfMeas = CStringProgenyID;
+end
+% PutTextInImage is designed to put texts in an image as pixels
+% but, more adjustment work is required here.
+%[DisplayImage, TextHandles] = PutTextInImage(DisplayImage,CurrLocations,CStringOfMeas)
 TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
-    'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize,...
-    'visible','off');
+    'HorizontalAlignment','center', 'color', [.6 .6 .6],'fontsize',10,...%handles.Preferences.FontSize,...
+    'fontweight','bold');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -245,16 +269,20 @@ handles.Pipeline.TrackObjects.(DataImage).Info.TextHandles = TextHandles;
 Info = handles.Pipeline.TrackObjects.(DataImage).Info;
 
 handles.Pipeline.TrackObjects.(ObjectName).Current.Labels = CurrLabels;
+handles.Pipeline.TrackObjects.(ObjectName).Current.Headers = CurrHeaders;
 handles.Pipeline.(DataImage)=DisplayImage;
 
-handles.Pipeline.TrackObjects.Locations{handles.Current.SetBeingAnalyzed} = CurrLocations;
-handles.Pipeline.TrackObjects.Labels{handles.Current.SetBeingAnalyzed} = CurrLabels;
+%%% Saves the Object-ID and Progeny-ID of each tracked object
+handles.Measurements.(ObjectName).TrackingDescription = {'Object-ID','Progeny-ID'};
+handles.Measurements.(ObjectName).Tracking{handles.Current.SetBeingAnalyzed}= [CStringObjectID, CStringProgenyID];
 
+%%
 %%%%%%%%%%%%%%%%%%%%%%
 %%%% SUBFUNCTIONS %%%%
 %%%%%%%%%%%%%%%%%%%%%%
 
-function CurrLabels = CompareImages(handles, Info, ImageName, Method, pixeldistance, PrevLabels)
+%%% pixeldistance is not being used here - why?
+function [CurrLabels, CurrHeaders] = CompareImages(handles, Info, ImageName, Method, pixeldistance, PrevLabels, PrevHeaders)
 %Compares the objects based on the method chosen
 
 PrevMaskedImage = handles.Previous.SegmentedImage;
@@ -270,7 +298,8 @@ CurrNumOfObjects = length(CurrLocations);
 
 EvalArray = Info.EvaluationArray;
 Size = size(EvalArray);
-RelationData = zeros(Size);
+%RelationData = zeros(Size); <-- this will make all entries 0.
+RelationData = 99999999999999999999*ones(Size);
 
 for i = 1:Size(1)
     [PrevMaskedObj, PrevObjLoc] = IsolateImage(PrevMaskedImage, i);
@@ -300,9 +329,9 @@ for i = 1:Size(1)
     end
 end
 
-CurrLabels = AssignLabels(RelationData, PrevLabels);
-
-function CurrLabels = ClosestXY(PrevLocations, CurrLocations, PrevLabels)
+[CurrLabels, CurrHeaders] = AssignLabels(RelationData, PrevLabels, PrevHeaders);
+%%
+function [CurrLabels, CurrHeaders] = ClosestXY(PrevLocations, CurrLocations, PrevLabels, PrevHeaders)
 %finds the closest objects in the two consectutive images and labels them
 %the same.
 
@@ -323,8 +352,8 @@ for i= 1:PrevNumOfObjects
     end
 end
 
-CurrLabels = AssignLabels(DistanceArray, PrevLabels);
-
+[CurrLabels, CurrHeaders] = AssignLabels(DistanceArray, PrevLabels, PrevHeaders);
+%%
 function Objects = FindObjectsToEval(PrevLocations, CurrLocations, NeighborDist)
 %Finds which objects that are in the pixelradius vicinity and evaluates
 %their intensity or size correlation
@@ -366,7 +395,7 @@ for i= 1:PrevNumOfObjects
     end
 end
 Objects.EvaluationArray = EvalArray;
-
+%%
 function [Image, border] = IsolateImage(IncomingLabelMatrixImage, counter)
 %Isolates each object
 
@@ -385,7 +414,7 @@ Image = CPclearborder(Image);
 border = [rmin rmax cmin cmax];
 
 
-
+%%
 function SizeCorrelation = CompareSize(Image1, Image2)
 %Finds the size correlation
 
@@ -421,7 +450,7 @@ else
     IntensityRatio = AvgIntense1/AvgIntense2;
 end
 IntensityCorrelation = 1-IntensityRatio;
-
+%%
 function [NormPrev, NormCurr] = NormalizeSizes(PrevIsoObj, CurrIsoObj)
 %Make isolated images the same size
 NormPrev = PrevIsoObj;
@@ -460,16 +489,17 @@ if padsize(2)<0
 else
     NormCurr = padarray(NormCurr, [0 abs(padsize(2))]);
 end
-
-function UpdatedLabels = AssignLabels(DataArray, PrevLabels)
+%%
+function [UpdatedLabels, UpdatedHeaders] = AssignLabels(DataArray, PrevLabels, PrevHeaders)
 % Assigns each object the label corresponding to its previous label
 
 Size = size(DataArray);
 UpdatedLabels = zeros(1, Size(2));
-
+copyDataArray = DataArray;
 while ~(length(find(DataArray == Inf)) == numel(DataArray))
     [i,j] = find(DataArray == min(min(DataArray)));
     UpdatedLabels(j(1)) = PrevLabels(i(1));
+    UpdatedHeaders{j(1)} = PrevHeaders{i(1)};
     Array(i,j) = 1;
     ObjectName = ['Object' int2str(i(1))];
     DataArray(i(1),:) = Inf(1,Size(2));
@@ -479,9 +509,11 @@ end
 for i= 1:Size(2)
     if UpdatedLabels(i)==0
         UpdatedLabels(i) = max(UpdatedLabels)+1;
+        [val,idx] = min(copyDataArray(:,i));
+        UpdatedHeaders{i} = strcat(PrevHeaders{idx},int2str(PrevLabels(idx)),'-');
     end
 end
-
+%%
 function ColoredImage = LabelByColor(handles, CurrLabel)
 %Relabel the label matrix so that the labels in the matrix are consistent
 %with the text labels.
@@ -515,3 +547,36 @@ catch
     rand('state', S);
 end
 im = label2rgb(image, handles.Pipeline.TrackObjects.Colormap, 'k', 'noshuffle');
+%%
+function [im,TextHandles] = PutTextInImage(im,CurrLocations,CStringOfMeas)
+
+% Create the text mask
+% Make an image the same size and put text in it
+hf = figure('color','white','units','normalized','position',[.1 .1 .8 .8]);
+image(ones(size(im)));
+set(gca,'units','pixels','position',[5 5 size(im,2)-1 size(im,1)-1],'visible','off')
+
+% Text at arbitrary position
+TextHandles = text(CurrLocations(:,1), size(im,1)-CurrLocations(:,2), CStringOfMeas, 'units','pixels','fontsize',5,...
+    'fontweight','bold','HorizontalAlignment','center', 'color', [0 0 0]);
+
+%TextHandles = text(CurrLocations(:,1), CurrLocations(:,2), CStringOfMeas, 'units','pixels','fontsize',10,...
+%    'fontweight','bold','HorizontalAlignment','center', 'color', [0 0 0]);
+
+%TextHandles = text(size(im,1)-CurrLocations(:,1), CurrLocations(:,2), CStringOfMeas, 'units','pixels','fontsize',10,...
+%    'fontweight','bold','HorizontalAlignment','center', 'color', [0 0 0]);
+
+% Capture the text image
+% Note that the size will have changed by about 1 pixel
+tim = getframe(gca);
+close(hf)
+
+% Extract the cdata
+tim2 = tim.cdata;
+
+% Make a mask with the negative of the text
+tmask = tim2==0;
+
+% Place white text
+% Replace mask pixels with UINT8 max
+im(tmask) = 255;%uint8(255);

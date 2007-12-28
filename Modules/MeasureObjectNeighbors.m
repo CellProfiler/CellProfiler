@@ -55,6 +55,11 @@ function handles = MeasureObjectNeighbors(handles)
 % objects range from 0 (if it has no neighbors) up to the highest number of
 % neighbors. The -1 value makes it incompatible with the Convert To Image 
 % module which expects a label matrix starting at zero.
+%
+% The extra measures that can also be caculated and saved are 
+% 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 
+% 'FirstClosestYVector' 'SecondClosestObjectNumber' 
+% 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -107,7 +112,7 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3})
 %infotypeVAR04 = imagegroup indep
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Do you want to calculate the extra measures?
+%textVAR05 = Do you want to calculate the extra measures? The extra measures are 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'.
 %choiceVAR05 = No
 %choiceVAR05 = Yes
 %inputtypeVAR05 = popupmenu

@@ -88,7 +88,7 @@ else
 	yp = coords(:,2);
 	profile = zeros(size(coords,1),1);
 	for p = 1:length(profile)
-	  profile(p) = GrayscaleImage(yp(p), xp(p));
+	  profile(p) = GrayscaleImage(round(yp(p)), round(xp(p)));
 	end
 	if min(profile) > min(profile(1), profile(end))*0.9
 	  Relabeled(Relabeled == b) = a;

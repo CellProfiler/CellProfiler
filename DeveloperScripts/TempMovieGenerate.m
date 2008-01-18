@@ -13,10 +13,7 @@
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
-% Authors:
-%   Anne Carpenter <carpenter@wi.mit.edu>
-%   Thouis Jones   <thouis@csail.mit.edu>
-%   In Han Kang    <inthek@mit.edu>
+% Please see the AUTHORS file for credits.
 %
 % $Revision$
 

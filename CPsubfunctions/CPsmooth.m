@@ -15,21 +15,7 @@ function [SmoothedImage RealFilterLength] = CPsmooth(OrigImage,SmoothingMethod,S
 %
 % Developed by the Broad Institute of MIT and Harvard
 %
-% Authors:
-%   Anne E. Carpenter
-%   Thouis Ray Jones
-%   In Han Kang
-%   Ola Friman
-%   Steve Lowe
-%   Joo Han Chang
-%   Colin Clarke
-%   Mike Lamprecht
-%   Peter Swire
-%   Rodrigo Ipince
-%   Vicky Lay
-%   Jun Liu
-%   Chris Gang
-%   Kyungnam Kim
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

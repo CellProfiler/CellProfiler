@@ -18,9 +18,7 @@ function LabelBoundaryImage = CPlabelperim(LabelMatrixImage)
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
-% Authors:
-%   Kyungnam Kim
-%   Thouis Ray Jones
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

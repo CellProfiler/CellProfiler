@@ -1,4 +1,4 @@
-function handles = IFFT2(handles)
+function handles = IFFT(handles)
 
 % Help for the IFFT2 module:
 % Category: Contributed
@@ -11,9 +11,7 @@ function handles = IFFT2(handles)
 % See the accompanying file LICENSE for details.
 %
 %
-% Authors:
-%   Paolo Arcaini
-%   Massimo Manara
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

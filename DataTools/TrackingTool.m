@@ -50,8 +50,7 @@ function handles = TrackingTool(handles)
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
-% Authors:
-%    Kyungnam Kim
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

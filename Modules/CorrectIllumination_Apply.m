@@ -58,20 +58,7 @@ function handles = CorrectIllumination_Apply(handles)
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
 %
-% Authors:
-%   Anne E. Carpenter
-%   Thouis Ray Jones
-%   In Han Kang
-%   Ola Friman
-%   Steve Lowe
-%   Joo Han Chang
-%   Colin Clarke
-%   Mike Lamprecht
-%   Peter Swire
-%   Rodrigo Ipince
-%   Vicky Lay
-%   Jun Liu
-%   Chris Gang
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

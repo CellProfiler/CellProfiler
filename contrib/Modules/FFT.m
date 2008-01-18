@@ -1,4 +1,4 @@
-function handles = FFT2(handles)
+function handles = FFT(handles)
 
 % Help for the FFT2 module:
 % Category: Contributed
@@ -11,9 +11,7 @@ function handles = FFT2(handles)
 % See the accompanying file LICENSE for details.
 %
 %
-% Authors:
-%   Paolo Arcaini
-%   Massimo Manara
+% Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
 %

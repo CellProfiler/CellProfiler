@@ -98,7 +98,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Type "Do not use" in unused boxes.
+%textVAR03 =
 %choiceVAR03 = Do not use
 %infotypeVAR03 = objectgroup
 ObjectNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});

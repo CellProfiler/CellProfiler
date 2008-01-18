@@ -5204,6 +5204,9 @@ h12 = uicontrol(...
     'Behavior',get(0,'defaultuicontrolBehavior'),...
     'Visible','off'); %#ok Ignore MLint
 
+% make scrollbars update dynamically
+CPdynamizescrollbar(h12);
+
 appdata = [];
 appdata.lastValidTag = 'IndividualModuleHelp';
 

@@ -3513,7 +3513,7 @@ else
                 'color',[0.7,0.7,0.9],'UserData',userData,'Resize','off');
             set(timerFig, 'Position', [0 BottomOfTimer 350 120]);
             set(timerFig, 'Toolbar', 'none');
-            %set(timerFig, 'Menubar', 'none');
+            set(timerFig, 'Menubar', 'none');
             set(timerFig, 'Position', [0 BottomOfTimer 350 120]);
             TimerData.timerFig = timerFig;
             TimerData.SetBeingAnalyzed = 1;

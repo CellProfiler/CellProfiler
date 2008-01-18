@@ -64,6 +64,8 @@ if ~isempty(varargin)
                 hist(data(:),min(200,round(length(data(:))/150)));
                 set(gca,'FontSize',FontSize);
                 title(['Histogram for ' get(get(get(ImageHandle,'parent'),'title'),'string')])
+                xlabel('Pixel intensity');
+                ylabel('Number of pixels'); 
                 grid on
             case {'MatlabWS'}                                 % Store image in Matlab base work space
                 assignin('base','Image',get(ImageHandle,'Cdata'));

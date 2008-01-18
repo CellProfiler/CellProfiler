@@ -1,4 +1,4 @@
-function handles = InvertForPrinting.m(handles)
+function handles = InvertForPrinting(handles)
 
 % Help for the Invert For Displaymodule:
 % Category: Image Processing

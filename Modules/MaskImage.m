@@ -93,5 +93,5 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the Masked image.
     subplot(2,1,2)
     CPimagesc(ObjectLabelMatrix,handles);
-    title('Image Mask');
+    title([MaskedImageName ' from ' ObjectName]);
 end

@@ -98,6 +98,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %textVAR06 = How do you want to display the tracked objects?
 %choiceVAR06 = Color and Number
 %choiceVAR06 = Grayscale and Number
+%choiceVAR06 = Color Only
+%choiceVAR06 = Grayscale Only
 %inputtypeVAR06 = popupmenu
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -211,9 +213,9 @@ end
 ColoredImage = LabelByColor(handles.Pipeline.TrackObjects.(ObjectName), CurrLabels);
 [ColoredImage,handles] = TrackCPlabel2rgb(handles, ColoredImage);
 
-if strcmp(DisplayType, 'Grayscale and Number')
+if ~isempty(strfind(DisplayType, 'Grayscale'))
     DisplayImage = CurrSegImage;
-elseif strcmp(DisplayType, 'Color and Number')
+elseif ~isempty(strfind(DisplayType, 'Color'))
     DisplayImage = ColoredImage;
 end
 
@@ -240,9 +242,13 @@ end
 % PutTextInImage is designed to put texts in an image as pixels
 % but, more adjustment work is required here.
 %[DisplayImage, TextHandles] = PutTextInImage(DisplayImage,CurrLocations,CStringOfMeas)
-TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
-    'HorizontalAlignment','center', 'color', [.6 .6 .6],'fontsize',10,...%handles.Preferences.FontSize,...
-    'fontweight','bold');
+if ~isempty(strfind(DisplayType, 'Number'))
+    TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
+        'HorizontalAlignment','center', 'color', [.6 .6 .6],'fontsize',10,...%handles.Preferences.FontSize,...
+        'fontweight','bold');
+else 
+    TextHandles = [];
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

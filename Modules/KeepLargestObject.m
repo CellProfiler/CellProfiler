@@ -1,4 +1,4 @@
-function handles = KeepLargestObjects(handles)
+function handles = KeepLargestObject(handles)
 
 % Help for KeepLargestObjects module:
 % Category: Object Processing
@@ -9,7 +9,7 @@ function handles = KeepLargestObjects(handles)
 % *************************************************************************
 %
 % CellProfiler is distributed under the GNU General Public License.
-% See the accompanying file LICENSE for licesne details and copyright
+% See the accompanying file LICENSE for license details and copyright
 % information.  See the file AUTHORS for contributors.
 %
 % $Revision$

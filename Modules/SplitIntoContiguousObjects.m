@@ -12,7 +12,7 @@ function handles = SplitIntoContiguousObjects(handles)
 % number.
 %
 % CellProfiler is distributed under the GNU General Public License.
-% See the accompanying file LICENSE for licesne details and copyright
+% See the accompanying file LICENSE for license details and copyright
 % information.  See the file AUTHORS for contributors.
 %
 % $Revision$

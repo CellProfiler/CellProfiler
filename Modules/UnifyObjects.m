@@ -15,6 +15,10 @@ function handles = UnifyObjects(handles)
 % If the distance threshold is zero, only objects that are touching
 % will be unified.
 %
+% A new "measurement" will be added for each input object.  This
+% "measurement" is a number that indicates the relabeled object
+% number.
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for licesne details and copyright
 % information.  See the file AUTHORS for contributors.
@@ -49,7 +53,9 @@ GrayscaleImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 % Repeat for each of the three images by calling a subfunction that
 % does the actual work.
 handles = doItForObjectName(handles, 'Segmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
-handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+if isfield(handles.Pipeline, ['SmallRemovedSegmented', ObjectName])
+  handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+end
 
 function handles = doItForObjectName(handles, prefix, ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName)
 drawnow
@@ -57,7 +63,9 @@ drawnow
 
 Orig = CPretrieveimage(handles, [prefix, ObjectName], ModuleName);
 
+%%%
 %%% IMAGE ANALYSIS
+%%%
 drawnow
 
 if strcmp(GrayscaleImageName, 'None')
@@ -97,8 +105,10 @@ else
     end
   end
 end
-    
+
+%%%
 %%% DISPLAY RESULTS
+%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -129,7 +139,9 @@ if any(findobj == ThisModuleFigureNumber)
     title(RelabeledObjectName);
 end
 
+%%%
 %%% SAVE DATA TO HANDLES STRUCTURE
+%%%
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.

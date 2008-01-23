@@ -203,6 +203,7 @@ handles.Pipeline.(fieldname) = SubregionObjectImage;
 
 handles = CPsaveObjectCount(handles, SubregionObjectName, SubregionObjectImage);
 handles = CPsaveObjectLocations(handles, SubregionObjectName, SubregionObjectImage);
+handles = CPsaveObjectComponents(handles, SubregionObjectName, SubregionObjectImage);
 
 if ~strcmpi(SaveOutlines,'Do not save')
     handles.Pipeline.(SaveOutlines) = FinalOutline;

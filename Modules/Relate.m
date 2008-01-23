@@ -8,19 +8,26 @@ function handles = Relate(handles)
 % (e.g. nucleus) become its children.
 % *************************************************************************
 %
-% Allows counting the number of objects within each parent object. An
-% object will be considered a child even if the edge is the only part
+% Allows associating "children" objects with "parent" objects. This is
+% useful for counting the number of children associated with each parent,
+% and for calculating mean measurement values for all children that are
+% associated with each parent. For every measurement that has been made of
+% the children objects upstream in the pipeline, this module calculates the
+% mean value of that measurement over all children and stores it as a
+% measurement for the parent. For this reason, this module should be placed
+% *after* all Measure modules that make measurements of the children
+% objects.
+%
+% An object will be considered a child even if the edge is the only part
 % touching a parent object. If an object is touching two parent objects,
 % the objects parent will be the higher numbered parent.
 %
 % The minimum distances of each child to its parent are also calculated.
-% These values are associated the child objects.
-% If an "Other" object is defined (e.g. Nuclei), then distances are
-% calculated to this object too, as well as normalized distances.  Normalized
-% distances for each child have a range [0 1] and are calculated as:
+% These values are associated with the child objects. If an "Other" object
+% is defined (e.g. Nuclei), then distances are calculated to this object
+% too, as well as normalized distances.  Normalized distances for each
+% child have a range [0 1] and are calculated as: 
 % (distance to the Parent) / sum(distances to parent and Other object)
-%
-% NOTE: This module should be placed *after* all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

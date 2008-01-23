@@ -50,12 +50,54 @@ GrayscaleImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
-% Repeat for each of the three images by calling a subfunction that
-% does the actual work.
 handles = doItForObjectName(handles, 'Segmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+if isfield(handles.Pipeline, ['UneditedSegmented', ObjectName])
+  handles = doItForObjectName(handles, 'UneditedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+end
 if isfield(handles.Pipeline, ['SmallRemovedSegmented', ObjectName])
   handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
 end
+
+%%%
+%%% DISPLAY RESULTS
+%%%
+drawnow
+
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+if any(findobj == ThisModuleFigureNumber)
+  Relabeled = CPretrieveimage(handles, ['Segmented', RelabeledObjectName], ModuleName);
+  vislabel = Relabeled;
+  props = regionprops(Relabeled, {'ConvexImage', 'BoundingBox'});
+  for k=1:length(props)
+    ci = props(k).ConvexImage;
+    bb = props(k).BoundingBox;
+    mask = false(size(Relabeled));
+    mask(bb(2)+0.5:bb(2)+bb(4)-0.5, bb(1)+0.5:bb(1)+bb(3)-0.5) = ci;
+    mask(imerode(mask, strel('disk', 1))) = 0;
+    vislabel(mask) = k;
+  end
+  RelabeledRGB = CPlabel2rgb(handles, vislabel);
+  
+  CPfigure(handles,'Image',ThisModuleFigureNumber);
+  CPimagesc(RelabeledRGB,handles);
+  title(RelabeledObjectName);
+end
+
+%%%
+%%% SAVE MEASUREMENTS TO HANDLES STRUCTURE
+%%%
+
+if ~isfield(handles.Measurements,RelabeledObjectName)
+  handles.Measurements.(RelabeledObjectName) = {};
+end
+
+handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
+handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
+
+
+%%%
+%%% SUBFUNCTION THAT DOES THE ACTUAL WORK
+%%%
 
 function handles = doItForObjectName(handles, prefix, ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName)
 drawnow
@@ -63,9 +105,7 @@ drawnow
 
 Orig = CPretrieveimage(handles, [prefix, ObjectName], ModuleName);
 
-%%%
 %%% IMAGE ANALYSIS
-%%%
 drawnow
 
 if strcmp(GrayscaleImageName, 'None')
@@ -106,54 +146,16 @@ else
   end
 end
 
-%%%
-%%% DISPLAY RESULTS
-%%%
-drawnow
-
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    OrigRGB = CPlabel2rgb(handles,Orig);
-
-    vislabel = Relabeled;
-    props = regionprops(Relabeled, {'ConvexImage', 'BoundingBox'});
-    for k=1:length(props)
-      ci = props(k).ConvexImage;
-      bb = props(k).BoundingBox;
-      mask = false(size(Orig));
-      mask(bb(2)+0.5:bb(2)+bb(4)-0.5, bb(1)+0.5:bb(1)+bb(3)-0.5) = ci;
-      mask(imerode(mask, strel('disk', 1))) = 0;
-      vislabel(mask) = k;
-    end
-    RelabeledRGB = CPlabel2rgb(handles, vislabel);
-
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(Orig,'TwoByOne',ThisModuleFigureNumber)
-    end
-    subplot(2,1,1);
-    CPimagesc(OrigRGB,handles);
-    title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2);
-    CPimagesc(RelabeledRGB,handles);
-    title(RelabeledObjectName);
-end
-
-%%%
 %%% SAVE DATA TO HANDLES STRUCTURE
-%%%
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
-fieldname = [prefix, RelabeledObjectName];
-handles.Pipeline.(fieldname) = Relabeled;
+fieldName = [prefix, RelabeledObjectName];
+handles.Pipeline.(fieldName) = Relabeled;
 
-if ~isfield(handles.Measurements,RelabeledObjectName)
-    handles.Measurements.(RelabeledObjectName) = {};
-end
-
-handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
-handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
+%
+%
+%
 
 function [Coords]=brlinexya(Sx,Sy,Ex,Ey)
 % function [Coords]=brlinexya(Sx,Sy,Ex,Ey)

@@ -23,7 +23,7 @@ function handles = UnifyObjects(handles)
 % See the accompanying file LICENSE for licesne details and copyright
 % information.  See the file AUTHORS for contributors.
 %
-% $Revision:$
+% $Revision: 5039 $
 
 %%% VARIABLES
 drawnow

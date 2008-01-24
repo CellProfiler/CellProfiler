@@ -37,15 +37,18 @@ if FileName == 0, return, end   %% CPuigetfile canceled
 %% Override the DefaultOutputDirectory since the 'load' command below
 %% may have the denoted the path as on the cluster if CreatebatchFiles 
 %% was used to generate the raw measurements file
-origDefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
-origDefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
+origDefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
+origDefaultImageDirectory = handles.Current.DefaultImageDirectory;
 %%% Load the specified CellProfiler output file
 try
+    MsgBoxLoad = CPmsgbox(['Loading file into ' ModuleName '.  Please wait...']);
     load(fullfile(Pathname, FileName));
 catch
     CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
+    close(MsgBoxLoad)
     return
 end
+close(MsgBoxLoad)
 
 promptLoop = 0;
 while promptLoop == 0
@@ -103,10 +106,12 @@ end
 %% Save temp values that LoadText needs
 tempVarValues=handles.Settings.VariableValues;
 tempCurrentField = handles.Current;
-%% Change handles that LoadText requires
+%% Change handles that LoadText requires.
+%% Note that DataTools are denoted as Module #1
 handles.Settings.VariableValues{1,1}=TextFileName;
 handles.Settings.VariableValues{1,2}=DataName;
 handles.Settings.VariableValues{1,3}=TextFilePathname;
+
 handles.Current.CurrentModuleNumber='01';
 handles.Current.SetBeingAnalyzed=1;
 handles.Current.DefaultImageDirectory = origDefaultImageDirectory; %% In case cluster path is different

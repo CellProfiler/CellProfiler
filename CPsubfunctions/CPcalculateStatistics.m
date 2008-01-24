@@ -45,6 +45,7 @@ for i = 1:length(ObjectFields)
                         %%% Check for measurements
                         if ~isfield(handles.Measurements.(ObjectName),MeasureName)
                             CPwarndlg(['There is a problem in the ' ModuleName ' module becaue it could not find the measurements you specified. CellProfiler will proceed but this module will be skipped.']);
+                            close(waitbarhandle)
                             return;
                         end
 
@@ -63,6 +64,7 @@ for i = 1:length(ObjectFields)
                         YmatrixRows = size(Ymatrix,1);
                         if GroupingValueRows ~= YmatrixRows
                             CPwarndlg('There was an error in the Calculate Statistics module involving the number of text elements loaded for it.  CellProfiler will proceed but this module will be skipped.');
+                            close(waitbarhandle)
                             return;
                         else
                             [v, z, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(GroupingValues,Ymatrix);

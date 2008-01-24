@@ -39,11 +39,14 @@ end
 
 %%% Load the specified CellProfiler output file
 try
+    MsgBoxLoad = CPmsgbox('Loading file.  Please wait...');
     load(fullfile(Pathname, FileName));
 catch
     CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
+    close(MsgBoxLoad)
     return
 end
+close(MsgBoxLoad)
 
 PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],...
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});

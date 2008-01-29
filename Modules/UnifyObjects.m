@@ -87,12 +87,6 @@ end
 %%% SAVE MEASUREMENTS TO HANDLES STRUCTURE
 %%%
 
-if ~isfield(handles.Measurements,RelabeledObjectName)
-  handles.Measurements.(RelabeledObjectName) = {};
-end
-
-handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
-handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
 
 
 %%%
@@ -156,9 +150,16 @@ drawnow
 fieldName = [prefix, RelabeledObjectName];
 handles.Pipeline.(fieldName) = Relabeled;
 
-%
-%
-%
+if ~isfield(handles.Measurements,RelabeledObjectName)
+  handles.Measurements.(RelabeledObjectName) = {};
+end
+
+handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
+handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
+
+%%%
+%%% Subfunction
+%%%
 
 function [Coords]=brlinexya(Sx,Sy,Ex,Ey)
 % function [Coords]=brlinexya(Sx,Sy,Ex,Ey)

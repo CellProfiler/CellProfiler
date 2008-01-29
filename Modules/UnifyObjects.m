@@ -144,6 +144,9 @@ else
       end
     end
   end
+  % Make sure objects are consecutively numbered, otherwise downstream
+  % modules will choke.
+  Relabeled = CPrelabelDensely(Relabeled);
 end
 
 %%% SAVE DATA TO HANDLES STRUCTURE

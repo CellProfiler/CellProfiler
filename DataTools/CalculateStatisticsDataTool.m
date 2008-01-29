@@ -50,15 +50,29 @@ catch
 end
 close(MsgBoxLoad)
 
-promptLoop = 0;
-while promptLoop == 0
+text_file = [];
+forceChoose = 0;
+while ~exist(text_file,'file')
     oldLoadTextModNum = find(strcmp(handles.Settings.ModuleNames,'LoadText'), 1);
-    if ~isempty(oldLoadTextModNum) %% If user already used a LoadText Module in their original pipeline
+    if ~isempty(oldLoadTextModNum) && ~forceChoose
+        %% If user already used a LoadText Module in their original
+        %% pipeline, or if there is a problem finding the pre-existing
+        %% LoadText file
+        
         %% *NOTE* IF LoadText changes the order or composition of its
         %% queries, the '1' and '3' below may need to be changed!
         TextFileName = handles.Settings.VariableValues{oldLoadTextModNum,1};
         DataName = handles.Settings.VariableValues{oldLoadTextModNum,2};
         TextFilePathname = handles.Settings.VariableValues{oldLoadTextModNum,3};
+        text_file = fullfile(TextFilePathname,TextFileName);
+        
+        %% In case the LoadText file is moved or this is run on a different
+        %% machine
+        if ~exist(text_file,'file')
+            CPwarndlg('Cannot find previosly loaded LoadText file.  Please click OK and choose another file.','CalculateStatisticsDataTool')
+            forceChoose = 1;
+            continue
+        end
         
         Answers = CPinputdlg({'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
             'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
@@ -66,14 +80,12 @@ while promptLoop == 0
         if isempty(Answers), return, end %% Inputdlg canceled
         LogOrLinear = Answers{1};
         FigureName = Answers{2};
-
     else 
         %% If no Loadtext Module used previously
         [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
             'Select the text file with the grouping values you loaded for each image cycle', ...
             handles.Current.DefaultImageDirectory);
         if TextFileName == 0, return, end %% CPuigetfile canceled
-
         Answers = CPinputdlg({'What name would you like to give this data (what column heading)? You can leave this empty if a LoadText Module was already run',...
             'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
             'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
@@ -97,8 +109,8 @@ while promptLoop == 0
     elseif strcmpi(LogOrLinear, 'no') || strcmpi(LogOrLinear, 'n')
         LogOrLinear = '/';
     end
-
-    promptLoop = 1;
+    
+    text_file = fullfile(TextFilePathname,TextFileName);
 end
     
 %% This section below is similar to AddData.m, which also calls LoadText.m

@@ -100,10 +100,12 @@ for i=1:length(prefixes)
   prefix = prefixes{i};
   fieldname = [prefix, ObjectName];
   handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
-
-  handles = CPsaveObjectCount(handles, fieldname, FinalLabelMatrixImage);
-  handles = CPsaveObjectLocations(handles, fieldname, FinalLabelMatrixImage);
+% 
+%   handles = CPsaveObjectCount(handles, fieldname, FinalLabelMatrixImage);
+%   handles = CPsaveObjectLocations(handles, fieldname, FinalLabelMatrixImage);
 end
+handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
+handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
 
 function f = lapofgau(im, s);
 % im: image matrix (2 dimensional)

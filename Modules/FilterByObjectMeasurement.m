@@ -193,23 +193,27 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
+    
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,2,1);
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
     subplot(2,2,3);
-    CPimagesc(LabelMatrixImage,handles);
+    UnfilteredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
+    CPimagesc(UnfilteredLabelMatrixImage,handles);
     title(['Original ',ObjectName]);
+    
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-
     subplot(2,2,2);
+    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     CPimagesc(ColoredLabelMatrixImage,handles);
     title(['Filtered ' ObjectName]);
+    
     subplot(2,2,4);
     CPimagesc(ObjectOutlinesOnOrigImage,handles);
     title([TargetName, ' Outlines on Input Image']);

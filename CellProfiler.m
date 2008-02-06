@@ -2130,16 +2130,14 @@ else
     %CPhelpdlg('No module highlighted.');
 end
 
-%% Commented this out below, since we need to address the case when the
-%% module number is not the same as the figure number (e.g. when windows
-%% kept and Analyze is run multiple times)  DL 2008.01.30
-% %%%% On double-click of a Module in the ModulePipelineListBox,
-% %%%%  bring its corresponding figure window (if it exists) to the foreground
-% if strcmp(get(gcf,'SelectionType'),'open')
-%     if ~isempty(find(findobj('NumberTitle','on','-and','-property','UserData') == ModuleHighlighted, 1)) && ishandle(ModuleHighlighted)
-%         CPfigure(ModuleHighlighted);
-%     end
-% end
+%%%% On double-click of a Module in the ModulePipelineListBox,
+%%%%  bring its corresponding figure window (if it exists) to the foreground
+if strcmp(get(gcf,'SelectionType'),'open')
+    SelectedFigs = sort(findobj('-regexp','Name',handles.Settings.ModuleNames{ModuleHighlighted},'-and','NumberTitle','on','-and','-property','UserData'));
+    for iFig = 1:length(SelectedFigs)
+        CPfigure(SelectedFigs(iFig));
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% VARIABLE EDIT BOXES %%%

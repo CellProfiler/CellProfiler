@@ -677,6 +677,20 @@ Skipped = 0;
 for k = 1:NumberOfModules
     if ~isdeployed
         CurrentModuleNamedotm = [char(ModuleNames{k}) '.m'];
+        
+        %% Smooth.m was changed to SmoothOrEnhance.m since Tophat Filter
+        %% was added to the Smooth Module
+        if strcmp(CurrentModuleNamedotm,'Smooth.m')
+            CurrentModuleNamedotm  = 'SmoothOrEnhance.m'; %% 
+            Filename = 'SmoothOrEnhance';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            pause(.1);
+            figure(handles.figure1);
+            Pathnames{k-Skipped} = Pathname;
+            Settings.ModuleNames{k-Skipped} = Filename;
+            CPwarndlg('Note: The module ''Smooth'' has been replaced with ''SmoothOrEnhance''.  The settings have been transferred for your convenience')
+        end
+        
         if exist(CurrentModuleNamedotm,'file')
             Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm)); %#ok Ignore MLint
         else
@@ -710,18 +724,22 @@ for k = 1:NumberOfModules
                         Abort = 0;
                     end
                 case 'Search Module'
+                    %% Why is this 'if' needed?  An outer 'if' has already
+                    %% checked for this.  David 2008.02.08
                     if ~isdeployed
-		      filter = '*.m';
-		    else
-		      filter = '*.txt';
-		    end
-		    [Filename Pathname] = CPuigetfile(filter, ['Find ' CurrentModuleNamedotm ' or Choose Another Module'], handles.Preferences.DefaultModuleDirectory);
+                        filter = '*.m';
+                    else
+                        filter = '*.txt';
+                    end
+                    [Filename Pathname] = CPuigetfile(filter, ['Find ' CurrentModuleNamedotm ' or Choose Another Module'], handles.Preferences.DefaultModuleDirectory);
                     pause(.1);
                     figure(handles.figure1);
                     if Filename == 0
                         Abort = 1;
                     else
                         Pathnames{k-Skipped} = Pathname;
+                        %% Why is this 'if' needed?  An outer 'if' has already
+                        %% checked for this.  David 2008.02.08
                         if ~isdeployed
                             Settings.ModuleNames{k-Skipped} = Filename(1:end-2);
                         else

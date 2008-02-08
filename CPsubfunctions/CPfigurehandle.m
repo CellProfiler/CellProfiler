@@ -14,4 +14,7 @@ for ModuleNumber = 1:NumberOfModules
 end
 NextAvailableFigureHandle = CPfigure;
 close(NextAvailableFigureHandle);
-FigureHandle = max([ListOfFigureNumbers + 1, NextAvailableFigureHandle]);
+
+%% This will catch other numbered figures, such as the TestMode figures
+HighestNumberedFigure = max(findobj('NumberTitle','on'));
+FigureHandle = max([ListOfFigureNumbers + 1, NextAvailableFigureHandle, HighestNumberedFigure + 1]);

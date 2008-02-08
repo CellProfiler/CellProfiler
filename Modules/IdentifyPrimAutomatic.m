@@ -1193,7 +1193,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     IdPrimTestModeSegmentedFigureNumber = CPfigurehandle(handles);
                     CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
                     set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
-                        'name',['IdentifyPrimAutomatic Test Objects Display, cycle # ']);
+                        'name','IdentifyPrimAutomatic Test Objects Display, cycle # ');
                     uicontrol(IdPrimTestModeSegmentedFigureNumber,'style','text','units','normalized','string','Identified objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 end
                 %%% If the figure window DOES exist now, then calculate and display items
@@ -1217,7 +1217,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     IdPrimTestModeOutlinedFigureNumber = CPfigurehandle(handles);
                     CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
                     set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
-                        'name',['IdentifyPrimAutomatic Test Outlines Display, cycle # ']);
+                        'name','IdentifyPrimAutomatic Test Outlines Display, cycle # ');
                     uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
                 end
 

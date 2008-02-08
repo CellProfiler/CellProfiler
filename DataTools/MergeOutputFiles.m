@@ -62,7 +62,7 @@ while valid == 0
         return
     end
 
-    if length(Answers{2}) < 4 | ~strcmp(Answers{2}(end-3:end),'.mat') %#ok Ignore MLint
+    if length(Answers{2}) < 4 | ~strcmpi(Answers{2}(end-3:end),'.mat') %#ok Ignore MLint
         msg = CPmsgbox('The filename must have a .mat extension.');
         uiwait(msg);
         continue

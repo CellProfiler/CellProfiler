@@ -157,15 +157,15 @@ IlluminationImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,1
 Image(:,:,1) = PreTreatImage(CPretrieveimage(handles,ImageName1,ModuleName,'MustBeGray','CheckScale'), Modality1);
 
 
-if ~ strcmp(ImageName2, 'None'),
+if ~ strcmpi(ImageName2, 'None'),
     Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName2,ModuleName,'MustBeGray','CheckScale'), Modality2);
 end
 
-if ~ strcmp(ImageName3, 'None'),
+if ~ strcmpi(ImageName3, 'None'),
     Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName3,ModuleName,'MustBeGray','CheckScale'), Modality3);
 end
 
-if ~ strcmp(ImageName4, 'None'),
+if ~ strcmpi(ImageName4, 'None'),
     Image(:,:,end+1) = PreTreatImage(CPretrieveimage(handles,ImageName4,ModuleName,'MustBeGray','CheckScale'), Modality4);
 end
 
@@ -192,7 +192,7 @@ ImageSize = [size(Image, 1) size(Image, 2)];
 NumberOfComponents = 10;
 
 %%% Now there are two possiblities, depending on Each or All.  
-if strcmp(EachOrAll, 'Each'),
+if strcmpi(EachOrAll, 'Each'),
     %%% If Each, we don't sample, we just pass the whole image into
     %%% the correction calculation.
     IlluminationField = CPcalc_illum_corrxn(Samples, Locations, SmoothingDiameter / 2.0, NumberOfComponents, ImageSize, false);
@@ -277,30 +277,30 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
+if strcmpi(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
     handles.Pipeline.(IlluminationImageName1) = PostTreatImage(IlluminationField(:,:,1), Modality1);
 
     %%% We need this count variable because of the code above that fetches
     %%% images (see PRELIMINARY CALCULATIONS above)
     count = 2;
     
-    if ~ strcmp(ImageName2, 'None')
-        if (~ strcmp(IlluminationImageName2, 'Do not save')) ,
+    if ~ strcmpi(ImageName2, 'None')
+        if (~ strcmpi(IlluminationImageName2, 'Do not save')) ,
             handles.Pipeline.(IlluminationImageName2) = PostTreatImage(IlluminationField(:,:,count), Modality2);
         end
         count = count + 1;
     end
     
     
-    if ~ strcmp(ImageName3, 'None')
-        if (~ strcmp(IlluminationImageName3, 'Do not save')) ,
+    if ~ strcmpi(ImageName3, 'None')
+        if (~ strcmpi(IlluminationImageName3, 'Do not save')) ,
             handles.Pipeline.(IlluminationImageName3) = PostTreatImage(IlluminationField(:,:,count), Modality3);
         end
         count = count + 1;
     end
     
-    if ~ strcmp(ImageName4, 'None')
-        if (~ strcmp(IlluminationImageName4, 'Do not save')) ,
+    if ~ strcmpi(ImageName4, 'None')
+        if (~ strcmpi(IlluminationImageName4, 'Do not save')) ,
             handles.Pipeline.(IlluminationImageName4) = PostTreatImage(IlluminationField(:,:,count), Modality4);
         end
     end
@@ -310,7 +310,7 @@ end
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-if strcmp(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
+if strcmpi(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets),
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.

@@ -102,7 +102,7 @@ for k = FirstImage:LastImage
     i = i+1;
 end
 
-if ~strcmp(Logical,'None')
+if ~strcmpi(Logical,'None')
     try % try/catch not really necessary, but just in case.
         [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
     catch
@@ -123,7 +123,7 @@ SelectedMeasurementsMatrix = cell2mat(SelectedMeasurementsCellArray(:));
 
 OutputMeasurements{1,1} = SelectedMeasurementsMatrix;
 %%% Retrieves the measurements to threshold on, if requested.
-if ~strcmp(Logical,'None')
+if ~strcmpi(Logical,'None')
     SelectMeasurementsCellArray = MeasurementToThresholdValueOn(1:end);
     OutputMeasurements{1,2} = cell2mat(SelectMeasurementsCellArray(:));
     AdditionalInfoForTitle = [' for objects where ', MeasurementToThresholdValueOnName, Logical, num2str(ThresholdVal)];
@@ -131,7 +131,7 @@ else AdditionalInfoForTitle = [];
 end
 %%% Applies the specified ThresholdValue and gives a cell
 %%% array as output.
-if strcmp(Logical,'None')
+if strcmpi(Logical,'None')
     %%% If the user selected None, the measurements are not
     %%% altered.
 elseif strcmpi(Logical,'>')
@@ -158,7 +158,7 @@ end
 HistogramData(end) = [];
 FinalHistogramData(:,1) = HistogramData;
 
-if strcmp(BinVar,'Percentages')
+if strcmpi(BinVar,'Percentages')
     for i = 1: size(FinalHistogramData,2)
         SumForThatColumn = sum(FinalHistogramData(:,i));
         FinalHistogramData(:,i) = 100*FinalHistogramData(:,i)/SumForThatColumn;
@@ -173,7 +173,7 @@ PlotBinLocations = FigureSettings{1};
 AxesHandles = findobj(h_Parent,'Tag','BarTag');
 for i = 1:length(AxesHandles)
     h2 = axes('Position',get(AxesHandles(i),'Position'));
-    if strcmp(Flip,'AxesFlipped')
+    if strcmpi(Flip,'AxesFlipped')
         plot(FinalHistogramData(:,1),PlotBinLocations,'LineWidth',2, 'Tag', LineTag);
     else
         plot(PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2, 'Tag', LineTag);

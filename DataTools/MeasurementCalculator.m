@@ -75,9 +75,9 @@ for ImageSetNbr = 1:length(Measurements1)
    
     % If Operation2 indicates mean, replace all entries in tmp2 with
     % the image average, and proceed by doing "objectwise" multiplication/division
-    if strcmp(UserInput.Operation2,'mean')
+    if strcmpi(UserInput.Operation2,'mean')
         tmp2 = mean(tmp2)*ones(size(tmp1));    % Important to give the new vector the size of tmp1
-    elseif strcmp(UserInput.Operation2,'median')
+    elseif strcmpi(UserInput.Operation2,'median')
         tmp2 = median(tmp2)*ones(size(tmp1));    % Important to give the new vector the size of tmp1
     end
 
@@ -88,9 +88,9 @@ for ImageSetNbr = 1:length(Measurements1)
     end
 
     % Do the calculation
-    if strcmp(UserInput.Operation1,'multiplication')
+    if strcmpi(UserInput.Operation1,'multiplication')
         NewMeasurement{ImageSetNbr} = tmp1.*tmp2;
-    elseif strcmp(UserInput.Operation1,'division')
+    elseif strcmpi(UserInput.Operation1,'division')
         NewMeasurement{ImageSetNbr} = tmp1./tmp2;
     end
 end

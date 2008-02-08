@@ -15,7 +15,7 @@ CPwaitbar(0,waitbarhandle,'CPcalculateStatistics Progress');
 for i = 1:length(ObjectFields)
     ObjectName = char(ObjectFields(i));
     %%% Filter out Experiment and Image fields
-    if ~strcmp(ObjectName,'Experiment')
+    if ~strcmpi(ObjectName,'Experiment')
 
         try
             %%% Get all fieldnames in Measurements.(ObjectName)
@@ -27,13 +27,13 @@ for i = 1:length(ObjectFields)
         for j = 1:length(MeasureFields)
             MeasureFeatureName = char(MeasureFields(j));
             if length(MeasureFeatureName) > 7
-                if strcmp(MeasureFeatureName(end-7:end),'Features')
+                if strcmpi(MeasureFeatureName(end-7:end),'Features')
 
                     %%% Not placed with above if statement since
                     %%% MeasureFeatureName may not be 8 characters long
-                    if ~strcmp(MeasureFeatureName(1:8),'Location')
+                    if ~strcmpi(MeasureFeatureName(1:8),'Location')
 
-                        if strcmp(MeasureFeatureName,'ModuleErrorFeatures')
+                        if strcmpi(MeasureFeatureName,'ModuleErrorFeatures')
                             continue;
                         end
 

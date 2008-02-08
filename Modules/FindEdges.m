@@ -285,7 +285,7 @@ elseif strcmpi(Method,'ratio')
     Mn = CPsmooth(OrigImage,'Sum of Squares',SizeOfSmoothingFilter,0);
     EdgedImage = Mn./Sq;
 
-    if strcmp(BinaryOrGray,'Binary')
+    if strcmpi(BinaryOrGray,'Binary')
         %%% For the case where we want to automatically calculate a threshold.
         if CalculateThreshold
             [handles,AutoThresh] = CPthreshold(handles,'Otsu Global','01','0','1',1,EdgedImage,['Edged_',ImageName],ModuleName);
@@ -305,7 +305,7 @@ elseif strcmpi(Method,'ratio')
         EdgedImage = im2bw(EdgedImage, ThresholdUsed);
     end
 
-    if strcmp(Thinning,'thinning')
+    if strcmpi(Thinning,'thinning')
         EdgedImage = imerode(EdgedImage,strel('disk',3));
     end
 end

@@ -161,12 +161,17 @@ switch lower(SmoothingMethod)
     case 'remove brightroundspeckles'
         %%% It does a grayscle open morphological operation. Effectively, 
         %%% it removes speckles of SizeOfSmoothingFilter brighter than its
-        %%% surroundings. If comebined with the 'Subtract' module, it
+        %%% surroundings. If combined with the 'Subtract' module, it
         %%% behaves like a tophat filter        
         SPECKLE_RADIUS = round(SizeOfSmoothingFilter/2);
-        disk_radus = round(SPECKLE_RADIUS);
-        SE = strel('disk', disk_radus);
+        disk_radius = round(SPECKLE_RADIUS);
+        SE = strel('disk', disk_radius);
         SmoothedImage = imopen(OrigImage, SE);
+    case 'enhance brightroundspeckles (tophat filter)'
+        SPECKLE_RADIUS = round(SizeOfSmoothingFilter/2);
+        disk_radius = round(SPECKLE_RADIUS);
+        SE = strel('disk', disk_radius);
+        SmoothedImage = imtophat(OrigImage,SE);
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

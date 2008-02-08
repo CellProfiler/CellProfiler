@@ -1,4 +1,4 @@
-function CPupdatefigurecycle(SetBeingAnalyzed,FigureNumber);
+function CPupdatefigurecycle(SetBeingAnalyzed,FigureNumber)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

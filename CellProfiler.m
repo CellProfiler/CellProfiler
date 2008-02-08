@@ -294,12 +294,9 @@ ClosingFunction = ...
 %%% above.
 set(handles.figure1,'CloseRequestFcn',ClosingFunction);
 
-%%% Obtains the screen size.
-% ScreenSize = get(0,'ScreenSize');
-MonPos = get(0,'MonitorPositions');
-ScreenSize = MonPos(1,:);
-ScreenWidth = ScreenSize(3);
-ScreenHeight = ScreenSize(4);
+%%% Obtains the screen size from the primary display.
+[ScreenWidth,ScreenHeight] = CPscreensize;
+
 %%% Sets the position of the Main GUI window so it is in the center of
 %%% the screen. At one point, I designed the GUI window itself to be
 %%% 800 pixels wide and 600 high, but it has changed since then.
@@ -1037,13 +1034,12 @@ helpText = ['The settings contained within the selected file are based on an old
 
 %%% Creates the dialog box and its text, buttons, and edit boxes.
 MainWinPos = get(handles.figure1,'Position');
-MonPos = get(0,'MonitorPositions');
-ScreenSize = MonPos(1,:);
-% ScreenSize = get(0,'ScreenSize');
+
+[ScreenWidth,ScreenHeight] = CPscreensize;
 FigWidth = MainWinPos(3)*4/5;
 FigHeight = MainWinPos(4);
-LeftPos = .5*(ScreenSize(3)-FigWidth);
-BottomPos = .5*(ScreenSize(4)-FigHeight);
+LeftPos = .5*(ScreenWidth-FigWidth);
+BottomPos = .5*(ScreenHeight-FigHeight);
 FigPosition = [LeftPos BottomPos FigWidth FigHeight];
 Color = [0.7 .7 .9];
 
@@ -3503,9 +3499,8 @@ else
             %%% If multiple monitors are used, then get the ScreenSize data
             %%% from the main monitor. It can be enhanced to intelligently
             %%% calculate all the monitors' positions.
-            ScreenSize = get(0,'MonitorPositions');
-            ScreenWidth = ScreenSize(1,3);
-            ScreenHeight = ScreenSize(1,4);            
+            [ScreenWidth,ScreenHeight] = CPscreensize;
+                      
             %%% Determines where to place the timer window: We want it below the image
             %%% windows, which means at about 800 pixels from the top of the screen,
             %%% but in case the screen doesn't have that many pixels, we don't want it

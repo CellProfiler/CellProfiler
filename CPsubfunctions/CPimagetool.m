@@ -243,9 +243,10 @@ if ~isempty(varargin)
                     close(SaveImageHandle);
                 end
 
-                ScreenSize = get(0,'ScreenSize');
-                ScreenWidth = ScreenSize(3);
-                ScreenHeight = ScreenSize(4);
+                [ScreenWidth,ScreenHeight] = CPscreensize;
+%                 ScreenSize = get(0,'ScreenSize');
+%                 ScreenWidth = ScreenSize(3);
+%                 ScreenHeight = ScreenSize(4);
                 GUIwidth = 410;
                 GUIheight = 310;
                 Left = 0.5*(ScreenWidth - GUIwidth);

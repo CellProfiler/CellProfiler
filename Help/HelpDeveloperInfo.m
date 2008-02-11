@@ -391,6 +391,8 @@ function HelpDeveloperInfo
 %   if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
 %     close(ThisModuleFigureNumber)
 %   end
+% or simply use the subfunction:
+%   CPclosefigure(handles,CurrentModule)
 %
 % Note that in the above we do not use this:
 %   if handles.Current.SetBeingAnalyzed == 1

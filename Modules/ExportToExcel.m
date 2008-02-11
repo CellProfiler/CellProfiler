@@ -129,8 +129,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines the figure number to display in.
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    close(ThisModuleFigureNumber)
-end
+%%% The figure window display is unnecessary for this module, so it is
+%%% closed during the starting image cycle.
+CPclosefigure(handles,CurrentModule)

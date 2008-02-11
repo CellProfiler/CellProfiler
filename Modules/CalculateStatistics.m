@@ -159,5 +159,3 @@ drawnow
 %%% The figure window display is unnecessary for this module, so it is
 %%% closed during the starting image cycle.
 CPclosefigure(handles,CurrentModule)
-
-drawnow

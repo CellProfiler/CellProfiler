@@ -278,20 +278,20 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     end
 
     FileName = [FileName '.' FileFormat];
-
+    
     if strncmp(FileDirectory,'.',1)
         PathName = handles.Current.DefaultOutputDirectory;
-	if length(FileDirectory) > 1
+        if length(FileDirectory) > 1
             PathName = fullfile(PathName, FileDirectory(2:end));
         end
     elseif strncmp(FileDirectory, '&', 1)
         PathName = handles.Pipeline.(['Pathname', ImageFileName]);
-	if length(Subdirectory) > 0
-	  PathName = fullfile(PathName, Subdirectory);
-	end
-	if length(FileDirectory) > 1
-	  PathName = fullfile(PathName, FileDirectory(2:end));
-	end
+        if ~isempty(Subdirectory)
+            PathName = fullfile(PathName, Subdirectory);
+        end
+        if length(FileDirectory) > 1
+            PathName = fullfile(PathName, FileDirectory(2:end));
+        end
     else
         PathName = FileDirectory;
     end

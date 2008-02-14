@@ -6,10 +6,10 @@ import signal
 import copy
 
 # set up the environment for running that compiled matlab version.
-cpcluster_home = '/imaging/analysis/People/Ray/CPClusterSingle2007a'
+cpcluster_home = '/imaging/analysis/CPClusterSingle/5087'
 os.environ['CPCLUSTERHOME'] = cpcluster_home
-mcr_path = cpcluster_home + '/MCR/v76'
-os.environ['LD_LIBRARY_PATH'] = '%(mcr_path)s/runtime/glnx86:%(mcr_path)s/sys/os/glnx86:%(mcr_path)s/bin/glnx86'%(locals())
+mcr_path = '/imaging/analysis/CPClusterSingle/MCR/v76'
+os.environ['LD_LIBRARY_PATH'] = '%(mcr_path)s/runtime/glnxa64:%(mcr_path)s/sys/os/glnxa64:%(mcr_path)s/bin/glnxa64'%(locals())
 
 def run_job_with_timeout(full_command, timeout):
     '''

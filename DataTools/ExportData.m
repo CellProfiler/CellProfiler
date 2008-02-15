@@ -147,11 +147,11 @@ set(ETh,'units','pixels','resize','on','menubar','none','toolbar','none','number
 % Some variables controlling the sizes of uicontrols
 uiheight = 28;
 % Set window size in inches, depends on the number of objects
-ScreenSize = get(0,'ScreenSize');
+[ScreenWidth,ScreenHeight] = CPscreensize;
 Height = 330+ceil(length(fields)/2)*uiheight;
 Width  = 600;
-LeftPos = (ScreenSize(3)-Width)/2;
-BottomPos = (ScreenSize(4)-Height)/2;
+LeftPos = (ScreenWidth-Width)/2;
+BottomPos = (ScreenHeight-Height)/2;
 set(ETh,'position',[LeftPos BottomPos Width Height]);
 
 if ~isempty(fields)

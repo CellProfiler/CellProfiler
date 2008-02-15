@@ -24,12 +24,9 @@ if strcmp(Layout,'NarrowText') && (FigPos(3) ~= 280)
 end
 
 ImagePos = size(OrigImage);
-MonPos = get(0,'MonitorPositions');
-ScSize = MonPos(1,:);
+[ScreenWidth,ScreenHeight] = CPscreensize;
 FigureWidth = FigPosOrig(3);
 FigureHeight = FigPosOrig(4);
-ScreenWidth = ScSize(3);
-ScreenHeight = ScSize(4);
 ImageWidth = ImagePos(2);
 ImageHeight = ImagePos(1);
 

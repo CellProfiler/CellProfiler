@@ -310,8 +310,7 @@ if strcmp(EachOrAll,'All')
             %%% Notifies the user that the first cycle will take much longer than
             %%% subsequent sets.
             %%% Obtains the screen size.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
+            [ScreenWidth,ScreenHeight] = CPscreensize;
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
             h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.']);

@@ -51,8 +51,7 @@ elseif strncmpi(RescaleOption,'E',1) == 1
                 %%% Notifies the user that the first image set will take much longer than
                 %%% subsequent sets.
                 %%% Obtains the screen size.
-                ScreenSize = get(0,'ScreenSize');
-                ScreenHeight = ScreenSize(4);
+                [ScreenWidth,ScreenHeight] = CPscreensize;
                 PotentialBottom = [0, (ScreenHeight-720)];
                 BottomOfMsgBox = max(PotentialBottom);
                 PositionMsgBox = [500 BottomOfMsgBox 350 100];

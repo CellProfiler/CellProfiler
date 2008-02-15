@@ -614,8 +614,8 @@ try
         %%% set back to normalized so they scale appropriately if
         %%% the user resizes the window.
         FigurePosition = get(FigureHandle, 'Position');
-        ScreenSize = get(0,'ScreenSize');
-        NewFigurePosition = [ScreenSize(3)/4 ScreenSize(4)-(FigurePosition(4)+170) 600 FigurePosition(4)];
+        [ScreenWidth,ScreenHeight] = CPscreensize;
+        NewFigurePosition = [ScreenWidth/4 ScreenHeight-(FigurePosition(4)+170) 600 FigurePosition(4)];
         set(FigureHandle,'Position',NewFigurePosition)
         set(AxesHandles,'Units', 'pixels');
         NewHeight = FigurePosition(4)+30;
@@ -1072,9 +1072,9 @@ FigHandle = CPfigure;
 set(FigHandle,'units','pixels','resize','on','menubar','none','toolbar','none','numbertitle','off','Name','Choose histogram settings');
 Height = 625;
 Width  = 475;
-ScreenSize = get(0,'ScreenSize');
-LeftPos = (ScreenSize(3)-Width)/2;
-BottomPos = (ScreenSize(4)-Height)/2;
+[ScreenWidth,ScreenHeight] = CPscreensize;
+LeftPos = (ScreenWidth-Width)/2;
+BottomPos = (ScreenHeight-Height)/2;
 set(FigHandle,'position',[LeftPos BottomPos Width Height]);
 
 NumMat=(1:handles.Current.SetBeingAnalyzed)';

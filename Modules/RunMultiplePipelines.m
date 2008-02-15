@@ -125,9 +125,7 @@ catch
         fullfile(filepath,filename),'.']);
 end
 % save figure properties
-ScreenSize = get(0,'ScreenSize');
-ScreenWidth = ScreenSize(3);
-ScreenHeight = ScreenSize(4);
+[ScreenWidth,ScreenHeight] = CPscreensize;
 fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if ~isempty(fig)
     try

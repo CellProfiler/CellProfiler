@@ -35,8 +35,7 @@ if strcmpi(Mode,'DoNow') == 1
     WaitbarHandle = waitbar(0,'');
     %%% Obtains the screen size and determines where the wait bar will
     %%% be displayed.
-    ScreenSize = get(0,'ScreenSize');
-    ScreenHeight = ScreenSize(4);
+    [ScreenWidth,ScreenHeight] = CPscreensize;
     PotentialBottom = [0, (ScreenHeight-720)];
     BottomOfMsgBox = max(PotentialBottom);
     OldPos = get(WaitbarHandle,'position');

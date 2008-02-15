@@ -22,9 +22,8 @@ SelectDisplay = CPfigure('Units','Inches','Resize','Off','Menubar','None','Toolb
 Pos = get(SelectDisplay,'Position');
 % Get screen height
 set(0,'Units','inches')
-ScreenSize = get(0,'ScreenSize');
+[ScreenWidth,ScreenHeight] = CPscreensize;
 set(0,'Units','pixels')
-ScreenHeight = ScreenSize(4);
 % Estimate window Height
 uiheight = 0.3;
 Height = (NumberOfModules+4)*uiheight;

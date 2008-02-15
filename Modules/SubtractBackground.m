@@ -124,11 +124,10 @@ if handles.Current.SetBeingAnalyzed == 1
         %%% Starts with a high value for MinimumTenthMinimumPixelValue;
         MinimumTenthMinimumPixelValue = 1;
         %%% Obtains the screen size.
-        ScreenSize = get(0,'ScreenSize');
-        ScreenHeight = ScreenSize(4);
+        [ScreenWidth,ScreenHeight] = CPscreensize;
         PotentialBottom = [0, (ScreenHeight-720)];
         BottomOfMsgBox = max(PotentialBottom);
-        LeftPos = ScreenSize(3)/4;
+        LeftPos = ScreenWidth/4;
         PositionMsgBox = [LeftPos BottomOfMsgBox 280 60];
         TimeStart = clock;
         NumberOfImages = length(FileList);

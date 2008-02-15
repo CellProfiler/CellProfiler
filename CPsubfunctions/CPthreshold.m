@@ -283,8 +283,7 @@ elseif strcmp(Threshold,'All')
         try
             %%% Notifies the user that the first image set will take much
             %%% longer than subsequent sets. Obtains the screen size.
-            ScreenSize = get(0,'ScreenSize');
-            ScreenHeight = ScreenSize(4);
+            [ScreenWidth,ScreenHeight] = CPscreensize;
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
             h = CPmsgbox('Preliminary calculations are under way for the Identify Primary Threshold module.  Subsequent image sets will be processed much more quickly than the first image set.');

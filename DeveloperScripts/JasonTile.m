@@ -205,8 +205,7 @@ if handles.Current.SetBeingAnalyzed == 1
     ImageWidth = ImageSize(2);
     TotalWidth = NumberColumns*ImageWidth;
     TotalHeight = NumberRows*ImageHeight;
-    %%% Packs the workspace to free up memory since a large variable is about to be produced.
-    pack;
+
     %%% Preallocates the array to improve speed. The data class for
     %%% the tiled image is set to match the incoming image's class.
     handles.Pipeline.(TiledImageName) = zeros(TotalHeight,TotalWidth,size(LoadedImage,3),class(LoadedImage));

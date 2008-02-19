@@ -109,7 +109,6 @@ for i=1:length(ImageName)
     if strncmpi(DeletePipeline,'Y',1) == 1
         handles.Pipeline = rmfield(handles.Pipeline,ImageName{i});
     end
-    pack;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

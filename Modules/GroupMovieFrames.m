@@ -264,8 +264,6 @@ if SetBeingAnalyzed == 1
             CPerrordlg('There is a problem with the number of image sets.  If there are multiple GroupMovieFrames modules, please be sure that they all define the same number of images per cycle')
         end
     end
-else
-
 end
 
 %%% Remove slashes entries with N/A or no filename from the input,

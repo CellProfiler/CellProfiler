@@ -252,9 +252,20 @@ nGroupFrames = str2num(NumGroupFrames);
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Reset the max number of cycles here 
-if SetBeingAnalyzed == 1  
-    handles.Current.NumberOfImageSets = floor(handles.Current.NumberOfImageSets/nGroupFrames);
+%%% Reset the max number of cycles here
+%%% Do this only once -- on the first cycle, and only for the first GroupMovieFrames instance
+if SetBeingAnalyzed == 1
+    if (str2num(handles.Current.CurrentModuleNumber) == min(strmatch('GroupMovieFrames',handles.Settings.ModuleNames)))
+        handles.Current.NumberOfImageSets = floor(handles.Current.NumberOfImageSets/nGroupFrames);
+    else
+        %% Check that this GroupMovieFrames will create the same NumberOfImageSets
+        FileList = handles.Pipeline.(['FileList', MovieName]);
+        if size(FileList,2)/nGroupFrames ~= handles.Current.NumberOfImageSets
+            CPerrordlg('There is a problem with the number of image sets.  If there are multiple GroupMovieFrames modules, please be sure that they all define the same number of images per cycle')
+        end
+    end
+else
+
 end
 
 %%% Remove slashes entries with N/A or no filename from the input,

@@ -13,15 +13,18 @@ catch
     reportBatchError(['Batch Error: Loading batch file (' batchfile ')']);
 end
 
-%%% Test that we can write to the output files
-OutputFileName = sprintf('%s/%s%d_to_%d_OUT.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
-try
-    save(OutputFileName,'handles');
-catch
-    disp(['Could not write to ' OutputFileName ', so processing aborted.']);
-    quit;
-end
-delete(OutputFileName);
+%%%%%%% This section causing error.  Output is e.g.
+%% "Could not write to ./status/Batch_97_to_108_OUT.matl/1, so processing
+%% aborted." DLogan 2008.02.21
+% %%% Test that we can write to the output files
+% OutputFileName = sprintf('%s/%s%d_to_%d_OUT.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
+% try
+%     save(OutputFileName,'handles');
+% catch
+%     disp(['Could not write to ' OutputFileName ', so processing aborted.']);
+%     quit;
+% end
+% delete(OutputFileName);
 
 % If we get the argument 'all', use EndingSet as a step size and print
 % out the imageset numbers for each set that still needs to run.

@@ -11,11 +11,18 @@ function handles = SplitIntoContiguousObjects(handles)
 % "measurement" is a number that indicates the relabeled object
 % number.
 %
+
 % CellProfiler is distributed under the GNU General Public License.
-% See the accompanying file LICENSE for license details and copyright
-% information.  See the file AUTHORS for contributors.
+% See the accompanying file LICENSE for details.
 %
-% $Revision$
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Please see the AUTHORS file for credits.
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision:$
 
 %%% VARIABLES
 drawnow

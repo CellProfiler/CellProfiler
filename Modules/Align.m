@@ -94,7 +94,7 @@ AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
 %choiceVAR09 = Do not use
-%infotypeVAR09 = imagegroup
+%infotypeVAR09 = imagegroup indep
 MoreImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
@@ -105,7 +105,7 @@ MoreAlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,10
 
 %textVAR11 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
 %choiceVAR11 = Do not use
-%infotypeVAR11 = imagegroup
+%infotypeVAR11 = imagegroup indep
 MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 

@@ -19,7 +19,7 @@ function handles = DefineGrid(handles)
 % found automatically using previous modules in the pipeline.
 %
 % If you are using images of plastic plates, it may be useful to precede
-% this module with an IdentifyPrimAtuomatic module to find the plastic
+% this module with an IdentifyPrimAutomatic module to find the plastic
 % plate, followed by a Crop module to remove the plastic edges of the
 % plate, so that the grid can be defined within the smooth portion of the
 % plate only. If the plates are not centered in exactly the same position

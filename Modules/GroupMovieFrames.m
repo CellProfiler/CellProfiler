@@ -1,6 +1,6 @@
 function handles = GroupMovieFrames(handles)
 
-% Help for the Load Images module:
+% Help for the GroupMovieFrames module:
 % Category: File Processing
 %
 % SHORT DESCRIPTION:

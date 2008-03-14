@@ -58,6 +58,8 @@ function handles = CreateBatchFiles(handles)
 % for the remote machine you would type "/remoteserver2". As of now, this
 % is hardcoded to always end in Linux and Macintosh format using forward
 % slashes (/).
+% Note: If you are specifying Other Paths (the last two settings), these
+% settings will override the first five path settings. 
 %
 % Note:
 % * This module produces a Batch_data.mat file (the prefix Batch_ can be
@@ -200,7 +202,7 @@ end
 %%% because the save function will not allow us to save a variable
 %%% under a different name.
 PreservedHandles = handles;
-
+ 
 %%% Changes parts of several pathnames if the user has
 %%% specified that parts of the pathname are named differently from
 %%% the perspective of the local computer vs. the cluster
@@ -211,6 +213,21 @@ if strcmp(OldPathname, '.') ~= 1
     %%% out on the local machine.
     %%% BatchCellProfilerPath = strrep(fullfile(NewPathname,strrep(BatchCellProfilerPath,OldPathname,'')),'\','/');
     BatchImagePath = strrep(strrep(BatchImagePath,OldPathname,NewPathname),'\','/');
+    %%% This bit of code replaces the "\" to "/" in the image filenames 
+    %%% when the 'Analyze Subdirectories' question='Yes'.  Note: This
+    %%% problem only occurs when a user creates a set of Batch files from 
+    %%% a PC and runs it on a linux cluster. --Martha 2008-03-14
+    HandlesPipeline = fieldnames(handles.Pipeline);
+    for i=1:length(HandlesPipeline)
+        if strncmp(HandlesPipeline(i),'FileList', 8)
+            for j=1:length(handles.Pipeline.(HandlesPipeline{i}))
+            BatchImageFile = strrep(handles.Pipeline.(HandlesPipeline{i}){j},'\','/');
+            handles.Pipeline.(HandlesPipeline{i}){j} = BatchImageFile;
+            end
+        end
+    end
+    
+    
     %    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
     BatchOutputPath = strrep(strrep(BatchOutputPath,OldPathname,NewPathname),'\','/');
     %    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');

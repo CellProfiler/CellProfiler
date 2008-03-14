@@ -106,9 +106,8 @@ switch lower(SmoothingMethod)
         RealFilterLength=2*FiltLength;
     case 'median filter'
         %%% The following is used for the Median Filtering smoothing method
-        %%% medfilt2 on double images is too slow. Let's covert it to uint16 which is very much fast!
+        %%% medfilt2 on double images is too slow. Let's covert it to uint16 which is much faster!
         %%% Let's get pixel values stretched from [min,max] to [0,1] for the best precision/accuracy
-        FiltLength = SizeOfSmoothingFilter;
         maxval = max(OrigImage(:));
         minval = min(OrigImage(:));
         range = maxval - minval;
@@ -159,7 +158,7 @@ switch lower(SmoothingMethod)
 %        h = fspecial('average', [SizeOfSmoothingFilter SizeOfSmoothingFilter]);
 %        SmoothedImage = imfilter(OrigImage, h, 'replicate');
     case 'remove brightroundspeckles'
-        %%% It does a grayscle open morphological operation. Effectively, 
+        %%% It does a grayscale open morphological operation. Effectively, 
         %%% it removes speckles of SizeOfSmoothingFilter brighter than its
         %%% surroundings. If combined with the 'Subtract' module, it
         %%% behaves like a tophat filter        

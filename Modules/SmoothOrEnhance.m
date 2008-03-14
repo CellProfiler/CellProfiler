@@ -7,24 +7,25 @@ function handles = SmoothOrEnhance(handles)
 % Smooths (blurs) images.
 % *************************************************************************
 %
-% Sorry, this module's documentation is out of date. It will be documented
-% soon.
-%
 % Settings:
 %
 % Smoothing Method:
 % Note that smoothing is a time-consuming process, and fitting a polynomial
 % is fastest but does not allow a very tight fit as compared to the slower
-% median filtering method. Width of artifacts over ~50 take substantial
+% median filtering method. Artifacts with widths over ~50 take substantial
 % amounts of time to process.
 %
-% BRIGHT SPECKLE DETECTION: If you use 'Remove BrightRoundSpeckles', 
-% you may want to use the Subtract module subsequently to subtract the 
-% smoothed image from the original image in order to leave bright 
-% round-shaped speckles. Effectlive, this will do tophat filtering. 
-% Then, you can use the ApplyThreshold module to make a binary 
+% BRIGHT SPECKLE DETECTION: 'Enhance BrightRoundSpeckles' performs 
+% morphological tophat filtering, which has the effect of enhancing round 
+% objects with size equal to, or slightly smaller than, the ObjectWidth setting. 
+%   'Remove BrightRoundSpeckles' is a filtering method to remove bright, round 
+% speckles, equivalent to a morphological open operation.  When followed by 
+% a Subtract module which subtracts the smoothed image from the original,
+% bright round-shaped speckles will be enhanced. This is effectively the 
+% same as 'Enhance BrightRoundSpeckles', or tophat filtering.
+%   Then, you could use the ApplyThreshold module to make a binary 
 % speckles/non-speckles image. Furthermore, the IdentifyPrimAutomatic can 
-% be used on the thresholded image to label each speckles for your analysis.
+% be used on the thresholded image to label each speckle for your analysis.
 %
 % Special note on saving images: If you want to save the smoothed image to
 % use it for later analysis, you should save the smoothed image in '.mat'

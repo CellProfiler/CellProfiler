@@ -2,9 +2,15 @@ function parse_filenames( image_file )
 %PARSE_FILENAMES Parse a cell array of filenames from a concatenated image.CSV file
 %                   into a file with well, site, and wavelength info.
 %
-%  parse_filenames('image.CSV') 
+%  parse_filenames('/PATH/image.CSV') 
 %
-% OUTPUT: 'image_well_info.csv'
+% OUTPUT: '/PATH/image_well_info.csv'
+%
+% NB!! Assumes a concatenated image.csv file!  The order will be incorrect
+% otherwise!!!
+%
+% For now, this only works for filenames of this construction ->
+% "..._A01_s1_w2..."
 
 %% READ IMAGE.CSV FILE
 fid = fopen(image_file);

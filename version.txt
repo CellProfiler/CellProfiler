@@ -1,3 +1,14 @@
+Version 1.0.5122
+- New feature: Added checkbox to toggle image intensity scaling
+- Smooth: Changed 'Smooth' module to 'SmoothOrEnhance'and renamed 'RemoveBrightRoundSpeckles' to 'Tophat filter.'
+- Relate: Bug fix for segmented fields.
+- Align: Bug fix (minor).
+- CreateBatchFiles: properly change the "\" to"/" when modifying the paths for the images.
+
+Version 1.0.5019
+- TrackObjects and Laplauccian of Gaussianwere added as modules.
+- TrackingTool added to the Data Tools.
+
 Version 1.0.4942
 - MeasureObjectAreaShape:Zernike optimization: 30% - 50% reduced computation time.
 - MeasureImageSaturationBlur: added two more measurements: PercentMaximal and LocalFocusScore (actually NormVar of Local NormVariances).

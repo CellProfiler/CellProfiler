@@ -1,5 +1,5 @@
 function parse_filenames( image_file )
-%PARSE_FILENAMES Parse a cell array of filenames from a concatenated image.CSV file
+%PARSE_FILENAMES Parse image numbers and filenames from a concatenated image.CSV file
 %                   into a file with well, site, and wavelength info.
 %
 %  parse_filenames('/PATH/image.CSV') 
@@ -9,8 +9,8 @@ function parse_filenames( image_file )
 % NB!! Assumes a concatenated image.csv file!  The order will be incorrect
 % otherwise!!!
 %
-% For now, this only works for filenames of this construction ->
-% "..._A01_s1_w2..."
+% For now, this only works for files & filenames of this construction ->
+% image number, "..._A01_s1_w2...", etc.
 
 %% READ IMAGE.CSV FILE
 fid = fopen(image_file);
@@ -32,8 +32,9 @@ end
 
 %% TREATMENT column
 % NB will need to be changed for each platemap!
-
-% treatment 
+% 
+% NOT DONE.  Will be more complicated and require user inputs depending on 
+%           platemap layout
 
 
 %% OUTPUT .csv file

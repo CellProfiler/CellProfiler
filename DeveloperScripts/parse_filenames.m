@@ -47,7 +47,7 @@ if ~exist(well_file,'file')
     M = [well, site, wavelength];
     fid = fopen(well_file,'w');
     for i = 1:size(M,1)
-       fprintf(fid, '%d,%s,%s\n',image_num(i),M{i,1},M{i,2});
+       fprintf(fid, '%d,%s,%s,%s\n',image_num(i),M{i,1},M{i,2},M{i,3});
     end
     fclose(fid);
 else 

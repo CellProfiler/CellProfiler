@@ -873,7 +873,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
     catch
         %%% It is very unlikely to get here, because this means the
         %%% pathname was incorrect, but we had checked this before
-        Choice = CPquestdlg(['The ' CurrentModuleName ' module could not be found in the directory specified or an error occured while extracting its variable settings. This error is not common; the module might be corrupt or, if running on the non-developers version of CellProfiler, the module might not be located in the default Module folder. The module will be skipped and the rest of the pipeline will be loaded. Would you like to see the module''s saved settings? (' lasterr ')'],'Error','Yes','No','Abort','Yes');
+        Choice = CPquestdlg(['The ' CurrentModuleName ' module could not be found in the directory specified or an error occured while extracting its variable settings. This error is not common; the module might be corrupt or, if running on the non-developers version of CellProfiler, your preferences may not be set properly. To check your preferences, click on File >> Set Preferences.  The module will be skipped and the rest of the pipeline will be loaded. Would you like to see the module''s saved settings? (' lasterr ')'],'Error','Yes','No','Abort','Yes');
         switch Choice
             case 'Yes'
                 FailedModule(handles,Settings.VariableValues(ModuleNum-Skipped,:),'Sorry, variable descriptions could not be retrieved from this file',CurrentModuleName,ModuleNum-Skipped);

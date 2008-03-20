@@ -62,7 +62,7 @@ OrigImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the smoothed image?
-%defaultVAR02 = CorrBluef
+%defaultVAR02 = CorrBlue
 %infotypeVAR02 = imagegroup indep
 SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

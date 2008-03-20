@@ -97,24 +97,28 @@ if SetBeingAnalyzed == 1
    CPcheckplatedivisibility(handles.Current.NumberOfImageSets,NumberOfCyclesPerPlate);
 end
 
-%%% Calculate the data to be recorded for this image cycle.
+%%% Calculate the data to be recorded for this image cycle, beginning with
+%%% the first feature, PlateNumber.
 PlateNumber = ceil(SetBeingAnalyzed/NumberOfCyclesPerPlate)
 
-%%% Subtract previous plates
+%%% Subtract previous plates to get a linear well index, which can range
+%%% from 1 to NumberOfCyclesPerPlate. 
 CurrentLinearWellIndex = SetBeingAnalyzed - PlateNumber*NumberOfCyclesPerPlate;
 
-RowNumber = CurrentLinearWellIndex
-Row = 
-ColumnNumber  
-Column
-RowAndColumn
-FullLabel
+%%% TODO: THE FOLLOWING SIX VALUES NEED TO BE CALCULATED, BASED ON THE
+%%% CurrentLinearWellIndex. I'VE INSERTED DUMMY VALUES FOR NOW. Note that
+%%% we store the same number twice for Column and ColumnNumber, but one is
+%%% a string and the other is a number.
+RowNumber = 2
+Row = 'A'
+ColumnNumber = 4  
+Column = '04'
+RowAndColumn = 'A01'
+FullLabel = '1_A01'
 
-%%% NEED TO FILL IN WHAT TO DISPLAY HERE.
-TextStringForDisplay = [];
-
-%%% ARE CURLY BRACES PROPER HERE?
-Labels = {PlateNumber,PlateRow,PlateColumn,PlateRowAndColumn,PlateFullLabel};
+%%% TODO: ARE CURLY BRACES PROPER HERE? NOT SURE.
+Labels = {PlateNumber, RowNumber, Row, ColumnNumber, Column, RowAndColumn, FullLabel};
+TextStringForDisplay = {num2str(PlateNumber), num2str(RowNumber), Row, num2str(ColumnNumber), Column, RowAndColumn, FullLabel};;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -126,19 +130,22 @@ if any(findobj == ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
-        %%% Activates the appropriate figure window.
-        currentfig = CPfigure(handles,'Text',ThisModuleFigureNumber);
-        %%% Places the text in the window
-        uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', TextStringForDisplay,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    %%% Activates the appropriate figure window.
+    currentfig = CPfigure(handles,'Text',ThisModuleFigureNumber);
+    %%% Places the text in the window, starting with the heading.
+    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
+        'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+        'fontsize',FontSize,'fontweight','bold','string',[LabelName, ' labels for cycle #',num2str(handles.Current.SetBeingAnalyzed)],'UserData',handles.Current.SetBeingAnalyzed);
+    %%% There are 7 features to be displayed in the window.
+    for n = 1:7
+        uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', TextStringForDisplay{n},'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-handles.Measurements.Image.([LabelName,'Features']) = {'PlateNumber' 'PlateRow' 'PlateColumn' 'PlateRowAndColumn' 'PlateFullLabel'};
-
-handles.Measurements.Image.(LabelName){handles.Current.SetBeingAnalyzed} = Labels;
-
-
-
+Fieldname = ['Label_',LabelName];
+handles.Measurements.Image.([Fieldname,'Features']) = {'PlateNumber' 'RowNumber' 'Row' 'ColumnNumber' 'Column' 'RowAndColumn' 'FullLabel'};
+handles.Measurements.Image.(Fieldname){handles.Current.SetBeingAnalyzed} = Labels;

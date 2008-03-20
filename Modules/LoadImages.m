@@ -42,11 +42,6 @@ function handles = LoadImages(handles)
 % you can change the Load Images module to recognize all images in your
 % folder.
 %
-% (Update: 10-11-2007) The settings in LoadImages has been slightly changed
-% and the pipeline with old settings will be automatically converted to one
-% with new settings. If you save the old pipeline, it will be saved with
-% new settings.
-%
 % Settings:
 %
 % How do you want to load these files?
@@ -1103,7 +1098,7 @@ function skip_strips(TIF, strip_offsets)
 fseek(TIF.file, strip_offsets(TIF.num_strips) + TIF.strip_bytes(TIF.num_strips),-1);
 return;
 
-%===================sub-functions that reads an IFD entry:===================
+%===================sub-functions that read an IFD entry:===================
 
 function [nbbytes, typechar] = matlabtype(tifftypecode)
 switch (tifftypecode)

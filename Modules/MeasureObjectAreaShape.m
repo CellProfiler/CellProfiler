@@ -404,7 +404,7 @@ for i = 1:length(ObjectNameList)
         handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = Basic;
     end
 
-    %%% Report measurements
+    %%% Display measurements
     FontSize = handles.Preferences.FontSize;
     if any(findobj == ThisModuleFigureNumber)
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet

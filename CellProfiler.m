@@ -2147,9 +2147,10 @@ end
 %%%% On double-click of a Module in the ModulePipelineListBox,
 %%%%  bring its corresponding figure window (if it exists) to the foreground
 if strcmp(get(gcf,'SelectionType'),'open')
-    SelectedFigs = sort(findobj('-regexp','Name',handles.Settings.ModuleNames{ModuleHighlighted},'-and','NumberTitle','on','-and','-property','UserData'));
-    for iFig = 1:length(SelectedFigs)
-        CPfigure(SelectedFigs(iFig));
+    SelectedFigs = findobj('-regexp','Name',handles.Settings.ModuleNames{ModuleHighlighted},'-and','NumberTitle','on','-and','-property','UserData');
+    LoneSelectedFig = SelectedFigs(SelectedFigs == handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]));
+    if length(LoneSelectedFig) == 1
+        CPfigure(LoneSelectedFig);
     end
 end
 

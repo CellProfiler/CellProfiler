@@ -255,5 +255,5 @@ handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = 
 Threshold = mean(Threshold(:)); %% Use average threshold, namely for adaptive threshold methods
 handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,3) = Threshold;
 
-%% Save the thresholded image in handles.Pipeline for later use.
+%%% Save the thresholded image in handles.Pipeline for later use.
 handles.Pipeline.(ObjectName) = ThresholdedOrigImage;

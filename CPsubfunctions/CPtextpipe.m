@@ -91,7 +91,14 @@ for p = 1:VariableSize(1)
     else
         ModuleNamedotm = [Module '.m'];
     end
+    
     fid2=fopen(fullfile(PathnameModules,ModuleNamedotm));
+    %%% If the module is not found in the modules folder, it will error
+    %%% here. TODO: We should have a catch and then try to find the module
+    %%% anywhere in the Matlab path.
+    if fid2 == -1
+        error(['Cannot find the ', Module,' module, which is necessary to export the pipeline settings information. If you disable exporting the pipeline settings (by leaving the "Extension for exported pipeline settings file" box blank during exporting), exporting of the remaining data should proceed normally.']);
+    end    
     while 1
         output = fgetl(fid2);
         if ~ischar(output), break, end

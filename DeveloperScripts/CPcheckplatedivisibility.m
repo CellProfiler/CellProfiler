@@ -1,4 +1,4 @@
-function CPcheckplatedivisibility(NumberOfImageSets,NumberOfCyclesPerPlate);
+function CPcheckplatedivisibility(NumberOfImageSets,NumberOfCyclesPerPlate,ModuleName);
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -18,5 +18,5 @@ function CPcheckplatedivisibility(NumberOfImageSets,NumberOfCyclesPerPlate);
 
 Divisibility = rem(NumberOfImageSets,NumberOfCyclesPerPlate);
 if  Divisibility~=0
-    CPwarndlg(['Given your specifications for numbers of rows, columns, and image cycles per well, the number of image cycles you have chosen works out to ', num2str(handles.Current.NumberOfImageSets/NumberOfCyclesPerPlate),' plates, which is not an integer. You may want to check that your settings and/or image files are correct.']);
+    CPwarndlg(['Warning for the ',ModuleName, ' module: Given your specifications for numbers of rows, columns, and image cycles per well, the number of image cycles you have chosen works out to ', num2str(NumberOfImageSets/NumberOfCyclesPerPlate),' plates, which is not an integer. You may want to check that your settings and/or image files are correct.']);
 end

@@ -372,7 +372,7 @@ try
             Median = CPnanmedian(OutputMeasurementsForStats);
             %%% pObject is the percentage of image covered by objects. We will
             %%% set to 50% for now
-            pObject = '50';
+            pObject = '0.5';
             [handles,Otsu] = CPthreshold(handles,'Otsu Global',pObject,-Inf,Inf,1,OutputMeasurementsForStats,'HistogramData','Histogram Data tool');
             [handles,MoG] = CPthreshold(handles,'MoG Global',pObject,-Inf,Inf,1,OutputMeasurementsForStats,'HistogramData','Histogram Data tool');
 

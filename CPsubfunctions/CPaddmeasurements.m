@@ -26,7 +26,12 @@ if isfield(handles.Measurements.(Object),FeaturesField)
         end
         NewColumn = length(handles.Measurements.(Object).(FeaturesField)) + 1;
         handles.Measurements.(Object).(FeaturesField)(NewColumn) = {Feature};
-        handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed}(:,NewColumn) = Data;
+        
+        if size(handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed},2) ~= NewColumn - 1
+            CPerrordlg('Measurements may be overwriting!  Make sure that only one column of measurements is written at a time by the current module')
+        else
+            handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed}(:,NewColumn) = Data;
+        end
     else
         if length(OldColumn) > 1
             error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');

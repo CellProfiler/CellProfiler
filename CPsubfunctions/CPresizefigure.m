@@ -15,11 +15,15 @@ function CPresizefigure(OrigImage,Layout,FigHandle)
 FigPosOrig = get(FigHandle,'Position');
 FigPos = FigPosOrig;
 
+FigUserData = get(FigHandle,'Userdata');
+
 %%% Handles Text display windows.
 if strcmp(Layout,'NarrowText') && (FigPos(3) ~= 280)
     FigPos(3) = 280;
     %%% Sets the figure position and size.
     set(FigHandle,'Position',FigPos);
+    FigUserData.MyHandles.NumSubplots = 0;
+    set(FigHandle,'Userdata',FigUserData)
     return
 end
 
@@ -42,6 +46,7 @@ if strcmp(Layout,'OneByOne')
         %%% 40 is added to allow for axes labels.
         FigureWidth = 40 + FigureHeight * ImageWidth / ImageHeight;
     end
+    FigUserData.MyHandles.NumSubplots = 1;
 %%% If the window is 2 rows x 2 columns (standard):
 %%% 2*ImageHeight is because there are two rows.
 %%% 2*ImageWidth is because there are two columns.
@@ -53,6 +58,7 @@ elseif strcmp(Layout,'TwoByTwo')
         %%% 40 is added to allow for axes labels.
         FigureWidth = 40 + FigureHeight * (2*ImageWidth) / (2*ImageHeight);
     end
+    FigUserData.MyHandles.NumSubplots = 4;
 %%% If the window is 2 rows x 1 column (narrow):
 elseif strcmp(Layout,'TwoByOne')
     %%% Makes the figure half width.    
@@ -65,6 +71,7 @@ elseif strcmp(Layout,'TwoByOne')
         %%% 40 is added to allow for axes labels.
         FigureWidth = 40 + FigureHeight * ImageWidth / (2*ImageHeight);
     end
+    FigUserData.MyHandles.NumSubplots = 2;
 end
 
 %%% Checks whether the resulting figure would take up more than 40% of
@@ -93,3 +100,8 @@ FigPos(4) = FigureHeight;
 
 %%% Sets the figure position and size.
 set(FigHandle,'Position',FigPos);
+
+%%% Sets the number of subplots.  
+%%% Used in CPimagesc to test whether all subplots are grayscale, and the
+%%% RGB buttons can be removed
+set(FigHandle,'Userdata',FigUserData)

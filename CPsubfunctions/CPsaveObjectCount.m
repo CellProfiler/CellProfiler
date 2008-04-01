@@ -4,7 +4,7 @@ if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
   handles.Measurements.Image.ObjectCountFeatures = {};
   handles.Measurements.Image.ObjectCount = {};
 end
-column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ObjectCountFeatures, objectName)));
+column = find(strcmp(['ObjectCount ' objectName],handles.Measurements.Image.ObjectCountFeatures));
 if isempty(column)
   handles.Measurements.Image.ObjectCountFeatures(end+1) = { ['ObjectCount ' objectName] };
   column = length(handles.Measurements.Image.ObjectCountFeatures);

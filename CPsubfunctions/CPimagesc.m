@@ -25,3 +25,20 @@ set(gca,'fontsize',handles.Preferences.FontSize)
 if ndims(Image) == 2
     colormap(handles.Preferences.IntensityColorMap);
 end
+
+%% Delete RGB buttons if the ALL images in the figure are grayscale
+ImageHandles = findobj(gcf,'Type','Image');
+NumberOfColorbars = length(findobj(gcf,'Tag','Colorbar'));
+FigUserData = get(gcf,'Userdata');
+
+%% Only check for all grayscale images once all subplots exist
+if ~isfield(FigUserData.MyHandles,'NumSubplots') || length(ImageHandles) == (FigUserData.MyHandles.NumSubplots - NumberOfColorbars)
+    for i = length(ImageHandles):-1:1
+        NDIM(i) = ndims(get(ImageHandles(i),'CData'));
+    end
+    if ~any(NDIM == 3)
+        delete(findobj(gcf,'Tag','ToggleColorR'))
+        delete(findobj(gcf,'Tag','ToggleColorG'))
+        delete(findobj(gcf,'Tag','ToggleColorB'))
+    end
+end

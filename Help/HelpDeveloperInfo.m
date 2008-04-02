@@ -364,8 +364,8 @@ function HelpDeveloperInfo
 %   CPfigure(handles,'Image',ThisModuleFigureNumber);
 % For figures that contain any images, choose 'Image', otherwise choose
 % 'Text'. 'Image' figures will have the RGB checkboxes which allow
-% displaying individual channels and they will also have the
-% InteractiveZoom and CellProfiler Image Tools menu items.
+% displaying individual channels, the InteractiveZoom and CellProfiler 
+% Image Tools menu items, and the Raw/Stretched intensity scale pulldown.
 %
 % Note: unfortunately there is no convenient way right now to have more
 % than one figure window per module. We work around this in the case of

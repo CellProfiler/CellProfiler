@@ -45,6 +45,9 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
     if nargin>=2
         %%% This is for the typical usage:
         %%% CPfigure(handles,'Image',ThisModuleFigureNumber)
+        %% Currently if varargin{2}='Image' creates ImageTools toolbat, RGB
+        %% buttons, and Raw/Stretched dropdown.  If a module does not need
+        %% these, then choose 'Text' instead (or just '').
         FigureType = varargin{2};
         Font = userData.MyHandles.Preferences.FontSize;
         set(FigHandle,'Toolbar','figure');

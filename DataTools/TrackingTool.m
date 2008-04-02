@@ -143,7 +143,7 @@ end
 
 %%% Opens and displays the image.
 try
-    [ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName), handles);
+    [ImageToDisplay, handles] = CPimread(fullfile(Pathname,FileName));
 catch
     CPerrordlg(['Error opening image ', FileName, ' in folder ', Pathname])
     return

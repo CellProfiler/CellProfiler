@@ -45,7 +45,7 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
     if nargin>=2
         %%% This is for the typical usage:
         %%% CPfigure(handles,'Image',ThisModuleFigureNumber)
-        %% Currently if varargin{2}='Image' creates ImageTools toolbat, RGB
+        %% Currently if varargin{2}='Image' it creates ImageTools toolbar, RGB
         %% buttons, and Raw/Stretched dropdown.  If a module does not need
         %% these, then choose 'Text' instead (or just '').
         FigureType = varargin{2};
@@ -225,6 +225,13 @@ else
     %%% CPfigure with no arguments just sets the figure to be the
     %%% current/active one.
     FigHandle=figure(varargin{:});
-    set(FigHandle,'UserData',userData);
+    
+    %% Do not overwrite the old UserData, if the figure was pre-existing 
+    %% with the field UserData.MyHandles
+    if nargin == 0 && isfield(get(FigHandle),'UserData')
+        if ~isfield(get(FigHandle,'UserData'),'MyHandles')
+            set(FigHandle,'UserData',userData);
+        end
+    end
     set(FigHandle,'Color',[0.7 0.7 0.9],'BackingStore','off');
 end

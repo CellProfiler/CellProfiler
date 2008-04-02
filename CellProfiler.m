@@ -2152,12 +2152,7 @@ if strcmp(get(gcf,'SelectionType'),'open')
         if ~isempty(SelectedFigs) && exist('ModuleNumber','var') && isfield(handles.Current,['FigureNumberForModule' TwoDigitString(ModuleNumber)])
             LoneSelectedFig = SelectedFigs(SelectedFigs == handles.Current.(['FigureNumberForModule' TwoDigitString(ModuleNumber)]));
             if length(LoneSelectedFig) == 1
-                %% 'UserData' saved and restored since CPfigure called with 
-                %% less than two arguments obliterates 'UserData', which is
-                %% necessary for ImageTools, e.g.
-                UserDataLoneSelectedFig = get(LoneSelectedFig,'UserData');
                 CPfigure(LoneSelectedFig);
-                set(LoneSelectedFig,'UserData',UserDataLoneSelectedFig)
             end
         end
     end

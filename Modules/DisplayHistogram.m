@@ -363,7 +363,7 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
 %%% Activates the appropriate figure window.
-HistHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+HistHandle = CPfigure(handles,'Text',ThisModuleFigureNumber);
 
 h = subplot(1,1,1);
 pos=get(h, 'Position');

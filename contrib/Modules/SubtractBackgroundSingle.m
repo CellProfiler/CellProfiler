@@ -64,7 +64,7 @@ FileList = handles.Pipeline.(fieldname);
 if size(FileList,1) == 2
 error(['Image processing was canceled in the ', ModuleName, ' module because it cannot function on movies.']);
 end
-[TempImage, handles] = CPimread(fullfile(Pathname,char(FileList(index))), handles);
+TempImage = CPimread(fullfile(Pathname,char(FileList(index))));
 SortedColumnImage = sort(reshape(TempImage, [],1));
 TenthMinimumPixelValue = SortedColumnImage(PixelThreshold); 
 if TenthMinimumPixelValue ~= 0

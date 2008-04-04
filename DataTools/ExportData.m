@@ -39,7 +39,9 @@ if RawFileName == 0
 end
 
 %%% Load the specified CellProfiler output file.
+waitbarhandle = CPwaitbar(1,'Loading file. Please wait...');
 Loaded = load(fullfile(RawPathname, RawFileName));
+close(waitbarhandle)
 
 %%% Check if it seems to be a CellProfiler output file or not.
 if isfield(Loaded,'handles')

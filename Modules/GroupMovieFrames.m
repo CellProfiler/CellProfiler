@@ -308,7 +308,7 @@ for n = 1:length(ImageName)
             LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
             LoadedImage = im2double(LoadedRawImage.data);
         elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
-            LoadedRawImage = imread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+            LoadedRawImage = CPimread_flex(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
             LoadedImage = im2double(LoadedRawImage);                
         end
         %%% Saves the original movie file name to the handles

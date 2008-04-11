@@ -246,7 +246,7 @@ try
     %%% Opens a window that lets the user choose histogram settings
     %%% This function returns a UserInput structure with the
     %%% information required to carry out the calculations.
-    global UserInput
+%     global UserInput  %% Not used?  Need to be declared at the beginnign of a function anyway.  David 2008_04_10
     try UserInput = UserInputWindow(handles,RawFileName,UserInput);
     catch CPerrordlg(lasterr)
         return

@@ -1182,7 +1182,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 drawnow;
                 SegmentedFigures = findobj('Tag','SegmentedFigure');
                 if isempty(SegmentedFigures)
-                    CPfigure('Tag','SegmentedFigure');
+                    Segmented_h = CPfigure;
+                    set(Segmented_h,'Tag','SegmentedFigure');
                     uicontrol('style','text','units','normalized','string','IDENTIFIED OBJECTS: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 else
                     CPfigure(SegmentedFigures(1));
@@ -1194,7 +1195,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
                 OutlinedFigures = findobj('Tag','OutlinedFigure');
                 if isempty(OutlinedFigures)
-                    CPfigure('Tag','OutlinedFigure');
+                    Outlined_h = CPfigure;
+                    set(Outlined_h,'Tag','OutlinedFigure');
                     uicontrol('style','text','units','normalized','string','Outlined Objects: Choosing None for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
                 else
                     CPfigure(OutlinedFigures(1));

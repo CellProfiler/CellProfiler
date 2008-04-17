@@ -1,10 +1,10 @@
 function handles = Multiply(handles)
 
-% Help for the CPimmultiply module:
+% Help for the Multiply module:
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% This module multiplies two images together.  
+% This module multiplies two images.  
 %
 %
 %
@@ -22,7 +22,7 @@ function handles = Multiply(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% DATA:
+% $Revision: 5167 $
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -49,6 +49,8 @@ MultiplyImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %%% Reads the images.
 OrigImage1 = CPretrieveimage(handles,ImageName1,ModuleName,'DontCheckColor','CheckScale');
 OrigImage2 = CPretrieveimage(handles,ImageName2,ModuleName,'DontCheckColor','CheckScale');
+
+%%%VariableRevisionNumber = 1
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

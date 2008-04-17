@@ -1,6 +1,12 @@
-function LoadedImage = CPimread(CurrentFileName)
+function LoadedImage = CPimread(CurrentFileName, idx)
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
+%
+% CPimread by itself returns the vaild image extensions
+% CPimread(CurrentFileName) is used for most filetypes
+% CPimread(CurrentFileName, idx) is used for 'tif,tiff,flex movies' option
+%       in LoadImages, where idx is index of a particular image within the
+%       file
 %
 % Developed by the Whitehead Institute for Biomedical Research.
 % Copyright 2003,2004,2005.
@@ -82,11 +88,18 @@ elseif nargin == 1,
         catch
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
+    elseif strcmp('.FLEX',upper(ext))
+        CPwarndlg('Flex files support is still under development.  The image displayed is likely only the first image within the file')
+        %% TODO: Display subplots of all images within one flex file (can
+        %% happen when image double-clicked in main GUI)
+        %% For now, we will just disaply the first image...
+        LoadedImage = im2double(imread(char(CurrentFileName)));
+
     else
         try
             Header = imfinfo(CurrentFileName);
-            if isfield(Header,'Model') & any(strfind(Header(1).Model,'GenePix'))
-                PreLoadedImage = imreadGP([FileName,ext],Pathname);
+            if isfield(Header,'Model') && any(strfind(Header(1).Model,'GenePix'))
+                PreLoadedImage = CPimreadGP([FileName,ext],Pathname);
                 LoadedImage(:,:,1)=double(PreLoadedImage(:,:,1))/65535;
                 LoadedImage(:,:,2)=double(PreLoadedImage(:,:,1))/65535;
                 LoadedImage(:,:,3)=zeros(size(PreLoadedImage,1),size(PreLoadedImage,2));
@@ -100,10 +113,12 @@ elseif nargin == 1,
             error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     end
+elseif nargin == 2,  %% Only used for 'tif,tiff,flex movies' option in LoadImages
+    LoadedImage = CPimread_flex(CurrentFileName, idx);
 end
 
-
-function ImageArray = imreadZVI(CurrentFileName)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ImageArray = CPimreadZVI(CurrentFileName)
 
 % Open .zvi file
 fid = fopen(char(CurrentFileName), 'r');
@@ -170,6 +185,7 @@ ImageData = A(newpos:newpos+NumPixels-1);
 %Stores and returns Image Array
 ImageArray=reshape(ImageData, Width, Height)';
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % One and two and three little-endians...
 function i = from_little_endian(byte_array)
 is_little_endian = typecast(uint8([1 0]), 'uint16') == 1;
@@ -190,13 +206,14 @@ else
   i = double(swapbytes(typecast(byte_array, type)));
 end
 
-function [Image Header] = imreadGP(filename,filedir)
-% IMREADGP
-%      imreadGP reads in a an image file from GenePix
-%      imreadGP ignores the preview images and collects the header
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [Image Header] = CPimreadGP(filename,filedir)
+% CPIMREADGP
+%      CPimreadGP reads in a an image file from GenePix
+%      CPimreadGP ignores the preview images and collects the header
 %      information
 %
-%      [Image Header] = imreadGP(filename,filedir)
+%      [Image Header] = CPimreadGP(filename,filedir)
 %
 %      Image is a M by N by Idx matrix where Idx is the number of full size
 %      images in the multi-image tiff file
@@ -250,3 +267,64 @@ end
 Header(setdiff(1:numel(Header),imageIdx)) = [];
 
 %num2str(Header(imageNums(1)).BitDepth) %possible later addition
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ScaledImage = CPimread_flex(imname, idx)
+%%% Read a .flex file, with possible scaling information.  No
+%%% documentation is available, as far as I know.  Most of what is
+%%% below is based on experiments, looking at the plaintext XML in the
+%%% .flex files, and by reference to FlexReader.java in the LOCI
+%%% Bio-Formats project.  
+
+
+% First load the image...
+RawImage = imread(imname, idx);
+
+% Then go back and try to get the scaling factors...
+try
+    % get the file contents
+    fid = fopen(imname, 'r');
+    FileAsString = fread(fid, inf, 'uint8=>char')';
+    fclose(fid);
+
+    % Extract the Array information
+    strstart = findstr('<Arrays>', FileAsString);
+    strend = findstr('</Arrays>', FileAsString);
+    ArrayString = FileAsString(strstart(1):strend(1));
+
+    % Find the Factors
+    factor_locations = findstr('Factor="', ArrayString);
+    
+    % determine maximum factor value, as it decides the number of bits to convert to, below.
+    for i = 1:length(factor_locations),
+        % get the ith factor string, and extract the value
+        IdxFactorStringStart = ArrayString(factor_locations(i) + length('Factor="'):end);
+        strend = findstr(IdxFactorStringStart, '"') - 1;
+        IdxFactorString = IdxFactorStringStart(1:strend);
+        ScalingFactors(i) = str2double(IdxFactorString);
+    end
+
+    %%% The logic here mirrors that in FlexReader.java, part of the LOCI Bio-Formats package
+    if max(ScalingFactors) > 256,
+        % upgrade to 32 bits
+        ScaledImage = uint32(RawImage) * ScalingFactors(idx);
+    elseif max(ScalingFactors) > 1,
+        % upgrade to 16 bits
+        ScaledImage = uint16(RawImage) * ScalingFactors(idx);
+    else
+        if isa(RawImage, 'uint8'),
+            % FlexReader.java leaves this as 8 bits, but that seems like
+            % it could drop a lot of precision.  Instead, we'll upgrade to
+            % 16 bits and multiply by 256, to give some room at the low
+            % end of the precision scale.
+            ScaledImage = (uint16(RawImage) * 256) * ScalingFactors(idx);
+        else
+            % We already have sufficient precision
+            ScaledImage = RawImage * ScalingFactors(idx);
+        end
+    end
+
+catch
+    % default is no scaling (for non-flex tiffs)
+    ScaledImage = RawImage;
+end

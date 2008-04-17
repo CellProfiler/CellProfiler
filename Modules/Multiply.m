@@ -1,4 +1,4 @@
-function handles = CPimmultiply(handles)
+function handles = Multiply(handles)
 
 % Help for the CPimmultiply module:
 % Category: Image Processing

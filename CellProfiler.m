@@ -551,7 +551,7 @@ for j=2:length(ListOfDataTools)
     uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));clear ans']);
 end
 
-uimenu(WindowsMenu,'Label','Close All','Tag','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(WindowsMenu,'Label','Close All','Accelerator','L','Tag','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
 
 uimenu(HelpMenu,'Label','Getting Started','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''GS'',guidata(gcbo))');
 uimenu(HelpMenu,'Label','General Help','Callback','CellProfiler(''HelpFiles_Callback'',gcbo,''Help'',guidata(gcbo))');

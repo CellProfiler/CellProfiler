@@ -1,7 +1,7 @@
 function handles = CPimmultiply(handles)
 
 % Help for the CPimmultiply module:
-% Category: Contributed
+% Category: Image Processing
 %
 % SHORT DESCRIPTION:
 % This module multiplies two images together.  

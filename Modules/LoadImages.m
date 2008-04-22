@@ -286,19 +286,6 @@ ImagesPerSet = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,
 FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-% %textVAR11 = Are you loading image or movie files?
-% %choiceVAR11 = Image
-% %choiceVAR11 = Movie
-% ImageOrMovie = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-% %inputtypeVAR11 = popupmenu
-% 
-% %textVAR12 = If you are loading a movie, what is the extension?
-% %choiceVAR12 = avi
-% %choiceVAR12 = stk
-% %choiceVAR12 = tif,tiff,flex
-% FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-% %inputtypeVAR12 = popupmenu
-
 %textVAR12 = Analyze all subfolders within the selected folder?
 %choiceVAR12 = No
 %choiceVAR12 = Yes

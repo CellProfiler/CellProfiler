@@ -12,7 +12,7 @@ function [handles,ChildCounts,ParentList] = CPrelateobjects(handles,ChildName,Pa
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -97,5 +97,8 @@ else
 end
 
 %%% Add the new measurements to the handles
-handles = CPaddmeasurements(handles,ChildName,'Parent',ParentName,ParentList);
-handles = CPaddmeasurements(handles,ParentName,'Children',[ChildName,'Count'],ChildCounts);
+handles = CPaddmeasurements(handles, ChildName, ['Parent_', ParentName], ...
+			    ParentList);
+handles = CPaddmeasurements(handles, ParentName, ...
+			    ['Children_', ChildName, '_Count'], ...
+			    ChildCounts);

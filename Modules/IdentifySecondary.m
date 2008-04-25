@@ -147,7 +147,7 @@ function handles = IdentifySecondary(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -775,48 +775,28 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
 
         if strcmp(IdentChoice,'Propagation')
-            %%% Saves the Threshold value to the handles structure.
-            %%% Storing the threshold is a little more complicated than storing other measurements
-            %%% because several different modules will write to the handles.Measurements.Image.Threshold
-            %%% structure, and we should therefore probably append the current threshold to an existing structure.
-            % First, if the Threshold fields don't exist, initialize them
-            if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
-                handles.Measurements.Image.ThresholdFeatures = {};
-                handles.Measurements.Image.Threshold = {};
-            end
-            %%% Search the ThresholdFeatures to find the column for this object type
-            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,SecondaryObjectName)));
-            %%% If column is empty it means that this particular object has not been segmented before. This will
-            %%% typically happen for the first cycle. Append the feature name in the
-            %%% handles.Measurements.Image.ThresholdFeatures matrix
-            if isempty(column)
-                handles.Measurements.Image.ThresholdFeatures(end+1) = {SecondaryObjectName};
-                column = length(handles.Measurements.Image.ThresholdFeatures);
-            end
-            handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+            % Save the Threshold value to the handles structure.
+	    handles = CPaddmeasurements ...
+		      (handles, 'Image', ...
+		       ['Threshold_', SecondaryObjectName], Threshold);
 
             %%% Also add the thresholding quality metrics to the measurements
             if exist('WeightedVariance', 'var')
-                FeatureName = [SecondaryObjectName '_WeightedVariance'];
-                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
-                if isempty(column),
-                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
-                    column = length(handles.Measurements.Image.ThresholdFeatures);
-                end
-                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = WeightedVariance;
-
-                FeatureName = [SecondaryObjectName '_SumOfEntropies'];
-                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
-                if isempty(column),
-                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
-                    column = length(handles.Measurements.Image.ThresholdFeatures);
-                end
-                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = SumOfEntropies;
+	      handles = CPaddmeasurements ...
+			(handles, 'Image', ...
+			 ['Threshold_WeightedVariance_', SecondaryObjectName], ...
+			 WeightedVariance);
+	      handles = CPaddmeasurements ...
+			(handles, 'Image', ...
+			 ['Threshold_SumOfEntropies_', SecondaryObjectName],...
+			 SumOfEntropies);	    
             end
         end
 
-	handles = CPsaveObjectCount(handles, SecondaryObjectName, FinalLabelMatrixImage);
-	handles = CPsaveObjectLocations(handles, SecondaryObjectName, FinalLabelMatrixImage);
+	handles = CPsaveObjectCount(handles, SecondaryObjectName, ...
+				    FinalLabelMatrixImage);
+	handles = CPsaveObjectLocations(handles, SecondaryObjectName, ...
+					FinalLabelMatrixImage);
 	
         %%% Saves images to the handles structure so they can be saved to the hard
         %%% drive, if the user requested.

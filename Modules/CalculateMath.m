@@ -1,4 +1,4 @@
-function handles = CalculateMath(handles)
+function handles = CalculateMath_DL(handles)
 
 % TEST
 % Help for the Calculate Math module:
@@ -10,7 +10,7 @@ function handles = CalculateMath(handles)
 % *************************************************************************
 %
 % The arithmetic operations available in this module include addition,
-% subtraction, multiplication and division. The operation can be choosen
+% subtraction, multiplication and division. The operation can be chosen
 % by adjusting the operations setting. The resulting data can also be
 % logged or raised to a power. This data can then be used in other
 % calculations and can be used in Classify Objects.
@@ -59,7 +59,7 @@ FirstObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
 %inputtypeVAR02 = popupmenu custom
-FirstMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+FirstCategory = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
@@ -83,7 +83,7 @@ SecondObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %choiceVAR06 = Neighbors
 %choiceVAR06 = Texture
 %inputtypeVAR06 = popupmenu custom
-SecondMeasure = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+SecondCategory = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR07 = 1
@@ -121,36 +121,37 @@ drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-if strcmp(FirstMeasure,'Intensity') || strcmp(FirstMeasure,'Texture')
-    FirstMeasure = [FirstMeasure, '_', FirstImage];
+if strcmp(FirstCategory,'Intensity') || strcmp(FirstCategory,'Texture')
+%     FirstCategory = [FirstCategory, '_', FirstImage];
+    FirstCategory = CPjoinstrings(FirstCategory,FirstImage);
 end
 
-if strcmp(SecondMeasure,'Intensity') || strcmp(SecondMeasure,'Texture')
-    SecondMeasure = [SecondMeasure, '_', SecondImage];
+if strcmp(SecondCategory,'Intensity') || strcmp(SecondCategory,'Texture')
+%     SecondCategory = [SecondCategory, '_', SecondImage];
+    SecondCategory = CPjoinstrings(SecondCategory,SecondImage);
 end
 
 % Get measurements
-FirstMeasurements = handles.Measurements.(FirstObjectName).(FirstMeasure){SetBeingAnalyzed};
+FirstMeasurements = handles.Measurements.(FirstObjectName).(FirstCategory){SetBeingAnalyzed};
 FirstMeasurements = FirstMeasurements(:,FirstFeatureNumber);
-SecondMeasurements = handles.Measurements.(SecondObjectName).(SecondMeasure){SetBeingAnalyzed};
+SecondMeasurements = handles.Measurements.(SecondObjectName).(SecondCategory){SetBeingAnalyzed};
 SecondMeasurements = SecondMeasurements(:,SecondFeatureNumber);
 
 if length(FirstMeasurements) ~= length(SecondMeasurements)
     error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',FirstObjectName,' and ',SecondObjectName,' do not have the same object count.']);
 end
 
+FirstFeatureName = CPfeaturename(handles,FirstObjectName,FirstCategory,FirstFeatureNumber);
+SecondFeatureName = CPfeaturename(handles,SecondObjectName,SecondCategory,SecondFeatureNumber);
+NewFieldName = CPjoinstrings(FirstObjectName,FirstCategory,FirstFeatureName,Operation,SecondObjectName,SecondCategory,SecondFeatureName);
 
 if( strcmpi(Operation, 'Multiply') )
-    NewFieldName = [FirstObjectName,'_',FirstMeasure(1),'_',num2str(FirstFeatureNumber),'_Multiply_',SecondObjectName,'_',SecondMeasure(1),'_',num2str(SecondObjectName)];
     FinalMeasurements = FirstMeasurements.*SecondMeasurements;
 elseif( strcmpi(Operation, 'Divide') )
-    NewFieldName = [FirstObjectName,'_',FirstMeasure(1),'_',num2str(FirstFeatureNumber),'_Divide_',SecondObjectName,'_',SecondMeasure(1),'_',num2str(SecondObjectName)];
     FinalMeasurements = FirstMeasurements./SecondMeasurements;
 elseif( strcmpi(Operation, 'Add') )
-    NewFieldName = [FirstObjectName,'_',FirstMeasure(1),'_',num2str(FirstFeatureNumber),'_Add_',SecondObjectName,'_',SecondMeasure(1),'_',num2str(SecondObjectName)];
     FinalMeasurements = FirstMeasurements + SecondMeasurements;
 elseif( strcmpi(Operation, 'Subtract') )
-    NewFieldName = [FirstObjectName,'_',FirstMeasure(1),'_',num2str(FirstFeatureNumber),'_Subtract_',SecondObjectName,'_',SecondMeasure(1),'_',num2str(SecondObjectName)];
     FinalMeasurements = FirstMeasurements - SecondMeasurements;
 end
     
@@ -162,7 +163,7 @@ if ~isnan(Power)
     FinalMeasurements = FinalMeasurements .^ Power;
 end
 
-handles = CPaddmeasurements(handles,FirstObjectName,'Ratio',NewFieldName,FinalMeasurements);
+handles = CPaddmeasurements(handles,'Math',NewFieldName,FinalMeasurements);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

@@ -293,10 +293,6 @@ for i = 1:length(ObjectNameList)
         if strcmp(ZernikeChoice,'Yes')
             Zernike = zeros(NumObjects,size(Zernikeindex,1));
 
-%{
-        %%% Please note that the commented blocks with are for the on-going Zernike optimization project.
-            accum_error = 0;
-%}            
             for Object = 1:NumObjects
                 %%% Calculate Zernike shape features
                 [xcord,ycord] = find(LabelMatrixImage==Object);
@@ -329,13 +325,6 @@ for i = 1:length(ObjectNameList)
                     n = Zernikeindex(k,1);
                     m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
 
-%{                    
-                    % Un-optimized
-                    s = zeros(size(x));
-                    for lv = 0:(n-m)/2; % (n-m)/2 could be 0, 1, 2, 3, or 4
-                        s  = s + (-1)^lv*fak(n-lv)/( fak(lv) * fak((n+m)/2-lv) * fak((n-m)/2-lv)) * r.^(n-2*lv).*exp(sqrt(-1)*m*phi);                        
-                    end
-%}
                     % Optimized
                     s_new = zeros(size(x));
                     exp_term = exp(sqrt(-1)*m*phi);
@@ -346,10 +335,6 @@ for i = 1:length(ObjectNameList)
                     end
                     s = s_new;
                     
-%{                    
-                    s_diff = s - s_new;
-                    accum_error = accum_error + sum(s_diff(:));
-%}                    
                     s(r>1) = 0;
                     Zf(:,:,k) = s / normalization;
                 end
@@ -371,9 +356,6 @@ for i = 1:length(ObjectNameList)
                 end
             end
         end
-%{        
-        debug_error = accum_error  % To verify if debug_error = 0, i.e., the optimized Zernike version gives the same results.
-%}        
         % FormFactor
         FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
 
@@ -397,6 +379,7 @@ for i = 1:length(ObjectNameList)
 
     if strcmp(ZernikeChoice,'Yes')
         %%% Save measurements
+	handles = CPaddmeasurements(handles, ObjectName, 'AreaShape' XXX
         handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
         handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = [Basic Zernike];
     else
@@ -476,15 +459,6 @@ for i = 1:length(ObjectNameList)
         % and to determine the correct window size
         columns = columns + 1;
     end
-end
-
-% For un-opimized Zernike
-
-function f = fak(n)
-if n==0
-    f = 1;
-else
-    f = prod(1:n);
 end
 
 % For optimized Zernike (subfunctions below)

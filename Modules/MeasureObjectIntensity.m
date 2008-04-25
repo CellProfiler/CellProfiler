@@ -270,8 +270,8 @@ for i = 1:length(ObjectNameList)
         Basic(1,1:11) = 0;
     end
     %%% Save measurements
-    handles.Measurements.(ObjectName).(['Intensity_',ImageName,'Features']) = BasicFeatures;
-    handles.Measurements.(ObjectName).(['Intensity_',ImageName])(handles.Current.SetBeingAnalyzed) = {Basic};
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				['Intensity_',ImageName], Basic);
     
     %%% Report measurements
     if any(findobj == ThisModuleFigureNumber);

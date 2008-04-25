@@ -27,7 +27,7 @@ OldMeasurement = ...
     isfield(handles.Measurements.(ObjectName), FeatureName);
 
 if (FirstSet && OldMeasurement),
-    error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', int2str(handles.Current.CurrentModuleNumber), ').']);
+    error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', handles.Current.CurrentModuleNumber, ').']);
 end
 
 if ((~FirstSet) && (~OldMeasurement)),

@@ -514,19 +514,17 @@ drawnow
 handles.Pipeline.(CroppedImageName) = CroppedImage;
 
 %%% Saves the amount of cropping in case it is useful.
-FeatureNames = {'AreaRetainedAfterCropping','OriginalImageArea'};
-fieldname = ['Crop_',CroppedImageName,'Features'];
-handles.Measurements.Image.(fieldname) = FeatureNames;
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 [rows,columns] = size(OrigImage);
 OriginalImageArea = rows*columns*PixelSize*PixelSize;
 AreaRetainedAfterCropping = sum(BinaryCropImage(:))*PixelSize*PixelSize;
-fieldname = ['Crop_',CroppedImageName];
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaRetainedAfterCropping;
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = OriginalImageArea;
+handles = CPaddmeasurements(handles, 'Image', ['Crop_AreaRetainedAfterCropping',CroppedImageName], AreaRetainedAfterCropping);
+handles = CPaddmeasurements(handles, 'Image', ['Crop_OriginalImageArea',CroppedImageName], OriginalImageArea);
 
-
+%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION %%%
+%%%%%%%%%%%%%%%%%%%
 
 function [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles, OrigImage, CroppedImageName, ModuleName, RemoveRowsAndColumns)
 %%% Retrieves the Cropping image from the handles structure.

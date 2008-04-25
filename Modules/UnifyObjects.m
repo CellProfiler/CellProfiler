@@ -23,7 +23,7 @@ function handles = UnifyObjects(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -56,13 +56,31 @@ GrayscaleImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
-handles = doItForObjectName(handles, 'Segmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+%%%
+%%% CALL THE FUNCTION THAT DOES THE ACTUAL WORK FOR EACH SET OF OBJECTS
+%%%
+
+handles = doItForObjectName(handles, 'Segmented', ObjectName, ...
+			    RelabeledObjectName, DistanceThreshold, ...
+			    GrayscaleImageName);
 if isfield(handles.Pipeline, ['UneditedSegmented', ObjectName])
-  handles = doItForObjectName(handles, 'UneditedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+  handles = doItForObjectName(handles, 'UneditedSegmented', ObjectName, ...
+			      RelabeledObjectName, DistanceThreshold, ...
+			      GrayscaleImageName);
 end
 if isfield(handles.Pipeline, ['SmallRemovedSegmented', ObjectName])
-  handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName);
+  handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, ...
+			      RelabeledObjectName, DistanceThreshold, ...
+			      GrayscaleImageName);
 end
+
+% Save measurements for the 'Segmented' objects only, so as to agree
+% with IdentifyPrimaryAuto.
+fieldName = ['Segmented', RelabeledObjectName];
+labels = handles.Pipeline.(fieldName);
+handles = CPsaveObjectCount(handles, RelabeledObjectName, labels);
+handles = CPsaveObjectLocations(handles, RelabeledObjectName, labels);
+
 
 %%%
 %%% DISPLAY RESULTS
@@ -71,7 +89,8 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-  Relabeled = CPretrieveimage(handles, ['Segmented', RelabeledObjectName], ModuleName);
+  Relabeled = CPretrieveimage(handles, ['Segmented', RelabeledObjectName], ...
+			      ModuleName);
   vislabel = Relabeled;
   props = regionprops(Relabeled, {'ConvexImage', 'BoundingBox'});
   for k=1:length(props)
@@ -89,17 +108,14 @@ if any(findobj == ThisModuleFigureNumber)
   title(RelabeledObjectName);
 end
 
-%%%
-%%% SAVE MEASUREMENTS TO HANDLES STRUCTURE
-%%%
-
-
 
 %%%
 %%% SUBFUNCTION THAT DOES THE ACTUAL WORK
 %%%
 
-function handles = doItForObjectName(handles, prefix, ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName)
+function handles = doItForObjectName(handles, prefix, ObjectName, ...
+				     RelabeledObjectName, ...
+				     DistanceThreshold, GrayscaleImageName)
 drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -119,7 +135,9 @@ else
   % GrayscaleImage) along the line connecting the components' centroids.
   % If this profile looks like the components belong to separate
   % objects, break the object back up. (XXX)
-  GrayscaleImage = double(CPretrieveimage(handles, GrayscaleImageName, ModuleName, 'MustBeGray', 'CheckScale'));
+  GrayscaleImage = double(CPretrieveimage(handles, GrayscaleImageName, ...
+					  ModuleName, 'MustBeGray', ...
+					  'CheckScale'));
   Relabeled = Orig;
   props = regionprops(Orig, {'Centroid'});
   n = length(props);
@@ -152,16 +170,9 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE
 drawnow
 
-%%% Saves the final segmented label matrix image to the handles structure.
+%%% Saves the label matrix image to the handles structure.
 fieldName = [prefix, RelabeledObjectName];
 handles.Pipeline.(fieldName) = Relabeled;
-
-if ~isfield(handles.Measurements,RelabeledObjectName)
-  handles.Measurements.(RelabeledObjectName) = {};
-end
-
-handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
-handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
 
 %%%
 %%% Subfunction

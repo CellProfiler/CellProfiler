@@ -29,7 +29,7 @@ function handles = LoadSingleImage(handles)
 % folder.
 %
 % If more than four single images must be loaded, more than one Load Single
-% Image module can be run sequentially. Running more than one of these
+% Image module can be run sequentially. Running more than one o f these
 % modules also allows images to be retrieved from different folders.
 %
 % LoadImages can now open and read .ZVI files.  .ZVI files are Zeiss files
@@ -214,7 +214,7 @@ end
 %%% names to the already written ones.
 if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') && isfield(handles.Measurements.Image,'FileNames')
     if length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
-        % Get existing file/path names. Returns a cell array of names
+        Get existing file/path names. Returns a cell array of names
         ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
         ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
         ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
@@ -229,7 +229,8 @@ if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') && 
 end
 
 %%% Write to the handles.Measurements.Image structure
-handles.Measurements.Image.FileNamesText                   = FileNamesText;
-handles.Measurements.Image.FileNames(SetBeingAnalyzed)     = {FileNames};
-handles.Measurements.Image.PathNamesText                   = PathNamesText;
-handles.Measurements.Image.PathNames(SetBeingAnalyzed)     = {PathNames};
+
+handles = CPaddmeasurements(handles,'Image',[ModuleName,'_FileNamesText'],FileNamesText)  ;
+handles = CPaddmeasurements(handles,'Image',[ModuleName,'_FileNames'],{FileNames});
+handles = CPaddmeasurements(handles,'Image',[ModuleName,'_PathNamesText'], PathNamesText);
+handles = CPaddmeasurements(handles,'Image',[ModuleName,'_PathNames'],{PathNames} );

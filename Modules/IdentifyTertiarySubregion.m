@@ -154,10 +154,6 @@ warning off MATLAB:conversionToLogical
 FinalOutline = logical(IntensityOutlines);
 warning on MATLAB:conversionToLogical
 
-if ~isfield(handles.Measurements,SubregionObjectName)
-    handles.Measurements.(SubregionObjectName) = {};
-end
-
 [handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubregionObjectName,SecondaryObjectName,SubregionObjectImage,SecondaryObjectImage,ModuleName);
 [handles,ChildList,FinalParentList] = CPrelateobjects(handles,SubregionObjectName,PrimaryObjectName,SubregionObjectImage,PrimaryObjectImage,ModuleName);
 

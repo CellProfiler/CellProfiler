@@ -104,7 +104,7 @@ function handles = MeasureImageAreaOccupied(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -244,16 +244,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-FeatureNames = {'AreaOccupied','TotalImageArea','ThresholdUsed'};
-fieldname = ['AreaOccupied_',ObjectName,'Features'];
-handles.Measurements.Image.(fieldname) = FeatureNames;
-
-fieldname = ['AreaOccupied_',ObjectName];
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,1) = AreaOccupied;
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,2) = TotalImageArea;
-
-Threshold = mean(Threshold(:)); %% Use average threshold, namely for adaptive threshold methods
-handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed}(:,3) = Threshold;
+prefix = ['AreaOccupied_', ObjectName];
+handles = CPaddmeasurements(handles, 'Image', ...
+			    prefix, AreaOccupied);
+handles = CPaddmeasurements(handles, 'Image', ...
+			    [prefix, '_TotalImageArea'], TotalImageArea);
+% Store the average threshold, namely for adaptive threshold methods.
+handles = CPaddmeasurements(handles, 'Image', ...
+			    [prefix, '_ThresholdUsed'], mean(Threshold(:)));
 
 %%% Save the thresholded image in handles.Pipeline for later use.
 handles.Pipeline.(ObjectName) = ThresholdedOrigImage;

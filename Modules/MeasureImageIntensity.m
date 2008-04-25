@@ -147,7 +147,10 @@ end
 drawnow
 
 %%% Saves measurements to the handles structure.
-featurefieldname = ['Intensity_',ImageName,'Features'];
-fieldname = ['Intensity_',ImageName];
-handles.Measurements.Image.(featurefieldname) = {'TotalIntensity','MeanIntensity','TotalArea'};
-handles.Measurements.Image.(fieldname)(handles.Current.SetBeingAnalyzed) = {[TotalIntensity MeanIntensity TotalArea]};
+prefix = ['Intensity_', ImageName, '_'];
+handles = CPaddmeasurements(handles, 'Image', [prefix, 'TotalIntensity'], ...
+			    TotalIntensity);
+handles = CPaddmeasurements(handles, 'Image', [prefix, 'MeanIntensity'], ...
+			    MeanIntensity);
+handles = CPaddmeasurements(handles, 'Image', [prefix, 'TotalArea'], ...
+			    TotalArea);

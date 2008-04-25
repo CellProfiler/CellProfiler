@@ -23,8 +23,8 @@ function handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data)
 % set, or an old measurement being appended to in a later set.
 FirstSet = (handles.Current.SetBeingAnalyzed == 1);
 OldMeasurement = ...
-    isfield(handles.Measurement, ObjectName) && ...
-    isfield(handles.Measurement.(ObjectName), FeatureName);
+    isfield(handles.Measurements, ObjectName) && ...
+    isfield(handles.Measurements.(ObjectName), FeatureName);
 
 if (FirstSet && OldMeasurement),
     error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', int2str(handles.Current.CurrentModuleNumber), ').']);
@@ -39,7 +39,7 @@ if ischar(Data) && (~ strcmp(ObjectName, 'Image')),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add string measurement to non-image ', ObjectName, '.', FeatureName]);
 elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
-elseif strcmp(ObjectName, 'Image') && isnumeric(Data) && (size(Data) ~= [1 1]),
+elseif strcmp(ObjectName, 'Image') && isnumeric(Data) && ~isscalar(Data),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add non-scalar (', int2str(size(Data)), ') measurement to ', ObjectName, '.', FeatureName]);
 end
 

@@ -9,12 +9,11 @@ function handles = Crop(handles)
 % previous step in the pipeline on another image.
 % *************************************************************************
 %
-% Warnings about this module: The cropping module will remove rows and
-% columns that are completely blank. Also, keep in mind that cropping
-% changes the size of your images, which may have unexpected consequences.
-% For example, identifying objects in a cropped image and then trying to
-% measure their intensity in the *original* image will not work because the
-% two images are not the same size.
+% Keep in mind that cropping changes the size of your images, which may
+% have unexpected consequences. For example, identifying objects in a
+% cropped image and then trying to measure their intensity in the
+% *original* image will not work because the two images are not the same
+% size.
 %
 % Features measured:          Feature Number:
 % AreaRetainedAfterCropping |   1
@@ -27,11 +26,11 @@ function handles = Crop(handles)
 % Rectangle - self-explanatory.
 % Ellipse - self-explanatory.
 % Other...
-% To crop based on an object identified in a previous module, type in the
+% * To crop based on an object identified in a previous module, type in the
 % name of that identified object instead of Rectangle or Ellipse. Please
 % see PlateFix for information on cropping based on previously identified
 % plates.
-% To crop into an arbitrary shape you define, use the LoadSingleImage
+% * To crop into an arbitrary shape you define, use the LoadSingleImage
 % module to load a black and white image (that you have already prepared)
 % from a file. If you have created this image in an image program such as
 % Photoshop, this binary image should contain only the values 0 and 255,
@@ -43,7 +42,7 @@ function handles = Crop(handles)
 % and should contain a contiguous block of white pixels, because keep in
 % mind that the cropping module will remove rows and columns that are
 % completely blank.
-% To crop into the same shape as was used previously in the pipeline to
+% * To crop into the same shape as was used previously in the pipeline to
 % crop another image, type in CroppingPreviousCroppedImageName, where
 % PreviousCroppedImageName is the image you produced with the previous Crop
 % module.
@@ -77,6 +76,9 @@ function handles = Crop(handles)
 % be shown, you should enter 1:end for both coordinates. If you would like
 % to crop 80 pixels from each edge of the plate, you could enter 80:end-80
 % for (Top, Left) and (Bottom, Right).
+%
+% You have the option to remove rows and columns that are completely blank
+% - even if they are not at the edges of the image but internal.
 %
 % Special note on saving images: See the help for the SaveImages module.
 % Also, you can save the cropping shape that you have used (e.g. an ellipse
@@ -122,13 +124,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 CroppedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = For RECTANGLE + ELLIPSE, into which shape would you like to crop? See the help for several other options.
+%textVAR03 = Into which shape would you like to crop? See the help for several other options.
 %choiceVAR03 = Rectangle
 %choiceVAR03 = Ellipse
 Shape = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
-%textVAR04 = Would you like to crop by typing in pixel coordinates or clicking with the mouse?
+%textVAR04 = For RECTANGLE + ELLIPSE, would you like to crop by typing in pixel coordinates or clicking with the mouse?
 %choiceVAR04 = Coordinates
 %choiceVAR04 = Mouse
 CropMethod = char(handles.Settings.VariableValues{CurrentModuleNum,4});

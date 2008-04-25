@@ -65,7 +65,7 @@ function handles = MeasureObjectNeighbors(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -130,8 +130,8 @@ IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
 se = strel('disk',d,0);
 if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
     ese = strel('disk',2,0);
-    XLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,1);
-    YLocations=handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed}(:,2);
+    XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
+    YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
 end
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 NumberOfObjects=max(IncomingLabelMatrixImage(:));
@@ -235,25 +235,47 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+handles = CPaddmeasurements(handles, ObjectName, 'Neighbors_NumberOfNeighbors', NumberOfNeighbors);
 if strcmp(ExtraMeasures,'Yes')
     %%% Saves neighbor measurements to handles structure.
-    handles.Measurements.(ObjectName).NeighborsFeatures = {'NumberOfNeighbors' 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'};
-    handles.Measurements.(ObjectName).Neighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors PercentTouching' FirstObjectNumber' FirstXVector' FirstYVector' SecondObjectNumber' SecondXVector' SecondYVector' AngleBetweenTwoClosestNeighbors']};
-else
-    %%% Saves neighbor measurements to handles structure.
-    handles.Measurements.(ObjectName).NeighborsFeatures = {'NumberOfNeighbors'};
-    handles.Measurements.(ObjectName).Neighbors(handles.Current.SetBeingAnalyzed) = {[NumberOfNeighbors]};
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_PercentTouching', PercentTouching');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_FirstClosestObjectNumber', ...
+				FirstObjectNumber');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_FirstClosestXVector', ...
+				FirstXVector');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_FirstClosestYVector', ...
+				FirstYVector');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_SecondClosestObjectNumber', ...
+				SecondObjectNumber');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_SecondClosestXVector', ...
+				SecondXVector');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_SecondClosestYVector', ...
+				SecondYVector');
+    handles = CPaddmeasurements(handles, ObjectName, ...
+				'Neighbors_AngleBetweenNeighbors', ...
+				AngleBetweenTwoClosestNeighbors');
 end
 
-% This field is different from the usual measurements. To avoid problems with export modules etc we don't
-% add a IdentityOfNeighborsFeatures field. It will then be "invisible" to
-% export modules, which look for fields with 'Features' in the name.
+% This field is different from the usual measurements.  It is one of
+% the very few places in the CP codebase where we don't use
+% CPaddmeasurements.  There is special code in CPconvertsql that
+% recognizes Neighbors as a special field of Measurements and refrains
+% from exporting it.
+%
+% Example: To extract the number of neighbor for objects called Cells, use code like this:
+%   handles.Measurements.Neighbors.IdentityOfNeighborsCells{1}{3}
+% where 1 is the image number and 3 is the object number. This
+% yields a list of the objects who are neighbors with Cell object 3.
 handles.Measurements.Neighbors.IdentityOfNeighbors(handles.Current.SetBeingAnalyzed) = {IdentityOfNeighbors};
 
-%%% Example: To extract the number of neighbor for objects called Cells, use code like this:
-%%% handles.Measurements.Neighbors.IdentityOfNeighborsCells{1}{3}
-%%% where 1 is the image number and 3 is the object number. This
-%%% yields a list of the objects who are neighbors with Cell object 3.
+%%% 
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

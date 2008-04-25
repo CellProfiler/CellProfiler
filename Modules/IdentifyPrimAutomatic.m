@@ -1118,64 +1118,34 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             end
 
             if strcmp(MergeChoice,'Yes')
-                %%% Saves the NumberOfMergedObjects to the handles structure.
-                %%% See comments for the Threshold saving below
-                if ~isfield(handles.Measurements.Image,'NumberOfMergedObjectsFeatures')
-                    handles.Measurements.Image.NumberOfMergedObjectsFeatures = {};
-                    handles.Measurements.Image.NumberOfMergedObjects = {};
-                end
-                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.NumberOfMergedObjectsFeatures,ObjectName)));
-                if isempty(column)
-                    handles.Measurements.Image.NumberOfMergedObjectsFeatures(end+1) = {ObjectName};
-                    column = length(handles.Measurements.Image.NumberOfMergedObjectsFeatures);
-                end
-                handles.Measurements.Image.NumberOfMergedObjects{handles.Current.SetBeingAnalyzed}(1,column) = NumberOfMergedObjects;
-            end
+                % Save the NumberOfMergedObjects to the handles structure.
+		handles = CPaddmeasurements ...
+			  (handles, 'Image', ...
+			   ['NumberOfMergedObjects_', ObjectName], ...
+			   NumberOfMergedObjects);
+	    end
 
-            %%% Saves the Threshold value to the handles structure. Storing
-            %%% the threshold is a little more complicated than storing
-            %%% other measurements because several different modules will
-            %%% write to the handles.Measurements.Image.Threshold
-            %%% structure, and we should therefore probably append the
-            %%% current threshold to an existing structure.
-            % First, if the Threshold fields don't exist, initialize them
-            if ~isfield(handles.Measurements.Image,'ThresholdFeatures')
-                handles.Measurements.Image.ThresholdFeatures = {};
-                handles.Measurements.Image.Threshold = {};
-            end
-            % Search the ThresholdFeatures to find the column for this object type
-            column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,ObjectName)));
-            % If column is empty it means that this particular object has
-            % not been segmented before. This will typically happen for the
-            % first cycle. Append the feature name in the
-            % handles.Measurements.Image.ThresholdFeatures matrix
-            if isempty(column)
-                handles.Measurements.Image.ThresholdFeatures(end+1) = {ObjectName};
-                column = length(handles.Measurements.Image.ThresholdFeatures);
-            end
-            handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = Threshold;
+            % Save the Threshold value to the handles structure.
+	    CPaddmeasurements(handles, 'Image', ...
+			      ['Threshold_Threshold_', ObjectName], ...
+			      Threshold);
             
             %%% Also add the thresholding quality metrics to the measurements
-            if exist('WeightedVariance', 'var'),
-                FeatureName = [ObjectName '_WeightedVariance'];
-                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
-                if isempty(column),
-                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
-                    column = length(handles.Measurements.Image.ThresholdFeatures);
-                end
-                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = WeightedVariance;
-                
-                FeatureName = [ObjectName '_SumOfEntropies'];
-                column = find(~cellfun('isempty',strfind(handles.Measurements.Image.ThresholdFeatures,FeatureName)));
-                if isempty(column),
-                    handles.Measurements.Image.ThresholdFeatures(end+1) = {FeatureName};
-                    column = length(handles.Measurements.Image.ThresholdFeatures);
-                end
-                handles.Measurements.Image.Threshold{handles.Current.SetBeingAnalyzed}(1,column) = SumOfEntropies;
+            if exist('WeightedVariance', 'var')
+	      handles = CPaddmeasurements ...
+			(handles, 'Image', ...
+			 ['Threshold_WeightedVariance_', ObjectName], ...
+			 WeightedVariance);
+	      handles = CPaddmeasurements ...
+			(handles, 'Image', ...
+			 ['Threshold_SumOfEntropies_', ObjectName], ...
+			 SumOfEntropies);
             end
 
-	    handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
-	    handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
+	    handles = CPsaveObjectCount(handles, ObjectName, ...
+					FinalLabelMatrixImage);
+	    handles = CPsaveObjectLocations(handles, ObjectName, ...
+					    FinalLabelMatrixImage);
         end
         
         if strcmp(TestMode,'Yes')

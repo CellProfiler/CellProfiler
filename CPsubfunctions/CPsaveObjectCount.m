@@ -1,12 +1,23 @@
-%%% Saves the ObjectCount, i.e. the number of segmented objects.
+% CPSAVEOBJECTCOUNT Save the count of segmented objects.
+%   The function returns a new version of the handles structure, in which
+%   the number of segmented objects has been saved.
+%
+%   Example:
+%      handles = CPsaveObjectCount(handles, 'Cells', labelMatrix)
+%      creates handles.Measurements.Cells{i}.Count_Cells.
 function handles = CPsaveObjectCount(handles, objectName, labels)
-if ~isfield(handles.Measurements.Image,'ObjectCountFeatures')
-  handles.Measurements.Image.ObjectCountFeatures = {};
-  handles.Measurements.Image.ObjectCount = {};
-end
-column = find(strcmp(['ObjectCount ' objectName],handles.Measurements.Image.ObjectCountFeatures));
-if isempty(column)
-  handles.Measurements.Image.ObjectCountFeatures(end+1) = { ['ObjectCount ' objectName] };
-  column = length(handles.Measurements.Image.ObjectCountFeatures);
-end
-handles.Measurements.Image.ObjectCount{handles.Current.SetBeingAnalyzed}(1, column) = max(labels(:));
+%
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2008.
+%
+% Please see the AUTHORS file for credits.
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 5139 $
+handles = CPaddmeasurements(handles, 'Image', ...
+                            CPjoinstrings('Count', objectName), ...
+			    max(labels(:)));

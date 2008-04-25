@@ -22,7 +22,7 @@ function handles = Align(handles)
 % the amount of shift between images, which can be useful for quality
 % control purposes.
 %
-% Measured feature:           Feature Number:
+% Measured feature:                 Feature Number:
 % Xshift_Image1NamevsImage2Name  |       1 (e.g., Xshift_BluevsRed)
 % Yshift_Image1NamevsImage2Name  |       2 (e.g., Yshift_BluevsRed)
 % Xshift_Image2NamevsImage3Name  |       3 (e.g., Xshift_RedvsGreen)

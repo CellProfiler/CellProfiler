@@ -37,9 +37,11 @@ function handles = DefineGrid(handles)
 % Columns                |      6 
 % TotalHeight            |      7
 % TotalWidth             |      8
-% LeftOrRightNum         |      9
-% TopOrBottomNum         |     10
-% RowsOrColumnsNum       |     11
+% LeftOrRightNum         |      9 (left = 1, right = 0)
+% TopOrBottomNum         |     10 (top = 1, bottom = 0)
+% RowsOrColumnsNum       |     11 (rows = 1, columns = 1)
+% The last three are related to the questions the module ask you about the
+% grid.
 %
 %
 % Settings: Most are self-explanatory.
@@ -571,6 +573,11 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%% Stores information about the grid to the Pipeline handles structure, so
+%%% that downstream modules can load it. This set of values is more
+%%% extensive than what we actually want to save to the Measurements
+%%% structure - I believe the Pipeline-stored measurements are often more
+%%% than one number per image.
 GridInfo.XLocationOfLowestXSpot = XLocationOfLowestXSpot;
 GridInfo.YLocationOfLowestYSpot = YLocationOfLowestYSpot;
 GridInfo.XSpacing = XSpacing;
@@ -593,8 +600,8 @@ GridInfo.TopOrBottom = TopOrBottom;
 
 handles.Pipeline.(['Grid_' GridName]) = GridInfo;
 
-%%% We need some way to keep track of these values in
-%%% handles.Measurements.Image.GridInfo so we must convert them to numbers.
+%%% To store these values in
+%%% handles.Measurements.Image.GridInfo we must convert them to numbers.
 %%% If you retrieve these values anywhere else, you must convert them back
 %%% to strings if you want to send them to CPmakegrid(GridInfo).
 if strcmp(LeftOrRight,'Left')
@@ -612,14 +619,19 @@ if strcmp(RowsOrColumns,'Rows')
 else
     RowsOrColumnsNum = 0;
 end
-GridInfoList = [XLocationOfLowestXSpot,YLocationOfLowestYSpot,XSpacing,YSpacing,Rows,Columns,TotalHeight,TotalWidth,LeftOrRightNum,TopOrBottomNum,RowsOrColumnsNum];
 
-featfield = [GridName,'InfoFeatures'];
-measfield = [GridName,'Info'];
-GridFeatures = {'XLocationOfLowestXSpot' 'YLocationOfLowestYSpot' 'XSpacing' 'YSpacing' 'Rows' 'Columns' 'TotalHeight' 'TotalWidth' 'LeftOrRightNum' 'TopOrBottomNum' 'RowsOrColumnsNum'};
-handles.Measurements.Image.(featfield) = GridFeatures;
-handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed} = GridInfoList;
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XLocationOfLowestXSpot'], XLocationOfLowestXSpot)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YLocationOfLowestYSpot'], YLocationOfLowestYSpot)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XSpacing'], XSpacing)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YSpacing'], YSpacing)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Rows'], Rows)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Columns'], Columns)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalHeight'], TotalHeight)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalWidth'], TotalWidth)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_LeftOrRightNum'], LeftOrRightNum)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TopOrBottomNum'], TopOrBottomNum)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_RowsOrColumnsNum'], RowsOrColumnsNum)
 
-if ~strcmp(RGBname,'Do not save')
+if ~strcmpi(RGBname,'Do not save')
     handles.Pipeline.(RGBname) = ColorImage;
 end

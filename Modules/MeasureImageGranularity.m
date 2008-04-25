@@ -55,7 +55,7 @@ function handles = MeasureImageGranularity(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -104,13 +104,11 @@ B = imresize(OrigImage, SubSampleSize, 'bilinear'); %RESULTS ON iCyte IMAGES WIT
 C = backgroundremoval(B, ImageSampleSize, ElementSize);
 gs = granspectr(C, GranularSpectrumLength);
 
-if handles.Current.SetBeingAnalyzed == 1
-    for i = 1:GranularSpectrumLength
-        FeatureNames{i} = ['GS',num2str(i)]; %#ok
-    end
-    handles.Measurements.Image.([ImageName 'SpectrumFeatures'])=FeatureNames;
+for i = 1:GranularSpectrumLength
+    handles = CPaddmeasurements ...
+	      (handles, 'Image', ...
+	       sprintf('%s_SpectrumFeatures_%d', ImageName, i), gs(:,i));
 end
-handles.Measurements.Image.([ImageName 'Spectrum']){handles.Current.SetBeingAnalyzed}=gs;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

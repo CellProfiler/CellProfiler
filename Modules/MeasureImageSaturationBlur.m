@@ -42,7 +42,7 @@ function handles = MeasureImageSaturationBlur(handles)
 % FocusScore{ImageNumber} = ...
 %    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 %
-% Update [Oct-11-2007]
+% Update (2007-10-11):
 %
 % The above score is to measure a relative score given a focus setting of 
 % a certain microscope. Using this, one can calibrrate the microscope's
@@ -75,7 +75,7 @@ function handles = MeasureImageSaturationBlur(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -169,8 +169,6 @@ for ImageNumber = 1:length(NameImageToCheck);
     PercentSaturation{ImageNumber} = PercentPixelsSaturated;  %#ok Ignore MLint
     PercentMaximal{ImageNumber} = 100*NumberPixelsMaximal/TotalPixels;
 
-    Measurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber}];
-    Featurefieldname = ['SaturationBlur_',NameImageToCheck{ImageNumber},'Features'];
     %%% Checks the focus of the images, if desired.
     if ~strcmpi(BlurCheck,'N')
         %         Old method of scoring focus, not justified
@@ -223,19 +221,22 @@ for ImageNumber = 1:length(NameImageToCheck);
         normvarLocalNormVar2{ImageNumber} = var(LocalNormVar(:))/median(LocalNormVar(:));
         LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
         
-        Featurenames = {'FocusScore','LocalFocusScore','WindowSize_LocalFocusScore','PercentSaturated','PercentMaximal'};
-        handles.Measurements.Image.(Featurefieldname) = Featurenames;
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = FocusScore{ImageNumber};
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = LocalFocusScore{ImageNumber};
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,3) = WindowSize;
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,4) = PercentSaturation{ImageNumber};
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,5) = PercentMaximal{ImageNumber};
-    else
-        Featurenames = {'PercentSaturated', 'PercentMaximal'};
-        handles.Measurements.Image.(Featurefieldname) = Featurenames;
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,1) = PercentSaturation{ImageNumber};
-        handles.Measurements.Image.(Measurefieldname){handles.Current.SetBeingAnalyzed}(:,2) = PercentMaximal{ImageNumber};
+	handles = CPaddmeasurements(handles, 'Image', ...
+				    'SaturationBlur_FocusScore', ...
+				    FocusScore{ImageNumber});
+	handles = CPaddmeasurements(handles, 'Image', ...
+				    'SaturationBlur_LocalFocusScore', ...
+				    LocalFocusScore{ImageNumber});
+	handles = CPaddmeasurements(handles, 'Image', ...
+				    'SaturationBlur_LocalFocusScoreWindowSize', ...
+				    WindowSize);
     end
+    handles = CPaddmeasurements(handles, 'Image', ...
+				'SaturationBlur_PercentSaturated', ...
+				PercentSaturation{ImageNumber});
+    handles = CPaddmeasurements(handles, 'Image', ...
+				'SaturationBlur_PercentMaximal', ...
+				PercentMaximal{ImageNumber});
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -1,5 +1,11 @@
-function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
+function handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data)
+% Add measurements of a feature to the handles.Measurements structure.
+% Location will be "handles.Measurements.ObjectName.FeatureName".
+% ObjectName can be "Image".  
+%
+% Data can be multiple doubles, or a single string (only if ObjectName is "Image").
 
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -12,35 +18,31 @@ function handles = CPaddmeasurements(handles,Object,Measure,Feature,Data)
 %
 % $Revision$
 
-%%% It's a little unclear under what circumstances this subfunction should
-%%% be used, as opposed to naming substructures with the exact name of the
-%%% feature (like handles.Measurements.Nuclei.AreaShape =
-%%% {'area','perimeter'} etc). Someone should resolve this someday.
-FeaturesField = [Measure,'Features'];
 
-if isfield(handles.Measurements.(Object),FeaturesField)
-    OldColumn = strmatch(Feature,handles.Measurements.(Object).(FeaturesField),'exact');
-    if handles.Current.SetBeingAnalyzed == 1 || isempty(OldColumn)
-        if length(OldColumn) > 1
-            error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');
-        end
-        NewColumn = length(handles.Measurements.(Object).(FeaturesField)) + 1;
-        handles.Measurements.(Object).(FeaturesField)(NewColumn) = {Feature};
-        
-        if size(handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed},2) ~= NewColumn - 1
-            CPerrordlg('Measurements may be overwriting!  Make sure that only one column of measurements is written at a time by the current module')
-        else
-            handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed}(:,NewColumn) = Data;
-        end
-    else
-        if length(OldColumn) > 1
-            error('Image processing was canceled because you are attempting to create the same measurements, please remove redundant module.');
-        elseif isempty(OldColumn)
-            error('This should not happen. Please look at code for CPaddmeasurements. OldColumn is empty and it is not the first set being analyzed.');
-        end
-        handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed}(:,OldColumn) = Data;
-    end
-else
-    handles.Measurements.(Object).(FeaturesField) = {Feature};
-    handles.Measurements.(Object).(Measure){handles.Current.SetBeingAnalyzed} = Data;
+% Check that either this is a new measurement being added in the first
+% set, or an old measurement being appended to in a later set.
+FirstSet = (handles.Current.SetBeingAnalyzed == 1);
+OldMeasurement = ...
+    isfield(handles.Measurement, ObjectName) && ...
+    isfield(handles.Measurement.(ObjectName), FeatureName);
+
+if (FirstSet && OldMeasurement),
+    error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', int2str(handles.Current.CurrentModuleNumber), ').']);
 end
+
+if ((~FirstSet) && (~OldMeasurement)),
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add new measurement ', ObjectName, '.',  FeatureName, ' that already exists in set ', int2str(handles.Current.SetBeingAnalyzed)]);
+end
+
+%%% Verify we can add this type of Measurement to this type of object
+if ischar(Data) && (~ strcmp(ObjectName, 'Image')),
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add string measurement to non-image ', ObjectName, '.', FeatureName]);
+elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data),
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
+elseif strcmp(ObjectName, 'Image') && isnumeric(Data) && (size(Data) ~= [1 1]),
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add non-scalar (', int2str(size(Data)), ') measurement to ', ObjectName, '.', FeatureName]);
+end
+
+
+%%% Checks have passed, add the data.
+handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed} = Data;

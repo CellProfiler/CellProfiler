@@ -18,8 +18,17 @@ function handles = Align(handles)
 % alignment is necessary for primary objects to be helpful to identify
 % secondary objects. The images are cropped appropriately according to
 % this alignment, so the final images will be smaller than the
-% originals by a few pixels if alignment is necessary.
-% 
+% originals by a few pixels if alignment is necessary. The module stores
+% the amount of shift between images, which can be useful for quality
+% control purposes.
+%
+% Measured feature:           Feature Number:
+% Xshift_Image1NamevsImage2Name  |       1 (e.g., Xshift_BluevsRed)
+% Yshift_Image1NamevsImage2Name  |       2 (e.g., Yshift_BluevsRed)
+% Xshift_Image2NamevsImage3Name  |       3 (e.g., Xshift_RedvsGreen)
+% Yshift_Image2NamevsImage3Name  |       4 (e.g., Yshift_RedvsGreen)
+% The latter two are measured only if three images are aligned.
+%
 % Settings:
 %
 % After entering the names of the images to be aligned as well as the 
@@ -120,6 +129,17 @@ MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,12
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%%% Checks whether the user has chosen "Do not use" in improper places.
+if strcmpi(Image1Name,'Do not use') || strcmpi(Image2Name,'Do not use') || strcmpi(AlignedImage1Name,'Do not use') || strcmpi(AlignedImage2Name,'Do not use')
+    error(['Image processing was canceled in the ', ModuleName, ' module because you must choose two images to align and name the resulting aligned images - one of the first two images you specified is currently called "Do not use".']);
+end
+    
+if strcmpi(Image3Name,'Do not use') ~= strcmpi(AlignedImage3Name,'Do not use') 
+   %%% If there is a mismatch between the input/output names for image 3:
+   %%% that is, if one is called Do not use but the other is not.
+   error(['Image processing was canceled in the ', ModuleName, ' module because you have specified a name for the third image but also marked it "Do not use".']);
+end
 
 %%% Reads the images.
 %Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'MustBeGray','CheckScale');
@@ -371,37 +391,30 @@ if strcmp(AdjustImage,'Yes')
     %%% by subsequent modules.
     handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
     handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
-    if strcmpi(Image3Name,'Do not use') ~= 1
-        handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
-    end
     if ~strcmpi(MoreImage1Name,'Do not use')
         handles.Pipeline.(MoreAlignedImage1Name) = MoreAlignedImage1;
     end
     if ~strcmpi(MoreImage2Name,'Do not use')
         handles.Pipeline.(MoreAlignedImage2Name) = MoreAlignedImage2;
-    end    
+    end
+    if ~strcmpi(Image3Name,'Do not use')
+        handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
+    end
 end
 
-%%% Stores the shift in alignment as a measurement for quality control
-%%% purposes.
-
-%%% If three images were aligned:
+%%% Stores the shift in alignment as a measurement. We store the image
+%%% names here, because otherwise other Align modules in the pipeline for
+%%% other images would overwrite each other. It *is* still the case two
+%%% Align modules will overwrite each other's measurements if the user
+%%% gives the aligned images all the same names, but we can't catch
+%%% everything.
+handles = CPaddmeasurements(handles, 'Image', ['Align_Xshift_',AlignedImage1Name,'vs',AlignedImage2Name], sx);
+handles = CPaddmeasurements(handles, 'Image', ['Align_Yshift_',AlignedImage1Name,'vs',AlignedImage2Name], sy);
+%%% If three images were aligned, there are two more measurements to store:
 if ~strcmpi(Image3Name,'Do not use')
-    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name,'Features'];
-    handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign' 'ImageXAlignFirstTwoImages' 'ImageYAlignFirstTwoImages'};
-    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'_',AlignedImage3Name];
-    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy sx2 sy2];
-else
-    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name,'Features'];
-    handles.Measurements.Image.(fieldname) = {'ImageXAlign' 'ImageYAlign'};
-    fieldname = ['Align_',AlignedImage1Name,'_',AlignedImage2Name];
-    handles.Measurements.Image.(fieldname){handles.Current.SetBeingAnalyzed} = [sx sy];    
+    handles = CPaddmeasurements(handles, 'Image', ['Align_Xshift_',AlignedImage2Name,'vs',AlignedImage3Name], sx2);
+    handles = CPaddmeasurements(handles, 'Image', ['Align_Yshift_',AlignedImage2Name,'vs',AlignedImage3Name], sy2);
 end
-
-% fieldname = ['ImageXAlign', AlignedImage1Name,AlignedImage2Name];
-% handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sx};
-% fieldname = ['ImageYAlign', AlignedImage1Name,AlignedImage2Name];
-% handles.Measurements.(fieldname)(handles.Current.SetBeingAnalyzed) = {sy};
 
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%

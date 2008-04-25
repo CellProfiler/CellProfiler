@@ -18,8 +18,6 @@ function [handles,Threshold,varargout] = CPthreshold(handles,Threshold,pObject,M
 
 if nargin == 9
     ObjectVar = [];
-else
-    ObjectVar = [ObjectVar,'_'];
 end
 
 %%% If we are running the Histogram data tool we do not want to limit the
@@ -368,9 +366,11 @@ end
 Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
-handles = CPaddmeasurements(handles, 'Image', ...
-			    ['Threshold_OrigThreshold_', ObjectVar, '_', ...
-		    ImageName], mean(mean(Threshold)));
+if ~isempty(ObjectVar),
+    handles = CPaddmeasurements(handles, 'Image', ...
+        ['Threshold_OrigThreshold_', ObjectVar, '_', ...
+            ImageName], mean(mean(Threshold)));
+end
 
 if (nargout >= 3),
     if ~ exist('BinaryCropMask', 'var')

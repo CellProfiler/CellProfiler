@@ -22,7 +22,7 @@ function handles = SplitIntoContiguousObjects(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision:$
+% $Revision: 42 $
 
 %%% VARIABLES
 drawnow
@@ -100,13 +100,9 @@ drawnow
 fieldname = [prefix, RelabeledObjectName];
 handles.Pipeline.(fieldname) = Relabeled;
 
-if ~isfield(handles.Measurements,RelabeledObjectName)
-    handles.Measurements.(RelabeledObjectName) = {};
-end
-
 handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
 handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
 
-handles.Measurements.(RelabeledObjectName).ContiguousObjectLabelsFeatures = { 'ObjectID' };
-handles.Measurements.(RelabeledObjectName).ContiguousObjectLabels(handles.Current.SetBeingAnalyzed) = { Mapping };
-
+% Save the object ID of each object.
+handles = CPaddmeasurements(handles, RelabeledObjectName, ...
+			    'ObjectID', Mapping);

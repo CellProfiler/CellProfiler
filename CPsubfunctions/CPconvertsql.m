@@ -27,81 +27,35 @@ end
 
 basename = [OutfilePrefix,int2str(FirstSet),'_',int2str(LastSet)];
 
-%%% SubMeasurementFieldnames usually includes 'Image' and objects like 'Nuclei'
-SubMeasurementFieldnames = fieldnames(handles.Measurements)';
+%%% Extract the object types to write (e.g., Image, Nuclei, ...).  The transpose allows looping below.
+ObjectNames = fieldnames(handles.Measurements)';
 
-for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
-    %%%SubFieldname is the first fieldname in SubMeasurementFieldnames.
-    SubFieldname = RemainingSubMeasurementFieldnames{1};
-    if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldname),'SubObjectFlag') || strcmp(SubFieldname,'Neighbors')
-        continue
+for ObjectCell = ObjectNames,
+    % why matlab, why?
+    ObjectName = ObjectCell{1};
+
+    %%% Some objects are not exported: experiments, subobjects, neighbors
+    if any(strcmp(ObjectName, {'Experiment', 'Neighbors'})) || isfield(handles.Measurements.(ObjectName), 'SubObjectFlag'),
+        continue;
     end
-    substruct = handles.Measurements.(SubFieldname);
-    substructfields = fieldnames(substruct)';
-    for ssfc = substructfields
-        ssf = ssfc{1};
-
-        if strfind(ssf, 'Features')
-            continue
+    
+    %%% Find the features for this object
+    Features = fieldnames(handles.Measurements.(ObjectName))';
+    for FeatureCell = Features,
+        FeatureName = FeatureCell{1};
+        
+        %%% Certain features are not exported
+        if any(strcmp({'Description', 'ModuleError', 'TimeElapsed'}, FeatureName)),
+            continue;
         end
 
-        if strfind(ssf, 'PathnameOrig')
-            continue
-        end
-
-        if strfind(ssf, 'Text')
-            if (strfind(ssf, 'Text') + 3) == length(ssf)
-                continue
-            end
-        end
-
-        if strfind(ssf, 'Description')
-            continue
-        end
-
-        if strfind(ssf, 'ModuleError')
-            continue
-        end
-
-        if strfind(ssf, 'TimeElapsed')
-            continue
-        end
-
-        if isfield(substruct, [ssf 'Features']),
-            names = handles.Measurements.(SubFieldname).([ssf 'Features']);
-        elseif isfield(substruct, [ssf 'Text']),
-            names = handles.Measurements.(SubFieldname).([ssf 'Text']);
-        elseif isfield(substruct, [ssf 'Description'])
-            if length(handles.Measurements.(SubFieldname).(ssf)) ~= handles.Current.NumberOfImageSets
-                continue;
-            else
-                names = handles.Measurements.(SubFieldname).([ssf 'Description']);
-            end
+        if strcmp(ObjectName, 'Image')
+            per_image_names{end+1} = cleanup(CPjoinstrings('Image', FeatureName));
         else
-            names = {ssf};
+            per_object_names{end+1} = cleanup(CPjoinstrings(ObjectName, FeatureName));
         end
-
-        vals = handles.Measurements.(SubFieldname).(ssf);
-
-        if ~ischar(vals{1})
-            if size(vals{1},2) ~= length(names) % make change here vals{1},2
-                if ~isempty(vals{1})
-                    error([SubFieldname ' ' ssf ' does not have right number of names ']);
-                end
-            end
-        end
-
-        if strcmp(SubFieldname, 'Image')
-            for n = 1:length(names)
-                per_image_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]); %#ok
-            end
-        else
-            for n = 1:length(names)
-                per_object_names{end+1} = cleanup([SubFieldname '_' ssf '_' names{n}]); %#ok
-            end
-        end
-    end %end of substrucfield
-end %end of remainfield
+    end %end of loop over feature names
+end %end of loop over object names
 
 %%% We need to find the maximum width of the paths and image
 %%% filenames.  Unfortunately, this function can be called with an
@@ -128,8 +82,9 @@ for fld=fieldnames(handles.Pipeline)',
     end
 end
 
-if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
 
+%%% Write the SQL table description and data loader.
+if (handles.Current.SetBeingAnalyzed == 1) || handles.Pipeline.DataToolExporting,
     if strcmp(SQLchoice,'MySQL')
 
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
@@ -170,7 +125,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!');
+                errordlg('STOP!  Batchsize is NaN.');
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -308,7 +263,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!');
+                errordlg('STOP!  BatchSize is NaN');
             end
             fprintf(fimageloader, 'INFILE %s1_1_image.CSV\n', OutfilePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
@@ -338,7 +293,7 @@ if handles.Current.SetBeingAnalyzed == 1 || ~strcmp(handles.Settings.ModuleNames
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!');
+                errordlg('STOP!  Batchsize is NaN');
             end
             fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
@@ -365,6 +320,8 @@ end
 fimage = fopen(fullfile(OutDir, [basename '_image.CSV']), 'W');
 fobject = fopen(fullfile(OutDir, [basename '_object.CSV']), 'W');
 
+
+
 perobjectvals = [];
 
 for img_idx = FirstSet:LastSet
@@ -372,86 +329,97 @@ for img_idx = FirstSet:LastSet
     fprintf(fimage, '%d', img_idx);
     objectbaserow = size(perobjectvals, 1);
     objectbasecol = 2;
-    objectbaserow_mean=size(perobjectvals_mean,1);
     numobj = 0;
     maxnumobj=0;
-    for RemainingSubMeasurementFieldnames = SubMeasurementFieldnames,
-        SubFieldname = RemainingSubMeasurementFieldnames{1};
-        if strcmp(SubFieldname,'Experiment') || isfield(handles.Measurements.(SubFieldname),'SubObjectFlag') || strcmp(SubFieldname,'Neighbors')
-            continue
+
+    feature_idx = 1;
+
+    for ObjectCell = ObjectNames,
+        % why matlab, why?
+        ObjectName = ObjectCell{1};
+
+        %%% Some objects are not exported: experiments, subobjects, neighbors
+        if any(strcmp(ObjectName, {'Experiment', 'Neighbors'})) || isfield(handles.Measurements.(ObjectName), 'SubObjectFlag'),
+            continue;
         end
-        substruct = handles.Measurements.(SubFieldname);
-        substructfields = fieldnames(substruct)';
-        for ssfc = substructfields,
-            ssf = ssfc{1};
 
-            if strfind(ssf, 'Features'),
+        %%% Find the features for this object
+        Features = fieldnames(handles.Measurements.(ObjectName))';
+        for FeatureCell = Features,
+            FeatureName = FeatureCell{1};
+            
+            %%% Certain features are not exported
+            if any(strcmp({'Description', 'ModuleError', 'TimeElapsed'}, FeatureName)),
                 continue;
             end
 
-            if strfind(ssf, 'PathnameOrig'),
-                continue;
+            %%% Old code checked if data for img_idx existed, but this one always should (entry should be [] if no objects).
+            try
+                vals = handles.Measurements.(ObjectName).(FeatureName){img_idx};
+            catch
+                error(['Measurements missing for image #' int2str(img_idx) ' and feature handles.Measurements.' ObjectName '.' FeatureName '.  (Max size is ' int2str(length(handles.Measurements.(ObjectName).(FeatureName))) '.)']);
             end
 
-            if strfind(ssf,'Text'),
-                if (strfind(ssf,'Text') + 3) == length(ssf),
-                    continue;
-                end
-            end
-
-            if strfind(ssf,'Description'),
-                continue;
-            end
-
-            if strfind(ssf, 'ModuleError'),
-                continue;
-            end
-
-            if strfind(ssf, 'TimeElapsed'),
-                continue;
-            end
-
-            if size(handles.Measurements.(SubFieldname).(ssf),2) >= img_idx
-                vals = handles.Measurements.(SubFieldname).(ssf){img_idx};
-            else
-                vals = [];
-            end
-
-            if strcmp(SubFieldname, 'Image'),
+            %%% write image data, gather object data for later writing
+            if strcmp(ObjectName, 'Image'),
                 if ischar(vals)
                     fprintf(fimage, ',%s', vals);
-                    %vals{} is cellarray, need loop through to get all elements value
-                elseif iscell(vals)
-                    if ischar(vals{1}) %is char
-                        for cellindex = 1:size(vals,2),
-                            fprintf(fimage, ',"%s"', vals{cellindex});
-                        end
-                    else %vals{cellindex} is not char
-                        fprintf(fimage, ',%g', cell2mat(vals));
+                elseif isnumeric(vals)
+                    if (~ isscalar(vals)),
+                        error(['Attempt to write non-scalar numeric value in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);
                     end
-                else %vals is number
                     fprintf(fimage, ',%g', vals);
+                    %%% Test that counts are integers
+                    if strcmp(FeatureName(max(findstr(FeatureName, 'Count')):end), 'Count') && (floor(vals) ~= vals),
+                        warning(['Attempt to write non-integer "Count" feature in per_image data, feature handles.Measurements.', ObjectName, '.', FeatureName ', value ', num2str(vals)]);
+                        CPwarndlg(['Attempt to write non-integer "Count" feature in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);
+                    end
+                else
+                    'foo'
+                    CPwarndlg(['Non-string, non-numeric data, feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
+                    % error(['Non-string, non-numeric data, feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
                 end
             else
-                if ~isa(vals,'numeric')
-                    error(['Non-numeric data not currently supported in per-object SQL data in field:' SubFieldname '.' ssf]);
+                %%% Sanity check
+                if ~ strcmp(per_object_names{feature_idx}, cleanup(CPjoinstrings(ObjectName, FeatureName))),
+                    error(['Mismatched feature names #', int2str(feature_idx), ' ', per_object_names{feature_idx}, '!=', cleanup(CPjoinstrings(ObjectName, FeatureName))])
                 end
-                numcols = size(vals,2);
-                numobj = size(vals,1);
-                if maxnumobj <numobj  % different measurement have different object count
+                feature_idx = feature_idx + 1;
+
+                if ~isa(vals,'numeric')
+                    error(['Non-numeric data not currently supported in per-object SQL data feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
+                end
+
+                if ~ isvector(vals)
+                    error(['This should not happen.  CellProfiler Coding Error.  Attempting to export multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
+                end
+
+                numobj = length(vals);
+                % put in nx1 orientation
+                vals = vals(:);
+
+                %%% There might be different numbers of different types of objects, unfortunately.  These will be filled with zeros, later.
+                if maxnumobj <numobj
                     maxnumobj=numobj;
                 end
-                perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1):(objectbasecol+numcols)) = vals;
-                perobjectvals_mean((objectbaserow_mean+1):(objectbaserow_mean+numobj), (objectbasecol-2+1):(objectbasecol-2+numcols)) = vals;
-                objectbasecol = objectbasecol + numcols;
+
+                %%% Add the values into the output 
+                perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1)) = vals;
+                perobjectvals_mean(1:numobj, (objectbasecol-2+1)) = vals;
+
+                %%% shift right
+                objectbasecol = objectbasecol + 1;
             end
-        end
+        end %%% loop over features
+
+        %%% put in image and object numbers
         if numobj > 0
             perobjectvals((objectbaserow+1):end, 1) = img_idx;
             perobjectvals((objectbaserow+1):end, 2) = 1:maxnumobj;
         end
 
-    end
+    end %%% loop over object types
+
     %print mean, stdev for all measurements per image
     formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
     if size(perobjectvals_mean,1)==1

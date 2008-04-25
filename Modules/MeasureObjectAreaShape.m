@@ -237,129 +237,34 @@ PixelSize = str2double(handles.Settings.PixelSize);
 for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
     if strcmp(ObjectName,'Do not use')
-        continue
+	continue
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
-
+    
     %%% Retrieves the label matrix image that contains the segmented
     %%% objects which will be measured with this module.
     LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%
     drawnow
-
-    %%% Initialize
-    Basic = [];
-    BasicFeatures    = {'Area',...
-        'Eccentricity',...
-        'Solidity',...
-        'Extent',...
-        'EulerNumber',...
-        'Perimeter',...
-        'FormFactor',...
-        'MajorAxisLength',...
-        'MinorAxisLength'...
-        'Orientation'};
-
-    if strcmp(ZernikeChoice,'Yes')
-        % Get index for Zernike functions
-        Zernike = [];
-        Zernikeindex = [];
-        ZernikeFeatures = {};
-        for n = 0:9
-            for m = 0:n
-                if rem(n-m,2) == 0
-                    Zernikeindex = [Zernikeindex;n m];
-                    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike_%d_%d',n,m)});
-                end
-            end
-        end
-        lut = construct_lookuptable_Zernike(Zernikeindex);
-    end
 
     NumObjects = max(LabelMatrixImage(:));
     if  NumObjects > 0
 
-        %%% Get the basic shape features
-        props = regionprops(LabelMatrixImage,'Area','Eccentricity','Solidity','Extent','EulerNumber',...
-            'MajorAxisLength','MinorAxisLength','Perimeter','Orientation');
-
-        if strcmp(ZernikeChoice,'Yes')
-            Zernike = zeros(NumObjects,size(Zernikeindex,1));
-
-            for Object = 1:NumObjects
-                %%% Calculate Zernike shape features
-                [xcord,ycord] = find(LabelMatrixImage==Object);
-                %%% It's possible for objects not to have any pixels,
-                %%% particularly tertiary objects (such as cytoplasm from
-                %%% cells the exact same size as their nucleus).
-                if isempty(xcord),
-                    % no need to create an empty line of data, as that's
-                    % already done above.
-                    continue;
-                end
-                diameter = max((max(xcord)-min(xcord)+1),(max(ycord)-min(ycord)+1));
-
-                if rem(diameter,2)== 0, diameter = diameter + 1;end   % An odd number facilitates implementation
-
-                % Calculate the Zernike basis functions
-                [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
-                r = sqrt(x.^2+y.^2);
-                phi = atan(y./(x+eps));
-                % It is necessary to normalize the bases by area.
-                normalization = sum(r(:) <= 1);
-                % this happens for diameter == 1
-                if (normalization == 0.0),
-                    normalization = 1.0;
-                end
- 
-                Zf = zeros(diameter,diameter,size(Zernikeindex,1));
-
-                for k = 1:size(Zernikeindex,1)
-                    n = Zernikeindex(k,1);
-                    m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
-
-                    % Optimized
-                    s_new = zeros(size(x));
-                    exp_term = exp(sqrt(-1)*m*phi);
-                    lv_index = [0 : (n-m)/2];
-                    for i = 1: length(lv_index)                        
-                        lv = lv_index(i);
-                        s_new = s_new + lut(k,i) * r.^(n-2*lv).*exp_term; 
-                    end
-                    s = s_new;
-                    
-                    s(r>1) = 0;
-                    Zf(:,:,k) = s / normalization;
-                end
-
-                % Get image patch, with offsets to center relative to the Zernike bases
-                BWpatch = zeros(diameter, diameter);
-                height = max(xcord) - min(xcord) + 1;
-                width = max(ycord) - min(ycord) + 1;
-                row_offset = floor((diameter - height) / 2) + 1;
-                col_offset = floor((diameter - width) / 2) + 1;
-                BWpatch(row_offset:(row_offset+height-1), col_offset:(col_offset+width-1)) = (LabelMatrixImage(min(xcord):max(xcord), min(ycord):max(ycord)) == Object);
-                
-                % Apply Zernike functions
-                try
-                    Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
-                catch
-                    Zernike(Object,:) = 0;
-                    display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
-                end
-            end
-        end
-        % FormFactor
-        FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);       % Add 1 to perimeter to avoid divide by zero
-
-        % Save basic shape features
+	%%% Get the basic shape features
+	BasicFeatures = {'Area', 'Eccentricity', 'Solidity', 'Extent', ...
+			 'EulerNumber', 'Perimeter', ...
+			 'MajorAxisLength', 'MinorAxisLength', 'Orientation'};
+	props = regionprops(LabelMatrixImage, BasicFeatures);
+	BasicFeatures(end + 1) = {'FormFactor'};
+	% Add 1 to perimeter to avoid divide by zero
+	FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);
         Basic = [cat(1,props.Area)*PixelSize^2,...
             cat(1,props.Eccentricity),...
             cat(1,props.Solidity),...
@@ -370,24 +275,29 @@ for i = 1:length(ObjectNameList)
             cat(1,props.MajorAxisLength)*PixelSize,...
             cat(1,props.MinorAxisLength)*PixelSize,...
             cat(1,props.Orientation)];
-    else
-        Basic = zeros(1,10);
-        if strcmp(ZernikeChoice,'Yes')
-            Zernike = zeros(1,30);
-        end
+	
+	% Save basic shape features.
+	for i=1:length(BasicFeatures)
+	    handles = CPaddmeasurements(handles, ObjectName, ...
+					['AreaShape_', BasicFeatures{i}], ...
+					Basic(:, i));
+	end
+	
+	if strcmp(ZernikeChoice,'Yes')
+	    % Get the Zernike features
+	    [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+
+	    % Save Zernike measurements
+	    for i=1:length(ZernikeFeatures)
+		handles = CPaddmeasurements(handles, ObjectName, ...
+					    ZernikeFeatures{i}, Zernike(:,i));
+	    end
+	end
     end
 
-    if strcmp(ZernikeChoice,'Yes')
-        %%% Save measurements
-	handles = CPaddmeasurements(handles, ObjectName, 'AreaShape' XXX
-        handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures,ZernikeFeatures);
-        handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = [Basic Zernike];
-    else
-        handles.Measurements.(ObjectName).AreaShapeFeatures = cat(2,BasicFeatures);
-        handles.Measurements.(ObjectName).AreaShape{handles.Current.SetBeingAnalyzed} = Basic;
-    end
-
+    %%%
     %%% Display measurements
+    %%%
     FontSize = handles.Preferences.FontSize;
     if any(findobj == ThisModuleFigureNumber)
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -461,7 +371,96 @@ for i = 1:length(ObjectNameList)
     end
 end
 
-% For optimized Zernike (subfunctions below)
+%%%
+%%% Subfunction for calculating Zernike
+%%%
+
+function [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage)
+NumObjects = max(LabelMatrixImage(:));
+% Get index for Zernike functions
+Zernikeindex = [];
+ZernikeFeatures = {};
+for n = 0:9
+    for m = 0:n
+	if rem(n-m,2) == 0
+	    Zernikeindex = [Zernikeindex;n m];
+	    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike_%d_%d',n,m)});
+	end
+    end
+end
+lut = construct_lookuptable_Zernike(Zernikeindex);
+
+Zernike = zeros(NumObjects,size(Zernikeindex,1));
+
+for Object = 1:NumObjects
+    %%% Calculate Zernike shape features
+    [xcord,ycord] = find(LabelMatrixImage==Object);
+    %%% It's possible for objects not to have any pixels,
+    %%% particularly tertiary objects (such as cytoplasm from
+    %%% cells the exact same size as their nucleus).
+    if isempty(xcord),
+	% no need to create an empty line of data, as that's
+	% already done above.
+	continue;
+    end
+    diameter = max((max(xcord)-min(xcord)+1),(max(ycord)-min(ycord)+1));
+
+    if rem(diameter,2)== 0
+	% An odd number facilitates implementation
+	diameter = diameter + 1;
+    end
+
+    % Calculate the Zernike basis functions
+    [x,y] = meshgrid(linspace(-1,1,diameter),linspace(-1,1,diameter));
+    r = sqrt(x.^2+y.^2);
+    phi = atan(y./(x+eps));
+    % It is necessary to normalize the bases by area.
+    normalization = sum(r(:) <= 1);
+    % this happens for diameter == 1
+    if (normalization == 0.0),
+	normalization = 1.0;
+    end
+    
+    Zf = zeros(diameter,diameter,size(Zernikeindex,1));
+
+    for k = 1:size(Zernikeindex,1)
+	n = Zernikeindex(k,1);
+	m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
+
+	% Optimized
+	s_new = zeros(size(x));
+	exp_term = exp(sqrt(-1)*m*phi);
+	lv_index = [0 : (n-m)/2];
+	for i = 1: length(lv_index)                        
+	    lv = lv_index(i);
+	    s_new = s_new + lut(k,i) * r.^(n-2*lv).*exp_term; 
+	end
+	s = s_new;
+	
+	s(r>1) = 0;
+	Zf(:,:,k) = s / normalization;
+    end
+
+    % Get image patch, with offsets to center relative to the Zernike bases
+    BWpatch = zeros(diameter, diameter);
+    height = max(xcord) - min(xcord) + 1;
+    width = max(ycord) - min(ycord) + 1;
+    row_offset = floor((diameter - height) / 2) + 1;
+    col_offset = floor((diameter - width) / 2) + 1;
+    BWpatch(row_offset:(row_offset+height-1), col_offset:(col_offset+width-1)) = (LabelMatrixImage(min(xcord):max(xcord), min(ycord):max(ycord)) == Object);
+    
+    % Apply Zernike functions
+    try
+	Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
+    catch
+	Zernike(Object,:) = 0;
+	display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
+    end
+end
+
+%%%
+%%% Subfunctions for optimized Zernike
+%%%
 
 %function previousely_calculated_value = lookuptable(lv,m,n) 
 %previousely_calculated_value = (-1)^lv*fak_table(n-lv)/( fak_table(lv) * fak_table((n+m)/2-lv) * fak_table((n-m)/2-lv));

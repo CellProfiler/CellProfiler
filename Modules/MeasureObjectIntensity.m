@@ -270,8 +270,11 @@ for i = 1:length(ObjectNameList)
         Basic(1,1:11) = 0;
     end
     %%% Save measurements
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				['Intensity_',ImageName], Basic);
+    for i=1:size(Basic,2)
+	feature_name = ['Intensity_',ImageName,'_',BasicFeatures{i}];
+	handles = CPaddmeasurements(handles, ObjectName, ...
+				    feature_name, Basic(:,i));
+    end
     
     %%% Report measurements
     if any(findobj == ThisModuleFigureNumber);

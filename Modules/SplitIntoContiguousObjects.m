@@ -42,10 +42,18 @@ RelabeledObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 % Repeat for each of the three images by calling a subfunction that
 % does the actual work.
-handles = doItForObjectName(handles, 'Segmented', ObjectName, RelabeledObjectName);
+handles = doItForObjectName(handles, 'Segmented', ObjectName, ...
+			    RelabeledObjectName);
 if isfield(handles.Pipeline, ['SmallRemovedSegmented', ObjectName])
-  handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, RelabeledObjectName);
+  handles = doItForObjectName(handles, 'SmallRemovedSegmented', ObjectName, ...
+			      RelabeledObjectName);
 end
+
+
+
+%%%
+%%% SUBFUNCTION THAT DOES THE ACTUAL WORK
+%%%
 
 function handles = doItForObjectName(handles, prefix, ObjectName, RelabeledObjectName, DistanceThreshold, GrayscaleImageName)
 drawnow
@@ -53,9 +61,9 @@ drawnow
 
 Orig = CPretrieveimage(handles, [prefix, ObjectName], ModuleName);
 
-%%%
-%%% IMAGE ANALYSIS
-%%%
+%
+% IMAGE ANALYSIS
+%
 drawnow
 
 Relabeled = bwlabel(Orig > 0);
@@ -69,9 +77,9 @@ for i=1:max(Relabeled(:))
   Mapping(i,1) = Orig(props(i).PixelIdxList(1));
 end
 
-%%%
-%%% DISPLAY RESULTS
-%%%
+%
+% DISPLAY RESULTS
+%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -91,18 +99,20 @@ if any(findobj == ThisModuleFigureNumber)
     title(RelabeledObjectName);
 end
 
-%%%
-%%% SAVE DATA TO HANDLES STRUCTURE
-%%%
+%
+% SAVE DATA TO HANDLES STRUCTURE
+%
 drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = [prefix, RelabeledObjectName];
 handles.Pipeline.(fieldname) = Relabeled;
 
-handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
-handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
+if strcmp(prefix, 'Segmented')
+  handles = CPsaveObjectCount(handles, RelabeledObjectName, Relabeled);
+  handles = CPsaveObjectLocations(handles, RelabeledObjectName, Relabeled);
 
-% Save the object ID of each object.
-handles = CPaddmeasurements(handles, RelabeledObjectName, ...
-			    'ObjectID', Mapping);
+  % Save the object ID of each object.
+  handles = CPaddmeasurements(handles, RelabeledObjectName, ...
+			      'ObjectID', Mapping);
+end

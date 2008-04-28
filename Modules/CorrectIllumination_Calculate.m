@@ -390,6 +390,13 @@ elseif strcmp(EachOrAll,'Each')
     if strcmp(IntensityChoice,'Regular')
         RawImage = OrigImage;
     elseif strcmp(IntensityChoice,'Background')
+
+        %% TODO - DL 2008.02.07
+%         %% Apply CropMask
+%         if exist(handles.Pipeline.(['CropMask',ImageName]))
+%             CropMask = handles.Pipeline.(['CropMask',OrigImage]);
+%         end
+        
         [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
         %%% Calculates a coarse estimate of the background
         %%% illumination by determining the minimum of each block

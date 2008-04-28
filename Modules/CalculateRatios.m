@@ -213,14 +213,22 @@ if ~isvarname(RatioName)
     RatioName = ['Ratio_ModuleNumber',CurrentModule];
     CPwarndlg(['The ratio name you entered was invalid, and has been replaced with ',RatioName,'.']);
 end
+
+FeatureName{1} = CPfeaturename(handles,ObjectName{1},Measure{1},FeatureNumber{1});
+FeatureName{2} = CPfeaturename(handles,ObjectName{2},Measure{2},FeatureNumber{2});
+
+RatioName = CPjoinstrings(ObjectName{1},Measure{1},FeatureName{1},'DividedBy',ObjectName{2},Measure{2},FeatureName{2});
 if strcmp(ObjectName{1},'Image')
     if length(FinalMeasurements)==1
-        handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',RatioName,FinalMeasurements);
+%         handles = CPaddmeasurements(handles,ObjectName{1},'SingleRatio',RatioName,FinalMeasurements);
+        handles = CPaddmeasurements(handles,'SingleRatio',RatioName,FinalMeasurements);
     else
-        handles = CPaddmeasurements(handles,ObjectName{1},'MultipleRatio',RatioName,FinalMeasurements);
+%         handles = CPaddmeasurements(handles,ObjectName{1},'MultipleRatio',RatioName,FinalMeasurements);
+        handles = CPaddmeasurements(handles,'MultipleRatio',RatioName,FinalMeasurements);
     end
 else
-    handles = CPaddmeasurements(handles,ObjectName{1},'Ratio',RatioName,FinalMeasurements);
+%     handles = CPaddmeasurements(handles,ObjectName{1},'Ratio',RatioName,FinalMeasurements);
+    handles = CPaddmeasurements(handles,'Ratio',RatioName,FinalMeasurements);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

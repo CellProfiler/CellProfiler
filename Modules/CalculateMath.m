@@ -1,4 +1,4 @@
-function handles = CalculateMath_DL(handles)
+function handles = CalculateMath(handles)
 
 % TEST
 % Help for the Calculate Math module:
@@ -121,6 +121,10 @@ drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
+%% Get FeatureNames from FeatureNumbers
+FirstFeatureName = CPfeaturename(handles,FirstCategory,FirstFeatureNumber);
+SecondFeatureName = CPfeaturename(handles,SecondObjectName,SecondCategory,SecondFeatureNumber);
+
 if strcmp(FirstCategory,'Intensity') || strcmp(FirstCategory,'Texture')
 %     FirstCategory = [FirstCategory, '_', FirstImage];
     FirstCategory = CPjoinstrings(FirstCategory,FirstImage);
@@ -141,8 +145,8 @@ if length(FirstMeasurements) ~= length(SecondMeasurements)
     error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',FirstObjectName,' and ',SecondObjectName,' do not have the same object count.']);
 end
 
-FirstFeatureName = CPfeaturename(handles,FirstObjectName,FirstCategory,FirstFeatureNumber);
-SecondFeatureName = CPfeaturename(handles,SecondObjectName,SecondCategory,SecondFeatureNumber);
+% FirstFeatureName = CPfeaturename(handles,FirstObjectName,FirstCategory,FirstFeatureNumber);
+% SecondFeatureName = CPfeaturename(handles,SecondObjectName,SecondCategory,SecondFeatureNumber);
 NewFieldName = CPjoinstrings(FirstObjectName,FirstCategory,FirstFeatureName,Operation,SecondObjectName,SecondCategory,SecondFeatureName);
 
 if( strcmpi(Operation, 'Multiply') )

@@ -218,15 +218,53 @@ function HelpDeveloperInfo
 % the entire image (e.g. Image TotalIntensity), or which could be an
 % aggregate measurement based on individual object measurements (e.g. Image
 % MeanArea).  Use the appropriate substructure to ensure that your data
-% will be extracted properly. The relationships between objects can also be
-% defined. For example, a nucleus might be associated with a particular
+% will be extracted properly. 
+%   The relationships between objects can also be defined. 
+% For example, a nucleus might be associated with a particular
 % cytoplasm and therefore each nucleus has a cytoplasm's number in the
 % nucleus' measurement field which links the two. Or, for multiple speckles
 % within a nucleus, each speckle will have a nucleus' number indicating
-% which nucleus the speckle belongs to (see the Relate Objects module or
+% which nucleus the speckle belongs to (see the Relate module or
 % Identify Secondary or Tertiary modules). Image measurements include a few
 % standard fields: ModuleErrorFeatures, ModuleError, TimeElapsed,
 % FileNamesText, FileNames, PathNamesText, PathNames.
+%   As of 2008_04_25, when a major Measurements overhaul was instituted, 
+% all modules that add measurements must use CPaddmeasurements.  
+% The usage is:
+%   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data)
+% 
+%   where
+%     ObjectName is a single string denoting the object, or simply "Image"
+%       for image measurements
+%     FeatureName is a single string, with category and parameters underscored
+%       Note: use CPjoinstrings to construct underscored parameter names.  
+%        E.g., CPjoinstrings('texture',42,'foo') => 'texture_42_foo'
+%     Data is either:
+%       (a) Nx1 vector
+%       (b) [], i.e. the empty matrix, for no objects
+%       (c) A single string (in the future, not compatible with objects(?))
+%
+% This will create a Measurements handles with this structure 
+%   handles.Measurements.ObjectName.Category_FeatureName(_Parameter)
+% 
+%   where
+%       ObjectName is same as the CPaddmeasurements argument
+%       Category = Module name, or useful category, 
+%                   or nothing (e.g. if feature name = ObjectCount)
+%                   E.g. 'AreaShape'
+%           Note: Do not include the word "Measure" when naming.
+%               This variable should be available from a settings drop down menu.
+%       FeatureName = particular feature within a module, e.g. 'Area'
+%           Construct from an edit box or hard code
+%               (someday, CP will look at upstream modules and make dropdowns)
+%       Parameter (optional) is used for modules that measure the
+%           same objects in different ways (e.g. the Intensity module can 
+%           measure intensities for Nuclei in two different images, blue and 
+%           green).  Primarily used for Channel or Texture scale
+%           Construct from an edit box or hard code
+%               (someday, CP will look at upstream modules and make dropdowns)
+%
+%%%%% TO BE REMOVED %%%%
 %    The other measurement types have two entries: e.g.
 % handles.Measurements.Nuclei.AreaShapeFeatures and
 % handles.Measurements.Nuclei.AreaShape. The substructure ending in
@@ -241,14 +279,15 @@ function HelpDeveloperInfo
 % handles.Measurements.Nuclei.Intensity_Blue
 % handles.Measurements.Nuclei.Intensity_GreenFeatures
 % handles.Measurements.Nuclei.Intensity_Green
+%%%%% TO BE REMOVED %%%%
+%
 %   Be sure to consider whether measurements you are storing will overwrite
 % each other if more than one module is placed in the pipeline. You can
 % differentiate measurements by including something specific in the name
 % (e.g. Intensity modules include the image name (e.g. Blue or Green) in
 % the substructure name). There are also several examples of modules where
 % new measures are appended to the end of an existing substructure (i.e.
-% forming a new column). See Calculate Ratios, which calls the
-% CPaddmeasurements subfunction to do this.
+% forming a new column). See Calculate Ratios.
 %
 % Why are file names stored in several places in the handles structure?
 % The Load Images module creates both handles.Pipeline.FilenameIMAGENAME

@@ -271,9 +271,9 @@ for i = 1:length(ObjectNameList)
     end
     %%% Save measurements
     for j=1:size(Basic,2)
-        feature_name = ['Intensity_',ImageName,'_',BasicFeatures{i}];
+        feature_name = ['Intensity_',ImageName,'_',BasicFeatures{j}];
         handles = CPaddmeasurements(handles, ObjectName, ...
-            feature_name, Basic(:,i));
+            feature_name, Basic(:,j));
     end
     
     %%% Report measurements

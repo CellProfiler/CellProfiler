@@ -279,8 +279,8 @@ for i = 1:length(ObjectNameList)
 	% Save basic shape features.
 	for j=1:length(BasicFeatures)
 	    handles = CPaddmeasurements(handles, ObjectName, ...
-					['AreaShape_', BasicFeatures{i}], ...
-					Basic(:, i));
+					['AreaShape_', BasicFeatures{j}], ...
+					Basic(:, j));
 	end
 	
 	if strcmp(ZernikeChoice,'Yes')
@@ -290,7 +290,7 @@ for i = 1:length(ObjectNameList)
 	    % Save Zernike measurements
 	    for j=1:length(ZernikeFeatures)
 		handles = CPaddmeasurements(handles, ObjectName, ...
-					    ZernikeFeatures{i}, Zernike(:,i));
+					    ZernikeFeatures{j}, Zernike(:,j));
 	    end
 	end
     end

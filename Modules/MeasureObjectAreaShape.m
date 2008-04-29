@@ -277,7 +277,7 @@ for i = 1:length(ObjectNameList)
             cat(1,props.Orientation)];
 	
 	% Save basic shape features.
-	for i=1:length(BasicFeatures)
+	for j=1:length(BasicFeatures)
 	    handles = CPaddmeasurements(handles, ObjectName, ...
 					['AreaShape_', BasicFeatures{i}], ...
 					Basic(:, i));
@@ -288,7 +288,7 @@ for i = 1:length(ObjectNameList)
 	    [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
 
 	    % Save Zernike measurements
-	    for i=1:length(ZernikeFeatures)
+	    for j=1:length(ZernikeFeatures)
 		handles = CPaddmeasurements(handles, ObjectName, ...
 					    ZernikeFeatures{i}, Zernike(:,i));
 	    end

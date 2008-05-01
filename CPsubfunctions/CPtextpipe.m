@@ -72,7 +72,11 @@ if ~ischar(RawPathname) || ~ischar(RawFilename) || ~isstruct(ExportInfo)
 else
     fprintf(fid,'Processing info for file: %s\n',fullfile(RawPathname, RawFilename));
     fprintf(fid,'Processed (start time): %s\n\n',handles.Current.TimeStarted);
-    NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
+    %    NbrOfProcessedSets = length(handles.Measurements.Image.FileNames);
+    AllImageFields = fieldnames(handles.Measurements.Image);
+    ImageFilenameFields = AllImageFields(strmatch('FileName', AllImageFields));
+    FirstFilename = ImageFilenameFields{1};
+    NbrOfProcessedSets = length(handles.Measurements.Image.(FirstFilename))
     fprintf(fid,'Number of processed image sets: %d\n',NbrOfProcessedSets);
 end
 

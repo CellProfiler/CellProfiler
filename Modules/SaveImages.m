@@ -67,7 +67,7 @@ function handles = SaveImages(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2007.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -340,45 +340,10 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
         handles.Pipeline.(['Pathname',ImageName]) = PathName;
         handles.Pipeline.(['Filename',ImageName])(SetBeingAnalyzed) = {FileName};
-
-        %%% Sets the initial values, which may get added to if we need to
-        %%% append in the next step.
-        FileNames = FileName;
-        PathNames = PathName;
-        FileNamesText = ['Filename ', ImageName];
-        PathNamesText = ['Path ', ImageName];
-
-        %%% Stores file and path name data in handles.Measurements. Since
-        %%% there may be several load/save modules in the pipeline which
-        %%% all write to the handles.Measurements.Image.FileName field, we
-        %%% store filenames in an "appending" style. Here we check if any
-        %%% of the modules above the current module in the pipeline has
-        %%% written to handles.Measurements.Image.Filenames. Then we should
-        %%% append the current filenames and path names to the already
-        %%% written ones. If this is the first module to put anything into
-        %%% the handles.Measurements.Image structure (though I think this
-        %%% is not really possible for SaveImages), then this section is
-        %%% skipped and the FileNamesText fields are created with their
-        %%% initial entry coming from this module.
-        if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-                isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
-            % Get existing file/path names. Returns a cell array of names
-            ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
-            ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
-            ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
-            ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
-            % Append current file names to existing file names
-            FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
-            FileNames     = cat(2,ExistingFileNames,FileNames);
-            PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
-            PathNames     = cat(2,ExistingPathNames,PathNames);
-        end
-
-        %%% Write to the handles.Measurements.Image structure
-        handles.Measurements.Image.FileNamesText                   = FileNamesText;
-        handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
-        handles.Measurements.Image.PathNamesText                   = PathNamesText;
-        handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
+	handles = CPaddmeasurements(handles, 'Image', ...
+				    ['FileName_', ImageName], FileName);
+	handles = CPaddmeasurements(handles, 'Image', ...
+				    ['PathName_', ImageName], PathName);
     end
 
     FileAndPathName = fullfile(PathName, FileName);

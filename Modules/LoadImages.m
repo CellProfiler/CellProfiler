@@ -358,9 +358,8 @@ if SetBeingAnalyzed == 1
             Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
         end
     end
-    SpecifiedPathname = Pathname;
-    if ~exist(SpecifiedPathname,'dir')
-        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    if ~exist(Pathname,'dir')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',Pathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
     end
 
     if strcmp(LoadChoice,'Order')
@@ -368,7 +367,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .tif, .jpg, .DIB).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Image');
+            FileNames = CPretrievemediafilenames(Pathname,'',AnalyzeSubDir,'Regular','Image');
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
@@ -391,14 +390,14 @@ if SetBeingAnalyzed == 1
                 fieldname = ['FileList', ImageName{n}];
                 handles.Pipeline.(fieldname) = FileList;
                 fieldname = ['Pathname', ImageName{n}];
-                handles.Pipeline.(fieldname) = SpecifiedPathname;
+                handles.Pipeline.(fieldname) = Pathname;
             end
             clear FileNames
 
         else
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .avi or .stk).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(SpecifiedPathname,'',AnalyzeSubDir,'Regular','Movie');
+            FileNames = CPretrievemediafilenames(Pathname,'',AnalyzeSubDir,'Regular','Movie');
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
@@ -421,8 +420,8 @@ if SetBeingAnalyzed == 1
                 for MovieFileNumber = 1:length(FileList)
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
                     if strcmpi(FileFormat,'avi movies') == 1
-                        try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                        try MovieAttributes = aviinfo(fullfile(Pathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
                         NumFrames = MovieAttributes.NumFrames;
                         for FrameNumber = 1:NumFrames
@@ -434,18 +433,18 @@ if SetBeingAnalyzed == 1
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         try
                             %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
-                            [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
+                            [S, NumFrames] = tiffread(fullfile(Pathname, CurrentMovieFileName),1);
                             for FrameNumber = 1:NumFrames
                                 %%% Puts the file name into the FrameByFrameFileList in the first row.
                                 FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                                 %%% Puts the frame number into the FrameByFrameFileList in the second row.
                                 FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                             end
-                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a stk file.'])
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as a stk file.'])
                         end
                     elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
-                        try MultiTifAttributes = imfinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
+                        try MultiTifAttributes = imfinfo(fullfile(Pathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
                         end
                         NumFrames = length(MultiTifAttributes);
                         for FrameNumber = 1:NumFrames
@@ -466,7 +465,7 @@ if SetBeingAnalyzed == 1
                 fieldname = ['FileFormat', ImageName{n}];
                 handles.Pipeline.(fieldname) = FileFormat;
                 fieldname = ['Pathname', ImageName{n}];
-                handles.Pipeline.(fieldname) = SpecifiedPathname;
+                handles.Pipeline.(fieldname) = Pathname;
                 NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
             end
             clear FileNames
@@ -511,7 +510,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             %%% Extract the file names
             for n = 1:length(ImageName)
-                FileList = CPretrievemediafilenames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
+                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
@@ -520,7 +519,7 @@ if SetBeingAnalyzed == 1
                 fieldname = ['FileList', ImageName{n}];
                 handles.Pipeline.(fieldname) = FileList;
                 fieldname = ['Pathname', ImageName{n}];
-                handles.Pipeline.(fieldname) = SpecifiedPathname;
+                handles.Pipeline.(fieldname) = Pathname;
 
                 NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
@@ -529,7 +528,7 @@ if SetBeingAnalyzed == 1
         else
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)
-                FileList = CPretrievemediafilenames(SpecifiedPathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
+                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
@@ -538,8 +537,8 @@ if SetBeingAnalyzed == 1
                 for MovieFileNumber = 1:length(FileList)
                     CurrentMovieFileName = char(FileList(MovieFileNumber));
                     if strcmpi(FileFormat,'avi movies') == 1
-                        try MovieAttributes = aviinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
+                        try MovieAttributes = aviinfo(fullfile(Pathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as an uncompressed avi file.'])
                         end
                         NumFrames = MovieAttributes.NumFrames;
                         for FrameNumber = 1:NumFrames
@@ -550,7 +549,7 @@ if SetBeingAnalyzed == 1
                         end
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
-                        [S, NumFrames] = tiffread(fullfile(SpecifiedPathname, CurrentMovieFileName),1);
+                        [S, NumFrames] = tiffread(fullfile(Pathname, CurrentMovieFileName),1);
                         for FrameNumber = 1:NumFrames
                             %%% Puts the file name into the FrameByFrameFileList in the first row.
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
@@ -558,8 +557,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
                         end
                     elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
-                        try MultiTifAttributes = imfinfo(fullfile(SpecifiedPathname, CurrentMovieFileName));
-                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(SpecifiedPathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
+                        try MultiTifAttributes = imfinfo(fullfile(Pathname, CurrentMovieFileName));
+                        catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as a tif, tiff, or flex file.']);
                         end
                         NumFrames = length(MultiTifAttributes);
                         for FrameNumber = 1:NumFrames
@@ -579,9 +578,7 @@ if SetBeingAnalyzed == 1
                     fieldname = ['FileFormat', ImageName{n}];
                     handles.Pipeline.(fieldname) = FileFormat;                    
                     fieldname = ['Pathname', ImageName{n}];
-                    handles.Pipeline.(fieldname) = SpecifiedPathname;
-                    %% for reference in saved files
-                    handles.Measurements.Image.(fieldname) = SpecifiedPathname;
+                    handles.Pipeline.(fieldname) = Pathname;
                     NumberOfFiles{n} = num2str(length(FrameByFrameFileList{n})); %#ok We want to ignore MLint error checking for this line.
                 end
                 clear FileList % Prevents confusion when loading this value later, for each movie set.
@@ -590,7 +587,7 @@ if SetBeingAnalyzed == 1
         %%% Determines which slots are empty.  None should be zero, because there is
         %%% an error check for that when looping through n = 1:5.
         for g = 1: length(NumberOfFiles)
-            LogicalSlotsToBeDeleted(g) =  isempty(NumberOfFiles{g});
+            LogicalSlotsToBeDeleted(g) = isempty(NumberOfFiles{g});
         end
         %%% Removes the empty slots from both the Number of Files array and the
         %%% Image Name array.
@@ -753,47 +750,22 @@ end
 %%% SAVE DATA TO HANDLES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
+handles = saveFileNamesToHandles(handles, ImageName, Pathname, FileNames);
 
-%%% First, fix feature names and the pathname
-PathNames = cell(1,length(ImageName));
-FileNamesText = cell(1,length(ImageName));
-PathNamesText = cell(1,length(ImageName));
-for n = 1:length(ImageName)
-    PathNames{n} = Pathname;
-    FileNamesText{n} = [ImageName{n}];
-    PathNamesText{n} = [ImageName{n}];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION FOR SAVING DATA TO HANDLES %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function handles = saveFileNamesToHandles(handles, ImageName, Pathname, ...
+					  FileNames)
+for i = 1:length(ImageName)
+    handles = CPaddmeasurements(handles, 'Image', ...
+				['FileName_', ImageName{i}], ...
+				FileNames{i});  
+    handles = CPaddmeasurements(handles, 'Image', ...
+				['PathName_', ImageName{i}], ...
+				Pathname);
 end
-
-%%% Since there may be several load/save modules in the pipeline which all
-%%% write to the handles.Measurements.Image.FileName field, we store
-%%% filenames in an "appending" style. Here we check if any of the modules
-%%% above the current module in the pipeline has written to
-%%% handles.Measurements.Image.Filenames. Then we should append the current
-%%% filenames and path names to the already written ones. If this is the
-%%% first module to put anything into the handles.Measurements.Image
-%%% structure, then this section is skipped and the FileNamesText fields
-%%% are created with their initial entry coming from this module.
-
-if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
-    % Get existing file/path names. Returns a cell array of names
-    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
-    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
-    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
-    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
-    % Append current file names to existing file names
-    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
-    FileNames     = cat(2,ExistingFileNames,FileNames);
-    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
-    PathNames     = cat(2,ExistingPathNames,PathNames);
-end
-
-%%% Write to the handles.Measurements.Image structure
-handles.Measurements.Image.FileNamesText                   = FileNamesText;
-handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
-handles.Measurements.Image.PathNamesText                   = PathNamesText;
-handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%

@@ -3903,7 +3903,8 @@ else
                                 %%% Got to here with an error, so break outer loop.
                                 break;
                             else
-                                errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
+                                errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName);
+                                CanMoveToNextModule = true;
                             end
                         end % Goes with try/catch.
 

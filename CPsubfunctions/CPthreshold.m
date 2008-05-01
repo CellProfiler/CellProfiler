@@ -367,7 +367,7 @@ Threshold = ThresholdCorrection*Threshold;
 Threshold = max(Threshold,MinimumThreshold);
 Threshold = min(Threshold,MaximumThreshold);
 if ~isempty(ObjectVar),
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Threshold','OrigThreshold', ObjectVar, ImageName), mean(mean(Threshold)));
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Threshold','OrigThreshold', ObjectVar), mean(mean(Threshold)));
 end
 
 if (nargout >= 3),

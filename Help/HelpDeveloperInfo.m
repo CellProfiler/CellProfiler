@@ -245,7 +245,7 @@ function HelpDeveloperInfo
 %     -FeatureName is a single string, with category and parameters
 %       (optional) underscored, like this:
 %
-%                   Category_SpecificFeatureName_Parameter  
+%                   Category_SpecificFeatureName_Parameters
 %
 %           * Category = Module name (e.g., AreaShape), or useful category, 
 %               or nothing if there is no appropriate category (e.g., if 

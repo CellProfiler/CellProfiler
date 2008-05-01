@@ -778,7 +778,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             % Save the Threshold value to the handles structure.
 	    handles = CPaddmeasurements ...
 		      (handles, 'Image', ...
-		       ['Threshold_', SecondaryObjectName], Threshold);
+		       ['Threshold_FinalThreshold_', SecondaryObjectName], Threshold);
 
             %%% Also add the thresholding quality metrics to the measurements
             if exist('WeightedVariance', 'var')

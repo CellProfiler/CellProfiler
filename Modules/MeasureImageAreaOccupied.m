@@ -127,7 +127,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %textVAR02 = What do you want to call the staining measured by this module?
 %defaultVAR02 = CellStain
 %infotypeVAR02 = imagegroup indep
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+StainName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold to determine what will work well.
 %choiceVAR03 = Otsu Global
@@ -235,7 +235,7 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     else
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
     end
-    displaytext = {['Area occupied by ',ObjectName,':      ',num2str(AreaOccupied,'%2.1E')]};
+    displaytext = {['Area occupied by ',StainName,':      ',num2str(AreaOccupied,'%2.1E')]};
     set(displaytexthandle,'string',displaytext)
 end
 
@@ -244,14 +244,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-prefix = ['AreaOccupied_', ObjectName];
 handles = CPaddmeasurements(handles, 'Image', ...
-			    prefix, AreaOccupied);
+			    CPjoinstrings('AreaOccupied','AreaOccupied'), AreaOccupied);
 handles = CPaddmeasurements(handles, 'Image', ...
-			    [prefix, '_TotalImageArea'], TotalImageArea);
+			    CPjoinstrings('AreaOccupied','TotalImageArea'), TotalImageArea);
 % Store the average threshold, namely for adaptive threshold methods.
 handles = CPaddmeasurements(handles, 'Image', ...
-			    [prefix, '_ThresholdUsed'], mean(Threshold(:)));
+			    CPjoinstrings('AreaOccupied','ThresholdUsed'), mean(Threshold(:)));
 
 %%% Save the thresholded image in handles.Pipeline for later use.
-handles.Pipeline.(ObjectName) = ThresholdedOrigImage;
+handles.Pipeline.(StainName) = ThresholdedOrigImage;

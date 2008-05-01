@@ -107,7 +107,7 @@ gs = granspectr(C, GranularSpectrumLength);
 for i = 1:GranularSpectrumLength
     handles = CPaddmeasurements ...
 	      (handles, 'Image', ...
-	       sprintf('%s_SpectrumFeatures_%d', ImageName, i), gs(:,i));
+	       CPjoinstrings('GranularSpectrum', i, ImageName), gs(:,i));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

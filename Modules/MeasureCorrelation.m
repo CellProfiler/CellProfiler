@@ -170,7 +170,7 @@ drawnow
 CorrelationFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
-        CorrelationFeatures{end+1} = [ImageName{i},'_',ImageName{j}];
+        CorrelationFeatures{end+1} = ['Correlation_',ImageName{i},'_',ImageName{j}];
     end
 end
 
@@ -259,13 +259,13 @@ for ObjectNameNbr = 1:ObjectNameCount
     %%% Store the correlation and slope measurements
     for f=1:size(Correlation,2)
 	handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
-				    ['Correlation_', CorrelationFeatures{f}], ...
+				    CPjoinstrings('Correlation', CorrelationFeatures{f}), ...
 				    Correlation(:, f));
     end
     if strcmp(ObjectName{ObjectNameNbr},'Image')
 	for f = 1:size(Slope,2)
 	    handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
-					['Correlation_', SlopeFeatures{f}], ...
+					CPjoinstrings('Correlation', SlopeFeatures{f}), ...
 					Slope(:, f));
 	end
     end

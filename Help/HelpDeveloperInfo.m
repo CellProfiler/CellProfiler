@@ -272,9 +272,16 @@ function HelpDeveloperInfo
 %        E.g., CPjoinstrings('texture',42,'foo') => 'texture_42_foo'
 %
 %     -Data is either:
-%       (a) Nx1 vector
-%       (b) [], i.e. the empty matrix, for no objects
-%       (c) A single string (in the future, not compatible with objects(?))
+%       (a) Nx1 vector of numerical data, one number per object where there
+%       are N objects.
+%       (b) [], i.e., the empty matrix if the module did not measure any
+%       objects in this instance. YES, it is very important to pass the
+%       empty matrix through CPaddmeasurements even if no objects were
+%       found or measured for a particular image.
+%       (c) A single string (only makes sense when the ObjectName =
+%       "Image")
+%       (d) In the future, we might add the capability to store Nx1
+%       strings, i.e., one string for every object.
 %
 %   Be sure to consider whether measurements you are storing will overwrite
 % each other if more than one of the same module is placed in the pipeline.

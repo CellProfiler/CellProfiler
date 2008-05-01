@@ -13,148 +13,161 @@ function CPwritemeasurements(handles,ExportInfo,RawPathname)
 
 %%% Get the handle to the waitbar and update the text in the waitbar
 waitbarhandle = CPwaitbar(0,'');
-CPwaitbar(0,waitbarhandle,'Export Status');
 
-%%% Step 1: Create a cell array containing matrices with all measurements for each object type
-%%% concatenated.
-SuperMeasurements = cell(length(ExportInfo.ObjectNames),1);
-SuperFeatureNames = cell(length(ExportInfo.ObjectNames),1);
+%%% Do we need to compute means/medians/stddevs?
+if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataParameter, {'mean', 'std', 'median'})),
+    CompositeValues = {};
+    CompositeNames = {};
+    CPwaitbar(0,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']);
+    
+    % find the number of measurements we need to compute (for the waitbar).
+    FieldCount = 0;
+    AllFields = fieldnames(handles.Measurements);
+    for i = 1:length(AllFields)
+        ObjectName = AllFields{i};
+        if any(strcmp(ObjectName, {'Image', 'Experiment', 'Neighbors'})), 
+            continue;
+        end
+        FieldCount = FieldCount + length(fieldnames(handles.Measurements.(ObjectName)));
+    end
+
+    % find the function to reduce values with
+    if ExportInfo.IgnoreNaN == 1
+        switch ExportInfo.DataParameter,
+            case 'mean'
+                reducer = @CPnanmean;
+            case 'std'
+                reducer = @CPnanstd;
+            case 'median'
+                reducer = @CPnanmedian;
+        end
+    else
+        switch ExportInfo.DataParameter,
+            case 'mean'
+                reducer = @mean;
+            case 'std'
+                reducer = @std;
+            case 'median'
+                reducer = @median;
+        end
+    end
+    
+    % Reduce per-object to per-image
+    FieldsCompleted = 0;
+    for i = 1:length(AllFields)
+        ObjectName = AllFields{i};
+        if any(strcmp(ObjectName, {'Image', 'Experiment', 'Neighbors'})), 
+            continue;
+        end
+
+        fields = fieldnames(handles.Measurements.(ObjectName));
+        for k = 1:length(fields)
+            fieldname = fields{k};
+
+            CPwaitbar(FieldsCompleted / FieldCount,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']);
+            FieldsCompleted = FieldsCompleted + 1;
+
+            % Name this measurement
+            CompositeNames{FieldsCompleted} = ['(', ExportInfo.DataParameter, ', ', ObjectName, ', ', fieldname, ')'];
+
+            Values = handles.Measurements.(ObjectName).(fieldname);
+            % loop over images
+            for v = 1:length(Values),
+                CompositeValues{v, FieldsCompleted} = reducer(Values{v});
+            end
+        end
+    end
+end
+
+CPwaitbar(0,waitbarhandle,'Export Status - writing data');
+
 for Object = 1:length(ExportInfo.ObjectNames)
     ObjectName = ExportInfo.ObjectNames{Object};
 
+    %%% This should warn
     if strcmp(ObjectName,'Neighbors')
         continue
     end
+
     if ~isfield(handles.Measurements,ObjectName)
         CPwarndlg(['The ',ObjectName,' results cannot be exported because those measurements were not made.'],'Warning')
         continue
     end
-    
-    %%% Get fields in handles.Measurements
-    fields = fieldnames(handles.Measurements.(ObjectName));
 
-    %%% Organize numerical features and text in a format suitable for exportation. This
-    %%% piece of code creates a super measurement matrix, where
-    %%% all features for all objects are stored. There will be one such
-    %%% matrix for each image set, and each column in such a matrix
-    %%% corresponds to one feature, e.g. Area or IntegratedIntensity.
-    MeasurementNames = {};
-    Measurements = {};
-    TextNames = {};
-    Text = {};
-
-    for k = 1:length(fields)
-
-        % Suffix 'Features' indicates that we have found a cell array with measurements, i.e.,
-        % where each cell contains a matrix of size
-        % [(Nbr of objects in image) x (Number of features of this feature type)]
-        if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
-            % Get the associated cell array of measurements
-            try
-                CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-8));
-            catch
-                error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
-
-            end
-            if strcmp(fields{k}(1:end-8),'ModuleError')
-                for j = 2:handles.Current.SetBeingAnalyzed
-                    CellArray{j} = CellArray{1};
-                end
-            end
-            if isempty(Measurements)
-                if isempty(CellArray)
-                    Measurements = NaN;
-                else
-                    Measurements = CellArray;
-                end
-            else
-                % Loop over the image sets
-                for j = 1:length(CellArray)
-                    if isempty(CellArray{j})
-                        Measurements{j} = cat(2,Measurements{j},NaN);
-                    else
-                        Measurements{j} = cat(2,Measurements{j},CellArray{j});
-                    end
-                end
-            end
-
-            % Construct informative feature names
-            tmp = handles.Measurements.(ObjectName).(fields{k});     % Get the feature names
-            for j = 1:length(tmp)
-                tmp{j} = [tmp{j} ' (', ObjectName,', ',fields{k}(1:end-8),')'];
-            end
-            MeasurementNames = cat(2,MeasurementNames,tmp);
-
-            % Suffix 'Text' indicates that we have found a cell array with text information, i.e.,
-            % where each cell contains a cell array of strings
-        elseif length(fields{k}) > 4 & strcmp(fields{k}(end-3:end),'Text')
-
-            % Get the associated cell array of measurements
-            try
-                CellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-4));
-            catch
-                error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated text field.']);
-            end
-
-            %%% If this is the first measurement structure encounterered we have to initialize instead of concatenate
-            if length(Text) == 0
-                Text = CellArray;
-                %%% else concatenate
-            else
-                % Loop over the image sets
-                for j = 1:length(CellArray)
-                    Text{j} = cat(2,Text{j},CellArray{j});
-                end
-            end
-            TextNames = cat(2,TextNames,handles.Measurements.(ObjectName).(fields{k}));
-        elseif length(fields{k}) > 11 & strcmp(fields{k}(end-10:end),'Description')
-            % Get the associated cell array of measurements
-            try
-                TempCellArray = handles.Measurements.(ObjectName).(fields{k}(1:end-11));
-            catch
-                error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated text field.']);
-            end
-            if length(TempCellArray) == handles.Current.NumberOfImageSets
-                for j = 1:length(TempCellArray)
-                    CellArray{j} = TempCellArray(j);
-                end
-                %%% If this is the first measurement structure encounterered we have to initialize instead of concatenate
-                if length(Text) == 0
-                    Text = CellArray;
-                    %%% else concatenate
-                else
-                    % Loop over the image sets
-                    for j = 1:length(CellArray)
-                        if length(Text) >= j
-                            Text{j} = cat(2,Text{j},CellArray{j});
-                        end
-                    end
-                end
-                TextNames = cat(2,TextNames,handles.Measurements.(ObjectName).(fields{k}));
-            end
-        end
-    end % end loop over the fields in the current object type
-
-    %%% Create the super measurement structure
-    SuperMeasurements{Object} = Measurements;
-    SuperMeasurementNames{Object} = MeasurementNames;
-    SuperText{Object} = Text;
-    SuperTextNames{Object} = TextNames;
-end % end loop over object types, i.e., Cells, Nuclei, Cytoplasm, Image
-
-%%% Step 2: Write the measurements to file
-for Object = 1:length(ExportInfo.ObjectNames)
-
-    ObjectName = ExportInfo.ObjectNames{Object};
-
-    if strcmp(ObjectName,'Neighbors')
-        continue
-    end
-    if ~isfield(handles.Measurements,ObjectName)
-        continue
-    end
     %%% Update waitbar
     CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+
+    %%% Find number of objects for each image
+    if strcmp(ObjectName, 'Image'),
+        fields = fieldnames(handles.Measurements.Image);
+        NumObjects = ones(length(handles.Measurements.Image.(fields{1})), 1);
+    else
+        fields = fieldnames(handles.Measurements.(ObjectName));
+        for k = 1:length(fields)
+            fieldname = fields{k};
+            FieldValues = handles.Measurements.(ObjectName).(fieldname);
+            for l = 1:length(FieldValues),
+                Lengths(l) = length(FieldValues{l});
+            end
+            if k == 1,
+                NumObjects = Lengths;
+            else
+                NumObjects = max(Lengths, NumObjects);
+            end
+        end
+    end
+
+    %%% Find offset for data of each image
+    ImageOffsets = cumsum(NumObjects) - NumObjects + 1;
+
+    %%% Gather Data
+    Values = {};
+    ValueNames = {};
+    fields = fieldnames(handles.Measurements.(ObjectName));
+    
+    %%% Bring all fields to full size
+    for k = 1:length(fields)
+        fieldname = fields{k};
+        FieldValues = handles.Measurements.(ObjectName).(fieldname);
+
+        %%% Give a meaningful name
+        ValueNames{k} = fieldname;
+
+        %%% Some measurements might not exist for all objects, so we need to bring them to full size
+        for l = 1:length(FieldValues),
+            if ischar(FieldValues{l}),
+                Values{ImageOffsets(l), k} = FieldValues{l};
+            else
+                numvals = length(FieldValues{l});
+                destination = ImageOffsets(l):(ImageOffsets(l)+numvals-1);
+                for d = 1:numvals,
+                    Values{destination(d), k} = FieldValues{l}(d);
+                end
+            end
+        end
+    end
+
+    %%% If Image data, and computing composite data, join the two for export
+    if strcmp(ObjectName, 'Image') && any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataParameter, {'mean', 'std', 'median'})),
+        Values = [Values CompositeValues];
+        ValueNames = [ValueNames CompositeNames];
+    end
+
+
+    %%% Add in image # indicators
+    Prefix = {};
+    AllImageFields = fieldnames(handles.Measurements.Image);
+    ImageFilenameFields = AllImageFields(strmatch('FileName', AllImageFields));
+    FirstFilename = ImageFilenameFields{1};
+    imageidx = 1;
+    for k = ImageOffsets,
+        Prefix{k, 1} = sprintf('Set #%d, %s',imageidx,handles.Measurements.Image.(FirstFilename){imageidx});
+        imageidx = imageidx + 1;
+    end
+    if size(Prefix, 1) < size(Values, 1),
+        Prefix{size(Values, 1), 1} = '';
+    end
+    Values = [Prefix Values];
 
     % Open a file for exporting the measurements
     % Add dot in extension if it's not there
@@ -165,264 +178,65 @@ for Object = 1:length(ExportInfo.ObjectNames)
     if exist(fullfile(RawPathname,filename),'file')
         Answer=CPquestdlg(['Do you want to overwrite ',fullfile(RawPathname,filename),'?'],'Overwrite File','Yes','No','Yes');
         if strcmp(Answer,'No')
-            break
+            continue
         end
     end
     fid = fopen(fullfile(RawPathname,filename),'w');
     if fid == -1
-        error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);
+        error('Cannot create the output file %s. Check permissions and that the file is not locked by another program.',filename);
     end
-
-    
-    % Get the measurements and feature names to export
-    Measurements     = SuperMeasurements{Object};
-    MeasurementNames = SuperMeasurementNames{Object};
-    Text             = SuperText{Object};
-    TextNames        = SuperTextNames{Object};
-
-    % The 'Image' object type gets some special treatement.
-    % Add the average values for all other measurements
-    if strcmp(ObjectName,'Image')
-        AllFields = fieldnames(handles.Measurements);
-        ObjectNumber = 0;
-        AllSuperMeasurements = {};
-        AllSuperMeasurementNames = {};
-        for i = 1:length(AllFields)
-            AllMeasurementNames = {};
-            AllMeasurements = {};
-            AllObjectName = AllFields{i};
-            if ~strcmpi(AllObjectName,'Image') && ~strcmpi(AllObjectName,'Experiment') && ~strcmpi(AllObjectName,'Neighbors')
-                ObjectNumber = ObjectNumber + 1;
-                fields = fieldnames(handles.Measurements.(AllObjectName));
-                for k = 1:length(fields)
-                    if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
-                        % Get the associated cell array of measurements
-                        try
-                            CellArray = handles.Measurements.(AllObjectName).(fields{k}(1:end-8));
-                        catch
-                            error(['Error in handles.Measurements structure. The field ',fields{k},' does not have an associated measurement field.']);
-                        end
-                        if length(AllMeasurements) == 0
-                            AllMeasurements = CellArray;
-                        else
-                            % Loop over the image sets
-                            for j = 1:length(CellArray)
-                                if isempty(CellArray{j})
-                                    AllMeasurements{j} = cat(2,AllMeasurements{j},NaN);
-                                else
-                                    AllMeasurements{j} = cat(2,AllMeasurements{j},CellArray{j});
-                                end
-                            end
-                        end
-                        % Construct informative feature names
-                        tmp = handles.Measurements.(AllObjectName).(fields{k});     % Get the feature names
-                        for j = 1:length(tmp)
-                            tmp{j} = [tmp{j} ' (', AllObjectName,', ',fields{k}(1:end-8),')'];
-                        end
-                        AllMeasurementNames = cat(2,AllMeasurementNames,tmp);
-                    end %%% End of if length(fields{k}) > 8 & strcmp(fields{k}(end-7:end),'Features')
-                end %%% End of k = 1:length(fields)
-                %%% Create the super measurement structure
-                AllSuperMeasurements{ObjectNumber} = AllMeasurements;
-                AllSuperMeasurementNames{ObjectNumber} = AllMeasurementNames;
-            end %%% End of if ~strcmpi(AllObjectName,'Image') && ~strcmpi(AllObjectName,'Experiment')
-        end %%% End of for i = 1:length(AllFields)
-
-        Measurements     = SuperMeasurements{Object};
-        MeasurementNames = SuperMeasurementNames{Object};
-
-        for k = 1:ObjectNumber
-            MeasurementNames = cat(2,MeasurementNames,AllSuperMeasurementNames{k});
-            tmpMeasurements = AllSuperMeasurements{k};
-            if ExportInfo.IgnoreNaN == 1
-                for imageset = 1:length(Measurements)
-                    if strcmp(ExportInfo.DataParameter,'std')
-                        Measurements{imageset} = cat(2,Measurements{imageset},CPnanstd(tmpMeasurements{imageset}));
-                    else
-                        if strcmp(ExportInfo.DataParameter,'mean')
-                            Measurements{imageset} = cat(2,Measurements{imageset},CPnanmean(tmpMeasurements{imageset}));
-                        else
-                            if strcmp(ExportInfo.DataParameter,'median')
-                                Measurements{imageset} = cat(2,Measurements{imageset},CPnanmedian(tmpMeasurements{imageset}));
-                            end
-                        end
-                    end
-                end
-            else
-                for imageset = 1:length(Measurements)
-                    if strcmp(ExportInfo.DataParameter,'std')
-                        Measurements{imageset} = cat(2,Measurements{imageset},std(tmpMeasurements{imageset},1));
-                    else
-                        if strcmp(ExportInfo.DataParameter,'mean')
-                            Measurements{imageset} = cat(2,Measurements{imageset},mean(tmpMeasurements{imageset},1));
-                        else
-                            if strcmp(ExportInfo.DataParameter,'median')
-                                Measurements{imageset} = cat(2,Measurements{imageset},median(tmpMeasurements{imageset},1));
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
 
     %%% Write tab-separated file that can be imported into Excel
     % Header part
     fprintf(fid,'%s\n\n', ObjectName);
 
-    % Write data in columns or rows?
-    if strcmp(ExportInfo.SwapRowsColumnInfo,'No')
-        % Write feature names in one row
-        % Interleave feature names with commas and write to file
-        strMeasurement = cell(2*length(MeasurementNames),1);
-        strMeasurement(1:2:end) = {'\t'};
-        strMeasurement(2:2:end) = MeasurementNames;
-        strText = cell(2*length(TextNames),1);
-        strText(1:2:end) = {'\t'};
-        strText(2:2:end) = TextNames;
-        if strcmp(ObjectName,'Image')
-            fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
-        else
-            fprintf(fid,sprintf('%s%s%s\n','\tObject Nbr',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));
-        end
+    %%% row or columns major?
+    if strcmp(ExportInfo.SwapRowsColumnInfo,'No'),
+        %%% Write feature names
+        % lead with an extra tab to offset from image set info, which was prefixed into Values
+        fprintf(fid, '\t%s', ValueNames{:});
+        fprintf(fid, '\n');
 
-        % Loop over the images sets
-        for imageset = 1:max(length(Measurements),length(Text))
-
-            % Write info about the image set (some unnecessary code here)
-            fprintf(fid,'Set #%d, %s',imageset,handles.Measurements.Image.FileNames{imageset}{1});
-
-            %%% Write measurements and text row by row
-            %%% First, determine number of rows to write. Have to do this to protect
-            %%% for the cases of no Measurements or no Text.
-            if ~isempty(Measurements)
-                NbrOfRows = size(Measurements{imageset},1);
-                if NbrOfRows == 0
-                    fprintf(fid,sprintf('\n'));
+        % loop over rows of the data
+        for row = 1:size(Values, 1),
+            for col = 1:size(Values, 2),
+                if col ~= 1,
+                    fprintf(fid, '\t');
                 end
-            elseif ~isempty(Text)
-                NbrOfRows = size(Text{imageset},1);
-            else
-                NbrOfRows = 0;
-            end
-
-            for row = 1:NbrOfRows    % Loop over the rows
-                % Write text
-                strText = {};
-                if ~isempty(TextNames)
-                    if strcmp(ObjectName,'Image')
-                        strText = cell(2*length(TextNames),1);
-                        strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                        tmp = Text{imageset}(row,:);               % Get the right row in the right image set
-                        index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
-                        for k = 1:length(index)
-                            for l = 1:length(index{k})
-                                tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
-                            end
-                        end
-                        strText(2:2:end) = tmp;                    % Interleave with tabs
-                    else
-                        strText = cell(2*length(TextNames),1);
-                        strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                        for i = 1:length(TextNames)
-                            strText(2*i) = Text{imageset}{i}(row);
-                        end
-                    end
-                end
-                % If not the 'Image' field, write an object number
-                if ~strcmp(ObjectName,'Image')
-                    fprintf(fid,'\t%d',row);
-                end
-                % Write measurements
-                strMeasurement = {};
-                if ~isempty(MeasurementNames)
-                    tmp = cellstr(num2str(Measurements{imageset}(row,:)','%g'));  % Create cell array with measurements
-                    strMeasurement = cell(2*length(tmp),1);
-                    strMeasurement(1:2:end) = {'\t'};                             % Interleave with tabs
-                    strMeasurement(2:2:end) = tmp;
-                end
-                fprintf(fid,sprintf('%s%s\n',char(cat(2,strText{:})),char(cat(2,strMeasurement{:}))));            % Write to file
-            end
-        end
-        %%% Write each measurement as a row, with each object as a column
-    else
-        %%% Write first row where the image set starting points are indicated
-        fprintf(fid,'\t%d',[]);
-        for imageset = 1:length(Measurements)
-            str = cell(size(Measurements{imageset},1)+1,1);
-            str(1) = {sprintf('Set #%d, %s',imageset,handles.Measurements.Image.FileNames{imageset}{1})};
-            str(2:end) = {'\t'};
-            fprintf(fid,sprintf('%s',cat(2,str{:})));
-        end
-        fprintf(fid,'\n');
-
-        %%% If the current object type isn't 'Image'
-        %%% print the 'Object Number'
-        if ~strcmp(ObjectName,'Image')
-            fprintf(fid,'%s','Object Nbr');
-            for imageset = 1:length(Measurements)
-                Nums=[1:size(Measurements{imageset},1)]';
-                tmp = cellstr(num2str(Nums,'%g'));
-                strMeasurement = cell(2*size(Measurements{imageset},1),1);
-                strMeasurement(1:2:end) = {'\t'};
-                strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
-                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));
-            end
-            fprintf(fid,'\n');
-        end
-
-        %%% Start by writing text
-        %%% Loop over rows, writing one image set's text features at the time
-        for row = 1:length(TextNames)
-            if strcmp(ObjectName,'Image')
-                fprintf(fid,'%s',TextNames{row});
-                for imageset = 1:length(Text)
-                    strText = cell(2*size(Text{imageset},1),1);
-                    strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                    tmp = Text{imageset}(:,row)';              % Get the right row in the right image set
-                    index = strfind(tmp,'\');                  % To use sprintf(), we need to duplicate any '\' characters
-                    for k = 1:length(index)
-                        for l = 1:length(index{k})
-                            tmp{k} = [tmp{k}(1:index{k}(l)+l-1),'\',tmp{k}(index{k}(l)+l:end)];   % Duplicate '\':s
-                        end
-                    end
-                    strText(2:2:end) = tmp;                    % Interleave with tabs
-                    fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
-                end
-                fprintf(fid,'\n');
-            else
-                fprintf(fid,'%s',TextNames{row});
-                for imageset = 1:length(Text)
-                    strText = cell(2*size(Text{imageset}{row},2),1);
-                    strText(1:2:end) = {'\t'};                 % 'Text' is a cell array where each cell contains a cell array
-                    tmp = Text{imageset}{row};
-                    strText(2:2:end) = tmp;                    % Interleave with tabs
-                    fprintf(fid,sprintf('%s',char(cat(2,strText{:}))));
-                end
-                fprintf(fid,'\n');
-            end
-        end
-
-        %%% Next, write numerical measurements
-        %%% Loop over rows, writing one image set's measurements at the time
-        for row = 1:length(MeasurementNames)
-            fprintf(fid,'%s',MeasurementNames{row});
-            for imageset = 1:length(Measurements)
-                if size(Measurements{imageset},2) >= row
-                    tmp = cellstr(num2str(Measurements{imageset}(:,row),'%g'));  % Create cell array with measurements
+                val = Values{row, col};
+                if isempty(val),
+                    fprintf(fid, '');
+                elseif ischar(val),
+                    fprintf(fid, '%s', val);
                 else
-                    tmp = {' '};
+                    fprintf(fid, '%d', val);        
                 end
-                strMeasurement = cell(2*size(Measurements{imageset},1),1);
-                strMeasurement(1:2:end) = {'\t'};
-                strMeasurement(2:2:end) = tmp;                    % Interleave with tabs
-                fprintf(fid,sprintf('%s',char(cat(2,strMeasurement{:}))));
             end
-            fprintf(fid,'\n');
+            fprintf(fid, '\n');
         end
-    end % Ends 'if' row/column flip
-    fclose(fid);
-end % Ends 'for'-loop over object types
+    else
+        %%% Add an empty Feature header (corresponding to the set # and fileinfo)
+        ValueNames = {'', ValueNames{:}};
 
-close(waitbarhandle)
+        %%% loop over columns
+        for col = 1:size(Values, 2),
+            %%% Feature name
+            fprintf(fid, '%s', ValueNames{col});
+
+            % loop over rows of the data
+            for row = 1:size(Values, 1),
+                val = Values{row, col};
+                if isempty(val),
+                    fprintf(fid, '\t');
+                elseif ischar(val),
+                    fprintf(fid, '\t%s', val);
+                else
+                    fprintf(fid, '\t%d', val);        
+                end
+            end
+            fprintf(fid, '\n');
+        end
+    end
+end
+
+close(waitbarhandle);

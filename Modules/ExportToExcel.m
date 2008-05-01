@@ -120,7 +120,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     ExportInfo.IgnoreNaN = 1;
     ExportInfo.SwapRowsColumnInfo = 'No';
     ExportInfo.DataParameter = 'mean';
-    handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,CurrentModuleNum) = 0;
     CPwritemeasurements(handles,ExportInfo,RawPathname);
 end
 

@@ -355,6 +355,8 @@ if SetBeingAnalyzed == 1
         if length(Pathname) == 1
             Pathname = handles.Current.DefaultImageDirectory;
         else
+	    % If the pathname start with '.', interpret it relative to
+            % the default image dir.
             Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
         end
     end

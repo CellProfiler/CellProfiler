@@ -252,16 +252,15 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         FileName = ImageFileName(2:end);
     else
         try
-            if iscell(handles.Pipeline.(['Filename', ImageFileName]))
-                FileName = handles.Pipeline.(['Filename', ImageFileName]){SetBeingAnalyzed};
-            else
-                FileName = handles.Pipeline.(['Filename', ImageFileName]);
-            end
-            [Subdirectory FileName] = fileparts(FileName); %#ok Ignore MLint
+	    FileName=handles.Measurements.Image.(['FileName_', ImageFileName]);
+            if iscell(FileName), FileName = FileName{SetBeingAnalyzed}; end
         catch
-            %%% If the user has selected an image name that is not straight from a load
-            %%% images module, the filenames will not be found in the handles structure.
-            error(['Image processing was canceled in the ', ModuleName, ' module because in answer to the question "Which images'' original filenames do you want to use as a base" you have entered improper text. You must choose N, text preceded with =, or an image name that was loaded directly from a LoadImages module.'])
+            % If the user has selected an image name that is not
+            % straight from a load %% images module, the filenames will
+            % not be found in the handles structure.
+	    err = lasterror();
+            err.message = ['Image processing was canceled in the ', ModuleName, ' module because in answer to the question "Which images'' original filenames do you want to use as a base" you have entered improper text. You must choose N, text preceded with =, or an image name that was loaded directly from a LoadImages module.  Matlab says that the error is: ', err.message];
+	    rethrow(err);
         end
     end
 
@@ -279,21 +278,13 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     FileName = [FileName '.' FileFormat];
     
-    if strncmp(FileDirectory,'.',1)
-        PathName = handles.Current.DefaultOutputDirectory;
-        if length(FileDirectory) > 1
-            PathName = fullfile(PathName, FileDirectory(2:end));
-        end
+    PathName = FileDirectory;
+    if strncmp(PathName,'.',1)
+	PathName = fullfile(handles.Current.DefaultOutputDirectory, ...
+			    FileDirectory(2:end));
     elseif strncmp(FileDirectory, '&', 1)
-        PathName = handles.Pipeline.(['Pathname', ImageFileName]);
-        if ~isempty(Subdirectory)
-            PathName = fullfile(PathName, Subdirectory);
-        end
-        if length(FileDirectory) > 1
-            PathName = fullfile(PathName, FileDirectory(2:end));
-        end
-    else
-        PathName = FileDirectory;
+	PathName = handles.Measurements.Image.(['PathName_', ImageFileName]);
+	if iscell(PathName), PathName = PathName{SetBeingAnalyzed}; end
     end
 
     %%% Makes sure that the File Directory specified by the user exists.

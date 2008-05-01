@@ -1,13 +1,16 @@
 % CPSAVEFILENAMESTOHANDLES Save filenames and pathnames.
+%   This function will move the subdirectory part of the filename to
+%   the pathname before saving to the handles structure.
+%
 %   Example:
 %      handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, ...
 %					  FileNames)
 %
 %   ImageName should be a cell array containing 'OrigBlue', 'OrigGreen', etc.
-%   Pathname should be a string, e.g., '/tmp/foo'.
-%   FileNames should be a cell array containing 'A01.TIF', 'A02.TIF', etc.
-function handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, ...
-					  FileNames)
+%   BasePathName should be a string, e.g., '/tmp/foo'.
+%   FileNames should be a cell array containing 'A01.TIF', 'b/A02.TIF', etc.
+function handles = CPsaveFileNamesToHandles(handles, ImageName, ...
+					    BasePathName, FileNames)
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -20,10 +23,12 @@ function handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, ...
 %
 % $Revision: 5228 $
 for i = 1:length(ImageName)
+    [subpart, filenamepart] = fileparts(FileNames{i});
+    pathname = fullfile(BasePathName, subpart);
     handles = CPaddmeasurements(handles, 'Image', ...
 				['FileName_', ImageName{i}], ...
-				FileNames{i});  
+				filenamepart);  
     handles = CPaddmeasurements(handles, 'Image', ...
 				['PathName_', ImageName{i}], ...
-				Pathname);
+				pathname);
 end

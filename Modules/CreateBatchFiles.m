@@ -264,9 +264,14 @@ for i = 1:length(PathFieldnames),
     handles.Pipeline.(PathFieldnames{i}) = BatchImagePath;
 end
 
-%%% Make sure ModuleError has same number of elements as
-%%% ModuleErrorFeatures
-handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,CurrentModuleNum) = 0;
+% %%% Make sure ModuleError has same number of elements as
+% %%% ModuleErrorFeatures
+% handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,CurrentModuleNum) = 0;
+%%% I'm not entirely sure why we need to record that there were no module
+%%% errors in the CreateBatchFiles module here rather than in
+%%% CellProfiler.m, but will go ahead and update the old code to the new
+%%% CPaddmeasurements format:
+handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(CurrentModuleNum),ModuleName]),0);
 
 %%% Saves the altered handles in a file which the user will feed to
 %%% the remote machines.

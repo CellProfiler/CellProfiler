@@ -33,7 +33,7 @@ function handles = Rotate(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -114,6 +114,8 @@ CPimagesc(OrigImage,handles);
 axis image
 drawnow
 
+% If this is the first image set, get the angle to rotate from the
+% user.  If not, get the value that was used for the first set.
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
     if strcmp(RotateMethod, 'Mouse')
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','position',[80 10 400 100],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
@@ -204,22 +206,12 @@ if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individuall
         error(['Image processing was canceled in the ', ModuleName, ' module because the rotation method is not recognized.']);
     end
 else
-    column = find(strcmp(handles.Measurements.Image.RotationFeatures,ImageName));
-    AngleToRotateDegrees = handles.Measurements.Image.Rotation{1}(column); %#ok Ignore MLint
+    fieldname = ['Rotation_', ImageName];
+    AngleToRotateDegrees = handles.Measurements.Image.(fieldname){1}; %#ok Ignore MLint
 end
 
-if ~isfield(handles.Measurements.Image,'RotationFeatures')
-    handles.Measurements.Image.RotationFeatures = {};
-    handles.Measurements.Image.Rotation = {};
-end
-
-column = find(strcmp(handles.Measurements.Image.RotationFeatures,ImageName));
-
-if isempty(column)
-    handles.Measurements.Image.RotationFeatures(end+1) = {ImageName};
-    column = length(handles.Measurements.Image.RotationFeatures);
-end
-handles.Measurements.Image.Rotation{handles.Current.SetBeingAnalyzed}(1,column) = AngleToRotateDegrees;
+handles = CPaddmeasurements(handles, 'Image', ['Rotation_', ImageName], ...
+			    AngleToRotateDegrees);
 
 PatienceHandle = CPmsgbox('Image rotation in progress');
 drawnow

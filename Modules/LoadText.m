@@ -11,9 +11,9 @@ function handles = LoadText(handles)
 %
 % Use this tool to load in text information. This is useful for two
 % reasons:
-% 1. Some modules, like DisplayGridInfo place text information onto images.
-% In this case, the number of text entries that you load with this module
-% must be identical to the number of grid locations.
+% 1. Some modules, like DisplayGridInfo, place text information onto
+% images. In this case, the number of text entries that you load with this
+% module must be identical to the number of grid locations.
 % 2. If the number of text entries that you load with this module is
 % identical to the number of cycles you are processing, the text
 % information you load will be placed in the output files alongside the
@@ -95,6 +95,10 @@ if strncmp(PathName,'.',1)
     end
 end
 
+%%% Note that all the text data is loaded and placed in the handles
+%%% structure during the first image cycle. So if the user cancels
+%%% processing earlier, there will be too many image measurements present.
+%%% This is probably OK with the Export modules/data tools.
 if handles.Current.SetBeingAnalyzed == 1
     %%% Parse text file %%%
     fid = fopen(fullfile(PathName,TextFileName),'r');
@@ -121,18 +125,18 @@ if handles.Current.SetBeingAnalyzed == 1
         end
     end
     fclose(fid);
-
+    
     %%% Add the data
-    %%% If the entered field doesn't exist  (This is the convenient way of doing it. Takes time for large ouput files??)
-    if ~isfield(handles.Measurements,FieldName)
-        handles.Measurements.Image.([FieldName,'Description']) = {Description};
-        handles.Measurements.Image.(FieldName) = Text;
-        %%% If the entered field already exists we have to append to this field
-    else
-        handles.Measurements.Image.([FieldName,'Description']) = cat(2,handles.Measurements.Image.([FieldName,'Description']),{Description});
-        handles.Measurements.Image.(FieldName) = cat(2,handles.Measurements.Image.(FieldName),Text);
+    for LineNumber = 1:length(Text)
+        handles = CPaddmeasurements(handles,'Image',['LoadedText_',FieldName],Text{LineNumber});
+        %%% We need to increment the set being analyzed so the text data can be
+        %%% stored for each cycle.
+        handles.Current.SetBeingAnalyzed = handles.Current.SetBeingAnalyzed + 1;
     end
-
+    %%% Set it back to 1, since this really is the first image cycle being
+    %%% processed.
+    handles.Current.SetBeingAnalyzed = 1; 
+    
     %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
     %%%%%%%%%%%%%%%%%%%%%%%

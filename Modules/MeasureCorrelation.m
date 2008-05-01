@@ -176,33 +176,35 @@ end
 
 %%% For each object type and for each segmented object, calculate the correlation between all combinations of images
 for ObjectNameNbr = 1:ObjectNameCount
-    
-    %%% For the cases where the label matrix was produced from a cropped
-    %%% image, the sizes of the images will not be equal. So, we crop the
-    %%% LabelMatrix and try again to see if the matrices are then the
-    %%% proper size. Removes Rows and Columns that are completely blank.
-    if any(size(Image{i}) < size(LabelMatrixImage{ObjectNameNbr}))
-        ColumnTotals = sum(LabelMatrixImage{ObjectNameNbr},1);
-        RowTotals = sum(LabelMatrixImage{ObjectNameNbr},2)';
-        warning off all
-        ColumnsToDelete = ~logical(ColumnTotals);
-        RowsToDelete = ~logical(RowTotals);
-        warning on all
-        drawnow
-        CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
-        CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
-        CroppedLabelMatrix(RowsToDelete,:,:) = [];
-        LabelMatrixImage{ObjectNameNbr} = [];
-        LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
-        %%% In case the entire image has been cropped away, we store a
-        %%% single zero pixel for the variable.
-        if isempty(LabelMatrixImage{ObjectNameNbr})
-            LabelMatrixImage{ObjectNameNbr} = 0;
-        end
-    end
 
-    if any(size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr}))
-        error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
+    for i=1:ImageCount
+	%%% For the cases where the label matrix was produced from a cropped
+	%%% image, the sizes of the images will not be equal. So, we crop the
+	%%% LabelMatrix and try again to see if the matrices are then the
+	%%% proper size. Removes Rows and Columns that are completely blank.
+	if any(size(Image{i}) < size(LabelMatrixImage{ObjectNameNbr}))
+	    ColumnTotals = sum(LabelMatrixImage{ObjectNameNbr},1);
+	    RowTotals = sum(LabelMatrixImage{ObjectNameNbr},2)';
+	    warning off all
+	    ColumnsToDelete = ~logical(ColumnTotals);
+	    RowsToDelete = ~logical(RowTotals);
+	    warning on all
+	    drawnow
+	    CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
+	    CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+	    CroppedLabelMatrix(RowsToDelete,:,:) = [];
+	    LabelMatrixImage{ObjectNameNbr} = [];
+	    LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
+	    %%% In case the entire image has been cropped away, we store a
+	    %%% single zero pixel for the variable.
+	    if isempty(LabelMatrixImage{ObjectNameNbr})
+		LabelMatrixImage{ObjectNameNbr} = 0;
+	    end
+	end
+
+	if any(size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr}))
+	    error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
+	end
     end
 
     %%% Calculate the correlation in all objects for all pairwise image combinations
@@ -253,14 +255,21 @@ for ObjectNameNbr = 1:ObjectNameCount
             end
         end
     end
+    
     %%% Store the correlation and slope measurements
-    if strcmp (ObjectName{ObjectNameNbr},'Image')
-        handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = [CorrelationFeatures SlopeFeatures];
-        handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {[Correlation Slope]};
-    else
-        handles.Measurements.(ObjectName{ObjectNameNbr}).CorrelationFeatures = CorrelationFeatures;
-        handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation(handles.Current.SetBeingAnalyzed) = {Correlation};
+    for f=1:size(Correlation,2)
+	handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
+				    ['Correlation_', CorrelationFeatures{f}], ...
+				    Correlation(:, f));
     end
+    if strcmp(ObjectName{ObjectNameNbr},'Image')
+	for f = 1:size(Slope,2)
+	    handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
+					['Correlation_', SlopeFeatures{f}], ...
+					Slope(:, f));
+	end
+    end
+    correlations{ObjectNameNbr} = Correlation;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -306,7 +315,7 @@ if any(findobj == ThisModuleFigureNumber)
                     set(h,'string',TextToDisplay);
                 else
                     %%% Calculate the average correlation over the objects
-                    c = mean(handles.Measurements.(ObjectName{ObjectNameNbr}).Correlation{handles.Current.SetBeingAnalyzed}(:,FeatureNbr));
+                    c = mean(correlations{ObjectNameNbr}(:,FeatureNbr));
                     uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-125-40*row 70 40],...
                         'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','center',...
                         'string',sprintf('%0.2f',c));

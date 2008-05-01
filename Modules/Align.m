@@ -408,12 +408,12 @@ end
 %%% Align modules will overwrite each other's measurements if the user
 %%% gives the aligned images all the same names, but we can't catch
 %%% everything.
-handles = CPaddmeasurements(handles, 'Image', ['Align_Xshift_',AlignedImage1Name,'vs',AlignedImage2Name], sx);
-handles = CPaddmeasurements(handles, 'Image', ['Align_Yshift_',AlignedImage1Name,'vs',AlignedImage2Name], sy);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage1Name,'vs',AlignedImage2Name]), sx);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage1Name,'vs',AlignedImage2Name]), sy);
 %%% If three images were aligned, there are two more measurements to store:
 if ~strcmpi(Image3Name,'Do not use')
-    handles = CPaddmeasurements(handles, 'Image', ['Align_Xshift_',AlignedImage2Name,'vs',AlignedImage3Name], sx2);
-    handles = CPaddmeasurements(handles, 'Image', ['Align_Yshift_',AlignedImage2Name,'vs',AlignedImage3Name], sy2);
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage2Name,'vs',AlignedImage3Name]), sx2);
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage2Name,'vs',AlignedImage3Name]), sy2);
 end
 
 %%%%%%%%%%%%%%%%%%%%

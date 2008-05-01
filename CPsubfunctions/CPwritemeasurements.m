@@ -118,7 +118,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     end
 
     %%% Find offset for data of each image
-    ImageOffsets = cumsum(NumObjects) - NumObjects + 1;
+    ImageOffsets = (cumsum(NumObjects) - NumObjects + 1);
 
     %%% Gather Data
     Values = {};
@@ -160,7 +160,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     ImageFilenameFields = AllImageFields(strmatch('FileName', AllImageFields));
     FirstFilename = ImageFilenameFields{1};
     imageidx = 1;
-    for k = ImageOffsets,
+    for k = ImageOffsets(:)',
         Prefix{k, 1} = sprintf('Set #%d, %s',imageidx,handles.Measurements.Image.(FirstFilename){imageidx});
         imageidx = imageidx + 1;
     end

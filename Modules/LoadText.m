@@ -128,7 +128,7 @@ if handles.Current.SetBeingAnalyzed == 1
     
     %%% Add the data
     for LineNumber = 1:length(Text)
-        handles = CPaddmeasurements(handles,'Image',['LoadedText_',FieldName],Text{LineNumber});
+        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('LoadedText',FieldName),Text{LineNumber});
         %%% We need to increment the set being analyzed so the text data can be
         %%% stored for each cycle.
         handles.Current.SetBeingAnalyzed = handles.Current.SetBeingAnalyzed + 1;

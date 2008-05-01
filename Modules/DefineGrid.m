@@ -627,17 +627,17 @@ else
     RowsOrColumnsNum = 0;
 end
 
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XLocationOfLowestXSpot'], XLocationOfLowestXSpot);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YLocationOfLowestYSpot'], YLocationOfLowestYSpot);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XSpacing'], XSpacing);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YSpacing'], YSpacing);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Rows'], Rows);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Columns'], Columns);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalHeight'], TotalHeight);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalWidth'], TotalWidth);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_LeftOrRightNum'], LeftOrRightNum);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TopOrBottomNum'], TopOrBottomNum);
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_RowsOrColumnsNum'], RowsOrColumnsNum);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'XLocationOfLowestXSpot'), XLocationOfLowestXSpot);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'YLocationOfLowestYSpot'), YLocationOfLowestYSpot);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'XSpacing'), XSpacing);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'YSpacing'), YSpacing);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'Rows'), Rows);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'Columns'), Columns);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'TotalHeight'), TotalHeight);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'TotalWidth'), TotalWidth);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'LeftOrRightNum'), LeftOrRightNum);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'TopOrBottomNum'), TopOrBottomNum);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'RowsOrColumnsNum'), RowsOrColumnsNum);
 
 if ~strcmpi(RGBname,'Do not save')
     handles.Pipeline.(RGBname) = ColorImage;

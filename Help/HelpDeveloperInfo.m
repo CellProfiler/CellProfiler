@@ -233,7 +233,7 @@ function HelpDeveloperInfo
 % that record measurements must use the subfunction CPaddmeasurements. The
 % usage is: 
 %
-%   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data)
+%   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data);
 %
 % Which will create this data structure:
 %
@@ -260,6 +260,9 @@ function HelpDeveloperInfo
 %               measurement assigns this name, but a few modules allow the
 %               user to type in the name of the feature (e.g., the
 %               CalculateRatios module allows the user to name the ratio).
+%               - Note: Be sure to list the Specific features measured by
+%               the module in the Help section. See MeasureObjectAreaShape
+%               for an example.
 %           * Parameters (optional) are used for modules that measure the
 %               same objects in different ways (e.g. the
 %               MeasureObjectIntensity module can measure intensities for

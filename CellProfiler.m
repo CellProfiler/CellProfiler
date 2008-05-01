@@ -3828,11 +3828,9 @@ else
                             %%% This is used to check for errors and allow restart.
                             CanMoveToNextModule = false;
                             
-
                             %%% Runs the appropriate module, with the handles structure as an
                             %%% input argument and as the output
                             %%% argument.
-                            handles.Measurements.Image.ModuleErrorFeatures(str2double(TwoDigitString(SlotNumber))) = {ModuleName};
                             handles = feval(ModuleName,handles);
 
                             %%% If the call to feval succeeded, then the module succeeded and we can move to the next module.
@@ -3854,9 +3852,11 @@ else
                             if ishandle(FigHandle)
                                 CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,FigHandle);
                             end
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2double(ModuleNumberAsString)) = 0;
+                            %%% We apparently ran the module successfully, so record a Zero.
+                            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[TwoDigitString(SlotNumber),ModuleName]),0);
                         catch
-                            handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,str2double(ModuleNumberAsString)) = 1;
+                            %%% We apparently had an error in the module, so record a One.
+                            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[TwoDigitString(SlotNumber),ModuleName]),1);
                             if strcmp(handles.Preferences.SkipErrors,'No')
                                 if isdeployed
                                     errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)

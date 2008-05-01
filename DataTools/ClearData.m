@@ -59,7 +59,7 @@ try
     [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
 catch
     ErrorMessage = lasterr;
-    CPerrordlg(['An error occurred in the ClearData Data Tool. ' ErrorMessage(30:end)]);
+    CPerrordlg(['An error occurred in the ClearData data tool. ' ErrorMessage(30:end)]);
     return
 end
 

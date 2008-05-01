@@ -113,6 +113,7 @@ FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+%%% Retrieves the grid, created by the DefineGrid module.
 try
     Grid = handles.Pipeline.(['Grid_' GridName]);
 catch
@@ -155,75 +156,105 @@ else
     radius = 0; %Sets the radius to 0 for non-circle shapes.
 end
 
-
-
 if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
-    measfield = [GridName,'Info'];
-    %if handles.Current.SetBeingAnalyzed == 1
-    featfield = [GridName,'InfoFeatures'];
-    handles.Measurements.Image.(featfield){12} = 'GridFailed';
-    %end
+    %%% Any of these conditions means the grid doesn't make sense.
     if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
         if handles.Current.SetBeingAnalyzed == 1
             error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
         else
-            FailCheck = 1;
-            SetNum = 1;
             if strcmp(FailedGridChoice,'The First')
-                PreviousGrid = handles.Measurements.Image.(measfield){1};
-            end
-            if strcmp(FailedGridChoice,'Any Previous')
-                while FailCheck >= 1
-                    try PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
-                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
-                    end
-                    FailCheck = PreviousGrid(1,12);
-                    SetNum = SetNum + 1;
+                GridInfo.XLocationOfLowestXSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XLocationOfLowestXSpot']){1};
+                GridInfo.YLocationOfLowestYSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YLocationOfLowestYSpot']){1};
+                GridInfo.XSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XSpacing']){1};
+                GridInfo.YSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YSpacing']){1};
+                GridInfo.Rows = handles.Measurements.Image.(['DefinedGrid_',GridName,'_Rows']){1};
+                GridInfo.Columns = handles.Measurements.Image.(['DefinedGrid_',GridName,'_Columns']){1};
+
+                GridInfo.TotalHeight = TotalHeight;
+                GridInfo.TotalWidth = TotalWidth;
+
+                if handles.Measurements.Image.(['DefinedGrid_',GridName,'_LeftOrRightNum']){1} == 1
+                    GridInfo.LeftOrRight = 'Left';
+                else
+                    GridInfo.LeftOrRight = 'Right';
+                end
+                if handles.Measurements.Image.(['DefinedGrid_',GridName,'_TopOrBottomNum']){1} == 1
+                    GridInfo.TopOrBottom = 'Top';
+                else
+                    GridInfo.TopOrBottom = 'Bottom';
+                end
+                if handles.Measurements.Image.(['DefinedGrid_',GridName,'_RowsOrColumnsNum']){1} == 1
+                    GridInfo.RowsOrColumns = 'Rows';
+                else
+                    GridInfo.RowsOrColumns = 'Columns';
                 end
             end
-            GridInfo.XLocationOfLowestXSpot = PreviousGrid(1,1);
-            GridInfo.YLocationOfLowestYSpot = PreviousGrid(1,2);
-            GridInfo.XSpacing = PreviousGrid(1,3);
-            GridInfo.YSpacing = PreviousGrid(1,4);
-            GridInfo.Rows = PreviousGrid(1,5);
-            GridInfo.Columns = PreviousGrid(1,6);
-            GridInfo.TotalHeight = TotalHeight;
-            GridInfo.TotalWidth = TotalWidth;
-            if PreviousGrid(1,9) == 1
-                GridInfo.LeftOrRight = 'Left';
-            else
-                GridInfo.LeftOrRight = 'Right';
-            end
-            if PreviousGrid(1,10) == 1
-                GridInfo.TopOrBottom = 'Top';
-            else
-                GridInfo.TopOrBottom = 'Bottom';
-            end
-            if PreviousGrid(1,11) == 1
-                GridInfo.RowsOrColumns = 'Rows';
-            else
-                GridInfo.RowsOrColumns = 'Columns';
+            if strcmp(FailedGridChoice,'Any Previous')
+                FailCheck = 1;
+                SetNum = 1;
+                while FailCheck
+                    try
+                        FailCheck = handles.Measurements.Image.(['DefinedGrid_',GridName,'_GridFailed']){handles.Current.SetBeingAnalyzed - SetNum};
+                    catch %%% If the data isn't stored there, then something is really wrong (something more than just the grid not being found).
+                        error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
+                    end
+                    if FailCheck
+                        SetNum = SetNum + 1;
+                        continue
+                    else
+                        GridInfo.XLocationOfLowestXSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XLocationOfLowestXSpot']){handles.Current.SetBeingAnalyzed - SetNum};
+                        GridInfo.YLocationOfLowestYSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YLocationOfLowestYSpot']){handles.Current.SetBeingAnalyzed - SetNum};
+                        GridInfo.XSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XSpacing']){handles.Current.SetBeingAnalyzed - SetNum};
+                        GridInfo.YSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YSpacing']){handles.Current.SetBeingAnalyzed - SetNum};
+                        GridInfo.Rows = handles.Measurements.Image.(['DefinedGrid_',GridName,'_Rows']){handles.Current.SetBeingAnalyzed - SetNum};
+                        GridInfo.Columns = handles.Measurements.Image.(['DefinedGrid_',GridName,'_Columns']){handles.Current.SetBeingAnalyzed - SetNum};
+
+                        GridInfo.TotalHeight = TotalHeight;
+                        GridInfo.TotalWidth = TotalWidth;
+
+                        if handles.Measurements.Image.(['DefinedGrid_',GridName,'_LeftOrRightNum']){handles.Current.SetBeingAnalyzed - SetNum} == 1
+                            GridInfo.LeftOrRight = 'Left';
+                        else
+                            GridInfo.LeftOrRight = 'Right';
+                        end
+                        if handles.Measurements.Image.(['DefinedGrid_',GridName,'_TopOrBottomNum']){handles.Current.SetBeingAnalyzed - SetNum} == 1
+                            GridInfo.TopOrBottom = 'Top';
+                        else
+                            GridInfo.TopOrBottom = 'Bottom';
+                        end
+                        if handles.Measurements.Image.(['DefinedGrid_',GridName,'_RowsOrColumnsNum']){handles.Current.SetBeingAnalyzed - SetNum} == 1
+                            GridInfo.RowsOrColumns = 'Rows';
+                        else
+                            GridInfo.RowsOrColumns = 'Columns';
+                        end
+                    end
+                end
             end
 
             Grid = CPmakegrid(GridInfo);
 
-            Leftmost = PreviousGrid(1,1);
-            Topmost = PreviousGrid(1,2);
-            XDiv = PreviousGrid(1,3);
-            YDiv = PreviousGrid(1,4);
-            Rows = PreviousGrid(1,5);
-            Cols = PreviousGrid(1,6);
+            Leftmost = GridInfo.XLocationOfLowestXSpot;
+            Topmost = GridInfo.YLocationOfLowestYSpot;
+            XDiv = GridInfo.XSpacing;
+            YDiv = GridInfo.YSpacing;
+            Rows = GridInfo.Rows;
+            Cols = GridInfo.Columns;
+            
             VertLinesX = Grid.VertLinesX;
             VertLinesY = Grid.VertLinesY;
             HorizLinesX = Grid.HorizLinesX;
             HorizLinesY = Grid.HorizLinesY;
             SpotTable = Grid.SpotTable;
         end
-        handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 1;
+        
+        handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_GridFailed'], 1);
     else
-        handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed}(1,12) = 0;
+        %%% If we arrive here, the grid placement has succeeded.
+        handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_GridFailed'], 0);
     end
 else
+    %%% If we aren't allowed to use previous/first grid, and if the
+    %%% calculated grid doesn't make sense, we need to error out.
     if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
         error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the Define Grid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
     end

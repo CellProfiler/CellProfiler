@@ -307,26 +307,33 @@ else
             XSpacing = round((XLocationOfHighestXSpot - XLocationOfLowestXSpot)/(Columns - 1));
             YSpacing = round((YLocationOfHighestYSpot - YLocationOfLowestYSpot)/(Rows - 1));
         else
-            measfield = [GridName,'Info'];
-            FailCheck = 1;
-            SetNum = 1;
             if strcmp(FailedGridChoice,'The First')
-                PreviousGrid = handles.Measurements.Image.(measfield){1};
+                XLocationOfLowestXSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XLocationOfLowestXSpot']){1};
+                YLocationOfLowestYSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YLocationOfLowestYSpot']){1};
+                XSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XSpacing']){1};
+                YSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YSpacing']){1};
             end
             if strcmp(FailedGridChoice,'Any Previous')
-                while FailCheck >= 1
-                    try PreviousGrid = handles.Measurements.Image.(measfield){handles.Current.SetBeingAnalyzed - SetNum};
-                    catch error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
+                FailCheck = 1;
+                SetNum = 1;
+                while FailCheck
+                    try
+                        FailCheck = handles.Measurements.Image.(['DefinedGrid_',GridName,'_GridFailed']){handles.Current.SetBeingAnalyzed - SetNum};
+                    catch %%% If the data isn't stored there, then something is really wrong (something more than just the grid not being found).
+                        error(['Image processing was canceled in the ', ModuleName, ' module because the module went looking for previous functioning grid(s) and could not find it, please check the pipeline.']);
                     end
-                    FailCheck = PreviousGrid(1,12);
-                    SetNum = SetNum + 1;
+                    if FailCheck
+                        SetNum = SetNum + 1;
+                        continue
+                    else
+                        XLocationOfLowestXSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XLocationOfLowestXSpot']){handles.Current.SetBeingAnalyzed - SetNum};
+                        YLocationOfLowestYSpot = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YLocationOfLowestYSpot']){handles.Current.SetBeingAnalyzed - SetNum};
+                        XSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_XSpacing']){handles.Current.SetBeingAnalyzed - SetNum};
+                        YSpacing = handles.Measurements.Image.(['DefinedGrid_',GridName,'_YSpacing']){handles.Current.SetBeingAnalyzed - SetNum};
+                    end
                 end
             end
-            XLocationOfLowestXSpot = PreviousGrid(1,1);
-            YLocationOfLowestYSpot = PreviousGrid(1,2);
-            XSpacing = PreviousGrid(1,3);
-            YSpacing = PreviousGrid(1,4);
-         end
+        end
     elseif strcmp(AutoOrManual,'Manual')
         if strcmp(ControlSpotMode,'Coordinates')
             if strncmp(EachOrOnce,'Once',4)
@@ -601,7 +608,7 @@ GridInfo.TopOrBottom = TopOrBottom;
 handles.Pipeline.(['Grid_' GridName]) = GridInfo;
 
 %%% To store these values in
-%%% handles.Measurements.Image.GridInfo we must convert them to numbers.
+%%% handles.Measurements.Image we must convert them to numbers.
 %%% If you retrieve these values anywhere else, you must convert them back
 %%% to strings if you want to send them to CPmakegrid(GridInfo).
 if strcmp(LeftOrRight,'Left')
@@ -620,17 +627,17 @@ else
     RowsOrColumnsNum = 0;
 end
 
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XLocationOfLowestXSpot'], XLocationOfLowestXSpot)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YLocationOfLowestYSpot'], YLocationOfLowestYSpot)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XSpacing'], XSpacing)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YSpacing'], YSpacing)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Rows'], Rows)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Columns'], Columns)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalHeight'], TotalHeight)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalWidth'], TotalWidth)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_LeftOrRightNum'], LeftOrRightNum)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TopOrBottomNum'], TopOrBottomNum)
-handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_RowsOrColumnsNum'], RowsOrColumnsNum)
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XLocationOfLowestXSpot'], XLocationOfLowestXSpot);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YLocationOfLowestYSpot'], YLocationOfLowestYSpot);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_XSpacing'], XSpacing);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_YSpacing'], YSpacing);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Rows'], Rows);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_Columns'], Columns);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalHeight'], TotalHeight);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TotalWidth'], TotalWidth);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_LeftOrRightNum'], LeftOrRightNum);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_TopOrBottomNum'], TopOrBottomNum);
+handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_RowsOrColumnsNum'], RowsOrColumnsNum);
 
 if ~strcmpi(RGBname,'Do not save')
     handles.Pipeline.(RGBname) = ColorImage;

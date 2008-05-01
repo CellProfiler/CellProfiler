@@ -54,7 +54,7 @@ function handles = TrackObjects(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -133,7 +133,9 @@ handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipelin
 SegmentedObjectName = ['Segmented' ObjectName];
 handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage = handles.Pipeline.(SegmentedObjectName);
 %%% Saves the location of each segmented object
-handles.Pipeline.TrackObjects.(ObjectName).Current.Locations = handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed};
+handles.Pipeline.TrackObjects.(ObjectName).Current.Locations = ...
+    [handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}, ...
+     handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}];
 
 % ObjectProperties = handles.Pipeline.TrackObjects.(ObjectName);
 CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
@@ -262,13 +264,14 @@ Info = handles.Pipeline.TrackObjects.(DataImage).Info;
 
 handles.Pipeline.TrackObjects.(ObjectName).Current.Labels = CurrLabels;
 handles.Pipeline.TrackObjects.(ObjectName).Current.Headers = CurrHeaders;
-handles.Pipeline.(DataImage)=DisplayImage;
+handles.Pipeline.(DataImage) = DisplayImage;
 
 %%% Saves the Object-ID and Progeny-ID of each tracked object
-handles.Measurements.(ObjectName).TrackingDescription = {'Object-ID','Progeny-ID'};
-handles.Measurements.(ObjectName).Tracking{handles.Current.SetBeingAnalyzed}= [CStringObjectID, CStringProgenyID];
+handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_ObjectID', ...
+			    CStringObjectID);
+handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_ProgenyID', ...
+			    CStringProgenyID);
 
-%%
 %%%%%%%%%%%%%%%%%%%%%%
 %%%% SUBFUNCTIONS %%%%
 %%%%%%%%%%%%%%%%%%%%%%

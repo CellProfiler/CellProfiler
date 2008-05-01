@@ -16,7 +16,7 @@ function handles = GroupMovieFrames(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -357,44 +357,4 @@ end
 %%% SAVE DATA TO HANDLES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% NOTE: The structure for filenames and pathnames will be a cell array of cell arrays
-
-%%% First, fix feature names and the pathname
-PathNames = cell(1,length(ImageName));
-FileNamesText = cell(1,length(ImageName));
-PathNamesText = cell(1,length(ImageName));
-for n = 1:length(ImageName)
-    PathNames{n} = Pathname;
-    FileNamesText{n} = [ImageName{n}];
-    PathNamesText{n} = [ImageName{n}];
-end
-
-%%% Since there may be several load/save modules in the pipeline which all
-%%% write to the handles.Measurements.Image.FileName field, we store
-%%% filenames in an "appending" style. Here we check if any of the modules
-%%% above the current module in the pipeline has written to
-%%% handles.Measurements.Image.Filenames. Then we should append the current
-%%% filenames and path names to the already written ones. If this is the
-%%% first module to put anything into the handles.Measurements.Image
-%%% structure, then this section is skipped and the FileNamesText fields
-%%% are created with their initial entry coming from this module.
-
-if  isfield(handles,'Measurements') && isfield(handles.Measurements,'Image') &&...
-        isfield(handles.Measurements.Image,'FileNames') && length(handles.Measurements.Image.FileNames) == SetBeingAnalyzed
-    % Get existing file/path names. Returns a cell array of names
-    ExistingFileNamesText = handles.Measurements.Image.FileNamesText;
-    ExistingFileNames     = handles.Measurements.Image.FileNames{SetBeingAnalyzed};
-    ExistingPathNamesText = handles.Measurements.Image.PathNamesText;
-    ExistingPathNames     = handles.Measurements.Image.PathNames{SetBeingAnalyzed};
-    % Append current file names to existing file names
-    FileNamesText = cat(2,ExistingFileNamesText,FileNamesText);
-    FileNames     = cat(2,ExistingFileNames,FileNames);
-    PathNamesText = cat(2,ExistingPathNamesText,PathNamesText);
-    PathNames     = cat(2,ExistingPathNames,PathNames);
-end
-
-%%% Write to the handles.Measurements.Image structure
-handles.Measurements.Image.FileNamesText                   = FileNamesText;
-handles.Measurements.Image.FileNames(SetBeingAnalyzed)         = {FileNames};
-handles.Measurements.Image.PathNamesText                   = PathNamesText;
-handles.Measurements.Image.PathNames(SetBeingAnalyzed)         = {PathNames};    
+handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, FileNames);

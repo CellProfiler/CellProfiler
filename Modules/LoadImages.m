@@ -750,22 +750,7 @@ end
 %%% SAVE DATA TO HANDLES %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-handles = saveFileNamesToHandles(handles, ImageName, Pathname, FileNames);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SUBFUNCTION FOR SAVING DATA TO HANDLES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function handles = saveFileNamesToHandles(handles, ImageName, Pathname, ...
-					  FileNames)
-for i = 1:length(ImageName)
-    handles = CPaddmeasurements(handles, 'Image', ...
-				['FileName_', ImageName{i}], ...
-				FileNames{i});  
-    handles = CPaddmeasurements(handles, 'Image', ...
-				['PathName_', ImageName{i}], ...
-				Pathname);
-end
+handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, FileNames);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS FOR READING STK FILES %%%

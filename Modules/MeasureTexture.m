@@ -177,8 +177,8 @@ if any(findobj == ThisModuleFigureNumber)
 end
 
 %%% START LOOP THROUGH ALL THE OBJECTS
-for i = 1:6
-    ObjectName = ObjectNameList{i};
+for ObjectNameListNum = 1:6
+    ObjectName = ObjectNameList{ObjectNameListNum};
     if strcmp(ObjectName,'Do not use')
         continue
     end
@@ -392,8 +392,12 @@ for i = 1:6
         Gabor = zeros(1,2);
     end
     %%% Save measurements
-    handles.Measurements.(ObjectName).(['Texture_',num2str(ScaleOfTexture),'_',ImageName,'Features']) = cat(2,HaralickFeatures,GaborFeatures);
-    handles.Measurements.(ObjectName).(['Texture_',num2str(ScaleOfTexture),'_',ImageName])(handles.Current.SetBeingAnalyzed) = {[Haralick Gabor]};
+    AllFeatures = cat(2,HaralickFeatures,GaborFeatures);
+    Data = [Haralick Gabor];
+    for FeatureNum = 1:length(AllFeatures)
+        feature_name = CPjoinstrings('Texture',char(AllFeatures{FeatureNum}),ImageName,num2str(ScaleOfTexture));
+        handles = CPaddmeasurements(handles, ObjectName, feature_name, Data(:,FeatureNum));
+    end
 
     %%% Report measurements
     FontSize = handles.Preferences.FontSize;

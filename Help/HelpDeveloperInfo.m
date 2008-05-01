@@ -217,7 +217,7 @@ function HelpDeveloperInfo
 % number for the entire image, which could come from one measurement from
 % the entire image (e.g. Image TotalIntensity), or which could be an
 % aggregate measurement based on individual object measurements (e.g. Image
-% MeanArea).  Use the appropriate substructure to ensure that your data
+% MeanAreaCells).  Use the appropriate substructure to ensure that your data
 % will be extracted properly. 
 %   The relationships between objects can also be defined. 
 % For example, a nucleus might be associated with a particular
@@ -228,66 +228,61 @@ function HelpDeveloperInfo
 % Identify Secondary or Tertiary modules). Image measurements include a few
 % standard fields: ModuleErrorFeatures, ModuleError, TimeElapsed,
 % FileNamesText, FileNames, PathNamesText, PathNames.
-%   As of 2008_04_25, when a major Measurements overhaul was instituted, 
-% all modules that add measurements must use CPaddmeasurements.  
-% The usage is:
+%
+%   Measurement storage was overhauled April 25 2005, such that all modules
+% that record measurements must use the subfunction CPaddmeasurements. The
+% usage is: 
+%
 %   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data)
+%
+% Which will create this data structure:
+%
+%   handles.Measurements.ObjectName.FeatureName = Data
 % 
 %   where
-%     ObjectName is a single string denoting the object, or simply "Image"
-%       for image measurements
-%     FeatureName is a single string, with category and parameters underscored
+%     -ObjectName is a single string denoting the name of the object, or
+%       simply "Image" for image measurements
+%     -FeatureName is a single string, with category and parameters
+%       (optional) underscored, like this:
+%
+%                   Category_SpecificFeatureName_Parameter  
+%
+%           * Category = Module name (e.g., AreaShape), or useful category, 
+%               or nothing if there is no appropriate category (e.g., if 
+%               feature name = ObjectCount there is no category).
+%               - Note: Do not include the word "Measure" when naming.
+%               - Note: If you create a new category, be sure to add it to
+%               the list of categories in [???? TO DO: Where????] so that
+%               your new category will be selectable from drop down menus
+%               for modules that ask the user to choose a category.
+%           * SpecificFeatureName = specific feature recorded by a module
+%               (e.g., Perimeter). Usually the module recording the
+%               measurement assigns this name, but a few modules allow the
+%               user to type in the name of the feature (e.g., the
+%               CalculateRatios module allows the user to name the ratio).
+%           * Parameters (optional) are used for modules that measure the
+%               same objects in different ways (e.g. the
+%               MeasureObjectIntensity module can measure intensities for
+%               Nuclei in two different images, blue and green). Primarily
+%               used for Channel or scale of Texture. Multiple parameters
+%               can be separated by underscores.
+%               (someday, CP will look at upstream modules and make dropdowns)
+%
 %       Note: use CPjoinstrings to construct underscored parameter names.  
 %        E.g., CPjoinstrings('texture',42,'foo') => 'texture_42_foo'
-%     Data is either:
+%
+%     -Data is either:
 %       (a) Nx1 vector
 %       (b) [], i.e. the empty matrix, for no objects
 %       (c) A single string (in the future, not compatible with objects(?))
 %
-% This will create a Measurements handles with this structure 
-%   handles.Measurements.ObjectName.Category_FeatureName(_Parameter)
-% 
-%   where
-%       ObjectName is same as the CPaddmeasurements argument
-%       Category = Module name, or useful category, 
-%                   or nothing (e.g. if feature name = ObjectCount)
-%                   E.g. 'AreaShape'
-%           Note: Do not include the word "Measure" when naming.
-%               This variable should be available from a settings drop down menu.
-%       FeatureName = particular feature within a module, e.g. 'Area'
-%           Construct from an edit box or hard code
-%               (someday, CP will look at upstream modules and make dropdowns)
-%       Parameter (optional) is used for modules that measure the
-%           same objects in different ways (e.g. the Intensity module can 
-%           measure intensities for Nuclei in two different images, blue and 
-%           green).  Primarily used for Channel or Texture scale
-%           Construct from an edit box or hard code
-%               (someday, CP will look at upstream modules and make dropdowns)
-%
-%%%%% TO BE REMOVED %%%%
-%    The other measurement types have two entries: e.g.
-% handles.Measurements.Nuclei.AreaShapeFeatures and
-% handles.Measurements.Nuclei.AreaShape. The substructure ending in
-% "Features" contains descriptive names of each measurement, e.g. "Area"
-% "Perimeter", "Form Factor". These are essentially column headings. The
-% companion substructure which lacks the "Feature" ending contains the
-% actual numerical measurements themselves. For modules that measure the
-% same objects in different ways (e.g. the Intensity module can measure
-% intensities for Nuclei in two different images, blue and green), the
-% identifying info becomes part of the substructure name, e.g.:
-% handles.Measurements.Nuclei.Intensity_BlueFeatures
-% handles.Measurements.Nuclei.Intensity_Blue
-% handles.Measurements.Nuclei.Intensity_GreenFeatures
-% handles.Measurements.Nuclei.Intensity_Green
-%%%%% TO BE REMOVED %%%%
-%
 %   Be sure to consider whether measurements you are storing will overwrite
-% each other if more than one module is placed in the pipeline. You can
-% differentiate measurements by including something specific in the name
-% (e.g. Intensity modules include the image name (e.g. Blue or Green) in
-% the substructure name). There are also several examples of modules where
-% new measures are appended to the end of an existing substructure (i.e.
-% forming a new column). See Calculate Ratios.
+% each other if more than one of the same module is placed in the pipeline.
+% You can differentiate measurements by including something specific in the
+% name (e.g. Intensity modules include the image name (e.g. Blue or Green)
+% in the substructure name). There are also several examples of modules
+% where new measures are appended to the end of an existing substructure
+% (i.e. forming a new column). See Calculate Ratios.
 %
 % Why are file names stored in several places in the handles structure?
 % The Load Images module creates both handles.Pipeline.FilenameIMAGENAME
@@ -304,7 +299,7 @@ function HelpDeveloperInfo
 % whereas the Filename location is only populated as the images cycle
 % through. We think there are good reasons for having filenames located in
 % different places (especially when dealing with movie files) but we have
-% not documented it thoroughly here!
+% not documented it thoroughly here.
 %
 % Which substructures are deleted prior to an analysis run?
 % Anything stored in handles.Measurements or handles.Pipeline will be

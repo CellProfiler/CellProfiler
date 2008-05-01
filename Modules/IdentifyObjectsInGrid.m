@@ -247,10 +247,10 @@ if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First
             SpotTable = Grid.SpotTable;
         end
         
-        handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_GridFailed'], 1);
+        handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(GridName,'DefinedGrid','GridFailed'), 1);
     else
         %%% If we arrive here, the grid placement has succeeded.
-        handles = CPaddmeasurements(handles, 'Image', ['DefinedGrid_',GridName,'_GridFailed'], 0);
+        handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(GridName,'DefinedGrid','GridFailed'), 0);
     end
 else
     %%% If we aren't allowed to use previous/first grid, and if the

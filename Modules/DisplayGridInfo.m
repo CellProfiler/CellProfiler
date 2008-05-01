@@ -164,9 +164,13 @@ uicontrol(FigHandle,...
     'UserData',findobj(FigHandle,'type','line'),...
     'Callback',GridLineColorCallback);
 
+
+%%% Note that we have stored the text in the "Image" structure. This is
+%%% probably not the perfect place for text where multiple pieces of text
+%%% are to be associated with a single image, but it seems like it won't
+%%% hurt to keep it as is.
 if ~strcmp(DataName1,'/')
-    Text1 = handles.Measurements.Image.(DataName1);
-    Description1 = handles.Measurements.Image.([DataName1 'Description']);
+    Text1 = handles.Measurements.Image.(['LoadedText_',DataName1]);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text1;
@@ -213,8 +217,7 @@ if ~strcmp(DataName1,'/')
 end
 
 if ~strcmp(DataName2,'/')
-    Text2 = handles.Measurements.Image.(DataName2);
-    Description2 = handles.Measurements.Image.([DataName2 'Description']);
+    Text2 = handles.Measurements.Image.(['LoadedText_',DataName2]);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text2;
@@ -262,8 +265,7 @@ if ~strcmp(DataName2,'/')
 end
 
 if ~strcmp(DataName3,'/')
-    Text3 = handles.Measurements.Image.(DataName3);
-    Description3 = handles.Measurements.Image.([DataName3 'Description']);
+    Text3 = handles.Measurements.Image.(['LoadedText_',DataName3]);
 
     temp=reshape(SpotTable,1,[]);
     tempText = Text3;

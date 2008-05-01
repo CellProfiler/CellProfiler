@@ -519,8 +519,8 @@ PixelSize = str2double(handles.Settings.PixelSize);
 [rows,columns] = size(OrigImage);
 OriginalImageArea = rows*columns*PixelSize*PixelSize;
 AreaRetainedAfterCropping = sum(BinaryCropImage(:))*PixelSize*PixelSize;
-handles = CPaddmeasurements(handles, 'Image', ['Crop_AreaRetainedAfterCropping',CroppedImageName], AreaRetainedAfterCropping);
-handles = CPaddmeasurements(handles, 'Image', ['Crop_OriginalImageArea',CroppedImageName], OriginalImageArea);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Crop','AreaRetainedAfterCropping',CroppedImageName), AreaRetainedAfterCropping);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Crop','OriginalImageArea',CroppedImageName), OriginalImageArea);
 
 %%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION %%%

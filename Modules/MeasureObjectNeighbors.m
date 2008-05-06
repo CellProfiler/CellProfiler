@@ -125,14 +125,21 @@ drawnow
 d = max(2,NeighborDistance+1);
 [sr,sc] = size(IncomingLabelMatrixImage);
 ImageOfNeighbors = -ones(sr,sc);
+ImageOfPercentTouching = -ones(sr,sc);
 NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
 IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
-se = strel('disk',d,0);
+if d == 2
+    se = strel('square',5);
+else
+    se = strel('disk',d,0);
+end
 if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
+    %ese = strel('square',5);
     ese = strel('disk',2,0);
     XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
     YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
 end
+global IncomingLabelMatrixImage;
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 NumberOfObjects=max(IncomingLabelMatrixImage(:));
 for k = 1:NumberOfObjects
@@ -216,6 +223,7 @@ for k = 1:NumberOfObjects
     IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
     NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
     ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+    ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
 end
 
 if NumberOfObjects == 0
@@ -291,16 +299,28 @@ if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(IncomingLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
+        CPresizefigure(IncomingLabelMatrixImage,'TwoByTwo',ThisModuleFigureNumber)
     end
-    subplot(2,1,1);
+    subplot(2,2,1);
     CPimagesc(ColoredIncomingObjectsImage,handles);
+    axis image;
     title(ObjectName)
-    subplot(2,1,2);
+
+    subplot(2,2,2);
     CPimagesc(ImageOfNeighbors,handles);
+    axis image;
     colormap(handles.Preferences.LabelColorMap)
-    colorbar('SouthOutside')
+    colorbar('EastOutside')
     title([ObjectName,' colored by number of neighbors'])
+
+    if strcmp(ExtraMeasures,'Yes')
+	subplot(2,2,4);
+	CPimagesc(ImageOfPercentTouching,handles);
+	axis image;
+	colormap(handles.Preferences.LabelColorMap)
+	colorbar('EastOutside')
+	title([ObjectName,' colored by percent touching'])
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -36,6 +36,17 @@ end
 % NOT DONE.  Will be more complicated and require user inputs depending on 
 %           platemap layout
 
+%% Split off WELL into 2 columns (e.g. 'A01' -> 'A' and '01')
+wellCharArray = cell2mat(well);
+if size(wellCharArray,2) ~= 3, error('wells do not all have 3 characters'), end
+row = wellCharArray(:,1);      %% 'A'
+col = wellCharArray(:,2:3);    %% '01'
+
+if ~all(isletter(row)), error('Problem with well row format.  Should all be letters'), end
+if any(isletter(col)), error('Problem with well column format.  Should all be character numbers'), end
+
+rowCellArray = cellstr(row);
+colCellArray = cellstr(col);
 
 %% OUTPUT .csv file
 [pathstr, name, ext] = fileparts(image_file);
@@ -44,10 +55,10 @@ if ~exist(well_file,'file')
     %% Note: cannot use xlswrite, because Mac's can't run Excel COM server
     %%  nor dlmwrite because it outputs one character at a time
     
-    M = [well, site, wavelength];
+    M = [rowCellArray, colCellArray, site, wavelength];
     fid = fopen(well_file,'w');
     for i = 1:size(M,1)
-       fprintf(fid, '%d,%s,%s,%s\n',image_num(i),M{i,1},M{i,2},M{i,3});
+       fprintf(fid, '%d,%s,%s,%s,%s\n',image_num(i),M{i,1},M{i,2},M{i,3},M{i,4});
     end
     fclose(fid);
 else 

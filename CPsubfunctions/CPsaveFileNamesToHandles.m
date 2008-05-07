@@ -1,6 +1,7 @@
 % CPSAVEFILENAMESTOHANDLES Save filenames and pathnames.
 %   This function will move the subdirectory part of the filename to
-%   the pathname before saving to the handles structure.
+%   the pathname before saving to the measurement part of the handles
+%   structure.
 %
 %   Example:
 %      handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, ...

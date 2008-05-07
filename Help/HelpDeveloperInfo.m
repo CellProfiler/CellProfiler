@@ -161,19 +161,20 @@ function HelpDeveloperInfo
 %    *** N.B. handles.Settings.PixelSize is where you should retrieve the
 % PixelSize if needed, not in handles.Preferences!
 %
-% handles.Pipeline:
-% This substructure is deleted at the beginning of the analysis run (see
-% 'Which substructures are deleted prior to an analysis run?' below).
-% handles.Pipeline is for storing data which must be retrieved by other
-% modules. This data can be overwritten as each image cycle is processed,
-% or it can be generated once and then retrieved during every subsequent
-% image set's processing, or it can be saved for each image set by saving
-% it according to which image cycle is being analyzed, depending on how it
-% will be used by other modules. Example fields in handles.Pipeline:
-% FileListOrigBlue, PathnameOrigBlue, FilenameOrigBlue, OrigBlue (which
-% contains the actual image). Whether the handles.Pipeline structure is
-% stored in the output file or not depends on whether you are in Fast Mode
-% (see Help > HelpFastMode or File > SetPreferences).
+% handles.Pipeline: This substructure is deleted at the beginning of
+% the analysis run (see 'Which substructures are deleted prior to an
+% analysis run?' below).  handles.Pipeline is for storing data which
+% must be retrieved by other modules. This data can be overwritten as
+% each image cycle is processed, or it can be generated once and then
+% retrieved during every subsequent image set's processing, or it can
+% be saved for each image set by saving it according to which image
+% cycle is being analyzed, depending on how it will be used by other
+% modules. Example fields in handles.Pipeline: FileListOrigBlue,
+% PathnameOrigBlue, FilenameOrigBlue, OrigBlue (which contains the
+% actual image). Whether the handles.Pipeline structure is stored in
+% the output file or not depends on whether you are in Fast Mode (see
+% Help > HelpFastMode or File > SetPreferences).  See note below for
+% the FileList..., Pathname..., and Filename... fields.
 %
 % handles.Current:
 % This substructure contains information needed for the main CellProfiler
@@ -219,23 +220,25 @@ function HelpDeveloperInfo
 % aggregate measurement based on individual object measurements (e.g. Image
 % MeanAreaCells).  Use the appropriate substructure to ensure that your data
 % will be extracted properly. 
-%   The relationships between objects can also be defined. 
-% For example, a nucleus might be associated with a particular
-% cytoplasm and therefore each nucleus has a cytoplasm's number in the
-% nucleus' measurement field which links the two. Or, for multiple speckles
-% within a nucleus, each speckle will have a nucleus' number indicating
-% which nucleus the speckle belongs to (see the Relate module or
-% Identify Secondary or Tertiary modules). Image measurements include a few
-% standard fields: ModuleErrorFeatures, ModuleError, TimeElapsed,
-% FileNamesText, FileNames, PathNamesText, PathNames.
+%   The relationships between objects can also be defined.  For
+% example, a nucleus might be associated with a particular cytoplasm
+% and therefore each nucleus has a cytoplasm's number in the nucleus'
+% measurement field which links the two. Or, for multiple speckles
+% within a nucleus, each speckle will have a nucleus' number
+% indicating which nucleus the speckle belongs to (see the Relate
+% module or Identify Secondary or Tertiary modules). Image
+% measurements include a few standard fields: ModuleErrorFeatures,
+% ModuleError, TimeElapsed, FileName_IMAGENAME, and
+% PathName_IMAGENAME.  See note below for fields having to do with
+% file and path names.
 %
-%   Measurement storage was overhauled April 25 2005, such that all modules
+%   Measurement storage was overhauled 2008-04-25 such that all modules
 % that record measurements must use the subfunction CPaddmeasurements. The
 % usage is: 
 %
 %   handles = CPaddmeasurements(handles,ObjectName,FeatureName,Data);
 %
-% Which will create this data structure:
+% This will create this data structure:
 %
 %   handles.Measurements.ObjectName.FeatureName = Data
 % 
@@ -294,22 +297,37 @@ function HelpDeveloperInfo
 % where new measures are appended to the end of an existing substructure
 % (i.e. forming a new column). See Calculate Ratios.
 %
-% Why are file names stored in several places in the handles structure?
-% The Load Images module creates both handles.Pipeline.FilenameIMAGENAME
-% and handles.Pipeline.FileListIMAGENAME when loading an image or movie. In
-% addition, file names are stored in handles.Measurements.Image.FileNames.
-% They are present in Measurements so that they can be exported properly.
-% For movies, the FileList field has the original name of the movie file
-% and how many frames it contains. The Filenames field has the original
-% movie file name and appends the frame number for every frame in the
-% movie. This allows the names to be used in other modules such as
-% SaveImages, which would otherwise over-write itself on every cycle using
-% the original file name. The FileList location is created at the beginning
-% of the run and contains all the images that will possibly be analyzed,
-% whereas the Filename location is only populated as the images cycle
-% through. We think there are good reasons for having filenames located in
-% different places (especially when dealing with movie files) but we have
-% not documented it thoroughly here.
+% Why are file names stored in several places in the handles
+% structure?  The Load Images module creates all of the following:
+%  - handles.Pipeline.FileListIMAGENAME
+%  - handles.Pipeline.Pathname
+%  - handles.Pipeline.FilenameIMAGENAME
+%  - handles.Measurements.Image.PathName_IMAGENAME
+%  - handles.Measurements.Image.FileName_IMAGENAME
+% The primary reason for the fields in the Measurements branch is that
+% it allows the information to be exported easily.  However, these
+% fields are also used elsewhere, e.g., the SaveImages module.
+%   The FileList field is mainly useful for movies.  For movies, the
+% FileList field has the original name of the movie file and how many
+% frames it contains. The Filenames field has the original movie file
+% name and appends the frame number for every frame in the movie. This
+% allows the names to be used in other modules such as SaveImages,
+% which would otherwise over-write itself on every cycle using the
+% original file name. The FileList location is created at the
+% beginning of the run and contains all the images that will possibly
+% be analyzed, whereas the Filename location is only populated as the
+% images cycle through.
+%   When images are loaded from subdirectories, the information stored
+% in the Pipeline and Measurements branches become subtly different.
+% Let B be the base directory (either the default image directory or
+% the directory specified as an option to LoadImages).  Suppose that N
+% image files are loaded from various subdirectories of B.  Let Si be
+% the subdirectory of the i-th file loaded, and let Fi be its file
+% name.  Then h.P.Pathname will be the string B; h.P.FilenameIMAGENAME
+% will be a cell array { 'S1/F1', 'S2/F2', ... };
+% h.M.I.PathName_IMAGENAME will be a cell array { 'B/S1', 'B/S2',
+% ... }; and h.M.I.FileName_IMAGENAME will be a cell array { 'F1',
+% 'F2', ... }.
 %
 % Which substructures are deleted prior to an analysis run?
 % Anything stored in handles.Measurements or handles.Pipeline will be

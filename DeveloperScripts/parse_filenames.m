@@ -12,6 +12,10 @@ function parse_filenames( image_file )
 % For now, this only works for files & filenames of this construction ->
 % image number, "..._A01_s1_w2...", etc.
 
+if nargin == 0
+    error('Parse_filenames requires a filename in quotes as input.')
+end
+
 %% READ IMAGE.CSV FILE
 fid = fopen(image_file);
 C = textscan(fid, '%u16 %s %*[^\n]','delimiter',',');

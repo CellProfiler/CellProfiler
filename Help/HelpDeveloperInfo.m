@@ -274,8 +274,11 @@ function HelpDeveloperInfo
 %               can be separated by underscores.
 %               (someday, CP will look at upstream modules and make dropdowns)
 %
-%       Note: use CPjoinstrings to construct underscored parameter names.  
-%        E.g., CPjoinstrings('texture',42,'foo') => 'texture_42_foo'
+%       Note: CPjoinstrings can be helpful in constructing feature
+%       names from strings and integers.  (If you are just joining
+%       strings, it is usually more convenient to join them
+%       directly with ['texture_', stringvariable], etc.)
+%       Usage: CPjoinstrings('texture',42,'foo') => 'texture_42_foo'
 %
 %     -Data is either:
 %       (a) Nx1 vector of numerical data, one number per object where there

@@ -109,7 +109,7 @@ function HelpDeveloperInfo
 % settings when loading a saved pipeline if it is located after
 % infotypeVAR01 or inputtypeVAR01.
 % 
-% When loading the settings of pipeline modules, CellProfiler trys to find
+% When loading the settings of pipeline modules, CellProfiler tries to find
 %       handles.Settings.VariableValues{ModuleNums,i} from the list of 
 %       handles.VariableBox{ModuleNums}(i), 
 % for example, 
@@ -353,6 +353,14 @@ function HelpDeveloperInfo
 % an image by that name, the module will run just fine: it will just
 % repeatedly use the processed image of nuclei leftover from the last image
 % set, which was left in handles.Pipeline.
+% 
+% How do I save the handles structure in a GUI module?
+% Any changes you make to the handles structure are not kept from one
+% module to the next unless they are saved to the GUI first. This is done
+% in MATLAB by using the command guidata(gcbo,handles), where gcbo is a
+% function which identifies the CellProfiler window to the module. Since
+% the guidata command can only store one variable at a time, be sure to use
+% it on the handles structure only.
 %
 % *** IMAGE ANALYSIS ***
 %

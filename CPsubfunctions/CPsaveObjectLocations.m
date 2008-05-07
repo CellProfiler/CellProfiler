@@ -1,3 +1,4 @@
+function handles = CPsaveObjectLocations(handles, objectName, labels)
 % CPSAVEOBJECTLOCATIONS Save the location of each segmented object.
 %   The function returns a new version of the handles structure, in
 %   which the location of each segmented object has been saved.
@@ -6,7 +7,6 @@
 %      handles = CPsaveObjectLocations(handles, 'Cells', cellLabelMatrix)
 %      creates handles.Measurements.Cells{1}.Location_Center_X and
 %      handles.Measurements.Cells{1}.Location_Center_Y.
-function handles = CPsaveObjectLocations(handles, objectName, labels)
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -27,7 +27,7 @@ centroids = cat(1,tmp.Centroid);
 %  centroids = [0 0];
 %end
 
-handles = CPaddMeasurements(handles, objectName, 'Location_Center_X', ...
+handles = CPaddmeasurements(handles, objectName, 'Location_Center_X', ...
                             centroids(:,1));
-handles = CPaddMeasurements(handles, objectName, 'Location_Center_Y', ...
+handles = CPaddmeasurements(handles, objectName, 'Location_Center_Y', ...
                             centroids(:,2));

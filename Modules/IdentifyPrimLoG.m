@@ -7,8 +7,13 @@ function handles = IdentifyPrimLog(handles)
 % Identifies objects given only an image as input.
 % *************************************************************************
 %
-% This module identifies primary objects (e.g. nuclei) in grayscale images
-% that show bright objects on a dark background.
+% This module identifies the centers of primary objects (e.g. nuclei) in
+% grayscale images that show bright objects on a dark background. The
+% IdentifySecondary module can be used to find the edges of objects, after
+% this module runs. Ultimately, this module will become an option in
+% IdentifyPrimAutomatic, so that its options for maxima suppression and
+% finding edges between clumps can be used. This module should therefore be
+% considered beta version/in development.
 %
 % $Revision: 5009 $
 

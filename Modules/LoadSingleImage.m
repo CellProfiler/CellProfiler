@@ -26,7 +26,8 @@ function handles = LoadSingleImage(handles)
 % a standin for the default image folder) as the folder from which images
 % are to be loaded and enter the filename as Imagetobeloaded.tif to load an
 % image from a different subfolder of the parent of the default image
-% folder.
+% folder.  The above also applies for '&' with regards to the default
+% output folder.
 %
 % If more than four single images must be loaded, more than one Load Single
 % Image module can be run sequentially. Running more than one o f these
@@ -60,7 +61,7 @@ drawnow
 
 %textVAR01 = This module loads one image for *all* cycles that will be processed. Typically, however, a different module (LoadImages) is used to load new sets of images during each cycle of processing.
 
-%pathnametextVAR02 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for the default image folder.
+%pathnametextVAR02 = Enter the path name to the folder where the images to be loaded are located.  Type period (.) for the default image folder, or type ampersand (&) for the default output folder.
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %filenametextVAR03 = What image file do you want to load? Include the extension, like .tif
@@ -124,7 +125,14 @@ if strncmp(Pathname,'.',1)
     else
         Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
     end
+elseif strncmp(Pathname, '&', 1)
+    if length(Pathname) == 1
+        Pathname = handles.Current.DefaultOutputDirectory;
+    else
+        Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
+    end
 end
+ 
 SpecifiedPathname = Pathname;
 if ~exist(SpecifiedPathname,'dir')
     error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])

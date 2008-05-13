@@ -213,10 +213,13 @@ if strcmp(OldPathname, '.') ~= 1
     %%% out on the local machine.
     %%% BatchCellProfilerPath = strrep(fullfile(NewPathname,strrep(BatchCellProfilerPath,OldPathname,'')),'\','/');
     BatchImagePath = strrep(strrep(BatchImagePath,OldPathname,NewPathname),'\','/');
+    %    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
+
     %%% This bit of code replaces the "\" to "/" in the image filenames 
-    %%% when the 'Analyze Subdirectories' question='Yes'.  Note: This
-    %%% problem only occurs when a user creates a set of Batch files from 
-    %%% a PC and runs it on a linux cluster. --Martha 2008-03-14
+    %%% when the 'Analyze Subdirectories' question='Yes' in the LoadImages
+    %%% module.  Note: This problem only occurs when a user creates a set
+    %%% of Batch files from a PC and runs it on a linux cluster. --Martha
+    %%% 2008-03-14
     HandlesPipeline = fieldnames(handles.Pipeline);
     for i=1:length(HandlesPipeline)
         if strncmp(HandlesPipeline(i),'FileList', 8)
@@ -227,8 +230,6 @@ if strcmp(OldPathname, '.') ~= 1
         end
     end
     
-    
-    %    BatchImagePath = strrep(fullfile(NewPathname,strrep(BatchImagePath,OldPathname,'')),'\','/');
     BatchOutputPath = strrep(strrep(BatchOutputPath,OldPathname,NewPathname),'\','/');
     %    BatchOutputPath = strrep(fullfile(NewPathname,strrep(BatchOutputPath,OldPathname,'')),'\','/');
     BatchRemotePath = strrep(strrep(BatchRemotePath,OldPathname,NewPathname),'\','/');

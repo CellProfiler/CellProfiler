@@ -269,7 +269,7 @@ end
 %%% Remove slashes entries with N/A or no filename from the input,
 %%% i.e., store only valid entries
 tmp2 = {};
-for n = 1:14
+for n = 1:length(ImageName)
     if ~strcmp(Position{n}, '/') || ~strcmp(ImageName{n}, '/')
         tmp2{end+1} = ImageName{n};
     end

@@ -139,7 +139,6 @@ if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
     XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
     YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
 end
-global IncomingLabelMatrixImage;
 props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 NumberOfObjects=max(IncomingLabelMatrixImage(:));
 for k = 1:NumberOfObjects

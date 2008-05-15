@@ -189,8 +189,6 @@ end
 %%% correctly so that when you open them in CPA they are in nice categories in
 %%% the dropdown menus. It's not often that we store text data so I am not
 %%% sure that I did it properly:
-Fieldname = ['Label_',LabelName];
-handles.Measurements.Image.([Fieldname,'NumericalFeatures']) = NumericalFeatureNames;
-handles.Measurements.Image.([Fieldname,'Numerical'])(handles.Current.SetBeingAnalyzed) = {NumericalValues};
-handles.Measurements.Image.([Fieldname,'Text']) = TextFeatureNames;
-handles.Measurements.Image.(Fieldname)(handles.Current.SetBeingAnalyzed) = {TextValues};
+
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Numerical'), NumericalValues);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Text'), TextValues);

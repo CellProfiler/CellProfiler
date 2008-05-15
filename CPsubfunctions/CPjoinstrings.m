@@ -1,14 +1,21 @@
-% CPJOINSTRINGS Convert arguments to strings and join together with underscore.
-%    The function takes a variable number of argument.  Each argument can be
-%    a string (i.e., a character array) or a number.
-%
-%    Examples:
-%       s = CPjoinstrings() returns the empty string.
-%       s = CPjoinstrings('foo') returns 'foo'.
-%       s = CPjoinstrings('foo', 42) returns 'foo_42'.
-%       s = CPjoinstrings('foo', 23, 'bar') returns 'foo_23_bar'.
 function string = CPjoinstrings(varargin)
+%CPjoinstrings Build underscore-separated string from parts.
+%   The function takes a variable number of argument.  Each argument can be
+%   a string (i.e., a character array) or a number.
 %
+%   CPjoinstrings(D1,D2, ... ) builds a full file name from the
+%   directories D1,D2, etc specified.  This is
+%   conceptually equivalent to
+%
+%      F = [D1 '_' D2 '_' ... '_' DN] 
+%
+%   except that care is taken to handle the cases where the directory
+%   parts D1, D2, etc. may contain an empty string, in which case there are
+%   not two consecutive underscores output.
+%
+%   Examples
+%   See also FILESEP, PATHSEP, FILEPARTS.
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -20,16 +27,27 @@ function string = CPjoinstrings(varargin)
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 5139 $
-string = '';
-for i = 1:nargin
-  if i > 1
-    string = [string, '_'];
-  end
-  arg = varargin{i};
-  if ischar(arg)
-    fragment = arg;
-  else
-    fragment = num2str(arg);
-  end
-  string = [string, fragment];
+
+error(nargchk(2, Inf, nargin, 'struct'));
+
+sepchar = '_';
+string = varargin{1};
+
+for i=2:nargin,
+   part = varargin{i};
+   if isempty(string) || isempty(part)
+      string = [string part];
+   else
+      % Handle the three possible cases
+      if (string(end)==sepchar) && (part(1)==sepchar),
+         string = [string part(2:end)];
+      elseif (string(end)==sepchar) || (part(1)==sepchar )
+         string = [string part];
+      else
+         string = [string sepchar part];
+      end
+   end
 end
+
+
+

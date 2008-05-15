@@ -1,15 +1,12 @@
 function string = CPjoinstrings(varargin)
 %CPjoinstrings Build underscore-separated string from parts.
-%   The function takes a variable number of argument.  Each argument can be
-%   a string (i.e., a character array) or a number.
 %
-%   CPjoinstrings(D1,D2, ... ) builds a full file name from the
-%   directories D1,D2, etc specified.  This is
-%   conceptually equivalent to
+%   CPjoinstrings(D1,D2, ... ) builds a string from 
+%   D1,D2, etc specified.  This is conceptually equivalent to
 %
 %      F = [D1 '_' D2 '_' ... '_' DN] 
 %
-%   except that care is taken to handle the cases where the directory
+%   Care is taken to handle the cases where the directory
 %   parts D1, D2, etc. may contain an empty string, in which case there are
 %   not two consecutive underscores output.
 %

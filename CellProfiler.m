@@ -542,7 +542,7 @@ uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferen
 uimenu(FileMenu,'Label','Load Preferences','Callback','CellProfiler(''LoadPreferences_Callback'',gcbo,[],guidata(gcbo));');
 if ~isdeployed
     uimenu(FileMenu,'Label','Save current CellProfiler code','Callback','CellProfiler(''ZipFiles_Callback'',gcbo,[],guidata(gcbo));');
-    uimenu(FileMenu,'Label','Tech Diagnosis','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
+    uimenu(FileMenu,'Label','Tech Diagnosis','Accelerator','T','Callback','CellProfiler(''TechnicalDiagnosis_Callback'',gcbo,[],guidata(gcbo));');
 end
 uimenu(FileMenu,'Label','Analyze images','Accelerator','N','Callback','CellProfiler(''AnalyzeImagesButton_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);

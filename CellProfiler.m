@@ -678,6 +678,19 @@ Skipped = 0;
 for k = 1:NumberOfModules
     if ~isdeployed
         CurrentModuleNamedotm = [char(ModuleNames{k}) '.m'];
+         
+        %% Calculating a suggested image threshold was added to
+        %% MeasureImageSaturationBlur. 
+        if strcmp(CurrentModuleNamedotm,'Measure.m')
+            CurrentModuleNamedotm  = 'MeasureImageQuality.m'; %% 
+            Filename = 'MeasureImageQuality';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            pause(.1);
+            figure(handles.figure1);
+            Pathnames{k-Skipped} = Pathname;
+            Settings.ModuleNames{k-Skipped} = Filename;
+            CPwarndlg('Note: The module ''MeasureImageSaturationBlur'' has been replaced with ''MeasureImageQuality''.  The settings have been transferred for your convenience.')
+        end
         
         %% Smooth.m was changed to SmoothOrEnhance.m since Tophat Filter
         %% was added to the Smooth Module
@@ -689,7 +702,7 @@ for k = 1:NumberOfModules
             figure(handles.figure1);
             Pathnames{k-Skipped} = Pathname;
             Settings.ModuleNames{k-Skipped} = Filename;
-            CPwarndlg('Note: The module ''Smooth'' has been replaced with ''SmoothOrEnhance''.  The settings have been transferred for your convenience')
+            CPwarndlg('Note: The module ''Smooth'' has been replaced with ''SmoothOrEnhance''.  The settings have been transferred for your convenience.')
         end
         
         if exist(CurrentModuleNamedotm,'file')

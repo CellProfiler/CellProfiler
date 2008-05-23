@@ -13,7 +13,7 @@ function handles = LabelImages(handles)
 % measurement that is stored in the output file and can thus be exported 
 % with other image data. For example, for 96 well plates, the first image
 % cycle will labeled PlateNumber = 1, Row = A, RowNumber = 1, Column = 01, 
-% ColumnNumber = 1, RowAndColumn = A01, and FullLabel = 1_A01. The second 
+% ColumnNumber = 1, RowAndColumn = A01, and FullLabel = Plate1_A01(_site01). The second 
 % well will be labeled A02 or B01, depending on your request. You can also 
 % specify how many images cycles are associated per well, if there are 
 % multiple fields of view per well.
@@ -21,11 +21,12 @@ function handles = LabelImages(handles)
 % Features measured:     Feature Number:
 % PlateNumber           |      1
 % RowNumber             |      2
-% Row                   |      3
-% ColumnNumber          |      4
-% Column                |      5
-% RowAndColumn          |      6 
-% FullLabel             |      7 
+% ColumnNumber          |      3
+% SiteNumber            |      4
+% RowText               |      5
+% ColumnText            |      6
+% RowAndColumnText      |      7 
+% FullLabelText         |      8 
 %
 % Settings: Most are self-explanatory.
 % 
@@ -59,8 +60,8 @@ LabelName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 RowsCols = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 try
     RowsCols = str2num(RowsCols); %#ok Ignore MLint
-    Rows = RowsCols(1);
-    Columns = RowsCols(2);
+    numRows = RowsCols(1);
+    numColumns = RowsCols(2);
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because there is an invalid input for the number of rows and columns.  You need two integers separated by a comma, such as "8,12".']);
 end
@@ -87,7 +88,7 @@ drawnow
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-NumberOfCyclesPerPlate = Rows*Columns*ImageCyclesPerWell;
+NumberOfCyclesPerPlate = numRows*numColumns*ImageCyclesPerWell;
 
 %%% Check whether the number of image sets is divisible by the number of
 %%% rows/columns, but only the first time through the module. No need to
@@ -103,27 +104,43 @@ PlateNumber = ceil(SetBeingAnalyzed/NumberOfCyclesPerPlate);
 
 %%% Subtract previous plates to get a linear well index, which can range
 %%% from 1 to NumberOfCyclesPerPlate. 
-CurrentLinearWellIndex = SetBeingAnalyzed - PlateNumber*NumberOfCyclesPerPlate;
+CurrentLinearWellIndex = rem(SetBeingAnalyzed-1,PlateNumber*NumberOfCyclesPerPlate)+1;
 
-%%% TODO: THE FOLLOWING SIX VALUES NEED TO BE CALCULATED, BASED ON THE
-%%% CurrentLinearWellIndex. I'VE INSERTED DUMMY VALUES FOR NOW. Note that
-%%% we store the same number twice for Column and ColumnNumber, but one is
-%%% a string and the other is a number.
-RowNumber = 2;
-Row = 'A';
-ColumnNumber = 4;
-Column = '04';
-RowAndColumn = 'A01';
-FullLabel = '1_A01';
+%% Get Position Numbers
+SiteNumber = rem(CurrentLinearWellIndex-1,ImageCyclesPerWell)+1;
+
+%% Transpose for 'B01' direction
+if strcmp(RowOrColumn,'A02')
+    ColumnNumber = rem(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)-1,numColumns)+1;
+    RowNumber = ceil(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)/(numColumns));
+elseif strcmp(RowOrColumn,'B01')    
+    RowNumber = rem(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)-1,numRows)+1;
+    ColumnNumber = ceil(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)/(numRows));
+else
+    CPerrordlg('RowOrColumn is invalid.')
+end
+
+%% Get Position Characters
+ColumnText = CPtwodigitstring(ColumnNumber);
+SiteText = CPtwodigitstring(SiteNumber);
+ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+RowText = ALPHABET(RowNumber);
+RowAndColumnText = [RowText ColumnText];
+FullLabelText = ['Plate' num2str(PlateNumber) '_' RowText ColumnText '_site' SiteText];
 
 %%% Make lists of the calculated values and their names for storage and
 %%% display later. Note that numerical features need to be stored
 %%% separately from text string features for proper exporting.
-NumericalFeatureNames = {'PlateNumber' 'RowNumber' 'ColumnNumber'};
-NumericalValues = [PlateNumber RowNumber ColumnNumber];
+% NumericalFeatureNames = {'PlateNumber' 'RowNumber' 'ColumnNumber' 'Site'};
+% NumericalValues = [PlateNumber RowNumber ColumnNumber SiteNumber];
 % NumericalValuesAsTextForDisplay = {num2str(PlateNumber), num2str(RowNumber), num2str(ColumnNumber)};;
-TextFeatureNames = {'Row' 'Column' 'RowAndColumn' 'FullLabel'};
-TextValues = {Row Column RowAndColumn FullLabel};
+% TextFeatureNames = {'Row' 'Column' 'Site' 'RowAndColumn' 'FullLabel'};
+
+%%
+Features = {'PlateNumber' 'RowNumber' 'ColumnNumber' 'SiteNumber' ...
+            'RowText' 'ColumnText' 'RowAndColumnText' 'FullLabelText'};
+FeaturesValues = cellfun(@eval,Features,'UniformOutput',false);
+%%
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -137,46 +154,27 @@ if any(findobj == ThisModuleFigureNumber);
     end
     %%% Activates the appropriate figure window.
     currentfig = CPfigure(handles,'Text',ThisModuleFigureNumber);
+
     %%% Places the text in the window, starting with the heading.
-    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
-        'HorizontalAlignment','center','Backgroundcolor',[.7 .7 .9],'fontname','Helvetica',...
+    uicontrol(ThisModuleFigureNumber,'style','text',...
+        'units','normalized',...
+        'position', [0 0.95 1 0.04],...
+        'HorizontalAlignment','center',...
+        'Backgroundcolor',[.7 .7 .9],...
+        'fontname','Helvetica',...
         'fontsize',handles.Preferences.FontSize,'fontweight','bold','string',[LabelName, ' for cycle #',num2str(handles.Current.SetBeingAnalyzed)],'UserData',handles.Current.SetBeingAnalyzed);
     %%% There are 7 features to be displayed in the window.
-    %%% Display feature 1: PlateNumber
-    n = 1;
-    FeatureName = NumericalFeatureNames{1};
-    FeatureValue = num2str(NumericalValues(1));
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
-    %%% Display feature 2: RowNumber
-    n = 2;
-    FeatureName = NumericalFeatureNames{2};
-    FeatureValue = num2str(NumericalValues(2));
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
-    %%% Display feature 3: Row
-    n = 3;
-    FeatureName = TextFeatureNames{1};
-    FeatureValue = TextValues{1};
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
-     %%% Display feature 4: ColumnNumber
-    n = 4;
-    FeatureName = NumericalFeatureNames{3};
-    FeatureValue = num2str(NumericalValues(3));
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
-    %%% Display feature 5: Column
-    n = 5;
-    FeatureName = TextFeatureNames{2};
-    FeatureValue = TextValues{2};
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
-    %%% Display feature 6: RowAndColumn
-    n = 6;
-    FeatureName = TextFeatureNames{3};
-    FeatureValue = TextValues{3};
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])    
-    %%% Display feature 7: FullLabel
-    n = 7;
-    FeatureName = TextFeatureNames{4};
-    FeatureValue = TextValues{4};
-    uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string', [FeatureName,': ', FeatureValue],'position',[.05 .85-(n-1)*.05 .95 .1],'BackgroundColor',[.7 .7 .9])
+    for idxData = 1:length(Features)
+        FeatureName = Features{idxData};
+        FeatureValue = num2str(FeaturesValues{idxData});
+        uicontrol(currentfig,'style','text',...
+            'units','normalized',...
+            'fontsize',handles.Preferences.FontSize,...
+            'HorizontalAlignment','left',...
+            'string',[FeatureName,': ', FeatureValue],...
+            'position',[.05 .85-(idxData-1)*.05 .95 .1],...
+            'BackgroundColor',[.7 .7 .9])
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -190,5 +188,17 @@ end
 %%% the dropdown menus. It's not often that we store text data so I am not
 %%% sure that I did it properly:
 
-handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Numerical'), NumericalValues);
-handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Text'), TextValues);
+% Fieldname = ['Label_',LabelName];
+% handles.Measurements.Image.([Fieldname,'NumericalFeatures']) = NumericalFeatureNames;
+% handles.Measurements.Image.([Fieldname,'Numerical'])(handles.Current.SetBeingAnalyzed) = {NumericalValues};
+% handles.Measurements.Image.([Fieldname,'StringFeatures']) = TextFeatureNames;
+% handles.Measurements.Image.([Fieldname,'String'])(handles.Current.SetBeingAnalyzed) = {TextValues};
+
+for idxData = 1:length(Features)
+    FeatureName = Features{idxData};
+    FeatureValue = num2str(FeaturesValues{idxData});
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label',FeatureName), FeatureValue);
+end
+
+% handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Numerical'), NumericalValues);
+% handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Text'), TextValues);

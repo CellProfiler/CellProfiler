@@ -30,8 +30,8 @@ if (FirstSet && OldMeasurement),
     error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', handles.Current.CurrentModuleNumber, ').']);
 end
 
-if ((~FirstSet) && (~OldMeasurement)),
-    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add new measurement ', ObjectName, '.',  FeatureName, ' that already exists in set ', int2str(handles.Current.SetBeingAnalyzed)]);
+if (~FirstSet) && (~OldMeasurement) && (~ strcmp(ObjectName, 'Experiment')),
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add new measurement ', ObjectName, '.',  FeatureName, ' in set ', int2str(handles.Current.SetBeingAnalyzed) ' that was not added in first set.']);
 end
 
 %%% Verify we can add this type of Measurement to this type of object
@@ -45,4 +45,8 @@ end
 
 
 %%% Checks have passed, add the data.
-handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed} = Data;
+if strcmp(ObjectName, 'Experiment'),
+    handles.Measurements.(ObjectName).(FeatureName) = Data;
+else
+    handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed} = Data;
+end

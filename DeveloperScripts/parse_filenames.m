@@ -19,7 +19,7 @@ end
 %% READ IMAGE.CSV FILE
 fid = fopen(image_file);
 C = textscan(fid, '%u16 %s %*[^\n]','delimiter',',');
-fclose(fid)
+fclose(fid);
 
 image_num = C{1};
 filename = C{2};
@@ -60,9 +60,14 @@ if ~exist(well_file,'file')
     %%  nor dlmwrite because it outputs one character at a time
     
     M = [rowCellArray, colCellArray, site, wavelength];
+    
+    %% Sort by image_num
+    [image_num_sorted,IDX] = sort(image_num);
+    M_sorted = M(IDX,:);
     fid = fopen(well_file,'w');
-    for i = 1:size(M,1)
-       fprintf(fid, '%d,%s,%s,%s,%s\n',image_num(i),M{i,1},M{i,2},M{i,3},M{i,4});
+    for i = 1:size(M_sorted,1)
+       fprintf(fid, '%d,%s,%s,%s,%s\n',image_num_sorted(i),...
+           M_sorted{i,1},M_sorted{i,2},M_sorted{i,3},M_sorted{i,4});
     end
     fclose(fid);
 else 

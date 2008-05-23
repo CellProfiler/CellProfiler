@@ -12,8 +12,10 @@ function handles = LabelImages(handles)
 % based on a plate layout. The annotation is created and stored as an image 
 % measurement that is stored in the output file and can thus be exported 
 % with other image data. For example, for 96 well plates, the first image
-% cycle will labeled PlateNumber = 1, Row = A, RowNumber = 1, Column = 01, 
-% ColumnNumber = 1, RowAndColumn = A01, and FullLabel = Plate1_A01(_site01). The second 
+% cycle will labeled:
+% PlateNumber = 1, RowNumber = 1, ColumnNumber = 1, SiteNumber = 1, 
+% RowText = A, ColumnText = 01, RowAndColumnText = A01, and 
+% FullLabel = Plate1_A01_site01. The second 
 % well will be labeled A02 or B01, depending on your request. You can also 
 % specify how many images cycles are associated per well, if there are 
 % multiple fields of view per well.
@@ -131,16 +133,9 @@ FullLabelText = ['Plate' num2str(PlateNumber) '_' RowText ColumnText '_site' Sit
 %%% Make lists of the calculated values and their names for storage and
 %%% display later. Note that numerical features need to be stored
 %%% separately from text string features for proper exporting.
-% NumericalFeatureNames = {'PlateNumber' 'RowNumber' 'ColumnNumber' 'Site'};
-% NumericalValues = [PlateNumber RowNumber ColumnNumber SiteNumber];
-% NumericalValuesAsTextForDisplay = {num2str(PlateNumber), num2str(RowNumber), num2str(ColumnNumber)};;
-% TextFeatureNames = {'Row' 'Column' 'Site' 'RowAndColumn' 'FullLabel'};
-
-%%
 Features = {'PlateNumber' 'RowNumber' 'ColumnNumber' 'SiteNumber' ...
             'RowText' 'ColumnText' 'RowAndColumnText' 'FullLabelText'};
 FeaturesValues = cellfun(@eval,Features,'UniformOutput',false);
-%%
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -163,7 +158,7 @@ if any(findobj == ThisModuleFigureNumber);
         'Backgroundcolor',[.7 .7 .9],...
         'fontname','Helvetica',...
         'fontsize',handles.Preferences.FontSize,'fontweight','bold','string',[LabelName, ' for cycle #',num2str(handles.Current.SetBeingAnalyzed)],'UserData',handles.Current.SetBeingAnalyzed);
-    %%% There are 7 features to be displayed in the window.
+    %%% There are the features to be displayed in the window.
     for idxData = 1:length(Features)
         FeatureName = Features{idxData};
         FeatureValue = num2str(FeaturesValues{idxData});
@@ -181,24 +176,8 @@ end
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% TODO: Make sure that these formats are compatible with CellProfiler
-%%% Analyst. They work for exporting to Excel but I haven't checked
-%%% exporting to a database, nor whether the column names are categorized
-%%% correctly so that when you open them in CPA they are in nice categories in
-%%% the dropdown menus. It's not often that we store text data so I am not
-%%% sure that I did it properly:
-
-% Fieldname = ['Label_',LabelName];
-% handles.Measurements.Image.([Fieldname,'NumericalFeatures']) = NumericalFeatureNames;
-% handles.Measurements.Image.([Fieldname,'Numerical'])(handles.Current.SetBeingAnalyzed) = {NumericalValues};
-% handles.Measurements.Image.([Fieldname,'StringFeatures']) = TextFeatureNames;
-% handles.Measurements.Image.([Fieldname,'String'])(handles.Current.SetBeingAnalyzed) = {TextValues};
-
 for idxData = 1:length(Features)
     FeatureName = Features{idxData};
     FeatureValue = num2str(FeaturesValues{idxData});
     handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label',FeatureName), FeatureValue);
 end
-
-% handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Numerical'), NumericalValues);
-% handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Label','Text'), TextValues);

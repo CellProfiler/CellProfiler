@@ -3864,6 +3864,7 @@ else
                             if strcmp(handles.Preferences.SkipErrors,'No')
                                 if isdeployed
                                     errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)
+                                    break_outer_loop = 1;
                                 else
                                     if exist([ModuleName,'.m'],'file') ~= 2,
                                         CPerrordlg(['Image processing was canceled because the image analysis module named ', ([ModuleName,'.m']), ' was not found. Is it stored in the folder with the other modules?  Has its name changed?']);

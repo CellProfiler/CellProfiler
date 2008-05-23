@@ -104,6 +104,7 @@ for i=3:size(handles.Current.PipelineDirectories.Directories);
                 guidata(gcbo, handles);
                 AnalyzeImagesButton_Callback(hObject, eventdata, handles);
 
+
             else
                 %%% Otherwise, clear the Pipeline.
 %                 handles.Settings.ModuleNames = {};
@@ -124,73 +125,78 @@ for i=3:size(handles.Current.PipelineDirectories.Directories);
                 k = k+1;
             end
             cd ..
-%%% Now, we will try to load each pipeline listed in FileListing.  Then,
-%%% change the Default Image and Output directories to be the same location
-%%% as the current directory.
-k=1;
-for k=1:FileNamesNoSubDir(1);
-try
-    if strfind(handles.Current.PipelineDirectories.FileListing(i),'PIPE');
-        %%% If the file contains PIPE load it as a pipeline.
-        eventdata= [DirectoryListing, handles.Current.PipelineDirectories.FileListing(5), errFlg];
-        LoadPipeline_Callback(hObject,eventdata,handles);
-    else
-        %%% Otherwise, clear the Pipeline.  
-        handles.Settings.ModuleNames = {};
-        handles.Settings.VariableValues = {};
-        handles.Settings.VariableInfoTypes = {};
-        handles.Settings.VariableRevisionNumbers = [];
-        handles.Settings.ModuleRevisionNumbers = [];
-        delete(get(handles.variablepanel,'children'));
-        set(handles.slider1,'visible','off');
-        handles.VariableBox = {};
-        handles.VariableDescription = {};
-        set(handles.ModulePipelineListBox,'Value',1);
-        handles.Settings.NumbersOfVariables = [];
-        handles.Current.NumberOfModules = 0;
-        contents = {'No Modules Loaded'};
-        set(handles.ModulePipelineListBox,'String',contents);
-        guidata(hObject,handles);
-    end    
-catch
-    errFlg = 1;
-end
 
-if (errFlg ~= 0)
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not load any pipelines.']);
-end
-        eventdata= [DirectoryListing, handles.Current.PipelineDirectories.FileListing(5), errFlg];
-        LoadPipeline_Callback(hObject,eventdata,handles);
-try
-    [filepath, filename, errFlg, updatedhandles] = callback(gcbo,[],guidata(gcbo));
-catch
-    errFlg = 1;
-end
+            %%% Now, we will try to load each pipeline listed in FileListing.  Then,
+            %%% change the Default Image and Output directories to be the same location
+            %%% as the current directory.
+            k=1;
+            for k=1:FileNamesNoSubDir(1);
+                try
+                    if strfind(handles.Current.PipelineDirectories.FileListing(i),'PIPE');
+                        %%% If the file contains PIPE load it as a pipeline.
+                        eventdata= [DirectoryListing, handles.Current.PipelineDirectories.FileListing(5), errFlg];
+                        LoadPipeline_Callback(hObject,eventdata,handles);
+                    else
+                        %%% Otherwise, clear the Pipeline.
+                        handles.Settings.ModuleNames = {};
+                        handles.Settings.VariableValues = {};
+                        handles.Settings.VariableInfoTypes = {};
+                        handles.Settings.VariableRevisionNumbers = [];
+                        handles.Settings.ModuleRevisionNumbers = [];
+                        delete(get(handles.variablepanel,'children'));
+                        set(handles.slider1,'visible','off');
+                        handles.VariableBox = {};
+                        handles.VariableDescription = {};
+                        set(handles.ModulePipelineListBox,'Value',1);
+                        handles.Settings.NumbersOfVariables = [];
+                        handles.Current.NumberOfModules = 0;
+                        contents = {'No Modules Loaded'};
+                        set(handles.ModulePipelineListBox,'String',contents);
+                        guidata(hObject,handles);
+                    end
+                catch
+                    errFlg = 1;
+                end
 
-if (errFlg ~= 0)
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not initialize pipeline.']);
-end
-try
-    importhandles = load(fullfile(filepath,filename));
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because it could not load from file ' ...
-        fullfile(filepath,filename),'.']);
-end
-% save figure properties
-[ScreenWidth,ScreenHeight] = CPscreensize;
-fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if ~isempty(fig)
-    try
-        close(fig); % Close the Restart figure
+                if (errFlg ~= 0)
+                    error(['Image processing was canceled in the ', ModuleName, ' module because it could not load any pipelines.']);
+                end
+                eventdata= [DirectoryListing, handles.Current.PipelineDirectories.FileListing(5), errFlg];
+                LoadPipeline_Callback(hObject,eventdata,handles);
+                try
+                    [filepath, filename, errFlg, updatedhandles] = callback(gcbo,[],guidata(gcbo));
+                catch
+                    errFlg = 1;
+                end
 
+                if (errFlg ~= 0)
+                    error(['Image processing was canceled in the ', ModuleName, ' module because it could not initialize pipeline.']);
+                end
+                try
+                    importhandles = load(fullfile(filepath,filename));
+                catch
+                    error(['Image processing was canceled in the ', ModuleName, ' module because it could not load from file ' ...
+                        fullfile(filepath,filename),'.']);
+                end
+                % save figure properties
+                [ScreenWidth,ScreenHeight] = CPscreensize;
+                fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
+                if ~isempty(fig)
+                    try
+                        close(fig); % Close the Restart figure
+
+                    end
+                end
+
+                handles.Current.DefaultImageDirectory = pwd;
+                handles.Current.DefaultOutputDirectory = pwd;
+            end
+
+            %%%At the end of this cycle, it will start back at the top of the for-loop.
     end
     end
-
-    handles.Current.DefaultImageDirectory = pwd;
-    handles.Current.DefaultOutputDirectory = pwd; 
-    end
- 
-%%%At the end of this cycle, it will start back at the top of the for-loop.
 end
+
+
 
 

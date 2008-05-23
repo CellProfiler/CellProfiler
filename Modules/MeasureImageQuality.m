@@ -374,19 +374,17 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 %%% At the end of the image set, calculate the mean, median, and stdev
 %%% for the entire image set.
 
-% This code is commented out until Ray fixes the 'Experiment' part of
-% CPaddmeasurements. --Martha 2008-05-22
-% if SetBeingAnalyzed == TotalNumberOfImageSets
-%         for ImageNumber=1:length(tmp2);
-%         Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}));
-%         end
-%         MeanThreshold = mean(cellfun(@mean,Threshold));
-%         MedianThreshold = median(cellfun(@median,Threshold));
-%         StdevThreshold = std(cellfun(@mean,Threshold));
-%         handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MeanThresh_AllImages'), MeanThreshold);
-%         handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MedianThresh_AllImages'), MedianThreshold);
-%         handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'StdThresh_AllImages'), StdevThreshold);
-% end
+if SetBeingAnalyzed == TotalNumberOfImageSets
+        for ImageNumber=1:length(tmp2);
+        Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}));
+        end
+        MeanThreshold = mean(cellfun(@mean,Threshold));
+        MedianThreshold = median(cellfun(@median,Threshold));
+        StdevThreshold = std(cellfun(@mean,Threshold));
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MeanThresh_AllImages'), MeanThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MedianThresh_AllImages'), MedianThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'StdThresh_AllImages'), StdevThreshold);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

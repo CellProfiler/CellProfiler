@@ -350,9 +350,13 @@ for img_idx = FirstSet:LastSet
             FeatureName = FeatureCell{1};
             
             %%% Certain features are not exported
-            if any(strcmp({'Description', 'ModuleError', 'TimeElapsed'}, FeatureName)),
+            Non_exported_list = {'Description'; 'ModuleError'; 'TimeElapsed'};
+            if any(cell2mat(cellfun(@strmatch, Non_exported_list,...
+                    cellstr(repmat(FeatureName,length(Non_exported_list),1)),...
+                    'UniformOutput',false)))
                 continue;
             end
+
 
             %%% Old code checked if data for img_idx existed, but this one always should (entry should be [] if no objects).
             try

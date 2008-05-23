@@ -84,11 +84,6 @@ CPwaitbar(0,waitbarhandle,'Export Status - writing data');
 for Object = 1:length(ExportInfo.ObjectNames)
     ObjectName = ExportInfo.ObjectNames{Object};
 
-    %%% This should warn
-    if strcmp(ObjectName,'Neighbors')
-        continue
-    end
-
     if ~isfield(handles.Measurements,ObjectName)
         CPwarndlg(['The ',ObjectName,' results cannot be exported because those measurements were not made.'],'Warning')
         continue
@@ -96,6 +91,50 @@ for Object = 1:length(ExportInfo.ObjectNames)
 
     %%% Update waitbar
     CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+
+    % Open a file for exporting the measurements
+    % Add dot in extension if it's not there
+    if ExportInfo.MeasurementExtension(1) ~= '.';
+        ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
+    end
+    filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
+    if exist(fullfile(RawPathname,filename),'file')
+        Answer=CPquestdlg(['Do you want to overwrite ',fullfile(RawPathname,filename),'?'],'Overwrite File','Yes','No','Yes');
+        if strcmp(Answer,'No')
+            continue
+        end
+    end
+    fid = fopen(fullfile(RawPathname,filename),'w');
+    if fid == -1
+        error('Cannot create the output file %s. Check permissions and that the file is not locked by another program.',filename);
+    end
+
+    % Header for file
+    fprintf(fid,'%s\n\n', ObjectName);
+
+    %%% Special case: Experiments
+    if strcmp(ObjectName, 'Experiment'),
+        fields = fieldnames(handles.Measurements.(ObjectName));
+        for k = 1:length(fields)
+            fieldname = fields{k};
+            val = handles.Measurements.(ObjectName).(fieldname);
+            if isnumeric(val),
+                fprintf(fid, '%s\t%f\n', fieldname, val);
+            elseif ischar(val),
+                fprintf(fid, '%s\t%s\n', fieldname, val);
+            else
+               error(['Don''t know how to export Experiment measurement ' fieldname '.']);
+           end
+       end
+       fclose(fid);
+       continue;
+   end
+                
+
+    %%% This should warn
+    if strcmp(ObjectName,'Neighbors')
+        continue
+    end
 
     %%% Find number of objects for each image
     if strcmp(ObjectName, 'Image'),
@@ -153,7 +192,6 @@ for Object = 1:length(ExportInfo.ObjectNames)
         ValueNames = [ValueNames CompositeNames];
     end
 
-
     %%% Add in image # indicators
     Prefix = {};
     AllImageFields = fieldnames(handles.Measurements.Image);
@@ -169,27 +207,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     end
     Values = [Prefix Values];
 
-    % Open a file for exporting the measurements
-    % Add dot in extension if it's not there
-    if ExportInfo.MeasurementExtension(1) ~= '.';
-        ExportInfo.MeasurementExtension = ['.',ExportInfo.MeasurementExtension];
-    end
-    filename = [ExportInfo.MeasurementFilename,'_',ObjectName,ExportInfo.MeasurementExtension];
-    if exist(fullfile(RawPathname,filename),'file')
-        Answer=CPquestdlg(['Do you want to overwrite ',fullfile(RawPathname,filename),'?'],'Overwrite File','Yes','No','Yes');
-        if strcmp(Answer,'No')
-            continue
-        end
-    end
-    fid = fopen(fullfile(RawPathname,filename),'w');
-    if fid == -1
-        error('Cannot create the output file %s. Check permissions and that the file is not locked by another program.',filename);
-    end
-
     %%% Write tab-separated file that can be imported into Excel
-    % Header part
-    fprintf(fid,'%s\n\n', ObjectName);
-
     %%% row or columns major?
     if strcmp(ExportInfo.SwapRowsColumnInfo,'No'),
         %%% Write feature names
@@ -237,6 +255,8 @@ for Object = 1:length(ExportInfo.ObjectNames)
             fprintf(fid, '\n');
         end
     end
+
+    fclose(fid);
 end
 
 close(waitbarhandle);

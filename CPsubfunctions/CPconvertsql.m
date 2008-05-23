@@ -84,7 +84,8 @@ end
 
 
 %%% Write the SQL table description and data loader.
-if (handles.Current.SetBeingAnalyzed == 1) || handles.Pipeline.DataToolExporting,
+if (handles.Current.SetBeingAnalyzed == 1) || ...
+        (isfield(handles.Pipeline,'DataToolExporting') && handles.Pipeline.DataToolExporting),
     if strcmp(SQLchoice,'MySQL')
 
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');

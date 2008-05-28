@@ -114,19 +114,14 @@ drawnow
 try
     [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
         SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
-    handles.Measurements.(SubObjectName).SubObjectFlag=1;
+    handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
     
     %% Save Distance 'Features'
-    handles.Measurements.(SubObjectName).DistanceFeatures = ParentName;
 
-    %% Initialize Distance
-    handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = ...
-        zeros(max([length(ParentsOfChildren) 1]),length(ParentName));
-    
     %% Calcuate the smallest distance from each Child to their Parent
     %% If no parent exists, then Distance = NaN
         
-    if isfield(handles.Measurements.(SubObjectName),'Location')
+    if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
         iObj = 0;
         for thisParent = ParentName %% Will need to change if we add more StepParents
             iObj = iObj + 1;
@@ -140,10 +135,11 @@ try
                 
                 %% Get location of each child object
                 ChList = find(ParentsOfChildren == iParentsOfChildren);
-                ChildrenLocations = handles.Measurements.(SubObjectName).Location{handles.Current.SetBeingAnalyzed}(ChList,:);
-
-                roundedChLoc = round(ChildrenLocations);
-                idx = sub2ind(size(DistTrans),roundedChLoc(:,2), roundedChLoc(:,1));
+                ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
+                ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
+                roundedChLocX = round(ChildrenLocationsX);
+                roundedChLocY= round(ChildrenLocationsY);
+                idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
                 Dist = DistTrans(idx);
 
                 %% SAVE Distance to 'handles'
@@ -164,51 +160,55 @@ try
         NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
         
         %% Save Normalized Distances
-        handles.Measurements.(SubObjectName).NormDistanceFeatures = {ParentName{1}}; %% outer curly brackets needed for correct length(MeasurementFeatures) calculation in inner loop below
-        handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = NormDist;
+         handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',{ParentName{1}}],NormDist);
     end
 
     %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
     %% which finds the mean measurements of all the subObjects that relate to each parent object
     MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
     NewObjectName=['Mean',SubObjectName];
-    if isfield(handles.Measurements.(SubObjectName),'Parent')
+    if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
 
         % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
-        if length(handles.Measurements.(SubObjectName).Parent) >= handles.Current.SetBeingAnalyzed
-            Parents=handles.Measurements.(SubObjectName).Parent{handles.Current.SetBeingAnalyzed};
-            for RemainingMeasurementFieldnames = MeasurementFieldnames
-                if isempty(strfind(char(RemainingMeasurementFieldnames),'Features')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Parent')) || ~isempty(strfind(char(RemainingMeasurementFieldnames),'Children'))
-                    continue
-                else
-                    FieldName=char(RemainingMeasurementFieldnames);
-                    MeasurementFeatures=handles.Measurements.(SubObjectName).(FieldName);
-                    handles.Measurements.(NewObjectName).(FieldName)=MeasurementFeatures;
-                    if length(handles.Measurements.(SubObjectName).(FieldName(1:end-8))) >= handles.Current.SetBeingAnalyzed;
-                        Measurements=handles.Measurements.(SubObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed};
-                        % The loop over 'j' below will never be entered if
-                        % there are no parents in the image, leading to a bug
-                        % where the data is truncated if the last few images
-                        % don't contain parents.  This next statement handles
-                        % that case by ensuring that at least something is
-                        % written at the correction location in the
-                        % Measurements structure.
-                        handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed} = [];
-                        for i=1:length(MeasurementFeatures)
+        if length(handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1}))) >= handles.Current.SetBeingAnalyzed
+            Parents=handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1})){handles.Current.SetBeingAnalyzed};
+                MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
+                handles.Measurements.(NewObjectName)=MeasurementFeatures;
+                %Why is this test line here?  Maybe it was necessary before we fixed the CPaddmeasurements problems? I've removed the 'end' for
+                %this test. -Martha 2008-05-27
+                %if length(handles.Measurements.(SubObjectName).(Fieldnames)) >= handles.Current.SetBeingAnalyzed;
+                   
+                
+                    % The loop over 'j' below will never be entered if
+                    % there are no parents in the image, leading to a bug
+                    % where the data is truncated if the last few images
+                    % don't contain parents.  This next statement handles
+                    % that case by ensuring that at least something is
+                    % written at the correction location in the
+                    % Measurements structure.
+                    
+                    for i=1:length(MeasurementFeatures)
+                        Fieldnames = MeasurementFieldnames{i};
+                        Measurements=handles.Measurements.(SubObjectName).(Fieldnames){handles.Current.SetBeingAnalyzed};
+                        handles.Measurements.(NewObjectName).(Fieldnames){handles.Current.SetBeingAnalyzed} = [];
+                        if strcmp(Fieldnames,'SubObjectFlag')
+                            % Code errors with SubObjectFlag, since there
+                            % is only one value.  So, it will be set to the
+                            % same value as it is for the SubObject.
+                            handles.Measurements.(NewObjectName).(Fieldnames){1}=1;
+                        else
                             for j=1:max(max(ParentObjectLabelMatrix))
                                 index=find(Parents==j);
-                                if isempty(index)
-                                    handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=0;
+                                if isempty(index) OR (index == 0)
+                                    handles.Measurements.(NewObjectName).(Fieldnames){j}=0;
                                 else
-                                    handles.Measurements.(NewObjectName).(FieldName(1:end-8)){handles.Current.SetBeingAnalyzed}(j,i)=mean(Measurements(index,i));
+                                    handles.Measurements.(NewObjectName).(Fieldnames){j}=mean(Measurements(index));
                                 end
                             end
                         end
-                    else
-                        CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
                     end
-                end
-            end
+                else
+                    CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
         end
     end
 catch

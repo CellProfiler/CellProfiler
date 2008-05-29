@@ -681,7 +681,7 @@ for k = 1:NumberOfModules
          
         %% Calculating a suggested image threshold was added to
         %% MeasureImageSaturationBlur. 
-        if strcmp(CurrentModuleNamedotm,'Measure.m')
+        if strcmp(CurrentModuleNamedotm,'MeasureImageSaturationBlur.m')
             CurrentModuleNamedotm  = 'MeasureImageQuality.m'; %% 
             Filename = 'MeasureImageQuality';
             Pathname = handles.Preferences.DefaultModuleDirectory;

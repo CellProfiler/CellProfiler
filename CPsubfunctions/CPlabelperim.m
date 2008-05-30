@@ -1,4 +1,4 @@
-function LabelBoundaryImage = CPlabelperim(LabelMatrixImage)
+function LabelBoundaryImage = CPlabelperim(LabelMatrixImage, conn)
 
 % A fast fuction to obtain the label boundary image from a label matrix image. 
 % The Matlab function 'bwperim' only works for a binary image, i.e.,
@@ -12,6 +12,8 @@ function LabelBoundaryImage = CPlabelperim(LabelMatrixImage)
 %                        2     0     0     2     0     0
 %                        2     2     2     2     0     0      
 %
+% Second, optional argument is neghborhood connectivity, defaulting to 4.
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -24,6 +26,10 @@ function LabelBoundaryImage = CPlabelperim(LabelMatrixImage)
 %
 % $Revision: 4200 $
 
+if nargin == 1,
+    conn = 4;
+end
+
 [sr sc] = size(LabelMatrixImage);        
 ShiftLeft = zeros(sr,sc);
 ShiftRight = zeros(sr,sc);
@@ -33,7 +39,23 @@ ShiftLeft(:,1:end-1) = LabelMatrixImage(:,2:end);
 ShiftRight(:,2:end) = LabelMatrixImage(:,1:end-1);
 ShiftUp(1:end-1,:) = LabelMatrixImage(2:end,:);
 ShiftDown(2:end,:) = LabelMatrixImage(1:end-1,:);
-InnerOuterBoundaryImage = ((ShiftLeft~=LabelMatrixImage) | (ShiftRight~=LabelMatrixImage) | ...
-                             (ShiftUp~=LabelMatrixImage) | (ShiftDown~=LabelMatrixImage));
+if conn == 4,
+    InnerOuterBoundaryImage = ((ShiftLeft~=LabelMatrixImage) | (ShiftRight~=LabelMatrixImage) | ...
+        (ShiftUp~=LabelMatrixImage) | (ShiftDown~=LabelMatrixImage));
+else
+    ShiftLeftUp = zeros(sr, sc);
+    ShiftLeftDown = zeros(sr, sc);
+    ShiftRightUp = zeros(sr, sc);
+    ShiftRightDown = zeros(sr, sc);
+    ShiftLeftUp(1:end-1,:) = ShiftLeft(2:end,:);
+    ShiftRightUp(1:end-1,:) = ShiftRight(2:end,:);
+    ShiftLeftDown(2:end,:) = ShiftLeft(1:end-1,:);
+    ShiftRightDown(2:end,:) = ShiftRight(1:end-1,:);
+    InnerOuterBoundaryImage = ((ShiftLeft~=LabelMatrixImage) | (ShiftRight~=LabelMatrixImage) | ...
+        (ShiftUp~=LabelMatrixImage) | (ShiftDown~=LabelMatrixImage) | ...
+        (ShiftRightUp~=LabelMatrixImage) | (ShiftRightDown~=LabelMatrixImage) | ...
+        (ShiftLeftUp~=LabelMatrixImage) | (ShiftLeftDown~=LabelMatrixImage));
+end
+    
 BoundaryImage = LabelMatrixImage & InnerOuterBoundaryImage;
 LabelBoundaryImage = BoundaryImage .* LabelMatrixImage;

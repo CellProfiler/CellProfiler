@@ -25,10 +25,13 @@ function handles = MeasureObjectNeighbors(handles)
 % SecondClosestYVector      |    8
 % AngleBetweenNeighbors     |    9
 %
-% How it works:
-% Retrieves objects in label matrix format. The objects are expanded by the
-% number of pixels the user specifies, and then the module counts up how
-% many other objects the object is overlapping.
+% How it works: Retrieves objects in label matrix format. The objects
+% are expanded by the number of pixels the user specifies, and then
+% the module counts up how many other objects the object is
+% overlapping.  PercentTouching, if computed, is defined as the number
+% of boundary pixels on an object not obscured when other objects are
+% dilated by the Neighbor distance limit (or 2 pixels if this distance
+% is set to 0 for the maximum expansion option detailed above).
 %
 % Interpreting the module output:
 % In the color image output of the module, there is a color spectrum used
@@ -122,89 +125,98 @@ IncomingLabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],Mod
 drawnow
 
 %%% Determines the neighbors for each object.
-d = max(2,NeighborDistance+1);
 [sr,sc] = size(IncomingLabelMatrixImage);
 ImageOfNeighbors = -ones(sr,sc);
 ImageOfPercentTouching = -ones(sr,sc);
-NumberOfNeighbors = zeros(max(IncomingLabelMatrixImage(:)),1);
-IdentityOfNeighbors = cell(max(IncomingLabelMatrixImage(:)),1);
-if d == 2
-    se = strel('square',5);
-else
-    se = strel('disk',d,0);
+NumberOfObjects=max(IncomingLabelMatrixImage(:));
+NumberOfNeighbors = zeros(NumberOfObjects,1);
+IdentityOfNeighbors = cell(max(NumberOfObjects),1);
+props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
+
+% Find structuring element to use for neighbor & perimeter identification.
+switch NeighborDistance,
+    case {0, 2},
+        se = strel('square', 5);
+        d = 2;
+    case 1,
+        se = strel('square', 3);
+        d = 1;
+    otherwise,
+        se = strel('disk', NeighborDistance);
+        d = NeighborDistance;
 end
+
+% If NeighborDistance is 0, we need to dilate all the labels
+if (NeighborDistance == 0),
+    [D, L] = bwdist(IncomingLabelMatrixImage > 0);
+    DilatedLabels = IncomingLabelMatrixImage(L);
+end
+    
+
 if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
-    %ese = strel('square',5);
-    ese = strel('disk',2,0);
     XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
     YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
+    %%% Compute all pairs distance matrix
+    XYLocations = [XLocations, YLocations];
+    a = reshape(XYLocations,1,NumberOfObjects,2);
+    b = reshape(XYLocations,NumberOfObjects,1,2);
+    AllPairsDistance = sqrt(sum((a(ones(NumberOfObjects,1),:,:) - b(:,ones(NumberOfObjects,1),:)).^2,3));
 end
-props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
-NumberOfObjects=max(IncomingLabelMatrixImage(:));
+
 for k = 1:NumberOfObjects
-    % Cut patch
+    % Cut patch around cell
     [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
     rmax = min(sr,max(r) + (d+1));
     rmin = max(1,min(r) - (d+1));
     cmax = min(sc,max(c) + (d+1));
     cmin = max(1,min(c) - (d+1));
-    p = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
-    % Extend cell boundary
-    pextended = imdilate(p==k,se,'same');
-    overlap = p.*pextended;
+    patch = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
+    % Extend cell to find neighbors
+    if (NeighborDistance > 0),
+        extended = imdilate(patch==k,se,'same');
+        overlap = patch(extended);
+        IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+        NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
+        ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+    else
+        %%% Use the dilated image to find neighbors (don't bother using patches)
+        extended = imdilate(DilatedLabels == k, strel('square', 3));
+        overlap = DilatedLabels(extended);
+        IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+        NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
+        ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+    end        
+
     if strcmp(ExtraMeasures,'Yes')
         %%% PERCENT TOUCHING %%%
-        epextended = imdilate(p,ese,'same');
-        x=bwperim(bwlabel(p==k));
-        State = warning;
-        warning off Matlab:DivideByZero
-        y=(imdilate(p~=k & p~=0,ese,'same')+(p==k))./(imdilate(p~=k & p~=0,ese,'same')+(p==k));
-        warning(State);
-        y(find(isnan(y)))=0;
-        z1=[zeros(1,size(y,2));y(1:end-1,:)];
-        z2=[y(2:end,:);zeros(1,size(y,2))];
-        z3=[zeros(size(y,1),1),y(:,1:end-1)];
-        z4=[y(:,2:end),zeros(size(y,1),1)];
-        Combined1=z1-x;
-        Combined2=z2-x;
-        Combined3=z3-x;
-        Combined4=z4-x;
-        EdgePixels=find(Combined1==-1 | Combined2==-1 | Combined3==-1 | Combined4==-1);
-        PercentTouching(k) = ((sum(sum(x))-length(EdgePixels))/sum(sum(x)))*100;
-
-        if NumberOfObjects > 4
+        % Find boundary pixel of current cell
+        BoundaryPixels = bwperim(patch == k, 8);
+        % Remove the current cell, and dilate the other objects
+        OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
+        PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
+        ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
+        if NumberOfObjects >= 3
             %%% CLOSEST NEIGHBORS %%%
-            CurrentX=XLocations(k);
-            CurrentY=YLocations(k);
-            XLocationsMinusCurrent=XLocations;
-            XLocationsMinusCurrent(k)=[];
-            YLocationsMinusCurrent=YLocations;
-            YLocationsMinusCurrent(k)=[];
-            FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
-            XLocationsMinusFirstClosest=XLocationsMinusCurrent;
-            XLocationsMinusFirstClosest(FirstClosest)=[];
-            YLocationsMinusFirstClosest=YLocationsMinusCurrent;
-            YLocationsMinusFirstClosest(FirstClosest)=[];
-            SecondClosest = dsearch(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest,delaunay(XLocationsMinusFirstClosest,YLocationsMinusFirstClosest),CurrentX,CurrentY);
-            FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
-            FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
-            FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
-            SecondXVector(k)=XLocationsMinusFirstClosest(SecondClosest)-CurrentX;
-            SecondYVector(k)=YLocationsMinusFirstClosest(SecondClosest)-CurrentY;
-            SecondObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusFirstClosest(SecondClosest)),round(XLocationsMinusFirstClosest(SecondClosest)));
-            AngleBetweenTwoClosestNeighbors(k)=real(acosd(dot([FirstXVector(k) FirstYVector(k)],[SecondXVector(k) SecondYVector(k)])/(sqrt(FirstXVector(k)^2+FirstYVector(k)^2)*sqrt(SecondXVector(k)^2+SecondYVector(k)^2))));
-        elseif NumberOfObjects > 3
+            DistancesFromCurrent = AllPairsDistance(k, :);
+            [Dists, Indices] = sort(DistancesFromCurrent);
+            FirstObjectNumber(k) = Indices(2);
+            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
+            SecondObjectNumber(k) = Indices(3);
+            SecondXVector(k) = XLocations(SecondObjectNumber(k)) - XLocations(k);
+            SecondYVector(k) = YLocations(SecondObjectNumber(k)) - YLocations(k);
+            Vec1 = [FirstXVector(k) FirstYVector(k)];
+            Vec2 = [SecondXVector(k) SecondYVector(k)];
+            AngleBetweenTwoClosestNeighbors(k) = real(acosd(dot(Vec1, Vec2) / (norm(Vec1) * norm(Vec2))));
+        elseif NumberOfObjects == 2,
             %%% CLOSEST NEIGHBORS %%%
-            CurrentX=XLocations(k);
-            CurrentY=YLocations(k);
-            XLocationsMinusCurrent=XLocations;
-            XLocationsMinusCurrent(k)=[];
-            YLocationsMinusCurrent=YLocations;
-            YLocationsMinusCurrent(k)=[];
-            FirstClosest = dsearch(XLocationsMinusCurrent,YLocationsMinusCurrent,delaunay(XLocationsMinusCurrent,YLocationsMinusCurrent),CurrentX,CurrentY);
-            FirstXVector(k)=XLocationsMinusCurrent(FirstClosest)-CurrentX;
-            FirstYVector(k)=YLocationsMinusCurrent(FirstClosest)-CurrentY;
-            FirstObjectNumber(k)=IncomingLabelMatrixImage(round(YLocationsMinusCurrent(FirstClosest)),round(XLocationsMinusCurrent(FirstClosest)));
+            if k == 1,
+                FirstObjectNumber(k) = 2;
+            else
+                FirstObjectNumber(k) = 1;
+            end
+            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
             SecondObjectNumber(k)=0;
             SecondXVector(k)=0;
             SecondYVector(k)=0;
@@ -219,10 +231,6 @@ for k = 1:NumberOfObjects
             AngleBetweenTwoClosestNeighbors(k)=0;
         end
     end
-    IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
-    NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
-    ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
-    ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
 end
 
 if NumberOfObjects == 0
@@ -312,6 +320,13 @@ if any(findobj == ThisModuleFigureNumber)
     colorbar('EastOutside')
     title([ObjectName,' colored by number of neighbors'])
 
+    if (NeighborDistance == 0),
+        subplot(2,2,3);
+        CPimagesc(CPlabel2rgb(handles, DilatedLabels), handles);
+        axis image;
+        title(['Fully expanded ' ObjectName]);
+    end
+
     if strcmp(ExtraMeasures,'Yes')
 	subplot(2,2,4);
 	CPimagesc(ImageOfPercentTouching,handles);
@@ -320,6 +335,7 @@ if any(findobj == ThisModuleFigureNumber)
 	colorbar('EastOutside')
 	title([ObjectName,' colored by percent touching'])
     end
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -31,8 +31,15 @@ function handles = MeasureImageIntensity(handles)
 % thresholded region around those bright objects by a certain distance so
 % as to avoid a 'halo' effect.
 %
+% For publication purposes, it is important to note that the units of
+% intensity from microscopy images are usually described as "Intensity
+% units" or "Arbitrary intensity units" since microscopes are not 
+% callibrated to an absolute scale. Also, it is important to note whether 
+% you are reporting either the mean or the total intensity, so specify
+% "Mean intensity units" or "Total intensity units" accordingly.
+%
 % See also MeasureObjectIntensity.
-
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

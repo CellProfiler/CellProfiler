@@ -52,6 +52,13 @@ function handles = MeasureObjectIntensity(handles)
 % gray-level representation of the object and the binary representation of
 % the object.
 %
+% For publication purposes, it is important to note that the units of
+% intensity from microscopy images are usually described as "Intensity
+% units" or "Arbitrary intensity units" since microscopes are not 
+% callibrated to an absolute scale. Also, it is important to note whether 
+% you are reporting either the mean or the integrated intensity, so specify
+% "Mean intensity units" or "Integrated intensity units" accordingly.
+%
 % See also MeasureImageIntensity.
 
 % CellProfiler is distributed under the GNU General Public License.

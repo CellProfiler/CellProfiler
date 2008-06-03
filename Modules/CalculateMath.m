@@ -24,7 +24,9 @@ function handles = CalculateMath(handles)
 % will be used for the operation. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% The calculations are stored along with the *first* object's data.
+% The calculations are stored along with the *first* object's data, unless 
+% the first object is an image and the second is not.  In this case,
+% the calculations are stored with the second object.
 %
 % See also CalculateRatios, all Measure modules.
 
@@ -186,8 +188,11 @@ if ~isnan(Power)
     FinalMeasurements = FinalMeasurements .^ Power;
 end
 
-handles = CPaddmeasurements(handles,FirstObjectName,MathFieldName,FinalMeasurements);
-
+if strcmp('Image',FirstObjectName) && ~strcmp('Image',SecondObjectName)
+    handles = CPaddmeasurements(handles,SecondObjectName,MathFieldName,FinalMeasurements);
+else
+    handles = CPaddmeasurements(handles,FirstObjectName,MathFieldName,FinalMeasurements);
+end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%

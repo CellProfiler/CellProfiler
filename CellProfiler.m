@@ -538,6 +538,7 @@ uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callba
 uimenu(FileMenu,'Label','Clear Pipeline','Callback','CellProfiler(''ClearPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Run Multiple Pipelines','Callback','CellProfiler(''RunMultiplePipelines_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Preferences','Callback','CellProfiler(''LoadPreferences_Callback'',gcbo,[],guidata(gcbo));');
 if ~isdeployed
@@ -1147,6 +1148,292 @@ descriptiontext = uicontrol(...
     'FontName','helvetica',...
     'FontSize',handles.Preferences.FontSize,...
     'Tag','descriptiontext'); %#ok Ignore MLint
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% RUN MULTIPLE PIPELINES BUTTON %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
+    RunMultiplePipelines_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+% Asks the user for a root directory in which pipelines are located, whether in
+% the root or in a sub-directory. Once specified, the function looks for
+% all pipeline files, and loads/executes each one sequentially. Output is
+% stored in the directory where the pipeline was located.
+
+%%% Define a couple of helpful variables for later use
+FrontEndFigure = handles.figure1;
+PipelineFileIdentifier = 'PIPE';
+
+%%% Obtain the root directory where the pipelines are to be processed
+if isempty(eventdata)
+    errFlg = 0;
+    RootPipelinesPathname = ...
+        uigetdir(handles.Current.DefaultOutputDirectory,'Choose the root directory where your pipelines are located.'); 
+    pause(.1);
+    figure(FrontEndFigure);
+else
+    RootPipelinesPathname = eventdata.SettingsPathname;
+end
+
+%%% If the user pressed Cancel, exit
+if RootPipelinesPathname == 0, return; end
+
+%%% Obtain directory list recursively using subdir (see subfunction below) 
+FilesAndDirsStructure = subdir(RootPipelinesPathname);
+
+%%% Puts the logical value of whether each object is a directory into a list.
+LogicalIsDirectory = cat(1,FilesAndDirsStructure.isdir);
+
+%%% Removes all directories from the list, leaving only files
+FilesAndDirsStructure = FilesAndDirsStructure(~LogicalIsDirectory);
+
+%%% Find only those files which have 'PIPE' in the name
+AllPotentialPipelineFilenames = cat(1,{FilesAndDirsStructure.name});
+FilesWithPIPEInName = regexp(AllPotentialPipelineFilenames,PipelineFileIdentifier);     % Match string to filename
+FilesWithPIPEInName(cellfun('isempty',FilesWithPIPEInName)) = {0};                      % Insert 0 for []
+FilesAndDirsStructure = FilesAndDirsStructure(find(cell2mat(FilesWithPIPEInName)));     % Remove non-PIPE files 
+
+%%% Saves the filename and directory lists separately.
+PipelinePathnames = {FilesAndDirsStructure.dir};
+PipelineFilenames = {FilesAndDirsStructure.name};
+
+ %%% Opens a window that lets the user choose what pipelines to run
+try choices = RunMultiplePipelines_Dialog(handles,PipelineFilenames);
+    if choices.Cancelled,               % If the user cancelled, then exit
+        return;
+    elseif isempty(choices.Indices),    % If the user selected nothing, then exit
+        return;
+    else                                % Otherwise, continue
+        IndicesOfPipelinesToRun = choices.Indices;
+    end
+catch CPerrordlg(lasterr)
+    return;
+end
+    
+%%% Use the user input to trim the pipeline list
+PipelineFilenames = PipelineFilenames(IndicesOfPipelinesToRun);
+PipelinePathnames = PipelinePathnames(IndicesOfPipelinesToRun);
+handles.Current.PipelineDirectories.Pathnames = PipelinePathnames;
+handles.Current.PipelineDirectories.Filenames = PipelineFilenames;
+
+%%% Start processing each pipeline in order
+for i = 1:length(PipelineFilenames);
+    handles = guidata(FrontEndFigure);
+    
+    %%% Now, we will try to load each pipeline listed in PipelineFilenames. 
+    %%% Beforehand, change the Default Image and Output directories to be 
+    %%% the same location as the current directory.
+    errFlg = 0;
+
+    try    %%% Attempt to run the pipeline
+        %%% Place the relevant parameters into eventdata and invoke 
+        %%% LoadPipeline_Callback
+        SettingsFilename = PipelineFilenames{i};
+        SettingsPathname = PipelinePathnames{i};
+        eventdata.SettingsPathname = SettingsPathname;
+        eventdata.SettingsFileName = SettingsFilename;
+        guidata(hObject,handles);
+        LoadPipeline_Callback(hObject,eventdata,guidata(FrontEndFigure));
+
+        %%% Set the current image and output directories to that in which the current pipeline is located
+        handles = guidata(FrontEndFigure);
+        handles.Current.DefaultImageDirectory = SettingsPathname;
+        handles.Current.DefaultOutputDirectory = SettingsPathname;
+        guidata(gcbo,handles);
+        
+        %%% Displays the chosen directories in the 
+        %%% DefaultImageDirectoryEditBox and DefaultOutputDirectoryEditBox.
+        set(handles.DefaultImageDirectoryEditBox,'String',handles.Current.DefaultImageDirectory);
+        set(handles.DefaultOutputDirectoryEditBox,'String',handles.Current.DefaultOutputDirectory);
+        
+        %%% Execute callback for DefaultImageDirectoryEditBox to retrieves the list of 
+        %%% image file names from the chosen directory, store them in the handles 
+        %%% structure, and display them in the filenameslistbox
+        DefaultImageDirectoryEditBox_Callback(hObject, [], guidata(FrontEndFigure));
+        % Do the same for OutputDirectoryEditBox
+        DefaultOutputDirectoryEditBox_Callback(hObject, [], guidata(FrontEndFigure));
+        
+        %%% Now run the pipeline by invoking AnalyzeImagesButton_Callback
+        AnalyzeImagesButton_Callback(hObject, eventdata, guidata(FrontEndFigure));
+    catch       %%% If something goes wrong, throw an error
+        errFlg = 1;
+    end
+
+    if errFlg ~= 0
+        error(['Image processing was canceled in RunMultiplePipelines due to an error.']);
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION: RUN MULTIPLE PIPELINES -> : SUBDIR %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function file = subdir(cdir)
+%SUBDIR List directory and all subdirectories.
+% SUBDIR recursively calls itself and uses DIR to find all files and
+% directories within a specified directory and all its subdirectories.
+%
+% D = SUBDIR('directory_name') returns the results in an M-by-1
+% structure with the fields:
+% name -- filename
+% dir -- directory containing file
+% date -- modification date
+% bytes -- number of bytes allocated to the file
+% isdir -- 1 if name is a directory and 0 if not
+
+if nargin == 0 || isempty(cdir)
+    cdir = cd; % Current directory is default
+end
+if cdir(end)=='\'
+    cdir(end) = ''; % Remove any trailing \ from directory
+end
+file = dir(cdir); % Read current directory
+for n = 1:length(file)
+    file(n).dir = cdir; % Assign dir field
+    if file(n).isdir && file(n).name(1)~='.'
+        % Element is a directory -> recursively search this one
+        tfile = subdir([cdir '\' file(n).name]); % Recursive call
+        file = [file; tfile]; % Append to result to current directory structure
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION: RUN MULTIPLE PIPELINES -> RunMultiplePipelines_Dialog %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function choices = RunMultiplePipelines_Dialog(handles, pipeline_filenames)
+
+% Initialize output variables
+choices.Indices = [];
+choices.Cancelled = 0;
+
+helpText = ['Displayed below are the pipelines found in the root directory '...
+    'you chose. Select which ones you want to run, using CTRL-mouse click for ',...
+    'multiple selections. Click Done to finish or Cancel to exit.'];
+
+%%% Creates the dialog box and its text, buttons, and edit boxes.
+FrontEndFigure = handles.figure1;
+MainWinPos = get(FrontEndFigure,'Position');
+
+[ScreenWidth,ScreenHeight] = CPscreensize;
+FigWidth = MainWinPos(3)*4/5*1/2;
+FigHeight = MainWinPos(4);
+LeftPos = .5*(ScreenWidth-FigWidth);
+BottomPos = .5*(ScreenHeight-FigHeight);
+FigPosition = [LeftPos BottomPos FigWidth FigHeight];
+Color = [0.7 .7 .9];
+
+%%% Label we attach to figures (as UserData) so we know they are ours
+userData.Application = 'CellProfiler';
+
+%%% Initialize push button conditions as application data
+appdata.ButtonPressed.Done = 0;
+appdata.ButtonPressed.Cancel = 0;
+
+%%% Create string to populate list box
+possiblePipelines = pipeline_filenames;
+
+PipelinesWindowHandle = figure(...
+    'Units','pixels',...
+    'Color',Color,...
+    'DockControls','off',...
+    'MenuBar','none',...
+    'Name','Select the pipelines to run',...
+    'NumberTitle','off',...
+    'Position',FigPosition,...
+    'Resize','off',...
+    'HandleVisibility','on',...
+    'Tag','pipelineswindow',...
+    'UserData',userData);
+
+informtext = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'BackgroundColor',Color',...
+    'Units','normalized',...
+    'Position',[0.10 0.82 0.80 0.13],...
+    'String',helpText,...
+    'Style','text',...
+    'FontName','helvetica',...
+    'HorizontalAlignment','left',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','informtext'); %#ok Ignore MLint
+
+pipelinelistbox = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'BackgroundColor', Color,...
+    'Units','normalized',...
+    'Position',[0.10 0.2 0.80 0.60],...
+    'String',possiblePipelines,...
+    'Style','listbox',...
+    'Value',[],...
+    'Max',2,...
+    'Min',0,...
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','pipelinelistbox'); %#ok Ignore MLint
+
+selectallpushbutton = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'BackgroundColor', Color,...
+    'Units','normalized',...
+    'Callback',' h = findobj(gcbf,''tag'',''pipelinelistbox''); set(h,''value'',1:length(get(h,''string'')));',...
+    'Position',[0.10 0.12 0.3 0.06],...
+    'Style','pushbutton',...
+    'String','Select all',...
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','selectallpushbutton');  %#ok Ignore MLint
+
+invertselectionpushbutton = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'BackgroundColor', Color,...
+    'Units','normalized',...
+    'Callback','h = findobj(gcbf,''tag'',''pipelinelistbox''); set(h,''value'',setdiff(1:length(get(h,''string'')),get(h,''value'')));',...
+    'Position',[0.6 0.12 0.3 0.06],...
+    'Style','pushbutton',...
+    'String','Invert selection',...
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','invertselectionpushbutton');  %#ok Ignore MLint
+
+donepushbutton = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'BackgroundColor', Color,...
+    'Units','normalized',...
+    'Callback','appdata = guidata(gcbf); appdata.ButtonPressed.Done = 1; guidata(gcbf,appdata); uiresume(gcbf);',...
+    'Position',[0.10 0.05 0.3 0.06],...
+    'Style','pushbutton',...
+    'String','Done',...
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','donepushbutton');  %#ok Ignore MLint
+
+cancelpushbutton = uicontrol(...
+    'Parent',PipelinesWindowHandle,...
+    'Units','normalized',...
+    'Callback','appdata = guidata(gcbf); appdata.ButtonPressed.Cancel = 1; guidata(gcbf,appdata); uiresume(gcbf);',...
+    'Position',[0.6 0.05 0.3 0.06],...
+    'String','Cancel',... 
+    'FontName','helvetica',...
+    'FontSize',handles.Preferences.FontSize,...
+    'Tag','cancelpushbutton');  %#ok Ignore MLint
+
+%%% Push application data to callback figure
+guidata(PipelinesWindowHandle,appdata);
+
+%%% Wait until window is destroyed or uiresume() is called
+uiwait(PipelinesWindowHandle);
+
+%%% Check what the user selected
+appdata = guidata(PipelinesWindowHandle);
+if appdata.ButtonPressed.Done,
+    choices.Indices = get(pipelinelistbox,'Value');
+    choices.Cancelled = 0;
+elseif appdata.ButtonPressed.Cancel,
+    choices.Indices = 0;
+    choices.Cancelled = 1;
+end
+
+close(PipelinesWindowHandle);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE PIPELINE BUTTON %%%

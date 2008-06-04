@@ -111,7 +111,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-try
     [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
         SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
     handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
@@ -166,54 +165,33 @@ try
     %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
     %% which finds the mean measurements of all the subObjects that relate to each parent object
     MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
-    NewObjectName=['Mean',SubObjectName];
+    NewObjectName=['Means_',SubObjectName, '_per_', ParentName{1}];
     if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
-
+        
         % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
         if length(handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1}))) >= handles.Current.SetBeingAnalyzed
             Parents=handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1})){handles.Current.SetBeingAnalyzed};
-                MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
-                handles.Measurements.(NewObjectName)=MeasurementFeatures;
-                %Why is this test line here?  Maybe it was necessary before we fixed the CPaddmeasurements problems? I've removed the 'end' for
-                %this test. -Martha 2008-05-27
-                %if length(handles.Measurements.(SubObjectName).(Fieldnames)) >= handles.Current.SetBeingAnalyzed;
-                   
-                
-                    % The loop over 'j' below will never be entered if
-                    % there are no parents in the image, leading to a bug
-                    % where the data is truncated if the last few images
-                    % don't contain parents.  This next statement handles
-                    % that case by ensuring that at least something is
-                    % written at the correction location in the
-                    % Measurements structure.
-                    
-                    for i=1:length(MeasurementFeatures)
-                        Fieldnames = MeasurementFieldnames{i};
-                        Measurements=handles.Measurements.(SubObjectName).(Fieldnames){handles.Current.SetBeingAnalyzed};
-                        handles.Measurements.(NewObjectName).(Fieldnames){handles.Current.SetBeingAnalyzed} = [];
-                        if strcmp(Fieldnames,'SubObjectFlag')
-                            % Code errors with SubObjectFlag, since there
-                            % is only one value.  So, it will be set to the
-                            % same value as it is for the SubObject.
-                            handles.Measurements.(NewObjectName).(Fieldnames){1}=1;
-                        else
-                            for j=1:max(max(ParentObjectLabelMatrix))
-                                index=find(Parents==j);
-                                if isempty(index) OR (index == 0)
-                                    handles.Measurements.(NewObjectName).(Fieldnames){j}=0;
-                                else
-                                    handles.Measurements.(NewObjectName).(Fieldnames){j}=mean(Measurements(index));
-                                end
-                            end
-                        end
+            MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
+            for i=1:length(MeasurementFeatures)
+                Fieldname = MeasurementFieldnames{i};
+                if strcmp(Fieldname, 'SubObjectFlag'),
+                    continue;
+                end
+                Measurements=handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};
+                MeanVals = zeros(max(Parents), 1);
+                for j = 1:max(Parents),
+                    indices = find(Parents == j);
+                    if ~ isempty(indices),
+                        MeanVals(j) = mean(Measurements(indices));
                     end
-                else
-                    CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
+                end
+                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, MeanVals);
+            end
+        else
+            CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
         end
     end
-catch
-    error('The Relate Module errored.  This may be fixed by ensuring that all Relate Modules occur *after* all Measure Modules, and that two Relate Modules are not relating the same objects.')
-end
+
 
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to

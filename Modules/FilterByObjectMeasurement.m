@@ -133,7 +133,8 @@ switch Measure
         end
 end
 
-MeasureInfo = handles.Measurements.(ObjectName).(Measure){handles.Current.SetBeingAnalyzed}(:,FeatureNum);
+FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, '');
+MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed};
 
 if strcmpi(MinValue1, 'No minimum')
     MinValue1 = -Inf;

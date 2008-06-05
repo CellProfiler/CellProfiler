@@ -207,7 +207,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         %%% same size as the original image).
         Threshold = ones(size(OrigImage));
         NumberOfLabelsInLabelMatrix = max(RetrievedCropMask(:));
-        for i = 1:NumberOfLabelsInLabelMatrix
+        for i = 1:double(NumberOfLabelsInLabelMatrix)   % If NumberOfLabelsInLabelMatrix is logical, make it double
             %%% Chooses out the pixels in the orig image that correspond
             %%% with i in the label matrix. This simultaneously produces a
             %%% linear set of numbers (and masking of pixels outside the

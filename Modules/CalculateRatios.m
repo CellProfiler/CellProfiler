@@ -211,19 +211,22 @@ elseif strcmpi(RatioName, 'Automatic')
 %     NewSecondFeatureName = CPjoinstrings(SecondTruncatedName{:});
 
 
-    RatioName = CPjoinstrings(ObjectName{1},FeatureName{1},FeatureName{1},'DividedBy',...
-                                ObjectName{2},FeatureName{2},FeatureName{2});
-elseif strcmp(ObjectName{1},'Image')
-    if length(FinalMeasurements)==1
-        RatioName = 'Single';
-    else
-        RatioName = 'Multiple';
-    end
+    RatioName = CPjoinstrings('Ratio',ObjectName{1},FeatureName{1},'DividedBy',...
+                                ObjectName{2},FeatureName{2});
 else
-    RatioName = 'Single';
+    RatioName = CPjoinstrings('Ratio', RatioName);
 end
 
-handles = CPaddmeasurements(handles,'Ratio',RatioName,FinalMeasurements);
+if strcmp(ObjectName{1}, 'Image') and strcmp(ObjectName{2}, 'Image'),
+    handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Ratio', RatioName),FinalMeasurements);
+else
+    if ~ strcmp(ObjectName{1}, 'Image'),
+        handles = CPaddmeasurements(handles,ObjectName{1},RatioName,FinalMeasurements);
+    end
+    if ~ strcmp(ObjectName{2}, 'Image'),
+        handles = CPaddmeasurements(handles,ObjectName{2},RatioName,FinalMeasurements);
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

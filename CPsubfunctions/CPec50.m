@@ -1,4 +1,4 @@
-function [FigureIncrement, results] = CPec50(conc,responses,LogOrLinear,PartialFigureName,ModuleName,ConcName,FigureIncrement)
+function [FigureIncrement, results] = CPec50(conc,responses,Logarithmic,PartialFigureName,ModuleName,ConcName,FigureIncrement)
 % EC50 Function to fit a dose-response data to a 4 parameter dose-response
 %   curve.
 %
@@ -23,7 +23,7 @@ function [FigureIncrement, results] = CPec50(conc,responses,LogOrLinear,PartialF
 %%% If we are using a log-domain set of doses, we have a better chance of
 %%% fitting a sigmoid to the curve if the concentrations are
 %%% log-transformed.
-if strcmpi(LogOrLinear,'Yes')
+if strcmpi(Logarithmic,'Yes')
     conc = log(conc);
 end
 
@@ -42,7 +42,7 @@ for i=1:n
     end
     if ~strcmpi(PartialFigureName,'Do not save')
         %%% This produces the figure with the interactive graph.
-        if strcmpi(LogOrLinear,'Yes')
+        if strcmpi(Logarithmic,'Yes')
             XaxisLabel = ['log(',ConcName,')'];
         else XaxisLabel = [ConcName,''];
         end

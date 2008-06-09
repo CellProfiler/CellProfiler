@@ -131,6 +131,8 @@ for p = 1:VariableSize(1)
         VariableDescrip = char(VariableDescriptions(q));
         try
             VariableVal = char(VariableValues(p,q));
+            % For path names, format escape sequences properly for fprintf
+            VariableVal = regexprep(VariableVal,'\','\\\');
         catch
             VariableVal = '  ';
 

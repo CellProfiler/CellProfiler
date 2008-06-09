@@ -21,12 +21,9 @@ function handles = CPsaveObjectLocations(handles, objectName, labels)
 % $Revision: 5139 $
 tmp = regionprops(labels, 'Centroid');
 centroids = cat(1,tmp.Centroid);
-% Commented this out because it should not be necessary---we should be
-% able to handle empty feature vectors.
-%if isempty(centroids)
-%  centroids = [0 0];
-%end
-
+if isempty(centroids)
+  centroids = zeros(0,2);
+end
 handles = CPaddmeasurements(handles, objectName, 'Location_Center_X', ...
                             centroids(:,1));
 handles = CPaddmeasurements(handles, objectName, 'Location_Center_Y', ...

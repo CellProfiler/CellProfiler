@@ -305,7 +305,7 @@ for n = 1:length(ImageName)
                 LoadedImage = im2double(LoadedRawImage.cdata);
             end
         elseif strcmpi(FileFormat,'stk movies') == 1
-            LoadedRawImage = tiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+            LoadedRawImage = CPtiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
             LoadedImage = im2double(LoadedRawImage.data);
         elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
             LoadedRawImage = CPimread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
@@ -324,9 +324,10 @@ for n = 1:length(ImageName)
         %%% substructure so it will be deleted at the end of the analysis batch.
         handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
         handles.Pipeline.(ImageName{n}) = LoadedImage;
-    catch ErrorMessage = lasterr;
-        ErrorNumber = {'first','second','third'};
-        error(['Image processing was canceled in the ', ModuleName, ' module because an error occurred when trying to load the ', ErrorNumber{n}, ' frame of the group. Please check the settings. Matlab says the problem is: ', ErrorMessage])
+    catch 
+        ErrorInfo = lasterror;
+        ErrorInfo.message = ['Error occurred when trying to extract frame #', num2str(n),' (', ErrorInfo.message,')'];
+        rethrow(ErrorInfo);
     end % Goes with: catch
     FileNames(n) = {CurrentFileNameWithFrame};
 end

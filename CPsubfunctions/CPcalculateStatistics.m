@@ -12,6 +12,9 @@ GroupingValues = str2num(char(GroupingStrings')); %#ok Ignore MLint
 waitbarhandle = CPwaitbar(0,'');
 CPwaitbar(0,waitbarhandle,'CPcalculateStatistics Progress');
 
+%%% Check for old-style measurements and try to recover them.
+handles = CP_convert_old_measurements(handles);
+
 for i = 1:length(ObjectFields)
     ObjectName = char(ObjectFields(i));
     %%% Filter out Experiment and Neighbor fields

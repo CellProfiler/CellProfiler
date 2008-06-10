@@ -14,6 +14,10 @@ function CPwritemeasurements(handles,ExportInfo,RawPathname)
 %%% Get the handle to the waitbar and update the text in the waitbar
 waitbarhandle = CPwaitbar(0,'');
 
+
+%%% Detect and try to deal with old-style measurements
+handles = CP_convert_old_measurements(handles);
+
 %%% Do we need to compute means/medians/stddevs?
 if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataParameter, {'mean', 'std', 'median'})),
     CompositeValues = {};

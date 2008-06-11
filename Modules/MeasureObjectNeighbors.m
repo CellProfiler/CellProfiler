@@ -59,10 +59,6 @@ function handles = MeasureObjectNeighbors(handles)
 % neighbors. The -1 value makes it incompatible with the Convert To Image 
 % module which expects a label matrix starting at zero.
 %
-% The extra measures that can also be caculated and saved are 
-% 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 
-% 'FirstClosestYVector' 'SecondClosestObjectNumber' 
-% 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

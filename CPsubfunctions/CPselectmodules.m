@@ -66,9 +66,7 @@ end
 %%% Create module names and checkboxes
 h = [];
 for k = 1:NumberOfModules
-    uicontrol(SelectDisplayPanel,'style','text','String',ModuleNames{k},'FontName','Times','FontSize',FontSize,'HorizontalAlignment','left',...
-        'units','inches','position',[0.6 ypos 3 .18],'BackgroundColor',[.7 .7 .9])
-    h(k) = uicontrol(SelectDisplayPanel,'Style','checkbox','units','inches','position',[0.2 ypos .2 .18],...
+    h(k) = uicontrol(SelectDisplayPanel,'Style','checkbox','String',ModuleNames{k},'units','inches','position',[0.2 ypos 3.2 .18],...
         'BackgroundColor',[.7 .7 .9],'Value',1);
     ypos=ypos-uiheight;
 end
@@ -79,10 +77,8 @@ if ReqSlid
 end
 
 %%% Create special features
-uicontrol(SelectDisplay,'Style','Checkbox','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 .2 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
-uicontrol(SelectDisplay,'Style','Text','String','Select All/None','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[0.6 0.5 1.5 .2],'BackgroundColor',[.7 .7 .9]);
-uicontrol(SelectDisplay,'Style','Checkbox','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 .2 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
-uicontrol(SelectDisplay,'Style','Text','String','Invert Selection','FontName','Times','FontSize',FontSize,'HorizontalAlignment','Left','Units','Inches','Position',[2.4 0.5 1.5 .2],'BackgroundColor',[.7 .7 .9]);
+uicontrol(SelectDisplay,'Style','Checkbox','String','Select All/None','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 1.7 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
+uicontrol(SelectDisplay,'Style','Checkbox','String','Invert Selection','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
 
 %%% Create OK and Cancel buttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally

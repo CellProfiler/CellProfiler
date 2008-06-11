@@ -102,12 +102,6 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3})
 %infotypeVAR04 = imagegroup indep
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Do you want to calculate the extra measures? The extra measures are 'PercentTouching' 'FirstClosestObjectNumber' 'FirstClosestXVector' 'FirstClosestYVector' 'SecondClosestObjectNumber' 'SecondClosestXVector' 'SecondClosestYVector' 'AngleBetweenNeighbors'.
-%choiceVAR05 = No
-%choiceVAR05 = Yes
-%inputtypeVAR05 = popupmenu
-ExtraMeasures = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-
 %%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,7 +147,7 @@ if (NeighborDistance == 0),
 end
     
 
-if strcmp(ExtraMeasures,'Yes') && max(IncomingLabelMatrixImage(:)) > 0
+if max(IncomingLabelMatrixImage(:)) > 0
     XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
     YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
     %%% Compute all pairs distance matrix
@@ -187,50 +181,50 @@ for k = 1:NumberOfObjects
         ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
     end        
 
-    if strcmp(ExtraMeasures,'Yes')
-        %%% PERCENT TOUCHING %%%
-        % Find boundary pixel of current cell
-        BoundaryPixels = bwperim(patch == k, 8);
-        % Remove the current cell, and dilate the other objects
-        OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
-        PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
-        ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
-        if NumberOfObjects >= 3
-            %%% CLOSEST NEIGHBORS %%%
-            DistancesFromCurrent = AllPairsDistance(k, :);
-            [Dists, Indices] = sort(DistancesFromCurrent);
-            FirstObjectNumber(k) = Indices(2);
-            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
-            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
-            SecondObjectNumber(k) = Indices(3);
-            SecondXVector(k) = XLocations(SecondObjectNumber(k)) - XLocations(k);
-            SecondYVector(k) = YLocations(SecondObjectNumber(k)) - YLocations(k);
-            Vec1 = [FirstXVector(k) FirstYVector(k)];
-            Vec2 = [SecondXVector(k) SecondYVector(k)];
-            AngleBetweenTwoClosestNeighbors(k) = real(acosd(dot(Vec1, Vec2) / (norm(Vec1) * norm(Vec2))));
-        elseif NumberOfObjects == 2,
-            %%% CLOSEST NEIGHBORS %%%
-            if k == 1,
-                FirstObjectNumber(k) = 2;
-            else
-                FirstObjectNumber(k) = 1;
-            end
-            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
-            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
-            SecondObjectNumber(k)=0;
-            SecondXVector(k)=0;
-            SecondYVector(k)=0;
-            AngleBetweenTwoClosestNeighbors(k)=0;
+
+    %%% PERCENT TOUCHING %%%
+    % Find boundary pixel of current cell
+    BoundaryPixels = bwperim(patch == k, 8);
+    % Remove the current cell, and dilate the other objects
+    OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
+    PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
+    ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
+    if NumberOfObjects >= 3
+        %%% CLOSEST NEIGHBORS %%%
+        DistancesFromCurrent = AllPairsDistance(k, :);
+        [Dists, Indices] = sort(DistancesFromCurrent);
+        FirstObjectNumber(k) = Indices(2);
+        FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+        FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
+        SecondObjectNumber(k) = Indices(3);
+        SecondXVector(k) = XLocations(SecondObjectNumber(k)) - XLocations(k);
+        SecondYVector(k) = YLocations(SecondObjectNumber(k)) - YLocations(k);
+        Vec1 = [FirstXVector(k) FirstYVector(k)];
+        Vec2 = [SecondXVector(k) SecondYVector(k)];
+        AngleBetweenTwoClosestNeighbors(k) = real(acosd(dot(Vec1, Vec2) / (norm(Vec1) * norm(Vec2))));
+    elseif NumberOfObjects == 2,
+        %%% CLOSEST NEIGHBORS %%%
+        if k == 1,
+            FirstObjectNumber(k) = 2;
         else
-            FirstObjectNumber(k)=0;
-            FirstXVector(k)=0;
-            FirstYVector(k)=0;
-            SecondObjectNumber(k)=0;
-            SecondXVector(k)=0;
-            SecondYVector(k)=0;
-            AngleBetweenTwoClosestNeighbors(k)=0;
+            FirstObjectNumber(k) = 1;
         end
+        FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+        FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
+        SecondObjectNumber(k)=0;
+        SecondXVector(k)=0;
+        SecondYVector(k)=0;
+        AngleBetweenTwoClosestNeighbors(k)=0;
+    else
+        FirstObjectNumber(k)=0;
+        FirstXVector(k)=0;
+        FirstYVector(k)=0;
+        SecondObjectNumber(k)=0;
+        SecondXVector(k)=0;
+        SecondYVector(k)=0;
+        AngleBetweenTwoClosestNeighbors(k)=0;
     end
+
 end
 
 if NumberOfObjects == 0
@@ -251,32 +245,32 @@ end
 drawnow
 
 handles = CPaddmeasurements(handles, ObjectName, 'Neighbors_NumberOfNeighbors', NumberOfNeighbors);
-if strcmp(ExtraMeasures,'Yes')
-    %%% Saves neighbor measurements to handles structure.
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_PercentTouching', PercentTouching');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_FirstClosestObjectNumber', ...
-				FirstObjectNumber');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_FirstClosestXVector', ...
-				FirstXVector');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_FirstClosestYVector', ...
-				FirstYVector');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_SecondClosestObjectNumber', ...
-				SecondObjectNumber');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_SecondClosestXVector', ...
-				SecondXVector');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_SecondClosestYVector', ...
-				SecondYVector');
-    handles = CPaddmeasurements(handles, ObjectName, ...
-				'Neighbors_AngleBetweenNeighbors', ...
-				AngleBetweenTwoClosestNeighbors');
-end
+
+%%% Saves neighbor measurements to handles structure.
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_PercentTouching', PercentTouching');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_FirstClosestObjectNumber', ...
+            FirstObjectNumber');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_FirstClosestXVector', ...
+            FirstXVector');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_FirstClosestYVector', ...
+            FirstYVector');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_SecondClosestObjectNumber', ...
+            SecondObjectNumber');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_SecondClosestXVector', ...
+            SecondXVector');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_SecondClosestYVector', ...
+            SecondYVector');
+handles = CPaddmeasurements(handles, ObjectName, ...
+            'Neighbors_AngleBetweenNeighbors', ...
+            AngleBetweenTwoClosestNeighbors');
+
 
 % This field is different from the usual measurements.  It is one of
 % the very few places in the CP codebase where we don't use
@@ -327,14 +321,12 @@ if any(findobj == ThisModuleFigureNumber)
         title(['Fully expanded ' ObjectName]);
     end
 
-    if strcmp(ExtraMeasures,'Yes')
-	subplot(2,2,4);
+    subplot(2,2,4);
 	CPimagesc(ImageOfPercentTouching,handles);
 	axis image;
 	colormap(handles.Preferences.LabelColorMap)
 	colorbar('EastOutside')
 	title([ObjectName,' colored by percent touching'])
-    end
 
 end
 

@@ -102,6 +102,8 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3})
 %infotypeVAR04 = imagegroup indep
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
+%textVAR05 = This text is left for consistency with prior versions. Any saved settings shown to the right are not used.
+
 %%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

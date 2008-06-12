@@ -82,18 +82,19 @@ for FileNbr = 1:length(SelectedFiles)
 
     %%% Load the specified CellProfiler output file
     try
-        clear handles;
-        load(fullfile(Pathname, SelectedFiles{FileNbr}));
+        temp_handles = load(fullfile(Pathname, SelectedFiles{FileNbr}));
     catch
         errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler or MATLAB file (it does not have the extension .mat)'];
         continue
     end
 
     %%% Quick check if it seems to be a CellProfiler file or not
-    if ~exist('handles','var')
+    if ~isfield(temp_handles, 'handles')
         errors{FileNbr} = [SelectedFiles{FileNbr},' is not a CellProfiler output file'];
         continue
     end
+
+    handles = temp_handles.handles;
 
     %% Save temp values that LoadText needs 
     tempVarValues=handles.Settings.VariableValues;

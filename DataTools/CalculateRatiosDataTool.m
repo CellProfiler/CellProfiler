@@ -46,9 +46,10 @@ end
 
 %%% Load the specified CellProfiler output file
 try
-    load(fullfile(Pathname, FileName));
+    temp = load(fullfile(Pathname, FileName));
+    handles = temp.handles;
 catch
-    CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
+    CPerrordlg(['Unable to load file ''', fullfile(Pathname, FileName), ''' (possibly not a CellProfiler output file).'])
     return
 end
 
@@ -81,8 +82,8 @@ end
 menuLoop=0;
 while menuLoop == 0
     try
-        [Measure1Object,Measure1fieldname,Measure1featurenumber] = CPgetfeature(handles,1);
-        [Measure2Object,Measure2fieldname,Measure2featurenumber] = CPgetfeature(handles,1);
+        [Measure1Object,Measure1fieldname] = CPgetfeature(handles,1);
+        [Measure2Object,Measure2fieldname] = CPgetfeature(handles,1);
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in CalculateRatiosDataTool. ' ErrorMessage(30:end)]);
@@ -97,7 +98,7 @@ end
 Measure1 = handles.Measurements.(Measure1Object).(Measure1fieldname);
 Measure2 = handles.Measurements.(Measure2Object).(Measure2fieldname);
 if length(Measure1) ~= length(Measure2)
-    CPerrordlg(['Processing cannot continue because the specified object names ',Measure1Object,' and ',Measure2Object,' do not have the same amount of measurements.']);
+    CPerrordlg(['Processing cannot continue because the specified object names ',Measure1Object,' and ',Measure2Object,' do not have the same number of measurements.']);
     return
 end
 %SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -106,9 +107,7 @@ for i = 1:length(Measure1)
        
     %% Extract the measures of interest
     NumeratorMeasurements = handles.Measurements.(Measure1Object).(Measure1fieldname){i};
-    NumeratorMeasurements = NumeratorMeasurements(:,Measure1featurenumber);
     DenominatorMeasurements = handles.Measurements.(Measure2Object).(Measure2fieldname){i};
-    DenominatorMeasurements = DenominatorMeasurements(:,Measure2featurenumber);
     
     %%% Calculate the new measure. 
     if strcmpi(Operation,'Multiply')
@@ -130,15 +129,20 @@ for i = 1:length(Measure1)
     end
     
     %%% Record the new measure in the handles structure.
-    NewFieldName = [Measure1Object,'_',Measure1fieldname(1),'_',num2str(Measure1featurenumber),'_',char(Operation),'_',Measure2Object,'_',Measure2fieldname(1),'_',num2str(Measure2featurenumber)];
+    NewFieldName = CPjoinstrings(Measure1fieldname, char(Operation), Measure2Object, Measure2fieldname);
     handles.Current.SetBeingAnalyzed = i;
-    handles = CPaddmeasurements(handles,Measure1Object,'Ratio',NewFieldName,FinalMeasurements);    
+    try
+        handles = CPaddmeasurements(handles,Measure1Object,NewFieldName,FinalMeasurements);    
+    catch
+        uiwait(CPerrordlg(['Could not add new measurements:\n' lasterr]));
+        return;
+    end
 end
 
 %%% Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, FileName),'handles');
-    CPmsgbox(['Updated ',FileName,' successfully saved.'])
+    CPmsgbox(['Updated ',FileName,' successfully saved.']);
 catch
     CPwarndlg(['Could not save updated ',FileName,' file.']);
 end

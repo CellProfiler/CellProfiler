@@ -1,4 +1,4 @@
-function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,ImageCheck,Suffix)
+function [ObjectTypename,FeatureName] = CPgetfeature(handles,ExcludeImageMeasurements,Suffix)
 
 % This function takes the user through three list dialogs where a specific
 % feature is chosen. It is possible to go back and forth between the list
@@ -7,8 +7,7 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 % variables will be returned if the cancel button is pressed.
 %
 % The input variable 'suffix' is a cell array containing strings of
-% suffixes to look for. The currently used suffixes are 'Features' and
-% 'Text'. If omitted, the default is to look for suffix 'Features'.
+% suffixes to look for. 
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -23,7 +22,7 @@ function [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handle
 % $Revision$
 
 if nargin < 2
-    ImageCheck = 0;
+    ExcludeImageMeasurements = false;
 end
 
 if nargin < 3
@@ -35,60 +34,38 @@ if ~isfield(handles,'Measurements')
     error('The selected file does not contain any measurements.')
 end
 
-%%% Extract the fieldnames of measurements from the handles structure.
-MeasFieldnames = fieldnames(handles.Measurements);
-if ImageCheck == 1
-    for i=1:length(handles.Measurements)
-        if strcmp(MeasFieldnames{i},'Image')
-            MeasFieldnames(i) = [];
-        end
-    end
+%%% Extract the Object names the handles structure.
+ObjectNames = fieldnames(handles.Measurements);
+
+if ExcludeImageMeasurements
+    ObjectNames(strcmp(ObjectNames, 'Image')) = [];
 end
 
 %%% Error detection.
-if isempty(MeasFieldnames)
+if isempty(ObjectNames)
     error('No measurements were found in the selected file.')
 end
 
 dlgno = 1;                            % This variable keeps track of which list dialog is shown
+
 while dlgno < 4
     switch dlgno
         case 1
-            [Selection, ok] = CPlistdlg('ListString',MeasFieldnames,'ListSize', [300 400],...
-                'Name','Select measurement',...
+            [Selection, ok] = CPlistdlg('ListString',ObjectNames,'ListSize', [300 400],...
+                'Name','Select object type',...
                 'PromptString','Choose an object type',...
                 'CancelString','Cancel',...
                 'SelectionMode','single');
             if ok == 0
-                ObjectTypename = [];FeatureType = [];FeatureNbr = [];SuffixNbr = [];
+                ObjectTypename = [];FeatureName = [];
                 return
             end
-            ObjectTypename = MeasFieldnames{Selection};
-
-            % Get all fields with the supplied suffix
-            FeatureTypes = fieldnames(handles.Measurements.(ObjectTypename));
-            SuffixNbr = [];
-            tmp = {};
-            for k = 1:length(FeatureTypes)
-                for j = 1:length(Suffix)
-                    if length(FeatureTypes{k}) > length(Suffix{j})
-                        if strcmp(FeatureTypes{k}(end-length(Suffix{j})+1:end),Suffix{j})
-                            SuffixNbr(end+1) = j;
-                            tmp{end+1} = FeatureTypes{k}(1:end-length(Suffix{j}));    % Remove the suffix
-                        end
-                    end
-                end
-            end
-            FeatureTypes = tmp;
-            if isempty(FeatureTypes)
-                SuffixStr = Suffix{1};
-                for i = 2:length(Suffix)
-                    SuffixStr = [SuffixStr ''' or ''' Suffix{i}];
-                end
-                error(['There are no feature types with suffix ''',SuffixStr,''' in the object type ',ObjectTypename])
-            end
+            ObjectTypename = ObjectNames{Selection};
             dlgno = 2;                      % Indicates that the next dialog box is to be shown next
+
         case 2
+            % Get feature prefixes for this object
+            FeatureTypes = get_prefixes(fieldnames(handles.Measurements.(ObjectTypename)));
             [Selection, ok] = CPlistdlg('ListString',FeatureTypes, 'ListSize', [300 400],...
                 'Name','Select measurement',...
                 'PromptString',['Choose a feature type for ', ObjectTypename],...
@@ -98,14 +75,11 @@ while dlgno < 4
                 dlgno = 1;                  % Back button pressed, go back one step in the menu system
             else
                 FeatureType = FeatureTypes{Selection};
-                if length(SuffixNbr) < Selection
-                    Selection = length(SuffixNbr);
-                end
-                SuffixNbr = SuffixNbr(Selection);
-                Features = handles.Measurements.(ObjectTypename).([FeatureType Suffix{SuffixNbr}]);
                 dlgno = 3;                  % Indicates that the next dialog box is to be shown next
             end
         case 3
+            % Get features for this selection
+            Features = get_postfixes(fieldnames(handles.Measurements.(ObjectTypename)), FeatureType);
             [Selection, ok] = CPlistdlg('ListString',Features, 'ListSize', [300 400],...
                 'Name','Select measurement',...
                 'PromptString',['Choose a ',FeatureType,' of ', ObjectTypename],...
@@ -114,8 +88,24 @@ while dlgno < 4
             if ok == 0
                 dlgno = 2;                  % Back button pressed, go back one step in the menu system
             else
-                FeatureNbr = Selection;
+                FeatureName = CPjoinstrings(FeatureType, Features{Selection});
                 dlgno = 4;                  % dlgno = 4 will exit the while-loop
             end
     end
 end
+
+
+function prefixes = get_prefixes(names)
+prefixes = cellfun(@(x) x{1}, regexp(names, '^([^_])+', 'tokens', 'once'), 'UniformOutput', false);
+idx = 1;
+while idx < length(prefixes)
+    duplicates = strmatch(prefixes{idx}, prefixes);
+    prefixes(duplicates(2:end)) = [];
+    idx = idx + 1;
+end
+
+
+function postfixes = get_postfixes(names, prefix)
+postfixes = regexp(names, [prefix '_(.*)'], 'tokens', 'once');
+postfixes(cellfun('isempty', postfixes)) = [];
+postfixes = cellfun(@(x) x{1}, postfixes, 'UniformOutput', false);

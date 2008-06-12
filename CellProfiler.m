@@ -1649,6 +1649,8 @@ if ModuleNamedotm ~= 0,
         ModuleNums = handles.Current.NumberOfModules+1;
     else
         ModuleNums = get(handles.ModulePipelineListBox,'value')+1;
+        % prevent error when two modules are selected
+        ModuleNums = max(ModuleNums);
     end
     ModuleNumber = CPtwodigitstring(ModuleNums);
 

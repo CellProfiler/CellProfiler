@@ -469,18 +469,19 @@ while true,
         bestx = bestx + nextx;
         besty = besty + nexty;
         best = newbest;
+        lastdx = nextx;
+        lastdy = nexty;
     end
 end
 
 function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
 %%% Finds the best one pixel move, but only in the same direction(s)
 %%% we moved last time (no sense repeating evaluations).  ldx is last
-%%% dx, ldy is last dy.  Technically, if one of them is zero, the test
-%%% should be more restrictive (XXX).
+%%% dx, ldy is last dy. 
 nb = best;
 for dx=-1:1,
     for dy=-1:1,
-        if (dx == ldx) || (dy == ldy),
+        if ((dx ~= 0) && (dx == ldx)) || ((dy ~= 0) && (dy == ldy)),
             cur = mutualinf(subim(in1, bx+dx, by+dy), subim(in2, -(bx+dx), -(by+dy)));
             if (cur > nb),
                 nb = cur;

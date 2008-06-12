@@ -47,7 +47,7 @@ end
 %%% Load the specified CellProfiler output file
 try
     temp = load(fullfile(Pathname, FileName));
-    handles = temp.handles;
+    handles = CP_convert_old_measurements(temp.handles);
 catch
     CPerrordlg(['Unable to load file ''', fullfile(Pathname, FileName), ''' (possibly not a CellProfiler output file).'])
     return

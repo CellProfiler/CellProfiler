@@ -600,6 +600,10 @@ if strcmp(Answer,'Yes')
     handles.Current.NumberOfModules = 0;
     contents = {'No Modules Loaded'};
     set(handles.ModulePipelineListBox,'String',contents);
+    
+    %%% Clear the pipeline name and path info
+    handles.Current.SavedPipeline.Info.Pathname = {};
+    handles.Current.SavedPipeline.Info.Filename = {};
     guidata(hObject,handles);
 end
 
@@ -801,6 +805,9 @@ handles.Settings.NumbersOfVariables = [];
 handles.VariableBox = {};
 handles.VariableDescription = {};
 
+handles.Current.SavedPipeline.Info.Pathname = SettingsPathname;
+handles.Current.SavedPipeline.Info.Filename = SettingsFileName;
+
 %%% For each module, extract its settings and check if they seem alright
 revisionConfirm = 0;
 Skipped = 0;
@@ -957,7 +964,7 @@ if exist('FixList','var')
         handles.Settings.VariableValues(FixList(k,1),FixList(k,2)) = FirstValue;
     end
 end
-
+    
 guidata(hObject,handles);
 set(handles.ModulePipelineListBox,'String',contents);
 set(handles.ModulePipelineListBox,'Value',1);
@@ -1451,8 +1458,20 @@ if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.Module
     handles.Settings.NumbersOfVariables((length(handles.Settings.ModuleNames)+1):end) = [];
 end
 
+%%% Initialize uiputfile dialog box with saved pipeline values (if any)
+FileName = '*.mat';
+Pathname = handles.Current.DefaultOutputDirectory;
+if isfield(handles.Current,'SavedPipeline'),
+    if ~isempty(handles.Current.SavedPipeline.Info.Filename),
+        FileName = handles.Current.SavedPipeline.Info.Filename;
+    end
+    if ~isempty(handles.Current.SavedPipeline.Info.Pathname) && exist(handles.Current.SavedPipeline.Info.Pathname,'dir'),
+        Pathname = handles.Current.SavedPipeline.Info.Pathname;
+    end
+end
+
 %%% The "Settings" variable is saved to the file name the user chooses.
-[FileName,Pathname] = CPuiputfile('*.mat', 'Save Pipeline As...',handles.Current.DefaultOutputDirectory);
+[FileName,Pathname] = CPuiputfile(FileName, 'Save Pipeline As...',Pathname);
 %%% Allows canceling.
 if FileName ~= 0
     [Temp,FileNom,FileExt] = fileparts(FileName); %#ok Ignore MLint
@@ -1503,7 +1522,15 @@ if FileName ~= 0
     if isfield(handles.Settings,'ModuleRevisionNumbers'),
         Settings.ModuleRevisionNumbers = handles.Settings.ModuleRevisionNumbers;
     end
-    save(fullfile(Pathname,FileName),'Settings')
+    
+    %%% Save current name and location of saved pipeline to handles
+    handles.Current.SavedPipeline.Info.Pathname = Pathname;
+    handles.Current.SavedPipeline.Info.Filename = FileName;
+    guidata(hObject, handles);
+    
+    %%% Save the pipeline
+    save(fullfile(Pathname,FileName),'Settings');
+    
     %%% Writes settings into a readable text file.
     if strcmp(SaveText,'Yes')
         CPtextpipe(handles,0,0,0);

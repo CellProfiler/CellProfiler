@@ -50,7 +50,18 @@ if isstruct(ExportInfo)
     end
 else
     %Prompt what to save file as, and where to save it.
-    [filename,SavePathname] = CPuiputfile('*.txt', 'Save Settings As...',handles.Current.DefaultOutputDirectory);
+    filename = '*.txt';
+    SavePathname = handles.Current.DefaultOutputDirectory;
+    if isfield(handles.Current,'SavedPipeline'),
+        if ~isempty(handles.Current.SavedPipeline.Info.Filename),
+            [junk,filename] = fileparts(handles.Current.SavedPipeline.Info.Filename);
+            filename = [filename '.txt'];
+        end
+        if ~isempty(handles.Current.SavedPipeline.Info.Pathname) && exist(handles.Current.SavedPipeline.Info.Pathname,'dir'),
+            SavePathname = handles.Current.SavedPipeline.Info.Pathname;
+        end
+    end
+    [filename,SavePathname] = CPuiputfile(filename, 'Save Settings As...',SavePathname);
     if filename == 0
         CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
         return

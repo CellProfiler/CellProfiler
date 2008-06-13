@@ -81,6 +81,7 @@ FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 2
+%%% note - if this module changes its variable ordering or meaning, CalculateStatisticsDataTool needs updating.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%

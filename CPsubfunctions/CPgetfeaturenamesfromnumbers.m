@@ -34,6 +34,9 @@ AllFieldNames = fieldnames(handles.Measurements.(ObjectName));
 CurrentMeasure = [CPjoinstrings(Category,'.*',Image,num2str(TextureScale)),'$'];
 FieldnumsCategoryCell = regexp(AllFieldNames,CurrentMeasure);
 FieldnumsCategory = find(~cellfun('isempty',FieldnumsCategoryCell));
+%% Could do error checking here, since the next line is where this subfn usually errors
+%% (if it can't find a FeatureName), but we ought to use 'try/catch' in the 
+%% calling function, for better error handling
 FeatureName = AllFieldNames(FieldnumsCategory(FeatureNumber));
 
 %% CHECK: There should be one Measurement that fulfills the above criteria

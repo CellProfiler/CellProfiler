@@ -42,96 +42,107 @@ origDefaultImageDirectory = handles.Current.DefaultImageDirectory;
 %%% Load the specified CellProfiler output file
 try
     MsgBoxLoad = CPmsgbox(['Loading file into ' ModuleName '.  Please wait...']);
-    load(fullfile(Pathname, FileName));
+    temp = load(fullfile(Pathname, FileName));
+    handles = CP_convert_old_measurements(temp.handles);
 catch
-    CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
+    CPerrordlg(['Unable to load file ''', fullfile(Pathname, FileName), ''' (file does not exist or is not a CellProfiler output file).'])
     close(MsgBoxLoad)
     return
 end
 close(MsgBoxLoad)
 
-text_file = [];
-forceChoose = 0;
-while ~exist(text_file,'file')
-    oldLoadTextModNum = find(strcmp(handles.Settings.ModuleNames,'LoadText'), 1);
-    if ~isempty(oldLoadTextModNum) && ~forceChoose
-        %% If user already used a LoadText Module in their original
-        %% pipeline, or if there is a problem finding the pre-existing
-        %% LoadText file
-        
-        %% *NOTE* IF LoadText changes the order or composition of its
-        %% queries, the '1' and '3' below may need to be changed!
-        TextFileName = handles.Settings.VariableValues{oldLoadTextModNum,1};
-        DataName = handles.Settings.VariableValues{oldLoadTextModNum,2};
-        TextFilePathname = handles.Settings.VariableValues{oldLoadTextModNum,3};
-        text_file = fullfile(TextFilePathname,TextFileName);
-        
-        %% In case the LoadText file is moved or this is run on a different
-        %% machine
-        if ~exist(text_file,'file')
-            CPwarndlg('Cannot find previosly loaded LoadText file.  Please click OK and choose another file.','CalculateStatisticsDataTool')
-            forceChoose = 1;
-            continue
+
+ValidGroupings = false;
+
+while ~ValidGroupings,
+    %%% Is there already dosage data available in the measurements?
+    if any(strncmpi(fieldnames(handles.Measurements.Image), 'LoadedText', 10)),
+        PreloadedFeatures = get_postfixes(fieldnames(handles.Measurements.Image), 'LoadedText');
+        [Selection, ok] = CPlistdlg('ListString', PreloadedFeatures, 'ListSize', [300 400],...
+            'Name', 'Select loaded data',...
+            'PromptString', 'Choose data preoloaded by LoadText, or select ''Other file''.',...
+            'CancelString', 'Other file',...
+            'SelectionMode', 'single');
+
+        if ok,
+            ValidGroupings = true;
+            FeatureName = PreloadedFeatures{Selection};
+
+            Answers = CPinputdlg({'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
+                    'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
+                'Operation', 1, {'Yes', 'Do not save'});
+
+            if isempty(Answers), return, end %% Inputdlg canceled
+
+            Logarithmic = Answers{1};
+            FigureName = Answers{2};
+
+            break;
         end
-        
-        Answers = CPinputdlg({'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
-            'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
-            'Operation', 1, {'Yes', 'Do not save'});
-        if isempty(Answers), return, end %% Inputdlg canceled
-        LogOrLinear = Answers{1};
-        FigureName = Answers{2};
-    else 
-        %% If no Loadtext Module used previously
-        [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
-            'Select the text file with the grouping values you loaded for each image cycle', ...
-            handles.Current.DefaultImageDirectory);
-        if TextFileName == 0, return, end %% CPuigetfile canceled
-        Answers = CPinputdlg({'What name would you like to give this data (what column heading)? You can leave this empty if a LoadText Module was already run',...
+    end
+
+    %%% If no preloaded data, or user selected 'Other file'...
+    [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
+        'Select the text file with the grouping values for each image cycle', ...
+        handles.Current.DefaultImageDirectory);
+    if TextFileName == 0, return, end %% CPuigetfile cancelled
+
+    Answers = CPinputdlg({'What name would you like to give this data (what column heading)?',...
             'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
             'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
-            'Operation', 1, {'positives','Yes', 'Do not save'});
-        if isempty(Answers), return, end %% Inputdlg canceled
-        DataName = Answers{1};
-        LogOrLinear = Answers{2};
-        FigureName = Answers{3};
+        'Operation', 1, {'positives','Yes', 'Do not save'});
+
+    if isempty(Answers), return, end %% Inputdlg cancelled
+    
+    FeatureName = Answers{1};
+    Logarithmic = Answers{2};
+    FigureName = Answers{3};
+
+    %% Check 'Logarithmic'
+    if ~ any(strcmpi({'yes', 'y', 'no', 'n', '/'}, Logarithmic)),
+        uiwait(CPerrordlg('Error: there was a problem with your choice for whether to log-transform data.'));
+        continue
+    elseif any(strcmpi({'no', 'n'}, Logarithmic)),
+        Logarithmic = '/';
+    end
+    
+    %%% Check if the user used the same name as a previous LoadText module
+    if any(strcmp(PreloadedFeatures, FeatureName)),
+        Replace = CPquestdlg(['A feature named ''', FeatureName, ''' already exists in the measurements.  Do you want to replace it?'], 'Existing feature', 'Yes', 'No', 'Cancel', 'Yes');
+        if strcmp(Replace, 'No'),
+            %%% jump back to the top of the loop. - or should this jump back to just below the CPuigetfile?
+            continue;
+        end
+        if strcmp(Replace, 'Cancel'), % cancelled.
+            return
+        end
+
+        %%% remove the conflicting measurement
+        handles.Measurements.Image = rmfield(handles.Measurements.Image, CPjoinstrings('LoadedText', FeatureName));
     end
 
-    %% Check 'DataName'
-    if isempty(DataName) && ~isfield(handles.Measurements.Image,DataName)
-        uiwait(CPerrordlg('Error: there was a problem with your choice of grouping values'));
-        continue
-    end
+    %% Save temp values that LoadText needs
+    tempVarValues=handles.Settings.VariableValues;
+    tempCurrent = handles.Current;
+    %% Change handles that LoadText requires.
+    %% Note that DataTools are denoted as Module #1
+    handles.Settings.VariableValues{1,1}=TextFileName;
+    handles.Settings.VariableValues{1,2}=FeatureName;
+    handles.Settings.VariableValues{1,3}=TextFilePathname;
     
-    %% Check 'LogOrLinear'
-    if ~strcmpi(LogOrLinear, 'yes') &&  ~strcmpi(LogOrLinear, 'y') && ~strcmpi(LogOrLinear, 'no') && ~strcmpi(LogOrLinear, 'n') && ~strcmpi(LogOrLinear, '/')
-        uiwait(CPerrordlg('Error: there was a problem with your choice for log10'));
-        continue
-    elseif strcmpi(LogOrLinear, 'no') || strcmpi(LogOrLinear, 'n')
-        LogOrLinear = '/';
-    end
-    
-    text_file = fullfile(TextFilePathname,TextFileName);
+    handles.Current.CurrentModuleNumber='01';
+    handles.Current.SetBeingAnalyzed=1;
+    handles.Current.DefaultImageDirectory = origDefaultImageDirectory; %% In case cluster path is different
+    %% Load Text
+    handles = LoadText(handles);
+    %% Return previous values
+    handles.Settings.VariableValues=tempVarValues;
+    handles.Current=tempCurrent;
+
+    %%% success...
+    ValidGroupings = true;
 end
     
-%% This section below is similar to AddData.m, which also calls LoadText.m
-
-%% Save temp values that LoadText needs
-tempVarValues=handles.Settings.VariableValues;
-tempCurrentField = handles.Current;
-%% Change handles that LoadText requires.
-%% Note that DataTools are denoted as Module #1
-handles.Settings.VariableValues{1,1}=TextFileName;
-handles.Settings.VariableValues{1,2}=DataName;
-handles.Settings.VariableValues{1,3}=TextFilePathname;
-
-handles.Current.CurrentModuleNumber='01';
-handles.Current.SetBeingAnalyzed=1;
-handles.Current.DefaultImageDirectory = origDefaultImageDirectory; %% In case cluster path is different
-%% Load Text
-handles = LoadText(handles);
-%% Return previous values
-handles.Settings.VariableValues=tempVarValues;
-handles.Current=tempCurrentField;
 
 Answer = CPinputdlg({'What do you want to call the output file with statistics?'},...
     'Calculate Statistics DataTool',1,{'StatsOUT.mat'});
@@ -148,18 +159,24 @@ handles.Current.DefaultImageDirectory = origDefaultImageDirectory;
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Checks whether the user has the Image Processing Toolbox.
+%%% Checks whether the user has the Statistics Toolbox.
 LicenseStats = license('test','statistics_toolbox');
 if LicenseStats ~= 1
     CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
-handles = CPcalculateStatistics(handles,DataName,LogOrLinear,FigureName,ModuleName,LicenseStats); %#ok<NASGU>
+handles = CPcalculateStatistics(handles,CPjoinstrings('LoadedText', FeatureName),Logarithmic,FigureName,ModuleName,LicenseStats); %#ok<NASGU>
 
 %%% Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, OutputFileName),'handles');
-    CPmsgbox(['Updated ',OutputFileName,' successfully saved.'])
+    CPmsgbox(['Updated ',OutputFileName,' successfully saved.']);
 catch
     CPwarndlg(['Could not save updated ',OutputFileName,' file.']);
 end
+
+
+function postfixes = get_postfixes(names, prefix)
+postfixes = regexp(names, [prefix '_(.*)'], 'tokens', 'once');
+postfixes(cellfun('isempty', postfixes)) = [];
+postfixes = cellfun(@(x) x{1}, postfixes, 'UniformOutput', false);

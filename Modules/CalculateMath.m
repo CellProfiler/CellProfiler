@@ -4,8 +4,8 @@ function handles = CalculateMath(handles)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% This module can take any measurements produced by previous modules and
-% can manipulate the numbers using basic arithmetic operations.
+% This module can take measurements produced by previous modules and
+% performs basic arithmetic operations.
 % *************************************************************************
 %
 % The arithmetic operations available in this module include addition,
@@ -24,9 +24,12 @@ function handles = CalculateMath(handles)
 % will be used for the operation. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
-% The calculations are stored along with the *first* object's data, unless 
-% the first object is an image and the second is not.  In this case,
-% the calculations are stored with the second object.
+% Saving:
+% The math measurements are stored as 'Math_...'. If both measures are 
+% image-based, then a single calculation (per cycle) will be stored as 'Image' data.  
+% If one measure is object-based and one image-based, then the calculations will
+% be stored associated with the object, one calculation per object.  If both are 
+% objects, then the calculations are stored with both objects.
 %
 % See also CalculateRatios, all Measure modules.
 
@@ -53,7 +56,7 @@ drawnow
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
-FirstObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
@@ -62,26 +65,26 @@ FirstObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Texture
 %inputtypeVAR02 = popupmenu custom
-FirstCategory = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
-FirstFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
+FeatureNumber{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-FirstImage = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
-FirstTextureScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
+TextureScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which object would you like to use as the second measurement? (The option IMAGE currently only works with Correlation measurements)?
 %choiceVAR06 = Image
 %infotypeVAR06 = objectgroup
 %inputtypeVAR06 = popupmenu
-SecondObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which category of measurements would you like to use?
 %choiceVAR07 = AreaShape
@@ -90,20 +93,20 @@ SecondObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %choiceVAR07 = Neighbors
 %choiceVAR07 = Texture
 %inputtypeVAR07 = popupmenu custom
-SecondCategory = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR08 = 1
-SecondFeatureNumber = str2double(handles.Settings.VariableValues{CurrentModuleNum,8});
+FeatureNumber{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR09 = imagegroup
 %inputtypeVAR09 = popupmenu
-SecondImage = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR10 = 1
-SecondTextureScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
+TextureScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Do you want the log (base 10) of the ratio?
 %choiceVAR11 = No
@@ -132,52 +135,47 @@ drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-FirstFeatureName = CPgetfeaturenamesfromnumbers(handles, FirstObjectName, ...
-    FirstCategory, FirstFeatureNumber, FirstImage,FirstTextureScale);
+for idx = 1:2
+    try
+        FeatureName{idx} = CPgetfeaturenamesfromnumbers(handles, ObjectName{idx}, ...
+            Category{idx}, FeatureNumber{idx}, Image{idx},TextureScale{idx});
 
-SecondFeatureName = CPgetfeaturenamesfromnumbers(handles, SecondObjectName, ...
-    SecondCategory, SecondFeatureNumber, SecondImage,SecondTextureScale);
-
-% Get measurements
-FirstMeasurements = handles.Measurements.(FirstObjectName).(FirstFeatureName){SetBeingAnalyzed};
-SecondMeasurements = handles.Measurements.(SecondObjectName).(SecondFeatureName){SetBeingAnalyzed};
-
-%% Check sizes (note, 'Image' measurements have length=1)
-if length(FirstMeasurements) ~= length(SecondMeasurements) && ...
-        ~(length(FirstMeasurements) ==1 || length(SecondMeasurements) == 1)
-    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',FirstObjectName,' and ',SecondObjectName,' do not have the same object count.']);
+        Measurements{idx} = handles.Measurements.(ObjectName{idx}).(FeatureName{idx}){SetBeingAnalyzed};
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ...
+            ' module (#' num2str(CurrentModuleNum) ...
+            ') because an error ocurred when retrieving the data.  '...
+            'Likely the category of measurement you chose, ',...
+            Category, ', was not available for ', ...
+            ObjectName,' with feature number ' num2str(FeatureNbr) ...
+            ', possibly specific to image ''' Image ''' and/or ' ...
+            'Texture Scale = ' num2str(TextureScale) '.']);
+    end
 end
+    
+%% Check sizes (note, 'Image' measurements have length=1)
+if length(Measurements{1}) ~= length(Measurements{2}) && ...
+        ~(length(Measurements{1}) ==1 || length(Measurements{2}) == 1)
+    error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',ObjectName{1},' and ',ObjectName{2},' do not have the same object count.']);
+end
+
+%% Construct field name
+FullFeatureName = CPjoinstrings('Math',ObjectName{1},FeatureName{1},...
+                            Operation,ObjectName{2},FeatureName{2});
 
 %% Since Matlab's max name length is 63, we need to truncate the fieldname
 MinStrLen = 5;
-FirstFeatureNameSubstrings = textscan(FirstFeatureName,'%s','delimiter','_');
-for idxStr = 1:length(FirstFeatureNameSubstrings{1})
-    Str = FirstFeatureNameSubstrings{1}{idxStr};
-    FirstTruncatedName{idxStr} = Str(1:min(length(Str),MinStrLen));
-end
-SecondFeatureNameSubstrings = textscan(SecondFeatureName,'%s','delimiter','_');
-for idxStr = 1:length(SecondFeatureNameSubstrings{1})
-    Str = SecondFeatureNameSubstrings{1}{idxStr};
-    SecondTruncatedName{idxStr} = Str(1:min(length(Str),MinStrLen));
-end
-NewFirstFeatureName = CPjoinstrings(FirstTruncatedName{:});
-NewSecondFeatureName = CPjoinstrings(SecondTruncatedName{:});
-
-%% Construct field name
-%% Note that we are not including FirstObjectName, since Math measurements 
-%%  are stored under the first object's structure
-MathFieldName = CPjoinstrings('Math',NewFirstFeatureName,Operation(1:4),...
-                            SecondObjectName,NewSecondFeatureName);
+TruncFeatureName = CPtruncatefeaturename(FullFeatureName,MinStrLen);
 
 %% Do Math
 if( strcmpi(Operation, 'Multiply') )
-    FinalMeasurements = FirstMeasurements .* SecondMeasurements;
+    FinalMeasurements = Measurements{1} .* Measurements{2};
 elseif( strcmpi(Operation, 'Divide') )
-    FinalMeasurements = FirstMeasurements ./ SecondMeasurements;
+    FinalMeasurements = Measurements{1} ./ Measurements{2};
 elseif( strcmpi(Operation, 'Add') )
-    FinalMeasurements = FirstMeasurements + SecondMeasurements;
+    FinalMeasurements = Measurements{1} + Measurements{2};
 elseif( strcmpi(Operation, 'Subtract') )
-    FinalMeasurements = FirstMeasurements - SecondMeasurements;
+    FinalMeasurements = Measurements{1} - Measurements{2};
 end
     
 if strcmp(LogChoice,'Yes')
@@ -188,15 +186,25 @@ if ~isnan(Power)
     FinalMeasurements = FinalMeasurements .^ Power;
 end
 
-if strcmp('Image',FirstObjectName) && ~strcmp('Image',SecondObjectName)
-    handles = CPaddmeasurements(handles,SecondObjectName,MathFieldName,FinalMeasurements);
+%% Save, depending on type of measurement (ObjectName)
+%% Note that Image measurements are scalars, while Objects are potentially vectors
+if strcmp(ObjectName{1}, 'Image') && strcmp(ObjectName{2}, 'Image'),
+    handles = CPaddmeasurements(handles,'Image',TruncFeatureName,FinalMeasurements);
 else
-    handles = CPaddmeasurements(handles,FirstObjectName,MathFieldName,FinalMeasurements);
+    if ~strcmp(ObjectName{1}, 'Image'),
+        handles = CPaddmeasurements(handles,ObjectName{1},TruncFeatureName,FinalMeasurements);
+    end
+    if ~strcmp(ObjectName{2}, 'Image'),
+        handles = CPaddmeasurements(handles,ObjectName{2},TruncFeatureName,FinalMeasurements);
+    end
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+
+%% TODO add display of numbers, as in CalculateRatios, and remove CPclosefigure
 
 %%% The figure window display is unnecessary for this module, so it is
 %%% closed during the starting image cycle.

@@ -141,10 +141,9 @@ if any(findobj == ThisModuleFigureNumber)
     end
     CPimagesc(NewImage,handles);
     title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    Callback = 'string=get(gcbo,''string'');UserData=get(gcbo,''UserData''); if strcmp(string,''off''),imagesc(UserData{1});set(gcbo,''string'',''on'');elseif strcmp(string,''on''),imagesc(UserData{2});set(gcbo,''string'',''off'');else,set(gcbo,''string'',''on'');end;clear UserData string;';
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
-        'Callback',Callback);
+        'Callback',@OverlayOutlines_Callback);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,3 +154,25 @@ drawnow
 if ~strcmp(SavedImageName,'Do not save')
     handles.Pipeline.(SavedImageName) = NewImage;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - OVERLAYOUTLINES_CALLBACK  %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function OverlayOutlines_Callback(hObject,eventdata)
+
+string = lower(get(hObject,'string'));
+UserData = get(hObject,'UserData'); 
+h_image = findobj(gcbf,'type','image');
+
+switch string,
+    case 'off',
+        set(h_image,'cdata',UserData{1});
+        set(hObject,'string','on');
+    case 'on',
+        set(h_image,'cdata',UserData{2});
+        set(hObject,'string','off');
+    otherwise
+        set(hObject,'string','on');
+end
+    

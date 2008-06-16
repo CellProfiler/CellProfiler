@@ -1,4 +1,4 @@
-[[I've put our notes to ourselves in brackets, and the real, proposed response outside of brackets]]
+[[I've put our notes to ourselves in brackets, and the real, proposed response outside of brackets.  "Ray: ..." is written by Ray, all else by Anne.]]
 
 Response to Reviewers' Comments, and guide to changes in the manuscript:  
 
@@ -14,26 +14,34 @@ Major Comments
 
 RESPONSE 1A:
 
-[[TO DO: we need to look up those particular papers and mention how they don't meet the criteria of the statement (what phenotypes were actually chosen, how was analysis done). Perhaps we need to adjust our own statement to be accurate in light of these papers. Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?]]
+[[TO DO: we need to look up those particular papers and mention how they don't meet the criteria of the statement (what phenotypes were actually chosen, how was analysis done). Perhaps we need to adjust our own statement to be accurate in light of these papers. Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?
+
+Ray: Can we change the emphasis such that we compare more on the fast flexibility of our approach, which is not present in the other methods?  Previous work didn't require extensive customization, it was just customized and no retargeted as easily as our method.]]
 
 1B: Further more, the authors' claim that "none has been implemented in a system proven capable of scoring millions of cells for many diverse morphologies - especially for phenotypes that are complex or subtle, without known positive controls, or present in only a small percentage of the cells in a sample". However, it appear that, as many other prior works, the proposed method also requires positive samples provided from human experts. Thus, it is unclear what do the authors mean by "without known positive controls"?
 
 
 RESPONSE 1B:
 
-[[We meant to say 'positive control *samples*', right? That essentially resolves the concern, but we should definitely respond a step further by saying that iteration is absolutely necessary when it's hard to even find positive control *cells*, whether positive control samples are available or not. Is it true that ours is the only iterative machine learning we've seen for cell based screening? I think so. Might also refer to the suppl figure (the one we informally called the 'bakal' approach), and/or to response to 1A.]]
+[[We meant to say 'positive control *samples*', right? That essentially resolves the concern, but we should definitely respond a step further by saying that iteration is absolutely necessary when it's hard to even find positive control *cells*, whether positive control samples are available or not. Is it true that ours is the only iterative machine learning we've seen for cell based screening? I think so. Might also refer to the suppl figure (the one we informally called the 'bakal' approach), and/or to response to 1A.
+
+Ray: Yes, we meant positive control samples (though *any* positive controls imply controlling the response of the cells, which we don't rely on).  We are the only iterative solution I know of.  
+
+The endocyte classification work can score millions of cells, for several cell-cycle phenotypes, so I think we need to adjust this to be more careful.]]
 
 
 1C: The idea of using human experts to guide classifier is neither novel nor interesting. The proposed approach of identifying positive control cells from "cells noticed by chance while browsing images from the screen, or outlier cells discovered by interactively exploring cell measurements" is highly biased, non-systematic, and, worst of all, probabilistic (i.e., may not be reproducible). Although the proposed method is good at "zooming" into the phenotypes selected by human experts, it is unclear how the proposed system may discover novel cells or phenotypes that are missed by the human experts.
 
 
 RESPONSE 1C:
-The reviewer misunderstands the goal of the tool; it is not to discover novel cells or phenotypes that are missed by the human experts. It is not intended to automatically discover phenotypes of which the researcher was not previously aware, it is meant to enable the proven successfulness of classic screens, wherein the researcher has already chosen an interesting phenotype, by whatever mechanism (chance, predesigned goal of the screen, etc.), and wants to find samples that reproducibly display that phenotype. We have adjusted [[XXX]] sentence to clarify this, such that it now reads [[XXX]].
+The reviewer misunderstands the goal of the tool; it is not to discover novel cells or phenotypes that are missed by the human experts. It is not intended to automatically discover phenotypes of which the researcher was not previously aware, it is meant to enable the proven [[successes - XXX]] of classic screens, wherein the researcher has already chosen an interesting phenotype, by whatever mechanism (predesigned goal of the screen, chance encounter, revisiting a previously completed screen after discovering a new phenotype of interest, etc.), and wants to find samples that reproducibly display that phenotype. We have adjusted [[XXX]] sentence to clarify this, such that it now reads [[XXX]].
 
 1D: This manuscript lacks methodological novelty or biological discovery to make this appropriate for Nature Methods.
 
 RESPONSE 1D:
-[[Maybe we just leave this alone because the editor is already willing to overlook the novelty complaint. Or, we simply say: "We know of no publications demonstrating the use of software for supervised, iterative machine learning to carry out a large-scale screen." (If that's true, see 1B. It's certainly true that it's the only software that's readily usable by anyone.)]]
+[[Maybe we just leave this alone because the editor is already willing to overlook the novelty complaint. Or, we simply say: "We know of no publications demonstrating the use of software for supervised, iterative machine learning to carry out a large-scale screen." (If that's true, see 1B. It's certainly true that it's the only software that's readily usable by anyone.)
+
+Ray: I think we can leave it alone.  In fact, I think we can leave almost all of reviewer 1 alone.]]
 
 ===========
 
@@ -49,24 +57,34 @@ There are a few successes in this field, but none to my knowledge that are routi
 RESPONSE 2A:
 The referee points out particular explorations that would be helpful to evaluate the methods we have described:
 (a) Confusion matrices: 
-[[Should we just convert the forced choice to a confusion matrix (which would look very very nice)? That would probably not please the referee, unless we make the argument that we have to use forced choice to keep the human experts scoring roughly the same number of positives and negatives and not having a different threshold of what they consider a 'hit'. We could provide a standard confusion matrix on a per-cell basis, of course (right?), or point to the supplemental figures showing sensitivity and specificity (that's essentially the same thing, right?), but what to do about per-image?]]
+[[Should we just convert the forced choice to a confusion matrix (which would look very very nice)? That would probably not please the referee, unless we make the argument that we have to use forced choice to keep the human experts scoring roughly the same number of positives and negatives and not having a different threshold of what they consider a 'hit'. We could provide a standard confusion matrix on a per-cell basis, of course (right?), or point to the supplemental figures showing sensitivity and specificity (that's essentially the same thing, right?), but what to do about per-image?
+
+Ray:  We can report confusion matrices per-cell.  Per-sample we don't have a lot of data, as we lack ground truth except a small fraction of samples, so I'd rather avoid that.]]
 
 (b) Discussion of different classifier implementations:
-[[Does the referee mean different machine-learning methods? If so, can we just throw the proposed best (i.e., something that was top of the list in a murphy paper) and throw it into CPA and test it? This would also address the modularity, for part 2C.3]]
+[[Does the referee mean different machine-learning methods? If so, can we just throw the proposed best (i.e., something that was top of the list in a murphy paper) and throw it into CPA and test it? This would also address the modularity, for part 2C.3
+
+Ray: I'd rather cut the modularity claim than go down the path of evaluating classifier methods, which are very orthogonal to this work.  I'd rather address this by being explicit about not testing other classifier methods, but feeling that they'd do fine.]]
 
 (c) Examination of feature space explored by different phenotypes:
 
-[[Do you suppose that they want just a general narrative about what features are helpful? or we could make a heatmappy thing showing what features were used for which phenotypes (I think Altschuler papers have had this), or we could make a bar chart with four bars for each phenotype: size, shape, intensity, texture. Then categorize the 611 features into one of those categories and count up how many rules were in each of those 4 categories. This little 4-bar chart per phenotype would be feasible to add to the existing big figures, I think. But a heatmap is easier to make and possibly more sophisticated-looking and could be a suppl. figure.]]
+[[Do you suppose that they want just a general narrative about what features are helpful? or we could make a heatmappy thing showing what features were used for which phenotypes (I think Altschuler papers have had this), or we could make a bar chart with four bars for each phenotype: size, shape, intensity, texture. Then categorize the 611 features into one of those categories and count up how many rules were in each of those 4 categories. This little 4-bar chart per phenotype would be feasible to add to the existing big figures, I think. But a heatmap is easier to make and possibly more sophisticated-looking and could be a suppl. figure.
+
+Ray: I don't think the feature space comment needs to be or should be addressed directly.  That's a much more complicated idea than what we're proposing, and very dependent on the feature set we measure.]]
 
 (d) The referee is concerned that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
-[[Is this concern addressed by just saying 'can now be accomplished with a few hours of setup time'? Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?  See 1A.  Murphy method hasn't been used in any real experiments? ok, that's a little harsh. but has it been used by any outside groups in the past decade? that might be actually literally true.]]
+[[Is this concern addressed by just saying 'can now be accomplished with a few hours of setup time'? Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?  See 1A.  Murphy method hasn't been used in any real experiments? ok, that's a little harsh. but has it been used by any outside groups in the past decade? that might be actually literally true.
+
+Ray: I think emphasizing the speed and flexibility might be the best way to go.  Murphy's methods and others' could have handled any of the phtypes we looked at, but it would have been far more painful to build the training set, etc.]]
 
 
 2B: The authors are first-class scientists, therefore it's worth posing a hypothetical question--  if I submitted a paper to Nature Methods reporting a new method based on an application of that method to a single dataset, would they consider that a reasonable demonstration of the general utility of the method?  This report describes the use of Classifier on one cell-based screen.  That implementation is certainly an achievement, but the authors (and editors of this journal, who have been guilty of this!) must consider the impact of reporting results based on a single run, in the absence of any significant finding derived from this analysis.  This does not diminish the work the authors have done, but recognizes the importance of delivering tested, generally useful methodology to the community.  The use of Classifier to define phenotypes across multiple screens, with multiple probes is therefore most important. Even surveying the types of assays most often done in HCS, and critically evaluating the phenotypes that are well detected and those that are less well-detected would be sufficient.  The authors must have access to this data.
 
 
 RESPONSE 2B:
-[[should we do a quick new screen for a fly phenotype or some other human phenotype, e.g., using piyush's images? or should we instead just refer to the other successful screens: piyush, eggert, gilliland]]
+[[should we do a quick new screen for a fly phenotype or some other human phenotype, e.g., using piyush's images? or should we instead just refer to the other successful screens: piyush, eggert, gilliland
+
+Ray: referring to published and successful screens would be the most effective argument.  Another phenotype would be fine, but work exterior to this paper (and with real scientific goals) carries more weight.  How dod we do that, though, with enough details to be useful without impinging their work, though?]]
 
 2C: Moreover, a few practical but very important considerations are missing:
 2C.1: No report on the computational performance of Classifier is mentioned.  How long does training take?  How does this scale with number of images, channels, image size, etc.?  What kinds of hardware are used for this calculation.  The authors have a very impressive compute facility at their disposal-is this required? Perhaps the application is limited by I/O, given its emphasis on large numbers of images.  Reporting these limitations is absolutely essential. 
@@ -74,13 +92,17 @@ RESPONSE 2B:
 
 RESPONSE 2C.1:
 
-[[This seems straightforward; Ray, can you draft a new paragraph/sentences for the text?]]
+[[This seems straightforward; Ray, can you draft a new paragraph/sentences for the text?
+
+Ray: Yeah, it's easy to address this, as most of the times are trivial, except for image processing, which is secondary to the paper.]]
 
 2C.2: The authors have bypassed any description of cellAnalyst, in favor of delivering a separate publication on this, but simple statements like support for commercial file formats, necessary configuration, etc. would be most valuable.  Many HCS platforms have a mix of data acquisition systems-which can be used?
 
 
 RESPONSE 2C.2:
-[[This seems straightforward; Anne can draft a new paragraph/sentences for the text]]
+[[This seems straightforward; Anne can draft a new paragraph/sentences for the text.
+
+Ray: there seems to be some CP versus CPA confusion here, too.]]
 
 2C.3: I will admit to a personal pet peeve, as a user with over 20 years of experience in digital imaging in the life sciences.  All software is called by its authors easy to use, and almost always easily pluggable.  Yet, in fact there are only a few examples where this is in fact the case, as judged by uptake from the community- ImageJ is probably the best example in life sciences imaging (there are many others in other scientific domains, e.g., crystallography).  The authors' assertion of an modular architecture (p. 9)  should be at least illustrated with pointers to where examples and documentation for this exist, and preferably with examples of how to add new classifiers.
 
@@ -88,7 +110,9 @@ RESPONSE 2C.2:
 RESPONSE 2C.3:
 This is certainly a reasonable pet peeve to hold in this field!  Of course, it is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that we have [[NN: eggert, gilliland, piyush, any others?]] collaborators currently using the tool, and in particular we gave the Mitchison group the software a year ago and they have successfully used it almost completely independently. They have completed a large-scale screen in Drosophila for [[xx]]. Since then, we have hired a full-time software engineer who has dramatically overhauled the interface for Classifier such that it is now even more user-friendly. The online tutorial shows this new Classifier tool in use ([[web link here]]) and we hope the referee will agree that the process is easy based on that evidence as well. We have not adjusted the text, but would be happy to do so if there seems a better way to substantiate ease of use.
 
-[[Hmm, anything else you suggest to address this, esp the pluggable part?]]
+[[Hmm, anything else you suggest to address this, esp the pluggable part?
+
+Ray: I think cut the full-time SWE stuff, it's not really evidenceof ease-of-use (perhaps future ease-of-use).  I think we should just cut the pluggable part.  Evaluating pluggability is even harder than ease-of-use, and we don't have anything to back up the claim with.  It's not key to what we wrote, so backing it out should be fine.]]
 
 
 
@@ -99,7 +123,9 @@ Reviewer #3:
 
 
 RESPONSE TO 3A: 
-[[Yes, but that's a different goal. Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.]]
+[[Yes, but that's a different goal. Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.
+
+Ray: I'm not sure what the "Some chemical/RNAi's..." sentence is trying to address (bias?).  I think we address this by saying, "yes, positive/negative controls allow more direct scoring, but we're doing something else."  Clarification in the paper may be necessary?]]
 
 
 3B: This is not the first time that pattern recognition was used to evaluate a set of diverse cellular phenotypes.  This was demonstrated a decade ago by Robert Murphy's group for determining sub-cellular locations (Cytometry 1998).  Although on the face of it this addresses a different biological problem (identification of sub-cellular compartment), the visual analysis problem is the same because the classifier doesn't "know" its identifying sub-cellular locations vs. RNAi phenotypes - in both cases the problem is to identify a set of diverse cellular morphologies.  Since Murphy's work, others have built single classifiers for solving a diversity of biological and cellular imaging problems (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy, as well as Loo et al. in a recent Nature Methods ).  In each of these approaches, classifiers are built using an automated process where the underlying image features are not problem-specific, making these approaches applicable to diverse imaging problems.  In light of this, the statement "none has addressed the problem of scale in terms of ability to score cells for many unusual phenotypes of interest" is not correct.  

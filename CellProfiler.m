@@ -605,6 +605,8 @@ if strcmp(Answer,'Yes')
     handles.Current.SavedPipeline.Info.Pathname = {};
     handles.Current.SavedPipeline.Info.Filename = {};
     guidata(hObject,handles);
+    
+    set(handles.figure1,'name','CellProfiler');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -807,6 +809,8 @@ handles.VariableDescription = {};
 
 handles.Current.SavedPipeline.Info.Pathname = SettingsPathname;
 handles.Current.SavedPipeline.Info.Filename = SettingsFileName;
+
+set(handles.figure1,'name',['CellProfiler - ',SettingsFileName]);
 
 %%% For each module, extract its settings and check if they seem alright
 revisionConfirm = 0;
@@ -1528,6 +1532,8 @@ if FileName ~= 0
     handles.Current.SavedPipeline.Info.Filename = FileName;
     guidata(hObject, handles);
     
+    set(handles.figure1,'name',['CellProfiler - ',FileName]);
+
     %%% Save the pipeline
     save(fullfile(Pathname,FileName),'Settings');
     

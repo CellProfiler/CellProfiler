@@ -220,6 +220,8 @@ RESPONSE TO 3H.10:
 3H.11: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.
 
 RESPONSE TO 3H.11:
+[[fine by me to leave it out. It's pretty conventional to talk about future directions for the work, so we could also re-word it, but I would assume it was already pretty clearly future directions and they still didn't like it so it might be simpler to just leave it out.]]
+
 
 3H.12: Validation and comparison to previous methods: It is clear that Classifier was compared to human detection, but the way the human detection was performed is not clear. Was each sample classified by a single researcher? What is the error rate of this manual classification? How many samples were used for training the classifier? What efforts (human resources) were required to train the classifier.
 
@@ -237,7 +239,7 @@ RESPONSE TO 3H.14:
 3H.15: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
 
 RESPONSE TO 3H.15:
-
+[[Two mechanisms: (1) add more modules to the image analysis pipeline (this is easy to do in CellProfiler and does not require programming skills, simply add a module to the pipeline. An example would be if there is a particular compartment to be defined, e.g. a concentric ring from 2-6 microns outside the edge of the nucleus, that might be helpful to score a particular phenotype. (2) write new modules for CellProfiler, in matlab. This is the route we took for angle between neighbors, because it was not a pre-existing measurement that CellProfiler was enabled to make. It is now a standard measurement included in the standard cytoprofile for future screens.]]
 
 3H. 16: Page 3: "Machine learning methods that select and combine multiple features for automated cell scoring have been
 explored and used for a few particular phenotypes"  The cited papers do not support the statement. Previous efforts (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy) have resulted in general phenotype recognition tools that can handle a large number of phenotypes, rather than focusing on detection of a few particular phenotypes. This is an important point, and it should be clear to the reader that this work is not the first attempt of general automated phenotype recognition.

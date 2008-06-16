@@ -497,6 +497,12 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,19});
 
 %%%VariableRevisionNumber = 12
 
+%%% NOTE!  The next time anyone changes the variables for this module, we
+%%% would really like to remove the Laplacian option. We are certain that
+%%% no one in the world is using it, but we didn't want to just remove it
+%%% and change the revision number for no other good reason.
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY ERROR CHECKING & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

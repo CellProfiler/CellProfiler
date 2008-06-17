@@ -10,32 +10,23 @@ Summary
 The authors describe a supervised machine learning approach to score phenotypes in high-throughput image-based screens. The approach requires human experts to provide examples of cells with and without phenotypes of interest. A machine learning algorithm is then trained to recognize the provided cells, and opinions from human experts are used iteratively to improve the classification accuracy.
 
 Major Comments
-1A: There is an extensive prior works in the area of automated high throughput cellular phenotype profiling using microscopy images. The statement that (past) "automated image analysis requires extensive customization to each phenotype ..." is not true. For example, unbiased sets of measurements that are not customized for any particular phenotypes were used in Boland, et al., Bioinformatics (2001), Tanaka, et. al., PLOS Biology (2005), and Loo, et al., Nature Methods (2007).
+COMMENT 1A: There is an extensive prior works in the area of automated high throughput cellular phenotype profiling using microscopy images. The statement that (past) "automated image analysis requires extensive customization to each phenotype ..." is not true. For example, unbiased sets of measurements that are not customized for any particular phenotypes were used in Boland, et al., Bioinformatics (2001), Tanaka, et. al., PLOS Biology (2005), and Loo, et al., Nature Methods (2007).
+
+Response:
+Agreed, our meaning was unclear in that sentence. We replaced the sentence with: "Automated image analysis coupled with machine learning can effectively score many phenotypes but can require significant effort to adapt to rare or subtle morphologies, particularly when positive control samples are not available."
 
 
-RESPONSE 1A:
+COMMENT 1B: Further more, the authors' claim that "none has been implemented in a system proven capable of scoring millions of cells for many diverse morphologies - especially for phenotypes that are complex or subtle, without known positive controls, or present in only a small percentage of the cells in a sample". However, it appear that, as many other prior works, the proposed method also requires positive samples provided from human experts. Thus, it is unclear what do the authors mean by "without known positive controls"?
 
-[[TO DO: we need to look up those particular papers and mention how they don't meet the criteria of the statement (what phenotypes were actually chosen, how was analysis done). Perhaps we need to adjust our own statement to be accurate in light of these papers. Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?
-
-Ray: Can we change the emphasis such that we compare more on the fast flexibility of our approach, which is not present in the other methods?  Previous work didn't require extensive customization, it was just customized and no retargeted as easily as our method.]]
-
-1B: Further more, the authors' claim that "none has been implemented in a system proven capable of scoring millions of cells for many diverse morphologies - especially for phenotypes that are complex or subtle, without known positive controls, or present in only a small percentage of the cells in a sample". However, it appear that, as many other prior works, the proposed method also requires positive samples provided from human experts. Thus, it is unclear what do the authors mean by "without known positive controls"?
+Response:
+The distinction between positive control samples and positive control cells was not clear in our original sentence. To clarify, we have replaced the sentence with: "These methods require providing examples of cells that do and do not display the morphology of interest (i.e., positive and negative cells). However, finding a sufficient number of positive cells can be prohibitively difficult when positive control samples are not available and when the phenotype is rare in the wild-type population."
 
 
-RESPONSE 1B:
+COMMENT 1C: The idea of using human experts to guide classifier is neither novel nor interesting. The proposed approach of identifying positive control cells from "cells noticed by chance while browsing images from the screen, or outlier cells discovered by interactively exploring cell measurements" is highly biased, non-systematic, and, worst of all, probabilistic (i.e., may not be reproducible). Although the proposed method is good at "zooming" into the phenotypes selected by human experts, it is unclear how the proposed system may discover novel cells or phenotypes that are missed by the human experts.
 
-[[We meant to say 'positive control *samples*', right? That essentially resolves the concern, but we should definitely respond a step further by saying that iteration is absolutely necessary when it's hard to even find positive control *cells*, whether positive control samples are available or not. Is it true that ours is the only iterative machine learning we've seen for cell based screening? I think so. Might also refer to the suppl figure (the one we informally called the 'bakal' approach), and/or to response to 1A.
-
-Ray: Yes, we meant positive control samples (though *any* positive controls imply controlling the response of the cells, which we don't rely on).  We are the only iterative solution I know of.  
-
-The endocyte classification work can score millions of cells, for several cell-cycle phenotypes, so I think we need to adjust this to be more careful.]]
-
-
-1C: The idea of using human experts to guide classifier is neither novel nor interesting. The proposed approach of identifying positive control cells from "cells noticed by chance while browsing images from the screen, or outlier cells discovered by interactively exploring cell measurements" is highly biased, non-systematic, and, worst of all, probabilistic (i.e., may not be reproducible). Although the proposed method is good at "zooming" into the phenotypes selected by human experts, it is unclear how the proposed system may discover novel cells or phenotypes that are missed by the human experts.
-
-
-RESPONSE 1C:
+Response:
 The reviewer misunderstands the goal of the tool; it is not to discover novel cells or phenotypes that are missed by the human experts. It is not intended to automatically discover phenotypes of which the researcher was not previously aware, it is meant to enable the proven [[successes - XXX]] of classic screens, wherein the researcher has already chosen an interesting phenotype, by whatever mechanism (predesigned goal of the screen, chance encounter, revisiting a previously completed screen after discovering a new phenotype of interest, etc.), and wants to find samples that reproducibly display that phenotype. We have adjusted [[XXX]] sentence to clarify this, such that it now reads [[XXX]].
+
 
 1D: This manuscript lacks methodological novelty or biological discovery to make this appropriate for Nature Methods.
 

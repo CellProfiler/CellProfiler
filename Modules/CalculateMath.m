@@ -16,8 +16,7 @@ function handles = CalculateMath(handles)
 %
 % This module currently works on an object-by-object basis (it calculates
 % the requested operation for each object) but can also apply the operation
-% for measurements made for entire images (but only for measurements
-% produced by the Correlation module).
+% for measurements made for entire images.
 %
 % Feature Number:
 % The feature number specifies which features from the Measure module(s)
@@ -52,7 +51,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to use as the first measurement (The option IMAGE currently only works with Correlation measurements)?
+%textVAR01 = Which object would you like to use as the first measurement?
 %choiceVAR01 = Image
 %infotypeVAR01 = objectgroup
 %inputtypeVAR01 = popupmenu
@@ -80,7 +79,7 @@ Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = 1
 TextureScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Which object would you like to use as the second measurement? (The option IMAGE currently only works with Correlation measurements)?
+%textVAR06 = Which object would you like to use as the second measurement?
 %choiceVAR06 = Image
 %infotypeVAR06 = objectgroup
 %inputtypeVAR06 = popupmenu

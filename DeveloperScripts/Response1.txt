@@ -25,7 +25,7 @@ The distinction between positive control samples and positive control cells was 
 COMMENT 1C: The idea of using human experts to guide classifier is neither novel nor interesting. The proposed approach of identifying positive control cells from "cells noticed by chance while browsing images from the screen, or outlier cells discovered by interactively exploring cell measurements" is highly biased, non-systematic, and, worst of all, probabilistic (i.e., may not be reproducible). Although the proposed method is good at "zooming" into the phenotypes selected by human experts, it is unclear how the proposed system may discover novel cells or phenotypes that are missed by the human experts.
 
 Response:
-The reviewer misunderstands the goal of the work we described - the goal is phenotype scoring, not phenotype discovery. The sentence was describing how a researcher might choose an interesting phenotype that they wish to pursue; historically, selecting phenotypes for study has indeed been highly biased (i.e., guided by the intuition of a biologist), in classic screens that have been the basis of much of modern biology. Methods exist for automated phenotype discovery, but that is not addressed by our work. We have clarified this in a revision of the sentence: "These can be cells from control samples if the screen has been designed to address a particular phenotype. These can also be cells identified by chance or based on outlier measurements if the screen’s goal is to uncover previously unknown or uncharacterized phenotypes, which was the case in this study."
+The goal of our work is phenotype scoring, not phenotype discovery. The sentence mentioned above describes how a researcher might choose an interesting phenotype that they wish to pursue; historically, selecting phenotypes for study has indeed been highly biased (i.e., guided by the intuition of a biologist), particularly in classic screens that have been the basis of much of modern biology. Methods exist for automated phenotype discovery, but this is not addressed by our work. We have revised the sentence to clarify: "These can be cells from control samples if the screen has been designed to address a particular phenotype, or cells identified by chance if the screen’s goal is to uncover previously uncharacterized phenotypes, as in many classic screens."
 
 
 COMMENT 1D: This manuscript lacks methodological novelty or biological discovery to make this appropriate for Nature Methods.
@@ -47,21 +47,13 @@ COMMENT 2A: However, does this very useful implementation constitute a significa
 
 Response:
 The referee points out particular explorations that would be helpful to evaluate the methods we have described:
-(a) Confusion matrices: 
-[[Should we just convert the forced choice to a confusion matrix (which would look very very nice)? That would probably not please the referee, unless we make the argument that we have to use forced choice to keep the human experts scoring roughly the same number of positives and negatives and not having a different threshold of what they consider a 'hit'. We could provide a standard confusion matrix on a per-cell basis, of course (right?), or point to the supplemental figures showing sensitivity and specificity (that's essentially the same thing, right?), but what to do about per-image?
-
-Ray:  We can report confusion matrices per-cell.  Per-sample we don't have a lot of data, as we lack ground truth except a small fraction of samples, so I'd rather avoid that.
-
-TO DO: Let's discuss.]]
+(a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  We have added this sentence: "Agreement between humans was comparable to that between humans and automated analysis ([[Supplementary Figure XXX]])."
 
 (b) Discussion of different classifier implementations:
-Evaluation of various classifier methods for cell screens has indeed been a popular focus of study and has been heavily explored in others' work, particularly from the Murphy lab. One conclusion from this work is that none of the top classification methods (e.g., [[X, Y, GentleBoosting]]) consistently performs dramatically better than the others [[Ray, is that accurate?]]. The goal of the approach we present is a method for rapidly creating useful training sets for rare phenotypes; comparing actual classifier methods is orthogonal to this work. To clarify this, we have added a sentence [[somewhere near where we mention GentleBoosting, saying something like "Other machine learning methods are also likely to be effective, based on their performance in previous work (Murphy lab references)"]].
+Evaluation of various classifier methods has indeed been heavily explored in others' work, both for cell screens in the Murphy lab, as well as many other domains in the general machine learning community. One conclusion from this work is that all of the top classification methods (e.g., SVMs, neural networks, boosting variants) perform roughly similarly.  Contributing to the work comparing particular learning methods is not our goal, and in fact, we believe that any of these methods would perform well within our framework.  Rather, we present a method for rapidly creating useful training sets for rare phenotypes, using an arbitrary machine learning algorithm. To clarify this, we have added a sentence: "Other machine learning methods are likely to be equally effective, based on their performance in previous work [[(Murphy lab, mitocheck, altschuler, bakal refs XXX)]]."
 
-[[Can we just throw the proposed best (i.e., something that was top of the list in a murphy paper) one into CPA and test it? This would also address the modularity, for part 2C.3.
+[[Are we addressing the reviewer's concerns adequately?]]
 
-Ray: I'd rather cut the modularity claim than go down the path of evaluating classifier methods, which are very orthogonal to this work.  I'd rather address this by being explicit about not testing other classifier methods, but feeling that they'd do fine.
-
-Anne: I think your response is ok, but if it takes one day to implement and test the 'best' alternate machine learning method on one phenotype, I'd like to try it. It's always risky to tell the reviewer you don't want to do their proposed experiment, especially if it's clearly not that time-consuming. Perhaps Vebjorn could carry this out while we are working on other parts?  Note also that our modularity claim was actually more along the lines of - You can swap in dift image processing, feature extraction, or machine learning methods. I think those are not overstating the claims because CP is a separate step from CPA so inherently that's modular (so long as it really is easy to put in a new m-l method into CPA)]]
 
 (c) Examination of feature space explored by different phenotypes:
 
@@ -114,6 +106,11 @@ COMMENT 2C.3: I will admit to a personal pet peeve, as a user with over 20 years
 Response:
 This is certainly a reasonable pet peeve to hold in this field!  Of course, it is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that many of our collaborators currently use the tool to score large-scale screens independently. Often, training was minimal (Mitchison & Lander groups), and in fact we have recently released an even easier-to-use interface for Classifier. The online demo shows this new Classifier tool in use (http://www.cellprofiler.com/examples) and we hope the referee will agree that the process is easy based on that evidence as well. [[Probably exclude this sentence: "We have not adjusted the text, but would be happy to do so if there seems a better way to substantiate ease of use."]]
 
+[[Ray: I'd rather cut the modularity claim than go down the path of evaluating classifier methods, which are very orthogonal to this work.  I'd rather address this by being explicit about not testing other classifier methods, but feeling that they'd do fine.
+
+Anne: I think your response is ok, but if it takes one day to implement and test the 'best' alternate machine learning method on one phenotype, I'd like to try it. It's always risky to tell the reviewer you don't want to do their proposed experiment, especially if it's clearly not that time-consuming. Perhaps Vebjorn could carry this out while we are working on other parts?  Note also that our modularity claim was actually more along the lines of - You can swap in dift image processing, feature extraction, or machine learning methods. I think those are not overstating the claims because CP is a separate step from CPA so inherently that's modular (so long as it really is easy to put in a new m-l method into CPA)]]
+
+
 [[Ray: I think we should just cut the pluggable part.  Evaluating pluggability is even harder than ease-of-use, and we don't have anything to back up the claim with.  It's not key to what we wrote, so backing it out should be fine.]]
 [[TODO: wait to decide about pluggable to see if we test an alternate machine learning method. Also, there's confusion about modularity of CP vs CPA.]]
 
@@ -153,24 +150,10 @@ Response:
 COMMENT 3F: A very real danger in applying pattern recognition techniques to visual assays is over-training.  In this application, this would manifest as an ability to robustly discern phenotypes within a set of images, but an inability to "generalize" this even to a repetition of the same experiment on a different day.  The performance of this classifier when applied to biological replicates should be looked into and discussed.
 
 Response:
-We add this: "In general, we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation. [[We do this (And maybe show a figure of jacob or maybe piyush)]].  Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation.  
+We add this: "We found our method resistant to over-training ([[Suppl. Figure XXX - not sens/spec, just combined error rate or xvalidation margin - legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.]]), as is generally the case for boosting algorithms ([[REF]]).  Still, this does not address cross-experiment generalization; we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation ([[Suppl. Figure YYY, Add experiments with training sets from piyush or jacob&milan (probably latter).]]). Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation."
 
 
 
-
-
-
-(We don't want to bring this up, since it begs the question of bias in the initial set):  Alternately, a classifier from an initial replicate can be used to quickly create a new training set specific to a later replicate, though bias in the latter training set is a concern.   
-
-and requires at least a few iterations of re-training to build a new training set.
-
-
-[[Daniel: I'm happy to hear that you believe you will be able to address the
-concerns of the refs regarding evaluation of the performance of Analyst.
-We weren't sure how well you would be able to address the concern of
-overtraining unless the method is somehow resistant to this. ]]
-
- GentleBoosting and other boosting algorithms are in general resistant to overtraining ([[REF]]). 
 
 COMMENT 3G: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 

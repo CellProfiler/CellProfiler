@@ -153,19 +153,24 @@ Response:
 COMMENT 3F: A very real danger in applying pattern recognition techniques to visual assays is over-training.  In this application, this would manifest as an ability to robustly discern phenotypes within a set of images, but an inability to "generalize" this even to a repetition of the same experiment on a different day.  The performance of this classifier when applied to biological replicates should be looked into and discussed.
 
 Response:
-We will address two separate underlying concerns: First, overtraining on a single data set was not observed (Figure [[showing plots showing the error function not decreasing after adding more rules]]), which is to be expected because GentleBoosting and other boosting algorithms are in general resistant to overtraining ([[REF]]).  We could include this as a supplementary figure, but we hesitate to lengthen the manuscript. 
+We add this: "In general, we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation. [[We do this (And maybe show a figure of jacob or maybe piyush)]].  Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation.  
 
-Second, we address generalizing a classifier to an image set acquired in a separate experiment. This is not usually  necessary because retraining is easy relative to the effort of replicating a large-scale screen and it would be preferable to create a training set for all replicates together. Regardless, 
 
-(1)  .(3) And it works in at least some cases (Figure, piyush data, but we can't publish it probably).
 
-These issues are briefly summarized by a new addition to the manuscript: "XXXX".
+
+
+
+(We don't want to bring this up, since it begs the question of bias in the initial set):  Alternately, a classifier from an initial replicate can be used to quickly create a new training set specific to a later replicate, though bias in the latter training set is a concern.   
+
+and requires at least a few iterations of re-training to build a new training set.
+
 
 [[Daniel: I'm happy to hear that you believe you will be able to address the
 concerns of the refs regarding evaluation of the performance of Analyst.
 We weren't sure how well you would be able to address the concern of
 overtraining unless the method is somehow resistant to this. ]]
 
+ GentleBoosting and other boosting algorithms are in general resistant to overtraining ([[REF]]). 
 
 COMMENT 3G: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 

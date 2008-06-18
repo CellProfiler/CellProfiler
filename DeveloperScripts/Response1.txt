@@ -57,8 +57,7 @@ Evaluation of various classifier methods has indeed been heavily explored in oth
 
 (c) Examination of feature space explored by different phenotypes:
 We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
-
-[[We are debating whether to put PCA plots for each phenotype, but they probably won't show nicely separable populations and there is not enough room/interest in narrating the results of those plots.]]
+[[TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features]]
 
 (d) The referee is concerned that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
 [[Is this concern addressed by just saying 'can now be accomplished with a few hours of setup time'? Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?  See 1A.  Murphy method hasn't been used in any real experiments? ok, that's a little harsh. but has it been used by any outside groups in the past decade? that might be actually literally true.

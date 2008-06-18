@@ -7,10 +7,9 @@ function handles = ImageMath(handles)
 % Performs simple mathematical operations on image intensities.
 % *************************************************************************
 %
-% Settings:
 % Operation:
 % The complement of a grayscale image inverts the intensities 
-% (dark areas become brighter, and bright areas become darker).
+% (dark areas become brighter, and bright areas become darker).  
 % 
 % Multiply factors:
 % The final image may have a substantially different range of pixel
@@ -162,14 +161,18 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        if ~strcmp(Operation,'Complement')
+
+    %% NumColumns is useful since 'Complement' has only one "before" image  
+    if ~strcmp(Operation,'Complement')
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage,'TwoByTwo',ThisModuleFigureNumber);
-            NumColumns = 2;
-        else
-            CPresizefigure(FirstImage,'TwoByOne',ThisModuleFigureNumber);
-            NumColumns = 1;
         end
+        NumColumns = 2; 
+    else
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(FirstImage,'TwoByOne',ThisModuleFigureNumber);
+        end
+        NumColumns = 1;
     end
     
     %% Set title text
@@ -185,20 +188,19 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     %%% First image subplot
- %   subplot(2,NumColumns,1); 
+    subplot(2,NumColumns,1);
     CPimagesc(MultiplyFactor1*FirstImage,handles); 
     title([FirstText ' image, cycle # ' num2str(handles.Current.SetBeingAnalyzed)]);
 
     if ~strcmp(Operation,'Complement')
         %%% Second image subplot
- %       subplot(2,NumColumns,3);
+        subplot(2,NumColumns,3);
         CPimagesc(MultiplyFactor2*SecondImage,handles);
         title([SecondText ' image']);
     end
     
     %% ImageAfterMath
-%    subplot(2,NumColumns,2); 
-    subplot(2,2,2); 
+    subplot(2,NumColumns,2);
     CPimagesc(ImageAfterMath,handles);
     if ~strcmp(Operation,'Complement')
         title([FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);

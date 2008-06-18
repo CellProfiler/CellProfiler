@@ -47,7 +47,7 @@ COMMENT 2A: However, does this very useful implementation constitute a significa
 
 Response:
 The referee points out particular explorations that would be helpful to evaluate the methods we have described:
-(a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  We have added this sentence: "Agreement between humans was comparable to that between humans and automated analysis ([[Supplementary Figure XXX]])."
+(a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  In addition to the existing statement that there were no false negatives and, in total, two false positives across the 720 samples scored by eye, we have added this sentence: "Agreement between humans was comparable to that between humans and automated scoring ([[Supplementary Figure XXX - complex confusion matrix]])."
 
 (b) Discussion of different classifier implementations:
 Evaluation of various classifier methods has indeed been heavily explored in others' work, both for cell screens in the Murphy lab, as well as many other domains in the general machine learning community. One conclusion from this work is that all of the top classification methods (e.g., SVMs, neural networks, boosting variants) perform roughly similarly.  Contributing to the work comparing particular learning methods is not our goal, and in fact, we believe that any of these methods would perform well within our framework.  Rather, we present a method for rapidly creating useful training sets for rare phenotypes, using an arbitrary machine learning algorithm. To clarify this, we have added a sentence: "Other machine learning methods are likely to be equally effective, based on their performance in previous work [[(Murphy lab, mitocheck, altschuler, bakal refs XXX)]]."
@@ -56,12 +56,9 @@ Evaluation of various classifier methods has indeed been heavily explored in oth
 
 
 (c) Examination of feature space explored by different phenotypes:
+We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
 
-[[Do you suppose that they want just a general narrative about what features are helpful? or we could make a heatmappy thing showing what features were used for which phenotypes (I think Altschuler papers have had this), or we could make a bar chart with four bars for each phenotype: size, shape, intensity, texture. Then categorize the 611 features into one of those categories and count up how many rules were in each of those 4 categories. This little 4-bar chart per phenotype would be feasible to add to the existing big figures, I think. But a heatmap is easier to make and possibly more sophisticated-looking and could be a suppl. figure.
-
-Ray: I don't think the feature space comment needs to be or should be addressed directly.  That's a much more complicated idea than what we're proposing, and very dependent on the feature set we measure.
-
-Anne: Again, I think it's not worth the risk to ignore this comment, especially when it's so easy to make the two types of plots I propose. We should pick our battles and be willing to do things that don't make sense even if they take us a few extra days in total.]]
+[[We are debating whether to put PCA plots for each phenotype, but they probably won't show nicely separable populations and there is not enough room/interest in narrating the results of those plots.]]
 
 (d) The referee is concerned that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
 [[Is this concern addressed by just saying 'can now be accomplished with a few hours of setup time'? Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?  See 1A.  Murphy method hasn't been used in any real experiments? ok, that's a little harsh. but has it been used by any outside groups in the past decade? that might be actually literally true.
@@ -79,7 +76,7 @@ Indeed, several other projects using Classifier have been successfully completed
 [[INCLUDE A FIGURE OF THESE PHENOTYPES]]
 
 [[Anne will send our short response to Daniel & ask whether he finds this convincing, or whether we should do a quick new screen for a fly phenotype or some other human phenotype, e.g., using piyush's images. We can tell him that doing a new screen would be fine, but work exterior to this paper (and with real scientific goals) carries more weight.]]
-[[Note also that we mentioned Yaffe & Floyd in our original paragraph but Anne is doublechecking whether they've actually used Classifier in their screen yet. Re. Gilliland, we haven't mentioned them and probably should not add them because it's a bit too soon.]]
+[[Note also that we mentioned Yaffe & Floyd in our original paragraph but that was a mistake - they've not actually used Classifier in their screen yet. Re. Gilliland & Jacob/Milan, we haven't mentioned them and probably should not add them because it's a bit too soon.]]
 
 COMMENT 2C: Moreover, a few practical but very important considerations are missing:
 COMMENT 2C.1: No report on the computational performance of Classifier is mentioned.  How long does training take?  How does this scale with number of images, channels, image size, etc.?  What kinds of hardware are used for this calculation.  The authors have a very impressive compute facility at their disposal-is this required? Perhaps the application is limited by I/O, given its emphasis on large numbers of images.  Reporting these limitations is absolutely essential. 

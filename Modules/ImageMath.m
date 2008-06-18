@@ -197,6 +197,7 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     %% ImageAfterMath
+%    subplot(2,NumColumns,2); 
     subplot(2,2,2); 
     CPimagesc(ImageAfterMath,handles);
     if ~strcmp(Operation,'Complement')

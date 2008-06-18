@@ -82,7 +82,7 @@ TODO: Let's discuss.]]
 COMMENT 2B: The authors are first-class scientists, therefore it's worth posing a hypothetical question--  if I submitted a paper to Nature Methods reporting a new method based on an application of that method to a single dataset, would they consider that a reasonable demonstration of the general utility of the method?  This report describes the use of Classifier on one cell-based screen.  That implementation is certainly an achievement, but the authors (and editors of this journal, who have been guilty of this!) must consider the impact of reporting results based on a single run, in the absence of any significant finding derived from this analysis.  This does not diminish the work the authors have done, but recognizes the importance of delivering tested, generally useful methodology to the community.  The use of Classifier to define phenotypes across multiple screens, with multiple probes is therefore most important. Even surveying the types of assays most often done in HCS, and critically evaluating the phenotypes that are well detected and those that are less well-detected would be sufficient.  The authors must have access to this data.
 
 Response:
-Indeed, we have been assisted several collaborators in using Classifier. Three in particular have conducted large-scale screens so far: (a) Piyush Gupta in Eric Lander's lab has completed an RNAi screen for regulators of the subtle cytoskeletal changes induced by a growth factor on human breast cancer cells [[CELL LINE NAME HERE]], (b) Mitchison's lab [[INSERT DESCRIPTION HERE]]. (c) Adam Castereno in Riki Eggert's lab has processed a substantial proportion of images from a chemical screen to identify regulators of the binucleate phenotype in Drosophila cells. These large-scale experiments were conducted in various cell types and for phenotypes distinct from each other and from those explored in our own screen. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript - in fact, two are now awaiting acceptance of our own manuscript before they submit their own work so as not to scoop us with our own method!
+Indeed, several other projects using Classifier have been successfully completed but not yet published. Three in particular have conducted large-scale screens so far: (a) Piyush Gupta in Eric Lander's lab has led completion of an RNAi screen for regulators of the subtle cytoskeletal changes induced by a growth factor on T47D human breast cancer cells, (b) Taio Xie in Tim Mitchison's lab has led completion of two genome-wide RNAi screens in HeLa cells for spindle morphology during cell division, and (c) Adam Castereno in Riki Eggert's lab has processed a substantial proportion of images from a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype. These large-scale experiments probed phenotypes distinct from each other and from those explored in our own screen. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript - in fact, two are now awaiting acceptance of our own manuscript before they submit their own work so as not to scoop us with our own method!
 
 [[INCLUDE A FIGURE OF THESE PHENOTYPES]]
 
@@ -96,13 +96,17 @@ Response:
 
 [[This seems straightforward; Ray, can you draft a new paragraph/sentences for the text?
 
-Ray: Yeah, it's easy to address this, as most of the times are trivial, except for image processing, which is secondary to the paper.]]
+Ray: Yeah, it's easy to address this, as most of the times are trivial, except for image processing, which is secondary to the paper.
+
+Anne: agreed, we probably don't need to mention the image processing times at all because the reviewer isn't asking about those (or is that evasive?)
+
+TODO: Ray will do]]
 
 
 COMMENT 2C.2: The authors have bypassed any description of cellAnalyst, in favor of delivering a separate publication on this, but simple statements like support for commercial file formats, necessary configuration, etc. would be most valuable.  Many HCS platforms have a mix of data acquisition systems-which can be used?
 
 Response:
-[[This seems straightforward; Anne can draft a new paragraph/sentences for the text.
+TODO: ANNE SHOULD DO THIS    [[This seems straightforward; Anne can draft a new paragraph/sentences for the text.
 
 Ray: there seems to be some CP versus CPA confusion here, too.]]
 

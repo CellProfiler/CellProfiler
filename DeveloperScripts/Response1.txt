@@ -106,20 +106,16 @@ TODO: Ray will do]]
 COMMENT 2C.2: The authors have bypassed any description of cellAnalyst, in favor of delivering a separate publication on this, but simple statements like support for commercial file formats, necessary configuration, etc. would be most valuable.  Many HCS platforms have a mix of data acquisition systems-which can be used?
 
 Response:
-TODO: ANNE SHOULD DO THIS    [[This seems straightforward; Anne can draft a new paragraph/sentences for the text.
-
-Ray: there seems to be some CP versus CPA confusion here, too.]]
+Good idea. We added: "CellProfiler and CellProfiler Analyst are compatible with images acquired on most commercial microscopes, including high-throughput automated microscopes (e.g., Cellomics, Molecular Devices, Zeiss). Adaptation of CellProfiler Analyst to a particular data set involves adjusting a properties file indicating the configuration of the database containing the measurements (CellProfiler Analyst, www.cellprofiler.org, TR Jones, IH Kang, DB Wheeler, RA Lindquist, A Papallo, DM Sabatini, P Golland, AE Carpenter, submitted)."
 
 
 COMMENT 2C.3: I will admit to a personal pet peeve, as a user with over 20 years of experience in digital imaging in the life sciences.  All software is called by its authors easy to use, and almost always easily pluggable.  Yet, in fact there are only a few examples where this is in fact the case, as judged by uptake from the community- ImageJ is probably the best example in life sciences imaging (there are many others in other scientific domains, e.g., crystallography).  The authors' assertion of an modular architecture (p. 9)  should be at least illustrated with pointers to where examples and documentation for this exist, and preferably with examples of how to add new classifiers.
 
 Response:
-This is certainly a reasonable pet peeve to hold in this field!  Of course, it is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that we have [[NN: eggert, gilliland, piyush, any others?]] collaborators currently using the tool, and in particular we gave the Mitchison group the software a year ago and they have successfully used it almost completely independently. They have completed a large-scale screen in Drosophila for [[xx]]. Since then, we have hired a full-time software engineer who has dramatically overhauled the interface for Classifier such that it is now even more user-friendly. The online tutorial shows this new Classifier tool in use ([[web link here]]) and we hope the referee will agree that the process is easy based on that evidence as well. We have not adjusted the text, but would be happy to do so if there seems a better way to substantiate ease of use.
+This is certainly a reasonable pet peeve to hold in this field!  Of course, it is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that many of our collaborators currently use the tool to score large-scale screens independently. Often, training was minimal (Mitchison & Lander groups), and in fact we have recently released an even easier-to-use interface for Classifier. The online demo shows this new Classifier tool in use (http://www.cellprofiler.com/examples) and we hope the referee will agree that the process is easy based on that evidence as well. [[Probably exclude this sentence: "We have not adjusted the text, but would be happy to do so if there seems a better way to substantiate ease of use."]]
 
-[[Hmm, anything else you suggest to address this, esp the pluggable part?
-
-Ray: I think cut the full-time SWE stuff, it's not really evidenceof ease-of-use (perhaps future ease-of-use).  I think we should just cut the pluggable part.  Evaluating pluggability is even harder than ease-of-use, and we don't have anything to back up the claim with.  It's not key to what we wrote, so backing it out should be fine.]]
-
+[[Ray: I think we should just cut the pluggable part.  Evaluating pluggability is even harder than ease-of-use, and we don't have anything to back up the claim with.  It's not key to what we wrote, so backing it out should be fine.]]
+[[TODO: wait to decide about pluggable to see if we test an alternate machine learning method. Also, there's confusion about modularity of CP vs CPA.]]
 
 
 ===========
@@ -157,6 +153,18 @@ Response:
 COMMENT 3F: A very real danger in applying pattern recognition techniques to visual assays is over-training.  In this application, this would manifest as an ability to robustly discern phenotypes within a set of images, but an inability to "generalize" this even to a repetition of the same experiment on a different day.  The performance of this classifier when applied to biological replicates should be looked into and discussed.
 
 Response:
+We will address two separate underlying concerns: First, overtraining on a single data set was not observed (Figure [[showing plots showing the error function not decreasing after adding more rules]]), which is to be expected because GentleBoosting and other boosting algorithms are in general resistant to overtraining ([[REF]]).  We could include this as a supplementary figure, but we hesitate to lengthen the manuscript. 
+
+Second, we address generalizing a classifier to an image set acquired in a separate experiment. This is not usually  necessary because retraining is easy relative to the effort of replicating a large-scale screen and it would be preferable to create a training set for all replicates together. Regardless, 
+
+(1)  .(3) And it works in at least some cases (Figure, piyush data, but we can't publish it probably).
+
+These issues are briefly summarized by a new addition to the manuscript: "XXXX".
+
+[[Daniel: I'm happy to hear that you believe you will be able to address the
+concerns of the refs regarding evaluation of the performance of Analyst.
+We weren't sure how well you would be able to address the concern of
+overtraining unless the method is somehow resistant to this. ]]
 
 
 COMMENT 3G: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.

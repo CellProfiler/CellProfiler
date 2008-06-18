@@ -714,6 +714,12 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPimagesc(ObjectOutlinesOnOrigImage,handles);
             title(IdentChoiceList(IdentChoiceNumber));
         end
+        
+        %%% Link the axis limits together so zoom/pan is reflected in all axes
+        if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
+            linkaxes(findobj(SecondaryTestFigureNumber,'type','axes'),'xy');
+        end
+
     end
 
     if strcmp(OriginalIdentChoice,IdentChoice)
@@ -762,6 +768,12 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             subplot(2,2,4);
             CPimagesc(BothOutlinesOnOrigImage,handles);
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+            
+            %%% Link the axis limits together so zoom/pan is reflected in all axes
+            if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
+                linkaxes(findobj(ThisModuleFigureNumber,'type','axes'),'xy');
+            end
+
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

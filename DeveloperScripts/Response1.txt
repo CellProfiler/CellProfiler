@@ -61,6 +61,8 @@ We have created a Supplementary Figure [[XXX]] to facilitate examination of the 
 (d) The referee is concerned that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
 We agree that the original sentence unintentionally implied that we applied machine learning to cell screening for the first time. We have adjusted the sentence to this: "automated scoring of a wide variety of morphologies can now be accomplished quickly and easily, even when the phenotype is rare in the wild-type population and positive control samples are not available."
 
+[[TO MENTION TO DANIEL ABOUT THIS SECTION OVERALL: we could have included any number of such explorations but were trying to make the paper as concise and interesting as possible, and each one requires adding more interpretation to the main text. I think we've done a good job including the data they want without adding too many tangents to the main text.]]
+
 COMMENT 2B: The authors are first-class scientists, therefore it's worth posing a hypothetical question--  if I submitted a paper to Nature Methods reporting a new method based on an application of that method to a single dataset, would they consider that a reasonable demonstration of the general utility of the method?  This report describes the use of Classifier on one cell-based screen.  That implementation is certainly an achievement, but the authors (and editors of this journal, who have been guilty of this!) must consider the impact of reporting results based on a single run, in the absence of any significant finding derived from this analysis.  This does not diminish the work the authors have done, but recognizes the importance of delivering tested, generally useful methodology to the community.  The use of Classifier to define phenotypes across multiple screens, with multiple probes is therefore most important. Even surveying the types of assays most often done in HCS, and critically evaluating the phenotypes that are well detected and those that are less well-detected would be sufficient.  The authors must have access to this data.
 
 Response:
@@ -91,16 +93,9 @@ Additional information would indeed be helpful. We added: "CellProfiler and Cell
 COMMENT 2C.3: I will admit to a personal pet peeve, as a user with over 20 years of experience in digital imaging in the life sciences.  All software is called by its authors easy to use, and almost always easily pluggable.  Yet, in fact there are only a few examples where this is in fact the case, as judged by uptake from the community- ImageJ is probably the best example in life sciences imaging (there are many others in other scientific domains, e.g., crystallography).  The authors' assertion of an modular architecture (p. 9)  should be at least illustrated with pointers to where examples and documentation for this exist, and preferably with examples of how to add new classifiers.
 
 Response:
-This is certainly a reasonable pet peeve to hold in this field!  Of course, it is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that many of our collaborators currently use the tool to score large-scale screens independently. Often, training was minimal (Mitchison & Lander groups), and in fact we have recently released an even easier-to-use interface for Classifier. The online demo shows this new Classifier tool in use (http://www.cellprofiler.com/examples) and we hope the referee will agree that the process is easy based on that evidence as well. [[Probably exclude this sentence: "We have not adjusted the text, but would be happy to do so if there seems a better way to substantiate ease of use."]]
+We concur. It is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that many of our collaborators currently use the tool to score large-scale screens independently, usually with minimal training.  We have recently released a new interface for Classifier intended to further improve ease-of-use. The online demo shows this new Classifier tool in use (http://www.cellprofiler.com/examples). 
 
-[[Ray: I'd rather cut the modularity claim than go down the path of evaluating classifier methods, which are very orthogonal to this work.  I'd rather address this by being explicit about not testing other classifier methods, but feeling that they'd do fine.
-
-Anne: I think your response is ok, but if it takes one day to implement and test the 'best' alternate machine learning method on one phenotype, I'd like to try it. It's always risky to tell the reviewer you don't want to do their proposed experiment, especially if it's clearly not that time-consuming. Perhaps Vebjorn could carry this out while we are working on other parts?  Note also that our modularity claim was actually more along the lines of - You can swap in dift image processing, feature extraction, or machine learning methods. I think those are not overstating the claims because CP is a separate step from CPA so inherently that's modular (so long as it really is easy to put in a new m-l method into CPA)]]
-
-
-[[Ray: I think we should just cut the pluggable part.  Evaluating pluggability is even harder than ease-of-use, and we don't have anything to back up the claim with.  It's not key to what we wrote, so backing it out should be fine.]]
-[[TODO: wait to decide about pluggable to see if we test an alternate machine learning method. Also, there's confusion about modularity of CP vs CPA.]]
-
+Regarding modularity, while the CellProfiler image analysis software (not described in this manuscript) is designed to be modular and has been proven readily adaptable to new projects since its release three years ago, we agree that it is difficult to substantiate pluggability in the absence of demonstrated use by a broader community of researchers. We decided to omit all text at the end of the discussion describing future possibilities, including substituting novel machine learning algorithms into CellProfiler Analyst.
 
 ===========
 
@@ -108,6 +103,10 @@ Reviewer #3:
 COMMENT 3A: A central argument of this manuscript is that computer vision techniques can be applied to visual cell-based screens in order to find subtle phenotypes in an objective way.  The paper describes an iterative manual process to build a set of rules by manually correcting feedback from the classifier as it is being built.  Since this process is based on the user's own perception, isn't the entire process then limited by the user's ability to discern the phenotypes as well as any bias the user may introduce?  Is there a way of building and refining the classifier based solely on experimental controls without relying on a user's visual perception?  There are several examples in the literature where human observers are unable to distinguish sub-cellular morphologies that are known to be different (for example, fluorescently labeled lysosomes and endosomes).
 
 Response: 
+Yes, previous work (e.g., the work of the Murphy Lab) has demonstrated that if positive controls are available and the phenotype is highly penetrant, computers can be trained to discriminate between phenotypes that cannot be visually distinguished by humans.  In these cases, Classifier provides a convenient interface for training and scoring with a machine learning algorithm.  In our work, we address the more challenging situation where the phenotype is less penetrant, positive controls are not available, or both, which makes generating training sets difficult.
+
+In addition, even when positive controls are available, training to the phenotype of a control may not [[...]].
+
 [[Yes, but that's a different goal. Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.
 
 Ray: I'm not sure what the "Some chemical/RNAi's..." sentence is trying to address (bias?).  I think we address this by saying, "yes, positive/negative controls allow more direct scoring, but we're doing something else."  Clarification in the paper may be necessary?]]]]
@@ -116,17 +115,18 @@ Ray: I'm not sure what the "Some chemical/RNAi's..." sentence is trying to addre
 COMMENT 3B: This is not the first time that pattern recognition was used to evaluate a set of diverse cellular phenotypes.  This was demonstrated a decade ago by Robert Murphy's group for determining sub-cellular locations (Cytometry 1998).  Although on the face of it this addresses a different biological problem (identification of sub-cellular compartment), the visual analysis problem is the same because the classifier doesn't "know" its identifying sub-cellular locations vs. RNAi phenotypes - in both cases the problem is to identify a set of diverse cellular morphologies.  Since Murphy's work, others have built single classifiers for solving a diversity of biological and cellular imaging problems (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy, as well as Loo et al. in a recent Nature Methods ).  In each of these approaches, classifiers are built using an automated process where the underlying image features are not problem-specific, making these approaches applicable to diverse imaging problems.  In light of this, the statement "none has addressed the problem of scale in terms of ability to score cells for many unusual phenotypes of interest" is not correct.  
 
 Response:
-
+[[Anne needs to see if comment 1A and 1B address this.]]
 
 COMMENT 3C: The novelty in the proposed approach is the focus on low-penetrance phenotypes, the motivation to make this software easy to use for biologists as well as allowing for iterative/interactive manual classifier building and refinement.
 
 Response:
-[[None needed, i think]]
+Yes, and we have adjusted the text to more clearly convey this, see comment [[1A?  1B?]].
 
 
 COMMENT 3D: A more detailed description of the image features used  is necessary.  While it may be beyond the scope of this journal to describe these algorithms in detail, the descriptions provided for what is being measured about each cell are inadequate to evaluate how the software operates.  This is equally true of the classifier algorithm itself.  GentleBoosting is  a method of combining several weak classifiers or a method of weighting a collection of image features.  It is not a classification algorithm on its own.  The actual algorithm(s) used for classification is not mentioned.  
 
 Response:
+We have added the list of features measured in Supplementary Data, and a description of the image analysis pipeline used to process the images.  The algorithms used in image processing are documented in the manual and open source code for CellProfiler.  We have clarified the main text on the classifier algorithm: "... GentleBoosting applied to decision stumps", and added a note in the methods about the specific implementation: "..., based on code from Torralba, et al."
 
 
 COMMENT 3E: The description of the classifier evaluation is also inadequate, but extremely important for this type of publication.  How many individual images were evaluated by both the classifier and manually?  How were the test images presented to manual scorers chosen - were they selected by the classifier?  It is not possible to evaluate the false positive and false negative rates presented without a more thorough description of the evaluation procedure.  Lastly, it would be informative to compare the performance of this classifier to other existing classification methods.  What are the limitations of this technique? How many different phenotypes can be handled in the same experiment? How does the performance degrade when the number of rules increases? What types of phenotypes are undetectable by  Classify? 

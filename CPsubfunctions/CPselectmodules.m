@@ -77,8 +77,8 @@ if ReqSlid
 end
 
 %%% Create special features
-uicontrol(SelectDisplay,'Style','Checkbox','String','Select All/None','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 1.7 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
-uicontrol(SelectDisplay,'Style','Checkbox','String','Invert Selection','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
+uicontrol(SelectDisplay,'Style','pushbutton','String','Select All/None','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 1.7 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
+uicontrol(SelectDisplay,'Style','pushbutton','String','Invert Selection','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
 
 %%% Create OK and Cancel buttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally

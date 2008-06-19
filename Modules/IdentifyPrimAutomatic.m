@@ -1189,6 +1189,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     im = CPlabel2rgb(handles,Objects);
                     CPimagesc(im,handles);
                     title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                    
+                     %%% Link the axis limits together so zoom/pan is reflected in all axes
+                    if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
+                        linkaxes(findobj(IdPrimTestModeSegmentedFigureNumber,'type','axes'),'xy');
+                    end
                 end
 
                 %%% Repeat what we've done for the segmented test mode window, now
@@ -1224,7 +1229,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     
                     %%% Link the axis limits together so zoom/pan is reflected in all axes
                     if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                        linkaxes(findobj(IdPrimTestModeSegmentedFigureNumber,'type','axes'),'xy');
+                        linkaxes(findobj(IdPrimTestModeOutlinedFigureNumber,'type','axes'),'xy');
                     end
                 end
             end

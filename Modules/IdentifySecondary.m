@@ -713,13 +713,12 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             subplot(2,2,IdentChoiceNumber);
             CPimagesc(ObjectOutlinesOnOrigImage,handles);
             title(IdentChoiceList(IdentChoiceNumber));
+            
+            %%% Link the axis limits together so zoom/pan is reflected in all axes
+            if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
+                linkaxes(findobj(SecondaryTestFigureNumber,'type','axes'),'xy');
+            end
         end
-        
-        %%% Link the axis limits together so zoom/pan is reflected in all axes
-        if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-            linkaxes(findobj(SecondaryTestFigureNumber,'type','axes'),'xy');
-        end
-
     end
 
     if strcmp(OriginalIdentChoice,IdentChoice)

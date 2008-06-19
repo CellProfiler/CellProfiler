@@ -31,7 +31,7 @@ filename = C{2};
 [site, remain] = strtok(remain,'_');
 for i = length(remain):-1:1
     w = remain{i};
-    wavelength{i,1} = w(2:3);
+    wavelength{i,1} = w(2:3); %#ok<AGROW>
 end
 
 %% TREATMENT column
@@ -53,7 +53,8 @@ rowCellArray = cellstr(row);
 colCellArray = cellstr(col);
 
 %% OUTPUT .csv file
-[pathstr, name, ext] = fileparts(image_file);
+% [pathstr, name, ext] = fileparts(image_file);
+[pathstr, name] = fileparts(image_file);
 well_file = fullfile(pathstr, [name '_well_info.csv']);
 if ~exist(well_file,'file')
     %% Note: cannot use xlswrite, because Mac's can't run Excel COM server

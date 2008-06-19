@@ -152,12 +152,7 @@ We add this: "We found our method resistant to over-training ([[Suppl. Figure XX
 COMMENT 3H: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 
 Response:
-While we have indeed produced useable software to enable the approach we describe, the goal of the manuscript was to describe the overall approach (which does in fact use existing algorithms for machien elarnereiienfndfj), with demonstration of its applicability to challenging phenotypes.
-
-We respectfully disag
-[[no repsonse needed?]]
-df
-dfsd
+Indeed, it was important to us to produce useable software to enable the approach we describe, rather than just a proof of principle. We also hope that the manuscript is clear in describing the first demonstration of the iterative machine learning approach to score multiple challenging and rare phenotypes.
 
 
 COMMENT 3I: Additional detailed comments:

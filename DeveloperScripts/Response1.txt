@@ -54,47 +54,38 @@ Evaluation of various classifier methods has indeed been heavily explored in oth
 
 [[Are we addressing the reviewer's concerns adequately?]]
 
-
 (c) Examination of feature space explored by different phenotypes:
 We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
 [[TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features]]
 
 (d) The referee is concerned that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
-[[Is this concern addressed by just saying 'can now be accomplished with a few hours of setup time'? Are those other papers similar to the method we used in the suppl figure (the one we informally called the 'bakal' approach)?  See 1A.  Murphy method hasn't been used in any real experiments? ok, that's a little harsh. but has it been used by any outside groups in the past decade? that might be actually literally true.
-
-Ray: I think emphasizing the speed and flexibility might be the best way to go.  Murphy's methods and others' could have handled any of the phtypes we looked at, but it would have been far more painful to build the training set, etc.
-
-TODO: Let's discuss.]]
-
+We agree that the original sentence unintentionally implied that we applied machine learning to cell screening for the first time. We have adjusted the sentence to this: "automated scoring of a wide variety of morphologies can now be accomplished quickly and easily, even when the phenotype is rare in the wild-type population and positive control samples are not available."
 
 COMMENT 2B: The authors are first-class scientists, therefore it's worth posing a hypothetical question--  if I submitted a paper to Nature Methods reporting a new method based on an application of that method to a single dataset, would they consider that a reasonable demonstration of the general utility of the method?  This report describes the use of Classifier on one cell-based screen.  That implementation is certainly an achievement, but the authors (and editors of this journal, who have been guilty of this!) must consider the impact of reporting results based on a single run, in the absence of any significant finding derived from this analysis.  This does not diminish the work the authors have done, but recognizes the importance of delivering tested, generally useful methodology to the community.  The use of Classifier to define phenotypes across multiple screens, with multiple probes is therefore most important. Even surveying the types of assays most often done in HCS, and critically evaluating the phenotypes that are well detected and those that are less well-detected would be sufficient.  The authors must have access to this data.
 
 Response:
-Indeed, several other projects using Classifier have been successfully completed but not yet published. Three in particular have conducted large-scale screens so far: (a) Piyush Gupta in Eric Lander's lab has led completion of an RNAi screen for regulators of the subtle cytoskeletal changes induced by a growth factor on T47D human breast cancer cells, (b) Taio Xie in Tim Mitchison's lab has led completion of two genome-wide RNAi screens in HeLa cells for spindle morphology during cell division, and (c) Adam Castereno in Riki Eggert's lab has processed a substantial proportion of images from a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype. These large-scale experiments probed phenotypes distinct from each other and from those explored in our own screen. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript - in fact, two are now awaiting acceptance of our own manuscript before they submit their own work so as not to scoop us with our own method!
+Indeed, several other projects using Classifier have been successful but not yet published. Three in particular involved large-scale screens: (a) Piyush Gupta in Eric Lander's lab has led completion of an RNAi screen for regulators of the subtle cytoskeletal changes induced by a growth factor on T47D human breast cancer cells, (b) Taio Xie in Tim Mitchison's lab has led completion of two genome-wide RNAi screens in HeLa cells for spindle morphology during cell division, and (c) Adam Castereno in Riki Eggert's lab has processed a substantial proportion of images from a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype. These large-scale experiments probed phenotypes distinct from each other and from those explored in our own screens described in this manuscript. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript. See also our response to [[THE QUESTION where we show Jacob/Milan data]].
 
-[[INCLUDE A FIGURE OF THESE PHENOTYPES]]
+[[TO DO: MAKE A FIGURE OF THESE PHENOTYPES, JUST FOR THE REBUTTAL LETTER]]
 
-[[Anne will send our short response to Daniel & ask whether he finds this convincing, or whether we should do a quick new screen for a fly phenotype or some other human phenotype, e.g., using piyush's images. We can tell him that doing a new screen would be fine, but work exterior to this paper (and with real scientific goals) carries more weight.]]
-[[Note also that we mentioned Yaffe & Floyd in our original paragraph but that was a mistake - they've not actually used Classifier in their screen yet. Re. Gilliland & Jacob/Milan, we haven't mentioned them and probably should not add them because it's a bit too soon.]]
+[[Anne will send our short response to Daniel & ask whether he finds this convincing, or whether we should do a quick new screen for a fly phenotype or some other human phenotype, e.g., using piyush's images. We can tell him that doing a new screen would be fine, but work exterior to this paper (and with real scientific goals) carries more weight.
+
+ACTUALLY: It seems that if we will show Jacob/Milan data, we don't need to be so apologetic to Daniel, just tell him what we are going to do.
+
+DOES RAY AGREE?]]
 
 COMMENT 2C: Moreover, a few practical but very important considerations are missing:
 COMMENT 2C.1: No report on the computational performance of Classifier is mentioned.  How long does training take?  How does this scale with number of images, channels, image size, etc.?  What kinds of hardware are used for this calculation.  The authors have a very impressive compute facility at their disposal-is this required? Perhaps the application is limited by I/O, given its emphasis on large numbers of images.  Reporting these limitations is absolutely essential. 
 
 Response:
 
-[[This seems straightforward; Ray, can you draft a new paragraph/sentences for the text?
-
-Ray: Yeah, it's easy to address this, as most of the times are trivial, except for image processing, which is secondary to the paper.
-
-Anne: agreed, we probably don't need to mention the image processing times at all because the reviewer isn't asking about those (or is that evasive?)
-
-TODO: Ray will do]]
+[[TODO: Ray will write. most of the times are trivial, except for image processing, which is secondary to the paper, but we still mention image processing briefly]]
 
 
 COMMENT 2C.2: The authors have bypassed any description of cellAnalyst, in favor of delivering a separate publication on this, but simple statements like support for commercial file formats, necessary configuration, etc. would be most valuable.  Many HCS platforms have a mix of data acquisition systems-which can be used?
 
 Response:
-Good idea. We added: "CellProfiler and CellProfiler Analyst are compatible with images acquired on most commercial microscopes, including high-throughput automated microscopes (e.g., Cellomics, Molecular Devices, Zeiss). Adaptation of CellProfiler Analyst to a particular data set involves adjusting a properties file indicating the configuration of the database containing the measurements (CellProfiler Analyst, www.cellprofiler.org, TR Jones, IH Kang, DB Wheeler, RA Lindquist, A Papallo, DM Sabatini, P Golland, AE Carpenter, submitted)."
+Additional information would indeed be helpful. We added: "CellProfiler and CellProfiler Analyst are compatible with images acquired on most commercial microscopes, including high-throughput automated microscopes (e.g., Cellomics, Molecular Devices, Zeiss). Configuring CellProfiler Analyst to access a new CellProfiler-generated database of measurements involves minor adjustments to a properties file (CellProfiler Analyst, www.cellprofiler.org, TR Jones, IH Kang, DB Wheeler, RA Lindquist, A Papallo, DM Sabatini, P Golland, AE Carpenter, submitted)."
 
 
 COMMENT 2C.3: I will admit to a personal pet peeve, as a user with over 20 years of experience in digital imaging in the life sciences.  All software is called by its authors easy to use, and almost always easily pluggable.  Yet, in fact there are only a few examples where this is in fact the case, as judged by uptake from the community- ImageJ is probably the best example in life sciences imaging (there are many others in other scientific domains, e.g., crystallography).  The authors' assertion of an modular architecture (p. 9)  should be at least illustrated with pointers to where examples and documentation for this exist, and preferably with examples of how to add new classifiers.

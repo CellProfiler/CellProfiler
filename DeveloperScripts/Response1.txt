@@ -50,7 +50,7 @@ The referee points out particular explorations that would be helpful to evaluate
 (a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  In addition to the existing statement that there were no false negatives and, in total, two false positives across the 720 samples scored by eye, we have added this sentence: "Agreement between humans was comparable to that between humans and automated scoring ([[Supplementary Figure XXX - complex confusion matrix]])."
 
 (b) Discussion of different classifier implementations:
-Evaluation of various classifier methods has indeed been heavily explored in others' work, both for cell screens in the Murphy lab, as well as many other domains in the general machine learning community. One conclusion from this work is that all of the top classification methods (e.g., SVMs, neural networks, boosting variants) perform roughly similarly.  Contributing to the work comparing particular learning methods is not our goal, and in fact, we believe that any of these methods would perform well within our framework.  Rather, we present a method for rapidly creating useful training sets for rare phenotypes, using an arbitrary machine learning algorithm. To clarify this, we have added a sentence: "Other machine learning methods are likely to be equally effective, based on their performance in previous work [[(Murphy lab, mitocheck, altschuler, bakal refs XXX)]]."
+Evaluation of various classifier methods has indeed been heavily explored in others' work, both for cell screens in the Murphy lab, as well as many other domains in the general machine learning community. One conclusion from this work is that all of the top classification methods (e.g., SVMs, neural networks, boosting variants) perform roughly similarly.  Contributing to the work comparing particular learning methods is not our goal, and in fact, we believe that any of these methods would perform well within our framework (initial testing indicated that SVMs performed similarly to GentleBoosting but were less suitable for generating the database queries necessary for scoring entire screens).  Rather, we present a method for rapidly creating useful training sets for rare phenotypes, using an arbitrary machine learning algorithm. To clarify this, we have added a sentence: "Other machine learning methods are likely to be equally effective, based on their performance in previous work [[(Murphy lab, mitocheck, altschuler, bakal refs XXX)]]."
 
 [[Are we addressing the reviewer's concerns adequately?]]
 
@@ -129,53 +129,65 @@ Response:
 We have added the list of features measured in Supplementary Data, and a description of the image analysis pipeline used to process the images.  The algorithms used in image processing are documented in the manual and open source code for CellProfiler.  We have clarified the main text on the classifier algorithm: "... GentleBoosting applied to decision stumps", and added a note in the methods about the specific implementation: "..., based on code from Torralba, et al."
 
 
-COMMENT 3E: The description of the classifier evaluation is also inadequate, but extremely important for this type of publication.  How many individual images were evaluated by both the classifier and manually?  How were the test images presented to manual scorers chosen - were they selected by the classifier?  It is not possible to evaluate the false positive and false negative rates presented without a more thorough description of the evaluation procedure.  Lastly, it would be informative to compare the performance of this classifier to other existing classification methods.  What are the limitations of this technique? How many different phenotypes can be handled in the same experiment? How does the performance degrade when the number of rules increases? What types of phenotypes are undetectable by  Classify? 
+COMMENT 3E: The description of the classifier evaluation is also inadequate, but extremely important for this type of publication.  How many individual images were evaluated by both the classifier and manually?  How were the test images presented to manual scorers chosen - were they selected by the classifier?  It is not possible to evaluate the false positive and false negative rates presented without a more thorough description of the evaluation procedure.  
 
 Response:
+Figure 2, and Figure 3 ("Validation" column), show the number of images that were scored by human scorers for each phenotype (e.g., 30 positive samples and 30 neutral samples for the Actin Blebs phenotype). Overall, 720 samples (360 positives, 360 neutrals) were scored by at least two humans (in addition to the computer). This, and the other questions raised, are now addressed more fully in the "Validation and comparison to previous methods" section: 
+
+"We tested ClassifierÕs accuracy at ranking samples by having researchers score samples by eye. The results for Actin Blebs are shown in detail in Figure 2, and data for all phenotypes are shown in the Validation column in Figure 3. For each phenotype, Classifier rank-ordered the 5,000 puromycin-treated samples by Enrichment Score (Figure 2a), as would be done in a typical screen. For validation, researchers were forced to choose between pairs of samples: one sample in each pair had been scored by Classifier as positive (Enrichment Score greater than or equal 3) and the other as neutral (Enrichment Score roughly 0). The bar chart in Figure 2c indicates the number of times each sample was chosen as positive in these forced choices. Samples that Classifier scored as positives in this case (left, Figure 2c) were also chosen by the researchers as positives (11 or 12 times, out of 12 comparisons total), and none of the neutral samples (right, Figure 2c) was routinely chosen as positive (0 or 1 time out of 12 comparisons)."
 
 
-COMMENT 3F: A very real danger in applying pattern recognition techniques to visual assays is over-training.  In this application, this would manifest as an ability to robustly discern phenotypes within a set of images, but an inability to "generalize" this even to a repetition of the same experiment on a different day.  The performance of this classifier when applied to biological replicates should be looked into and discussed.
-
-Response:
-We add this: "We found our method resistant to over-training ([[Suppl. Figure XXX - not sens/spec, just combined error rate or xvalidation margin - legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.]]), as is generally the case for boosting algorithms ([[REF]]).  Still, this does not address cross-experiment generalization; we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation ([[Suppl. Figure YYY, Add experiments with training sets from piyush or jacob&milan (probably latter).]]). Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation."
-
-
-
-
-COMMENT 3G: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
+COMMENT 3F: Lastly, it would be informative to compare the performance of this classifier to other existing classification methods.  What are the limitations of this technique? How many different phenotypes can be handled in the same experiment? How does the performance degrade when the number of rules increases? What types of phenotypes are undetectable by  Classify? 
 
 Response:
+For part of the answer to this query, please see our response above to Reviewer 2's Comment 2A (Discussion of different classifier implementations). The 14 phenotypes we successfully screened in this study represent nearly every interesting, unusual phenotype we encountered in the images. Two exceptions are described in the manuscript, one of which (Peas in a Pod) was rescued by repeating image processing to measure an additional feature, and one of which (Sparkly Actin) was abandoned as described. Regarding performance vs. number of rules, see our response to the next comment.
+
+
+COMMENT 3G: A very real danger in applying pattern recognition techniques to visual assays is over-training.  In this application, this would manifest as an ability to robustly discern phenotypes within a set of images, but an inability to "generalize" this even to a repetition of the same experiment on a different day.  The performance of this classifier when applied to biological replicates should be looked into and discussed.
+
+Response:
+We add this: "We found our method resistant to over-training ([[Suppl. Figure XXX - not sens/spec, just combined error rate or xvalidation margin - legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.]]), as is generally the case for boosting algorithms ([[REF]]).  Still, this does not address cross-experiment generalization; we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation ([[Suppl. Figure YYY, Add experiments with training sets from piyush or jacob&milan or Eggert/Castoreno (probably latter).]]). Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation."
+
+
+COMMENT 3H: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
+
+Response:
+While we have indeed produced useable software to enable the approach we describe, the goal of the manuscript was to describe the overall approach (which does in fact use existing algorithms for machien elarnereiienfndfj), with demonstration of its applicability to challenging phenotypes.
+
+We respectfully disag
 [[no repsonse needed?]]
+df
+dfsd
 
 
-COMMENT 3H: Additional detailed comments:
-COMMENT 3H.1: Page 5. It is mentioned that 611 measurements are used without mention of what these are or even what types of measurements are involved. Some analysis could also be useful, but at the very least users should be able to know what is being measured and how. I couldn't find them in the enclosed additional papers, and also not in the CellProfiler paper published in "Genome Biology". The image analysis is one of the most important contributions of this work, and it must be described.
+COMMENT 3I: Additional detailed comments:
+COMMENT 3I.1: Page 5. It is mentioned that 611 measurements are used without mention of what these are or even what types of measurements are involved. Some analysis could also be useful, but at the very least users should be able to know what is being measured and how. I couldn't find them in the enclosed additional papers, and also not in the CellProfiler paper published in "Genome Biology". The image analysis is one of the most important contributions of this work, and it must be described.
 
 Response:
 [[submit PIPE as suppl data, plus say it's all open source software so they can see exactly what we do, plus provide text list of the 611 features as suppl data. in general, too many papers are cluttered with pages of lists of features when they aren't really novel. ok, maybe we shouldn't say that latter statement.]]
 
 
-COMMENT 3H.2: Related to the previous comment. In page 4 ("Results"), several different characteristic are measured as a first step of the analysis. However, except from specifying that these include size, shape, intensity and textures, no information describing these measurements is provided. For instance, what characteristics of the shapes are used? How are they measured? The reference (27) does not lead to a source that specifies that. Intensity can be measured by very many different ways. Is it measured by using the statistical properties of the pixel intensity distribution? If so, which statistical properties are used? How are they measured? The term "texture" is also a very broad definition. Many techniques for measuring textures have been proposed, and the paper must describe which methods are used and how, or at least include references in which the exact same fashion of the use of these textures is specified. The rule files also feature some other measurements such as edges and polynomial decomposition. These should also be described in the text.
+COMMENT 3I.2: Related to the previous comment. In page 4 ("Results"), several different characteristic are measured as a first step of the analysis. However, except from specifying that these include size, shape, intensity and textures, no information describing these measurements is provided. For instance, what characteristics of the shapes are used? How are they measured? The reference (27) does not lead to a source that specifies that. Intensity can be measured by very many different ways. Is it measured by using the statistical properties of the pixel intensity distribution? If so, which statistical properties are used? How are they measured? The term "texture" is also a very broad definition. Many techniques for measuring textures have been proposed, and the paper must describe which methods are used and how, or at least include references in which the exact same fashion of the use of these textures is specified. The rule files also feature some other measurements such as edges and polynomial decomposition. These should also be described in the text.
 
 Response:
 
 
-COMMENT 3H.3: Another major point is the rules. It is clear that the rules are determined by the researcher in an interactive fashion using trial and error until she is satisfied with the results.  These rules, as provided in supplementary materials need further explanation.  The rule files seem to be a set of "if" conditions. However, the manuscript does not describe how the if clauses are handled, and it is not clear how the inference computation is performed and how the ranking is determined.  It is also not clear how important the manual correction of the rules is, or if the rules can be used without manual correction. What is the contribution of the manual correction (in terms of classification accuracy) to the automatically generated rules. This point is important because the readers might be curious to know if the method can be fully automated.
+COMMENT 3I.3: Another major point is the rules. It is clear that the rules are determined by the researcher in an interactive fashion using trial and error until she is satisfied with the results.  These rules, as provided in supplementary materials need further explanation.  The rule files seem to be a set of "if" conditions. However, the manuscript does not describe how the if clauses are handled, and it is not clear how the inference computation is performed and how the ranking is determined.  It is also not clear how important the manual correction of the rules is, or if the rules can be used without manual correction. What is the contribution of the manual correction (in terms of classification accuracy) to the automatically generated rules. This point is important because the readers might be curious to know if the method can be fully automated.
 
 Response:
 
 
-COMMENT 3H.4: Just by looking at the rule files, it seems that some of the image content descriptors that are used are computationally intensive. A few words about the computational resources that are required and the response time of the system might be useful for researchers who consider using this method, especially on the very large datasets (10s - 100s of thousands of images) one would encounter in a screen.
+COMMENT 3I.4: Just by looking at the rule files, it seems that some of the image content descriptors that are used are computationally intensive. A few words about the computational resources that are required and the response time of the system might be useful for researchers who consider using this method, especially on the very large datasets (10s - 100s of thousands of images) one would encounter in a screen.
 
 Response:
 
 
-COMMENT 3H.5: Page 10:  "50 individual rules" ==> "Fifty individual rules". (A sentence should not start with a number).
+COMMENT 3I.5: Page 10:  "50 individual rules" ==> "Fifty individual rules". (A sentence should not start with a number).
 
 Response:
 
 
-COMMENT 3H.6: Illustrations: All graphs must have clear units on both axes.
+COMMENT 3I.6: Illustrations: All graphs must have clear units on both axes.
 
 Response:
 

@@ -159,6 +159,8 @@ Response:
 [[Ray, is this answered sufficiently by response to comment 3D? You might elaborate on that response further if there's a bit more queried in this comment, then say "We now address these questions above - please see our response to comment 3D".  The last 3 sentences about whether it could be fully automated brings us back to the Bakal-like method, so this query needs to have an additional response, something like "Regarding whether the method can be fully automated, our response to comment 3A above now addresses the fact that while some screens can indeed be fully automated (and the Classifier function of CellProfiler Analyst for the first time readily enables this kind of analysis for researchers without programming skills), the main purpose of the interactive approach we present is for cases when such analysis fails."]]
 
 
+[[Ray: "Manual correction" - I'm not sure where that idea came from, perhaps the CPA manual?  It's not something we talk about in the paper, is it?]]
+
 COMMENT 3I.3: Just by looking at the rule files, it seems that some of the image content descriptors that are used are computationally intensive. A few words about the computational resources that are required and the response time of the system might be useful for researchers who consider using this method, especially on the very large datasets (10s - 100s of thousands of images) one would encounter in a screen.
 
 Response:
@@ -178,8 +180,8 @@ COMMENT 3I.5: It is totally unclear how gentleboosting is used. Boosting require
 Response:
 We have clarified which weak learner is used (regression stumps) in the GentleBoosting algorithm.  Please see our response to comment 3D.  The boosted classifier is made up of multiple stumps, which provides some information about relevant features, though their combination is more complex than any single feature.  The performance of training of and scoring via the classifier is addressed in our response to Reviewer 2's comment 2C.1.  More detail is given about the rule selection via the reference to Torralba, et al. (see also response to comment 3D).  
 
+[[Ray: I'm not sure what they mean by classifier-independent filtering.]]
 
-[[Ray, is this answered sufficiently by response to comment 3D (new 'stumps' statement) and 3I.4 (# of terms) and 2C.1 (computationally intensive)? You will probably need to elaborate on those responses further if there's a bit more queried in this comment, then say "We now address these questions above - please see our response to comment XXX and XXX and XXX."]]
 
 
 COMMENT 3I.6: Page 5: "Few dozens" is a rough estimation.  How does a researcher determine the number? Usually, the performance of machine learning algorithms can be improved by using more samples for training. This trivial practice of machine learning might not be known to many biologists. To help the readers effectively use the described tool, this must be further discussed, preferably by measuring the effect of several different training-set sizes on classifier performance.
@@ -190,10 +192,17 @@ While the manual provides practical tips like this, we agree this issue is impor
 "While more is always better when considering how many cells to score before beginning the iterative machine learning phase (if too few are used to initiate machine learning, the computer may train itself to a too-narrow definition of the phenotype), generating a large training set in the initial stage can be difficult when the phenotype is rare or no positive control samples are available; in fact, these are the cases where the iterative nature of Classifier is necessary. The optimal initial training set depends on the complexity of the phenotype and the scarcity of positive cells in the experiment, but a good rule of thumb is to begin with at least 50 [[or, perhaps this is where we reference a new Suppl figure - to address the last sentence of the comment, it'd be super easy to make a Suppl figure showing how a phenotype (e.g. Crescents, because it's got a large training set?) responds to increased training set size by choosing random training sets and measuring cross validation accuracy on the entire training set. That'd be kind of neat and I'm curious to see the results myself.]]"
 
 
+[[Ray: can we shorten this?]]
+
+
 COMMENT 3I.7: The term "scoring" is used throughout the manuscript in the sense of associating a specific sample with one of a discrete set of classes. This, however, is actually "classification", while the term "scoring" implies on some continuos indicator, e.g., Z-scores, Fisher scores, etc.
 
 Response:
-[[Ray - what do you think? I bet for Enrichment score we really do mean 'score', but for 'scoring' positives and negatives we really mean classify in many places in the text (even though the classification is based on a continuous score). This is your judgment whether (a) the comment is totally valid, (b) it's a matter of preference but we may as well change it because it's easy, or (c) it's worth arguing that our original terminology is reasonable. I'd vote for just changing the text because it's simple. LMK.]]
+We have adjusted the text to use the terms "classify" to mean label a cell as positive or negative based on some learned rules, and "score" to mean assign a continuous Enrichment Score to a particular sample. [[TO DO.]]
+
+[[Ray - what do you think? I bet for Enrichment score we really do mean 'score', but for 'scoring' positives and negatives we really mean classify in many places in the text (even though the classification is based on a continuous score). This is your judgment whether (a) the comment is totally valid, (b) it's a matter of preference but we may as well change it because it's easy, or (c) it's worth arguing that our original terminology is reasonable. I'd vote for just changing the text because it's simple. LMK.
+
+Ray: I think we change the text.]]
 
 
 COMMENT 3I.8: Discussion: Since only a subset of the dataset (reference 12) was used, the reader might wonder what was the barrier for repeating the same experiment for much larger network than the 14 phenotypes. What were the criteria for choosing these phenotypes.
@@ -203,11 +212,13 @@ Response:
 
 [[Note, the original sentence is: "We used the samples treated with puromycin (the selection agent for the shRNA vector) for the validation step shown in Figure 3." and we could easily add "... because XXX (I don't remember why you decided that)."]]
 
+[[Ray: How about: "... for two reasons: that we expect puromycin to affect phenotype penetrance in the wild type population, and because puromycin selection culls cells where the shRNA vector failed to infect, leading to more homogeneous populations in each sample."]]
+
 
 COMMENT 3I.9: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.
 
 Response:
-We decided to omit all text at the end of the discussion describing future possibilities, including application of the approach to whole organisms.
+We have omitted all text at the end of the discussion describing future possibilities, including application of the approach to whole organisms.
 
 
 COMMENT 3I.10: Validation and comparison to previous methods: It is clear that Classifier was compared to human detection, but the way the human detection was performed is not clear. Was each sample classified by a single researcher? What is the error rate of this manual classification? How many samples were used for training the classifier? What efforts (human resources) were required to train the classifier.
@@ -221,7 +232,9 @@ COMMENT 3I.11: The motivation for the forced choice test is unclear. Is there a 
 Response:
 We have added explanation to the text: "The biologically relevant score for a sample is enrichment of cells that display the phenotype, rather than a hard 'positive' or 'negative' label, because these samples, as in most screens (REF: perrimon/friedman article that talks about screens yielding smooth distributions rather than sharply defined positives), do not cleanly fall into clear positive and negative classes. Because our goal is to bring highly enriched samples to the attention of the researcher, our aim is to ensure that top-ranking samples are indeed enriched relative to samples scored as neutral. Scoring two samples relative to each other thus avoids the complication that different researchers will subconsciously choose different 'thresholds' at which they call a sample positive or negative."
 
-[[Ray, do you find this convincing? Perhaps you also have a more technical response to add to this one? Feel free to adjust]]
+[[Ray, do you find this convincing? Perhaps you also have a more technical response to add to this one? Feel free to adjust.
+
+Ray: I have wordsmithing ideas, but they can wait until Monday.]]
 
 
 COMMENT 3I.12: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
@@ -229,6 +242,7 @@ COMMENT 3I.12: Also, a new descriptor (the angle between the two nearest neighbo
 Response:
 We have added this information to the main text: "If additional features are predicted to be useful for a particular phenotype, they can be added in two ways: (1) Additional segmentation and feature extraction modules can be added to the image analysis pipeline in CellProfiler. For example, this approach could be used to define a new compartment of interest that might be helpful to score a particular phenotype, like a concentric ring from 2-6 microns outside the nucleus. Measure modules could then measure the size, shape, intensity or texture for that newly defined compartment.  Or, additional texture-measuring modules can be added, each one probing a different scale of texture. This does not require programming but rather simply adding modules to the pipeline and adjusting settings. (2) By adjusting the source code of CellProfiler, new features can be added to existing feature extraction modules or new modules can be written from scratch. This is the approach we took when we added code to measure the angle between neighbors, because it was not a pre-existing measurement made by CellProfiler's Measure Object Neighbors module. It is now a measurement included in the standard cytoprofile for future screens."
 
+[[Ray: I would like to wordsmith this on Monday.  Currently too long.]]
 
 COMMENT 3I.13: Page 3: "Machine learning methods that select and combine multiple features for automated cell scoring have been explored and used for a few particular phenotypes"  The cited papers do not support the statement. Previous efforts (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy) have resulted in general phenotype recognition tools that can handle a large number of phenotypes, rather than focusing on detection of a few particular phenotypes. This is an important point, and it should be clear to the reader that this work is not the first attempt of general automated phenotype recognition.
 

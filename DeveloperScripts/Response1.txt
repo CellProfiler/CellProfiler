@@ -251,3 +251,5 @@ These questions have now been addressed - see response to Reviewer 1's comment 1
 [[Anne TO DO: Check whether that's correct and search this response for other places we address this (search for 'explored')]]
 
 [[Anne TODO: Check editor comments; here we have just addressed reviewer comments]]
+
+[[TODO: send Adam C. and Riki Eggert a copy of the paper, they're interested.]]

@@ -11,6 +11,8 @@ COMMENT 1A: There is an extensive prior works in the area of automated high thro
 Response:
 Agreed, our meaning was unclear in that sentence. We replaced the sentence with: "Automated image analysis coupled with machine learning can effectively score many phenotypes but can require significant effort to adapt to rare or subtle morphologies, particularly when positive control samples are not available."
 
+[[VL: You should be explicit about in what ways the papers mentioned by the reviewer require significant effort.]]
+
 
 COMMENT 1B: Further more, the authors' claim that "none has been implemented in a system proven capable of scoring millions of cells for many diverse morphologies - especially for phenotypes that are complex or subtle, without known positive controls, or present in only a small percentage of the cells in a sample". However, it appear that, as many other prior works, the proposed method also requires positive samples provided from human experts. Thus, it is unclear what do the authors mean by "without known positive controls"?
 
@@ -21,7 +23,9 @@ The distinction between positive control samples and positive control cells was 
 COMMENT 1C: The idea of using human experts to guide classifier is neither novel nor interesting. The proposed approach of identifying positive control cells from "cells noticed by chance while browsing images from the screen, or outlier cells discovered by interactively exploring cell measurements" is highly biased, non-systematic, and, worst of all, probabilistic (i.e., may not be reproducible). Although the proposed method is good at "zooming" into the phenotypes selected by human experts, it is unclear how the proposed system may discover novel cells or phenotypes that are missed by the human experts.
 
 Response:
-The goal of our work is phenotype scoring, not discovery of novel phenotypes. The sentence mentioned above describes how a researcher might choose an interesting phenotype that they wish to pursue; historically, selecting phenotypes for study has indeed been highly biased (i.e., guided by the intuition of a biologist), particularly in classic screens that have been the basis of much of modern biology. Methods exist for automated phenotype discovery, but this is not addressed by our work. We have revised the sentence to clarify: "These can be cells from control samples if the screen has been designed to address a particular phenotype, or cells identified by chance if the screen’s goal is to uncover previously uncharacterized phenotypes, as in many classic screens."
+The goal of our work is phenotype scoring, not discovery of novel phenotypes. The sentence mentioned above describes how a researcher might choose an interesting phenotype that they wish to pursue; historically, selecting phenotypes for study has indeed been highly biased (i.e., guided by the intuition of a biologist), particularly in classic screens that have been the basis of much of modern biology. Methods exist for automated phenotype discovery, but this is not addressed by our work. We have revised the sentence to clarify: "These can be cells from control samples if the screen has been designed to address a particular phenotype, or cells identified by chance if the screen's goal is to uncover previously uncharacterized phenotypes, as in many classic screens."
+
+[[VL: This reponse is very good!]]
 
 
 COMMENT 1D: This manuscript lacks methodological novelty or biological discovery to make this appropriate for Nature Methods.
@@ -48,9 +52,12 @@ Evaluation of various classifier algorithms has indeed been heavily explored in 
 
 (c) Examination of feature space explored by different phenotypes:
 We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
-[[TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features. Reference this figure in the text where we mention features, near 'standard cytoprofiles' discussion.]]
+[[TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features. Reference this figure in the text where we mention features, near 'standard cytoprofiles' discussion.]]  
+[[VL: I'm not sure exactly what the reviewer means by "examination of feature space explored by different phenotypes", but as long as you do, that's enough.]]
 
 [[Question to Bjorn/Vebjorn about (a-c): here, we address the reviewer's specific queries, but are we addressing the reviewer's overall concerns adequately? Anything else we should add?]]
+
+[[VL: I think (a)--(c) cover the request for validation.]]
 
 (d) The referee is concerned that our statement "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  
 We agree that the original sentence unintentionally implied that we applied machine learning to cell screening for the first time. We have adjusted the sentence to appropriately qualify the statement: "automated scoring of a wide variety of morphologies can now be accomplished quickly and easily, even when the phenotype is rare in the wild-type population and positive control samples are not available."
@@ -59,6 +66,8 @@ COMMENT 2B: The authors are first-class scientists, therefore it's worth posing 
 
 Response:
 The reviewer makes an excellent point. Indeed, several other projects using Classifier have been successful but not yet published. We have now included analysis of a second image set (a different screen with different stains by different investigators) in response to Reviewer 3's comment 3G about over-training and how to score replicates performed on different days (please see that response below). Here, we should also elaborate on the screens mentioned only briefly in the text: (a) Piyush Gupta in Eric Lander's lab has led completion of an RNAi screen for regulators of the subtle cytoskeletal changes induced by a growth factor on T47D human breast cancer cells, (b) Taio Xie in Tim Mitchison's lab has led completion of two genome-wide RNAi screens in HeLa cells for spindle morphology during cell division, and (c) Adam Castereno in Riki Eggert's lab has processed a substantial proportion of images from a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype. These large-scale experiments probe phenotypes distinct from each other and from those explored in our own screens described in this manuscript. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript.
+
+[[VL: Good.]]
 
 [[Anne TO DO: Make a figure for phenotypes (a-c) just for the rebuttal letter, not for the manuscript.]]
 
@@ -83,6 +92,8 @@ Response:
 We concur. It is difficult to establish metrics to substantiate claims of 'easy-to-use', but we submit that many of our collaborators currently use the tool to score large-scale screens independently, usually with minimal training.  We have recently released a new interface for Classifier intended to further improve ease-of-use. The online demo shows this new Classifier tool in use (http://www.cellprofiler.com/examples). Thus, we do indeed consider this tool to be user-friendly, although we do not make this claim in the manuscript.
 
 Regarding modularity, we agree that demonstrated use by a broad community of researchers is strong evidence. Such evidence exists for CellProfiler image analysis software (not described in this manuscript), which has been adapted to dozens of projects by researchers unaffiliated with our group, but because CellProfiler Analyst/Classifier was released only recently, we decided to omit all text at the end of the discussion describing future possibilities, including substituting novel machine learning algorithms.
+
+[[VL: Good.]]
 
 ===========
 
@@ -132,7 +143,7 @@ COMMENT 3G: A very real danger in applying pattern recognition techniques to vis
 
 Response:
 We add these new paragraphs describing additional experiments we now include to address these comments: 
-"We found our approach resistant to over-training ([[Suppl. Figure XXX - cross validation results, see description below]]), as is generally the case for boosting algorithms ([[Ray TODO: provide reference]]). One strategy we used to prevent another type of over-training (training the system to recognize only a phenotypic subset of a broader phenotype of interest) is to rank-order samples after initial stages of machine learning, use Classifier to examine the negatively-classified cells marked in entire field-of-view images of the top "hits", and add additional positive examples to the training set to 'broaden' the definition of the phenotype. A similar approach can be even more readily used if positive control samples are available.
+"We found our approach resistant to over-training ([[Suppl. Figure XXX - cross validation results, see description below]]), as is generally the case for boosting algorithms ([[Ray TODO: provide reference]]). One strategy we used to prevent another type of over-training (training the system to recognize only a phenotypic subset of a broader phenotype of interest) is to rank-order samples after initial stages of machine learning, use Classifier to examine the negatively-classified cells marked in entire field-of-view images of the top "hits", and add additional positive examples to the training set to 'broaden' the definition of the phenotype. A similar approach can be even more readily used if positive control samples are available.  [[VL: This paragraph is a little unclear.]]
 
 Still, none of these safeguards addresses whether a classifier will generalize to new experiments: classifiers trained on one experiment are unlikely to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach (in addition to minimizing experimental variation and performing normalization if needed) is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to any remaining experimental variation ([[Suppl. Figure YYY, Add experiments with training sets from piyush or jacob&milan or Eggert/Castoreno (probably latter).]]). This is because training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation."
 
@@ -141,7 +152,9 @@ Still, none of these safeguards addresses whether a classifier will generalize t
 COMMENT 3H: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 
 Response:
-Indeed, it was important to us to produce useable software to enable the approach we describe, rather than just a proof of principle. We also hope that the revised manuscript more clearly emphasizes, in response to the other reviewers' comments, that this is the first demonstration of the iterative machine learning approach to score multiple challenging and rare phenotypes in large-scale screens.
+Indeed, it was important to us to produce useable software to enable the approach we describe, rather than just a proof of principle. We also hope that the revised manuscript more clearly emphasizes, in response to the other reviewers' comments, that this is the first demonstration of the iterative machine learning approach to score multiple challenging and rare phenotypes in large-scale screens. 
+
+[[VL: This is a nice, succinct statement of the paper's contribution.  If it's not already in the abstract, it should be.]]
 
 
 COMMENT 3I: Additional detailed comments:
@@ -236,6 +249,8 @@ We have added explanation to the text: "The biologically relevant score for a sa
 
 Ray: I have wordsmithing ideas, but they can wait until Monday.]]
 
+[[VL: I think it's convincing, but the last sentence could be clearer.]]
+
 
 COMMENT 3I.12: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
 
@@ -254,4 +269,4 @@ These questions have now been addressed - see response to Reviewer 1's comment 1
 
 [[TODO: send Adam C. and Riki Eggert a copy of the paper, they're interested.]]
 
-[[TODO: change decision stump to regression stump.]]
+[[TODO: change decision stump to regression stump.]] 

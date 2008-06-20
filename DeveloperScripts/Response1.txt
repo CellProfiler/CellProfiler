@@ -107,6 +107,7 @@ Yes, previous work (e.g., the work of the Murphy Lab) has demonstrated that if p
 
 There is another major use case for the approach we describe: even when positive controls are available, training to the phenotype of a control may not [[...]].   [[Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.]]
 
+
 [[ Clarification of all this in the paper is likely necessary]]
 
 
@@ -146,6 +147,8 @@ COMMENT 3G: A very real danger in applying pattern recognition techniques to vis
 Response:
 We add this: "We found our method resistant to over-training ([[Suppl. Figure XXX - not sens/spec, just combined error rate or xvalidation margin - legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.]]), as is generally the case for boosting algorithms ([[REF]]).  Still, this does not address cross-experiment generalization; we do not expect classifiers trained on one experiment to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, it will be necessary to create a new training set from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicates, the best approach is to create the training set using cells taken from all replicates, to maximize the classifier's robustness to experimental variation ([[Suppl. Figure YYY, Add experiments with training sets from piyush or jacob&milan or Eggert/Castoreno (probably latter).]]). Training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation."
 
+[[Ray, you know, we never mention in the text that one safeguard against over-training is that after initial stages of machine learning you can score samples, look at images of the top 'hits' with positively-classified cells labeled and add additional positive examples to the training set to 'broaden' the definition of the phenotype. This step is even easier if known positive control samples exist. Should this info go here (and be added to the main text)? I think this might be the only place where concern is voiced about over-defining the phenotype.]]
+
 
 COMMENT 3H: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 
@@ -178,48 +181,57 @@ Response:
 Done.
 [[TO DO: need to figure out which figures are referenced and fix them.]]
 
-COMMENT 3I.5: It is totally unclear how gentleboosting is used. Boosting requires ground truth and an existing classifier (as opposed to filtering, which requires only ground truth). Since the boosting is applied here as a first step of defining the classifier rules, it is unclear what classifier is used by gentleboosting (decision trees?). It should also be mentioned that the classifier used for boosting is different than the one used for the actual classification, and therefore features that are selected might not be informative for the actual classifier. Under these circumstances, it is unclear why the authors chose to use slow boosting over much faster and classifier-independent filtering.
-The number of terms used by gentleboosting is also unclear. Is this number fixed or is it determined dynamically in some way?
-While gentleboosting assigns weights to the features, it is unclear how the tentative rule is generated.
-Also, boosting is usually a computationally intensive task. A note about this issue is also required.
+COMMENT 3I.5: It is totally unclear how gentleboosting is used. Boosting requires ground truth and an existing classifier (as opposed to filtering, which requires only ground truth). Since the boosting is applied here as a first step of defining the classifier rules, it is unclear what classifier is used by gentleboosting (decision trees?). It should also be mentioned that the classifier used for boosting is different than the one used for the actual classification, and therefore features that are selected might not be informative for the actual classifier. Under these circumstances, it is unclear why the authors chose to use slow boosting over much faster and classifier-independent filtering.  The number of terms used by gentleboosting is also unclear. Is this number fixed or is it determined dynamically in some way? While gentleboosting assigns weights to the features, it is unclear how the tentative rule is generated.  Also, boosting is usually a computationally intensive task. A note about this issue is also required.
 
 Response:
+[[Ray, is this answered sufficiently by response to comment 3D (new 'stumps' statement) and 3I.4 (# of terms) and 2C.1 (computationally intensive)? You will probably need to elaborate on those responses further if there's a bit more queried in this comment, then say "We now address these questions above - please see our response to comment XXX and XXX and XXX."]]
 
 
 COMMENT 3I.6: Page 5: "Few dozens" is a rough estimation.  How does a researcher determine the number? Usually, the performance of machine learning algorithms can be improved by using more samples for training. This trivial practice of machine learning might not be known to many biologists. To help the readers effectively use the described tool, this must be further discussed, preferably by measuring the effect of several different training-set sizes on classifier performance.
 
 Response:
+[[the original sentence (in a figure legend, though more briefly described in the main text) is "After a few dozen cells are scored, the researcher can begin the iterative machine learning phase, where the computer generates a tentative rule based on the scored cells and presents the researcher with cells scored according to that rule."  Ray, what do you think about a response like: 'While the manual provides practical tips like this, we agree this issue is important enough to mention in the manuscript, and have added further guidance: "While more is always better when considering how many cells to score before beginning the iterative machine learning phase (if too few are used to initiate machine learning, the computer may train itself to a too-narrow definition of the phenotype), generating a large training set in the initial stage can be difficult when the phenotype is rare or no positive control samples are available; in fact, these are the cases where the iterative nature of Classifier is necessary. The optimal initial training set depends on the complexity of the phenotype and the scarcity of positive cells in the experiment, but a good rule of thumb is to begin with at least 50 [[or, perhaps this is where we reference a new Suppl figure - to address the last sentence of the comment, it'd be super easy to make a Suppl figure showing how a phenotype (e.g. Crescents, because it's got a large training set?) responds to increased training set size by choosing random training sets and measuring cross validation accuracy. That'd be kind of neat and I'm curious to see the results myself.]] ]].
 
 
-COMMENT 3I.7: The term "scoring" is used throughout the manuscript in the sense of associating a specific sample with one of a discrete set of classes. This, however, is actually "classification", while the term "scoring" implies on some continuos indicator, e.g., Z-scores, FIsher scores, etc.
+COMMENT 3I.7: The term "scoring" is used throughout the manuscript in the sense of associating a specific sample with one of a discrete set of classes. This, however, is actually "classification", while the term "scoring" implies on some continuos indicator, e.g., Z-scores, Fisher scores, etc.
 
 Response:
+[[Ray - what do you think? I bet for Enrichment score we really mean scores, but for 'scoring' positives and negatives we really mean classify in many places in the text (even though the classification is based on a continuous score). This is your judgment whether (a) the comment is totally valid, (b) it's a matter of preference but we may as well change it because it's easy, or (c) it's worth arguing that our original terminology is reasonable. I'd vote for just changing the text because it's simple. LMK.]]
 
 
 COMMENT 3I.8: Discussion: Since only a subset of the dataset (reference 12) was used, the reader might wonder what was the barrier for repeating the same experiment for much larger network than the 14 phenotypes. What were the criteria for choosing these phenotypes.
 
 Response:
+[[Ref 12 is the Moffat paper. I'm not sure what the query is - they think we used fewer than the number of samples in the Moffat paper (which is only true in the sense of puro+ instead of all)? But then the query says 'much larger network than the 14 phenotypes'. Not sure what that means. For the phenotypes, we could refer to our response to comment 3F "The 14 phenotypes we successfully screened in this study represent nearly every interesting, unusual phenotype we encountered in the images."]]
+
+[[Note, the original sentence is: "We used the samples treated with puromycin (the selection agent for the shRNA vector) for the validation step shown in Figure 3." and we could easily add "... because XXX (I don't remember why you decided that)."]]
 
 
 COMMENT 3I.9: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.
 
 Response:
-[[fine by me to leave it out. It's pretty conventional to talk about future directions for the work, so we could also re-word it, but I would assume it was already pretty clearly future directions and they still didn't like it so it might be simpler to just leave it out.]]
+We decided to omit all text at the end of the discussion describing future possibilities, including application of the approach to whole organisms.
 
 
 COMMENT 3I.10: Validation and comparison to previous methods: It is clear that Classifier was compared to human detection, but the way the human detection was performed is not clear. Was each sample classified by a single researcher? What is the error rate of this manual classification? How many samples were used for training the classifier? What efforts (human resources) were required to train the classifier.
 
 Response:
+These questions have now been addressed - see response to comments [[TO DO: X Y Z]].
 
 
 COMMENT 3I.11: The motivation for the forced choice test is unclear. Is there a specific reason for using this kind of test, rather than simply counting the number of samples that their automated score was in agreement with the manual score?
 
 Response:
+We have added explanation to the text: "The biologically relevant score for a sample is enrichment of cells that display the phenotype, rather than a hard 'positive' or 'negative' label, because these samples, as in most screens (REF: perrimon/friedman article that talks about screens yielding smooth distributions rather than sharply defined positives), do not cleanly fall into clear positive and negative classes. Because our goal is to bring highly enriched samples to the attention of the researcher, our aim is to ensure that top-ranking samples are indeed enriched relative to samples scored as neutral. Scoring two samples relative to each other thus avoids the complication that different researchers will subconsciously choose different 'thresholds' at which they call a sample positive or negative."
+
+[[Ray, do you find this convincing? Perhaps you also have a more technical response to add to this one? Feel free to adjust]]
 
 
 COMMENT 3I.12: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
 
 Response:
+
+
 [[Two mechanisms: (1) add more modules to the image analysis pipeline (this is easy to do in CellProfiler and does not require programming skills, simply add a module to the pipeline. An example would be if there is a particular compartment to be defined, e.g. a concentric ring from 2-6 microns outside the edge of the nucleus, that might be helpful to score a particular phenotype. (2) write new modules for CellProfiler, in matlab. This is the route we took for angle between neighbors, because it was not a pre-existing measurement that CellProfiler was enabled to make. It is now a standard measurement included in the standard cytoprofile for future screens.]]
 
 

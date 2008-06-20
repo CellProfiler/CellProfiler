@@ -46,8 +46,8 @@ There are a few successes in this field, but none to my knowledge that are routi
 COMMENT 2A: However, does this very useful implementation constitute a significant methodological or conceptual advance?  This is a surprisingly light treatment of an important topic that the authors properly and critically introduce-the use of automatic, supervised learning methods in large-scale cell-based screens.  As such the authors don't reach the standard achieved by other published papers in this field- reports of confusion matrices (as opposed to the very simple right/wrong analysis provided here), discussion of different classifier implementations, examination of feature space explored by different phenotypes. The authors' statement that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  Admittedly, many other papers from Eils, Murphy, Ellenberg & Pepperkok, and many others referenced by the authors have focused on automatic identification of human-recognized phenotypes, but Murphy's group have already established good methods for  distinguishing phenotypes based on molecular identity that were not known to be distinguishable by humans-in short classifiers can find new phenotypes.  Against this background, the authors' contention of a significant conceptual advance seems dubious. 
 
 Response:
-The referee points out particular explorations that would be helpful to evaluate the methods we have described:
-(a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  In addition to the existing statement that there were no false negatives and, in total, two false positives across the 720 samples scored by eye, we have added this sentence: "Agreement between humans was comparable to that between humans and automated scoring ([[Supplementary Figure XXX - complex confusion matrix]])."
+The referee points out particular explorations that would be helpful to evaluate the methods we have described. We left these out of the original manuscript to maintain sharp focus, but now include:
+(a) Confusion matrices support the validation results originally shown in Figure 3 ("Validation" column).  In addition to the existing statement that there were no false negatives and, in total, two false positives across the 720 samples scored by eye, we have added this sentence: "Agreement between humans was comparable to that between humans and automated scoring ([[Supplementary Figure XXX - complex confusion matrix that Chris is making]])."
 
 (b) Discussion of different classifier implementations:
 Evaluation of various classifier methods has indeed been heavily explored in others' work, both for cell screens in the Murphy lab, as well as many other domains in the general machine learning community. One conclusion from this work is that all of the top classification methods (e.g., SVMs, neural networks, boosting variants) perform roughly similarly.  Contributing to the work comparing particular learning methods is not our goal, and in fact, we believe that any of these methods would perform well within our framework (initial testing indicated that SVMs performed similarly to GentleBoosting but were less suitable for generating the database queries necessary for scoring entire screens).  Rather, we present a method for rapidly creating useful training sets for rare phenotypes, using an arbitrary machine learning algorithm. To clarify this, we have added a sentence: "Other machine learning methods are likely to be equally effective, based on their performance in previous work [[(Murphy lab, mitocheck, altschuler, bakal refs XXX)]]."
@@ -103,13 +103,11 @@ Reviewer #3:
 COMMENT 3A: A central argument of this manuscript is that computer vision techniques can be applied to visual cell-based screens in order to find subtle phenotypes in an objective way.  The paper describes an iterative manual process to build a set of rules by manually correcting feedback from the classifier as it is being built.  Since this process is based on the user's own perception, isn't the entire process then limited by the user's ability to discern the phenotypes as well as any bias the user may introduce?  Is there a way of building and refining the classifier based solely on experimental controls without relying on a user's visual perception?  There are several examples in the literature where human observers are unable to distinguish sub-cellular morphologies that are known to be different (for example, fluorescently labeled lysosomes and endosomes).
 
 Response: 
-Yes, previous work (e.g., the work of the Murphy Lab) has demonstrated that if positive controls are available and the phenotype is highly penetrant, computers can be trained to discriminate between phenotypes that cannot be visually distinguished by humans.  In these cases, Classifier provides a convenient interface for training and scoring with a machine learning algorithm.  In our work, we address the more challenging situation where the phenotype is less penetrant, positive controls are not available, or both, which makes generating training sets difficult.
+Yes, previous work (e.g., the work of the Murphy Lab) has demonstrated that if positive controls are available and the phenotype is highly penetrant, computers can be trained to discriminate between phenotypes that cannot be visually distinguished by humans, by labeling all cells from positive control samples as positive examples and all cells from negative controls as negative examples.  In these cases, Classifier provides a convenient interface for performing this type of analysis, by loading all cells from the controls into the training set without any interactive manual selection of cells.  In our work, we address the more challenging situation where the phenotype is less penetrant, positive controls are not available, or both, which makes generating training sets difficult. We note also that in some of the less-penetrant phenotypes of interest in this study, the approach of labeling all cells as positives is ineffective (see original Supplementary figure [[XXX - bakal-like figure]]).
 
-In addition, even when positive controls are available, training to the phenotype of a control may not [[...]].
+There is another major use case for the approach we describe: even when positive controls are available, training to the phenotype of a control may not [[...]].   [[Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.]]
 
-[[Yes, but that's a different goal. Some chemical/RNAi's have multiple effects on cells so excluding the biologist's intervention will lead down the wrong path. Both types of tools are needed, and our approach is needed when only some of the effects of positive control samples are of biological interest.
-
-Ray: I'm not sure what the "Some chemical/RNAi's..." sentence is trying to address (bias?).  I think we address this by saying, "yes, positive/negative controls allow more direct scoring, but we're doing something else."  Clarification in the paper may be necessary?]]]]
+[[ Clarification of all this in the paper is likely necessary]]
 
 
 COMMENT 3B: This is not the first time that pattern recognition was used to evaluate a set of diverse cellular phenotypes.  This was demonstrated a decade ago by Robert Murphy's group for determining sub-cellular locations (Cytometry 1998).  Although on the face of it this addresses a different biological problem (identification of sub-cellular compartment), the visual analysis problem is the same because the classifier doesn't "know" its identifying sub-cellular locations vs. RNAi phenotypes - in both cases the problem is to identify a set of diverse cellular morphologies.  Since Murphy's work, others have built single classifiers for solving a diversity of biological and cellular imaging problems (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy, as well as Loo et al. in a recent Nature Methods ).  In each of these approaches, classifiers are built using an automated process where the underlying image features are not problem-specific, making these approaches applicable to diverse imaging problems.  In light of this, the statement "none has addressed the problem of scale in terms of ability to score cells for many unusual phenotypes of interest" is not correct.  
@@ -126,8 +124,8 @@ Yes, and we have adjusted the text to more clearly convey this, see comment [[1A
 COMMENT 3D: A more detailed description of the image features used  is necessary.  While it may be beyond the scope of this journal to describe these algorithms in detail, the descriptions provided for what is being measured about each cell are inadequate to evaluate how the software operates.  This is equally true of the classifier algorithm itself.  GentleBoosting is  a method of combining several weak classifiers or a method of weighting a collection of image features.  It is not a classification algorithm on its own.  The actual algorithm(s) used for classification is not mentioned.  
 
 Response:
-We have added the list of features measured in Supplementary Data, and a description of the image analysis pipeline used to process the images.  The algorithms used in image processing are documented in the manual and open source code for CellProfiler.  We have clarified the main text on the classifier algorithm: "... GentleBoosting applied to decision stumps", and added a note in the methods about the specific implementation: "..., based on code from Torralba, et al."
-
+We regret the omission of this information. We have added the list of features measured (Supplementary Data [[XXX]]), a description of the image analysis pipeline used to process the images (Supplementary Data [[XXX]]), and the actual image analysis pipeline that can be run in CellProfiler to recreate exactly the analysis (Supplementary Data [[XXX]]).  This information points to which algorithms are used, which are, in turn, documented in CellProfiler's manual and open source code.  We have clarified the main text on the classifier algorithm: "... GentleBoosting applied to decision stumps", and added a note in the methods about the specific implementation: "..., based on code from Torralba, et al."
+[[TODO: create all this Suppl data and specify which revision of CP was used; mention that old versions can be downloaded; put the reference to all this near the mention of "standard cytoprofiles"]]
 
 COMMENT 3E: The description of the classifier evaluation is also inadequate, but extremely important for this type of publication.  How many individual images were evaluated by both the classifier and manually?  How were the test images presented to manual scorers chosen - were they selected by the classifier?  It is not possible to evaluate the false positive and false negative rates presented without a more thorough description of the evaluation procedure.  
 
@@ -152,42 +150,35 @@ We add this: "We found our method resistant to over-training ([[Suppl. Figure XX
 COMMENT 3H: A central criticism of this work is that the underlying basis is an image classification technique, but the paper focuses almost exclusively on its implementation in a software tool.  This is somewhat justified in that the software tool is indeed unique:  Despite previous work by others in this specific application of pattern recognition and image classification, no one has focused as much effort on making their software useable by bench scientists.  Whether this is sufficiently novel for publication in Nature Methods is an editorial decision.
 
 Response:
-Indeed, it was important to us to produce useable software to enable the approach we describe, rather than just a proof of principle. We also hope that the manuscript is clear in describing the first demonstration of the iterative machine learning approach to score multiple challenging and rare phenotypes.
+Indeed, it was important to us to produce useable software to enable the approach we describe, rather than just a proof of principle. We also hope that the manuscript is now more clearly emphasizing, in response to the other reviewers' comments, that this is the first demonstration of the iterative machine learning approach to score multiple challenging and rare phenotypes.
 
 
 COMMENT 3I: Additional detailed comments:
-COMMENT 3I.1: Page 5. It is mentioned that 611 measurements are used without mention of what these are or even what types of measurements are involved. Some analysis could also be useful, but at the very least users should be able to know what is being measured and how. I couldn't find them in the enclosed additional papers, and also not in the CellProfiler paper published in "Genome Biology". The image analysis is one of the most important contributions of this work, and it must be described.
+COMMENT 3I.1: Page 5. It is mentioned that 611 measurements are used without mention of what these are or even what types of measurements are involved. Some analysis could also be useful, but at the very least users should be able to know what is being measured and how. I couldn't find them in the enclosed additional papers, and also not in the CellProfiler paper published in "Genome Biology". The image analysis is one of the most important contributions of this work, and it must be described. Related to the previous comment. In page 4 ("Results"), several different characteristic are measured as a first step of the analysis. However, except from specifying that these include size, shape, intensity and textures, no information describing these measurements is provided. For instance, what characteristics of the shapes are used? How are they measured? The reference (27) does not lead to a source that specifies that. Intensity can be measured by very many different ways. Is it measured by using the statistical properties of the pixel intensity distribution? If so, which statistical properties are used? How are they measured? The term "texture" is also a very broad definition. Many techniques for measuring textures have been proposed, and the paper must describe which methods are used and how, or at least include references in which the exact same fashion of the use of these textures is specified. The rule files also feature some other measurements such as edges and polynomial decomposition. These should also be described in the text...RNAi screens for diverse phenotypes using Classifier: What are the "standard cytoprofiles"? Is there a list of the cell descriptors?
 
 Response:
-[[submit PIPE as suppl data, plus say it's all open source software so they can see exactly what we do, plus provide text list of the 611 features as suppl data. in general, too many papers are cluttered with pages of lists of features when they aren't really novel. ok, maybe we shouldn't say that latter statement.]]
+We now address these questions above - please see our response to Reviewer 2's comment 2A (c: Examination of feature space explored by different phenotypes) and also Reviewer 3's comment 3D.
 
 
-COMMENT 3I.2: Related to the previous comment. In page 4 ("Results"), several different characteristic are measured as a first step of the analysis. However, except from specifying that these include size, shape, intensity and textures, no information describing these measurements is provided. For instance, what characteristics of the shapes are used? How are they measured? The reference (27) does not lead to a source that specifies that. Intensity can be measured by very many different ways. Is it measured by using the statistical properties of the pixel intensity distribution? If so, which statistical properties are used? How are they measured? The term "texture" is also a very broad definition. Many techniques for measuring textures have been proposed, and the paper must describe which methods are used and how, or at least include references in which the exact same fashion of the use of these textures is specified. The rule files also feature some other measurements such as edges and polynomial decomposition. These should also be described in the text.
-
-Response:
-
-
-COMMENT 3I.3: Another major point is the rules. It is clear that the rules are determined by the researcher in an interactive fashion using trial and error until she is satisfied with the results.  These rules, as provided in supplementary materials need further explanation.  The rule files seem to be a set of "if" conditions. However, the manuscript does not describe how the if clauses are handled, and it is not clear how the inference computation is performed and how the ranking is determined.  It is also not clear how important the manual correction of the rules is, or if the rules can be used without manual correction. What is the contribution of the manual correction (in terms of classification accuracy) to the automatically generated rules. This point is important because the readers might be curious to know if the method can be fully automated.
+COMMENT 3I.2: Another major point is the rules. It is clear that the rules are determined by the researcher in an interactive fashion using trial and error until she is satisfied with the results.  These rules, as provided in supplementary materials need further explanation.  The rule files seem to be a set of "if" conditions. However, the manuscript does not describe how the if clauses are handled, and it is not clear how the inference computation is performed and how the ranking is determined.  It is also not clear how important the manual correction of the rules is, or if the rules can be used without manual correction. What is the contribution of the manual correction (in terms of classification accuracy) to the automatically generated rules. This point is important because the readers might be curious to know if the method can be fully automated.
 
 Response:
+[[Ray, is this answered sufficiently by response to comment 3D? You might elaborate on that response further if there's a bit more queried in this comment, then say "We now address these questions above - please see our response to comment 3D".  The last 3 sentences about whether it could be fully automated brings us back to the Bakal-like method, so this query needs to have an additional response, something like "Regarding whether the method can be fully automated, our response to comment 3A above now addresses the fact that while some screens can indeed be fully automated (and the Classifier function of CellProfiler Analyst for the first time readily enables this kind of analysis for researchers without programming skills), the main purpose of the interactive approach we present is for cases when such analysis fails."]]
 
 
-COMMENT 3I.4: Just by looking at the rule files, it seems that some of the image content descriptors that are used are computationally intensive. A few words about the computational resources that are required and the response time of the system might be useful for researchers who consider using this method, especially on the very large datasets (10s - 100s of thousands of images) one would encounter in a screen.
-
-Response:
-
-
-COMMENT 3I.5: Page 10:  "50 individual rules" ==> "Fifty individual rules". (A sentence should not start with a number).
+COMMENT 3I.3: Just by looking at the rule files, it seems that some of the image content descriptors that are used are computationally intensive. A few words about the computational resources that are required and the response time of the system might be useful for researchers who consider using this method, especially on the very large datasets (10s - 100s of thousands of images) one would encounter in a screen.
 
 Response:
+We now address these questions above - please see our response to Reviewer 2's comment 2C.1. 
 
 
-COMMENT 3I.6: Illustrations: All graphs must have clear units on both axes.
+COMMENT 3I.4: Page 10:  "50 individual rules" ==> "Fifty individual rules". (A sentence should not start with a number). Illustrations: All graphs must have clear units on both axes.
 
 Response:
+Done.
+[[TO DO: need to figure out which figures are referenced and fix them.]]
 
-
-COMMENT 3H.7: It is totally unclear how gentleboosting is used. Boosting requires ground truth and an existing classifier (as opposed to filtering, which requires only ground truth). Since the boosting is applied here as a first step of defining the classifier rules, it is unclear what classifier is used by gentleboosting (decision trees?). It should also be mentioned that the classifier used for boosting is different than the one used for the actual classification, and therefore features that are selected might not be informative for the actual classifier. Under these circumstances, it is unclear why the authors chose to use slow boosting over much faster and classifier-independent filtering.
+COMMENT 3I.5: It is totally unclear how gentleboosting is used. Boosting requires ground truth and an existing classifier (as opposed to filtering, which requires only ground truth). Since the boosting is applied here as a first step of defining the classifier rules, it is unclear what classifier is used by gentleboosting (decision trees?). It should also be mentioned that the classifier used for boosting is different than the one used for the actual classification, and therefore features that are selected might not be informative for the actual classifier. Under these circumstances, it is unclear why the authors chose to use slow boosting over much faster and classifier-independent filtering.
 The number of terms used by gentleboosting is also unclear. Is this number fixed or is it determined dynamically in some way?
 While gentleboosting assigns weights to the features, it is unclear how the tentative rule is generated.
 Also, boosting is usually a computationally intensive task. A note about this issue is also required.
@@ -195,50 +186,44 @@ Also, boosting is usually a computationally intensive task. A note about this is
 Response:
 
 
-COMMENT 3H.8: Page 5: "Few dozens" is a rough estimation.  How does a researcher determine the number? Usually, the performance of machine learning algorithms can be improved by using more samples for training. This trivial practice of machine learning might not be known to many biologists. To help the readers effectively use the described tool, this must be further discussed, preferably by measuring the effect of several different training-set sizes on classifier performance.
+COMMENT 3I.6: Page 5: "Few dozens" is a rough estimation.  How does a researcher determine the number? Usually, the performance of machine learning algorithms can be improved by using more samples for training. This trivial practice of machine learning might not be known to many biologists. To help the readers effectively use the described tool, this must be further discussed, preferably by measuring the effect of several different training-set sizes on classifier performance.
 
 Response:
 
 
-COMMENT 3H.9: The term "scoring" is used throughout the manuscript in the sense of associating a specific sample with one of a discrete set of classes. This, however, is actually "classification", while the term "scoring" implies on some continuos indicator, e.g., Z-scores, FIsher scores, etc.
+COMMENT 3I.7: The term "scoring" is used throughout the manuscript in the sense of associating a specific sample with one of a discrete set of classes. This, however, is actually "classification", while the term "scoring" implies on some continuos indicator, e.g., Z-scores, FIsher scores, etc.
 
 Response:
 
 
-COMMENT 3H.10: Discussion: Since only a subset of the dataset (reference 12) was used, the reader might wonder what was the barrier for repeating the same experiment for much larger network than the 14 phenotypes. What were the criteria for choosing these phenotypes.
+COMMENT 3I.8: Discussion: Since only a subset of the dataset (reference 12) was used, the reader might wonder what was the barrier for repeating the same experiment for much larger network than the 14 phenotypes. What were the criteria for choosing these phenotypes.
 
 Response:
 
 
-COMMENT 3H.11: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.
+COMMENT 3I.9: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.
 
 Response:
 [[fine by me to leave it out. It's pretty conventional to talk about future directions for the work, so we could also re-word it, but I would assume it was already pretty clearly future directions and they still didn't like it so it might be simpler to just leave it out.]]
 
 
-COMMENT 3H.12: Validation and comparison to previous methods: It is clear that Classifier was compared to human detection, but the way the human detection was performed is not clear. Was each sample classified by a single researcher? What is the error rate of this manual classification? How many samples were used for training the classifier? What efforts (human resources) were required to train the classifier.
+COMMENT 3I.10: Validation and comparison to previous methods: It is clear that Classifier was compared to human detection, but the way the human detection was performed is not clear. Was each sample classified by a single researcher? What is the error rate of this manual classification? How many samples were used for training the classifier? What efforts (human resources) were required to train the classifier.
 
 Response:
 
 
-COMMENT 3H.13: The motivation for the forced choice test is unclear. Is there a specific reason for using this kind of test, rather than simply counting the number of samples that their automated score was in agreement with the manual score?
+COMMENT 3I.11: The motivation for the forced choice test is unclear. Is there a specific reason for using this kind of test, rather than simply counting the number of samples that their automated score was in agreement with the manual score?
 
 Response:
 
 
-COMMENT 3H.14: RNAi screens for diverse phenotypes using Classifier: What are the "standard cytoprofiles? Is there a list of the cell descriptors?
-
-
-Response:
-
-
-COMMENT 3H.15: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
+COMMENT 3I.12: Also, a new descriptor (the angle between the two nearest neighbors) was added. It is not clear, however, if and how the user can add customized descriptors.
 
 Response:
 [[Two mechanisms: (1) add more modules to the image analysis pipeline (this is easy to do in CellProfiler and does not require programming skills, simply add a module to the pipeline. An example would be if there is a particular compartment to be defined, e.g. a concentric ring from 2-6 microns outside the edge of the nucleus, that might be helpful to score a particular phenotype. (2) write new modules for CellProfiler, in matlab. This is the route we took for angle between neighbors, because it was not a pre-existing measurement that CellProfiler was enabled to make. It is now a standard measurement included in the standard cytoprofile for future screens.]]
 
 
-COMMENT 3H. 16: Page 3: "Machine learning methods that select and combine multiple features for automated cell scoring have been
+COMMENT 3I.13: Page 3: "Machine learning methods that select and combine multiple features for automated cell scoring have been
 explored and used for a few particular phenotypes"  The cited papers do not support the statement. Previous efforts (e.g., Neumann et al., Bakal et al., Orlov et al., Chen & Murphy) have resulted in general phenotype recognition tools that can handle a large number of phenotypes, rather than focusing on detection of a few particular phenotypes. This is an important point, and it should be clear to the reader that this work is not the first attempt of general automated phenotype recognition.
 
 Response:

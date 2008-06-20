@@ -77,8 +77,8 @@ if ReqSlid
 end
 
 %%% Create special features
-uicontrol(SelectDisplay,'Style','pushbutton','String','Select All/None','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[0.2 0.5 1.7 .2],'Value',1,'UserData',h,'Callback','if get(gcbo,''Value''), set(get(gcbo,''UserData''),''Value'',1); else, set(get(gcbo,''UserData''),''Value'',0); end;');
-uicontrol(SelectDisplay,'Style','pushbutton','String','Invert Selection','Units','Inches','BackgroundColor',[.7 .7 .9],'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback','Checkboxes = get(gcbo,''UserData''); for i = 1:length(Checkboxes), if get(Checkboxes(i),''Value'')==1, set(Checkboxes(i),''Value'',0); else, set(Checkboxes(i),''Value'',1); end; end; clear Checkboxes;');
+uicontrol(SelectDisplay,'Style','togglebutton', 'Value',0,'String','Select All/None',   'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[0.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_SelectAllNone);
+uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Invert Selection',  'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_InvertSelection);
 
 %%% Create OK and Cancel buttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
@@ -117,7 +117,8 @@ end
 
 
 %%%%%%%%%%%% Subfunctions %%%%%%%%%%%%%
-
+%%
+%%% SUBFUNCTION - doFigureKeyPress
 function doFigureKeyPress(obj, evd)
 switch(evd.Key)
     case {'return','space'}
@@ -125,7 +126,8 @@ switch(evd.Key)
     case {'escape'}
         delete(gcf);
 end
-
+%%
+%%% SUBFUNCTION - Slider_Callback
 function Slider_Callback(SliderHandle,PanelHandle)
 %%% Get new position for the panel
 PanelPos = get(PanelHandle,'Position');
@@ -142,3 +144,22 @@ for i = 1:length(Children)
 end
 %%% Set the new position
 set(PanelHandle,'Position',[PanelPos(1) NewPos PanelPos(3) PanelPos(4)]);
+%%
+%%% SUBFUNCTION - SelectModules_SelectAllNone
+function SelectModules_SelectAllNone(hObject,eventdata)
+
+set(get(hObject,'userdata'),'value',~get(hObject,'value')); % Button down: Value = 1
+
+%%
+%%% SUBFUNCTION - SelectModules_InvertSelection
+function SelectModules_InvertSelection(hObject,eventdata)
+
+hdl = get(hObject,'userdata');
+
+try selected_values = cell2mat(get(hdl,'value'));
+catch selected_values = get(hdl,'value');
+end
+
+for i = 1:length(hdl), 
+    set(hdl(i),'value',~get(hdl(i),'value')); 
+end

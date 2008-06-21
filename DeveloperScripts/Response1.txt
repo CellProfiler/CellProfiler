@@ -54,6 +54,7 @@ Evaluation of various classifier algorithms has indeed been heavily explored in 
 We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
 [[TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features. Reference this figure in the text where we mention features, near 'standard cytoprofiles' discussion.]]  
 [[VL: I'm not sure exactly what the reviewer means by "examination of feature space explored by different phenotypes", but as long as you do, that's enough.]]
+[[Ray: we don't either, but we're making a best guess.]]
 
 [[Question to Bjorn/Vebjorn about (a-c): here, we address the reviewer's specific queries, but are we addressing the reviewer's overall concerns adequately? Anything else we should add?]]
 
@@ -269,4 +270,4 @@ These questions have now been addressed - see response to Reviewer 1's comment 1
 
 [[TODO: send Adam C. and Riki Eggert a copy of the paper, they're interested.]]
 
-[[TODO: change decision stump to regression stump.]] 
+[[TODO: change decision stump to regression stump, and cite both Torralba as well as Friedman & Tibshirani (or whatever the GB base ref is).]] 

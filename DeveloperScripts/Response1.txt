@@ -71,8 +71,11 @@ COMMENT 2C: Moreover, a few practical but very important considerations are miss
 COMMENT 2C.1: No report on the computational performance of Classifier is mentioned.  How long does training take?  How does this scale with number of images, channels, image size, etc.?  What kinds of hardware are used for this calculation.  The authors have a very impressive compute facility at their disposal-is this required? Perhaps the application is limited by I/O, given its emphasis on large numbers of images.  Reporting these limitations is absolutely essential. 
 
 Response:
+We have added: "Training time for classifiers is quite fast (25 seconds for the 1711-example Crescent Nuclei training set on a 2.33 GHz Intel Core 2 Duo), and grows linearly with training set size and the number of features.  Evaluation of the classifier on the full [[8 million cells?]] database takes roughly 2 minutes, with the same orders of growth.  This evaluation is primarily limited by disk transfer speed, as the full data set must be read in order to score every cell.  
 
-[[TODO: Ray will write. most of the times are trivial, except for image processing, which is secondary to the paper, but we will still mention image processing briefly.]]
+Processing times to identify and measure cells in CellProfiler are measured in minutes per image, depending on the particular experimental and image analysis assays.  Cluster computing prevents this from becoming a bottleneck.  Other image analysis systems require varying amounts of processing time."
+
+[[TODO: Anne, is the above sufficient?  If so, needs a home in the text.]]
 
 
 COMMENT 2C.2: The authors have bypassed any description of cellAnalyst, in favor of delivering a separate publication on this, but simple statements like support for commercial file formats, necessary configuration, etc. would be most valuable.  Many HCS platforms have a mix of data acquisition systems-which can be used?

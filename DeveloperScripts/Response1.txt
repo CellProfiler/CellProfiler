@@ -143,6 +143,9 @@ Still, none of these safeguards addresses whether a classifier will generalize t
 [[Ray TODO: Create Suppl. Figure XXX - cross validation results: error rate vs. number of rules. Do not show sens/spec, just combined error rate or xvalidation margin. Legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.
 
 There are sens/spec figures in /imaging/analysis/PublicationDrafts/2008_ClassifyPaper/ResubmissionToNatureMethods/
+
+These are for Adam C's data sets, two batches (AC34 and AC35) of multiple plates, scored for a binucleate phenotype.  They should probably show overall error rate, or classifier margin, or optimization function from GentleBoosting, rather than sens/spec.
+
 AC34.xvalid_50rules.pdf - xvalidation on AC34
 AC35.xvalid_50rules.pdf - xvalidation on AC35
 Combined_xvalid_AC35_AC34.pdf - xvalidation on AC34+AC35

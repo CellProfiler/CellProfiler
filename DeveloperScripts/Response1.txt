@@ -273,4 +273,6 @@ These questions have now been addressed - see response to Reviewer 1's comment 1
 
 [[TODO: send Adam C. and Riki Eggert a copy of the paper, they're interested.]]
 
-[[TODO: change decision stump to regression stump, and cite both Torralba as well as Friedman & Tibshirani (or whatever the GB base ref is).]] 
+[[TODO: change decision stump to regression stump, and cite both Torralba as well as Friedman & Tibshirani (or whatever the GB base ref is).]]
+
+[[TODO: per Bjšrn's suggestions, make sure we demonstrate several screens making use of this and about to be published.]]

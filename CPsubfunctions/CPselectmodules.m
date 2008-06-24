@@ -77,7 +77,7 @@ if ReqSlid
 end
 
 %%% Create special features
-uicontrol(SelectDisplay,'Style','togglebutton', 'Value',0,'String','Select All/None',   'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[0.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_SelectAllNone);
+uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Select All/None',   'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[0.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_SelectAllNone);
 uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Invert Selection',  'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_InvertSelection);
 
 %%% Create OK and Cancel buttons

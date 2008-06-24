@@ -9,9 +9,7 @@ Major Comments
 COMMENT 1A: There is an extensive prior works in the area of automated high throughput cellular phenotype profiling using microscopy images. The statement that (past) "automated image analysis requires extensive customization to each phenotype ..." is not true. For example, unbiased sets of measurements that are not customized for any particular phenotypes were used in Boland, et al., Bioinformatics (2001), Tanaka, et. al., PLOS Biology (2005), and Loo, et al., Nature Methods (2007).
 
 Response:
-Agreed, our meaning was unclear in that sentence. We replaced the sentence with: "Automated image analysis coupled with machine learning can effectively score many phenotypes but can require significant effort to adapt to rare or subtle morphologies, particularly when positive control samples are not available."
-
-[[WAITING FOR RAY' assessment - VL: You should be explicit about in what ways the papers mentioned by the reviewer require significant effort. AC: perhaps add to the end something like, "... because, in such cases, it is often difficult to find a sufficient number of positive example cells to train the machine learning algorithm". Ray, what do you think?]]
+Agreed, our meaning was unclear in that sentence. We replaced the sentence with: "Automated image analysis coupled with machine learning can effectively score many phenotypes. However, significant effort may be required to find a sufficient number of positive example cells to train the machine learning algorithm, particularly when positive control samples are not available."
 
 
 COMMENT 1B: Further more, the authors' claim that "none has been implemented in a system proven capable of scoring millions of cells for many diverse morphologies - especially for phenotypes that are complex or subtle, without known positive controls, or present in only a small percentage of the cells in a sample". However, it appear that, as many other prior works, the proposed method also requires positive samples provided from human experts. Thus, it is unclear what do the authors mean by "without known positive controls"?
@@ -70,12 +68,16 @@ The reviewer makes an excellent point. Indeed, several other projects using Clas
 [[Eggert.psd to be pasted here (currently on imaging/analysis)]]
 (c) Adam Castereno, et al., in Riki Eggert's lab have processed a substantial proportion of images using our approach/software for a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype induced by RNA interference against Rho. 
 
+[[Anne TODO: Also do a screen in fly cells for a particular phenotype? Let's use Fly200 (Ray is finding the database and images and make a properties file, Anne does the training, we do forced choice tests and produce an error rate vs rules plot) possibly for apoptosis (though tiny nuclear fragments are filtered out during image processing) or for mitotic subphases or some other phenotypes.]]
+
 
 COMMENT 2C: Moreover, a few practical but very important considerations are missing:
 COMMENT 2C.1: No report on the computational performance of Classifier is mentioned.  How long does training take?  How does this scale with number of images, channels, image size, etc.?  What kinds of hardware are used for this calculation.  The authors have a very impressive compute facility at their disposal-is this required? Perhaps the application is limited by I/O, given its emphasis on large numbers of images.  Reporting these limitations is absolutely essential. 
 
 Response:
-We have added: "Computing a classifier, given a training set, is fast (for example, 25 seconds to generate a 50-rule classifier for the 1711-example Crescent Nuclei training set on a 2.33 GHz Intel Core 2 Duo), and grows linearly with training set size and the number of features. Evaluation of the classifier to classify all [[Ray TODO: 8 million cells?]] in the database takes roughly 2 minutes, with the same orders of growth. This evaluation is primarily limited by disk transfer speed, as the full data set must be read in order to score every cell. Image processing times to identify and measure cells in CellProfiler are currently on the order of 30 seconds to several minutes per image, depending on the particular experimental and image analysis used (for example, NN seconds per 512x512 [[(Ray TODO:size correct? What's the time for NIRHT?)]] three-channel image on a [[Ray TODO: what speed computer here?]] for the human images in this study). Cluster computing prevents this from becoming a bottleneck."
+We have added: "Computing a classifier, given a training set, is fast (for example, 25 seconds to generate a 50-rule classifier for the 1711-example Crescent Nuclei training set on a 2.33 GHz Intel Core 2 Duo), and grows linearly with training set size and the number of features. Evaluation of the classifier to classify all 8 million cells in the database takes roughly 2 minutes, with the same orders of growth. This evaluation is primarily limited by disk transfer speed, as the full data set must be read in order to score every cell. 
+
+Image processing times to identify and measure cells in CellProfiler are currently on the order of 10 seconds to several minutes per image, depending on the particular experimental and image analysis used (for example, roughly 2.5 minutes per 512 x 512 image for the three-channel on a [[Ray TODO: what speed computer here? It was node392 at Broad...]] for the human cell images in this study). Cluster computing prevents this from becoming a bottleneck."
 [[TODO Anne (after Ray adjusts the text): put this in the methods somewhere.]]
 
 
@@ -277,7 +279,5 @@ These questions have now been addressed - see response to Reviewer 1's comment 1
 [[Anne TO DO: Check whether that's correct and search this response for other places we address this (search for 'explored')]]
 
 ---
-[[TODO: Per Bjorn's suggestion, make sure claims of novelty have been properly qualified]]
-[[TODO: Check for use of 'rule' vs. 'classifier']]
-
-[[TODO: cite both Torralba as well as Friedman & Tibshirani (or whatever the GB base ref is). AC: Ray, I have the Torralba reference and this is the GentleBoosting one; if it's correct you can delete this note now: 28. Friedman, J.H., Hastie, T. & Tibshirani, R. Additive logistic regression : a statistical view of boosting. Ann. Statist. 28, 337-407 (2000).]] 
+[[Anne TODO: Per Bjorn's suggestion, make sure claims of novelty have been properly qualified]]
+[[Anne TODO: Check for use of 'rule' vs. 'classifier']]

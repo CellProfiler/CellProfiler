@@ -66,7 +66,7 @@ The reviewer makes an excellent point. Indeed, several other projects using Clas
 (b) Taio Xie, et al., in Tim Mitchison's lab have used our approach/software to complete two genome-wide RNAi screens in HeLa cells related to spindle morphology during cell division, in enhancer/suppressor screens using two levels of a Kinesin-V inhibitor. The system was trained to identify monopolar mitotic cells.
 
 [[Eggert.psd to be pasted here (currently on imaging/analysis)]]
-(c) Adam Castereno, et al., in Riki Eggert's lab have processed a substantial proportion of images using our approach/software for a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype induced by RNA interference against Rho. 
+(c) Adam Castereno, et al., in Riki Eggert's lab have processed over 100,000 images using our approach/software for a chemical screen in Drosophila Kc167 cells to identify modulators of a binucleate phenotype induced by RNA interference against Rho. 
 
 [[Anne TODO: Also do a screen in fly cells for a particular phenotype? Let's use Fly200 (Ray is finding the database and images and make a properties file, Anne does the training, we do forced choice tests and produce an error rate vs rules plot) possibly for apoptosis (though tiny nuclear fragments are filtered out during image processing) or for mitotic subphases or some other phenotypes.]]
 

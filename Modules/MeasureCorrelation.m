@@ -231,7 +231,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                             ysize = size(Image{j});
                             if ~(xsize == ysize)        % Images must be the same size for the slope measurement to make sense
                                 sizeerr = 1;
-                                error;
+                                error(['Image processing was cancelled in the ', ModuleName, ' module because the images are not the same size.']);
                             else
                             SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
                             x = Image{i}(:);

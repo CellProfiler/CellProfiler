@@ -1,11 +1,11 @@
-function LoadedImage = CPimread(CurrentFileName, idx)
+function LoadedImage = CPimread(CurrentFileName, flex_idx)
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
 % CPimread by itself returns the vaild image extensions
 % CPimread(CurrentFileName) is used for most filetypes
-% CPimread(CurrentFileName, idx) is used for 'tif,tiff,flex movies' option
-%       in LoadImages, where idx is index of a particular image within the
+% CPimread(CurrentFileName, flex_idx) is used for 'tif,tiff,flex movies' option
+%       in LoadImages, where flex_idx is index of a particular image within the
 %       file
 %
 % Developed by the Whitehead Institute for Biomedical Research.
@@ -114,7 +114,7 @@ elseif nargin == 1,
         end
     end
 elseif nargin == 2,  %% Only used for 'tif,tiff,flex movies' option in LoadImages
-    LoadedImage = CPimread_flex(CurrentFileName, idx);
+    LoadedImage = CPimread_flex(CurrentFileName, flex_idx);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -269,7 +269,7 @@ Header(setdiff(1:numel(Header),imageIdx)) = [];
 %num2str(Header(imageNums(1)).BitDepth) %possible later addition
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ScaledImage = CPimread_flex(imname, idx)
+function ScaledImage = CPimread_flex(imname, flex_idx)
 %%% Read a .flex file, with possible scaling information.  No
 %%% documentation is available, as far as I know.  Most of what is
 %%% below is based on experiments, looking at the plaintext XML in the
@@ -278,7 +278,7 @@ function ScaledImage = CPimread_flex(imname, idx)
 
 
 % First load the image...
-RawImage = imread(imname, idx);
+RawImage = imread(imname, flex_idx);
 
 % Then go back and try to get the scaling factors...
 try
@@ -307,20 +307,20 @@ try
     %%% The logic here mirrors that in FlexReader.java, part of the LOCI Bio-Formats package
     if max(ScalingFactors) > 256,
         % upgrade to 32 bits
-        ScaledImage = uint32(RawImage) * ScalingFactors(idx);
+        ScaledImage = uint32(RawImage) * ScalingFactors(flex_idx);
     elseif max(ScalingFactors) > 1,
         % upgrade to 16 bits
-        ScaledImage = uint16(RawImage) * ScalingFactors(idx);
+        ScaledImage = uint16(RawImage) * ScalingFactors(flex_idx);
     else
         if isa(RawImage, 'uint8'),
             % FlexReader.java leaves this as 8 bits, but that seems like
             % it could drop a lot of precision.  Instead, we'll upgrade to
             % 16 bits and multiply by 256, to give some room at the low
             % end of the precision scale.
-            ScaledImage = (uint16(RawImage) * 256) * ScalingFactors(idx);
+            ScaledImage = (uint16(RawImage) * 256) * ScalingFactors(flex_idx);
         else
             % We already have sufficient precision
-            ScaledImage = RawImage * ScalingFactors(idx);
+            ScaledImage = RawImage * ScalingFactors(flex_idx);
         end
     end
 

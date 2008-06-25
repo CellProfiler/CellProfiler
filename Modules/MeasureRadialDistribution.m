@@ -16,7 +16,11 @@ function handles = MeasureRadialDistribution(handles)
 % defined as the point farthest from the boundary), or another object
 % can be used as the center, an example of which would be using Nuclei
 % for centers within Cells.
-
+%
+% Features measured:      Feature Number:
+% FracAtD               |    1
+% MeanFrac              |    2
+%
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -130,8 +134,8 @@ MeanPixelFraction = FractionAtDistance ./ (NumberOfPixelsAtDistance ./ repmat(su
 
 %%% Store Measurements
 for k = 1:BinCount,
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('Intensity', 'RadialDist', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('Intensity', 'RadialDist', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
 end
 
 

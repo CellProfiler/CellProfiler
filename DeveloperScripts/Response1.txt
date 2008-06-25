@@ -59,7 +59,11 @@ Evaluation of various classifier algorithms has indeed been heavily explored in 
 
 (c) Examination of feature space explored by different phenotypes:
 We have created a Supplementary Figure [[XXX]] to facilitate examination of the feature space explored by each phenotype.
-[[Ray TO DO: Make this figure, either lumping together into ~6 categories, or a skinny bar chart of all 611 features. Reference this figure in the text where we mention features, near 'standard cytoprofiles' discussion.]]  
+
+[[Figure Legend: Comparison of the number of times features were referenced in the classifiers learned for each phenotype.  "Texture", "Intensity", and "Shape" indicate all features of the particular type, regardless of color channel.  Correlation between channels is included with the Intensity group.  These are further subdivided by which cellular compartment they are calculated within, nucleus, entire cell, or cytoplasm (cell body excluding nucleus).  "Other" includes only neighbor counts of cells and cell location within images (essentially a noise feature).
+
+TODO: Anne - is this okay?]]
+ 
 
 
 COMMENT 2B: The authors' statement that "...automated scoring of unusual phenotypes in general can now be accomplished, if accurate cytoprofiles can be generated for the cell images" doesn't seem novel.  Admittedly, many other papers from Eils, Murphy, Ellenberg & Pepperkok, and many others referenced by the authors have focused on automatic identification of human-recognized phenotypes, but Murphy's group have already established good methods for  distinguishing phenotypes based on molecular identity that were not known to be distinguishable by humans-in short classifiers can find new phenotypes.  Against this background, the authors' contention of a significant conceptual advance seems dubious. 
@@ -219,7 +223,7 @@ Done. We added units and labels to the cell cycle supplementary data, which appe
 COMMENT 3I.5: It is totally unclear how gentleboosting is used. Boosting requires ground truth and an existing classifier (as opposed to filtering, which requires only ground truth). Since the boosting is applied here as a first step of defining the classifier rules, it is unclear what classifier is used by gentleboosting (decision trees?). It should also be mentioned that the classifier used for boosting is different than the one used for the actual classification, and therefore features that are selected might not be informative for the actual classifier. Under these circumstances, it is unclear why the authors chose to use slow boosting over much faster and classifier-independent filtering.  The number of terms used by gentleboosting is also unclear. Is this number fixed or is it determined dynamically in some way? While gentleboosting assigns weights to the features, it is unclear how the tentative rule is generated.  Also, boosting is usually a computationally intensive task. A note about this issue is also required.
 
 Response:
-We have clarified which weak learner is used (regression stumps) in the GentleBoosting algorithm.  Please see our response to comment 3D.  [[Ray, is the following sentence necessary? If so, it should be integrated into the response to 3D: "The boosted classifier is made up of multiple stumps, which provides some information about relevant features, though their combination is more complex than any single feature." VL: think the sentence can be removed]] The performance of training of and scoring via the classifier is addressed in our response to Reviewer 2's comment 2D.1.  More detail is given about the rule selection via the reference to Torralba, et al. (see also response to comment 3D).  
+We have clarified which weak learner is used (regression stumps) in the GentleBoosting algorithm.  Please see our response to comment 3D.  [[Ray, is the following sentence necessary? If so, it should be integrated into the response to 3D: "The boosted classifier is made up of multiple stumps, which provides some information about relevant features, though their combination is more complex than any single feature." VL: think the sentence can be removed.  RJ: I agree, it can be dropped.]] The performance of training of and scoring via the classifier is addressed in our response to Reviewer 2's comment 2D.1.  More detail is given about the rule selection via the reference to Torralba, et al. (see also response to comment 3D).  
 
 
 COMMENT 3I.6: Page 5: "Few dozens" is a rough estimation.  How does a researcher determine the number? Usually, the performance of machine learning algorithms can be improved by using more samples for training. This trivial practice of machine learning might not be known to many biologists. To help the readers effectively use the described tool, this must be further discussed, preferably by measuring the effect of several different training-set sizes on classifier performance.
@@ -250,6 +254,8 @@ Please see our response to comment 3F.
 
 [[Ray: How about: "... for two reasons: that we expect puromycin to affect phenotype penetrance in the wild type population, and because puromycin selection culls cells where the shRNA vector failed to infect, leading to more homogeneous populations in each sample."]]
 [[AC: Ray - really, 'we expect puromycin to affect phenotype penetrance in the wild type population'? Isn't it just that 'puromycin might affect phenotype penetrance in the wild type population'?  But anyway, is that really why we did this?  I actually don't remember, but the latter reasoning makes more sense than the former - or are those two statements actually just one argument?]]
+[[RJ: Yes, we did it because it does affect some phenotypes' penetrance in the wild-type population, so that's probably sufficient.]]
+
 
 
 COMMENT 3I.9: Page 9: The statement according which Classifier can be used on full organisms such as zebrafish and C. elegans is not supported by any empirical or theorethical evidence. The authors can use some of the publicly available datasets and report on the detection rate. Unless this is done, such a statement should be left out of the manuscript.

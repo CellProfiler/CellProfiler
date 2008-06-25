@@ -305,23 +305,14 @@ try
     end
 
     %%% The logic here mirrors that in FlexReader.java, part of the LOCI Bio-Formats package
+    %%% Note: We had special considerations for 8- vs. 16-bit images, but
+    %%% this was deemed unnecessary
     if max(ScalingFactors) > 256,
         % upgrade to 32 bits
         ScaledImage = uint32(RawImage) * ScalingFactors(flex_idx);
-    elseif max(ScalingFactors) > 1,
-        % upgrade to 16 bits
-        ScaledImage = uint16(RawImage) * ScalingFactors(flex_idx);
     else
-        if isa(RawImage, 'uint8'),
-            % FlexReader.java leaves this as 8 bits, but that seems like
-            % it could drop a lot of precision.  Instead, we'll upgrade to
-            % 16 bits and multiply by 256, to give some room at the low
-            % end of the precision scale.
-            ScaledImage = (uint16(RawImage) * 256) * ScalingFactors(flex_idx);
-        else
-            % We already have sufficient precision
-            ScaledImage = RawImage * ScalingFactors(flex_idx);
-        end
+        % upgrade to 16 bits (if 8-bit)
+        ScaledImage = uint16(RawImage) * ScalingFactors(flex_idx);
     end
 
 catch

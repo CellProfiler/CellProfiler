@@ -1,32 +1,58 @@
 function img = CPimcapture( h, opt, dpi, opt2, opt3)
-% IMCAPTURE do screen captures at controllable resolution using the undocumented "hardcopy" built-in function.
+% IMCAPTURE do screen captures at controllable resolution using the 
+%   undocumented "hardcopy" built-in function.
 %
 % USAGE:
-%   IMG = IMCAPTURE(H) gets a screen capture from object H, where H is a handle to a figure, axis or an image
-%                   When H is an axis handle and OPT ~= 'all' (see below) the capture is done on
-%                   that axis alone, no matter how many more axis the Figure contains. 
+%   IMG = IMCAPTURE(H) gets a screen capture from object H, where H is a 
+%                   handle to a figure, axis or an image
+%                   When H is an axis handle and OPT ~= 'all' (see below) 
+%                   the capture is done on that axis alone, no matter how 
+%                   many more axis the Figure contains. 
 %   IMG = IMCAPTURE or IMG = IMCAPTURE([]) operates on the current figure.
-%   IMG = IMCAPTURE(H, OPT) selects one of three possible operations depending on the OPT string
-%           OPT == 'img' returns an image corresponding to the axes contents and a size determined
-%                   by the figure size.
-%           OPT == 'imgAx' returns an image corresponding to the displyed image plus its labels.
-%                   This option tries to fill a enormous gap in Matlab base which is the non availability of
-%                   an easy way of geting a raster image that respects the data original aspect ratio.
-%           OPT == 'all' returns an image with all the figure's contents and size determined by the figure size.
-%   IMG = IMCAPTURE(H,OPT,DPI) do the screen capture at DPI resolution. DPI can be either a string or numeric
-%                   If DPI is not provided, the screen capture is done at 150 dpi
-%                   If DPI = 0, returns an image that has exactly the same width and height of the original CData
-%                   You can use this, for example, to convert an indexed image to RGB.
-%                   Note, this should be equivalent to a call to GETFRAME, but maybe it fails less in
-%                   returning EXACTLY an image of the same size of CData (R13, as usual, is better than R14).
-%   IMG = IMCAPTURE(H,'img',[MROWS NCOLS]) returns an image of the size specified by [mrows ncols]
-%                   This a 10 times faster option to the use of imresize(IMG,[mrows ncols],method)
-%                   when method is either 'bilinear' or 'bicubic'. Not to
-%                   mention the memory consumption.
+%   IMG = IMCAPTURE(H, OPT) selects one of three possible operations 
+%                   depending on the OPT string.
+%           OPT == 'img' returns an image corresponding to the axes 
+%                   contents and a size determined by the figure size.
+%           OPT == 'imgAx' returns an image corresponding to the displyed 
+%                   image plus its labels. This option tries to fill a 
+%                   enormous gap in Matlab base which is the non 
+%                   availability of an easy way of geting a raster image 
+%                   that respects the data original aspect ratio.
+%           OPT == 'all' returns an image with all the figure's contents 
+%                   and size determined by the figure size.
+%   IMG = IMCAPTURE(H,OPT,DPI) do the screen capture at DPI resolution. 
+%                   DPI can be either a string or numeric. If DPI is not 
+%                   provided, the screen capture is done at 150 dpi. If 
+%                   DPI = 0, returns an image that has exactly the same 
+%                   width and height of the original CData. You can use 
+%                   this, for example, to convert an indexed image to RGB.
+%                   Note, this should be equivalent to a call to GETFRAME, 
+%                   but maybe it fails less in returning EXACTLY an image 
+%                   of the same size of CData (R13, as usual, is better 
+%                   than R14).
+%   IMG = IMCAPTURE(H,'img',[MROWS NCOLS]) returns an image of the size 
+%                   specified by [mrows ncols].
+%                   This a 10 times faster option to the use of 
+%                   imresize(IMG,[mrows ncols],method) when method is 
+%                   either 'bilinear' or 'bicubic'. Not to mention the 
+%                   memory consumption.
+%
+%   Written by Joaquim Luis (jluis@ualg.pt)
 %
 %   Please see the documentation at http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=13355
-%   for the full explnation of the code. Original author: Joaquim Luis (jluis@ualg.pt), University of Algarve
+%   for the full explnation of the code. 
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Please see the AUTHORS file for credits.
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision: 5414 $
 
 hFig = [];      hAxes = [];
 if (nargin == 0 || isempty(h)),     h = get(0,'CurrentFigure');    end

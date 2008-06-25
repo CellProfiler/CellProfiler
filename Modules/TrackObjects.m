@@ -133,19 +133,18 @@ handles.Pipeline.TrackObjects.(ObjectName).Current.(ImageName) = handles.Pipelin
 SegmentedObjectName = ['Segmented' ObjectName];
 handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage = handles.Pipeline.(SegmentedObjectName);
 %%% Saves the location of each segmented object
-handles.Pipeline.TrackObjects.(ObjectName).Current.Locations = ...
-    [handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}, ...
-     handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}];
+handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed} = ...
+    handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed};
 
 % ObjectProperties = handles.Pipeline.TrackObjects.(ObjectName);
-CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
+CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed};
 CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage;
 
 if ~(handles.Current.SetBeingAnalyzed == 1)
     %%% Extracts data from the handles structure
     %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     PrevImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.(ImageName);
-    PrevLocations = handles.Pipeline.TrackObjects.(ObjectName).Previous.Locations;
+    PrevLocations = handles.Pipeline.TrackObjects.(ObjectName).Previous.Locations{handles.Current.SetBeingAnalyzed-1};
     PrevLabels = handles.Pipeline.TrackObjects.(ObjectName).Previous.Labels;
     PrevSegImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.SegmentedImage;
     PrevHeaders = handles.Pipeline.TrackObjects.(ObjectName).Previous.Headers;
@@ -153,7 +152,7 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
     %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     CurrImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
 
-    CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations;
+    CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed};
     CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage;
 
     switch TrackMethod
@@ -193,7 +192,7 @@ if ~(handles.Current.SetBeingAnalyzed == 1)
 %     end
 
 else
-    len = length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations);
+    len = length(handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed});
     CurrLabels = 1:len;
     for i = 1:len
         CurrHeaders{i} = '';
@@ -271,6 +270,12 @@ handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_ObjectID', ...
 			    CStringObjectID);
 handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_ProgenyID', ...
 			    CStringProgenyID);
+
+%% SAVE ALL FRAMES
+handles.Pipeline.TrackObjects.(ObjectName).Labels{handles.Current.SetBeingAnalyzed} = CurrLabels;
+handles.Pipeline.TrackObjects.(ObjectName).Headers{handles.Current.SetBeingAnalyzed}  = CurrHeaders;
+handles.Pipeline.TrackObjects.(ObjectName).Locations{handles.Current.SetBeingAnalyzed}  = CurrLocations;
+%%
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%%% SUBFUNCTIONS %%%%

@@ -21,8 +21,8 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 error(nargchk(4, 6, nargin, 'string'))
 
 %% Parse inputs
-if isempty(Image), Image = ''; end
-if isempty(TextureScale), TextureScale = ''; end
+if ~exist('Image','var'), Image = ''; end
+if ~exist('TextureScale','var'), TextureScale = ''; end
 if strcmp(Category,'Intensity')
     TextureScale = '';
 elseif ~strcmp(Category,'Texture')

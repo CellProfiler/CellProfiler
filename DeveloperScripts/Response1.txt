@@ -74,13 +74,14 @@ COMMENT 2C: The authors are first-class scientists, therefore it's worth posing 
 Response:
 The reviewer makes an excellent point - indeed, several other projects using Classifier have been successful, and we have now included analysis of two additional image sets in the revised manuscript. These are different screens, with different stains, in different cell lines, from different species, and by different investigators. One is described more fully in our response to Reviewer 3's comment 3G about overfitting and how to score replicates performed on different days (please see that response below). The second is described in the following new paragraph:
 
-"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, NN genes were previously screened by RNA interference in Drosophila for a metaphase phenotype
+"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, 288 genes were previously screened by RNA interference in Drosophila for a metaphase phenotype
 
 [[this new paragraph goes just before the discussion]]
 
 
 [[Ray TODO: Process Fly200 forced choice tests from Anne & Chris]]
-[[Anne TODO: describe the results of forced choice]]
+[[Ray TODO: Find widerborst in sl03 and sl24 and see if it came up as a hit; otherwise we might need to train again and score all 5 replicates (which might also make forced-choice easier because perhaps the other slides have stronger hits)]]
+[[Anne TODO: describe the results of forced choice, once they are available.]]
 
 We should also elaborate on the screens mentioned only briefly in the text: we have assisted in the completion of several large-scale screens that probe phenotypes distinct from each other and from those described in this manuscript. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript but instead elaborate on a few of them here:
 

@@ -74,14 +74,22 @@ COMMENT 2C: The authors are first-class scientists, therefore it's worth posing 
 Response:
 The reviewer makes an excellent point - indeed, several other projects using Classifier have been successful, and we have now included analysis of two additional image sets in the revised manuscript. These are different screens, with different stains, in different cell lines, from different species, and by different investigators. One is described more fully in our response to Reviewer 3's comment 3G about overfitting and how to score replicates performed on different days (please see that response below). The second is described in the following new paragraph:
 
-"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, 288 genes were previously screened by RNA interference in Drosophila using living cell microarrays for a metaphase phenotype."
+"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, 288 genes were previously screened for a metaphase phenotype by RNA interference in Drosophila using living cell microarrays [[REF: submitted CPA paper]]. There were five replicates of the array, and each array had three replicate spots per gene, plus 256 negative control spots lacking dsRNA. In our previous work, we applied sequential gates based on four measured features of the DNA stain of each cell, to identify cells in metaphase. Defining the gates was empirical and somewhat tedious. For this study, we instead used Classifier to automatically select features and weight them to score the phenotype, while still leveraging the biologist's knowledge of the phenotype during the iterative training phase. Within [[XX]] hours (less than XX minutes hands-on time), Classifier was trained to identify metaphase nuclei and had scored the entire screen, identifying the gene Widerborst (CG5643) as the top hit, as had been the result in our original study. We confirmed the accurate scoring of images by forced-choice validation (Figure 4). Again (as in Supplementary Figure [[XXX- bakal-like]]), providing the positive control sample images directly to the machine learning algorithm was not successful to score the phenotype (Supplementary Figure [[XXX]])."
 
 [[this new paragraph goes just before the discussion]]
 
 
-[[Ray TODO: Process Fly200 forced choice tests from Anne & Chris]]
-[[Ray TODO: Find widerborst in sl03 and sl24 and see if it came up as a hit; otherwise we might need to train again and score all 5 replicates (which might also make forced-choice easier because perhaps the other slides have stronger hits)]]
-[[Anne TODO: describe the results of forced choice, once they are available.]]
+[[Ray TODO: 
+- Ray: Have someone get the images transferred over here for the other slides () 
+- Ray: Commit an adjusted properties file (svn update first)
+- Anne: Create new training set, across all five slides, and score samples
+- Ray: See if widerborst came up as a hit on at least the two slides we expect
+- Ray: Create forced choice tests for Anne & Chris
+- Ray: Do bakal-like analysis where you feed all widerborst images (from the two slides where it was a hit) as positives, and create a forced-choice test for that as well.
+- Anne & Chris: Do forced choice tests
+- Ray: Analyze forced choice tests and make Supp Figures
+- Anne: describe the results of all this in the text.
+]]
 
 We should also elaborate on the screens mentioned only briefly in the text: we have assisted in the completion of several large-scale screens that probe phenotypes distinct from each other and from those described in this manuscript. They were conducted by different investigators, in different cell types/organisms, using different image acquisition devices at different magnifications. These screens are, of course, intended for separate publication so we have not added detailed description to this manuscript but instead elaborate on a few of them here:
 
@@ -169,22 +177,9 @@ We performed additional experiments and the revised manuscript now includes the 
 
 None of these safeguards addresses whether a classifier will generalize to new experiments: classifiers trained on one experiment are unlikely to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, a new training set must be created from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicate experiments, training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation. A more robust approach is to create a training set spanning all replicates ([[Suppl. Figure YYY, Add experiments with training sets from Eggert/Castoreno (possibly also Fly200)]]). 
 
-[[Ray TODO: Write figure legend]]
+[[Ray TODO: Write figure legend. Legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.]]
 [[Anne TODO: Make into a single figure; Cross validn = a, Cross-cross validn = b]]
 
-
-Create Suppl. Figure XXX - cross validation results: error rate vs. number of rules. Do not show sens/spec, just combined error rate or xvalidation margin. Legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.
-
-There are sens/spec figures in /imaging/analysis/PublicationDrafts/2008_ClassifyPaper/ResubmissionToNatureMethods/
-
-These are for Adam C's data sets, two batches (AC34 and AC35) of multiple plates, scored for a binucleate phenotype.  They should probably show overall error rate, or classifier margin, or optimization function from GentleBoosting, rather than sens/spec.
-
-AC34.xvalid_50rules.pdf - xvalidation on AC34
-AC35.xvalid_50rules.pdf - xvalidation on AC35
-Combined_xvalid_AC35_AC34.pdf - xvalidation on AC34+AC35
-Crossvalid_AC35_AC34.pdf - xvalidation of AC34's classifier applied to AC35 and vice versa
-Randomized_xvalid_AC35_AC34.pdf - xvalidation of AC34+AC35 with randomized labels
-]]
 [[Anne TODO: put new paragraphs in the 'validation' section of Results.]]
 
 

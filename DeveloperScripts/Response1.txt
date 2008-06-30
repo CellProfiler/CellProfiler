@@ -108,7 +108,6 @@ COMMENT 2D.1: No report on the computational performance of Classifier is mentio
 
 Response:
 We have added the following to the methods: "Computing a classifier, given a training set, is fast (for example, 25 seconds to generate a 50-rule classifier for the 1711-example Crescent Nuclei training set on a 2.33 GHz Intel Core 2 Duo), and grows linearly with training set size and the number of features. Evaluation of the classifier to classify all 8 million cells in the database takes roughly 2 minutes, with the same orders of growth. This evaluation is primarily limited by disk transfer speed, as the full data set must be read in order to score every cell. Image processing times to identify and measure cells using CellProfiler are currently on the order of 10 seconds to several minutes per image, depending on the particular experimental and image analysis used (for example, roughly 2.5 minutes per three-channel 512 x 512 image on a 2.4 GHz Intel CPU with 8 Gigabytes of RAM, for the human cell images in this study). Cluster computing prevents this from becoming a bottleneck."
-[[TODO Anne: put this in the methods section at the end of Software.]]
 
 We have also added the following to the main text: "While highly dependent on the complexity of the phenotype and the scarcity of positive example cells, the entire process of training Classifier for a phenotype typically takes a few hours; of that, the hands-on time is typically less than an hour."
 

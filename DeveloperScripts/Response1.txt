@@ -74,7 +74,7 @@ COMMENT 2C: The authors are first-class scientists, therefore it's worth posing 
 Response:
 The reviewer makes an excellent point - indeed, several other projects using Classifier have been successful, and we have now included analysis of two additional image sets in the revised manuscript. These are different screens, with different stains, in different cell lines, from different species, and by different investigators. One is described more fully in our response to Reviewer 3's comment 3G about overfitting and how to score replicates performed on different days (please see that response below). The second is described in the following new paragraph:
 
-"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, 288 genes were previously screened by RNA interference in Drosophila for a metaphase phenotype
+"Lastly, we tested Classifier’s flexibility by applying it to another large-scale image set. In this experiment, 288 genes were previously screened by RNA interference in Drosophila using living cell microarrays for a metaphase phenotype."
 
 [[this new paragraph goes just before the discussion]]
 
@@ -169,7 +169,11 @@ We performed additional experiments and the revised manuscript now includes the 
 
 None of these safeguards addresses whether a classifier will generalize to new experiments: classifiers trained on one experiment are unlikely to be applicable to experiments involving different assay protocols, cellular stains, or image acquisition instrumentation. In such cases, a new training set must be created from scratch. Using our approach, the time required to do so is minimal relative to the effort involved in sample preparation and imaging for a large-scale screen. For replicate experiments, training a classifier on one replicate and applying it to another risks negatively impacting its accuracy due to undetected experimental variation. A more robust approach is to create a training set spanning all replicates ([[Suppl. Figure YYY, Add experiments with training sets from Eggert/Castoreno (possibly also Fly200)]]). 
 
-[[Ray TODO: Create Suppl. Figure XXX - cross validation results: error rate vs. number of rules. Do not show sens/spec, just combined error rate or xvalidation margin. Legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.
+[[Ray TODO: Write figure legend]]
+[[Anne TODO: Make into a single figure; Cross validn = a, Cross-cross validn = b]]
+
+
+Create Suppl. Figure XXX - cross validation results: error rate vs. number of rules. Do not show sens/spec, just combined error rate or xvalidation margin. Legend should explain briefly that per-cell and per-image error rates are related, but in a way we don't necessarily understand.
 
 There are sens/spec figures in /imaging/analysis/PublicationDrafts/2008_ClassifyPaper/ResubmissionToNatureMethods/
 

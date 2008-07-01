@@ -699,7 +699,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             SecondaryTestFigureNumber = CPfigurehandle(handles);
             CPfigure(handles,'Image',SecondaryTestFigureNumber);
             set(SecondaryTestFigureNumber,'Tag','IdSecondaryTestModeFigure',...
-                'name',['IdentifySecondary Test Display, cycle # ']);
+                'name','IdentifySecondary Test Display, cycle # ');
             CPresizefigure(ObjectOutlinesOnOrigImage,'TwoByTwo',SecondaryTestFigureNumber);
         end
         %%% If the figure window DOES exist now, then calculate and display items
@@ -713,11 +713,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             subplot(2,2,IdentChoiceNumber);
             CPimagesc(ObjectOutlinesOnOrigImage,handles);
             title(IdentChoiceList(IdentChoiceNumber));
-            
-            %%% Link the axis limits together so zoom/pan is reflected in all axes
-            if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                linkaxes(findobj(SecondaryTestFigureNumber,'type','axes'),'xy');
-            end
         end
     end
 
@@ -767,12 +762,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             subplot(2,2,4);
             CPimagesc(BothOutlinesOnOrigImage,handles);
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
-            
-            %%% Link the axis limits together so zoom/pan is reflected in all axes
-            if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                linkaxes(findobj(ThisModuleFigureNumber,'type','axes'),'xy');
-            end
-
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -185,11 +185,6 @@ if any(findobj == ThisModuleFigureNumber);
     subplot(2,2,4); 
     CPimagesc(FinalOutline,handles); 
     title([SubregionObjectName, ' Outlines']);
-        
-    %%% Link the axis limits together so zoom/pan is reflected in all axes
-    if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-        linkaxes(findobj(ThisModuleFigureNumber,'type','axes'),'xy');
-    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

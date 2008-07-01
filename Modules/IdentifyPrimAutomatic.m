@@ -1024,11 +1024,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     CPimagesc(OutlinedObjects,handles);
                     title(['Outlined ', ObjectName]);
                     
-                    %%% Link the axis limits together so zoom/pan is reflected in all axes
-                    if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                        linkaxes(findobj(ThisModuleFigureNumber,'type','axes'),'xy');
-                    end
-                    
                     %%% Report numbers
                     posx = get(hx,'Position');
                     posy = get(hy,'Position');
@@ -1189,11 +1184,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     im = CPlabel2rgb(handles,Objects);
                     CPimagesc(im,handles);
                     title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
-                    
-                     %%% Link the axis limits together so zoom/pan is reflected in all axes
-                    if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                        linkaxes(findobj(IdPrimTestModeSegmentedFigureNumber,'type','axes'),'xy');
-                    end
                 end
 
                 %%% Repeat what we've done for the segmented test mode window, now
@@ -1226,11 +1216,6 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
                     CPimagesc(OutlinedObjects,handles);
                     title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
-                    
-                    %%% Link the axis limits together so zoom/pan is reflected in all axes
-                    if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-                        linkaxes(findobj(IdPrimTestModeOutlinedFigureNumber,'type','axes'),'xy');
-                    end
                 end
             end
         end

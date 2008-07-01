@@ -14,48 +14,66 @@ function h = CPimagesc(Image,handles)
 
 %%% Displays the image.
 h = imagesc(Image);
+
+CurrentAxes = get(h,'parent');
+CurrentFig = get(CurrentAxes,'parent');
+
+%%% Link any image axis limits together so zoom/pan is reflected in all axes
+if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
+    AllAxesHandles = findobj(CurrentFig,'type','axes');
+    
+    %%% Make sure the axis limits are the same in all axes, otherwise
+    %%% linkaxes will adjust them all to the same value (which would be bad)
+    AllAxesLimits = [get(AllAxesHandles,'xlim') get(AllAxesHandles,'ylim')];
+    if size(AllAxesLimits,1) > 1,
+        AllAxesLimits = cell2mat(AllAxesLimits);
+        if size(unique(AllAxesLimits,'rows'),1) == 1,
+            linkaxes(AllAxesHandles,'xy');
+        end
+    end
+end
+
 %%% Embeds the Image tool submenu so that it appears when the user clicks
 %%% on the image. 
 set(h,'ButtonDownFcn','CPimagetool');
 
 %%% Sets the user's preference for font size, which should affect tick
 %%% labels and current and future titles.
-set(gca,'fontsize',handles.Preferences.FontSize)
+set(CurrentAxes,'fontsize',handles.Preferences.FontSize)
 
 %%% Applies the user's choice for colormap.
 if ndims(Image) == 2
     colormap(handles.Preferences.IntensityColorMap);
 end
 
-ImageHandles = findobj(gcf,'Type','Image');
-FigUserData = get(gcf,'Userdata');
+ImageHandles = findobj(CurrentFig,'Type','Image');
+FigUserData = get(CurrentFig,'Userdata');
 
-FigHandle = gcf;
 Font = handles.Preferences.FontSize;
  
-if isempty(findobj(gcf,'tag','ToggleColorR'))
+if isempty(findobj(CurrentFig,'tag','ToggleColorR')),
     uicontrol('Style', 'checkbox', ...
         'Units','normalized',...
         'Position', [.93 .6 .06 .04], ...
-        'Callback', @ToggleColor_Callback, 'parent',FigHandle, ...
+        'Callback', @ToggleColor_Callback, 'parent',CurrentFig, ...
         'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
         'max',1,'value',1,'tag','ToggleColorR','string','R');
 end
 
-if isempty(findobj(gcf,'tag','ToggleColorG'))
+if isempty(findobj(CurrentFig,'tag','ToggleColorG')),
     uicontrol('Style', 'checkbox', ...
         'Units','normalized',...
         'Position', [.93 .55 .06 .04], ...
-        'Callback', @ToggleColor_Callback, 'parent',FigHandle, ...
+        'Callback', @ToggleColor_Callback, 'parent',CurrentFig, ...
         'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
         'max',1,'value',1,'tag','ToggleColorG','string','G');
 end
 
-if isempty(findobj(gcf,'tag','ToggleColorB'))
+if isempty(findobj(CurrentFig,'tag','ToggleColorB')),
     uicontrol('Style', 'checkbox', ...
         'Units','normalized',...
         'Position', [.93 .50 .06 .04], ...
-        'Callback', @ToggleColor_Callback, 'parent',FigHandle, ...
+        'Callback', @ToggleColor_Callback, 'parent',CurrentFig, ...
         'FontSize',Font,'BackgroundColor',[.7,.7,.9],'min',0,...
         'max',1,'value',1,'tag','ToggleColorB','string','B');
 end
@@ -67,9 +85,9 @@ if isfield(FigUserData,'MyHandles')
         NDIM(i) = ndims(get(ImageHandles(i),'CData'));
     end
     if ~any(NDIM == 3)
-        delete(findobj(gcf,'Tag','ToggleColorR'))
-        delete(findobj(gcf,'Tag','ToggleColorG'))
-        delete(findobj(gcf,'Tag','ToggleColorB'))
+        delete(findobj(CurrentFig,'Tag','ToggleColorR'))
+        delete(findobj(CurrentFig,'Tag','ToggleColorG'))
+        delete(findobj(CurrentFig,'Tag','ToggleColorB'))
     end
 end
 %%

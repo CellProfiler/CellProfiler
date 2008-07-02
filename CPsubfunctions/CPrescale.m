@@ -100,8 +100,8 @@ elseif strncmpi(RescaleOption,'E',1) == 1
             LowestPixelOrig = handles.Pipeline.(fieldname);
         end
     elseif (strcmp(upper(LowestPixelOrig), 'AE') & strcmp(upper(HighestPixelOrig), 'AE'))== 1
-        LowestPixelOrig = min(min(MethodSpecificArguments));
-        HighestPixelOrig = max(max(MethodSpecificArguments));
+        LowestPixelOrig = min(min(InputImage));
+        HighestPixelOrig = max(max(InputImage));
     else
         LowestPixelOrig = str2double(LowestPixelOrig);
         HighestPixelOrig = str2double(HighestPixelOrig);

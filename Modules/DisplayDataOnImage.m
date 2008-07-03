@@ -99,7 +99,7 @@ DPIToSave = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR09 = popupmenu
 SavedImageContents = lower(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%

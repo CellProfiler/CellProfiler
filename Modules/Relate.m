@@ -118,7 +118,7 @@ drawnow
     %% Save Distance 'Features'
 
     %% Calcuate the smallest distance from each Child to their Parent
-    %% If no parent exists, then Distance = NaN
+    %% If no parent exists, then Distance = []
         
     if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
         iObj = 0;
@@ -128,21 +128,25 @@ drawnow
             %% Calculate perimeters for all parents simultaneously
             DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' ParentName{iObj}]));
             
-            for iParentsOfChildren = 1:max(ParentsOfChildren)
-                %% Calculate distance transform to perimeter of Parent objects
-                DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
-                
-                %% Get location of each child object
-                ChList = find(ParentsOfChildren == iParentsOfChildren);
-                ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
-                ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
-                roundedChLocX = round(ChildrenLocationsX);
-                roundedChLocY= round(ChildrenLocationsY);
-                idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
-                Dist = DistTrans(idx);
+            if max(ParentsOfChildren) > 0,
+                for iParentsOfChildren = 1:max(ParentsOfChildren)
+                    %% Calculate distance transform to perimeter of Parent objects
+                    DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
 
-                %% SAVE Distance to 'handles'
-                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+                    %% Get location of each child object
+                    ChList = find(ParentsOfChildren == iParentsOfChildren);
+                    ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
+                    ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
+                    roundedChLocX = round(ChildrenLocationsX);
+                    roundedChLocY= round(ChildrenLocationsY);
+                    idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
+                    Dist = DistTrans(idx);
+
+                    %% SAVE Distance to 'handles'
+                    handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+                end
+            else
+                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = [];
             end
         end
     else
@@ -159,7 +163,7 @@ drawnow
         NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
         
         %% Save Normalized Distances
-         handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',{ParentName{1}}],NormDist);
+         handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
     end
 
     %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure

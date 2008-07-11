@@ -87,7 +87,7 @@ else
     AllImageFields = fieldnames(handles.Measurements.Image);
     ImageFilenameFields = AllImageFields(strmatch('FileName', AllImageFields));
     FirstFilename = ImageFilenameFields{1};
-    NbrOfProcessedSets = length(handles.Measurements.Image.(FirstFilename))
+    NbrOfProcessedSets = length(handles.Measurements.Image.(FirstFilename));
     fprintf(fid,'Number of processed image sets: %d\n',NbrOfProcessedSets);
 end
 

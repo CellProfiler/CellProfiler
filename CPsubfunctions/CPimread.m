@@ -4,7 +4,8 @@ function LoadedImage = CPimread(CurrentFileName, flex_idx)
 %
 % CPimread by itself returns the vaild image extensions
 % CPimread(CurrentFileName) is used for most filetypes
-% CPimread(CurrentFileName, flex_idx) is used for 'tif,tiff,flex movies' option
+% CPimread(CurrentFileName, flex_idx) is used for 'tif,tiff,flex movies'
+% option
 %       in LoadImages, where flex_idx is index of a particular image within the
 %       file
 %
@@ -22,22 +23,27 @@ if nargin == 0 %returns the vaild image extensions
     LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 1,
+    % The following lines make sure that all directory separation
+    % characters follow the platform format
+    CurrentFileName = char(CurrentFileName);
+    CurrentFileName([strfind(CurrentFileName,'/') strfind(CurrentFileName,'\')]) = filesep;
+    
     %%% Handles a non-Matlab readable file format.
-    [Pathname, FileName, ext] = fileparts(char(CurrentFileName));
+    [Pathname, FileName, ext] = fileparts(CurrentFileName);
     if strcmp('.DIB', upper(ext)),
         %%% Opens this non-Matlab readable file format.  Compare to
         %%% Matlab Central file id 11096, which does the same thing.
 	%%% The DIB (Device Independent Bitmap) format is a format %%
         %%% used (mostly internally) by MS Windows.  Cellomics has
         %%% adopted it for their instruments.
-        fid = fopen(char(CurrentFileName), 'r');
+        fid = fopen(CurrentFileName, 'r');
         if (fid == -1),
-            error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
+            error(['The file ', CurrentFileName, ' could not be opened. CellProfiler attempted to open it in DIB file format.']);
         end
         A = fread(fid, 52, 'uint8=>uint8');
 	HeaderLength = from_little_endian(A(1:4));
 	if HeaderLength ~= 40
-	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with header length other than %d', char(CurrentFileName), HeaderLength));
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with header length other than %d', CurrentFileName, HeaderLength));
 	end
         Width = from_little_endian(A(5:8));
         Height = from_little_endian(A(9:12));
@@ -50,13 +56,13 @@ elseif nargin == 1,
 	if BitDepth == 16
 	  BitDepth = 12;
 	else
-	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with bit depth %d', char(CurrentFileName), BitDepth));
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with bit depth %d', CurrentFileName, BitDepth));
 	end
 
         Channels = from_little_endian(A(13:14));
 	Compression = from_little_endian(A(17:20));
 	if Compression ~= 0
-	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB compression of type %d', char(CurrentFileName), Compression));
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB compression of type %d', CurrentFileName, Compression));
 	end
 	% We have never seen a DIB file with more than one channel.
         % It seems reasonable to assume that the second channel would
@@ -67,7 +73,7 @@ elseif nargin == 1,
 	  [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
 	  if Count < (Width * Height),
 	    fclose(fid);
-	    error(['End-of-file encountered while reading ', char(CurrentFileName), '. Have you entered the proper size and number of channels for these images?']);
+	    error(['End-of-file encountered while reading ', CurrentFileName, '. Have you entered the proper size and number of channels for these images?']);
 	  end
 	  LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
 	end
@@ -84,16 +90,16 @@ elseif nargin == 1,
             %%% Read (open) the image you want to analyze and assign it to a variable,
             %%% "LoadedImage".
             %%% Opens Matlab-readable file formats.
-            LoadedImage = im2double(CPimreadZVI(char(CurrentFileName)));
+            LoadedImage = im2double(CPimreadZVI(CurrentFileName));
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', CurrentFileName, '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     elseif strcmp('.FLEX',upper(ext))
         CPwarndlg('Flex files support is still under development.  The image displayed is likely only the first image within the file')
         %% TODO: Display subplots of all images within one flex file (can
         %% happen when image double-clicked in main GUI)
         %% For now, we will just disaply the first image...
-        LoadedImage = im2double(imread(char(CurrentFileName)));
+        LoadedImage = im2double(imread(CurrentFileName));
 
     else
         try
@@ -107,10 +113,10 @@ elseif nargin == 1,
                 %%% Read (open) the image you want to analyze and assign it to a variable,
                 %%% "LoadedImage".
                 %%% Opens Matlab-readable file formats.
-                LoadedImage = im2double(imread(char(CurrentFileName)));
+                LoadedImage = im2double(imread(CurrentFileName));
             end
         catch
-            error(['Image processing was canceled because the module could not load the image "', char(CurrentFileName), '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
+            error(['Image processing was canceled because the module could not load the image "', CurrentFileName, '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     end
 elseif nargin == 2,  %% Only used for 'tif,tiff,flex movies' option in LoadImages
@@ -121,9 +127,9 @@ end
 function ImageArray = CPimreadZVI(CurrentFileName)
 
 % Open .zvi file
-fid = fopen(char(CurrentFileName), 'r');
+fid = fopen(CurrentFileName, 'r');
 if (fid == -1),
-    error(['The file ', char(CurrentFileName), ' could not be opened. CellProfiler attempted to open it in ZVI file format.']);
+    error(['The file ', CurrentFileName, ' could not be opened. CellProfiler attempted to open it in ZVI file format.']);
 end
 
 %read and store data

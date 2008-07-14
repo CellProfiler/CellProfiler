@@ -96,7 +96,7 @@ TopOrBottom = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 LeftOrRight = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Would you like to go in tile them in meander mode?
+%textVAR09 = Would you like to tile them in meander mode (adjacent tiles span the image in one direction, then the next row/column in the opposite direction )?
 %choiceVAR09 = No
 %choiceVAR09 = Yes
 MeanderMode = char(handles.Settings.VariableValues{CurrentModuleNum,9});

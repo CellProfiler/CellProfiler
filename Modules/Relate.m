@@ -118,7 +118,7 @@ drawnow
     %% Save Distance 'Features'
 
     %% Calcuate the smallest distance from each Child to their Parent
-    %% If no parent exists, then Distance = []
+    %% If no parent exists, then Distance = NaN
         
     if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
         iObj = 0;
@@ -146,7 +146,7 @@ drawnow
                     handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
                 end
             else
-                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = [];
+                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = NaN;
             end
         end
     else
@@ -163,7 +163,7 @@ drawnow
         NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
         
         %% Save Normalized Distances
-         handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
+        handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
     end
 
     %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure

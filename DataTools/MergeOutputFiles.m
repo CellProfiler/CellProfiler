@@ -155,7 +155,7 @@ if isfield(handles.Measurements.Image,'ModuleErrorFeatures')
     handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
 end
 
-CPwaitbar(1,waitbarhandle,'Saving Output. Please wait...')
+CPwaitbar(1,waitbarhandle,'Saving Output. Please wait...');
 save(fullfile(BatchPath,OutputFileName),'handles');
 close(waitbarhandle);
 CPmsgbox('Merging is completed.');

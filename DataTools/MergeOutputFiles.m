@@ -148,8 +148,12 @@ end
 if isfield(handles.Measurements.Image,'TimeElapsed')
     handles.Measurements.Image = rmfield(handles.Measurements.Image,'TimeElapsed');
 end
-handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleError');
-handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
+if isfield(handles.Measurements.Image,'ModuleError')
+    handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleError');
+end
+if isfield(handles.Measurements.Image,'ModuleErrorFeatures')
+    handles.Measurements.Image = rmfield(handles.Measurements.Image,'ModuleErrorFeatures');
+end
 
 CPwaitbar(1,waitbarhandle,'Saving Output. Please wait...')
 save(fullfile(BatchPath,OutputFileName),'handles');

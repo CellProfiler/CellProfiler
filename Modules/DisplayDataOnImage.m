@@ -222,7 +222,7 @@ else
     % destroy this one so we don't have an invisible window hanging
     % around
     if userdoesntwantwindow && ishandle(DataHandle),
-        close(DataHandle);
+        CPclosefigure(handles,CurrentModule);
     end
 end
 

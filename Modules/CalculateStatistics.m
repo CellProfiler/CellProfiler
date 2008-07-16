@@ -145,10 +145,23 @@ if LicenseStats ~= 1
     CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
+% Two possibilities: (1) We're at the end of the pipeline in an
+% interactive session, or (2) we're in the middle of batch processing.
+if isfield(handles.Current, 'BatchInfo'),
+    LastSet = handles.Current.BatchInfo.End;
+else
+	LastSet = handles.Current.NumberOfImageSets;
+end
+DoCalculateStatistics = (handles.Current.SetBeingAnalyzed == LastSet);
+
+% Special case: We're writing batch files, and this is the first cycle.
+if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && isfield(handles.Current, 'BatchInfo') && (handles.Current.SetBeingAnalyzed == 1)
+    DoCalculateStatistics = 1;
+end
+
+if DoCalculateStatistics,
     handles = CPcalculateStatistics(handles,CPjoinstrings('LoadedText', DataName),Logarithmic,FigureName,ModuleName,LicenseStats);
-    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

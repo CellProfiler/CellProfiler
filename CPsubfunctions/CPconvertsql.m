@@ -12,6 +12,8 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 %
 % $Revision$
 
+features_not_to_be_exported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
+
 per_image_names = {};
 per_object_names = {};
 
@@ -45,9 +47,11 @@ for ObjectCell = ObjectNames,
         FeatureName = FeatureCell{1};
         
         %%% Certain features are not exported
-        if any(strcmp({'Description', 'ModuleError', 'TimeElapsed'}, FeatureName)),
-            continue;
-        end
+	if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
+				features_not_to_be_exported, ...
+				'UniformOutput', false)))
+	    continue
+	end
 
         if strcmp(ObjectName, 'Image')
             per_image_names{end+1} = cleanup(CPjoinstrings('Image', FeatureName));
@@ -84,8 +88,7 @@ end
 
 
 %%% Write the SQL table description and data loader.
-if (handles.Current.SetBeingAnalyzed == 1) || ...
-        (isfield(handles.Pipeline,'DataToolExporting') && handles.Pipeline.DataToolExporting),
+if (FirstSet == 1)
     if strcmp(SQLchoice,'MySQL')
 
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
@@ -96,7 +99,7 @@ if (handles.Current.SetBeingAnalyzed == 1) || ...
         fprintf(fmain, 'CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY',TablePrefix);
 
         for i = per_image_names,
-            if strfind(i{1}, 'FileNames')
+            if strfind(i{1}, 'FileName')
                 fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, FileNameWidth);
             elseif  strfind(i{1}, 'Path'),
                 fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, PathNameWidth);
@@ -350,13 +353,11 @@ for img_idx = FirstSet:LastSet
             FeatureName = FeatureCell{1};
             
             %%% Certain features are not exported
-            Non_exported_list = {'Description'; 'ModuleError'; 'TimeElapsed'};
-            if any(cell2mat(cellfun(@strmatch, Non_exported_list,...
-                    cellstr(repmat(FeatureName,length(Non_exported_list),1)),...
-                    'UniformOutput',false)))
-                continue;
-            end
-
+	    if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
+				    features_not_to_be_exported, ...
+				    'UniformOutput', false)))
+		continue
+	    end
 
             %%% Old code checked if data for img_idx existed, but this one always should (entry should be [] if no objects).
             try

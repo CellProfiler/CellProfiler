@@ -134,6 +134,31 @@ FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 3
 
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+drawnow
+
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+
+%textVAR01 = What did you call the grouping values you loaded for each image cycle? See help for details.
+%infotypeVAR01 = datagroup
+DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu
+
+%textVAR02 = Would you like to log-transform the grouping values before attempting to fit a sigmoid curve?
+%choiceVAR02 = Yes
+%choiceVAR02 = No
+Logarithmic = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%inputtypeVAR02 = popupmenu
+
+%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added). Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
+%defaultVAR03 = Do not save
+%infotypeVAR03 = imagegroup indep
+FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+%%%VariableRevisionNumber = 3
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,22 +170,7 @@ if LicenseStats ~= 1
     CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
 end
 
-
-% Two possibilities: (1) We're at the end of the pipeline in an
-% interactive session, or (2) we're in the middle of batch processing.
-if isfield(handles.Current, 'BatchInfo'),
-    LastSet = handles.Current.BatchInfo.End;
-else
-	LastSet = handles.Current.NumberOfImageSets;
-end
-DoCalculateStatistics = (handles.Current.SetBeingAnalyzed == LastSet);
-
-% Special case: We're writing batch files, and this is the first cycle.
-if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && isfield(handles.Current, 'BatchInfo') && (handles.Current.SetBeingAnalyzed == 1)
-    DoCalculateStatistics = 1;
-end
-
-if DoCalculateStatistics,
+if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     handles = CPcalculateStatistics(handles,CPjoinstrings('LoadedText', DataName),Logarithmic,FigureName,ModuleName,LicenseStats);
 end
 

@@ -104,51 +104,51 @@ function handles = MeasureObjectAreaShape(handles)
 % HERE IS MORE DETAILED INFORMATION ABOUT THE MEASUREMENTS FOR YOUR
 % REFERENCE
 %
-% 'Area' ? Scalar; the actual number of pixels in the region. (This value 
-% might differ slightly from the value returned by bwarea, which weights 
+% 'Area' ? Scalar; the actual number of pixels in the region. (This value
+% might differ slightly from the value returned by bwarea, which weights
 % different patterns of pixels differently.)
 %
-% 'Eccentricity' ? Scalar; the eccentricity of the ellipse that has the 
-% same second-moments as the region. The eccentricity is the ratio of the 
-% distance between the foci of the ellipse and its major axis length. The 
+% 'Eccentricity' ? Scalar; the eccentricity of the ellipse that has the
+% same second-moments as the region. The eccentricity is the ratio of the
+% distance between the foci of the ellipse and its major axis length. The
 % value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
-% eccentricity is 0 is actually a circle, while an ellipse whose eccentricity 
-% is 1 is a line segment.) This property is supported only for 2-D input 
+% eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
+% is 1 is a line segment.) This property is supported only for 2-D input
 % label matrices.
 %
 % 'Solidity' -? Scalar; the proportion of the pixels in the convex hull that
-% are also in the region. Computed as Area/ConvexArea. This property is 
+% are also in the region. Computed as Area/ConvexArea. This property is
 % supported only for 2-D input label matrices.
 %
 % 'Extent' ? Scalar; the proportion of the pixels in the bounding box that
-% are also in the region. Computed as the Area divided by the area of the 
+% are also in the region. Computed as the Area divided by the area of the
 % bounding box. This property is supported only for 2-D input label matrices.
 %
-% 'EulerNumber' ? Scalar; equal to the number of objects in the region 
-% minus the number of holes in those objects. This property is supported 
-% only for 2-D input label matrices. regionprops uses 8-connectivity to 
-% compute the EulerNumber measurement. To learn more about connectivity, 
+% 'EulerNumber' ? Scalar; equal to the number of objects in the region
+% minus the number of holes in those objects. This property is supported
+% only for 2-D input label matrices. regionprops uses 8-connectivity to
+% compute the EulerNumber measurement. To learn more about connectivity,
 % see Pixel Connectivity.
 %
 % 'perimeter' ? p-element vector containing the distance around the boundary
-% of each contiguous region in the image, where p is the number of regions. 
-% regionprops computes the perimeter by calculating the distance between 
-% each adjoining pair of pixels around the border of the region. If the 
-% image contains discontiguous regions, regionprops returns unexpected 
-% results. The following figure shows the pixels included in the perimeter 
+% of each contiguous region in the image, where p is the number of regions.
+% regionprops computes the perimeter by calculating the distance between
+% each adjoining pair of pixels around the border of the region. If the
+% image contains discontiguous regions, regionprops returns unexpected
+% results. The following figure shows the pixels included in the perimeter
 % calculation for this object
-% 
-% 'MajorAxisLength' ? Scalar; the length (in pixels) of the major axis of 
+%
+% 'MajorAxisLength' ? Scalar; the length (in pixels) of the major axis of
 % the ellipse that has the same normalized second central moments as the
 % region. This property is supported only for 2-D input label matrices.
 %
 % 'MinorAxisLength' ? Scalar; the length (in pixels) of the minor axis of
-% the ellipse that has the same normalized second central moments as the 
+% the ellipse that has the same normalized second central moments as the
 % region. This property is supported only for 2-D input label matrices.
 %
-% 'Orientation' ? Scalar; the angle (in degrees ranging from -90 to 90 
+% 'Orientation' ? Scalar; the angle (in degrees ranging from -90 to 90
 % degrees) between the x-axis and the major axis of the ellipse that has the
-% same second-moments as the region. This property is supported only for 
+% same second-moments as the region. This property is supported only for
 % 2-D input label matrices.
 %
 % See also MeasureImageAreaOccupied.
@@ -233,38 +233,40 @@ end
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
 
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+
 %%% START LOOP THROUGH ALL THE OBJECTS
 for i = 1:length(ObjectNameList)
     ObjectName = ObjectNameList{i};
     if strcmp(ObjectName,'Do not use')
-	continue
+        continue
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
-    
+
     %%% Retrieves the label matrix image that contains the segmented
     %%% objects which will be measured with this module.
     LabelMatrixImage =  CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
-    
+
     %%%
     %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
     %%%
     drawnow
 
     NumObjects = max(LabelMatrixImage(:));
+    BasicFeatures = {'Area', 'Eccentricity', 'Solidity', 'Extent', ...
+        'EulerNumber', 'Perimeter', ...
+        'MajorAxisLength', 'MinorAxisLength', 'Orientation'};
     if  NumObjects > 0
 
-	%%% Get the basic shape features
-	BasicFeatures = {'Area', 'Eccentricity', 'Solidity', 'Extent', ...
-			 'EulerNumber', 'Perimeter', ...
-			 'MajorAxisLength', 'MinorAxisLength', 'Orientation'};
-	props = regionprops(LabelMatrixImage, BasicFeatures);
-	BasicFeatures(end + 1) = {'FormFactor'};
-	% Add 1 to perimeter to avoid divide by zero
-	FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);
+        %%% Get the basic shape features
+        props = regionprops(LabelMatrixImage, BasicFeatures);
+        BasicFeatures(end + 1) = {'FormFactor'}; %#ok<AGROW>
+        % Add 1 to perimeter to avoid divide by zero
+        FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);
         Basic = [cat(1,props.Area)*PixelSize^2,...
             cat(1,props.Eccentricity),...
             cat(1,props.Solidity),...
@@ -275,24 +277,24 @@ for i = 1:length(ObjectNameList)
             cat(1,props.MajorAxisLength)*PixelSize,...
             cat(1,props.MinorAxisLength)*PixelSize,...
             cat(1,props.Orientation)];
-	
-	% Save basic shape features.
-	for j=1:length(BasicFeatures)
-	    handles = CPaddmeasurements(handles, ObjectName, ...
-					['AreaShape_', BasicFeatures{j}], ...
-					Basic(:, j));
-	end
-	
-	if strcmp(ZernikeChoice,'Yes')
-	    % Get the Zernike features
-	    [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
 
-	    % Save Zernike measurements
-	    for j=1:length(ZernikeFeatures)
-		handles = CPaddmeasurements(handles, ObjectName, ...
-					    ZernikeFeatures{j}, Zernike(:,j));
-	    end
-	end
+        % Save basic shape features.
+        for j=1:length(BasicFeatures)
+            handles = CPaddmeasurements(handles, ObjectName, ...
+                ['AreaShape_', BasicFeatures{j}], ...
+                Basic(:, j));
+        end
+
+        if strcmp(ZernikeChoice,'Yes')
+            % Get the Zernike features
+            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+
+            % Save Zernike measurements
+            for j=1:length(ZernikeFeatures)
+                handles = CPaddmeasurements(handles, ObjectName, ...
+                    ZernikeFeatures{j}, Zernike(:,j));
+            end
+        end
     end
 
     %%%
@@ -300,7 +302,7 @@ for i = 1:length(ObjectNameList)
     %%%
     FontSize = handles.Preferences.FontSize;
     if any(findobj == ThisModuleFigureNumber)
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        if SetBeingAnalyzed == handles.Current.StartingImageSet
             delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
             delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
@@ -319,7 +321,7 @@ for i = 1:length(ObjectNameList)
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.25 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Basic features:','UserData',handles.Current.SetBeingAnalyzed);
-        for k = 1:10
+        for k = 1:length(BasicFeatures)
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'string',BasicFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
@@ -330,13 +332,15 @@ for i = 1:length(ObjectNameList)
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.35 0.25 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'fontweight','bold','string','First 5 Zernike features:','UserData',handles.Current.SetBeingAnalyzed);
-            for k = 1:5
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.35-0.04*k 0.25 0.03],...
-                    'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                    'fontsize',FontSize,'string',ZernikeFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
+            if NumObjects > 0
+                for k = 1:5 %% Only displaying the first 5 for space considerations
+                    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.35-0.04*k 0.25 0.03],...
+                        'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+                        'fontsize',FontSize,'string',ZernikeFeatures{k},'UserData',handles.Current.SetBeingAnalyzed);
+                end
             end
         end
-
+        %% Second column (numbers)
         % The name of the object image
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.9 0.1 0.03],...
             'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
@@ -347,24 +351,28 @@ for i = 1:length(ObjectNameList)
             'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'string',num2str(max(LabelMatrixImage(:))),'UserData',handles.Current.SetBeingAnalyzed);
 
-        % Report features, if there are any.
-        if max(LabelMatrixImage(:)) > 0
-            % Basic shape features
-            for k = 1:10
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
-            end
+        %% Report features, if there are any.
+        % Plot zeros if no objects
+        if max(LabelMatrixImage(:)) < 1 
+            Basic = zeros(length(ObjectNameList),length(BasicFeatures)+1);
+            Zernike = zeros(length(ObjectNameList),5);
+        end
+        % Basic shape features
+        for k = 1:length(Basic)
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+                'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
+        end
 
-            if strcmp(ZernikeChoice,'Yes')
-                % Zernike shape features
-                for k = 1:5
-                    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.35-0.04*k 0.1 0.03],...
-                        'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                        'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
-                end
+        if strcmp(ZernikeChoice,'Yes')
+            % Zernike shape features
+            for k = 1:5
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.35-0.04*k 0.1 0.03],...
+                    'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Zernike(:,k))),'UserData',handles.Current.SetBeingAnalyzed);
             end
         end
+
         % This variable is used to write results in the correct column
         % and to determine the correct window size
         columns = columns + 1;
@@ -382,10 +390,10 @@ Zernikeindex = [];
 ZernikeFeatures = {};
 for n = 0:9
     for m = 0:n
-	if rem(n-m,2) == 0
-	    Zernikeindex = [Zernikeindex;n m];
-	    ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike_%d_%d',n,m)});
-	end
+        if rem(n-m,2) == 0
+            Zernikeindex = [Zernikeindex;n m];
+            ZernikeFeatures = cat(2,ZernikeFeatures,{sprintf('Zernike_%d_%d',n,m)});
+        end
     end
 end
 lut = construct_lookuptable_Zernike(Zernikeindex);
@@ -399,15 +407,15 @@ for Object = 1:NumObjects
     %%% particularly tertiary objects (such as cytoplasm from
     %%% cells the exact same size as their nucleus).
     if isempty(xcord),
-	% no need to create an empty line of data, as that's
-	% already done above.
-	continue;
+        % no need to create an empty line of data, as that's
+        % already done above.
+        continue;
     end
     diameter = max((max(xcord)-min(xcord)+1),(max(ycord)-min(ycord)+1));
 
     if rem(diameter,2)== 0
-	% An odd number facilitates implementation
-	diameter = diameter + 1;
+        % An odd number facilitates implementation
+        diameter = diameter + 1;
     end
 
     % Calculate the Zernike basis functions
@@ -418,27 +426,27 @@ for Object = 1:NumObjects
     normalization = sum(r(:) <= 1);
     % this happens for diameter == 1
     if (normalization == 0.0),
-	normalization = 1.0;
+        normalization = 1.0;
     end
-    
+
     Zf = zeros(diameter,diameter,size(Zernikeindex,1));
 
     for k = 1:size(Zernikeindex,1)
-	n = Zernikeindex(k,1);
-	m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
+        n = Zernikeindex(k,1);
+        m = Zernikeindex(k,2); % m = 0,1,2,3,4,5,6,7,8, or 9
 
-	% Optimized
-	s_new = zeros(size(x));
-	exp_term = exp(sqrt(-1)*m*phi);
-	lv_index = [0 : (n-m)/2];
-	for i = 1: length(lv_index)                        
-	    lv = lv_index(i);
-	    s_new = s_new + lut(k,i) * r.^(n-2*lv).*exp_term; 
-	end
-	s = s_new;
-	
-	s(r>1) = 0;
-	Zf(:,:,k) = s / normalization;
+        % Optimized
+        s_new = zeros(size(x));
+        exp_term = exp(sqrt(-1)*m*phi);
+        lv_index = [0 : (n-m)/2];
+        for i = 1: length(lv_index)
+            lv = lv_index(i);
+            s_new = s_new + lut(k,i) * r.^(n-2*lv).*exp_term;
+        end
+        s = s_new;
+
+        s(r>1) = 0;
+        Zf(:,:,k) = s / normalization;
     end
 
     % Get image patch, with offsets to center relative to the Zernike bases
@@ -448,13 +456,13 @@ for Object = 1:NumObjects
     row_offset = floor((diameter - height) / 2) + 1;
     col_offset = floor((diameter - width) / 2) + 1;
     BWpatch(row_offset:(row_offset+height-1), col_offset:(col_offset+width-1)) = (LabelMatrixImage(min(xcord):max(xcord), min(ycord):max(ycord)) == Object);
-    
+
     % Apply Zernike functions
     try
-	Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
+        Zernike(Object,:) = squeeze(abs(sum(sum(repmat(BWpatch,[1 1 size(Zernikeindex,1)]).*Zf))))';
     catch
-	Zernike(Object,:) = 0;
-	display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
+        Zernike(Object,:) = 0;
+        display(sprintf([ObjectName,' number ',num2str(Object),' was too big to be calculated. Batch Error! (this is included so it can be caught during batch processing without quitting out of the analysis)']))
     end
 end
 
@@ -462,7 +470,7 @@ end
 %%% Subfunctions for optimized Zernike
 %%%
 
-%function previousely_calculated_value = lookuptable(lv,m,n) 
+%function previousely_calculated_value = lookuptable(lv,m,n)
 %previousely_calculated_value = (-1)^lv*fak_table(n-lv)/( fak_table(lv) * fak_table((n+m)/2-lv) * fak_table((n-m)/2-lv));
 
 % Zernikeindex =
@@ -511,24 +519,24 @@ function f = fak_table(n)
 switch n
     case 0
         f = 1;
-    case 1 
+    case 1
         f = 1;
-    case 2 
+    case 2
         f = 2;
-    case 3 
+    case 3
         f = 6;
-    case 4 
+    case 4
         f = 24;
-    case 5 
+    case 5
         f = 120;
-    case 6 
+    case 6
         f = 720;
-    case 7 
+    case 7
         f = 5040;
-    case 8 
+    case 8
         f = 40320;
-    case 9 
+    case 9
         f = 362880;
-    otherwise        
-        f = NaN; % 
+    otherwise
+        f = NaN; %
 end

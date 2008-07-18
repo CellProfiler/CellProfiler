@@ -1,10 +1,10 @@
-function CPplotmeasurement(handles,PlotType,FigHandle,ModuleFlag,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
+function CPplotmeasurement(handles,PlotType,FigHandle,ModuleFlag,Object,Feature,Object2,Feature2)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -23,323 +23,132 @@ catch
     FontSize = handles.Current.FontSize;
 end
 
-if (length(Feature) > 10) && strncmp(Feature,'Intensity_',10)
-    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Feature(11:end),' in ',Object];
-elseif (length(Feature) > 8) && strncmp(Feature,'Texture_',8)
-    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Feature(9:end),' in ',Object];
-else
-    str = [handles.Measurements.(Object).([Feature,'Features']){FeatureNo},' of ',Object];
-end
+str = pretty_feature_name(Feature, Object);
 
-str = strrep(str,'_',' ');
+if PlotType <= 3
+    UserAnswers = UserAnswersWindow(handles);
+    if ~isfield(UserAnswers, 'FirstSample')
+        return % Cancelled.
+    end
 
-% Bar graph
-if PlotType == 1
-    %%% Extract the measurement
     Measurements = handles.Measurements.(Object).(Feature);
 
-    %%% Opens a window that lets the user choose graph settings
-    %%% This function returns a UserAnswers structure with the
-    %%% information required to carry out the calculations.
-    try UserAnswers = UserAnswersWindow(handles);
-    catch CPerrordlg(lasterr)
-        return
+    % Thresholds the data if user chose other than "None".  Reassigns
+    % Measurements.
+    if ~strcmp(UserAnswers.Logical,'None')
+	msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
+	uiwait(msgfig);
+	[object_name, feature_name] = CPgetfeature(handles, 1);
+	if isempty(object_name)
+	    return
+	end
+	[Thresholdstr, Measurements, object_name, feature_name] = ...
+	    Threshold(handles, Measurements, UserAnswers, object_name, feature_name);
     end
 
-    % If Cancel button pressed, return
-    if ~isfield(UserAnswers, 'FirstSample')
-        return
-    end
+    image_numbers = UserAnswers.FirstSample:UserAnswers.LastSample;
+    nimages = length(image_numbers);
 
-    FirstImage=UserAnswers.FirstSample;
-    LastImage=UserAnswers.LastSample;
-
-    switch UserAnswers.Color
-        case 'Blue'
-            LineColor='b';
-        case 'Gray'
-            LineColor=[.7 .7 .7];
-        case 'Green'
-            LineColor='g';
-        case 'Yellow'
-            LineColor='y';
-        case 'Magenta'
-            LineColor='m';
-        case 'Cyan'
-            LineColor='c';
-        case 'Black'
-            LineColor='k';
-        case 'White'
-            LineColor='w';
-        otherwise
-            LineColor=[.7 .7 .9];
-    end
-
-    %%% Thresholds the data if user chose other than "None"
-    %%% Reassigns Measurements
-    if strcmp(UserAnswers.Logical,'None') ~= 1
-        try
-            msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
-            uiwait(msgfig);
-            [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            if isempty(ObjectTypename),return,end
-            [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch
-            rethrow(lasterr);
-            return
+    empty_image = false;
+    for image_number = image_numbers
+        if isempty(Measurements{image_number})
+            empty_image = true;
         end
     end
-
-    % Calculate mean and standard deviation
-    MeasurementsMean = zeros(length(Measurements),1);
-    MeasurementsStd = zeros(length(Measurements),1);
-
-    ImageSet=[];
-    for count=FirstImage:LastImage
-        ImageSet=[ImageSet; count];
-    end
-
-    emptymat=0;
-    GraphedSamples=[];
-    for k = 1:length(ImageSet)
-        imagenum=ImageSet(k);
-        if ~isempty(Measurements{imagenum})
-            GraphedSamples=[GraphedSamples;imagenum];
-            MeasurementsMean(k) = mean(Measurements{imagenum}(:,FeatureNo));
-            MeasurementsStd(k)  = std(Measurements{imagenum}(:,FeatureNo));
-        else
-            emptymat=1;
-        end
-    end
-
-    if emptymat
-        warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no bars). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
-        uiwait(warnfig);
-    end
-    if isempty(FigHandle)
-        FigHandle=CPfigure;
-    end
-    %%% Do the plotting
-    graph=bar(MeasurementsMean);
-    set(graph,'FaceColor',LineColor);
-
-    hold on
-    for k = 1:length(GraphedSamples)
-        plot([k k],[MeasurementsMean(k)-MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
-        plot([k-0.075,k+0.075],[MeasurementsMean(k)-MeasurementsStd(k),MeasurementsMean(k)-MeasurementsStd(k)],'k','linewidth',1)
-        plot([k-0.075,k+0.075],[MeasurementsMean(k)+MeasurementsStd(k),MeasurementsMean(k)+MeasurementsStd(k)],'k','linewidth',1)
-    end
-    hold off
-
-    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
-    if strcmp(UserAnswers.Logical,'None') ~= 1
-        ylabel(gca,{[];str;'for objects where';Thresholdstr;'mean +/- standard deviation'},'fontname','Helvetica','fontsize',FontSize+2)
-    else
-        ylabel(gca,[str,', mean +/- standard deviation'],'fontname','Helvetica','fontsize',FontSize+2)
-    end
-    axis([0 length(ImageSet)+1 ylim])
-    set(gca,'xtick',[0 1:length(ImageSet) length(ImageSet)+1]);
-    set(gca,'xticklabel',[0; ImageSet; LastImage+1]);
-    titlestr = str;
-
-    %%% Line graph
-elseif PlotType == 2
-
-    %%% Extract the measurement
-    Measurements = handles.Measurements.(Object).(Feature);
-
-    %%% Opens a window that lets the user choose graph settings
-    %%% This function returns a UserAnswers structure with the
-    %%% information required to carry out the calculations.
-    try UserAnswers = UserAnswersWindow(handles);
-    catch CPerrordlg(lasterr)
-        return
-    end
-
-    % If Cancel button pressed, return
-    if ~isfield(UserAnswers, 'FirstSample')
-        return
-    end
-
-    FirstImage=UserAnswers.FirstSample;
-    LastImage=UserAnswers.LastSample;
-
-    switch UserAnswers.Color
-        case 'Blue'
-            LineColor='b';
-        case 'Gray'
-            LineColor=[.7 .7 .7];
-        case 'Green'
-            LineColor='g';
-        case 'Yellow'
-            LineColor='y';
-        case 'Magenta'
-            LineColor='m';
-        case 'Cyan'
-            LineColor='c';
-        case 'Black'
-            LineColor='k';
-        case 'White'
-            LineColor='w';
-        otherwise
-            LineColor=[.7 .7 .9];
-    end
-
-    %%% Thresholds the data if user chose other than "None"
-    %%% Reassigns Measurements
-    if strcmp(UserAnswers.Logical,'None') ~= 1
-        try
-            msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
-            uiwait(msgfig);
-            [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            if isempty(ObjectTypename),return,end
-            [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch
-            rethrow(lasterr);
-        end
-    end
-
-    % Calculate mean and standard deviation
-    MeasurementsMean = zeros(length(Measurements),1);
-    MeasurementsStd = zeros(length(Measurements),1);
-
-    ImageSet=[];
-    for count=FirstImage:LastImage
-        ImageSet=[ImageSet; count];
-    end
-
-    emptymat=0;
-    for k = 1:length(ImageSet)
-        imagenum=ImageSet(k);
-        if ~isempty(Measurements{imagenum})
-            MeasurementsMean(k) = mean(Measurements{imagenum}(:,FeatureNo));
-            MeasurementsStd(k)  = std(Measurements{imagenum}(:,FeatureNo));
-        else
-            emptymat=1;
-        end
-    end
-
-    if emptymat
-        warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no lines). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
-        uiwait(warnfig);
-    end
-
-    %%% Plots a line chart, where the X dimensions are incremented
-    %%% from 1 to the number of measurements to be PlotTypeed, and Y is
-    %%% the measurement of interest.
-    if isempty(FigHandle)
-        FigHandle=CPfigure;
-    end
-    hold on
-    plot(1:length(MeasurementsMean), MeasurementsMean,'Color',LineColor,'LineWidth',1);
-
-    %%% Plots the Standard deviations as lines, too.
-    plot(1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,':','Color',LineColor);
-    plot(1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,':','Color',LineColor);
-    hold off
-    axis([0 length(ImageSet)+1 ylim])
-
-    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
-    if strcmp(UserAnswers.Logical,'None') ~= 1
-        ylabel(gca,{[];str;'for objects where';Thresholdstr;'mean +/- standard deviation'},'fontname','Helvetica','fontsize',FontSize+2)
-    else
-        ylabel(gca,[str,', mean +/- standard deviation'],'fontname','Helvetica','fontsize',FontSize+2)
-    end
-
-    set(gca,'xtick',[0 1:length(ImageSet) length(ImageSet)+1]);
-    set(gca,'xticklabel',[0; ImageSet; LastImage+1]);
-    titlestr = str;
-
-    %%% Scatter plot, 1 measurement
-elseif PlotType == 3
-
-    %%% Extract the measurements
-    Measurements = handles.Measurements.(Object).(Feature);
-
-    %%% Opens a window that lets the user choose graph settings
-    %%% This function returns a UserAnswers structure with the
-    %%% information required to carry out the calculations.
-    try UserAnswers = UserAnswersWindow(handles);
-    catch CPerrordlg(lasterr)
-        return
-    end
-
-    % If Cancel button pressed, return
-    if ~isfield(UserAnswers, 'FirstSample')
-        return
-    end
-
-    FirstImage=UserAnswers.FirstSample;
-    LastImage=UserAnswers.LastSample;
-
-    %%% Thresholds the data if user chose other than "None"
-    %%% Reassigns Measurements
-    if strcmp(UserAnswers.Logical,'None') ~= 1
-        try
-            msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
-            uiwait(msgfig);
-            [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-            if isempty(ObjectTypename),return,end
-            [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-        catch
-            rethrow(lasterr);
-            return
-        end
-    end
-
-
-    switch UserAnswers.Color
-        case 'Blue'
-            LineColor='b';
-        case 'Gray'
-            LineColor=[.7 .7 .7];
-        case 'Green'
-            LineColor='g';
-        case 'Yellow'
-            LineColor='y';
-        case 'Magenta'
-            LineColor='m';
-        case 'Cyan'
-            LineColor='c';
-        case 'Black'
-            LineColor='k';
-        case 'White'
-            LineColor='w';
-        otherwise
-            LineColor=[.7 .7 .9];
-    end
-
-    ImageSet=[];
-    for count=FirstImage:LastImage
-        ImageSet=[ImageSet;count];
-    end
-
-    emptymat=0;
-    for k = 1:length(ImageSet)
-        imagenum=ImageSet(k);
-        if isempty(Measurements{imagenum})
-            emptymat=1;
-        end
-    end
-
-    if emptymat
+    if empty_image
         warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no data points). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
         uiwait(warnfig);
     end
+    
+    xticklabels = num2cell([0; image_numbers'; 0]);
+    xticklabels{1} = '';
+    xticklabels{end} = '';
+end
+
+if PlotType <= 2
+    means = zeros(nimages, 1);
+    stds = zeros(nimages, 1);
+
+    for i = 1:nimages
+	image_number = image_numbers(i);
+	if ~isempty(Measurements{image_number})
+	    means(i) = mean(Measurements{image_number});
+	    stds(i) = std(Measurements{image_number});
+	end
+    end
+end
+
+if PlotType == 1
+    % Bar graph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     if isempty(FigHandle)
         FigHandle=CPfigure;
     end
-    %%% Plot
+
+    graph = bar(means);
+    set(graph, 'FaceColor', LineColor(UserAnswers.Color));
+
     hold on
-    for k = FirstImage:LastImage
+    for k = 1:length(image_numbers)
+        plot([k k],[means(k)-stds(k),means(k)+stds(k)],'k','linewidth',1)
+        plot([k-0.075,k+0.075],[means(k)-stds(k),means(k)-stds(k)],'k','linewidth',1)
+        plot([k-0.075,k+0.075],[means(k)+stds(k),means(k)+stds(k)],'k','linewidth',1)
+    end
+    hold off
+
+    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
+    if strcmp(UserAnswers.Logical,'None') ~= 1
+        ylabel(gca,{[];str;'for objects where';Thresholdstr;'mean +/- standard deviation'},'fontname','Helvetica','fontsize',FontSize+2)
+    else
+        ylabel(gca,[str,', mean +/- standard deviation'],'fontname','Helvetica','fontsize',FontSize+2)
+    end
+    axis([0 length(image_numbers)+1 ylim])
+    set(gca,'xtick',[0 1:length(image_numbers) length(image_numbers)+1]);
+    set(gca,'xticklabel', xticklabels);
+    titlestr = str;
+
+elseif PlotType == 2
+    % Line graph %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if isempty(FigHandle)
+        FigHandle=CPfigure;
+    end
+    hold on
+    plot(1:nimages, means, 'Color', LineColor(UserAnswers.Color), 'LineWidth', 1);
+
+    %%% Plots the Standard deviations as lines, too.
+    plot(1:nimages, means-stds, ':', 'Color', LineColor(UserAnswers.Color));
+    plot(1:nimages, means+stds, ':', 'Color', LineColor(UserAnswers.Color));
+    hold off
+    axis([0 nimages+1 ylim])
+
+    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
+    if strcmp(UserAnswers.Logical,'None') ~= 1
+        ylabel(gca,{[];str;'for objects where';Thresholdstr;'mean +/- standard deviation'},'fontname','Helvetica','fontsize',FontSize+2)
+    else
+        ylabel(gca,[str,', mean +/- standard deviation'],'fontname','Helvetica','fontsize',FontSize+2)
+    end
+
+    set(gca,'xtick',[0 1:nimages nimages+1]);
+    set(gca,'xticklabel', xticklabels);
+    titlestr = str;
+
+elseif PlotType == 3
+    % Scatter plot, 1 measurement %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    if isempty(FigHandle)
+        FigHandle=CPfigure;
+    end
+
+    hold on
+    for k = UserAnswers.FirstSample:UserAnswers.LastSample
         if ~isempty(Measurements{k})
-            plot(k*ones(length(Measurements{k}(:,FeatureNo))),Measurements{k}(:,FeatureNo),'.k','color',LineColor)
-            plot(k,mean(Measurements{k}(:,FeatureNo)),'.r','Markersize',20)
+            plot(k*ones(length(Measurements{k})), Measurements{k}, '.k', 'color', LineColor(UserAnswers.Color))
+            plot(k,mean(Measurements{k}), '.r', 'Markersize', 20)
         end
     end
     hold off
-    axis([0 length(ImageSet)+1 ylim])
+    axis([0 nimages+1 ylim])
 
     xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
     if strcmp(UserAnswers.Logical,'None') ~= 1
@@ -347,92 +156,49 @@ elseif PlotType == 3
     else
         ylabel(gca,str,'fontname','Helvetica','fontsize',FontSize+2)
     end
-    set(gca,'xtick',[0 1:length(ImageSet) length(ImageSet)+1]);
-    set(gca,'xticklabel',[0; ImageSet; LastImage+1]);
+    set(gca,'xtick',[0 1:nimages nimages+1]);
+    set(gca,'xticklabel', xticklabels);
     titlestr = str;
 
-    %%% Scatter plot, 2 measurements
 elseif PlotType == 4
+    % Scatter plot, 2 measurements %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    %%% Extract the measurements
-    % Measurements for X axis
     Measurements1 = handles.Measurements.(Object).(Feature);
-    % Measurements for Y axis
     Measurements2 = handles.Measurements.(Object2).(Feature2);
 
     if ModuleFlag == 0
-        %%% Calculates some values for the next dialog box.
-        TotalNumberImageSets = length(Measurements1);
-        TextTotalNumberImageSets = num2str(TotalNumberImageSets);
-
-        %%% Opens a window that lets the user choose graph settings
-        %%% This function returns a UserAnswers structure with the
-        %%% information required to carry out the calculations.
-        try UserAnswers = UserAnswersWindow(handles);
-        catch CPerrordlg(lasterr)
-            return
-        end
-
-        % If Cancel button pressed, return
+        UserAnswers = UserAnswersWindow(handles);
         if ~isfield(UserAnswers, 'FirstSample')
-            return
+            return % Cancelled.
         end
-
-        FirstImage=UserAnswers.FirstSample;
-        LastImage=UserAnswers.LastSample;
 
         %%% Thresholds the data if user chose other than "None"
         %%% Reassigns Measurements
-        if strcmp(UserAnswers.Logical,'None') ~= 1
-            try
-                msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
-                uiwait(msgfig);
-                [ObjectTypename,FeatureType,FeatureNum] = CPgetfeature(handles);
-                if isempty(ObjectTypename),return,end
-                [Thresholdstr2,Measurements2,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements2,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-                [Thresholdstr1,Measurements1,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements1,UserAnswers,ObjectTypename,FeatureType,FeatureNum);
-            catch
-                rethrow(lasterr);
-                return
-            end
-        end
-
-
-        switch UserAnswers.Color
-            case 'Blue'
-                LineColor='b';
-            case 'Gray'
-                LineColor=[.7 .7 .7];
-            case 'Green'
-                LineColor='g';
-            case 'Yellow'
-                LineColor='y';
-            case 'Magenta'
-                LineColor='m';
-            case 'Cyan'
-                LineColor='c';
-            case 'Black'
-                LineColor='k';
-            case 'White'
-                LineColor='w';
-            otherwise
-                LineColor=[.7 .7 .9];
+        if ~strcmp(UserAnswers.Logical,'None')
+	    msgfig=CPmsgbox('In the following dialog, please select the measurements that the original measurements will be thresholded on.');
+	    uiwait(msgfig);
+	    [object_name, feature_name] = CPgetfeature(handles, 1);
+	    if isempty(object_name)
+		return
+	    end
+	    [Thresholdstr2,Measurements2,object_name,feature_name] = Threshold(handles,Measurements2,UserAnswers,object_name,feature_name);
+	    [Thresholdstr1,Measurements1,object_name,feature_name] = Threshold(handles,Measurements1,UserAnswers,object_name,feature_name);
         end
 
         if isempty(FigHandle)
             FigHandle=CPfigure;
         end
-        %%% Plot
+
         hold on
-        emptymat=0;
-        for k = FirstImage:LastImage
+        empty_image = false;
+        for k = UserAnswers.FirstSample:UserAnswers.LastSample
             if size(Measurements1{k},1) ~= size(Measurements2{k})
                 error('The number of objects for the chosen measurements does not match.')
             end
-            if ~isempty(Measurements1{k}) & ~isempty(Measurements2{k})
-                plot(Measurements1{k}(:,FeatureNo),Measurements2{k}(:,FeatureNo2),'.k', 'color', LineColor)
+            if ~isempty(Measurements1{k}) && ~isempty(Measurements2{k})
+                plot(Measurements1{k},Measurements2{k},'.k', 'color', LineColor(UserAnswers.Color))
             else
-                emptymat=1;
+                empty_image = true;
             end
         end
         hold off
@@ -442,34 +208,26 @@ elseif PlotType == 4
             FigHandle=CPfigure;
         end
         hold on
-        emptymat=0;
+        empty_image = false;
         for k = 1:length(Measurements1)
             if size(Measurements1{k},1) ~= size(Measurements2{k})
                 error('The number of objects for the chosen measurements does not match.')
             end
             if ~isempty(Measurements1{k})
-                plot(Measurements1{k}(:,FeatureNo),Measurements2{k}(:,FeatureNo2),'.k')
+                plot(Measurements1{k}, Measurements2{k}, '.k')
             else
-                emptymat=1;
+                empty_image = true;
             end
         end
         hold off
     end
 
-    if emptymat
+    if empty_image
         warnfig=CPwarndlg('There is an empty matrix in your measurement data, so a portion of the measurements will not be taken into account for the graph. This may affect the display of the graph (eg. fewer/no bars). This probably occurred because your custom-chosen data threshold was too stringent. You may consider trying a more lenient threshold.');
         uiwait(warnfig);
     end
 
-    if (length(Feature2) > 10) && strncmp(Feature2,'Intensity_',10)
-        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ',Feature2(11:end), ' in ',Object2];
-    elseif (length(Feature2) > 8) & strncmp(Feature2,'Texture_',8)
-        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ',Feature2(9:end), ' in ',Object2];
-    else
-        str2 = [handles.Measurements.(Object2).([Feature2,'Features']){FeatureNo2},' of ', Object2];
-    end
-
-    str2 = strrep(str2,'_',' ');
+    str2 = pretty_feature_name(Feature2, Object2);
 
     if ModuleFlag == 0 && strcmp(UserAnswers.Logical,'None') ~= 1
         xlabel(gca,{str;'for objects where';Thresholdstr1;[]},'fontsize',FontSize+2,'fontname','Helvetica')
@@ -648,16 +406,14 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Thresholdstr,Measurements,ObjectTypename,FeatureType,FeatureNum] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType,FeatureNum)
+function [Thresholdstr,Measurements,ObjectTypename,FeatureType] = Threshold(handles,Measurements,UserAnswers,ObjectTypename,FeatureType)
 
 
-if isempty(ObjectTypename),return,end
-MeasurementToThresholdValueOnName = cat(2,handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNum},' of ',ObjectTypename);
-tmp = handles.Measurements.(ObjectTypename).(FeatureType);
-MeasurementToThresholdValueOn = cell(length(tmp),1);
-for k = 1:length(tmp)
-    MeasurementToThresholdValueOn{k} = tmp{k}(:,FeatureNum);
+if isempty(ObjectTypename)
+    return
 end
+MeasurementToThresholdValueOnName = pretty_feature_name(FeatureType, ObjectTypename);
+MeasurementToThresholdValueOn = handles.Measurements.(ObjectTypename).(FeatureType);
 
 ArraySize=size(Measurements{1,1});
 NumFeatures=ArraySize(2);
@@ -682,85 +438,60 @@ for ImageNumber = 1:NumberOfImages
 
     %%% Applies the specified ThresholdValue and gives a cell
     %%% array as output.
-    if strcmp(UserAnswers.Logical,'>') == 1
-        newmat=[];
-        boolcol=(ListOfMeasurements{CompressedImageNumber,2} > UserAnswers.ThresholdVal);
-        for col=1:NumFeatures
-            datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
-            newcol=[];
-            for row=1:length(boolcol)
-                if boolcol(row) == 1
-                    newcol=[newcol; datacol(row)];
-                end
-            end
-
-            newmat=[newmat newcol];
-        end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;
-    elseif strcmp(UserAnswers.Logical,'>=') == 1
-        newmat=[];
-        boolcol=(ListOfMeasurements{CompressedImageNumber,2} >= UserAnswers.ThresholdVal);
-        for col=1:NumFeatures
-            datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
-            newcol=[];
-            for row=1:length(boolcol)
-                if boolcol(row) == 1
-                    newcol=[newcol; datacol(row)];
-                end
-            end
-
-            newmat=[newmat newcol];
-        end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;
-    elseif strcmp(UserAnswers.Logical,'<') == 1
-        newmat=[];
-        boolcol=(ListOfMeasurements{CompressedImageNumber,2} < UserAnswers.ThresholdVal);
-        for col=1:NumFeatures
-            datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
-            newcol=[];
-            for row=1:length(boolcol)
-                if boolcol(row) == 1
-                    newcol=[newcol; datacol(row)];
-                end
-            end
-
-            newmat=[newmat newcol];
-        end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;
-    elseif strcmp(UserAnswers.Logical,'<=') == 1
-        newmat=[];
-        boolcol=(ListOfMeasurements{CompressedImageNumber,2} <= UserAnswers.ThresholdVal);
-        for col=1:NumFeatures
-            datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
-            newcol=[];
-            for row=1:length(boolcol)
-                if boolcol(row) == 1
-                    newcol=[newcol; datacol(row)];
-                end
-            end
-
-            newmat=[newmat newcol];
-        end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;
-    else
-        newmat=[];
-        boolcol=(ListOfMeasurements{CompressedImageNumber,2} == UserAnswers.ThresholdVal);
-        for col=1:NumFeatures
-            datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
-            newcol=[];
-            for row=1:length(boolcol)
-                if boolcol(row) == 1
-                    newcol=[newcol; datacol(row)];
-                end
-            end
-
-            newmat=[newmat newcol];
-        end
-        OutputMeasurements{CompressedImageNumber,1} = newmat;
+    operators = { @gt, @ge, @lt, @le, @eq };
+    operator = operators{find(strcmp(UserAnswers.Logical, ...
+				     { '>', '>=', '<', '<=' }))};
+    newmat=[];
+    boolcol = operator(ListOfMeasurements{CompressedImageNumber,2}, ...
+		       UserAnswers.ThresholdVal);
+    for col=1:NumFeatures
+	datacol=ListOfMeasurements{CompressedImageNumber,1}(:,col);
+	newcol=[];
+	for row=1:length(boolcol)
+	    if boolcol(row) == 1
+		newcol=[newcol; datacol(row)];
+	    end
+	end
+	
+	newmat=[newmat newcol];
     end
+    OutputMeasurements{CompressedImageNumber,1} = newmat;
 
     %%% Increments the CompressedImageNumber.
     CompressedImageNumber = CompressedImageNumber + 1;
 end
 
 Measurements=OutputMeasurements';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function lc = LineColor(color)
+switch color
+ case 'Blue'
+  lc = 'b';
+ case 'Gray'
+  lc = [.7 .7 .7];
+ case 'Green'
+  lc = 'g';
+ case 'Yellow'
+  lc = 'y';
+ case 'Magenta'
+  lc = 'm';
+ case 'Cyan'
+  lc = 'c';
+ case 'Black'
+  lc = 'k';
+ case 'White'
+  lc = 'w';
+ otherwise
+  lc = [.7 .7 .9];
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function str = pretty_feature_name(feature_name, object_name)
+[feature_type, feature_subtype, image_name] = ...
+    strread(feature_name, '%s%s%s', 'delimiter', '_');
+if strcmp(feature_type, 'Intensity') || strcmp(feature_type, 'Texture')
+    str = sprintf('%s of %s in %s', char(feature_subtype), char(image_name), char(object_name));
+else
+    str = sprintf('%s of %s', strrep(char(feature_name), '_', ' '), char(object_name));
+end

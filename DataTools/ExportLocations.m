@@ -29,14 +29,16 @@ function ExportLocations(handles)
 if RawFileName == 0
     return
 end
-load(fullfile(RawPathname, RawFileName));
-
-if ~exist('handles','var')
-    CPerrordlg('This is not a CellProfiler output file.');
+%%% Load the specified CellProfiler output file
+try
+    temp = load(fullfile(RawPathname, RawFileName));
+    handles = CP_convert_old_measurements(temp.handles);
+catch
+    CPerrordlg(['Unable to load file ''', fullfile(RawPathname, RawFileName), ''' (possibly not a CellProfiler output file).'])
     return
 end
 
-%%% Quick check if it seems to be a CellProfiler file or not
+%%% Quick check
 if ~isfield(handles,'Measurements')
     CPerrordlg('The selected file does not contain any measurements.')
     return
@@ -66,8 +68,9 @@ end
 
 ObjectTypename = MeasFieldnames{Selection};
 
-if isfield(handles.Measurements.(ObjectTypename),'Location')
-    Locations = handles.Measurements.(ObjectTypename).Location;
+if isfield(handles.Measurements.(ObjectTypename),'Location_Center_X')
+    Locations_X = handles.Measurements.(ObjectTypename).Location_Center_X{1};
+    Locations_Y = handles.Measurements.(ObjectTypename).Location_Center_Y{1};
 else
     CPerrordlg('The object you have chosen does not have location measurements.');
     return
@@ -126,9 +129,15 @@ if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
 
     Fields=fieldnames(handles.Measurements.Image);
     GridList={};
+    LastGridName = '';
     for i = 1:length(Fields)
-        if strcmp(Fields{i}(end-3:end),'Info')
-            GridList{end+1}=Fields{i}; %#ok Ignore MLint
+        if findstr(Fields{i},'DefinedGrid') == 1,
+            delims = findstr('_', Fields{i});
+            GridName = Fields{i}(delims(1):delims(end));
+            if ~strcmp(GridName, LastGridName),
+                GridList{end+1}=GridName; %#ok Ignore MLint
+                LastGridName = GridName;
+            end
         end
     end
 
@@ -138,26 +147,27 @@ if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
             'PromptString','Select grid to base grid correction on',...
             'CancelString','Cancel',...
             'SelectionMode','single');
-        GridToBaseCorrectionOn=handles.Measurements.Image.(GridList{Selection}){1};
-        GridInfo.XLocationOfLowestXSpot = GridToBaseCorrectionOn(1);
-        GridInfo.YLocationOfLowestYSpot = GridToBaseCorrectionOn(2);
-        GridInfo.XSpacing = GridToBaseCorrectionOn(3);
-        GridInfo.YSpacing = GridToBaseCorrectionOn(4);
-        GridInfo.Rows = GridToBaseCorrectionOn(5);
-        GridInfo.Columns = GridToBaseCorrectionOn(6);
-        GridInfo.TotalHeight = GridToBaseCorrectionOn(7);
-        GridInfo.TotalWidth = GridToBaseCorrectionOn(8);
-        if GridToBaseCorrectionOn(9) == 1
+
+        GridName = ['DefinedGrid_' GridList{Selection}];
+        for i = 1:length(Fields)
+            if findstr(Fields{i},GridName) == 1,
+                delims = findstr('_', Fields{i});
+                FeatureName = Fields{i}(delims(end):end);
+                Gridinfo.(FeatureName) = handles.Measurements.Image.(GridName){1};
+            end
+        end
+
+        if GridInfo.LeftOrRightNum == 1
             GridInfo.LeftOrRight = 'Left';
         else
             GridInfo.LeftOrRight = 'Right';
         end
-        if GridToBaseCorrectionOn(10) == 1
+        if GridInfo.TopOrBottomNum == 1
             GridInfo.TopOrBottom = 'Top';
         else
             GridInfo.TopOrBottom = 'Bottom';
         end
-        if GridToBaseCorrectionOn(11) == 1
+        if GridInfo.RowsOrColumnsNum == 1
             GridInfo.RowsOrColumns = 'Rows';
         else
             GridInfo.RowsOrColumns = 'Columns';
@@ -165,15 +175,15 @@ if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
         Grid = CPmakegrid(GridInfo);
         VertLinesX = Grid.VertLinesX;
         HorizLinesY = Grid.HorizLinesY;
-        EntireGridRows = GridToBaseCorrectionOn(5);
-        EntireGridCols = GridToBaseCorrectionOn(6);
+        EntireGridRows = GridInfo.Rows;
+        EntireGridCols = GridInfo.Cols;
     else
-        error('Can''t do grid correction.');
+        error('Can''t do grid correction.  No grid info defined (use DefineGrid module).');
     end
 
     if strcmpi(GridChoice,'Yes')
         try
-            ObjectAreas = handles.Measurements.(ObjectTypename).AreaShape{1}(:,1);
+            ObjectAreas = handles.Measurements.(ObjectTypename).AreaShape_Area{1};
         catch
             CPerrordlg('The object you have chosen does not have Area measurements.');
         end
@@ -204,8 +214,8 @@ if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
             AcceptableAnswers = 1;
         end
 
-        OldXLocations = reshape(Locations{1}(:,1),EntireGridCols,EntireGridRows)';
-        OldYLocations = reshape(Locations{1}(:,2),EntireGridCols,EntireGridRows)';
+        OldXLocations = reshape(Locations_X,EntireGridCols,EntireGridRows)';
+        OldYLocations = reshape(Locations_Y,EntireGridCols,EntireGridRows)';
         OldObjectAreas = reshape(ObjectAreas,EntireGridCols,EntireGridRows)';
 
         for i = 1:(EntireGridRows/SubGridRows)
@@ -259,31 +269,28 @@ if strcmpi(MeanderOption,'Meander') || strcmpi(GridChoice,'Yes')
             end
         end
 
-        NewLocations{1}(:,1) = reshape(NewXLocations',1,[]);
-        NewLocations{1}(:,2) = reshape(NewYLocations',1,[]);
-
-        Locations = NewLocations;
+        Locations_X = reshape(NewXLocations',1,[]);
+        Locations_Y = reshape(NewYLocations',1,[]);
     end
 
     if strcmpi(MeanderOption,'Meander')
         for i = 2:2:EntireGridRows
-            Locations{1}((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:)=flipud(Locations{1}((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:));
+            Locations_X((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:)=flipud(Locations_X((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:));
+            Locations_Y((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:)=flipud(Locations_Y((EntireGridCols*(i-1)+1):EntireGridCols*(i-1)+EntireGridCols,:));
         end
     end
 end
 
-for ImageNumber = 1:length(Locations)
-    filename = [ObjectTypename,'_Locations_Image_',num2str(ImageNumber),'.csv'];
-    fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,filename),'w');
-    if fid == -1
-        CPerrordlg(sprintf('Cannot create the output file %s. There might be another program using a file with the same name.',filename));
-        return
-    end
-    FixedLocations = Locations{ImageNumber}*PixelUnits;
-    FixedLocations(:,1) = FixedLocations(:,1) - (FixedLocations(1,1)-FirstSpotX);
-    FixedLocations(:,2) = FixedLocations(:,2) - (FixedLocations(1,2)-FirstSpotY);
-    for ObjectNumber = 1:size(Locations{ImageNumber},1)
-        fprintf(fid,[num2str(round(FixedLocations(ObjectNumber,1))),',',num2str(round(FixedLocations(ObjectNumber,2))),'\n']);
-    end
-    fclose(fid);
+filename = [ObjectTypename,'_Locations_Image_1.csv'];
+fid = fopen(fullfile(handles.Current.DefaultOutputDirectory,filename),'w');
+if fid == -1
+    CPerrordlg(sprintf('Cannot create the output file %s.',filename));
+    return
 end
+FixedLocations = [Locations_X*PixelUnits Locations_Y*PixelUnits];
+FixedLocations(:,1) = FixedLocations(:,1) - (FixedLocations(1,1)-FirstSpotX);
+FixedLocations(:,2) = FixedLocations(:,2) - (FixedLocations(1,2)-FirstSpotY);
+for ObjectNumber = 1:size(FixedLocations,1)
+    fprintf(fid,[num2str(round(FixedLocations(ObjectNumber,1))),',',num2str(round(FixedLocations(ObjectNumber,2))),'\n']);
+end
+fclose(fid);

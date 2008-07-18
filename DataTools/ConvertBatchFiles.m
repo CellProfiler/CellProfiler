@@ -65,31 +65,28 @@ files = files(selection);
 
 %%% Open the files, remove empty entries in the handles.Measurements structure
 %%% and store the files.
-waitbarhandle = waitbar(0,'');
+waitbarhandle = CPwaitbar(0,'');
 for fileno = 1:length(files)
     waitbar(fileno/length(files),waitbarhandle,sprintf('Converting %s.',files{fileno}));drawnow
-    load(fullfile(Pathname, files{fileno}));
+    try
+        temp = load(fullfile(Pathname, files{fileno}));
+        handles = temp.handles;
+    catch
+        ErrorMessage = lasterr;
+        CPerrordlg(['An error occurred in ConvertBatchFiles tool loading ', fullfile(Pathname, files{fileno}), ' : ', ErrorMessage(30:end)]);
+        return
+    end
+
+    % Check that this is actually the output of a batch processing run.
+    if ~ isfield(handles.Current, 'BatchInfo')
+        continue
+    end
+
     firstfields = fieldnames(handles.Measurements);
     for i = 1:length(firstfields)
         secondfields = fieldnames(handles.Measurements.(firstfields{i}));
         for j = 1:length(secondfields)
-            if iscell(handles.Measurements.(firstfields{i}).(secondfields{j}))
-                index = ~cellfun('isempty',handles.Measurements.(firstfields{i}).(secondfields{j}));
-                if sum(index==0) > 0       % There exist empty cells, remove them
-                    index(1) = 0;          % First set is a dummy set
-                    handles.Measurements.(firstfields{i}).(secondfields{j}) = ...
-                        handles.Measurements.(firstfields{i}).(secondfields{j})(index);
-                    %%% Remove first image cycle data from the first batch
-                    %%% file.
-                elseif handles.Current.BatchInfo.Start == 2
-                    if ~(~isempty(strfind(secondfields{j},'Features')) || ~isempty(strfind(secondfields{j},'Text')) || ...
-                            ~isempty(strfind(secondfields{j},'ModuleError')))
-                        index(1) = 0;
-                        handles.Measurements.(firstfields{i}).(secondfields{j}) = ...
-                            handles.Measurements.(firstfields{i}).(secondfields{j})(index);
-                    end
-                end
-            end
+            handles.Measurements.(firstfields{i}).(secondfields{j}) = handles.Measurements.(firstfields{i}).(secondfields{j})(handles.Current.BatchInfo.Start:handles.Current.BatchInfo.End);
         end
     end
     save(fullfile(Pathname,['Converted',files{fileno}]),'handles');

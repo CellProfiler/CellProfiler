@@ -108,4 +108,7 @@ else
         end
     end
     set(FigHandle,'Color',[0.7 0.7 0.9],'BackingStore','off');
+    % force an axes creation
+    q = gca;
+    title('', 'Interpreter', 'none');
 end

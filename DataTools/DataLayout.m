@@ -26,34 +26,41 @@ function DataLayout(handles)
 % $Revision$
 
 %%% Ask the user to choose the file from which to extract measurements.
-[RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
-if RawFileName == 0
+[FileName, Pathname] = CPuigetfile('*.mat', 'Select the measurements file',handles.Current.DefaultOutputDirectory);
+if FileName == 0
     return
 end
-load(fullfile(RawPathname, RawFileName));
+try
+    temp = load(fullfile(Pathname, FileName));
+    handles = CP_convert_old_measurements(temp.handles);
+catch
+    CPerrordlg(['Unable to load file ''', fullfile(Pathname, FileName), ''' (possibly not a CellProfiler output file).'])
+    return
+end
 
 % Ask the user for the feature
 try
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    [ObjectName,FeatureName] = CPgetfeature(handles);
 catch
     ErrorMessage = lasterr;
     CPerrordlg(['An error occurred in the DataLayout Data Tool. ' ErrorMessage(30:end)]);
     return
 end
-if isempty(ObjectTypename),return,end
+if isempty(ObjectName),return,end
 
 % Get the measurements cell array
-CellArray = handles.Measurements.(ObjectTypename).(FeatureType);
+RawMeasurements = handles.Measurements.(ObjectName).(FeatureName);
 
 % Extract the selected feature and calculate the mean
-Measurements = zeros(length(CellArray),1);
+Measurements = zeros(length(RawMeasurements),1);
 try
-    for k = 1:length(CellArray)
-        Measurements(k) = mean(CellArray{k}(:,FeatureNo));
+    for k = 1:length(RawMeasurements)
+        Measurements(k) = mean(RawMeasurements{k});
     end
 catch
-     CPerrordlg('use the data tool MergeOutputFiles or ConvertBatchFiles to convert the data first');
-     return;
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the DataLayout Tool, while taking the mean of measurements for display. ' ErrorMessage(30:end)]);
+    return
 end
 
 % Ask for the dimensions of the image
@@ -83,8 +90,11 @@ end
 MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 
 %%% Shows the results.
-TitleString = sprintf('Objects: %s, Feauture classification: %s, Feature: %s',ObjectTypename, FeatureType, handles.Measurements.(ObjectTypename).([FeatureType ,'Features']){FeatureNo});
-CPfigure, 
-CPimagesc(MeanImage,handles), 
-title(TitleString), 
-colorbar
+TitleString = sprintf('Objects: %s, Feature: %s',ObjectName, FeatureName);
+CPfigure;
+get(get(gca, 'Title'))
+CPimagesc(MeanImage,handles);
+get(get(gca, 'Title'))
+title(TitleString);
+get(get(gca, 'Title'))
+colorbar;

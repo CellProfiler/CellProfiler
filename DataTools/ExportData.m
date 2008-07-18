@@ -39,16 +39,11 @@ if RawFileName == 0
 end
 
 %%% Load the specified CellProfiler output file.
-waitbarhandle = CPwaitbar(1,'Loading file. Please wait...');
-Loaded = load(fullfile(RawPathname, RawFileName));
-close(waitbarhandle)
-
-%%% Check if it seems to be a CellProfiler output file or not.
-if isfield(Loaded,'handles')
-    handles = Loaded.handles;
-    clear Loaded
-else
-    CPerrordlg('The selected file does not seem to be a CellProfiler output file.')
+try
+    temp = load(fullfile(RawPathname, RawFileName));
+    handles = CP_convert_old_measurements(temp.handles);
+catch
+    CPerrordlg(['Unable to load file ''', fullfile(RawPathname, RawFileName), ''' (possibly not a CellProfiler output file).']);
     return
 end
 
@@ -82,7 +77,7 @@ while DataExists == 0
             end
         else
             warnfig = CPwarndlg('You must select at least one measurement to export. If you wish to only export pipeline settings and not measurements, type a settings extension. Please try again.');
-            uiwait(warnfig)
+            uiwait(warnfig);
         end
     end
 end
@@ -106,11 +101,11 @@ if isfield(ExportInfo, 'ExportProcessInfo')
 
     %%% Done!
     if strcmp(ExportInfo.ExportProcessInfo, 'Yes') && isempty(ExportInfo.ObjectNames)
-        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.'])
+        CPmsgbox(['Exporting is complete. Your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.']);
     elseif strcmp(ExportInfo.ExportProcessInfo, 'Yes')
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' and your pipeline settings have been saved as ', ExportInfo.ProcessInfoFilename, ExportInfo.ProcessInfoExtension, ' in the default output folder, ', RawPathname, '.']);
     else
-        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', RawPathname, '.'])
+        CPmsgbox(['Exporting is complete. Your exported data has been saved as ', ExportInfo.MeasurementExtension, ' files with base name ', ExportInfo.MeasurementFilename, ' in the default output folder, ', RawPathname, '.']);
     end
 end
 
@@ -140,7 +135,6 @@ FontSize = GUIhandles.Preferences.FontSize;
 fields = fieldnames(handles.Measurements);
 if length(fields) > 20
     error('There are more than 20 different objects in the chosen file. There is probably something wrong in the handles.Measurement structure.')
-
 end
 
 % Create Export window
@@ -194,6 +188,7 @@ else  % No measurements found
     uicontrol(ETh,'style','text','String','No measurements found','FontName','helvetica','FontSize',FontSize,...
         'units','pixels','position',[0 Height-80 600 15],'BackgroundColor',get(ETh,'color'),'fontweight','bold')
 end
+
 % Propose a filename. Remove 'OUT' and '.mat' extension from filename
 ProposedFilename = RawFileName;
 indexOUT = strfind(ProposedFilename,'OUT');
@@ -238,10 +233,10 @@ IgnoreNaN = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','
 %Help button
 Help_Callback = 'CPhelpdlg(''Sometimes a measurement is recorded as Not a Number, which means that it could not be calculated for some reason. For example, you cannot calculate the texture (smoothness) of an object made of only one pixel. So, when you want to calculate the mean texture for all objects in that image, you have two options: ignore NaNs and calculate the mean only for those objects that have a numerical texture measurement, or, if a NaN is present, record the mean measurement also as NaN.'')';
 
-uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
-    'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
-    'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
-    'Callback', Help_Callback);
+    uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+        'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
+        'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+        'Callback', Help_Callback);
 
 ypos=ypos-uiheight;
 uicontrol(ETh,'style','text','String','Base filename for exported files:',...
@@ -286,12 +281,12 @@ uicontrol(ETh,'style','pushbutton','String','Cancel','FontName','helvetica','Fon
 uicontrol(ETh,'style','pushbutton','String','Export','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold','units','pixels',...
     'position',[posx+125 10 75 uiheight],'Callback','[foo,fig] = gcbo;set(fig,''UserData'',1);uiresume(fig);clear fig foo','BackgroundColor',[.7 .7 .9]);
 
-uiwait(ETh)                         % Wait until window is destroyed or uiresume() is called
+uiwait(ETh);                         % Wait until window is destroyed or uiresume() is called
 
 ExportInfo.IgnoreNaN = get(IgnoreNaN,'Value');
 
-if get(ETh,'Userdata') == 1     % The user pressed the Export button
-
+if get(ETh,'Userdata') == 1,     % The user pressed the Export button
+    
     % File names
     if ~isempty(fields)
         ExportInfo.MeasurementFilename = get(EditMeasurementFilename,'String');
@@ -309,15 +304,13 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
     else
         ExportInfo.SwapRowsColumnInfo = 'Yes';
     end
-
+    
     if get(DataExportParameter,'Value')==1
         ExportInfo.DataParameter = 'mean';
-    else if get(DataExportParameter,'Value')==2
-            ExportInfo.DataParameter = 'median';
-        else if get(DataExportParameter,'Value')==3
-                ExportInfo.DataParameter = 'std';
-            end;
-        end;
+    elseif get(DataExportParameter,'Value')==2
+        ExportInfo.DataParameter = 'median';
+    elseif get(DataExportParameter,'Value')==3
+        ExportInfo.DataParameter = 'std';
     end;
 
     % Get measurements to export
@@ -328,8 +321,8 @@ if get(ETh,'Userdata') == 1     % The user pressed the Export button
         end
         ExportInfo.ObjectNames = fields(find(buttonchoice));  %#ok Get the fields for which the radiobuttons are enabled
     end
-
-    delete(ETh)
+    
+    delete(ETh);
 else
     delete(ETh);
     ExportInfo.ObjectNames = [];

@@ -550,7 +550,7 @@ uimenu(FileMenu,'Label','Exit','Callback',ClosingFunction);
 
 ListOfDataTools=handles.Current.DataToolsFilenames;
 for j=2:length(ListOfDataTools)
-    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',[char(ListOfDataTools(j))  '(guidata(gcbo));clear ans']);
+    uimenu(DataToolsMenu,'Label',char(ListOfDataTools(j)),'Callback',@(foo, bar)call_data_tool(char(ListOfDataTools(j))));
 end
 
 uimenu(WindowsMenu,'Label','Close All','Accelerator','L','Tag','Close All','Callback','CellProfiler(''CloseWindows_Callback'',gcbo,[],guidata(gcbo));');
@@ -567,6 +567,15 @@ uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHe
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
+
+function call_data_tool(tool_name, foo)
+try
+    eval([tool_name '(guidata(gcbo));']);
+    clear ans;
+catch 
+    ErrorMessage = lasterr;
+    CPerrordlg(['An error occurred in the ' tool_name ' Data Tool. ' ErrorMessage(29:end)]);
+end
 
 % --- Outputs from this function are returned to the command line.
 function varargout = CellProfiler_OutputFcn(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.

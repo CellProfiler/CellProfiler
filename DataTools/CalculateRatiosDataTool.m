@@ -53,6 +53,8 @@ catch
     return
 end
 
+error 'Foo'
+
 promptLoop = 0;
 while promptLoop == 0
     Answers = inputdlg({'Operation? Multiply or Divide, Add Or Subtract', 'Take Log10? Yes or no', 'Raise to what power? "/" to ignore'}, 'Operation', 1, {'Multiply', '/', '/'}); 

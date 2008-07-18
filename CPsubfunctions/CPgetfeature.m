@@ -1,4 +1,4 @@
-function [ObjectTypename,FeatureName] = CPgetfeature(handles,ExcludeImageMeasurements,Suffix)
+function [ObjectTypename,FeatureName] = CPgetfeature(handles,ExcludeImageMeasurements)
 
 % This function takes the user through three list dialogs where a specific
 % feature is chosen. It is possible to go back and forth between the list
@@ -23,10 +23,6 @@ function [ObjectTypename,FeatureName] = CPgetfeature(handles,ExcludeImageMeasure
 
 if nargin < 2
     ExcludeImageMeasurements = false;
-end
-
-if nargin < 3
-    Suffix = {'Features'};
 end
 
 %%% Quick check if it seems to be a CellProfiler file or not

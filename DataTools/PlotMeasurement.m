@@ -28,70 +28,43 @@ function PlotMeasurement(handles)
 %
 % $Revision$
 
-%%% Ask the user to choose the file from which to extract
-%%% measurements. The window opens in the default output directory.
 [FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
-
-%%% Allows canceling.
 if FileName == 0
     return
 end
-
-%%% Load the specified CellProfiler output file
+fn = fullfile(Pathname, FileName);
 try
-    MsgBoxLoad = CPmsgbox('Loading file.  Please wait...');
-    load(fullfile(Pathname, FileName));
+    temp = load(fn);
+    handles = CP_convert_old_measurements(temp.handles);
 catch
     CPerrordlg('Selected file is not a CellProfiler or MATLAB file (it does not have the extension .mat).')
-    close(MsgBoxLoad)
     return
 end
-close(MsgBoxLoad)
 
 PlotType = listdlg('Name','Choose the plot type','SelectionMode','single','ListSize',[200 200],...
     'ListString',{'Bar chart','Line chart','Scatter plot, 1 measurement','Scatter plot, 2 measurements'});
-if isempty(PlotType), return,end
+if isempty(PlotType)
+    return
+end
 
 if PlotType == 4
     %%% Get the feature types
-    try
-        msg=CPmsgbox('In the following dialog, please choose measurements for the Y axis.');
-        uiwait(msg);
-        [Object2,Feature2,FeatureNo2] = CPgetfeature(handles);
+    msg=CPmsgbox('In the following dialog, please choose measurements for the Y axis.');
+    uiwait(msg);
+    [Object2,Feature2] = CPgetfeature(handles, 1);
         
-        msg=CPmsgbox('In the following dialog, please choose measurements for the X axis.');
-        uiwait(msg);
-        [Object,Feature,FeatureNo] = CPgetfeature(handles);
-        
-    catch
-        ErrorMessage = lasterr;
-        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(30:end)]);
-        return
+    msg=CPmsgbox('In the following dialog, please choose measurements for the X axis.');
+    uiwait(msg);
+    [Object,Feature] = CPgetfeature(handles, 1);
+    if isempty(Object) || isempty(Object2)
+	return
     end
-    if isempty(Object),return,end
-    if isempty(Object2),return,end
-    try
-        CPplotmeasurement(handles,PlotType,[],0,Object,Feature,FeatureNo,Object2,Feature2,FeatureNo2)
-    catch
-        ErrorMessage = lasterr;
-        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
-        return
-    end
+    CPplotmeasurement(handles,PlotType,[],0,Object,Feature,Object2,Feature2)
 else
     %%% Get the feature type
-    try
-        [Object,Feature,FeatureNo] = CPgetfeature(handles);
-    catch
-        ErrorMessage = lasterr;
-        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(30:end)]);
-        return
+    [Object,Feature] = CPgetfeature(handles, 1);
+    if isempty(Object)
+	return
     end
-    if isempty(Object),return,end
-    try
-       CPplotmeasurement(handles,PlotType,[],0,Object,Feature,FeatureNo)
-    catch
-        ErrorMessage = lasterr;
-        CPerrordlg(['An error occurred in the PlotMeasurement Data Tool. ' ErrorMessage(35:end)]);
-        return
-    end
+    CPplotmeasurement(handles,PlotType,[],0,Object,Feature)
 end

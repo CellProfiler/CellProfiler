@@ -142,5 +142,5 @@ if ~strcmp(OptionalCmds, '.')
 end
 
 %%% Store into handles structure
-OneFrame = getframe(HistHandle);
-handles.Pipeline.(HistImage)=OneFrame.cdata;
+FigureShot = CPimcapture(HistHandle); %% using defaults of whole figure and 150 dpi
+handles.Pipeline.(HistImage)=FigureShot;

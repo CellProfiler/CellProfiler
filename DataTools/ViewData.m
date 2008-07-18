@@ -26,13 +26,20 @@ function ViewData(handles)
 %
 % $Revision$
 
-%%% Ask the user to choose the file from which to extract measurements.
+% Ask the user to choose the file from which to extract measurements.
 [FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 if FileName == 0
     return
 end
 
-%%% Load the specified CellProfiler output file
+% Quick check if it seems to be a CellProfiler file or not
+s = whos('-file',fullfile(Pathname, FileName));
+if ~any(strcmp('handles',cellstr(cat(1,s.name)))),
+    CPerrordlg('Selected file is not a CellProfiler output file.')
+    return
+end
+
+% Load the specified CellProfiler output file
 try
     load(fullfile(Pathname, FileName));
 catch
@@ -40,19 +47,14 @@ catch
     return
 end
 
-%%% Quick check if it seems to be a CellProfiler file or not
-if ~exist('handles','var')
-    CPerrordlg('Selected file is not a CellProfiler output file.')
-    return
-end
+% Try to convert features
+handles = CP_convert_old_measurements(handles);
 
 FinalOK = 0;
 while FinalOK == 0
-
     %%% Let the user select which feature to view
-    Suffix = {'Features','Text','Description'};
     try
-        [ObjectTypename,FeatureType,FeatureNbr,SuffixNbr] = CPgetfeature(handles,0,Suffix);
+        [ObjectTypename,FeatureType] = CPgetfeature(handles,0);
     catch
         ErrorMessage = lasterr;
         CPerrordlg(['An error occurred in the ViewData Data Tool. ' ErrorMessage(30:end)]);
@@ -60,39 +62,38 @@ while FinalOK == 0
     end
     if isempty(ObjectTypename),return,end
 
-    %%% Get the description
-    Description = handles.Measurements.(ObjectTypename).([FeatureType,Suffix{SuffixNbr}]){FeatureNbr};
-
     %%% Generate a cell array with strings to display
     NbrOfImageSets = length(handles.Measurements.(ObjectTypename).(FeatureType));
     TextToDisplay = cell(NbrOfImageSets,1);
     
-    if strcmp(Suffix{SuffixNbr},'Description')
-        if NbrOfImageSets > length(handles.Measurements.Image.FileNames)
-            CPerrordlg('There are more text descriptions than image files. This has not yet been supported.');
-        end
+    filenames = fieldnames(handles.Measurements.Image);
+    idx = ~cellfun(@isempty,strfind(filenames,'FileName'));
+    fileswithmeasurements = handles.Measurements.Image.(char(filenames(find(idx,1))));
+    if NbrOfImageSets ~= length(fileswithmeasurements)
+        CPerrordlg('There is an unequal number of measures to the number of image files. This has not yet been supported.');
     end
     
+    filenames = filenames(idx,:);
+    filenamelist = {}; for i = 1:length(filenames),filenamelist = cat(1,filenamelist,handles.Measurements.Image.(filenames{i})); end
     for ImageSet = 1:NbrOfImageSets
-
-        % Numeric or text?
-        if strcmp(Suffix{SuffixNbr},'Features')
-            if length(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}) >= FeatureNbr
-                info = num2str(mean(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}(:,FeatureNbr)));
-            else
-                info = 'No Objects Identified';
-            end
-        elseif strcmp(Suffix{SuffixNbr},'Text')
-            info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}{FeatureNbr};
-        elseif strcmp(Suffix{SuffixNbr},'Description')
+        if ~isempty(handles.Measurements.(ObjectTypename).(FeatureType){ImageSet}),
             info = handles.Measurements.(ObjectTypename).(FeatureType){ImageSet};
+        else
+            info = 'No objects identified';
         end
-
+        if isnumeric(info), info = num2str(mean(info)); end     % Numeric data
+        if iscell(info), info = char(info); end                 % Text data
         try
             TextToDisplay{ImageSet} = sprintf('Cycle #%d, %s:     %s',...
                 ImageSet,...
-                handles.Measurements.Image.FileNames{ImageSet}{1},...
-                info);
+                filenamelist{1,ImageSet},...
+                info(1,:));
+            if size(info,1) > 1,    % If there is a vector of text data
+                for j = 2:size(info,1),
+                    TextToDisplay{ImageSet} = strvcat(1,TextToDisplay{ImageSet},...
+                        sprintf('                 %s',info(j,:)));
+                end
+            end
         catch
             CPerrordlg('Use the data tool MergeOutputFiles or ConvertBatchFiles to convert the data first');
             return;
@@ -100,7 +101,7 @@ while FinalOK == 0
     end
 
     %%% Produce an infostring that explains what is displayed
-    if strcmp(Suffix{SuffixNbr},'Text')
+    if strfind(FeatureType,'Text')
         InfoString = 'Cycle #,  <filename>:     <text>';
     elseif strcmp(ObjectTypename,'Image')
         InfoString = 'Cycle #,  <filename>:     <value>';
@@ -111,7 +112,7 @@ while FinalOK == 0
 
     % Display data in a list dialog box
     [Selection, FinalOK] = listdlg('ListString',TextToDisplay, 'ListSize', [600 200],...
-        'Name',['Information for ',Description],...
+        'Name',['Information for ',FeatureType],...
         'PromptString','Press ''Back'' to select another information entry.',...
         'CancelString','Back',...
         'SelectionMode','single');

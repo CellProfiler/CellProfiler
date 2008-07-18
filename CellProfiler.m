@@ -574,7 +574,7 @@ try
     clear ans;
 catch 
     ErrorMessage = lasterr;
-    CPerrordlg(['An error occurred in the ' tool_name ' Data Tool. ' ErrorMessage(29:end)]);
+    CPerrordlg(['An error occurred in the ' tool_name ' Data Tool: ' ErrorMessage]);
 end
 
 % --- Outputs from this function are returned to the command line.

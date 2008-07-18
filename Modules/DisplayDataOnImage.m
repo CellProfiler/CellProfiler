@@ -215,8 +215,8 @@ else
         case 'axes',    opt = 'imgAx';
         case 'figure',  opt = 'all';
     end
-    drawnow;    % Need this here for the imcapture to work correctly
-    handles.Pipeline.(DataImage)= imcapture(DataHandle,opt,dpi);
+    drawnow;    % Need this here for the CPimcapture to work correctly
+    handles.Pipeline.(DataImage)= CPimcapture(DataHandle,opt,dpi);
 
     % if the user didn't want to display the window in the first place,
     % destroy this one so we don't have an invisible window hanging

@@ -169,5 +169,5 @@ end
 %%%%%%%%%%%%%%%
 drawnow
 
-OneFrame = getframe(FigHandle);
-handles.Pipeline.(PlotImage)=OneFrame.cdata;
+FigureShot = CPimcapture(FigHandle); %% using defaults of whole figure and 150 dpi
+handles.Pipeline.(PlotImage)=FigureShot;

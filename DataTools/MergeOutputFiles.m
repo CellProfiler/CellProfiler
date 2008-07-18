@@ -61,8 +61,8 @@ while valid == 0
     if isempty(Answers)
         return
     end
-
-    if length(Answers{2}) < 4 | ~strcmpi(Answers{2}(end-3:end),'.mat') %#ok Ignore MLint
+    [junk,junk,extension] = fileparts(Answers{2});
+    if ~strcmp(extension,'.mat'),
         msg = CPmsgbox('The filename must have a .mat extension.');
         uiwait(msg);
         continue
@@ -86,18 +86,18 @@ BatchFilePrefix = Answers{1};
 %%% We want to load the handles from the batch process
 clear handles
 
-%%% Load the data file and check that it contains handles
-MsgBoxLoad = CPmsgbox('Loading first file.  Please wait...');
-load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
-if ~exist('handles','var')
+%%% Quick check if it seems to be a CellProfiler file or not
+s = whos('-file',fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
+if ~any(strcmp('handles',cellstr(cat(1,s.name)))),
     CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',[BatchFilePrefix,'data.mat']))
-    close(MsgBoxLoad)
     return
 end
+%%% Load the data file
+MsgBoxLoad = CPmsgbox('Loading first file.  Please wait...');
+load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
 close(MsgBoxLoad)
 
 Fieldnames = fieldnames(handles.Measurements);
-
 FileList = dir(BatchPath);
 Matches = ~cellfun('isempty', regexp({FileList.name}, ['^' BatchFilePrefix '[0-9]+_to_[0-9]+_OUT.mat$']));
 FileList = FileList(Matches);
@@ -107,33 +107,29 @@ end
 
 waitbarhandle = CPwaitbar(0,['Merging ' num2str(length(FileList) + 1) ' files ...']);
 for i = 1:length(FileList)
-    %% Something about the loaded 'X_data.mat' file is causing this
-    %% warning, perhaps a cluster vs. local named function?  Seems OK, so turning it off. David 2007.11.21
+    % Turn off function handle warning. Presumably due to cluster vs. local named function
     LoadWarning = warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle');
     SubsetData = load(fullfile(BatchPath,FileList(i).name));
     warning(LoadWarning)
-%     disp(FileList(i).name)
-
+    
     if (isfield(SubsetData.handles, 'BatchError')),
         error(['Image processing was canceled in the ', ModuleName, ' module because there was an error merging batch file output.  File ' FileList(i).name ' encountered an error.  The error was ' SubsetData.handles.BatchError '.  Please re-run that batch file.']);
     end
+    
+    % Try to convert features (if needed)
+    SubsetData.handles = CP_convert_old_measurements(SubsetData.handles);
 
     SubSetMeasurements = SubsetData.handles.Measurements;
 
-    for fieldnum=1:length(Fieldnames)
+    for fieldnum = 1:length(Fieldnames)
         secondfields = fieldnames(handles.Measurements.(Fieldnames{fieldnum}));
         % Some fields should not be merged, remove these from the list of fields
-        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'PathName')));   % Don't merge pathnames under handles.Measurements.GeneralInfo
-        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')));   % Don't merge cell arrays with feature names
-        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'SubObjectFlag')));   % Don't merge cell arrays with SubObjectFlag (to play nicely with Relate module)
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'PathName')) & ...   % Don't merge pathnames under handles.Measurements.GeneralInfo
+                                    cellfun('isempty',strfind(secondfields,'Features')) & ...   % Don't merge cell arrays with feature names
+                                    cellfun('isempty',strfind(secondfields,'SubObjectFlag')));  % Don't merge cell arrays with SubObjectFlag (to play nicely with Relate module)
         for j = 1:length(secondfields)
             idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));
             idxs(1) = 0; %% Protects the first/main 'Batch' file
-%             if (fieldnum == 1),
-%                 lo = min(find(idxs(2:end))+1);
-%                 hi = max(find(idxs(2:end))+1);
-%                 disp(['Merging measurements for sets ' num2str(lo) ' to ' num2str(hi) '.']);
-%             end
             handles.Measurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs) = SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j})(idxs);
         end
     end

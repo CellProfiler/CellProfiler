@@ -56,14 +56,18 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
+%choiceVAR02 = AreaOccupied
 %choiceVAR02 = AreaShape
-%choiceVAR02 = Correlation
+%choiceVAR02 = Children
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Ratio
 %choiceVAR02 = Texture
+%choiceVAR02 = ImageQuality
+%choiceVAR02 = Granularity
+%choiceVAR02 = RadialDistribution
 %inputtypeVAR02 = popupmenu custom
-Measure = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
@@ -73,68 +77,72 @@ if isempty(FeatureNumber) || isnan(FeatureNumber)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
-%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements do you want to use?
+%textVAR04 = For AREASHAPE, INTENSITY or TEXTURE features, which image's measurements do you want to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What do you want to call the resulting histogram image?
-%defaultVAR05 = OrigHist
-%infotypeVAR05 = imagegroup indep
-HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%textVAR05 = For TEXTURE or RADIALDISTRIBUTION features, what previously measured texture scale (TEXTURE) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
+%defaultVAR05 = 1
+UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = How many histogram bins would you like to use?
-%choiceVAR06 = 16
-%choiceVAR06 = 2
-%choiceVAR06 = 10
-%choiceVAR06 = 50
-%choiceVAR06 = 100
-%choiceVAR06 = 256
-NumberOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
-%inputtypeVAR06 = popupmenu custom
+%textVAR06 = What do you want to call the resulting histogram image?
+%defaultVAR06 = OrigHist
+%infotypeVAR06 = imagegroup indep
+HistImage = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+
+%textVAR07 = How many histogram bins would you like to use?
+%choiceVAR07 = 16
+%choiceVAR07 = 2
+%choiceVAR07 = 10
+%choiceVAR07 = 50
+%choiceVAR07 = 100
+%choiceVAR07 = 256
+NumberOfBins = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%inputtypeVAR07 = popupmenu custom
 
 if isempty(NumberOfBins)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for number of histogram bins is not valid.']);
 end
 
-%textVAR07 = Enter the range on the X axis for frequency counts on the Y axis ('Min Max'):
-%defaultVAR07 = Automatic
-MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu custom
+%textVAR08 = Enter the range on the X axis for frequency counts on the Y axis ('Min Max'):
+%defaultVAR08 = Automatic
+MinAndMax = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu custom
 
-%textVAR08 = Do you want the X axis to be log scale?
-%choiceVAR08 = No
-%choiceVAR08 = Yes
-LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
-
-%textVAR09 = Do you want to use absolute numbers of objects or percentage of total objects?
-%choiceVAR09 = Numbers
-%choiceVAR09 = Percents
-NumberOrPercent = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Do you want the X axis to be log scale?
+%choiceVAR09 = No
+%choiceVAR09 = Yes
+LogOrLinear = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Do you the style to be a line, bar, or area graph?
-%choiceVAR10 = Bar
-%choiceVAR10 = Line
-%choiceVAR10 = Area
-LineOrBar = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Do you want to use absolute numbers of objects or percentage of total objects?
+%choiceVAR10 = Numbers
+%choiceVAR10 = Percents
+NumberOrPercent = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%textVAR11 = What color do you want the graph to be?
-%choiceVAR11 = Blue
-%choiceVAR11 = Red
-%choiceVAR11 = Green
-%choiceVAR11 = Yellow
-%choiceVAR11 = Magenta
-%choiceVAR11 = Cyan
-%choiceVAR11 = Black
-%choiceVAR11 = White
-%choiceVAR11 = CellProfiler background
-Color = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = Do you the style to be a line, bar, or area graph?
+%choiceVAR11 = Bar
+%choiceVAR11 = Line
+%choiceVAR11 = Area
+LineOrBar = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%textVAR12 = What color do you want the graph to be?
+%choiceVAR12 = Blue
+%choiceVAR12 = Red
+%choiceVAR12 = Green
+%choiceVAR12 = Yellow
+%choiceVAR12 = Magenta
+%choiceVAR12 = Cyan
+%choiceVAR12 = Black
+%choiceVAR12 = White
+%choiceVAR12 = CellProfiler background
+Color = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -144,43 +152,14 @@ drawnow
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-CellFlg = 0;
-switch Measure
-    case 'AreaShape'
-        if strcmp(ObjectName,'Image')
-            Measure = '^AreaOccupied_.*Features$';
-            Fields = fieldnames(handles.Measurements.Image);
-            TextComp = regexp(Fields,Measure);
-            A = cellfun('isempty',TextComp);
-            try
-                Measure = Fields{find(A==0)+1};
-            catch
-                error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-            end
-            CellFlg = 1;
-        end
-    case 'Intensity'
-        Measure = ['Intensity_' Image];
-    case 'Texture'
-        Measure = ['Texture_[0-9]*[_]?' Image '$'];
-        Fields = fieldnames(handles.Measurements.(ObjectName));
-        TextComp = regexp(Fields,Measure);
-        A = cellfun('isempty',TextComp);
-        try
-            Measure = Fields{A==0};
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-        end
-    case 'Ratio'
-        Measure = '.*Ratio$';
-        Fields = fieldnames(handles.Measurements.(ObjectName));
-        TextComp = regexp(Fields,Measure);
-        A = cellfun('isempty',TextComp);
-        try
-            Measure = Fields{A==0};
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-        end
+% FeatureName = CPgetfeaturenameFromMeasureChoice(handles, ObjectName, MeasureChoice, FeatureNumber, Image, UserSpecifiedNumber);
+switch lower(MeasureChoice)
+    case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
+        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber, Image);
+    case {'areashape','neighbors','ratio'}
+        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber);
+    case {'texture','radialdistribution'}
+        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber, Image, UserSpecifiedNumber);
 end
 
 %%% Checks that the Min and Max have valid values
@@ -234,10 +213,8 @@ end
 
 %Replacement ends here
 %%% Get measurements
-try  Measurements = handles.Measurements.(ObjectName).(Measure){SetBeingAnalyzed}(:,FeatureNumber);
-    if CellFlg
-        Measurements = Measurements{1};
-    end
+try
+    Measurements = handles.Measurements.(ObjectName).(FeatureName){SetBeingAnalyzed};
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the measurements could not be found. This module must be after a measure module or no objects were identified.']);
 end
@@ -379,12 +356,12 @@ else
     plot('v6',PlotBinLocations,FinalHistogramData(:,1),'LineWidth',2, 'color', HistColor);
 end
 
-FeatureName=handles.Measurements.(ObjectName).([Measure,'Features']){FeatureNumber};
+% FeatureName=handles.Measurements.(ObjectName).(FeatureName){FeatureNumber};
 set(h,'XTickLabel',XTickLabels)
 set(h,'XTick',PlotBinLocations)
 set(gca,'Tag','BarTag','ActivePositionProperty','Position')
-set(get(h,'XLabel'),'String',[FeatureName,' of ',ObjectName])
-set(get(h,'Title'),'String',['Histogram for ', FeatureName,' of ',ObjectName])
+set(get(h,'XLabel'),'String',[FeatureName,' of ',ObjectName],'interpreter','none')
+set(get(h,'Title'),'String',['Histogram for ', FeatureName,' of ',ObjectName],'interpreter','none')
 
 if strncmpi(NumberOrPercent,'N',1)
     set(get(h,'YLabel'),'String','Number of objects')
@@ -455,5 +432,5 @@ tempData.FigureSettings = FigureSettings;
 tempData.handles = rmfield(handles,'Pipeline');
 tempData.Application = 'CellProfiler';
 set(HistHandle,'UserData',tempData);
-OneFrame = getframe(HistHandle);
-handles.Pipeline.(HistImage)=OneFrame.cdata;
+FigureShot = CPimcapture(HistHandle); %% using defaults of whole figure and 150 dpi
+handles.Pipeline.(HistImage)=FigureShot;

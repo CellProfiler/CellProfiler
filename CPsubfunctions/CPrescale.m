@@ -43,8 +43,10 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     LowestPixelOrig = MethodSpecificArguments{1};
     HighestPixelOrig = MethodSpecificArguments{2};
     LowestPixelRescale = MethodSpecificArguments{3};
-    HighestPixelRescale = MethodSpecificArguments{4};
-    ImageName = MethodSpecificArguments{5};
+    LowestPixelRescaleBoundingValue = MethodSpecificArguments{4};
+    HighestPixelRescale = MethodSpecificArguments{5};
+    HighestPixelRescaleBoundingValue = MethodSpecificArguments{6};
+    ImageName = MethodSpecificArguments{7};
     if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')) == 1
         if handles.Current.SetBeingAnalyzed == 1
             try
@@ -107,18 +109,17 @@ elseif strncmpi(RescaleOption,'E',1) == 1
         HighestPixelOrig = str2double(HighestPixelOrig);
     end
     %%% Rescales the Image.
-    InputImageMod = InputImage;
-    %Any pixel in the original image lower than the user-input lowest bound is
-    %pinned to the lowest value.
-    InputImageMod(InputImageMod < LowestPixelOrig) = LowestPixelOrig;
-    %Any pixel in the original image higher than the user-input highest bound is
-    %pinned to the lowest value.
-    InputImageMod(InputImageMod > HighestPixelOrig) = HighestPixelOrig;
-    %Scales and shifts the original image to produce the rescaled image
-    scaleFactor = (HighestPixelRescale - LowestPixelRescale)  / (HighestPixelOrig - LowestPixelOrig);
-    shiftFactor = LowestPixelRescale - LowestPixelOrig;
-    OutputImage = InputImageMod + shiftFactor;
-    OutputImage = OutputImage * scaleFactor;
+    % (1) Scale and shift the original image to produce the rescaled image.
+    % Here, we find the linear transformation that maps the user-specified
+    %   old bounding values to their new bounding values
+    hi = HighestPixelOrig; HI = HighestPixelRescale;
+    lo = LowestPixelOrig; LO = LowestPixelRescale;
+    X = inv([lo 1; hi 1])*[LO; HI]; m = X(1); b = X(2); 
+    OutputImage = InputImage*m + b;
+    %(2) Pixels in the original image higher/lower than the user-input 
+    %   highest/lowest bound are set to the desired value.
+    OutputImage(OutputImage < LowestPixelRescale) =    LowestPixelRescaleBoundingValue;
+    OutputImage(OutputImage > HighestPixelRescale) =   HighestPixelRescaleBoundingValue;
 elseif strncmpi(RescaleOption,'C',1) == 1
     OutputImage = uint8(InputImage*255);
 else error(['For the rescaling option, you must enter N, S, M, G, E, or C for the method by which to rescale the image. Your entry was ', RescaleOption])

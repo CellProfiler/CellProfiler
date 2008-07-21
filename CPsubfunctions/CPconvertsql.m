@@ -131,7 +131,7 @@ if (FirstSet == 1)
             if isnan(BatchSize)
                 errordlg('STOP!  Batchsize is NaN.');
             end
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',OutfilePrefix,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -140,13 +140,13 @@ if (FirstSet == 1)
                 EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
                 ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
                 ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',ImageSQLFileName,TablePrefix);
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',ImageSQLFileName,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',ObjectSQLFileName,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
             end
         else
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'';\n',basename,TablePrefix);
+            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -255,7 +255,7 @@ if (FirstSet == 1)
         %%%%%%%%%%%%%%%%%%%%%
 
         fcolload = fopen(fullfile(OutDir, [DBname,'_LOADCOLUMNS.CTL']), 'W');
-        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
+        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY ''''(shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
         fclose(fcolload);
 
         %%%%%%%%%%%%%%%%%%%%
@@ -280,7 +280,7 @@ if (FirstSet == 1)
             fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
         end
 
-        fprintf(fimageloader, 'INTO TABLE  %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' (col1',TablePrefix);
+        fprintf(fimageloader, 'INTO TABLE  %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''' (col1',TablePrefix);
         for i = 2:(PrimKeyPosition-1)
             fprintf(fimageloader, ',\n%s', ['col',num2str(i)]);
         end

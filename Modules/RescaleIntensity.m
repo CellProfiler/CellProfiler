@@ -94,16 +94,24 @@ HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 0
 LowestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
-%defaultVAR07 = 1
+%textVAR07 = (Method E only): For pixels below the chosen lowest intensity, what value do you want them to have (range [0,1])?
+%defaultVAR07 = 0
+LowestPixelRescaleBoundingValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
+%textVAR08 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
+%defaultVAR08 = 1
 HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
-%infotypeVAR08 = imagegroup
-OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%textVAR09 = (Method E only): For pixels above the chosen highest intensity, what value do you want them to have (range [0,1])? 
+%defaultVAR09 = 1
+HighestPixelRescaleBoundingValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%%%VariableRevisionNumber = 2
+%textVAR10 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
+%infotypeVAR10 = imagegroup
+OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR10 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -131,8 +139,10 @@ elseif strncmpi(RescaleOption,'E',1)
     MethodSpecificArguments{1} = LowestPixelOrig;
     MethodSpecificArguments{2} = HighestPixelOrig;
     MethodSpecificArguments{3} = LowestPixelRescale;
-    MethodSpecificArguments{4} = HighestPixelRescale;
-    MethodSpecificArguments{5} = ImageName;
+    MethodSpecificArguments{4} = LowestPixelRescaleBoundingValue;
+    MethodSpecificArguments{5} = HighestPixelRescale;
+    MethodSpecificArguments{6} = HighestPixelRescaleBoundingValue;
+    MethodSpecificArguments{7} = ImageName;
 elseif strncmpi(RescaleOption,'C',1)
     MethodSpecificArguments = [];
 end

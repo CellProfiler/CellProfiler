@@ -110,7 +110,6 @@ drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 %%% Get the correct fieldname where measurements are located
-CellFlg = 0;
 try
     switch lower(MeasureChoice)
         case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
@@ -142,15 +141,11 @@ end
 if ErrorFlag
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     %%% Creates the display window.
-    DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
     title('No objects identified.');
     CPwarndlg(['No objects were identified. This could mean that the measurements you have specified in the ',ModuleName,' are not being processed. Please verify that the Measure module precedes this module.']); 
 else
-    if CellFlg
-        if iscell(ListOfMeasurements),
-            ListOfMeasurements = ListOfMeasurements{1};
-        end
-    end
+
     StringListOfMeasurements = cellstr(num2str(ListOfMeasurements));
 
     %%% Extracts the XY locations. This is temporarily hard-coded

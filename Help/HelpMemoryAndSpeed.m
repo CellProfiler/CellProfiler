@@ -61,7 +61,8 @@ function HelpMemoryAndSpeed
 %   objects, a good deal of computer time will be used in processing each
 %   individual object, many of which you might not need. In this case, make
 %   sure that you adjust the diameter options in IdentifyPrimAutomatic to 
-%   exclude small objects you are not interested in.
+%   exclude small objects you are not interested in, or use a FilterObjects 
+%   module to eliminate objects that are not of interest.
 
 helpdlg(help('HelpMemoryAndSpeed'))
 

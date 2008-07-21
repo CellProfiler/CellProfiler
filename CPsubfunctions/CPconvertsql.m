@@ -255,7 +255,7 @@ if (FirstSet == 1)
         %%%%%%%%%%%%%%%%%%%%%
 
         fcolload = fopen(fullfile(OutDir, [DBname,'_LOADCOLUMNS.CTL']), 'W');
-        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY ''''(shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
+        fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''' (shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
         fclose(fcolload);
 
         %%%%%%%%%%%%%%%%%%%%

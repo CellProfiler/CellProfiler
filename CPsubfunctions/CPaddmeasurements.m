@@ -1,4 +1,4 @@
-function handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data)
+function handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data, ImageSetNumber)
 % Add measurements of a feature to the handles.Measurements structure.
 % Location will be "handles.Measurements.ObjectName.FeatureName".
 % ObjectName can be "Image".  
@@ -19,9 +19,13 @@ function handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data)
 % $Revision$
 
 
+if nargin < 5,
+    ImageSetNumber = handles.Current.SetBeingAnalyzed;
+end
+
 % Check that either this is a new measurement being added in the first
 % set, or an old measurement being appended to in a later set.
-FirstSet = (handles.Current.SetBeingAnalyzed == 1);
+FirstSet = (ImageSetNumber == 1);
 OldMeasurement = ...
     isfield(handles.Measurements, ObjectName) && ...
     isfield(handles.Measurements.(ObjectName), FeatureName);
@@ -35,7 +39,7 @@ if (FirstSet && OldMeasurement),
 end
 
 if (~FirstSet) && (~OldMeasurement) && (~ strcmp(ObjectName, 'Experiment')),
-    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add new measurement ', ObjectName, '.',  FeatureName, ' in set ', int2str(handles.Current.SetBeingAnalyzed) ' that was not added in first set.']);
+    error(['This should not happen.  CellProfiler Coding Error.  Attempting to add new measurement ', ObjectName, '.',  FeatureName, ' in set ', int2str(ImageSetNumber) ' that was not added in first set.']);
 end
 
 %%% Verify we can add this type of Measurement to this type of object
@@ -52,5 +56,5 @@ end
 if strcmp(ObjectName, 'Experiment'),
     handles.Measurements.(ObjectName).(FeatureName) = Data;
 else
-    handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed} = Data;
+    handles.Measurements.(ObjectName).(FeatureName){ImageSetNumber} = Data;
 end

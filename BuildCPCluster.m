@@ -35,7 +35,7 @@ end
 % Attempt to build CPCluster.m
 if exist('CPCluster.m','file'),
     disp('Building CPCluster.m....');
-    mcc -v -R -nodisplay -m CPCluster.m
+    mcc -v -R -nodisplay -m CPCluster.m -a './CPsubfunctions/CPsplash.jpg'
     disp('Finished building');
 else
     error('CPCluster.m is not present in the current directory. Please check to see if it exists and try again.');

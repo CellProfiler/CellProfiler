@@ -43,9 +43,15 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     LowestPixelOrig = MethodSpecificArguments{1};
     HighestPixelOrig = MethodSpecificArguments{2};
     LowestPixelRescale = MethodSpecificArguments{3};
-    HighestPixelRescale = MethodSpecificArguments{4};
+    LowestPixelOrigPinnedValue = MethodSpecificArguments{4};
+    HighestPixelRescale = MethodSpecificArguments{5};
+    HighestPixelOrigPinnedValue = MethodSpecificArguments{6};
     ImageName = MethodSpecificArguments{5};
-    if (strcmp(upper(LowestPixelOrig), 'AA') & strcmp(upper(HighestPixelOrig), 'AA')) == 1
+    % Case 1: Either of the arguments are AA
+    if any([strcmp(upper(LowestPixelOrig), 'AA') strcmp(upper(HighestPixelOrig), 'AA')]),
+        FindLowestIntensity =   strcmp(upper(LowestPixelOrig), 'AA');
+        FindHighestIntensity =  strcmp(upper(HighestPixelOrig),'AA');
+        
         if handles.Current.SetBeingAnalyzed == 1
             try
                 %%% Notifies the user that the first image set will take much longer than
@@ -89,36 +95,59 @@ elseif strncmpi(RescaleOption,'E',1) == 1
             end
             HighestPixelOrig = double(maxPixelValue);
             LowestPixelOrig = double(minPixelValue);
-            fieldname = ['MaxPixelValue', ImageName];
-            handles.Pipeline.(fieldname) = HighestPixelOrig;
-            fieldname = ['MinPixelValue', ImageName];
-            handles.Pipeline.(fieldname) = LowestPixelOrig;
+            if FindHighestIntensity,
+                fieldname = ['MaxPixelValue', ImageName];
+                handles.Pipeline.(fieldname) = HighestPixelOrig;
+            end
+            if FindLowestIntensity,
+                fieldname = ['MinPixelValue', ImageName];
+                handles.Pipeline.(fieldname) = LowestPixelOrig;
+            end
         else
-            fieldname = ['MaxPixelValue', ImageName];
-            HighestPixelOrig = handles.Pipeline.(fieldname);
-            fieldname = ['MinPixelValue',ImageName];
-            LowestPixelOrig = handles.Pipeline.(fieldname);
+            if FindHighestIntensity,
+                fieldname = ['MaxPixelValue', ImageName];
+                HighestPixelOrig = handles.Pipeline.(fieldname);
+            end
+            if FindLowestIntensity,
+                fieldname = ['MinPixelValue',ImageName];
+                LowestPixelOrig = handles.Pipeline.(fieldname);
+            end
         end
-    elseif (strcmp(upper(LowestPixelOrig), 'AE') & strcmp(upper(HighestPixelOrig), 'AE'))== 1
+    end
+    
+    % Case 2: Either of the arguments are AE
+    if strcmp(upper(LowestPixelOrig), 'AE'),
         LowestPixelOrig = min(min(InputImage));
+    end
+    if strcmp(upper(HighestPixelOrig), 'AE'),
         HighestPixelOrig = max(max(InputImage));
-    else
+    end
+    
+    % Case 3: Either of the arguments are numbers
+    if isfinite(str2double(LowestPixelOrig))    % Evaulates to NaN if a string
         LowestPixelOrig = str2double(LowestPixelOrig);
+    end
+    if isfinite(str2double(HighestPixelOrig))
         HighestPixelOrig = str2double(HighestPixelOrig);
     end
 
     % Perform the rescaling
     InputImageMod = InputImage;
-    % (1) Pixels above/below specified values are pinned to the highest/lowest values for the image set (for a single image, this does nothing) 
-    InputImageMod(InputImageMod > HighestPixelOrig) =   HighestPixelOrig;
-    InputImageMod(InputImageMod < LowestPixelOrig) =    LowestPixelOrig;
-    % (2) Scale and shift the original image to produce the rescaled image.
+    % (1) Scale and shift the original image to produce the rescaled image.
     % Here, we find the linear transformation that maps the user-specified
-    %   old bounding values to their new bounding values
+    %   old high/low values to their new high/low values
     hi = HighestPixelOrig; HI = HighestPixelRescale;
     lo = LowestPixelOrig; LO = LowestPixelRescale;
-    X = inv([lo 1; hi 1])*[LO; HI]; m = X(1); b = X(2); 
-    OutputImage = InputImageMod*m + b;
+    X = [lo 1; hi 1]\[LO; HI]; 
+    OutputImage = InputImageMod*X(1) + X(2);
+    % Extra measure to make sure values close to EPS are mapped to 0
+    % (since the matrix algebra is not perfect)
+    OutputImage(abs(OutputImage) > 0 & abs(OutputImage) < eps) = 0;
+    
+    % (2) Pixels above/below rescaled values are set to the desired pinning values 
+    OutputImage(OutputImage > HighestPixelRescale) =   HighestPixelOrigPinnedValue;
+    OutputImage(OutputImage < LowestPixelRescale) =    LowestPixelOrigPinnedValue;
+    
 elseif strncmpi(RescaleOption,'C',1) == 1
     OutputImage = uint8(InputImage*255);
 else error(['For the rescaling option, you must enter N, S, M, G, E, or C for the method by which to rescale the image. Your entry was ', RescaleOption])

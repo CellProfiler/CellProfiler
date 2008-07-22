@@ -142,7 +142,8 @@ try FontSize = handles.Preferences.FontSize;
     %%% We used to store the font size in Current, so this line makes old
     %%% output files compatible. Shouldn't be necessary with any files made
     %%% after November 15th, 2006.
-catch FontSize = handles.Current.FontSize;
+catch
+    FontSize = handles.Current.FontSize;
 end
 
 %%% Call the function CPgetfeature(), which opens a series of list dialogs and

@@ -22,20 +22,23 @@ function GenerateHistogramMovie(handles)
 %
 % $Revision$
 
-%%% Ask the user to choose the file from which to extract
-%%% measurements. The window opens in the default output directory.
+% Ask the user to choose the file from which to extract
+% measurements. The window opens in the default output directory.
 [RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
-%%% Allows canceling.
+% Allows canceling.
 if RawFileName == 0
     return
 end
 load(fullfile(RawPathname, RawFileName));
 
-%%% Call the function CPgetfeature, which opens a series of list dialogs
-%%% and lets the user choose a feature. The feature can be identified via
-%%% 'ObjectTypename', 'FeatureType' and 'FeatureNo'.
+% Try to convert old measurements
+handles = CP_convert_old_measurements(handles);
+
+% Call the function CPgetfeature, which opens a series of list dialogs
+% and lets the user choose a feature. The feature can be identified via
+% 'ObjectTypename', 'FeatureType' and 'FeatureNo'.
 try
-    [ObjectTypename,FeatureType,FeatureNo] = CPgetfeature(handles);
+    [ObjectTypename,FeatureType] = CPgetfeature(handles);
 catch
     ErrorMessage = lasterr;
     CPerrordlg(['An error occurred in the GenerateHistogramMovie Data Tool. ' ErrorMessage(30:end)]);
@@ -43,55 +46,54 @@ catch
 end
 if isempty(ObjectTypename),return,end
 
-%%% Extract the measurement and calculate mean and standard deviation
+% Extract the measurement and calculate mean and standard deviation
 tmp = handles.Measurements.(ObjectTypename).(FeatureType);
 MeasurementsMean = zeros(length(tmp),1);
 MeasurementsStd = zeros(length(tmp),1);
 for k = 1:length(tmp)
     if ~isempty(tmp{k})
-        MeasurementsMean(k) = mean(tmp{k}(:,FeatureNo));
-        MeasurementsStd(k)  = std(tmp{k}(:,FeatureNo));
+        MeasurementsMean(k) = mean(tmp{k});
+        MeasurementsStd(k)  = std(tmp{k});
     end
 end
 
-%%% Do the plotting
-titlestr = [handles.Measurements.(ObjectTypename).([FeatureType,'Features']){FeatureNo},' of ', ObjectTypename];
+% Do the plotting
+FeatureDisp = strrep(FeatureType,'_','\_');
+ObjectDisp = strrep(ObjectTypename,'_','\_');
+titlestr = [FeatureDisp,' of ', ObjectDisp];
 
-%%% Plots a line chart, where the X dimensions are incremented
-%%% from 1 to the number of measurements to be displayed, and Y is
-%%% the measurement of interest.
-
+% Plots a line chart, where the X dimensions are incremented from 1 to the 
+% number of measurements to be displayed, and Y is the measurement of
+% interest.
 for l = 1:length(MeasurementsMean)
+    if l == 1,
+        FigureHandle = CPfigure('Position',[1 500 792 813],'visible','off');
+        
+        % Plots the line chart and the standard deviations as lines, too
+        plot(1:1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
+        AxisHandle = findobj(FigureHandle,'type','axes');
+        hold(AxisHandle,'on');
+        plot(1:1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,'Color',[0.7 0.7 0.7]);
+        plot(1:1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,'Color',[0.7 0.7 0.7]);
+        h = plot(l,MeasurementsMean(l),'rV');
+        hold(AxisHandle,'off');
+    
+        FontSize = 10;
+        set(AxisHandle,'fontname','Helvetica','fontsize',FontSize)
+        xlabel(AxisHandle,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
+        ylabel(AxisHandle,'Mean +/- standard deviation','fontname','Helvetica','fontsize',FontSize+2)
+        title(titlestr,'Fontname','Helvetica','fontsize',FontSize+2)
 
-    FigureHandle = CPfigure('Position',[1 500 792 813],'visible','off');
-
-    %subplot('position',[0.1 0.55 .8 0.18])
-    hold on
-    plot(1:1:length(MeasurementsMean), MeasurementsMean,'Color',[0 0 0],'LineWidth',1);
-    %%% Plots the Standard deviations as lines, too.
-    plot(1:1:length(MeasurementsMean), MeasurementsMean-MeasurementsStd,'Color',[0.7 0.7 0.7]);
-    plot(1:1:length(MeasurementsMean), MeasurementsMean+MeasurementsStd,'Color',[0.7 0.7 0.7]);
-    plot(l,MeasurementsMean(l),'rV');
-    hold off
-
-
-    set(gca,'XTick',0:100:length(MeasurementsMean))
-    FontSize = 10;
-    set(gca,'fontname','Helvetica','fontsize',FontSize)
-    xlabel(gca,'Image number','Fontname','Helvetica','fontsize',FontSize+2)
-    ylabel(gca,'Mean +/- standard deviation','fontname','Helvetica','fontsize',FontSize+2)
-    title(titlestr,'Fontname','Helvetica','fontsize',FontSize+2)
-    %axis([0 length(MeasurementsMean)+1 0 600])
-
-    set(FigureHandle,'Color','w')
-
-    if l==1
+        set(FigureHandle,'Color','w')
+        
+        % Create the figure
         [filename,pathname] = CPuiputfile('*.avi', 'Save Movie As...',handles.Current.DefaultOutputDirectory);
-        Xmo=avifile(fullfile(pathname,filename));
+        Xmo = avifile(fullfile(pathname,filename));
+    else
+        set(h,'xdata',l,'ydata',MeasurementsMean(l));
     end
-    Xmo=addframe(Xmo,FigureHandle);
-    disp(l) %#ok Ignore MLint We want to see which frame we are at.
-    close
+
+    Xmo = addframe(Xmo,FigureHandle);
 end
 
 Xmo = close(Xmo);

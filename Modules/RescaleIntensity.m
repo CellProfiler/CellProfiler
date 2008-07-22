@@ -28,11 +28,11 @@ function handles = RescaleIntensity(handles)
 % set. 
 %
 % The user also has the option of selecting the value that pixels 
-% above/below the user-specified range are set to, by entering numbers in
+% above/below the rescaled range are set to, by entering numbers in
 % the "For pixels above/below the chosen value..." boxes. If the user wants
 % these pixels to be set to the rescaled highest/lowest intensity values, 
 % enter the same number in these boxes as was entered in the highest/lowest
-% rescaled intensity boxes. Using other values permits a simple form of
+% rescaled intensity boxes. However, using other values permits a simple form of
 % thresholding (e.g., setting the high bounding value to 0 can be used for
 % removing bright pixels above a specified value)
 %

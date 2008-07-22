@@ -16,23 +16,36 @@ function handles = RescaleIntensity(handles)
 % Rescaling method:
 % (S) Stretch the image so that the minimum is zero and the maximum is
 % one.
+%
 % (E) Enter the minimum and maximum values of the original image and the
 % desired resulting image. Pixels are scaled from their user-specified 
 % original range to a new user-specified range.  If the user enters "AE" 
 % (Automatic for Each), then the highest and lowest pixel values will be 
 % Automatically computed for each image by taking the maximum and minimum 
 % pixel values in each image.  If the user enters "AA" (Automatic for All),
-% then the highest and lowest pixel values will be Automatically computed 
+% then the highest and/or lowest pixel values will be Automatically computed 
 % by taking the maximum and minimum pixel values in all the images in the 
-% set. Pixels in the original image that are above or below the original 
-% range are pinned to the high/low values of that range before being 
-% scaled. To convert 12-bit images saved in 16-bit format to the correct 
-% range, use the settings 0, 0.0625, 0, 1.  The value 0.0625 is equivalent 
+% set. 
+%
+% The user also has the option of selecting the value that pixels 
+% above/below the user-specified range are set to, by entering numbers in
+% the "For pixels above/below the chosen value..." boxes. If the user wants
+% these pixels to be set to the rescaled highest/lowest intensity values, 
+% enter the same number in these boxes as was entered in the highest/lowest
+% rescaled intensity boxes. Using other values permits a simple form of
+% thresholding (e.g., setting the high bounding value to 0 can be used for
+% removing bright pixels above a specified value)
+%
+% To convert 12-bit images saved in 16-bit format to the correct 
+% range, use the settings 0, 0.0625, 0, 0, 1, 1.  The value 0.0625 is equivalent 
 % to 2^12 divided by 2^16, so it will convert a 16 bit image containing 
 % only 12 bits of data to the proper range.
-% (G) rescale the image so that all pixels are equal to or Greater
+%
+% (G) Rescale the image so that all pixels are equal to or greater
 % than one.
+%
 % (M) Match the maximum of one image to the maximum of another.
+%
 % (C) Convert to 8 bit: Images in CellProfiler are normally stored as
 % numerical class double in the range of 0 to 1. This option converts these
 % images to class uint8, meaning an 8 bit integer in the range of 0 to 255.
@@ -94,14 +107,22 @@ HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 0
 LowestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
-%defaultVAR07 = 1
-HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = (Method E only): For pixels below the chosen value above, what value do you want them to have (range [0,1])?
+%defaultVAR07 = 0
+LowestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
-%infotypeVAR08 = imagegroup
-OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%textVAR08 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
+%defaultVAR08 = 1
+HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
+%textVAR09 = (Method E only): For pixels above the chosen value above, what value do you want them to have (range [0,1])?
+%defaultVAR09 = 1
+HighestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
+
+%textVAR10 = (Method M only): What did you call the image whose maximum you want the rescaled image to match?
+%infotypeVAR10 = imagegroup
+OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %%%VariableRevisionNumber = 2
 
@@ -131,8 +152,10 @@ elseif strncmpi(RescaleOption,'E',1)
     MethodSpecificArguments{1} = LowestPixelOrig;
     MethodSpecificArguments{2} = HighestPixelOrig;
     MethodSpecificArguments{3} = LowestPixelRescale;
-    MethodSpecificArguments{4} = HighestPixelRescale;
-    MethodSpecificArguments{5} = ImageName;
+    MethodSpecificArguments{4} = LowestPixelOrigPinnedValue;
+    MethodSpecificArguments{5} = HighestPixelRescale;
+    MethodSpecificArguments{6} = HighestPixelOrigPinnedValue;
+    MethodSpecificArguments{7} = ImageName;
 elseif strncmpi(RescaleOption,'C',1)
     MethodSpecificArguments = [];
 end

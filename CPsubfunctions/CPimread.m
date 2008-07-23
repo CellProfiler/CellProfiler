@@ -26,7 +26,7 @@ elseif nargin == 1,
     % The following lines make sure that all directory separation
     % characters follow the platform format
     CurrentFileName = char(CurrentFileName);
-    CurrentFileName([strfind(CurrentFileName,'/') strfind(CurrentFileName,'\')]) = filesep;
+    CurrentFileName = strrep(strrep(CurrentFileName,'\',filesep),'/',filesep);
     
     %%% Handles a non-Matlab readable file format.
     [Pathname, FileName, ext] = fileparts(CurrentFileName);

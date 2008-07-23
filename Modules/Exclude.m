@@ -37,6 +37,17 @@ function handles = Exclude(handles)
 % saved using the name: SmallRemovedSegmented + whatever you called the
 % objects (e.g. SmallRemovedSegmented Nuclei).
 %
+% Another note on filtering objects: The Exclude module will not exclude
+% whole objects that are overlapping with the specified region. To handle 
+% this, you can convert the region to a binary image, then use 
+% MeasureObjectIntensity on the objects but based on the binary image. This
+% will essentially count the number of region pixels within each object,
+% which will be non-zero if there is any overlap of the object with the 
+% region of interest. Using FilterByObjectMeasurement based on a fraction
+% of the integrated intensity can then be applied to exclude overlapping 
+% objects. We will probably include this procedure as an option in the 
+% next release.
+%
 % See also FilterByObjectMeasurement, OverlayOutlines, ConvertToImage.
 
 % CellProfiler is distributed under the GNU General Public License.

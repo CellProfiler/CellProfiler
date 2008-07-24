@@ -41,7 +41,7 @@ if ~isempty(varargin)
                 CPfigure(handles,'Image',FigureHandle);
                 CPimagesc(data,handles);
                 colormap(cmap);
-                Title = get(get(get(ImageHandle,'parent'),'title'),'string');
+                Title = char(get(get(get(ImageHandle,'parent'),'title'),'string'));
                 title(Title);
                 Title = strrep(Title,'\_','_');
                 set(FigureHandle,'Name',Title);

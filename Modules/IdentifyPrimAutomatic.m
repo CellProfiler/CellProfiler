@@ -773,7 +773,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         %%% figure number for the window, so we don't choose a
                         %%% figure number that is being used by another module.
                         IdPrimDistinguishClumpedObjManualFigureNumber = CPfigurehandle(handles);
-                        FigureHandle = CPfigure(handles,'Image',IdPrimDistinguishClumpedObjManualFigureNumber);
+                        FigureHandle = CPfigure(handles,'',IdPrimDistinguishClumpedObjManualFigureNumber);
                         set(IdPrimDistinguishClumpedObjManualFigureNumber,'Tag','IdPrimDistinguishClumpedObjManualFigure',...
                             'name','IdentifyPrimAutomatic Manually Distinguish Clumped Objects Display, cycle # ');
                     end

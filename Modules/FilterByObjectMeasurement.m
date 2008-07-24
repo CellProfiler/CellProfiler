@@ -118,22 +118,34 @@ else
 end
 LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
-switch Measure
-    case 'Intensity'
-        Measure = ['Intensity_' ImageName];
-    case 'Texture'
-        Measure = ['Texture_[0-9]*[_]?' ImageName '$'];
-        Fields = fieldnames(handles.Measurements.(ObjectName));
-        TextComp = regexp(Fields,Measure);
-        A = cellfun('isempty',TextComp);
-        try
-            Measure = Fields{A==0};
-        catch
-            error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-        end
+try
+    switch lower(Measure)
+        case {'intensity','granularity'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName);
+        case {'areashape','neighbors','ratio'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum);
+        case {'texture','radialdistribution'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, UserSpecifiedNumber);
+    end
+catch
+    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
 end
-
-FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, '');
+% switch Measure
+%     case 'Intensity'
+%         Measure = ['Intensity_' ImageName];
+%     case 'Texture'
+%         Measure = ['Texture_[0-9]*[_]?' ImageName '$'];
+%         Fields = fieldnames(handles.Measurements.(ObjectName));
+%         TextComp = regexp(Fields,Measure);
+%         A = cellfun('isempty',TextComp);
+%         try
+%             Measure = Fields{A==0};
+%         catch
+%             error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
+%         end
+% end
+% 
+% FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, '');
 MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed};
 
 if strcmpi(MinValue1, 'No minimum')
@@ -155,12 +167,12 @@ drawnow
 
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
-for i=1:numel(Filter)
+for i = 1:numel(Filter)
     FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
 end
 
 x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
-x(x(:,2)>0,2)=1:sum(x(:,2)>0);
+x(x(:,2) > 0,2) = 1:sum(x(:,2) > 0);
 LookUpColumn = x(:,2);
 
 FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
@@ -213,7 +225,7 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,2);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     CPimagesc(ColoredLabelMatrixImage,handles);
-    title(['Filtered ' ObjectName]);
+    title([ObjectName,' filtered by ',FeatureName]);
     
     subplot(2,2,4);
     CPimagesc(ObjectOutlinesOnOrigImage,handles);

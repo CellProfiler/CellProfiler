@@ -766,15 +766,33 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     MaximaImage = bwmorph(MaximaImage,'shrink',inf);
                 elseif strcmp(LocalMaximaType, 'Manual') || strcmp(LocalMaximaType, 'Manual_for_IdSecondary')
                     %%% Do the manual clicking for local maximas
-                    FigureHandle = CPfigure;
-                    CPimagesc(OrigImage,handles);
-                    AxisHandle = gca;
-                    title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),...
-                        '. Click on approximate cell center points to outline the region of interest.']},...
-                        {'The backspace key or right mouse button will erase the last clicked point.'},...
-                        {'Use Edit > Colormap to adjust the contrast of the image if needed.'},...
-                        {'Press enter when finished.'},...
-                        {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
+                    IdPrimDistinguishClumpedObjManualFigureNumber = findobj('Tag','IdPrimDistinguishClumpedObjManualFigure');
+                    if isempty(IdPrimDistinguishClumpedObjManualFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                        %%% Creates the window, sets its tag, and puts some
+                        %%% text in it. The first lines are meant to find a suitable
+                        %%% figure number for the window, so we don't choose a
+                        %%% figure number that is being used by another module.
+                        IdPrimDistinguishClumpedObjManualFigureNumber = CPfigurehandle(handles);
+                        FigureHandle = CPfigure(handles,'Image',IdPrimDistinguishClumpedObjManualFigureNumber);
+                        set(IdPrimDistinguishClumpedObjManualFigureNumber,'Tag','IdPrimDistinguishClumpedObjManualFigure',...
+                            'name','IdentifyPrimAutomatic Manually Distinguish Clumped Objects Display, cycle # ');
+                    end
+                    %%% If the figure window DOES exist now, then calculate and display items
+                    %%% in it.
+                    if ~isempty(IdPrimDistinguishClumpedObjManualFigureNumber)
+                        %%% Makes the window active.
+                        FigureHandle = CPfigure(IdPrimDistinguishClumpedObjManualFigureNumber(1));
+                        %%% Updates the cycle number on the window.
+                        CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimDistinguishClumpedObjManualFigureNumber);
+                        CPimagesc(OrigImage,handles);
+                        AxisHandle = gca;
+                        title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),...
+                            '. Click on approximate cell center points to outline the region of interest.']},...
+                            {'The backspace key or right mouse button will erase the last clicked point.'},...
+                            {'Use Edit > Colormap to adjust the contrast of the image if needed.'},...
+                            {'Press enter when finished.'},...
+                            {'Then be patient while waiting for processing to complete.'}],'fontsize',handles.Preferences.FontSize);
+                    end
                     [xpts,ypts] = getpoints(AxisHandle);
                     MaximaImage = zeros(size(OrigImage,1), size(OrigImage, 2));
                     point_idx = sub2ind(size(OrigImage), ypts, xpts);

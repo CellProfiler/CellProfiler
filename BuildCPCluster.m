@@ -42,7 +42,7 @@ else
 end
 
 % Change the permissions
-!chmod -R 775 *'
+!chmod -R 775 *
 
 % Exit
 quit

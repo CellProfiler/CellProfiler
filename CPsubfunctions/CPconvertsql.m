@@ -374,6 +374,7 @@ for img_idx = FirstSet:LastSet
                     if (~ isscalar(vals)),
                         error(['Attempt to write non-scalar numeric value in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);
                     end
+                    vals(~ isfinite(vals)) = 0;
                     fprintf(fimage, ',%g', vals);
                     %%% Test that counts are integers
                     if strcmp(FeatureName(max(findstr(FeatureName, 'Count')):end), 'Count') && (floor(vals) ~= vals),
@@ -381,7 +382,6 @@ for img_idx = FirstSet:LastSet
                         CPwarndlg(['Attempt to write non-integer "Count" feature in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);
                     end
                 else
-                    'foo'
                     CPwarndlg(['Non-string, non-numeric data, feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
                     % error(['Non-string, non-numeric data, feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
                 end

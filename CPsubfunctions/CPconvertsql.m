@@ -447,7 +447,7 @@ formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];
 %%% THIS LINE WRITES ENTIRE OBJECT VALS FILE
 %%% if vals{1} is empty skip writting into object file
 if ~iscell(vals) || (iscell(vals) && ~isempty(vals{1}))
-    perobjectvals(isnan(perobjectvals)) = 0;
+    perobjectvals(~ isfinite(perobjectvals)) = 0;
     fprintf(fobject, formatstr, perobjectvals');
 end
 

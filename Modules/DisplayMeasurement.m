@@ -65,7 +65,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Neighbors
 %choiceVAR03 = Ratio
 %inputtypeVAR03 = popupmenu custom
-FeatureType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
 %defaultVAR04 = 1
@@ -80,43 +80,51 @@ end
 %inputtypeVAR05 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What do you want to call the generated plots?
-%defaultVAR06 = OrigPlot
-%infotypeVAR06 = imagegroup indep
-PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = For TEXTURE or RADIALDISTRIBUTION features, what previously measured texture scale (TEXTURE) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
+%defaultVAR06 = 1
+UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = ONLY ENTER THE FOLLOWING INFORMATION IF USING SCATTER PLOT WITH TWO MEASUREMENTS!
+%textVAR07 = What do you want to call the generated plots?
+%defaultVAR07 = OrigPlot
+%infotypeVAR07 = imagegroup indep
+PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Which object would you like for the second scatter plot measurement, or if using a Ratio, what is the numerator object (The option IMAGE currently only works with Correlation measurements)?
-%choiceVAR08 = Image
-%infotypeVAR08 = objectgroup
-%inputtypeVAR08 = popupmenu
-ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = ONLY ENTER THE FOLLOWING INFORMATION IF USING SCATTER PLOT WITH TWO MEASUREMENTS!
 
-%textVAR09 = Which category of measurements would you like to use?
-%choiceVAR09 = AreaShape
-%choiceVAR09 = Correlation
-%choiceVAR09 = Intensity
-%choiceVAR09 = Neighbors
-%choiceVAR09 = Ratio
-%choiceVAR09 = Texture
-%inputtypeVAR09 = popupmenu custom
-FeatureType2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Which object would you like for the second scatter plot measurement, or if using a Ratio, what is the numerator object (The option IMAGE currently only works with Correlation measurements)?
+%choiceVAR09 = Image
+%infotypeVAR09 = objectgroup
+%inputtypeVAR09 = popupmenu
+ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
-%defaultVAR10 = 1
-FeatureNo2 = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Which category of measurements would you like to use?
+%choiceVAR10 = AreaShape
+%choiceVAR10 = Correlation
+%choiceVAR10 = Intensity
+%choiceVAR10 = Neighbors
+%choiceVAR10 = Ratio
+%choiceVAR10 = Texture
+%inputtypeVAR10 = popupmenu custom
+MeasureChoice2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%textVAR11 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%defaultVAR11 = 1
+FeatureNo2 = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 if isempty(FeatureNo2)
     error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);
 end
 
-%textVAR11 = For INTENSITY or TEXTURE features, which image would you like to process?
-%infotypeVAR11 = imagegroup
-%inputtypeVAR11 = popupmenu
-Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR12 = For INTENSITY or TEXTURE features, which image would you like to process?
+%infotypeVAR12 = imagegroup
+%inputtypeVAR12 = popupmenu
+Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 1
+%textVAR13 = For TEXTURE or RADIALDISTRIBUTION features, what previously measured texture scale (TEXTURE) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
+%defaultVAR13 = 1
+UserSpecifiedNumber2 = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -124,15 +132,38 @@ Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 drawnow
 
 %%% Determines which cycle is being analyzed.
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-NumberOfImageSets = handles.Current.NumberOfImageSets;
+% SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+% NumberOfImageSets = handles.Current.NumberOfImageSets;
 
-if strcmp(FeatureType,'Intensity') || strncmp(FeatureType,'Texture',7)
-    FeatureType = [FeatureType, '_',Image];
+%%% Get the correct fieldname where measurements are located
+try
+    switch lower(MeasureChoice)
+        case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image);
+        case {'areashape','neighbors','ratio'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo);
+        case {'texture','radialdistribution'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image, UserSpecifiedNumber);
+    end
+catch
+    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', MeasureChoice, ', was not available for ', ObjectName]);
 end
 
-if strcmp(FeatureType2,'Intensity') || strncmp(FeatureType2,'Texture',7)
-    FeatureType2 = [FeatureType2, '_',Image2];
+if strcmp(PlotType,'Scatter 2')
+    %%% Get the correct fieldname where measurements are located for second
+    %%% scatterplot measures
+    try
+        switch lower(MeasureChoice2)
+            case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
+                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2, Image2);
+            case {'areashape','neighbors','ratio'}
+                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2);
+            case {'texture','radialdistribution'}
+                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2, Image2, UserSpecifiedNumber2);
+        end
+    catch
+        error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', MeasureChoice, ', was not available for ', ObjectName]);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -140,28 +171,28 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(PlotType,'Bar')
+if strcmp(PlotType,'Bar')           %%%% Bar chart
     PlotType = 1;
-    %%% Line chart
-elseif strcmp(PlotType,'Line')
+elseif strcmp(PlotType,'Line')      %%% Line chart
     PlotType = 2;
-    %%% Scatter plot, 1 measurement
-elseif strcmp(PlotType,'Scatter 1')
+elseif strcmp(PlotType,'Scatter 1')     %%% Scatter plot, 1 measurement
     PlotType = 3;
-    %%% Scatter plot, 2 measurements
-elseif strcmp(PlotType,'Scatter 2')
+elseif strcmp(PlotType,'Scatter 2')    %%% Scatter plot, 2 measurements
     PlotType = 4;
 end
 
+%%% Activates the appropriate figure window.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 drawnow
-%%% Activates the appropriate figure window.
 FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 if PlotType == 4
-    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureType,FeatureNo,ObjectName2,FeatureType2,FeatureNo2);
+%     CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,MeasureChoice,FeatureNo,ObjectName2,MeasureChoice2,FeatureNo2);
+    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureName,ObjectName2,FeatureName2);
 else
-    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureType,FeatureNo);
+    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureName);
+
+%                     handles,PlotType,FigHandle,ModuleFlag,Object,Feature,Object2,Feature2
 end
 
 %%%%%%%%%%%%%%%

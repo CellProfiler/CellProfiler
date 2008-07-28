@@ -243,7 +243,7 @@ end
 set(gca,'fontname','Helvetica','fontsize',FontSize)
 title(titlestr,'Fontname','Helvetica','fontsize',FontSize+2)
 if ishandle(FigHandle)
-    set(FigHandle,'Numbertitle','off','name',['Plot Measurement: ',get(get(gca,'title'),'string')])
+    set(FigHandle,'name',[get(get(gca,'title'),'string'),': ',get(FigHandle,'name')])
 end
 
 

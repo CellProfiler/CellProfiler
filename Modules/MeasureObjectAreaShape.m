@@ -358,7 +358,7 @@ for i = 1:length(ObjectNameList)
             Zernike = zeros(length(ObjectNameList),5);
         end
         % Basic shape features
-        for k = 1:length(Basic)
+        for k = 1:size(Basic,2)
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.3+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                 'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))),'UserData',handles.Current.SetBeingAnalyzed);

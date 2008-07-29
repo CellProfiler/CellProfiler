@@ -13,10 +13,10 @@ batch_size = int(argv[4])
 write_data = argv[5]
 timeout = int(argv[6])
 
-CPCluster='/imaging/analysis/CPClusterSingle/5087'
+CPCluster='/imaging/analysis/CPCluster/XXXX'
 
 # This should probably submit to the same queuetype, but we want to make sure it works.
-command = "bsub -K -q short -N -oo %(datadir)s/txt_output/joblist.txt %(CPCluster)s/CPClusterSingle.py %(datadir)s/%(prefix)sdata.mat all %(batch_size)d %(datadir)s/status %(prefix)s no %(timeout)d"%(locals())
+command = "bsub -K -q short -N -oo %(datadir)s/txt_output/joblist.txt %(CPCluster)s/CPCluster.py %(datadir)s/%(prefix)sdata.mat all %(batch_size)d %(datadir)s/status %(prefix)s no %(timeout)d"%(locals())
 subproc = Popen(command.split(" "),stdout=PIPE,stderr=PIPE)
 subproc.wait()
 
@@ -27,10 +27,10 @@ for l in f:
     if l == "":
         continue
     start,end = l.strip().split(" ")
-    print "bsub -q %(queue)s -o %(datadir)s/txt_output/%(start)s_to_%(end)s.txt %(CPCluster)s/CPClusterSingle.py %(datadir)s/%(prefix)sdata.mat %(start)s %(end)s %(datadir)s/status %(prefix)s %(write_data)s %(timeout)d"%(locals())
+    print "bsub -q %(queue)s -o %(datadir)s/txt_output/%(start)s_to_%(end)s.txt %(CPCluster)s/CPCluster.py %(datadir)s/%(prefix)sdata.mat %(start)s %(end)s %(datadir)s/status %(prefix)s %(write_data)s %(timeout)d"%(locals())
 
 
 
 #  for i in `; do
-#      echo bsub -q $QueueType -o ${BatchTxtOutputDir}/${i}.txt $CPCluster/CPClusterSingle.sh ${BatchDataDir}/${BatchPrefix}data.mat $i $BatchStatusDir $BatchPrefix
+#      echo bsub -q $QueueType -o ${BatchTxtOutputDir}/${i}.txt $CPCluster/CPCluster.sh ${BatchDataDir}/${BatchPrefix}data.mat $i $BatchStatusDir $BatchPrefix
 #  done

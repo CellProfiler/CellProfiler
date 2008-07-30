@@ -124,8 +124,7 @@ for i = 1:length(FileList)
     for fieldnum = 1:length(Fieldnames)
         secondfields = fieldnames(handles.Measurements.(Fieldnames{fieldnum}));
         % Some fields should not be merged, remove these from the list of fields
-        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'PathName')) & ...   % Don't merge pathnames under handles.Measurements.GeneralInfo
-                                    cellfun('isempty',strfind(secondfields,'Features')) & ...   % Don't merge cell arrays with feature names
+        secondfields = secondfields(cellfun('isempty',strfind(secondfields,'Features')) & ...   % Don't merge cell arrays with feature names
                                     cellfun('isempty',strfind(secondfields,'SubObjectFlag')));  % Don't merge cell arrays with SubObjectFlag (to play nicely with Relate module)
         for j = 1:length(secondfields)
             idxs = ~cellfun('isempty',SubSetMeasurements.(Fieldnames{fieldnum}).(secondfields{j}));

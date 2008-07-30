@@ -1,33 +1,33 @@
 #!/util/bin/python
 from sys import argv,exit
 from subprocess import Popen, PIPE, STDOUT
+from scipy.io.mio import loadmat
+from os.path import exists
 
-if len(argv) != 7:
-    print "usage: %s DataDir BatchPrefix QueueType BatchSize WriteOutData(yes/no) Timeout"%(argv[0])
+if len(argv) != 6:
+    print "usage: %s DataDir QueueType BatchSize WriteOutData(yes/no) Timeout"%(argv[0])
     exit(1)
 
 datadir = argv[1]
-prefix = argv[2]
-queue = argv[3]
-batch_size = int(argv[4])
-write_data = argv[5]
-timeout = int(argv[6])
+queue = argv[2]
+batch_size = int(argv[3])
+write_data = argv[4]
+timeout = int(argv[5])
 
 CPCluster='/imaging/analysis/CPCluster/XXXX'
 
-# This should probably submit to the same queuetype, but we want to make sure it works.
-command = "bsub -K -q short -N -oo %(datadir)s/txt_output/joblist.txt %(CPCluster)s/CPCluster.py %(datadir)s/%(prefix)sdata.mat all %(batch_size)d %(datadir)s/status %(prefix)s no %(timeout)d"%(locals())
-subproc = Popen(command.split(" "),stdout=PIPE,stderr=PIPE)
-subproc.wait()
+# Load Batch_data and figure out the sets that need running
+batch_info = loadmat("%(datadir)s/Batch_data.mat"%(locals()))
+num_sets = batch_info['handles'].Current.NumberOfImageSets + 20 
 
-f = open("%(datadir)s/txt_output/joblist.txt"%(locals()))
-
-for l in f:
-    l = l.strip()
-    if l == "":
-        continue
-    start,end = l.strip().split(" ")
-    print "bsub -q %(queue)s -o %(datadir)s/txt_output/%(start)s_to_%(end)s.txt %(CPCluster)s/CPCluster.py %(datadir)s/%(prefix)sdata.mat %(start)s %(end)s %(datadir)s/status %(prefix)s %(write_data)s %(timeout)d"%(locals())
+# Loop over batches, check status file, print out commands for those that need it
+for start in range(2, num_sets + 1, batch_size):
+    end = start + batch_size - 1
+    if end > num_sets:
+        end = num_sets
+    status_file_name = "%(datadir)s/status/Batch_%(start)d_to_%(end)d_DONE.mat"%(locals())
+    if not exists(status_file_name):
+        print "bsub -q %(queue)s -o %(datadir)s/txt_output/%(start)s_to_%(end)s.txt %(CPCluster)s/CPCluster.py %(datadir)s/Batch_data.mat %(start)s %(end)s %(datadir)s/status Batch_ %(write_data)s %(timeout)d"%(locals())
 
 
 

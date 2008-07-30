@@ -13,38 +13,6 @@ catch
     reportBatchError(['Batch Error: Loading batch file (' batchfile ')']);
 end
 
-%%%%%%% This section causing error.  Output is e.g.
-%% "Could not write to ./status/Batch_97_to_108_OUT.matl/1, so processing
-%% aborted." DLogan 2008.02.21
-% %%% Test that we can write to the output files
-% OutputFileName = sprintf('%s/%s%d_to_%d_OUT.mat',OutputFolder,BatchFilePrefix,StartingSet,EndingSet);
-% try
-%     save(OutputFileName,'handles');
-% catch
-%     disp(['Could not write to ' OutputFileName ', so processing aborted.']);
-%     quit;
-% end
-% delete(OutputFileName);
-
-% If we get the argument 'all', use EndingSet as a step size and print
-% out the imageset numbers for each set that still needs to run.
-if strcmp(StartingSet, 'all'),
-    if exist(OutputFolder) ~= 7, % directory
-        error(sprintf('Output folder %s does not exist.', OutputFolder));
-        quit;
-    end
-    StepSize = str2num(EndingSet);
-    Starts = 2:StepSize:handles.Current.NumberOfImageSets;
-    Ends = Starts + StepSize - 1;
-    Ends(end) = handles.Current.NumberOfImageSets;
-    for imagesets = [Starts ; Ends],
-        if ~ exist(sprintf('%s/%s%d_to_%d_DONE.mat',OutputFolder,BatchFilePrefix,imagesets(1),imagesets(2))),
-            disp(sprintf('%d %d', imagesets(1), imagesets(2)));
-        end
-    end
-    quit;
-end
-
 % arguments come in as strings, convert to integer
 StartingSet = str2num(StartingSet);
 EndingSet = str2num(EndingSet);

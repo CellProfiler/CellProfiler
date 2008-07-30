@@ -1,4 +1,11 @@
 #!/util/bin/python
+
+# This is a wrapper around the compiled Matlab CPCluster program,
+# which has a tendency to hang on the cluster.  We wrap it in a script
+# that watches the matlab program, and if it fails to report back (via
+# a HUP signal after each module), it kills it and restarts it (up to
+# three times).
+
 import os
 import sys
 from subprocess import Popen
@@ -59,6 +66,10 @@ def run_job_with_timeout(full_command, timeout):
     # probably crashed before starting (intermitted Matlab failure),
     # and should be given another chance.  It also may have exited
     # before ever reporting back.
+
+    if status['was_killed'] and status['ever_had_heartbeat']:
+        print >>sys.stderr, "CPCluster.py: Matlab process timed out, killed."
+
     return status['was_killed'] and (not status['ever_had_heartbeat'])
     
 

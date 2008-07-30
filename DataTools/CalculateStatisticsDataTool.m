@@ -79,6 +79,7 @@ while ~ValidGroupings,
 
             break;
         end
+    else PreloadedFeatures = '';
     end
 
     %%% If no preloaded data, or user selected 'Other file'...

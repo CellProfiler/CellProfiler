@@ -6,30 +6,15 @@ addpath(pwd);
 
 % Check to see if neccesary directories are present and if they are, add
 % them to the path
-try
-    addpath(fullfile(pwd,'ImageTools'));
-catch
-    error('The ImageTools directory is not present in the current directory. Please check to see if it exists and try again.');
-end
-try
-    addpath(fullfile(pwd,'DataTools'));
-catch
-    error('The DataTools directory is not present in the current directory. Please check to see if it exists and try again.');
-end
-try
-    addpath(fullfile(pwd,'CPsubfunctions'));
-catch
-    error('The CPsubfunctions directory is not present in the current directory. Please check to see if it exists and try again.');
-end
-try
-    addpath(fullfile(pwd,'Modules'));
-catch
-    error('The Modules directory is not present in the current directory. Please check to see if it exists and try again.');
-end
-try
-    addpath(fullfile(pwd,'Help'));
-catch
-    error('The Help directory is not present in the current directory. Please check to see if it exists and try again.');
+
+Dirs = {'ImageTools','DataTools','CPsubfunctions','Modules','Help'};
+
+for thisDir = Dirs
+    try
+        addpath(fullfile(pwd,char(thisDir)));
+    catch
+        error(['The ' char(thisDir) ' directory is not present in the current directory. Please check to see if it exists and try again.']);
+    end
 end
 
 % Attempt to build CPCluster.m

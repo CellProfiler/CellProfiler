@@ -296,8 +296,6 @@ if ~strcmpi(SaveColoredObjects,'Do not save')
     handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
-FeatureName = FeatureName(~isspace(FeatureName));                    % Remove spaces in the feature name
-
 %%% Save to handles
 % fieldname = ['Classify_',ObjectName,'_',FeatureName{1},'_',FeatureName{2}];
 % handles.Measurements.Image.([fieldname,'Features']) = BinLabels;

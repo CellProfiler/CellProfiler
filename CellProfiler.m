@@ -6109,14 +6109,13 @@ end
 rmappdata(0,'OpenGuiWhenRunning');
 
 function SplashScreenHandle = SplashScreen
-SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
-axis off;
 if isdeployed
     logo = imread('CPsplash.jpg','jpg');
 else
     ImageFile = fullfile(fileparts(which('CellProfiler.m')),'CPsubfunctions','CPsplash.jpg');
     logo = imread(ImageFile,'jpg');
 end
+SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
 iptsetpref('ImshowBorder','tight')
 imshow(logo);
 

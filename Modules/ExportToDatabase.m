@@ -5,15 +5,18 @@ function handles = ExportToDatabase(handles)
 %
 % SHORT DESCRIPTION:
 % Exports data in database readable format, including an importing file
-% with column names.
+% with column names and a CellProfiler Analyst properties file, if desired.
 % *************************************************************************
 %
 % This module exports measurements to a SQL compatible format. It creates
 % MySQL or Oracle scripts and associated data files which will create a
-% database and import the data into it. This module must be run at the end
-% of a pipeline, or second to last if you are using the CreateBatchFiles
-% module. If you forget this module, you can also run the ExportDatabase
-% data tool after processing is complete; its function is the same.
+% database and import the data into it and gives you the option of creating
+% a properties file for use with CellProfiler Analyst. 
+% 
+% This module must be run at the end of a pipeline, or second to last if 
+% you are using the CreateBatchFiles module. If you forget this module, you
+% can also run the ExportDatabase data tool after processing is complete; 
+% its functionality is the same.
 %
 % The database is set up with two primary tables. These tables are the
 % Per_Image table and the Per_Object table (which may have a prefix if you
@@ -67,6 +70,19 @@ function handles = ExportToDatabase(handles)
 % you may unintentionally overwrite existing tables.
 %
 % SQL File Prefix: All the CSV files will start with this prefix.
+%
+% Create a CellProfiler Analyst properties file: Generate a template
+% properties for using your new database in CellProfiler Analyst (a data
+% exploration tool which can also be downloaded from
+% http://www.cellprofiler.org/)
+% 
+% If creating a properties file for use with CellProfiler Analyst (CPA): 
+% The module will attempt to fill in as many as the entries as possible 
+% based on the current handles structure. However, entries such as the 
+% server name, username and password are omitted. Hence, opening the 
+% properties file in CPA will produce an error since it won't be able to
+% connect to the server. However, you can still edit the file in CPA and
+% then fill in the required information.
 %
 % ********************* How To Import MySQL *******************************
 % Step 1: Log onto the server where the database will be located.
@@ -151,7 +167,13 @@ FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%VariableRevisionNumber = 4
+%textVAR06 = Do you want to create a CellProfiler Analyst properties file?
+%choiceVAR06 = Yes
+%choiceVAR06 = No
+WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -192,6 +214,8 @@ else
 end
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 
+DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & DoWriteSQL;
+
 % Special case: We're writing batch files, and this is the first cycle.
 if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (handles.Current.SetBeingAnalyzed == 1)
     DoWriteSQL = 1;
@@ -210,6 +234,10 @@ if DoWriteSQL,
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
     CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
+    
+    if DoWriteCPAPropertiesFile,
+        CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

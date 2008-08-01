@@ -1,4 +1,4 @@
-#!/util/bin/python
+#!/broad/tools/apps/Python-2.5.2/bin/python
 from sys import argv,exit
 from subprocess import Popen, PIPE, STDOUT
 from scipy.io.mio import loadmat

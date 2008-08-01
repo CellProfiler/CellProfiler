@@ -16,11 +16,16 @@ function handles = Align(handles)
 % have matching bright and dark areas.  This is useful when the
 % microscope is not perfectly calibrated because, for example, proper
 % alignment is necessary for primary objects to be helpful to identify
-% secondary objects. The images are cropped appropriately according to
-% this alignment, so the final images will be smaller than the
-% originals by a few pixels if alignment is necessary. The module stores
-% the amount of shift between images, which can be useful for quality
-% control purposes.
+% secondary objects. 
+%
+% Some important notes for proper use of this module:
+% (1) Regardless of the number of input images, they will all be aligned with
+% respect to the first image.
+% (2) The images are cropped according to the smallest input image. If the
+% images are all the same size, then no cropping is performed
+% (3) If an image is aligned, the padded pixels are assigned a fill value of zero.
+% (4) The module stores the amount of shift between images as a measurement,
+% which can be useful for quality control purposes.
 %
 % Measured feature:                 Feature Number:
 % Xshift_Image1NamevsImage2Name  |       1 (e.g., Xshift_BluevsRed)
@@ -32,11 +37,9 @@ function handles = Align(handles)
 % Settings:
 %
 % After entering the names of the images to be aligned as well as the 
-% aligned image name(s), choose whether to display the image produced by 
-% this module by selecting "yes" in the appropriate menu. Lastly, select 
-% the method of alignment. There are two choices, one is based on mutual 
-% information while the other is based on the cross correlation. When using
-% the cross correlation method, the second image should serve as a template
+% aligned image name(s), select the method of alignment. There are two 
+% choices, one is based on mutual information while the other is based on 
+% the cross correlation. When using the cross correlation method, the second image should serve as a template
 % and be smaller than the first image selected.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -58,7 +61,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the first image to be aligned? (will be displayed as blue) 
+%textVAR01 = What is the name of the first image to be aligned? (will be displayed as blue) 
 %infotypeVAR01 = imagegroup
 Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -68,7 +71,7 @@ Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 AlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What did you call the second image to be aligned? (will be displayed as green) 
+%textVAR03 = What is the name of the second image to be aligned? (will be displayed as green) 
 %infotypeVAR03 = imagegroup
 Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
@@ -78,7 +81,7 @@ Image2Name = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %infotypeVAR04 = imagegroup indep
 AlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What did you call the third image to be aligned? (will be displayed as red) 
+%textVAR05 = What is the name of the third image to be aligned? (will be displayed as red) 
 %choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
 Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -89,71 +92,66 @@ Image3Name = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR06 = imagegroup indep
 AlignedImage3Name = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = This module calculates the alignment shift and stores it as a measurement. Do you want to actually shift the images and crop them to produce the aligned images? 
-%choiceVAR07 = Yes
-%choiceVAR07 = No
-AdjustImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%textVAR07 = Should this module use Mutual Information or Normalized Cross Correlation to align the images?  If using normalized cross correlation, the second image should be the template and smaller than the first.
+%choiceVAR07 = Mutual Information
+%choiceVAR07 = Normalized Cross Correlation
+AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = Should this module use Mutual Information or Normalized Cross Correlation to align the images?  If using normalized cross correlation, the second image should be the template and smaller than the first.
-%choiceVAR08 = Mutual Information
-%choiceVAR08 = Normalized Cross Correlation
-AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR08 = Do not use
+%infotypeVAR08 = imagegroup indep
+MoreImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
-%choiceVAR09 = Do not use
+%textVAR09 = What do you want to call the subsequently aligned first image?
+%defaultVAR09 = /
 %infotypeVAR09 = imagegroup indep
-MoreImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+MoreAlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = What do you want to call the subsequently aligned first image?
-%defaultVAR10 = /
+%textVAR10 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR10 = Do not use
 %infotypeVAR10 = imagegroup indep
-MoreAlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
-%textVAR11 = If you aligned an image or a sequence with a template (two image alignment), to what other image/sequence do you want to apply the shift calculated above?
-%choiceVAR11 = Do not use
+%textVAR11 = What do you want to call the subsequently aligned second image?
+%defaultVAR11 = /
 %infotypeVAR11 = imagegroup indep
-MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
+MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = What do you want to call the subsequently aligned second image?
-%defaultVAR12 = /
-%infotypeVAR12 = imagegroup indep
-MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Checks whether the user has chosen "Do not use" in improper places.
+% Checks whether the user has chosen "Do not use" in improper places.
 if strcmpi(Image1Name,'Do not use') || strcmpi(Image2Name,'Do not use') || strcmpi(AlignedImage1Name,'Do not use') || strcmpi(AlignedImage2Name,'Do not use')
     error(['Image processing was canceled in the ', ModuleName, ' module because you must choose two images to align and name the resulting aligned images - one of the first two images you specified is currently called "Do not use".']);
 end
     
 if strcmpi(Image3Name,'Do not use') ~= strcmpi(AlignedImage3Name,'Do not use') 
-   %%% If there is a mismatch between the input/output names for image 3:
-   %%% that is, if one is called Do not use but the other is not.
+   % If there is a mismatch between the input/output names for image 3:
+   % that is, if one is called Do not use but the other is not.
    error(['Image processing was canceled in the ', ModuleName, ' module because you have specified a name for the third image but also marked it "Do not use".']);
 end
 
-%%% Reads the images.
-%Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'MustBeGray','CheckScale');
+% Are there three input images? If so, set a flag
+AreThereThreeInputImages = ~strcmpi(Image3Name,'Do not use');
+
+% Reads the images
 Image1 = CPretrieveimage(handles,Image1Name,ModuleName,'DontCheckColor','CheckScale');
 [M1 N1 P1] = size(Image1);
-%Image2 = CPretrieveimage(handles,Image2Name,ModuleName,'MustBeGray','CheckScale');
 Image2 = CPretrieveimage(handles,Image2Name,ModuleName,'DontCheckColor','CheckScale');
 [M2 N2 P2] = size(Image2);
-%%% Same for Image 3.
-if ~strcmpi(Image3Name,'Do not use')
+% Same for Image 3.
+if AreThereThreeInputImages
     Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'DontCheckColor','CheckScale');
     [M3 N3 P3] = size(Image3);
 end
-%%% Same for More Image 1,2.
+% Same for More Image 1,2.
 if ~strcmpi(MoreImage1Name,'Do not use')
     MoreImage1 = CPretrieveimage(handles,MoreImage1Name,ModuleName,'DontCheckColor','CheckScale');
     [M3 N3 P3] = size(MoreImage1);
@@ -163,197 +161,105 @@ if ~strcmpi(MoreImage2Name,'Do not use')
     [M3 N3 P3] = size(MoreImage2);
 end
 
-
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Aligns three input images.
-if ~strcmpi(Image3Name,'Do not use')
-    % Check to make sure all images are the same size
-    % if not take the minimum size of them and warn user
+% Are all images are the same size? If not take the minimum size and warn the user
+
+if AreThereThreeInputImages, 
     M = [M1 M2 M3];
     N = [N1 N2 N3];
-    P = [P1 P2 P3];    
-    if any(diff(M))||any(diff(N))||any(diff(P))
-        Mmin=min(M);
-        Nmin=min(N);
-        Pmin=min(P);
-        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size']))
-            CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size'],'replace');
-        end        
-        Image1=Image1(1:Mmin,1:Nmin,1:Pmin);
-        Image2=Image2(1:Mmin,1:Nmin,1:Pmin);
-        Image3=Image3(1:Mmin,1:Nmin,1:Pmin);        
-    end
-    %%% Aligns 1 and 2 (see subfunctions at the end of the module).
-    [sx, sy] = autoalign(sum(Image1,3)/sum(max(max(Image1))), sum(Image2,3)/sum(max(max(Image2))), AlignMethod);
-    if (P1 > 1)||(P2 > 1)||(P3 > 1)
-        %% Color Images
-        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images']))
-            CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are color. The images will be converted to Gray for alignment and the alignment will be applied to the color images.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images'],'replace');
-        end
-        AlignR1 = subim(Image1(:,:,1), sx, sy);
-        AlignG1 = subim(Image1(:,:,2), sx, sy);
-        AlignB1 = subim(Image1(:,:,3), sx, sy);
-        Temp1 = zeros([size(AlignR1) 3]);
-        Temp1(:,:,1) = AlignR1;
-        Temp1(:,:,2) = AlignG1;
-        Temp1(:,:,3) = AlignB1;
-        AlignR2 = subim(Image2(:,:,1), -sx, -sy);
-        AlignG2 = subim(Image2(:,:,2), -sx, -sy);
-        AlignB2 = subim(Image2(:,:,3), -sx, -sy);
-        Temp2 = zeros([size(AlignR2) 3]);
-        Temp2(:,:,1) = AlignR2;
-        Temp2(:,:,2) = AlignG2;
-        Temp2(:,:,3) = AlignB2;
-        %%% Assumes 3 is stuck to 2.
-        AlignR3 = subim(Image3(:,:,1), -sx, -sy);
-        AlignG3 = subim(Image3(:,:,2), -sx, -sy);
-        AlignB3 = subim(Image3(:,:,3), -sx, -sy);
-        Temp3 = zeros([size(AlignR3) 3]);
-        Temp3(:,:,1) = AlignR3;
-        Temp3(:,:,2) = AlignG3;
-        Temp3(:,:,3) = AlignB3;
-        %%% Aligns 2 and 3.
-%        [sx2, sy2] = autoalign(Temp2, Temp3, AlignMethod);
-        [sx2, sy2] = autoalign(sum(Temp2,3)/sum(max(max(Temp2))), sum(Temp3,3)/sum(max(max(Temp3))), AlignMethod);
-        Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy), ...
-            ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
-        if strcmp(AdjustImage,'Yes') == 1
-           %AlignedImage2 = subim(Temp2, sx2, sy2);
-           AlignR23 = subim(Temp2(:,:,1), sx2, sy2);
-           AlignG23 = subim(Temp2(:,:,2), sx2, sy2);
-           AlignB23 = subim(Temp2(:,:,3), sx2, sy2);
-           AlignedImage2 = zeros([size(AlignR23) 3]);
-           AlignedImage2(:,:,1) = AlignR23;
-           AlignedImage2(:,:,2) = AlignG23;
-           AlignedImage2(:,:,3) = AlignB23;    
-            %AlignedImage3 = subim(Temp3, -sx2, -sy2);
-           AlignR32 = subim(Temp3(:,:,1), -sx2, -sy2);
-           AlignG32 = subim(Temp3(:,:,2), -sx2, -sy2);
-           AlignB32 = subim(Temp3(:,:,3), -sx2, -sy2);
-           AlignedImage3 = zeros([size(AlignR32) 3]);
-           AlignedImage3(:,:,1) = AlignR32;
-           AlignedImage3(:,:,2) = AlignG32;
-           AlignedImage3(:,:,3) = AlignB32; 
-           %%% 1 was already aligned with 2.
-           %AlignedImage1 = subim(Temp1, sx2, sy2);
-           AlignR12 = subim(Temp1(:,:,1), sx2, sy2);
-           AlignG12 = subim(Temp1(:,:,2), sx2, sy2);
-           AlignB12 = subim(Temp1(:,:,3), sx2, sy2);
-           AlignedImage1 = zeros([size(AlignR12) 3]);
-           AlignedImage1(:,:,1) = AlignR12;
-           AlignedImage1(:,:,2) = AlignG12;
-           AlignedImage1(:,:,3) = AlignB12; 
-        end
-
-    else
-        %% Gray Images
-        Temp1 = subim(Image1, sx, sy);
-        Temp2 = subim(Image2, -sx, -sy);
-        %%% Assumes 3 is stuck to 2.
-        Temp3 = subim(Image3, -sx, -sy);
-        %%% Aligns 2 and 3.
-        [sx2, sy2] = autoalign(Temp2, Temp3, AlignMethod);
-        Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy), ...
-            ') (2 vs 3: X ', num2str(sx2), ', Y ', num2str(sy2),')'];
-        if strcmp(AdjustImage,'Yes') == 1
-            AlignedImage2 = subim(Temp2, sx2, sy2);
-            AlignedImage3 = subim(Temp3, -sx2, -sy2);
-            %%% 1 was already aligned with 2.
-            AlignedImage1 = subim(Temp1, sx2, sy2);
-        end
-    end
-else %%% Aligns two input images.
+    P = [P1 P2 P3]; 
+else
     M = [M1 M2];
     N = [N1 N2];
-    P = [P1 P2];    
-    if any(diff(M))||any(diff(N))||any(diff(P))
-        Mmin=min(M);
-        Nmin=min(N);
-        Pmin=min(P);       
-        if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 2 Images not all same size']))
-            CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 2 Images not all same size'],'replace');
-        end
-        Image1=Image1(1:Mmin,1:Nmin,1:Pmin);
-        Image2=Image2(1:Mmin,1:Nmin,1:Pmin);
-    end
-    [sx, sy] = autoalign(sum(Image1,3)/sum(max(max(Image1))), sum(Image2,3)/sum(max(max(Image2))), AlignMethod);
-    Results = ['(1 vs 2: X ', num2str(sx), ', Y ', num2str(sy),')'];
-    if strcmp(AdjustImage,'Yes') == 1
-       if (P1 > 1)||(P2 > 1)
-            if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images']))
-                CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are color. The images will be converted to Gray for alignment and the alignment will be applied to the color images.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images'],'replace');
-            end
-             % Apply subim to each individual color element
-             AlignR1 = subim(Image1(:,:,1), sx, sy);
-             AlignG1 = subim(Image1(:,:,2), sx, sy);
-             AlignB1 = subim(Image1(:,:,3), sx, sy);             
-             AlignedImage1 = zeros([size(AlignR1) 3]);
-             AlignedImage1(:,:,1) = AlignR1;
-             AlignedImage1(:,:,2) = AlignG1; 
-             AlignedImage1(:,:,3) = AlignB1;
-             AlignR2 = subim(Image2(:,:,1), -sx, -sy);
-             AlignG2 = subim(Image2(:,:,2), -sx, -sy);
-             AlignB2 = subim(Image2(:,:,3), -sx, -sy);             
-             AlignedImage2 = zeros([size(AlignR2) 3]);
-             AlignedImage2(:,:,1) = AlignR2;
-             AlignedImage2(:,:,2) = AlignG2; 
-             AlignedImage2(:,:,3) = AlignB2;
-       else  
-            % Kyungnam temporarily modified 2007-08-28
-            %%% Chopped and aligned sub-images
-            % AlignedImage1 = subim(Image1, sx, sy);
-            % AlignedImage2 = subim(Image2, -sx, -sy);
-            %%% Shifted and padded registered images
-            AlignedImage1 = registered_im(Image1, sx, sy);
-            AlignedImage2 = Image2;            
-            if ~strcmpi(MoreImage1Name,'Do not use')
-                MoreAlignedImage1 = registered_im(MoreImage1, sx, sy);
-            end
-            if ~strcmpi(MoreImage2Name,'Do not use')
-                MoreAlignedImage2 = registered_im(MoreImage2, sx, sy); 
-            end
-       end
+    P = [P1 P2];
+end
+
+if any(diff(M)) || any(diff(N)) || any(diff(P))
+    Mmin = min(M);
+    Nmin = min(N);
+    Pmin = min(P);
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size']))
+        CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size'],'replace');
+    end        
+    CroppedImage1 = Image1(1:Mmin,1:Nmin,1:Pmin);
+    CroppedImage2 = Image2(1:Mmin,1:Nmin,1:Pmin);
+    if AreThereThreeInputImages, CroppedImage3 = Image3(1:Mmin,1:Nmin,1:Pmin); end    
+end
+    
+% If there are color images, let the user know that the color image will be
+% converted into grayscale for alignment
+if any(P > 1)
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images']))
+        CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are color. The images will be converted to Gray for alignment and the alignment will be applied to the color images.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': working on color images'],'replace');
     end
 end
+    
+% Aligns images 1 and 2 (see subfunctions at the end of the module). The 
+% nice thing about imtransform is that it works on 2-D and 3-D images 
+% (i.e., grayscale and RGB) with the same arguments
+[tx12, ty12] = autoalign(   sum(CroppedImage1,3)/sum(max(max(CroppedImage1))), ...
+                            sum(CroppedImage2,3)/sum(max(max(CroppedImage2))), AlignMethod);
+Results = ['(Image 1 vs 2: DX ', num2str(tx12), ', DY ', num2str(ty12),')'];
+
+tform = maketform('affine',[1 0 ; 0 1; -tx12 -ty12]);
+AlignedImage1 = CroppedImage1;
+AlignedImage2 = imtransform(CroppedImage2,tform,'xdata',[1 size(CroppedImage2,2)],'ydata',[1 size(CroppedImage2,1)]);
+
+% If there is a 3rd input image, align image 3 with the newly-aligned image 2
+if AreThereThreeInputImages, 
+    NotYetAlignedImage3 = imtransform(Image3,tform,'xdata',[1 size(CroppedImage3,2)],'ydata',[1 size(CroppedImage3,1)]);
+
+    [tx23, ty23] = autoalign(   sum(AlignedImage2,3)/sum(max(max(AlignedImage2))), ...
+                                sum(NotYetAlignedImage3,3)/sum(max(max(NotYetAlignedImage3))), AlignMethod);
+    Results = [ '(Image 1 vs 2: DX ', num2str(tx23),', DY ', num2str(ty23), ') ',...
+                '(Image 2 vs 3: DX ', num2str(tx23),', DY ', num2str(ty23),')'];
+    tform = maketform('affine',[1 0 ; 0 1; tx23 ty23]);
+    AlignedImage3 = imtransform(NotYetAlignedImage3,tform,'xdata',[1 size(CroppedImage3,2)],'ydata',[1 size(CroppedImage3,1)]);
+end
+    
+% Apply this transformation to other images if desired
+if ~strcmpi(MoreImage1Name,'Do not use')
+    MoreAlignedImage1 = imtransform(MoreImage1,tform,'xdata',[1 size(CroppedImage1,2)],'ydata',[1 size(CroppedImage1,1)]);
+end
+if ~strcmpi(MoreImage2Name,'Do not use')
+    MoreAlignedImage2 = imtransform(MoreImage2,tform,'xdata',[1 size(CroppedImage1,2)],'ydata',[1 size(CroppedImage1,1)]);
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines the figure number to display in.
+% Determine the figure number to display the results
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    if strcmp(AdjustImage,'Yes')
-        %%% For three input images.
-        if (~strcmpi(Image3Name,'Do not use') && all(size(Image1) == size(Image2)) && all(size(Image1) == size(Image3))),
-            OriginalRGB(:,:,1) = sum(Image3,3)/sum(max(max(Image3)));
-            OriginalRGB(:,:,2) = sum(Image2,3)/sum(max(max(Image2)));
-            OriginalRGB(:,:,3) = sum(Image1,3)/sum(max(max(Image1)));
-            AlignedRGB(:,:,1) = sum(AlignedImage3,3)/sum(max(max(AlignedImage3)));
-            AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(AlignedImage2)));
-            AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(AlignedImage1)));
-        %%% For two input images.
-        elseif all(size(Image1) == size(Image2)),
-            %%% Note that the size is recalculated in case images were
-            %%% cropped to be the same size.
-            [M1 N1 P1] = size(Image1);
-            OriginalRGB(:,:,1) = zeros(M1,N1);
-            OriginalRGB(:,:,2) = sum(Image2,3)/sum(max(max(Image2)));
-            OriginalRGB(:,:,3) = sum(Image1,3)/sum(max(max(Image1)));
-            [aM1, aN1, aP1] = size(AlignedImage1);
-            AlignedRGB(:,:,1) = zeros(aM1,aN1);
-            AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(Image2)));
-            AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(Image1)));
-        else
-            OriginalRGB = Image1;
-            AlignedRGB = AlignedImage1;
-        end
+    % For three input images
+    if AreThereThreeInputImages,
+        OriginalRGB(:,:,1) = sum(CroppedImage3,3)/sum(max(max(CroppedImage3)));
+        OriginalRGB(:,:,2) = sum(CroppedImage2,3)/sum(max(max(CroppedImage2)));
+        OriginalRGB(:,:,3) = sum(CroppedImage1,3)/sum(max(max(CroppedImage1)));
+        AlignedRGB(:,:,1) = sum(AlignedImage3,3)/sum(max(max(AlignedImage3)));
+        AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(AlignedImage2)));
+        AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(AlignedImage1)));
+    % For two input images
+    else
+        % Note that the size is recalculated in case images were
+        % cropped to be the same size.
+        [M1 N1 P1] = size(CroppedImage1);
+        OriginalRGB(:,:,1) = zeros(M1,N1);
+        OriginalRGB(:,:,2) = sum(CroppedImage2,3)/sum(max(max(CroppedImage2)));
+        OriginalRGB(:,:,3) = sum(CroppedImage1,3)/sum(max(max(CroppedImage1)));
+        [aM1, aN1, aP1] = size(AlignedImage1);
+        AlignedRGB(:,:,1) = zeros(aM1,aN1);
+        AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(Image2)));
+        AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(Image1)));
     end
-    %%% Activates the appropriate figure window.
+
+    % Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OriginalRGB,'TwoByOne',ThisModuleFigureNumber)
@@ -361,18 +267,15 @@ if any(findobj == ThisModuleFigureNumber)
         Position = get(ThisModuleFigureNumber,'position');
         set(ThisModuleFigureNumber,'position',[Position(1),Position(2)-40,Position(3),Position(4)+40])
     end
-    if strcmp(AdjustImage,'Yes')
-        %%% A subplot of the figure window is set to display the original
-        %%% image.
-        subplot(5,1,1:2);
-        CPimagesc(OriginalRGB,handles);
-        title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-        %%% A subplot of the figure window is set to display the adjusted
-        %%%  image.
-        subplot(5,1,3:4);
-        CPimagesc(AlignedRGB,handles);
-        title('Aligned Images');
-    end
+    
+    subplot(5,1,1:2);
+    CPimagesc(OriginalRGB,handles);
+    title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    % A subplot of the figure window is set to display the adjusted image
+    subplot(5,1,3:4);
+    CPimagesc(AlignedRGB,handles);
+    title('Aligned Images');
+
     if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 40],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     else
@@ -386,54 +289,66 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(AdjustImage,'Yes')
-    %%% Saves the adjusted image to the handles structure so it can be used
-    %%% by subsequent modules.
-    handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
-    handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
-    if ~strcmpi(MoreImage1Name,'Do not use')
-        handles.Pipeline.(MoreAlignedImage1Name) = MoreAlignedImage1;
-    end
-    if ~strcmpi(MoreImage2Name,'Do not use')
-        handles.Pipeline.(MoreAlignedImage2Name) = MoreAlignedImage2;
-    end
-    if ~strcmpi(Image3Name,'Do not use')
-        handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
-    end
+% Saves the adjusted image to the handles structure so it can be used
+% by subsequent modules.
+handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
+handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
+if ~strcmpi(MoreImage1Name,'Do not use')
+    handles.Pipeline.(MoreAlignedImage1Name) = MoreAlignedImage1;
+end
+if ~strcmpi(MoreImage2Name,'Do not use')
+    handles.Pipeline.(MoreAlignedImage2Name) = MoreAlignedImage2;
+end
+if AreThereThreeInputImages
+    handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
 end
 
-%%% Stores the shift in alignment as a measurement. We store the image
-%%% names here, because otherwise other Align modules in the pipeline for
-%%% other images would overwrite each other. It *is* still the case two
-%%% Align modules will overwrite each other's measurements if the user
-%%% gives the aligned images all the same names, but we can't catch
-%%% everything.
-handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage1Name,'vs',AlignedImage2Name]), sx);
-handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage1Name,'vs',AlignedImage2Name]), sy);
-%%% If three images were aligned, there are two more measurements to store:
-if ~strcmpi(Image3Name,'Do not use')
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage2Name,'vs',AlignedImage3Name]), sx2);
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage2Name,'vs',AlignedImage3Name]), sy2);
+% Stores the shift in alignment as a measurement. We store the image
+% names here, because otherwise other Align modules in the pipeline for
+% other images would overwrite each other. It *is* still the case two
+% Align modules will overwrite each other's measurements if the user
+% gives the aligned images all the same names, but we can't catch
+% everything.
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage1Name,'vs',AlignedImage2Name]), tx12);
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage1Name,'vs',AlignedImage2Name]), ty12);
+
+% If three images were aligned, there are two more measurements to store:
+if AreThereThreeInputImages
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Xshift_',AlignedImage2Name,'vs',AlignedImage3Name]), tx23);
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Align',['Yshift_',AlignedImage2Name,'vs',AlignedImage3Name]), ty23);
 end
 
+
+%%
 %%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTIONS %%%
 %%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - autoalign
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [shiftx, shifty] = autoalign(in1, in2, method)
-if (strcmp(method, 'Mutual Information')==1),
+if (strcmp(method, 'Mutual Information')),
     [shiftx, shifty] = autoalign_mutualinf(in1, in2);
 else
     [shiftx, shifty] = autoalign_ncc(in1, in2);
 end
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - autoalign_ncc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [shiftx, shifty] = autoalign_ncc(in1, in2)
 %%% XXX - should check dimensions
-ncc = normxcorr2(in2, in1);
+ncc = normxcorr2(in1, in2);
 [i, j] = find(ncc == max(ncc(:)));
 shiftx = j(1) - size(in2, 2);
 shifty = i(1) - size(in2, 1);
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - autoalign_mutualinf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [shiftx, shifty] = autoalign_mutualinf(in1, in2)
 %%% Aligns two images using mutual-information and hill-climbing.
 best = mutualinf(in1, in2);
@@ -474,6 +389,10 @@ while true,
     end
 end
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - one_step
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [nx, ny, nb] = one_step(in1, in2, bx, by, ldx, ldy, best)
 %%% Finds the best one pixel move, but only in the same direction(s)
 %%% we moved last time (no sense repeating evaluations).  ldx is last
@@ -497,6 +416,10 @@ if (best == nb),
     ny = 0;
 end
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - subim
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function sub = subim(im, dx, dy)
 %%% Subimage with positive or negative offsets
 if (dx > 0),
@@ -510,21 +433,12 @@ else
     sub = sub(1:end+dy,:);
 end
 
-function regim = registered_im (im, dx, dy)
-%%% Registeredimage with positive or negative offsets
-regim = mean(im(:))*ones(size(im));
-if (dx > 0),
-    regim(:,1:end-dx) = im(:,1+dx:end);
-else
-    regim(:,1-dx:end) = im(:,1:end+dx);
-end
-if (dy > 0),
-    regim(1:end-dy,:) = regim(1+dy:end,:);
-else
-    regim(1-dy:end,:) = regim(1:end+dy,:);
-end
-
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - entropy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function H = entropy(X)
+
 %%% Entropy of samples X
 S = imhist(X,256);
 %%% if S is probability distribution function N is 1
@@ -536,7 +450,12 @@ else
     H=0;
 end
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - entropy2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function H = entropy2(X,Y)
+
 %%% joint entropy of paired samples X and Y Makes sure images are binned to
 %%% 256 graylevels
 X = double(im2uint8(X));
@@ -553,6 +472,11 @@ else
     H=0;
 end
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - mutualinf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function I = mutualinf(X, Y)
+
 %%% Mutual information of images X and Y
 I = entropy(X) + entropy(Y) - entropy2(X,Y);

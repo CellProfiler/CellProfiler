@@ -20,6 +20,7 @@ if nargin == 9
     ObjectVar = [];
 end
 
+
 %%% If we are running the Histogram data tool we do not want to limit the
 %%% threshold with a maximum of 1 or minimum of 0; otherwise we check for
 %%% values outside the range here.
@@ -193,9 +194,10 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
         %%% image. Bilinear prevents dipping below zero. The crop the image
         %%% get rid of the padding, to make the result the same size as the
         %%% original image.
+        warning off MATLAB:divideByZero
         Threshold = imresize(Threshold, size(PaddedImage), 'bilinear');
         Threshold = Threshold(RowsToAddPre+1:end-RowsToAddPost,ColumnsToAddPre+1:end-ColumnsToAddPost);
-        
+        warning on MATLAB:divideByZero
     elseif MethodFlag == 2 %%% The PerObject method.
         %%% This method require the Retrieved CropMask, which should be a
         %%% label matrix of objects, where each object consists of an
@@ -645,6 +647,7 @@ function level = RobustBackground(im,handles,ImageName,pObject)
 %%% than in the main code prior to sending to this function via blkproc,
 %%% because the blkproc function takes a single image as input, so we have
 %%% to store the image and its cropmask in a single image variable.
+warning off MATLAB:divideByZero
 if ndims(im) == 3
     Image = im(:,:,1);
     CropMask = im(:,:,2);
@@ -722,10 +725,10 @@ end
 % TrimmedImages{end+1} = {TrimmedImage};
 % Images{end+1} = {im};
 % save('Batch_80Autodata','Means','StDevs','Levels','TrimmedImages','Images');
-
+warning on MATLAB:divideByZero
 
 function level = RidlerCalvard(im,handles,ImageName,pObject)
-
+warning off MATLAB:divideByZero
 %%% The following is needed for the adaptive cases where there the image
 %%% has been cropped. This must be done within this subfunction, rather
 %%% than in the main code prior to sending to this function via blkproc,
@@ -773,7 +776,7 @@ else
     end
     level = exp(MinVal + (MaxVal-MinVal)*NewThresh);
 end
-
+warning on MATLAB:divideByZero
 
 function level = Kapur(im,handles,ImageName,pObject)
 %%% This is the Kapur, Sahoo, & Wong method of thresholding, adapted to log-space.

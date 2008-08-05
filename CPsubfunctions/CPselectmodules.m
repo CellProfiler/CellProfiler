@@ -77,8 +77,11 @@ if ReqSlid
 end
 
 %%% Create special features
-uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Select All/None',   'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[0.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_SelectAllNone);
-uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Invert Selection',  'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[2.2 0.5 1.7 .2],'UserData',h,'Callback',@SelectModules_InvertSelection);
+uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Select All/None',   'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[0.2 0.5 1.7 .2],'Callback',@SelectModules_SelectAllNone);
+uicontrol(SelectDisplay,'Style','pushbutton',   'Value',0,'String','Invert Selection',  'Units','Inches','BackgroundColor',[.7 .7 .9], 'Position',[2.2 0.5 1.7 .2],'Callback',@SelectModules_InvertSelection);
+appdata.modulehandles = h;
+appdata.selectallnone = 1;
+guidata(SelectDisplay,appdata);
 
 %%% Create OK and Cancel buttons
 posx = (Width - 1.7)/2;               % Centers buttons horizontally
@@ -148,18 +151,20 @@ set(PanelHandle,'Position',[PanelPos(1) NewPos PanelPos(3) PanelPos(4)]);
 %%% SUBFUNCTION - SelectModules_SelectAllNone
 function SelectModules_SelectAllNone(hObject,eventdata)
 
-set(get(hObject,'userdata'),'value',~get(hObject,'value')); % Button down: Value = 1
+appdata = guidata(hObject);
+hdl = appdata.modulehandles;
+appdata.selectallnone = ~appdata.selectallnone;
+set(hdl,'value',appdata.selectallnone);
+guidata(hObject,appdata);
 
 %%
 %%% SUBFUNCTION - SelectModules_InvertSelection
 function SelectModules_InvertSelection(hObject,eventdata)
 
-hdl = get(hObject,'userdata');
-
-try selected_values = cell2mat(get(hdl,'value'));
-catch selected_values = get(hdl,'value');
-end
-
-for i = 1:length(hdl), 
-    set(hdl(i),'value',~get(hdl(i),'value')); 
+appdata = guidata(hObject);
+hdl = appdata.modulehandles;
+if iscell(get(hdl,'value')),
+    set(hdl,{'value'},num2cell(cellfun(@not,get(hdl,'value'))));
+else
+    set(hdl,'value',~get(hdl,'value'));
 end

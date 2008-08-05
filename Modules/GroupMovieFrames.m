@@ -36,255 +36,110 @@ drawnow
 MovieName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = How many frames per cycle do you want extract?
+%textVAR02 = How many frames are there per group?
 %defaultVAR02 = 1
-NumGroupFrames = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+NumGroupFrames = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%--
-%textVAR03 = 1. What's the position of the frame (within the group) that you want to load?
-%defaultVAR03 = 1
-Position{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Are the frame groups interleaved (ABCABC...) or separated (AA..BB..CC..)?
+%choiceVAR03 = Interleaved
+%choiceVAR03 = Separated
+Interleaved = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
 
-%textVAR04 = What do you want to call this frame within CellProfiler?
+%textVAR04 = What do you want to call frame 1 in each group (or / to ignore)?
 %defaultVAR04 = OrigDAPI
 %infotypeVAR04 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%--
-%textVAR05 = 2. What's the position of the frame (within the group) that you want to load?
+%textVAR05 = What do you want to call frame 2 in each group (or / to ignore)?
 %defaultVAR05 = /
-Position{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%infotypeVAR05 = imagegroup indep
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What do you want to call this frame within CellProfiler?
+%textVAR06 = What do you want to call frame 3 in each group (or / to ignore)?
 %defaultVAR06 = /
 %infotypeVAR06 = imagegroup indep
-ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%--
-%textVAR07 = 3. What's the position of the frame (within the group) that you want to load?
+%textVAR07 = What do you want to call frame 4 in each group (or / to ignore)?
 %defaultVAR07 = /
-Position{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%infotypeVAR07 = imagegroup indep
+ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call this frame within CellProfiler?
+%textVAR08 = What do you want to call frame 5 in each group (or / to ignore)?
 %defaultVAR08 = /
 %infotypeVAR08 = imagegroup indep
-ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%--
-%textVAR09 = 4. What's the position of the frame (within the group) that you want to load?
+%textVAR09 = What do you want to call frame 6 in each group (or / to ignore)?
 %defaultVAR09 = /
-Position{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%infotypeVAR09 = imagegroup indep
+ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = What do you want to call this frame within CellProfiler?
-%defaultVAR10 = /
-%infotypeVAR10 = imagegroup indep
-ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%--
-%textVAR11 = 5. What's the position of the frame (within the group) that you want to load?
-%defaultVAR11 = /
-Position{5} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-
-%textVAR12 = What do you want to call this frame within CellProfiler?
-%defaultVAR12 = /
-%infotypeVAR12 = imagegroup indep
-ImageName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-
-%--
-%textVAR13 = 6. What's the position of the frame (within the group) that you want to load?
-%defaultVAR13 = /
-Position{6} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
-
-%textVAR14 = What do you want to call this frame within CellProfiler?
-%defaultVAR14 = /
-%infotypeVAR14 = imagegroup indep
-ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-
-%--
-%textVAR15 = 7. What's the position of the frame (within the group) that you want to load?
-%defaultVAR15 = /
-Position{7} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
-
-%textVAR16 = What do you want to call this frame within CellProfiler?
-%defaultVAR16 = /
-%infotypeVAR16 = imagegroup indep
-ImageName{7} = char(handles.Settings.VariableValues{CurrentModuleNum,16});
-
-%--
-%textVAR17 = 8. What's the position of the frame (within the group) that you want to load?
-%defaultVAR17 = /
-Position{8} = char(handles.Settings.VariableValues{CurrentModuleNum,17});
-
-%textVAR18 = What do you want to call this frame within CellProfiler?
-%defaultVAR18 = /
-%infotypeVAR18 = imagegroup indep
-ImageName{8} = char(handles.Settings.VariableValues{CurrentModuleNum,18});
-
-%--
-%textVAR19 = 9. What's the position of the frame (within the group) that you want to load?
-%defaultVAR19 = /
-Position{9} = char(handles.Settings.VariableValues{CurrentModuleNum,19});
-
-%textVAR20 = What do you want to call this frame within CellProfiler?
-%defaultVAR20 = /
-%infotypeVAR20 = imagegroup indep
-ImageName{9} = char(handles.Settings.VariableValues{CurrentModuleNum,20});
-
-%--
-%textVAR21 = 10. What's the position of the frame (within the group) that you want to load?
-%defaultVAR21 = /
-Position{10} = char(handles.Settings.VariableValues{CurrentModuleNum,21});
-
-%textVAR22 = What do you want to call this frame within CellProfiler?
-%defaultVAR22 = /
-%infotypeVAR22 = imagegroup indep
-ImageName{10} = char(handles.Settings.VariableValues{CurrentModuleNum,22});
-
-%--
-%textVAR23 = 11. What's the position of the frame (within the group) that you want to load?
-%defaultVAR23 = /
-Position{11} = char(handles.Settings.VariableValues{CurrentModuleNum,23});
-
-%textVAR24 = What do you want to call this frame within CellProfiler?
-%defaultVAR24 = /
-%infotypeVAR24 = imagegroup indep
-ImageName{11} = char(handles.Settings.VariableValues{CurrentModuleNum,24});
-
-%--
-%textVAR25 = 12. What's the position of the frame (within the group) that you want to load?
-%defaultVAR25 = /
-Position{12} = char(handles.Settings.VariableValues{CurrentModuleNum,25});
-
-%textVAR26 = What do you want to call this frame within CellProfiler?
-%defaultVAR26 = /
-%infotypeVAR26 = imagegroup indep
-ImageName{12} = char(handles.Settings.VariableValues{CurrentModuleNum,26});
-
-%--
-%textVAR27 = 13. What's the position of the frame (within the group) that you want to load?
-%defaultVAR27 = /
-Position{13} = char(handles.Settings.VariableValues{CurrentModuleNum,27});
-
-%textVAR28 = What do you want to call this frame within CellProfiler?
-%defaultVAR28 = /
-%infotypeVAR28 = imagegroup indep
-ImageName{13} = char(handles.Settings.VariableValues{CurrentModuleNum,28});
-
-%--
-%textVAR29 = 14. What's the position of the frame (within the group) that you want to load?
-%defaultVAR29 = /
-Position{14} = char(handles.Settings.VariableValues{CurrentModuleNum,29});
-
-%textVAR30 = What do you want to call this frame within CellProfiler?
-%defaultVAR30 = /
-%infotypeVAR30 = imagegroup indep
-ImageName{14} = char(handles.Settings.VariableValues{CurrentModuleNum,30});
-
-%--
-%textVAR31 = 15. What's the position of the frame (within the group) that you want to load?
-%defaultVAR31 = /
-Position{15} = char(handles.Settings.VariableValues{CurrentModuleNum,31});
-
-%textVAR32 = What do you want to call this frame within CellProfiler?
-%defaultVAR32 = /
-%infotypeVAR32 = imagegroup indep
-ImageName{15} = char(handles.Settings.VariableValues{CurrentModuleNum,32});
-
-%--
-%textVAR33 = 16. What's the position of the frame (within the group) that you want to load?
-%defaultVAR33 = /
-Position{16} = char(handles.Settings.VariableValues{CurrentModuleNum,33});
-
-%textVAR34 = What do you want to call this frame within CellProfiler?
-%defaultVAR34 = /
-%infotypeVAR34 = imagegroup indep
-ImageName{16} = char(handles.Settings.VariableValues{CurrentModuleNum,34});
-
-%--
-%textVAR35 = 17. What's the position of the frame (within the group) that you want to load?
-%defaultVAR35 = /
-Position{17} = char(handles.Settings.VariableValues{CurrentModuleNum,35});
-
-%textVAR36 = What do you want to call this frame within CellProfiler?
-%defaultVAR36 = /
-%infotypeVAR36 = imagegroup indep
-ImageName{17} = char(handles.Settings.VariableValues{CurrentModuleNum,36});
-
-%--
-%textVAR37 = 18. What's the position of the frame (within the group) that you want to load?
-%defaultVAR37 = /
-Position{18} = char(handles.Settings.VariableValues{CurrentModuleNum,37});
-
-%textVAR38 = What do you want to call this frame within CellProfiler?
-%defaultVAR38 = /
-%infotypeVAR38 = imagegroup indep
-ImageName{18} = char(handles.Settings.VariableValues{CurrentModuleNum,38});
-
-%--
-%textVAR39 = 19. What's the position of the frame (within the group) that you want to load?
-%defaultVAR39 = /
-Position{19} = char(handles.Settings.VariableValues{CurrentModuleNum,39});
-
-%textVAR40 = What do you want to call this frame within CellProfiler?
-%defaultVAR40 = /
-%infotypeVAR40 = imagegroup indep
-ImageName{19} = char(handles.Settings.VariableValues{CurrentModuleNum,40});
-
-%--
-%textVAR41 = 20. What's the position of the frame (within the group) that you want to load?
-%defaultVAR41 = /
-Position{20} = char(handles.Settings.VariableValues{CurrentModuleNum,41});
-
-%textVAR42 = What do you want to call this frame within CellProfiler?
-%defaultVAR42 = /
-%infotypeVAR42 = imagegroup indep
-ImageName{20} = char(handles.Settings.VariableValues{CurrentModuleNum,42});
-
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% GROUP LOADING FROM MOVIE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-nGroupFrames = str2num(NumGroupFrames);
-
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
+%%% LoadImages goes through each movie file, finds how many frames
+%%% there are, and stores an entry in handles.Pipeline.(['FileList'
+%%% MovieName]).  It also sets NumberOfImageSets to the total number
+%%% of frames.
+%%%
 %%% Reset the max number of cycles here
 %%% Do this only once -- on the first cycle, and only for the first GroupMovieFrames instance
+%%% 
 if SetBeingAnalyzed == 1
     if (str2num(handles.Current.CurrentModuleNumber) == min(strmatch('GroupMovieFrames',handles.Settings.ModuleNames)))
-        handles.Current.NumberOfImageSets = floor(handles.Current.NumberOfImageSets/nGroupFrames);
+        handles.Current.NumberOfImageSets = floor(handles.Current.NumberOfImageSets/NumGroupFrames);
     else
         %% Check that this GroupMovieFrames will create the same NumberOfImageSets
         FileList = handles.Pipeline.(['FileList', MovieName]);
-        if size(FileList,2)/nGroupFrames ~= handles.Current.NumberOfImageSets
-            CPerrordlg('There is a problem with the number of image sets.  If there are multiple GroupMovieFrames modules, please be sure that they all define the same number of images per cycle')
+        if size(FileList,2)/NumGroupFrames ~= handles.Current.NumberOfImageSets
+            CPerrordlg('There is a problem with the number of image sets.  If there are multiple GroupMovieFrames modules, please be sure that they all produce the same number of image sets after grouping.')
         end
     end
 end
 
-%%% Remove slashes entries with N/A or no filename from the input,
+%%% Remove slashes entries with no filename from the input,
 %%% i.e., store only valid entries
-tmp2 = {};
-for n = 1:length(ImageName)
-    if ~strcmp(Position{n}, '/') || ~strcmp(ImageName{n}, '/')
-        tmp2{end+1} = ImageName{n};
-    end
-end
-ImageName = tmp2;
+ImageName = ImageName(~ strcmp(ImageName, '/'));
+
+FileList = handles.Pipeline.(['FileList', MovieName]);
+
+%%% Find the base position of the movie for the current frames
+CurrentOffset = (SetBeingAnalyzed - 1) * NumGroupFrames + 1;
+CurrentMovieStart = CurrentOffset - FileList{2, CurrentOffset} + 1;
+GroupNumberInMovie = (CurrentOffset - CurrentMovieStart) / NumGroupFrames;
+MovieFrames = FileList{3, CurrentOffset};
+
 
 for n = 1:length(ImageName) 
+    if strcmp(ImageName{n}, '/'),
+        continue
+    end
+
     %%% This try/catch will catch any problems in the load images module.
     try
         %%% The following runs every time through this module (i.e. for every cycle).
+
+        if strcmp(Interleaved, 'Interleaved'),
+            Position = CurrentMovieStart + GroupNumberInMovie * NumGroupFrames + n - 1;
+        else
+            Position = CurrentMovieStart + (n - 1) * (MovieFrames / NumGroupFrames) + GroupNumberInMovie;
+        end
+
         %%% Determines which movie to analyze.
         fieldname = ['FileList', MovieName];
         FileList = handles.Pipeline.(fieldname);
         %%% Determines the file name of the movie you want to analyze.
-        CurrentFileName = FileList(:,(SetBeingAnalyzed-1)*nGroupFrames+str2num(Position{n}));
+        CurrentFileName = FileList(:,Position);
         %%% Determines the directory to switch to.
         fieldname = ['Pathname', MovieName];
         Pathname = handles.Pipeline.(fieldname);
@@ -343,6 +198,9 @@ if any(findobj == ThisModuleFigureNumber);
         CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
     for n = 1:length(ImageName)
+        if strcmp(ImageName{n}, '/'),
+            continue
+        end
         %%% Activates the appropriate figure window.
         currentfig = CPfigure(handles,'Text',ThisModuleFigureNumber);
         if iscell(ImageName)

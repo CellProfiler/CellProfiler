@@ -431,6 +431,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                            %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                            FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                         end
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         try
@@ -441,6 +443,8 @@ if SetBeingAnalyzed == 1
                                 FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                                 %%% Puts the frame number into the FrameByFrameFileList in the second row.
                                 FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                                %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                                FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                             end
                         catch error(['Image processing was canceled in the ', ModuleName, ' module because the file ',fullfile(Pathname, CurrentMovieFileName),' was not readable as a stk file.'])
                         end
@@ -454,6 +458,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                            %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                            FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                         end  
                     else
                         error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi, stk, tif, tiff, or flex movie files.'])
@@ -548,6 +554,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                            %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                            FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                         end
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
@@ -557,6 +565,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                            %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                            FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                         end
                     elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
                         try MultiTifAttributes = imfinfo(fullfile(Pathname, CurrentMovieFileName));
@@ -568,6 +578,8 @@ if SetBeingAnalyzed == 1
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
                             FrameByFrameFileList{n}(2,StartingPositionForThisMovie + FrameNumber) = {FrameNumber};
+                            %%% Puts the movie length into the FrameByFrameFileList in the third row.
+                            FrameByFrameFileList{n}(3,StartingPositionForThisMovie + FrameNumber) = {NumFrames};
                         end
                     else
                         error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler can currently read only avi, stk, tif, tiff, or flex movie files.'])

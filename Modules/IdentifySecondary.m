@@ -158,7 +158,6 @@ function handles = IdentifySecondary(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
-drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
@@ -257,7 +256,6 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
@@ -305,7 +303,6 @@ MaximumThreshold = ThresholdRange(index+1:end);
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 %%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
@@ -342,7 +339,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% line between secondary objects is halfway between them rather than
             %%% favoring the primary object with the greater label number.
             [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
-            drawnow
             %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
             if max(Labels(:)) == 0,
                 Labels = ones(size(Labels));
@@ -354,7 +350,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% the pixels that are part of a secondary object.
             RelabeledDilatedPrelimSecObjectImage = zeros(size(ExpandedRelabeledDilatedPrelimSecObjectImage));
             RelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage) = ExpandedRelabeledDilatedPrelimSecObjectImage(DilatedPrelimSecObjectBinaryImage);
-            drawnow
         elseif strcmp(IdentChoice(12),'B')
             [labels_out,d]=IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,1.0);
             labels_out(d>DistanceToDilate) = 0;
@@ -384,7 +379,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         % add more output arguments as follows:
         %%% [PropagatedImage, dist, diff_count, pop_count] = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,RegularizationFactor);
         PropagatedImage = IdentifySecPropagateSubfunction(PrelimPrimaryLabelMatrixImage,OrigImage,ThresholdedOrigImage,RegularizationFactor);
-        drawnow
 
         %%% STEP 3: We used the PrelimPrimaryLabelMatrixImage as the
         %%% source for primary objects, but that label-matrix is built
@@ -461,7 +455,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% right up against the background pixels and therefore getting skipped.
         %%% Note: it is less accurate and less fast to use edge detection (sobel)
         %%% to identify the edges of the primary objects.
-        drawnow
         %%% Converts the PrelimPrimaryLabelMatrixImage to binary.
         PrelimPrimaryBinaryImage = im2bw(PrelimPrimaryLabelMatrixImage,.5);
         %%% Creates the structuring element that will be used for dilation.
@@ -474,7 +467,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         %%% STEP 3: Produce the marker image which will be used for the first
         %%% watershed.
-        drawnow
         %%% Combines the foreground markers and the background markers.
         BinaryMarkerImagePre = PrelimPrimaryBinaryImage | InvertedThresholdedOrigImage;
         %%% Overlays the PrimaryObjectOutlines to maintain distinctions between each
@@ -484,7 +476,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         %%% STEP 4: Calculate the Sobel image, which reflects gradients, which will
         %%% be used for the watershedding function.
-        drawnow
         %%% Calculates the 2 sobel filters.  The sobel filter is directional, so it
         %%% is used in both the horizontal & vertical directions and then the
         %%% results are combined.
@@ -499,7 +490,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         AbsSobeledImage = abs(I1) + abs(I2);
 
         %%% STEP 5: Perform the first watershed.
-        drawnow
 
         %%% Overlays the foreground and background markers onto the
         %%% absolute value of the Sobel Image, so there are black nuclei on top of
@@ -513,7 +503,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         %%% STEP 6: Identify and extract the secondary objects, using the watershed
         %%% lines.
-        drawnow
         %%% The BlackWatershedLines image is a label matrix where the watershed
         %%% lines = 0 and each distinct object is assigned a number starting at 1.
         %%% This image is converted to a binary image where all the objects = 1.
@@ -523,7 +512,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% than bwlabel, even for 2D images.  I found that in this case it is
         %%% about 10 times slower.
         LabelMatrixImage1 = bwlabel(SecondaryObjects1,4);
-        drawnow
 
         %%% STEP 7: Discarding background "objects".  The first watershed function
         %%% simply divides up the image into regions.  Most of these regions
@@ -551,7 +539,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
         %%% STEP 8: Produce the marker image which will be used for the second
         %%% watershed.
-        drawnow
         %%% The module has now produced a binary image of actual secondary
         %%% objects.  The gradient (Sobel) image was used for watershedding, which
         %%% produces very nice divisions between objects that are clumped, but it
@@ -581,7 +568,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% STEP 9: Perform the second watershed.
         %%% As described above, the second watershed is performed on the original
         %%% intensity image rather than on a gradient (Sobel) image.
-        drawnow
         %%% Inverts the original image.
         InvertedOrigImage = imcomplement(OrigImage);
         %%% Overlays the foreground and background markers onto the
@@ -603,7 +589,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% steps, inappropriate regions are weeded out anyway.
         SecondWatershedPre2 = im2bw(SecondWatershedPre,.5);
         SecondWatershed = bwlabel(SecondWatershedPre2);
-        drawnow
 
         %%% STEP 10: As in step 7, remove objects that are actually background
         %%% objects.  See step 7 for description. This time, the edited primary object image is
@@ -686,7 +671,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
     BothOutlinesOnOrigImage(PrimaryObjectOutlines == 1) = LineIntensity;
     
     if strcmp(TestMode,'Yes')
-        drawnow;
         %%% If the test mode window does not exist, it is created, but only
         %%% if it's at the starting image set (if the user closed the window
         %%% intentionally, we don't want to pop open a new one).
@@ -730,7 +714,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%%%%%%%%%%%%%%%%%%%%%%
         %%% DISPLAY RESULTS %%%
         %%%%%%%%%%%%%%%%%%%%%%%
-        drawnow
 
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
@@ -763,11 +746,11 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPimagesc(BothOutlinesOnOrigImage,handles);
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
         end
+        drawnow
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% SAVE DATA TO HANDLES STRUCTURE %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        drawnow
 
         %%% Saves the final, segmented label matrix image of secondary objects to
         %%% the handles structure so it can be used by subsequent modules.

@@ -43,7 +43,7 @@ if ~isempty(varargin)
                 colormap(cmap);
                 Title = char(get(get(get(ImageHandle,'parent'),'title'),'string'));
                 title(Title);
-                Title = strrep(Title,'\_','_');
+                Title = strrep(Title,'_','_');
                 set(FigureHandle,'Name',Title);
             case {'Histogram'}                                % Produce histogram (only for scalar images)
                 CPfigure(handles);
@@ -577,7 +577,6 @@ else
         th = findobj(get(ImageToolWindowHandle,'children'),'style','text');            % Get handle to text object
 
         Title = get(get(get(handle,'Parent'),'Title'),'String');      % Get title of image
-        Title = strrep(Title,'\_','_');
         set(th,'string',Title);                                       % Put new text
 
         if length(Title)>36                                           % Adjust position
@@ -604,7 +603,6 @@ else
         set(ImageToolWindowHandle,'UserData',userData);
         % Get title of image
         Title = get(get(get(handle,'Parent'),'Title'),'String');
-        Title = strrep(Title,'\_','_');
         % Adjust position
         if length(Title)>36
             width = 0.06*length(Title);

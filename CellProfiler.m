@@ -3649,7 +3649,6 @@ if strcmp(get(gcf,'SelectionType'),'open')
                 CPfigure(handles,'image','name',FileName);
                 CPimagesc(Image,handles);
                 colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
-                FileName = strrep(FileName,'_','\_');
                 title(FileName);
             catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
             end
@@ -3668,7 +3667,6 @@ if strcmp(get(gcf,'SelectionType'),'open')
             CPfigure(handles,'image','name',FileName);
             CPimagesc(Image,handles);
             colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
-            FileName = strrep(FileName,'_','\_');
             title(FileName);
         catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
         end

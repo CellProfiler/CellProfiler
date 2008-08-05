@@ -182,12 +182,10 @@ Xlocations = handles.Measurements.(ObjectTypename).Location_Center_X{SampleNumbe
 Ylocations = handles.Measurements.(ObjectTypename).Location_Center_Y{SampleNumber};
 
 %%% Create window
-ImageDisp = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure(handles,'image');
 CPimagesc(ImageToDisplay,handles);
-FeatureDisp = strrep(FeatureType,'_','\_');
 
-title([ObjectTypename,', ',FeatureDisp,' on ',ImageDisp])
+title([ObjectTypename,', ',FeatureType,' on ',ImageFileName])
 
 %%% Overlays the values in the proper location in the image.
 TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...

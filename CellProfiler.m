@@ -127,6 +127,9 @@ end
 %%% Set the default color for CP dialogs.
 set(0, 'defaultuicontrolbackgroundcolor', [0.7 0.7 0.9]);
 
+%%% Turn off TeX interpreter globally
+set(0,'DefaultTextInterpreter','none')
+
 if ~isdeployed
     %%% If the Default Module Directory has not yet been successfully
     %%% identified (i.e., it is not present in the loaded preferences or

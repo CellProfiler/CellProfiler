@@ -56,6 +56,5 @@ else
     end
     CPfigure(handles,'Image',FigureHandle);
     CPimagesc(Image,handles);
-    FileName = strrep(FileName,'_','\_');
     title(FileName);
 end

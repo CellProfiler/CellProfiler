@@ -279,10 +279,7 @@ if any(findobj == ThisModuleFigureNumber)
             CPresizefigure(NonQuantizedImage,'TwoByTwo',ThisModuleFigureNumber);
         end
     end
-    AdjustedObjectName = strrep(ObjectName,'_','\_');
-    AdjustedFeatureName = strrep(FeatureName,'_','\_');
-    AdjustedCategory = strrep(Category,'_','\_');
-
+ 
     %%% If we are using a user defined field, there is no corresponding
     %%% image.
     if ~strcmpi(Category,'Ratio')
@@ -293,7 +290,7 @@ if any(findobj == ThisModuleFigureNumber)
         if max(Measurements) > length(colormap)
             colormap(feval(IntensityColormap,max(Measurements)))
         end
-        title([AdjustedObjectName,' shaded according to ',AdjustedFeatureName])
+        title([ObjectName,' shaded according to ',FeatureName])
     end
 
     %%% Produce and plot histogram of original data
@@ -302,9 +299,9 @@ if any(findobj == ThisModuleFigureNumber)
     hist(Measurements,Nbins);
     %%% Took this out: don't want to use misleading colors.
     %%%    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    xlabel(AdjustedFeatureName,'fontsize',handles.Preferences.FontSize);
-    ylabel(['# of ',AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
-    title(['Histogram of ',AdjustedCategory],'fontsize',handles.Preferences.FontSize);
+    xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
     ylimits = ylim;
@@ -318,16 +315,16 @@ if any(findobj == ThisModuleFigureNumber)
         %%% A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
         CPimagesc(QuantizedRGBimage,handles);
-        title(['Classified ', AdjustedObjectName]);
+        title(['Classified ', ObjectName]);
         %% TODO add legend
     end
     %%% Produce and plot histogram
     subplot(2,2,4)
     bar_ctr = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(bar_ctr,bins,1);
-    xlabel(AdjustedFeatureName,'fontsize',handles.Preferences.FontSize);
-    ylabel(['# of ',AdjustedObjectName],'fontsize',handles.Preferences.FontSize);
-    title(['Classified by ',AdjustedCategory],'fontsize',handles.Preferences.FontSize);
+    xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
     axis tight

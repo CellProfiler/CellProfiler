@@ -360,8 +360,8 @@ end
 set(h,'XTickLabel',XTickLabels)
 set(h,'XTick',PlotBinLocations)
 set(gca,'Tag','BarTag','ActivePositionProperty','Position')
-set(get(h,'XLabel'),'String',[FeatureName,' of ',ObjectName],'interpreter','none')
-set(get(h,'Title'),'String',['Histogram for ', FeatureName,' of ',ObjectName],'interpreter','none')
+set(get(h,'XLabel'),'String',[FeatureName,' of ',ObjectName])
+set(get(h,'Title'),'String',['Histogram for ', FeatureName,' of ',ObjectName])
 
 if strncmpi(NumberOrPercent,'N',1)
     set(get(h,'YLabel'),'String','Number of objects')

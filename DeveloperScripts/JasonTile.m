@@ -520,9 +520,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
         YLocations = i*ImageHeight - ImageHeight/2;
         XLocations = j*ImageWidth - ImageWidth/2;
         OneColumnNewFileList = reshape(NewFileList,[],1);
-        PrintableOneColumnNewFileList = strrep(OneColumnNewFileList,'_','\_');
         %%% Creates FileNameText
-        text(XLocations, YLocations, PrintableOneColumnNewFileList,...
+        text(XLocations, YLocations, OneColumnNewFileList,...
             'HorizontalAlignment','center', 'color', 'white','visible','off', ...
             'UserData','FileNameTextHandles','fontsize',handles.Preferences.FontSize);
         userData = get(ThisModuleFigureNumber,'UserData');

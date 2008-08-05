@@ -18,9 +18,6 @@ h = imagesc(Image);
 CurrentAxes = get(h,'parent');
 CurrentFig = get(CurrentAxes,'parent');
 
-%%% Matlab destroys the value for title interpreters when imagesc is called
-set(get(CurrentAxes, 'Title'), 'Interpreter', 'none');
-
 %%% Link any image axis limits together so zoom/pan is reflected in all axes
 if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
     AllAxesHandles = findobj(CurrentFig,'type','axes');

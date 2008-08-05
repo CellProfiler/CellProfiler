@@ -188,7 +188,6 @@ else
     if ~isempty(slash_index), slash_index = slash_index(1); justtheFeatureName = justtheFeatureName(1:slash_index-1); end
 
     Title = [ObjectName,', ',justtheFeatureName,' on ',Image];
-    Title = strrep(Title,'_','\_');
     title(Title);
 
     %%% Overlays the values in the proper location in the image.

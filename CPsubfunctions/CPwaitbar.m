@@ -12,7 +12,7 @@ set(fout, 'Color', [0.7 0.7 0.9], 'UserData',userData);
 
 ax = get(fout, 'Children');
 ttl = get(ax, 'Title');
-set(ttl,'Interpreter','none') 
+% set(ttl,'Interpreter','none') 
 try 
     handles = guidata(gcbo);
     axFontSize = handles.Preferences.FontSize;

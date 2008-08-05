@@ -197,7 +197,8 @@ if ~isempty(sample_info_sets)
                     SampleNames{count}=CellArray{count}{1};
                 end
             end
-        catch SampleNames = handles.Pipeline.([prefix HeadingName]);
+        catch
+            SampleNames = handles.Pipeline.([prefix HeadingName]);
         end
     else
         return
@@ -208,8 +209,10 @@ end
 %%% This function returns a UserInput structure with the
 %%% information required to carry out the calculations.
 UserInput = [];
-try UserInput = UserInputWindow(handles,RawFileName,UserInput);
-catch CPerrordlg(lasterr)
+try 
+    UserInput = UserInputWindow(handles,RawFileName,UserInput);
+catch
+    CPerrordlg(lasterr)
     return
 end
 
@@ -444,15 +447,11 @@ if strcmpi(UserInput.ExportHist,'Yes') == 1
         HistogramTitles, UserInput.EachRow);
 end
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Displays histogram data for non-heatmap graphs %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 VersionCheck = version;
-
 
 if ~strcmpi(UserInput.Style,'Heatmap') && strcmpi(UserInput.Display,'Yes')
     %%% Calculates the square root in order to determine the dimensions for the
@@ -500,9 +499,8 @@ if ~strcmpi(UserInput.Style,'Heatmap') && strcmpi(UserInput.Display,'Yes')
             set(h,'YTick',PlotBinLocations)
             set(gcf, 'Tag', 'AxesFlipped')
             set(gca,'Tag','BarTag','ActivePositionProperty','Position')
-            % Fix underscores in HistogramTitles
-            AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
-            title(AdjustedHistogramTitle)
+
+            title(HistogramTitles{ImageNumber})
             if strcmpi(UserInput.BinVar,'Actual numbers')
                 set(get(h,'XLabel'),'String','Number of objects')
             else
@@ -515,9 +513,8 @@ if ~strcmpi(UserInput.Style,'Heatmap') && strcmpi(UserInput.Display,'Yes')
             set(h,'XTick',PlotBinLocations)
             set(gcf, 'Tag', 'AxesNotFlipped')
             set(gca,'Tag','BarTag','ActivePositionProperty','Position')
-            % Fix underscores in HistogramTitles
-            AdjustedHistogramTitle = strrep(HistogramTitles{ImageNumber},'_','\_');
-            title(AdjustedHistogramTitle)
+
+            title(HistogramTitles{ImageNumber})
             if Increment == 1
                 if strcmpi(UserInput.BinVar,'Actual numbers')
                     set(get(h,'YLabel'),'String','Number of objects')

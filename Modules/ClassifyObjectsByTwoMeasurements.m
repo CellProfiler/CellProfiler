@@ -248,8 +248,6 @@ if any(findobj == ThisModuleFigureNumber)
     if SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(QuantizedRGBimage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    AdjustedObjectName = strrep(ObjectName,'_','\_');
-    AdjustedFeatureName = strrep(FeatureName,'_','\_');
 
     %%% Produce and plot histograms of first and second sets of data
     FontSize = handles.Preferences.FontSize;
@@ -257,9 +255,9 @@ if any(findobj == ThisModuleFigureNumber)
         subplot(2,2,FeatNum)
         Nbins = min(round(NbrOfObjects),40);
         hist(Measurements{FeatNum},Nbins);
-        xlabel(AdjustedFeatureName{FeatNum},'Fontsize',FontSize);
-        ylabel(['# of ' AdjustedObjectName],'Fontsize',FontSize);
-        title(['Histogram of ' AdjustedFeatureName{FeatNum}],'Fontsize',FontSize);
+        xlabel(FeatureName{FeatNum},'Fontsize',FontSize);
+        ylabel(['# of ' ObjectName],'Fontsize',FontSize);
+        title(['Histogram of ' FeatureName{FeatNum}],'Fontsize',FontSize);
         %%% Using "axis tight" here is ok, I think, because we are displaying
         %%% data, not images.
         ylimits = ylim;
@@ -271,15 +269,15 @@ if any(findobj == ThisModuleFigureNumber)
     %%% A subplot of the figure window is set to display the quantized image.
     subplot(2,2,3)
     CPimagesc(QuantizedRGBimage,handles);
-    title(['Classified ', AdjustedObjectName]);
+    title(['Classified ', ObjectName]);
 
     %%% Produce and plot histogram
     subplot(2,2,4)
     x = 1:4;
     bar(x,bins,1);
     xlabel(['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
-    ylabel(['# of ',AdjustedObjectName],'fontsize',FontSize);
-    title(['Classified by ' AdjustedFeatureName{1} ', ' AdjustedFeatureName{2}],'fontsize',FontSize);
+    ylabel(['# of ',ObjectName],'fontsize',FontSize);
+    title(['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);
     %%% Using "axis tight" here is ok, I think, because we are displaying
     %%% data, not images.
     axis tight

@@ -178,7 +178,6 @@ Xlocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,1);
 Ylocations = handles.Measurements.(ObjectTypename).Location{SampleNumber}(:,2);
 
 %%% Create window
-ImageFileName = strrep(ImageFileName,'_','\_');
 FigureHandle = CPfigure(handles,'image');
 CPimagesc(ImageToDisplay,handles);
 if TextFlag

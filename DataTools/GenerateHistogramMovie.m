@@ -58,9 +58,7 @@ for k = 1:length(tmp)
 end
 
 % Do the plotting
-FeatureDisp = strrep(FeatureType,'_','\_');
-ObjectDisp = strrep(ObjectTypename,'_','\_');
-titlestr = [FeatureDisp,' of ', ObjectDisp];
+titlestr = [FeatureType,' of ', ObjectTypename];
 
 % Plots a line chart, where the X dimensions are incremented from 1 to the 
 % number of measurements to be displayed, and Y is the measurement of

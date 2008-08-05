@@ -123,11 +123,9 @@ if ~ strcmp(OldPathname, '.')
     %%% Replaces \ with / in all image filenames (PC only)
     Fields=fieldnames(handles.Pipeline);
     for i = 1:length(Fields)
-        if length(Fields{i}) > 8
-            if strcmp(Fields{i}(1:8),'FileList')
-                FieldName = Fields{i};
-                handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
-            end
+        if strncmp(Fields{i}, 'FileList', 8)
+            FieldName = Fields{i};
+            handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
         end
     end
 

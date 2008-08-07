@@ -27,8 +27,6 @@ function handles = GroupMovieFrames(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
-drawnow
-
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the movie you want to group?
@@ -82,7 +80,6 @@ ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% GROUP LOADING FROM MOVIE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -190,7 +187,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
-drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
@@ -210,6 +206,7 @@ if any(findobj == ThisModuleFigureNumber);
         end
         uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
     end
+    drawnow
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

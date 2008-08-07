@@ -362,8 +362,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         LookUpColumn(1)=0;
         FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
 
-        keyboard
-
     elseif strcmp(IdentChoice,'Propagation')
         %%% STEP 2: Starting from the identified primary objects, the secondary
         %%% objects are identified using the propagate function, written by Thouis

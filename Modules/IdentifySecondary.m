@@ -307,7 +307,11 @@ MaximumThreshold = ThresholdRange(index+1:end);
 %%% STEP 1: Marks at least some of the background by applying a
 %%% weak threshold to the original image of the secondary objects.
 if GetThreshold
-    [handles,Threshold,WeightedVariance,SumOfEntropies] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,SecondaryObjectName);
+    if (length(IdentChoiceList) == 1) && strcmp(IdentChoiceList{1}, 'Distance -N'),
+        Threshold = 0;
+    else
+        [handles,Threshold,WeightedVariance,SumOfEntropies] = CPthreshold(handles,Threshold,pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImage,ImageName,ModuleName,SecondaryObjectName);
+    end
 else Threshold = 0; % should never be used
 end
 %%% ANNE REPLACED THIS LINE 11-06-05.
@@ -329,17 +333,12 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
 
     if strncmp(IdentChoice,'Distance',8)
         if strcmp(IdentChoice(12),'N')
-            %%% Creates the structuring element using the user-specified size.
-            StructuringElement = strel('disk', DistanceToDilate);
-            %%% Dilates the preliminary label matrix image (edited for small only).
-            DilatedPrelimSecObjectLabelMatrixImage = imdilate(PrelimPrimaryLabelMatrixImage, StructuringElement);
-            %%% Converts to binary.
-            DilatedPrelimSecObjectBinaryImage = im2bw(DilatedPrelimSecObjectLabelMatrixImage,.5);
-            %%% Computes nearest neighbor image of nuclei centers so that the dividing
-            %%% line between secondary objects is halfway between them rather than
-            %%% favoring the primary object with the greater label number.
-            [ignore, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0)); %#ok We want to ignore MLint error checking for this line.
+            %%% Dilate primary objects, and find nearest pixel in original label.
+            [dist, Labels] = bwdist(full(PrelimPrimaryLabelMatrixImage>0));
+            DilatedPrelimSecObjectBinaryImage = dist < DistanceToDilate;            
+
             %%% Remaps labels in Labels to labels in PrelimPrimaryLabelMatrixImage.
+
             if max(Labels(:)) == 0,
                 Labels = ones(size(Labels));
             end
@@ -357,15 +356,13 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             RelabeledDilatedPrelimSecObjectImage = labels_out;
         end
 
-
         %%% Removes objects that are not in the edited EditedPrimaryLabelMatrixImage.
-        LookUpTable = sortrows(unique([PrelimPrimaryLabelMatrixImage(:) EditedPrimaryLabelMatrixImage(:)],'rows'),1);
-        b=zeros(max(LookUpTable(:,1)+1),2);
-        b(LookUpTable(:,1)+1,1)=LookUpTable(:,1);
-        b(LookUpTable(:,1)+1,2)=LookUpTable(:,2);
-        b(:,1) = 0:size(b,1)-1;
-        LookUpColumn = b(:,2);
+        Map = sparse(1:numel(PrelimPrimaryLabelMatrixImage), PrelimPrimaryLabelMatrixImage(:)+1, EditedPrimaryLabelMatrixImage(:));
+        LookUpColumn = full(max(Map,[], 1));
+        LookUpColumn(1)=0;
         FinalLabelMatrixImage = LookUpColumn(RelabeledDilatedPrelimSecObjectImage+1);
+
+        keyboard
 
     elseif strcmp(IdentChoice,'Propagation')
         %%% STEP 2: Starting from the identified primary objects, the secondary
@@ -637,9 +634,6 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         FinalLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0) = EditedPrimaryLabelMatrixImage(EditedPrimaryLabelMatrixImage ~= 0);
     end
 
-    %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
-    %%% window in subplot(2,2,2).
-    ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     %%% Calculates OutlinesOnOrigImage for displaying in the figure
     %%% window in subplot(2,2,3).
     %%% Note: these outlines are not perfectly accurate; for some reason it
@@ -732,6 +726,8 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
             subplot(2,2,2);
+            %%% Calculates the ColoredLabelMatrixImage for display
+            ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
             CPimagesc(ColoredLabelMatrixImage,handles);
             title(['Outlined ',SecondaryObjectName]);
             %%% A subplot of the figure window is set to display the original image
@@ -745,8 +741,8 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             subplot(2,2,4);
             CPimagesc(BothOutlinesOnOrigImage,handles);
             title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+            drawnow
         end
-        drawnow
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% SAVE DATA TO HANDLES STRUCTURE %%%

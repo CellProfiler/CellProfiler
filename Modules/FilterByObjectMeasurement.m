@@ -130,22 +130,7 @@ try
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
 end
-% switch Measure
-%     case 'Intensity'
-%         Measure = ['Intensity_' ImageName];
-%     case 'Texture'
-%         Measure = ['Texture_[0-9]*[_]?' ImageName '$'];
-%         Fields = fieldnames(handles.Measurements.(ObjectName));
-%         TextComp = regexp(Fields,Measure);
-%         A = cellfun('isempty',TextComp);
-%         try
-%             Measure = Fields{A==0};
-%         catch
-%             error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-%         end
-% end
-% 
-% FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, '');
+
 MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed};
 
 if strcmpi(MinValue1, 'No minimum')

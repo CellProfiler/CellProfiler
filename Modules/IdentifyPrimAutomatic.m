@@ -297,9 +297,11 @@ function handles = IdentifyPrimAutomatic(handles)
 % along with the size of the smoothing filter, affects whether objects
 % close to each other are considered a single object or multiple objects.
 % It does not affect the dividing lines between an object and the
-% background. If you see too many objects merged that ought to be separate,
-% the value should be lower. If you see too many objects split up that
-% ought to be merged, the value should be higher.
+% background. This setting looks for the maximum intensity in the size 
+% specified by the user.  The local intensity histogram is smoothed to 
+% remove the peaks within that distance. So,if you see too many objects 
+% merged that ought to be separate, the value should be lower. If you see 
+% too many objects split up that ought to be merged, the value should be higher.
 %    Object markers are suppressed based on the specified minimum object
 % diameter that you have entered, but you may want to override the
 % automatically calculated value here. The maxima suppression distance

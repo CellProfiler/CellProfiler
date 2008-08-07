@@ -81,7 +81,7 @@ SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
 DatabaseType = answer(3);
 TablePrefix = answer(4);
 if isempty(DatabaseName) | isempty(SQLScriptFileName)
-    errordlg('A database name and an SQL script name must be specified!');
+    error('A database name and an SQL script name must be specified!');
     return
 end
 %end
@@ -103,7 +103,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     try
         ObjectTypes = fieldnames(handles.Measurements);
     catch
-        errordlg('The output file does not contain a field called Measurements');
+        CPerrordlg('The output file does not contain a field called Measurements');
         return;
     end
 

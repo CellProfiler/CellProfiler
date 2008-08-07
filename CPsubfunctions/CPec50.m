@@ -52,7 +52,7 @@ for i=1:n
             try close(FigureHandle)
             end
         catch
-            errordlg(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
+            error(['Image processing was NOT canceled in the ', ModuleName, ' module, but the figure could not be saved to the hard drive for some reason. Check your settings.  The error is: ', lasterr])
         end
         FigureIncrement = FigureIncrement + 1;
     end

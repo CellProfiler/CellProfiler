@@ -53,19 +53,19 @@ TopRightImage = BottomLeftOfWellImage;
 [BottomRightImageHeight, BottomRightImageWidth] = size(BottomRightImage);
 
 if TopLeftImageHeight ~= TopRightImageHeight
-    errordlg('The heights of the top two images is not the same')
+    error('The heights of the top two images is not the same')
     return
 end
 if BottomLeftImageHeight ~= BottomRightImageHeight
-    errordlg('The heights of the bottom two images is not the same')
+    error('The heights of the bottom two images is not the same')
     return
 end
 if TopLeftImageWidth ~= BottomLeftImageWidth
-    errordlg('The widths of the two left images is not the same')
+    error('The widths of the two left images is not the same')
     return
 end
 if TopRightImageWidth ~= BottomRightImageWidth
-    errordlg('The widths of the two right images is not the same')
+    error('The widths of the two right images is not the same')
     return
 end
 WholeImageWidth = TopLeftImageWidth + TopRightImageWidth;

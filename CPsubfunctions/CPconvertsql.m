@@ -129,7 +129,7 @@ if (FirstSet == 1)
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!  Batchsize is NaN.');
+                error('STOP!  Batchsize is NaN.');
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -234,7 +234,7 @@ if (FirstSet == 1)
 
         p=p+1;
         if PrimKeyPosition ~= p
-            errordlg('STOP!');
+            error('STOP!');
         end
 
         % Per_Object table's colnames
@@ -267,7 +267,7 @@ if (FirstSet == 1)
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!  BatchSize is NaN');
+                error('STOP!  BatchSize is NaN');
             end
             fprintf(fimageloader, 'INFILE %s1_1_image.CSV\n', OutfilePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets
@@ -297,7 +297,7 @@ if (FirstSet == 1)
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
             if isnan(BatchSize)
-                errordlg('STOP!  Batchsize is NaN');
+                error('STOP!  Batchsize is NaN');
             end
             fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
             for n = 2:BatchSize:handles.Current.NumberOfImageSets

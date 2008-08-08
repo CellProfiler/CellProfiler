@@ -120,121 +120,121 @@ drawnow
 [sr,sc] = size(IncomingLabelMatrixImage);
 ImageOfNeighbors = -ones(sr,sc);
 ImageOfPercentTouching = -ones(sr,sc);
-NumberOfObjects=max(IncomingLabelMatrixImage(:));
-NumberOfNeighbors = zeros(NumberOfObjects,1);
-IdentityOfNeighbors = cell(max(NumberOfObjects),1);
-props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
+NumberOfObjects = max(IncomingLabelMatrixImage(:));
 
-% Find structuring element to use for neighbor & perimeter identification.
-switch NeighborDistance,
-    case {0, 2},
-        se = strel('square', 5);
-        d = 2;
-    case 1,
-        se = strel('square', 3);
-        d = 1;
-    otherwise,
-        se = strel('disk', NeighborDistance);
-        d = NeighborDistance;
-end
+if NumberOfObjects > 0
+    NumberOfNeighbors = zeros(NumberOfObjects,1);
+    IdentityOfNeighbors = cell(max(NumberOfObjects),1);
+    props = regionprops(IncomingLabelMatrixImage,'PixelIdxList');
 
-% If NeighborDistance is 0, we need to dilate all the labels
-if (NeighborDistance == 0),
-    [D, L] = bwdist(IncomingLabelMatrixImage > 0);
-    DilatedLabels = IncomingLabelMatrixImage(L);
-end
-    
-
-if max(IncomingLabelMatrixImage(:)) > 0
-    XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
-    YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
-    %%% Compute all pairs distance matrix
-    XYLocations = [XLocations, YLocations];
-    a = reshape(XYLocations,1,NumberOfObjects,2);
-    b = reshape(XYLocations,NumberOfObjects,1,2);
-    AllPairsDistance = sqrt(sum((a(ones(NumberOfObjects,1),:,:) - b(:,ones(NumberOfObjects,1),:)).^2,3));
-end
-
-for k = 1:NumberOfObjects
-    % Cut patch around cell
-    [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
-    rmax = min(sr,max(r) + (d+1));
-    rmin = max(1,min(r) - (d+1));
-    cmax = min(sc,max(c) + (d+1));
-    cmin = max(1,min(c) - (d+1));
-    patch = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
-    % Extend cell to find neighbors
-    if (NeighborDistance > 0),
-        extended = imdilate(patch==k,se,'same');
-        overlap = patch(extended);
-        IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
-        NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
-        ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
-    else
-        %%% Use the dilated image to find neighbors (don't bother using patches)
-        extended = imdilate(DilatedLabels == k, strel('square', 3));
-        overlap = DilatedLabels(extended);
-        IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
-        NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
-        ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
-    end        
-
-
-    %%% PERCENT TOUCHING %%%
-    % Find boundary pixel of current cell
-    BoundaryPixels = bwperim(patch == k, 8);
-    % Remove the current cell, and dilate the other objects
-    OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
-    PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
-    ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
-    if NumberOfObjects >= 3
-        %%% CLOSEST NEIGHBORS %%%
-        DistancesFromCurrent = AllPairsDistance(k, :);
-        [Dists, Indices] = sort(DistancesFromCurrent);
-        FirstObjectNumber(k) = Indices(2);
-        FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
-        FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
-        SecondObjectNumber(k) = Indices(3);
-        SecondXVector(k) = XLocations(SecondObjectNumber(k)) - XLocations(k);
-        SecondYVector(k) = YLocations(SecondObjectNumber(k)) - YLocations(k);
-        Vec1 = [FirstXVector(k) FirstYVector(k)];
-        Vec2 = [SecondXVector(k) SecondYVector(k)];
-        AngleBetweenTwoClosestNeighbors(k) = real(acosd(dot(Vec1, Vec2) / (norm(Vec1) * norm(Vec2))));
-    elseif NumberOfObjects == 2,
-        %%% CLOSEST NEIGHBORS %%%
-        if k == 1,
-            FirstObjectNumber(k) = 2;
-        else
-            FirstObjectNumber(k) = 1;
-        end
-        FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
-        FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
-        SecondObjectNumber(k)=0;
-        SecondXVector(k)=0;
-        SecondYVector(k)=0;
-        AngleBetweenTwoClosestNeighbors(k)=0;
-    else
-        FirstObjectNumber(k)=0;
-        FirstXVector(k)=0;
-        FirstYVector(k)=0;
-        SecondObjectNumber(k)=0;
-        SecondXVector(k)=0;
-        SecondYVector(k)=0;
-        AngleBetweenTwoClosestNeighbors(k)=0;
+    % Find structuring element to use for neighbor & perimeter identification.
+    switch NeighborDistance,
+        case {0, 2},
+            se = strel('square', 5);
+            d = 2;
+        case 1,
+            se = strel('square', 3);
+            d = 1;
+        otherwise,
+            se = strel('disk', NeighborDistance);
+            d = NeighborDistance;
     end
 
-end
+    % If NeighborDistance is 0, we need to dilate all the labels
+    if (NeighborDistance == 0),
+        [D, L] = bwdist(IncomingLabelMatrixImage > 0);
+        DilatedLabels = IncomingLabelMatrixImage(L);
+    end
 
-if NumberOfObjects == 0
-    NumberOfNeighbors=0;
-    PercentTouching=0;
-    FirstObjectNumber=0;
-    FirstXVector=0;
-    FirstYVector=0;
-    SecondObjectNumber=0;
-    SecondXVector=0;
-    SecondYVector=0;
-    AngleBetweenTwoClosestNeighbors=0;
+
+    if max(IncomingLabelMatrixImage(:)) > 0
+        XLocations=handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed};
+        YLocations=handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed};
+        %%% Compute all pairs distance matrix
+        XYLocations = [XLocations, YLocations];
+        a = reshape(XYLocations,1,NumberOfObjects,2);
+        b = reshape(XYLocations,NumberOfObjects,1,2);
+        AllPairsDistance = sqrt(sum((a(ones(NumberOfObjects,1),:,:) - b(:,ones(NumberOfObjects,1),:)).^2,3));
+    end
+
+    for k = 1:NumberOfObjects
+        % Cut patch around cell
+        [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
+        rmax = min(sr,max(r) + (d+1));
+        rmin = max(1,min(r) - (d+1));
+        cmax = min(sc,max(c) + (d+1));
+        cmin = max(1,min(c) - (d+1));
+        patch = IncomingLabelMatrixImage(rmin:rmax,cmin:cmax);
+        % Extend cell to find neighbors
+        if (NeighborDistance > 0),
+            extended = imdilate(patch==k,se,'same');
+            overlap = patch(extended);
+            IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+            NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
+            ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+        else
+            %%% Use the dilated image to find neighbors (don't bother using patches)
+            extended = imdilate(DilatedLabels == k, strel('square', 3));
+            overlap = DilatedLabels(extended);
+            IdentityOfNeighbors{k} = setdiff(unique(overlap(:)),[0,k]);
+            NumberOfNeighbors(k) = length(IdentityOfNeighbors{k});
+            ImageOfNeighbors(sub2ind([sr sc],r,c)) = NumberOfNeighbors(k);
+        end        
+
+
+        %%% PERCENT TOUCHING %%%
+        % Find boundary pixel of current cell
+        BoundaryPixels = bwperim(patch == k, 8);
+        % Remove the current cell, and dilate the other objects
+        OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
+        PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
+        ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
+        if NumberOfObjects >= 3
+            %%% CLOSEST NEIGHBORS %%%
+            DistancesFromCurrent = AllPairsDistance(k, :);
+            [Dists, Indices] = sort(DistancesFromCurrent);
+            FirstObjectNumber(k) = Indices(2);
+            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
+            SecondObjectNumber(k) = Indices(3);
+            SecondXVector(k) = XLocations(SecondObjectNumber(k)) - XLocations(k);
+            SecondYVector(k) = YLocations(SecondObjectNumber(k)) - YLocations(k);
+            Vec1 = [FirstXVector(k) FirstYVector(k)];
+            Vec2 = [SecondXVector(k) SecondYVector(k)];
+            AngleBetweenTwoClosestNeighbors(k) = real(acosd(dot(Vec1, Vec2) / (norm(Vec1) * norm(Vec2))));
+        elseif NumberOfObjects == 2,
+            %%% CLOSEST NEIGHBORS %%%
+            if k == 1,
+                FirstObjectNumber(k) = 2;
+            else
+                FirstObjectNumber(k) = 1;
+            end
+            FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
+            FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
+            SecondObjectNumber(k)=0;
+            SecondXVector(k)=0;
+            SecondYVector(k)=0;
+            AngleBetweenTwoClosestNeighbors(k)=0;
+        else
+            FirstObjectNumber(k)=0;
+            FirstXVector(k)=0;
+            FirstYVector(k)=0;
+            SecondObjectNumber(k)=0;
+            SecondXVector(k)=0;
+            SecondYVector(k)=0;
+            AngleBetweenTwoClosestNeighbors(k)=0;
+        end
+    end
+else
+    NumberOfNeighbors = 0;
+    PercentTouching = 0;
+    FirstObjectNumber = 0;
+    FirstXVector = 0;
+    FirstYVector = 0;
+    SecondObjectNumber = 0;
+    SecondXVector = 0;
+    SecondYVector = 0;
+    AngleBetweenTwoClosestNeighbors = 0;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

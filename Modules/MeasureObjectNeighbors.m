@@ -157,6 +157,10 @@ if NumberOfObjects > 0
         AllPairsDistance = sqrt(sum((a(ones(NumberOfObjects,1),:,:) - b(:,ones(NumberOfObjects,1),:)).^2,3));
     end
 
+    % Initialize measurements
+    [FirstObjectNumber,FirstXVector,FirstYVector,SecondObjectNumber,PercentTouching,...
+        SecondXVector,SecondYVector,AngleBetweenTwoClosestNeighbors] = deal(zeros(1,NumberOfObjects));
+    
     for k = 1:NumberOfObjects
         % Cut patch around cell
         [r,c] = ind2sub([sr sc],props(k).PixelIdxList);
@@ -211,21 +215,14 @@ if NumberOfObjects > 0
             end
             FirstXVector(k) = XLocations(FirstObjectNumber(k)) - XLocations(k);
             FirstYVector(k) = YLocations(FirstObjectNumber(k)) - YLocations(k);
-            SecondObjectNumber(k)=0;
-            SecondXVector(k)=0;
-            SecondYVector(k)=0;
-            AngleBetweenTwoClosestNeighbors(k)=0;
-        else
-            FirstObjectNumber(k)=0;
-            FirstXVector(k)=0;
-            FirstYVector(k)=0;
-            SecondObjectNumber(k)=0;
-            SecondXVector(k)=0;
-            SecondYVector(k)=0;
-            AngleBetweenTwoClosestNeighbors(k)=0;
+            SecondObjectNumber(k) = 0;
+            SecondXVector(k) = 0;
+            SecondYVector(k) = 0;
+            AngleBetweenTwoClosestNeighbors(k) = 0;
         end
     end
 else
+    DilatedLabels = zeros(size(IncomingLabelMatrixImage));
     NumberOfNeighbors = 0;
     PercentTouching = 0;
     FirstObjectNumber = 0;
@@ -235,6 +232,7 @@ else
     SecondXVector = 0;
     SecondYVector = 0;
     AngleBetweenTwoClosestNeighbors = 0;
+    IdentityOfNeighbors = cell(0,1);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

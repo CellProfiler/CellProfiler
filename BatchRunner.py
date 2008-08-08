@@ -18,7 +18,7 @@ CPCluster='/imaging/analysis/CPCluster/XXXX'
 
 # Load Batch_data and figure out the sets that need running
 batch_info = loadmat("%(datadir)s/Batch_data.mat"%(locals()))
-num_sets = batch_info['handles'].Current.NumberOfImageSets + 20 
+num_sets = batch_info['handles'].Current.NumberOfImageSets
 
 # Loop over batches, check status file, print out commands for those that need it
 for start in range(2, num_sets + 1, batch_size):

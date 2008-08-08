@@ -397,7 +397,7 @@ for img_idx = FirstSet:LastSet
                 end
 
                 if ~ isvector(vals)
-                    error(['This should not happen.  CellProfiler Coding Error.  Attempting to export multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
+                    error(['This should not happen.  CellProfiler Coding Error.  Attempting to export multidimensional (', int2str(size(vals)), ') measurement ', ObjectName, '.', FeatureName]);
                 end
 
                 numobj = length(vals);

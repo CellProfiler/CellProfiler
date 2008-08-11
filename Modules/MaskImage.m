@@ -65,15 +65,10 @@ ObjectLabelMatrix = handles.Pipeline.(['Segmented',ObjectName]);
 
 ObjectLabelMatrix(ObjectLabelMatrix>0)=1;
 
-handles.Pipeline.(MaskedImageName)=OrigImage;
-handles.Pipeline.(['CropMask',MaskedImageName])=ObjectLabelMatrix;
-
-
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 %%% Check whether that figure is open. This checks all the figure handles
@@ -95,3 +90,12 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ObjectLabelMatrix,handles);
     title([MaskedImageName ' from ' ObjectName]);
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+handles.Pipeline.(MaskedImageName)=OrigImage;
+handles.Pipeline.(['CropMask',MaskedImageName])=ObjectLabelMatrix;

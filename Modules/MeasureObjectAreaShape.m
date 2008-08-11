@@ -278,7 +278,7 @@ for i = 1:length(ObjectNameList)
             cat(1,props.Orientation)];
 
         % Save basic shape features.
-        for j=1:length(BasicFeatures)
+        for j = 1:length(BasicFeatures)
             handles = CPaddmeasurements(handles, ObjectName, ...
                 ['AreaShape_', BasicFeatures{j}], ...
                 Basic(:, j));
@@ -293,6 +293,21 @@ for i = 1:length(ObjectNameList)
                 handles = CPaddmeasurements(handles, ObjectName, ...
                     ZernikeFeatures{j}, Zernike(:,j));
             end
+        end
+    else
+        % If there are no objects, write in an empty
+        for j = 1:length(BasicFeatures)
+            handles = CPaddmeasurements(handles, ObjectName, ...
+                ['AreaShape_', BasicFeatures{j}], []);
+        end
+        
+        % Here, just getting the feaure names out; I don't care about the
+        % values, and the subfunction doesn't error if the label matrix is
+        % empty
+        [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+        for j = 1:length(ZernikeFeatures)
+            handles = CPaddmeasurements(handles, ObjectName, ...
+                ZernikeFeatures{j}, []);
         end
     end
 

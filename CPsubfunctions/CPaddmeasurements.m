@@ -29,12 +29,14 @@ FirstSet = (ImageSetNumber == 1);
 OldMeasurement = ...
     isfield(handles.Measurements, ObjectName) && ...
     isfield(handles.Measurements.(ObjectName), FeatureName);
+BatchProcessing = isfield(handles.Current, 'BatchInfo');
 
 if (length(FeatureName) > namelengthmax),
     error(['The feature name ''', FeatureName, ''' is too long.']);
 end
 
-if (FirstSet && OldMeasurement),
+%%% Don't allow overwriting of measurements, *except* in batch processing.
+if (FirstSet && OldMeasurement && ~BatchProcessing),
     error(['Image processing was canceled because you are attempting to recreate the same measurements, please remove redundant module (#', handles.Current.CurrentModuleNumber, ').']);
 end
 

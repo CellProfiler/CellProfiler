@@ -180,7 +180,7 @@ end
 
 TextFlag = 0;
 if iscell(tmp)    
-    if FeatureType == 'Tracking'
+    if strcmp(FeatureType, 'Tracking')
         StringListOfMeasurements = tmp;
     else
         StringListOfMeasurements = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};

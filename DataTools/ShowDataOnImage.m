@@ -1,4 +1,4 @@
-function handles = ShowDataOnImage(handles)
+function orig_handles = ShowDataOnImage(handles)
 
 % Help for the Show Data on Image tool:
 % Category: Data Tools
@@ -56,6 +56,10 @@ function handles = ShowDataOnImage(handles)
 %
 % $Revision$
 
+
+%%% This tool shouldn't change anything in the handles.
+orig_handles = handles;
+
 %%% Asks the user to choose the file from which to extract measurements.
 [RawFileName, RawPathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 if RawFileName == 0,return,end
@@ -69,7 +73,7 @@ handles = CP_convert_old_measurements(handles);
 %%% lets the user choose a feature. The feature can be identified via 'ObjectTypename',
 %%% 'FeatureType' and 'FeatureNo'.
 try
-    [ObjectTypename,FeatureType] = CPgetfeature(handles,1);
+    [ObjectTypename,FeatureType] = CPgetfeature(handles,1, true);
 catch
     ErrorMessage = lasterr;
     CPerrordlg(['An error occurred in the ShowDataOnImage Data Tool. ' ErrorMessage(30:end)]);
@@ -83,9 +87,16 @@ if isempty(Answer)
     return
 end
 SampleNumber = str2double(Answer{1});
-if SampleNumber > length(handles.Measurements.(ObjectTypename).(FeatureType))
-    CPerrordlg(['Error: the sample number you entered, ' num2str(SampleNumber) ', exceeds the number of samples in the output file.']);
-    return
+if strcmp(FeatureType, 'Object Number'),
+    if SampleNumber > length(handles.Measurements.Image.(CPjoinstrings('Count', ObjectTypename))),
+        CPerrordlg(['Error: the sample number you entered, ' num2str(SampleNumber) ', exceeds the number of samples in the output file.']);
+        return
+    end
+else
+    if SampleNumber > length(handles.Measurements.(ObjectTypename).(FeatureType))
+       CPerrordlg(['Error: the sample number you entered, ' num2str(SampleNumber) ', exceeds the number of samples in the output file.']);
+        return
+    end 
 end
 
 %%% Looks up the corresponding image file name
@@ -157,9 +168,13 @@ catch
 end
 
 %%% Extracts the measurement values.
-tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+if strcmp(FeatureType, 'Object Number'),
+    tmp = (1:handles.Measurements.Image.(CPjoinstrings('Count', ObjectTypename)){SampleNumber})';
+else
+    tmp = handles.Measurements.(ObjectTypename).(FeatureType){SampleNumber};
+end
 if isempty(tmp)
-    CPerrordlg('Error: there are no object measurements in your file');
+    CPerrordlg('Error: there are no object measurements in your file for that image.');
     return
 end
 

@@ -43,7 +43,7 @@ elseif nargin == 1,
         A = fread(fid, 52, 'uint8=>uint8');
 	HeaderLength = from_little_endian(A(1:4));
 	if HeaderLength ~= 40
-	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with header length other than %d', CurrentFileName, HeaderLength));
+	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB files with header length %d', CurrentFileName, HeaderLength));
 	end
         Width = from_little_endian(A(5:8));
         Height = from_little_endian(A(9:12));

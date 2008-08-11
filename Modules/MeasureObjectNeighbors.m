@@ -223,15 +223,15 @@ if NumberOfObjects > 0
     end
 else
     DilatedLabels = zeros(size(IncomingLabelMatrixImage));
-    NumberOfNeighbors = 0;
-    PercentTouching = 0;
-    FirstObjectNumber = 0;
-    FirstXVector = 0;
-    FirstYVector = 0;
-    SecondObjectNumber = 0;
-    SecondXVector = 0;
-    SecondYVector = 0;
-    AngleBetweenTwoClosestNeighbors = 0;
+    NumberOfNeighbors = [];
+    PercentTouching = [];
+    FirstObjectNumber = [];
+    FirstXVector = [];
+    FirstYVector = [];
+    SecondObjectNumber = [];
+    SecondXVector = [];
+    SecondYVector = [];
+    AngleBetweenTwoClosestNeighbors = [];
     IdentityOfNeighbors = cell(0,1);
 end
 

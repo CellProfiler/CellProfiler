@@ -274,7 +274,7 @@ for i = 1:length(ObjectNameList)
             Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
     else
-        Basic(1,1:11) = 0;
+        Basic = zeros(0,11);
     end
     %%% Save measurements
     for j=1:size(Basic,2)

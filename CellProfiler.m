@@ -3041,8 +3041,8 @@ clear PixelSize* *Dir* , close(SetPreferencesWindowHandle);
 clear SetPreferencesWindowHandle FontSize FontSizeEditBoxHandle;
 
 function SetPreferences_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-
 %%% Creates a global variable to be used later.
+clear global EnteredPreferences
 global EnteredPreferences
 
 %%% Opens a dialog box to retrieve input from the user.
@@ -3454,6 +3454,11 @@ CancelButton = uicontrol(...
 
 %%% Waits for the user to respond to the window.
 uiwait(SetPreferencesWindowHandle)
+%%% Prevent switching current directories to the preferences location.
+if ~isempty(EnteredPreferences)
+    EnteredPreferences.DefaultImageDirectory = handles.Current.DefaultImageDirectory;
+    EnteredPreferences.DefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
+end
 %%% Allows canceling by checking whether EnteredPreferences exists.
 LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
 
@@ -4896,63 +4901,59 @@ LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
 
 function LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences)
 
-if exist('EnteredPreferences','var')
-    if ~isempty(EnteredPreferences)
-        %%% Retrieves the data that the user entered and saves it to the
-        %%% handles structure.
-        handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
-        handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
-        handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
-        handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
-        handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;
-        handles.Preferences.IntensityColorMap = EnteredPreferences.IntensityColorMap;
-        handles.Preferences.LabelColorMap = EnteredPreferences.LabelColorMap;
-        handles.Preferences.StripPipeline = EnteredPreferences.StripPipeline;
-        handles.Preferences.SkipErrors = EnteredPreferences.SkipErrors;
-        try
-            handles.Preferences.DisplayModeValue = EnteredPreferences.DisplayModeValue;
-        catch
-            handles.Preferences.DisplayModeValue = 1;
-        end
-        clear global EnteredPreferences
-
-        %%% Now that handles.Preferences.(5 different variables) has been filled
-        %%% in, the handles.Current values and edit box displays are set.
-        handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
-        handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
-        %        handles.Current.PixelSize = handles.Preferences.PixelSize;
-        % handles.Current.FontSize  = str2num(handles.Preferences.FontSize);
-        handles.Settings.PixelSize = handles.Preferences.PixelSize;
-
-        %%% (No need to set a current module directory or display it in an
-        %%% edit box; the one stored in preferences is the only one ever
-        %%% used).
-        set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
-        set(handles.DefaultOutputDirectoryEditBox,'String',handles.Preferences.DefaultOutputDirectory)
-        set(handles.DefaultImageDirectoryEditBox,'String',handles.Preferences.DefaultImageDirectory)
-        %%% Retrieves the list of image file names from the chosen directory,
-        %%% stores them in the handles structure, and displays them in the
-        %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
-        handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
-        %%% Adds the default module directory to Matlab's search path.
-        if ~isdeployed
-            addpath(handles.Preferences.DefaultModuleDirectory)
-        end
-
-        %%% Set new fontsize...
-        names = fieldnames(handles);
-        for k = 1:length(names)
-            if ishandle(handles.(names{k}))
-                set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Preferences.FontSize,'FontName','helvetica');
-            end
-        end
-        %%% ... and make it the new default.
-        set(0, 'defaultuicontrolfontsize', handles.Preferences.FontSize);
-        set(0, 'defaultuicontrolfontname', 'helvetica');
-
-        %%% Updates the handles structure to incorporate all the changes.
-        guidata(gcbo, handles);
+if exist('EnteredPreferences','var') &&  ~isempty(EnteredPreferences)
+    %%% Retrieves the data that the user entered and saves it to the
+    %%% handles structure.
+    handles.Preferences.PixelSize = EnteredPreferences.PixelSize;
+    handles.Preferences.FontSize  = str2double(EnteredPreferences.FontSize);
+    handles.Preferences.DefaultImageDirectory = EnteredPreferences.DefaultImageDirectory;
+    handles.Preferences.DefaultOutputDirectory = EnteredPreferences.DefaultOutputDirectory;
+    handles.Preferences.DefaultModuleDirectory = EnteredPreferences.DefaultModuleDirectory;
+    handles.Preferences.IntensityColorMap = EnteredPreferences.IntensityColorMap;
+    handles.Preferences.LabelColorMap = EnteredPreferences.LabelColorMap;
+    handles.Preferences.StripPipeline = EnteredPreferences.StripPipeline;
+    handles.Preferences.SkipErrors = EnteredPreferences.SkipErrors;
+    try
+        handles.Preferences.DisplayModeValue = EnteredPreferences.DisplayModeValue;
+    catch
+        handles.Preferences.DisplayModeValue = 1;
     end
+    clear global EnteredPreferences
+    
+    %%% Now that handles.Preferences.(5 different variables) has been filled
+    %%% in, the handles.Current values and edit box displays are set.
+    handles.Current.DefaultOutputDirectory = handles.Preferences.DefaultOutputDirectory;
+    handles.Current.DefaultImageDirectory = handles.Preferences.DefaultImageDirectory;
+    handles.Settings.PixelSize = handles.Preferences.PixelSize;
+    
+    %%% (No need to set a current module directory or display it in an
+    %%% edit box; the one stored in preferences is the only one ever
+    %%% used).
+    set(handles.PixelSizeEditBox,'String',handles.Preferences.PixelSize)
+    set(handles.DefaultOutputDirectoryEditBox,'String',handles.Preferences.DefaultOutputDirectory)
+    set(handles.DefaultImageDirectoryEditBox,'String',handles.Preferences.DefaultImageDirectory)
+    %%% Retrieves the list of image file names from the chosen directory,
+    %%% stores them in the handles structure, and displays them in the
+    %%% filenameslistbox, by faking a click on the DefaultImageDirectoryEditBox.
+    handles = DefaultImageDirectoryEditBox_Callback(hObject, eventdata, handles);
+    %%% Adds the default module directory to Matlab's search path.
+    if ~isdeployed
+        addpath(handles.Preferences.DefaultModuleDirectory)
+    end
+    
+    %%% Set new fontsize...
+    names = fieldnames(handles);
+    for k = 1:length(names)
+        if ishandle(handles.(names{k}))
+            set(findobj(handles.(names{k}),'-property','FontSize'),'FontSize',handles.Preferences.FontSize,'FontName','helvetica');
+        end
+    end
+    %%% ... and make it the new default.
+    set(0, 'defaultuicontrolfontsize', handles.Preferences.FontSize);
+    set(0, 'defaultuicontrolfontname', 'helvetica');
+    
+    %%% Updates the handles structure to incorporate all the changes.
+    guidata(gcbo, handles);
 end
 
 function ZipFiles_Callback(hObject, eventdata, handles)

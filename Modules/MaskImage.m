@@ -53,17 +53,38 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 MaskedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%%%VariableRevisionNumber = 2
+%textVAR04 = Do you want to invert the object mask?
+%choiceVAR04 = No
+%choiceVAR04 = Yes
+InvertMask = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
 
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
-
 ObjectLabelMatrix = handles.Pipeline.(['Segmented',ObjectName]);
+CropMask = ObjectLabelMatrix>0;
 
-ObjectLabelMatrix(ObjectLabelMatrix>0)=1;
+if strcmp(InvertMask,'Yes')
+    CropMask = ~CropMask;
+end
+
+%% Respect previous MaskImage modules
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname)
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    BinaryCropImage = handles.Pipeline.(fieldname);
+    try 
+        CropMask = CropMask & BinaryCropImage;
+    catch
+        error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -87,7 +108,7 @@ if any(findobj == ThisModuleFigureNumber)
 
     %%% A subplot of the Masked image.
     subplot(2,1,2)
-    CPimagesc(ObjectLabelMatrix,handles);
+    CPimagesc(CropMask,handles);
     title([MaskedImageName ' from ' ObjectName]);
 end
 
@@ -98,4 +119,4 @@ end
 drawnow
 
 handles.Pipeline.(MaskedImageName)=OrigImage;
-handles.Pipeline.(['CropMask',MaskedImageName])=ObjectLabelMatrix;
+handles.Pipeline.(['CropMask',MaskedImageName])=CropMask;

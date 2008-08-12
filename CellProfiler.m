@@ -30,8 +30,11 @@ if ~nargin
     tic
     if ~isdeployed
         try
-            addpath(genpath(fileparts(which('CellProfiler.m'))))
-            savepath
+            keyboard
+            subdirs = strread(genpath(fileparts(which('CellProfiler'))), '%s','delimiter',':');
+            subdirs = subdirs(cellfun('isempty', strfind(subdirs, '.svn')));
+            addpath(subdirs{:});
+            savepath;
         catch CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
         end
     end

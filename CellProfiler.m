@@ -30,7 +30,6 @@ if ~nargin
     tic
     if ~isdeployed
         try
-            keyboard
             subdirs = strread(genpath(fileparts(which('CellProfiler'))), '%s','delimiter',':');
             subdirs = subdirs(cellfun('isempty', strfind(subdirs, '.svn')));
             addpath(subdirs{:});

@@ -91,9 +91,13 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-  CPfigure(handles,'Image',ThisModuleFigureNumber);
+  h_fig = CPfigure(handles,'Image',ThisModuleFigureNumber);
   CPimagesc(visRGB, handles);
   title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+  
+  uicontrol(h_fig,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
+      'UserData',{OrigImage visRGB},'backgroundcolor',[.7 .7 .9],...
+      'Callback',@CP_OrigNewImage_Callback);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
@@ -112,7 +116,7 @@ end
 handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
 handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
 
-function f = lapofgau(im, s);
+function f = lapofgau(im, s)
 % im: image matrix (2 dimensional)
 % s: filter width
 % f: filter output.
@@ -120,5 +124,5 @@ function f = lapofgau(im, s);
 
 sigma = (s-1)/3;
 op = fspecial('log',s,sigma); 
-op = op - sum(op(:))/prod(size(op)); % make the op to sum to zero
+op = op - sum(op(:))/numel(op); % make the op to sum to zero
 f = filter2(op,im);

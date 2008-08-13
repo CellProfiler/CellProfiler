@@ -897,7 +897,7 @@ if isempty(Image(CropMask)),
 end
 
 %%% clamp dynamic range
-minval = max(Image(CropMask))/256;
+minval = max(Image(CropMask))/256; 
 if minval == 0.0,
     soe = 0;
     return;
@@ -907,14 +907,22 @@ Image(Image < minval) = minval;
 %%% Smooth the histogram
 Image = smooth_log_histogram(Image, 8);
 
+ImMin = min(Image(CropMask));
+ImMax = max(Image(CropMask));
+
 %%% Find bin locations
-[N, X] = hist(log2(Image(CropMask)), 256);
+upper = log2(ImMax);
+lower = log2(ImMin);
+step = (upper - lower) / 256;
+X2 = (0:256) * step + lower;
+% necessary for histc
+X2 = X2+step/2;
 
 %%% Find counts for FG and BG
 FG = Image((Image >= Threshold) & CropMask);
 BG = Image((Image < Threshold) & CropMask);
-NFG = hist(log2(FG), X);
-NBG = hist(log2(BG), X);
+NFG = histc(log2(FG), X2);
+NBG = histc(log2(BG), X2);
 
 %%% drop empty bins
 NFG = NFG(NFG > 0);

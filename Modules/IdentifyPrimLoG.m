@@ -61,12 +61,23 @@ drawnow
 im = double(OrigImage) - double(min(OrigImage(:)));
 im = im / max(im(:));
 
+%% Set regions outside of CropMasks equal to 0
+fieldname = ['CropMask', ImageName];
+if isfield(handles.Pipeline,fieldname)
+    %%% Retrieves previously selected cropping mask from handles
+    %%% structure.
+    try 
+        im(~(handles.Pipeline.(fieldname))) = 0;
+    catch
+        error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
+    end
+end
+
 ac = lapofgau(1 - im, Radius);
-ac(find(ac < Threshold)) = Threshold;
+ac(ac < Threshold) = Threshold;
 ac = ac - Threshold;
-ac2 = ac;
-indices = find(imregionalmax(ac2));
-maxima = sortrows([indices ac2(indices)], -2);
+indices = find(imregionalmax(ac));
+maxima = sortrows([indices ac(indices)], -2);
 
 bw = false(size(im));
 bw(maxima(:,1)) = true;
@@ -82,7 +93,6 @@ r(dilated) = 1;
 g(dilated) = 0;
 b(dilated) = 0;
 visRGB = cat(3, r, g, b);
-
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

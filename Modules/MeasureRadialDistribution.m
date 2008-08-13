@@ -84,23 +84,17 @@ LabelMatrixImage = CPretrieveimage(handles,['Segmented', MainObjects],ModuleName
 
 if ~ strcmp(CenterObjects, 'None'),
     CenterLabels = CPretrieveimage(handles,['Segmented', CenterObjects],ModuleName,'MustBeGray','DontCheckScale');
+    %%% Find the centers of the center objects (for anisotropy calculation)
+    props = regionprops(CenterLabels, 'Centroid');
+    Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
 else
-    %%% This would be easiest if we could dilate the label matrix.
-    %%% However, we can't guarantee that objects don't touch.  We'll
-    %%% work in two steps:
-    %%%
-    %%% First, separate objects by removing their boundary pixels, and then dilate.
-    SeparatedCenters = LabelMatrixImage - CPlabelperim(LabelMatrixImage);
-    DilatedCenters = LabelMatrixImage .* bwmorph(SeparatedCenters ~= 0, 'shrink', Inf);
-    %%% Second, find any labels that lack a center, and add them back individually.
-    MissingCenters = 1:max(LabelMatrixImage);
-    MissingCenters(DilatedCenters(DilatedCenters > 0)) = 0;
-    MissingCenters = MissingCenters(MissingCenters > 0);
-    for m = MissingCenters,
-        DilatedCenters = DilatedCenters + m * bwmorph(LabelMatrixImage == m, 'shrink', Inf);
-    end
-    CenterLabels = DilatedCenters;
+    %%% Find the centroids of the objects
+    props = regionprops(LabelMatrixImage, 'Centroid');
+    Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
+    CenterLabels = full(sparse(centroids(1,:), centroids(2,:), 1:size(centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
 end
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -110,6 +104,7 @@ end
 %%% We include the center objects within the propagate mask, because
 %%% otherwise distances don't propagate out of them.
 CombinedLabels = max(LabelMatrixImage, CenterLabels);
+NumObjects = max(CombinedLabels(:));
 [IgnoreLabels, DistanceFromCenters] = IdentifySecPropagateSubfunction(CenterLabels, zeros(size(CenterLabels)), CombinedLabels > 0, 1.0);
 
 %%% Find distance from outer boundaries to Centers.  We find the
@@ -124,18 +119,53 @@ TotalDistance = DistanceFromCenters + DistanceFromEdges;
 
 %%% Bin the values.  Yay for "full(sparse(...))".
 BinIndexes = floor(NormalizedDistance * BinCount + 1);
-Mask = (BinIndexes>0) & (LabelMatrixImage > 0);
-BinnedValues = full(sparse(LabelMatrixImage(Mask), BinIndexes(Mask), Image(Mask), max(CombinedLabels(:)), BinCount));
+Mask = (LabelMatrixImage > 0);
+BinnedValues = full(sparse(LabelMatrixImage(Mask), BinIndexes(Mask), Image(Mask), NumObjects, BinCount));
 % Fraction of stain at a particular radius
 FractionAtDistance = BinnedValues ./ repmat(sum(BinnedValues, 2), 1, BinCount);
 % Average density at a particular radius - note that to make this invariant to scale changes, we adjust the normalizer by total pixels.
-NumberOfPixelsAtDistance = full(sparse(LabelMatrixImage(Mask), BinIndexes(Mask), 1, max(CombinedLabels(:)), BinCount));
+NumberOfPixelsAtDistance = full(sparse(LabelMatrixImage(Mask), BinIndexes(Mask), 1, NumObjects, BinCount));
 MeanPixelFraction = FractionAtDistance ./ (NumberOfPixelsAtDistance ./ repmat(sum(NumberOfPixelsAtDistance, 2), 1, BinCount) + eps);
+
+%%% Anisotropy calculation.  Split each cell into eight wedges, then
+%%% compute coefficient of variation of the wedges' mean intensities
+%%% in each ring.
+%%%
+%%% Compute each pixel's delta from the center object's centroid
+[Horiz, Vert] = meshgrid(1:size(LabelMatrixImage, 2), 1:size(LabelMatrixImage, 1));
+Horiz(LabelMatrixImage == 0) = 0;
+Vert(LabelMatrixImage == 0) = 0;
+CentroidHoriz = zeros(size(LabelMatrixImage));
+CentroidHoriz(Mask) = Centroids(1, LabelMatrixImage(LabelMatrixImage > 0));
+CentroidVert = zeros(size(LabelMatrixImage));
+CentroidVert(Mask) = Centroids(2, LabelMatrixImage(LabelMatrixImage > 0));
+DeltaHoriz = Horiz - CentroidHoriz;
+DeltaVert = Vert - CentroidVert;
+%%% We now compute three single-bit images, dividing the object into eight radial slices, numbered 1 to 8.
+Mask1 = (DeltaHoriz > 0);
+Mask2 = (DeltaVert > 0);
+Mask3 = (abs(DeltaHoriz) > abs(DeltaVert));
+RadialSlice = 1 + Mask1 + 2 * Mask2 + 4 * Mask3;
+%%% Now, for each (Label, Bin, RadialSlice) triplet, we need the mean
+%%% intensity.  Matlab lacks 3D sparse matrices, so we'll loop over
+%%% the bins
+RadialCV = zeros(NumObjects, BinCount);
+for Bin = 1:BinCount,
+    % similar to computations above, but limited to a particular bin
+    Bin_Mask = Mask & (BinIndexes == Bin);
+    RadialValues = (sparse(LabelMatrixImage(Bin_Mask), RadialSlice(Bin_Mask), Image(Bin_Mask), NumObjects, 8));
+    NumberOfPixelsInSlice = (sparse(LabelMatrixImage(Bin_Mask), RadialSlice(Bin_Mask), 1, NumObjects, 8));
+    RadialSliceMeans = RadialValues ./ NumberOfPixelsInSlice;
+    RadialCV(:, Bin) = CPnanstd(RadialSliceMeans')' ./ CPnanmean(RadialSliceMeans')';
+end
+RadialCV(isnan(RadialCV)) = 0;
+
 
 %%% Store Measurements
 for k = 1:BinCount,
     handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
     handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'RadialCV', ImageName, num2str(k)), RadialCV(:, k));
 end
 
 
@@ -162,4 +192,7 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,2,3);
     CPimagesc(MeanPixelFraction, handles);
     title('MeanPixelFraction');
+    subplot(2,2,4);
+    CPimagesc(RadialCV, handles);
+    title('RadialCV');
 end

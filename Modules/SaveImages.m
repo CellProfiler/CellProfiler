@@ -330,7 +330,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         %%% Stores file and path name data in handles.Pipeline.
         handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
         handles.Pipeline.(['Pathname',ImageName]) = PathName;
-        handles.Pipeline.(['Filename',ImageName])(SetBeingAnalyzed) = {FileName};
+
 	handles = CPaddmeasurements(handles, 'Image', ...
 				    ['FileName_', ImageName], FileName);
 	handles = CPaddmeasurements(handles, 'Image', ...

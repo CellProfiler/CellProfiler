@@ -47,7 +47,7 @@ end
 %%% Verify we can add this type of Measurement to this type of object
 if ischar(Data) && (~ strcmp(ObjectName, 'Image')),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add string measurement to non-image ', ObjectName, '.', FeatureName]);
-elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data),
+elseif ~strcmp(ObjectName, 'Image') && ~isvector(Data) && ~isempty(Data)
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add multidimensional (', int2str(size(Data)), ') measurement ', ObjectName, '.', FeatureName]);
 elseif strcmp(ObjectName, 'Image') && isnumeric(Data) && ~isscalar(Data),
     error(['This should not happen.  CellProfiler Coding Error.  Attempting to add non-scalar (', int2str(size(Data)), ') measurement to ', ObjectName, '.', FeatureName]);

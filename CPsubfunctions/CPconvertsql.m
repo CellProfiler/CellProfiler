@@ -396,7 +396,7 @@ for img_idx = FirstSet:LastSet
                     error(['Non-numeric data not currently supported in per-object SQL data feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
                 end
 
-                if ~ isvector(vals)
+                if ~isvector(vals) && ~isempty(vals)
                     error(['This should not happen.  CellProfiler Coding Error.  Attempting to export multidimensional (', int2str(size(vals)), ') measurement ', ObjectName, '.', FeatureName]);
                 end
 

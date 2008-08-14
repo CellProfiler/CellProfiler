@@ -3557,7 +3557,18 @@ if exist(pathname,'dir')
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
 else
-    CPerrordlg('A directory with that name does not exist');
+    Question = ['The directory ''' pathname ''' does not exist.  Would you like to create it?'];
+    Answer = CPquestdlg(Question,'Missing directory','Yes','No','Yes');
+    if strcmp(Answer, 'Yes'),
+        [status, message] = mkdir(pathname);
+        if status 
+            handles.Current.DefaultImageDirectory = pathname;
+            FileNames = CPretrievemediafilenames(pathname,'','No','Exact','Both');
+            handles.Current.FilenamesInImageDir = FileNames;
+        else
+            CPerrordlg(['Unable to create directory ''' pathname '''.  (' message ')']);
+        end
+    end
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currently stored information.
@@ -3614,7 +3625,16 @@ if exist(pathname,'dir') ~= 0
     %%% previously selected directory, and change the contents of the
     %%% filenameslistbox back to the previously selected directory.
 else
-    CPerrordlg('A directory with that name does not exist');
+    Question = ['The directory ''' pathname ''' does not exist.  Would you like to create it?'];
+    Answer = CPquestdlg(Question,'Missing directory','Yes','No','Yes');
+    if strcmp(Answer, 'Yes'),
+        [status, message] = mkdir(pathname);
+        if status 
+            handles.Current.DefaultOutputDirectory = pathname;
+        else
+            CPerrordlg(['Unable to create directory ''' pathname '''.  (' message ')']);
+        end
+    end
 end
 %%% Whether or not the directory exists and was updated, we want to
 %%% update the GUI display to show the currrently stored information.

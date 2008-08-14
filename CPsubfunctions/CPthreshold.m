@@ -856,7 +856,7 @@ function Q = smooth_log_histogram(R, bits)
 state = randn('state');
 randn('state', 0);
 R(R == 0) = 1 / (2^bits);
-Q = exp(log(R) + 0.5*randn(size(R)).*(-log(R)/log(2))/bits);
+Q = exp(log(R) + 0.5*randn(size(R)).*(-log2(R)/bits));
 Q(Q > 1) = 1.0;
 Q(Q < 0) = 0.0;
 randn('state', state);

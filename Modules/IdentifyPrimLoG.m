@@ -4,16 +4,46 @@ function handles = IdentifyPrimLog(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% Identifies objects given only an image as input.
+%
+% Identifies the centers of blob-like primary objects.  The result
+% consists of only a single pixel per object, located near the center
+% of the object.
+%
 % *************************************************************************
 %
-% This module identifies the centers of primary objects (e.g. nuclei) in
-% grayscale images that show bright objects on a dark background. The
-% IdentifySecondary module can be used to find the edges of objects, after
-% this module runs. Ultimately, this module will become an option in
-% IdentifyPrimAutomatic, so that its options for maxima suppression and
-% finding edges between clumps can be used. This module should therefore be
-% considered beta version/in development.
+% This module identifies the centers of blob-like primary objects
+% (e.g. nuclei) in grayscale images that show bright objects on a dark
+% background.  When the objects of interest are fairly round and of
+% even size, this module may be more sensitive than the methods in
+% IdentifyPrimAutomatic and therefore detect objects that would
+% otherwise be lost.
+% 
+% The result consists of only a single pixel per object, located near
+% the center of the object; the IdentifySecondary module can be used
+% to fill out the object based on this center point.
+%
+% The radius parameter should be set to the approximate radius of the
+% objects of interest.  The algorithm is not very sensitive to this
+% parameter.
+%
+% The threshold parameter tells the algorithm how inclusive to be when
+% looking for objects.  Internally, each potential object is assigned
+% a score that depends on both how bright the object is and how
+% blob-like its shape is.  Only objects that score above the threshold
+% are returned.  The threshold must be determined experimentally.  If
+% it is too high, objects will be lost; if it is too low, spurious
+% objects will be found.
+%
+% The module works by convolving the image with the Laplacian of
+% Gaussian (LoG) kernel.  This is equivalent to convolving with the
+% Gaussian kernel and then with the Laplace operator.  The regional
+% maxima in the filter response that exceed the specificed threshold
+% are identified as objects.  The radius parameter specifies the width
+% of the kernel.
+%
+% Ultimately, this module will become an option in
+% IdentifyPrimAutomatic, so that its options for maxima suppression
+% and finding edges between clumps can be used.
 %
 % $Revision: 5009 $
 

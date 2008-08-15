@@ -178,17 +178,17 @@ else
     P = [P1 P2];
 end
 
+Mmin = min(M);
+Nmin = min(N);
+Pmin = min(P);
 if any(diff(M)) || any(diff(N)) || any(diff(P))
-    Mmin = min(M);
-    Nmin = min(N);
-    Pmin = min(P);
     if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size']))
         CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size'],'replace');
-    end        
-    CroppedImage1 = Image1(1:Mmin,1:Nmin,1:Pmin);
-    CroppedImage2 = Image2(1:Mmin,1:Nmin,1:Pmin);
-    if AreThereThreeInputImages, CroppedImage3 = Image3(1:Mmin,1:Nmin,1:Pmin); end    
+    end    
 end
+CroppedImage1 = Image1(1:Mmin,1:Nmin,1:Pmin);
+CroppedImage2 = Image2(1:Mmin,1:Nmin,1:Pmin);
+if AreThereThreeInputImages, CroppedImage3 = Image3(1:Mmin,1:Nmin,1:Pmin); end 
     
 % If there are color images, let the user know that the color image will be
 % converted into grayscale for alignment

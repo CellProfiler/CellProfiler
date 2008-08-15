@@ -73,33 +73,39 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Neighbors
 %choiceVAR03 = Ratio
 %choiceVAR03 = Texture
+%choiceVAR03 = RadialDistribution
 %inputtypeVAR03 = popupmenu
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
 FeatureNumOrName = handles.Settings.VariableValues{CurrentModuleNum,4};
+
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Minimum value required:
-%choiceVAR06 = No minimum
-%inputtypeVAR06 = popupmenu custom
-MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale do you want to use?
+%defaultVAR06 = 1
+SizeScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,06});
 
-%textVAR07 = Maximum value allowed:
-%choiceVAR07 = No maximum
+%textVAR07 = Minimum value required:
+%choiceVAR07 = No minimum
 %inputtypeVAR07 = popupmenu custom
-MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR08 = Do not save
-%infotypeVAR08 = outlinegroup indep
-SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = Maximum value allowed:
+%choiceVAR08 = No maximum
+%inputtypeVAR08 = popupmenu custom
+MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%%%VariableRevisionNumber = 4
+%textVAR09 = What do you want to call the outlines of the identified objects (optional)?
+%defaultVAR09 = Do not save
+%infotypeVAR09 = outlinegroup indep
+SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -119,12 +125,14 @@ LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'
 
 try
     switch lower(Measure)
-        case {'intensity','granularity'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName);
-        case {'areashape','neighbors','ratio'}
+        case {'areashape','ratio'}
             FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName);
-        case {'texture','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName, UserSpecifiedNumber);
+        case {'intensity','granularity','children','parent'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName);
+        case {'texture','neighbors','radialdistribution'}
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName, SizeScale);
+        otherwise
+            error('Measurement category could not be found.')
     end
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);

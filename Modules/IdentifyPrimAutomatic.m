@@ -1257,7 +1257,9 @@ function Objects = MergeObjects(Objects,OrigImage,Diameters)
 MinDiameter = Diameters(1);
 MaxDiameter = Diameters(2);
 MaxEccentricity = 0.75;      % Empirically determined value
+warning('off', 'MATLAB:divideByZero'); %%% Matlab failing atan vs atan2 in regionprops line 672.
 props = regionprops(Objects,'EquivDiameter','PixelIdxList','Eccentricity');   % Get diameters of the objects
+warning('on', 'MATLAB:divideByZero');
 EquivDiameters = cat(1,props.EquivDiameter);
 Eccentricities = cat(1,props.Eccentricity);
 IndexEccentricity = intersect(find(Eccentricities > MaxEccentricity),find(EquivDiameters < (MinDiameter + (MaxDiameter - MinDiameter)/4)));

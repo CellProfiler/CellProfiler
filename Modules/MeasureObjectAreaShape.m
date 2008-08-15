@@ -301,13 +301,15 @@ for i = 1:length(ObjectNameList)
                 ['AreaShape_', BasicFeatures{j}], []);
         end
         
-        % Here, just getting the feaure names out; I don't care about the
-        % values, and the subfunction doesn't error if the label matrix is
-        % empty
-        [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
-        for j = 1:length(ZernikeFeatures)
-            handles = CPaddmeasurements(handles, ObjectName, ...
-                ZernikeFeatures{j}, []);
+        if strcmp(ZernikeChoice,'Yes')
+            % Here, just getting the feaure names out; I don't care about the
+            % values, and the subfunction doesn't error if the label matrix is
+            % empty
+            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+            for j = 1:length(ZernikeFeatures)
+                handles = CPaddmeasurements(handles, ObjectName, ...
+                    ZernikeFeatures{j}, []);
+            end
         end
     end
 

@@ -4227,11 +4227,15 @@ else
                             if ishandle(FigHandle)
                                 CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,FigHandle);
                             end
-                            %%% We apparently ran the module successfully, so record a Zero.
-                            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(SlotNumber),ModuleName]),0);
+                            %%% We apparently ran the module successfully, so record a Zero (unless we're restarting)
+                            if ~ strcmp(ModuleName, 'Restart')
+                                handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(SlotNumber),ModuleName]),0);
+                            end
                         catch
                             %%% We apparently had an error in the module, so record a One.
-                            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(SlotNumber),ModuleName]),1);
+                            if ~ strcmp(ModuleName, 'Restart')
+                                handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(SlotNumber),ModuleName]),1);
+                            end
                             if strcmp(handles.Preferences.SkipErrors,'No')
                                 if isdeployed
                                     errorfunction(ModuleNumberAsString,handles.Preferences.FontSize,ModuleName)

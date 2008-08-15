@@ -34,42 +34,42 @@ function handles = GroupMovieFrames(handles)
 MovieName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = How many frames are there per group?
+%textVAR02 = How many frames should be extracted each cycle?
 %defaultVAR02 = 1
 NumGroupFrames = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,2}));
 
-%textVAR03 = Are the frame groups interleaved (ABCABC...) or separated (AA..BB..CC..)?
+%textVAR03 = Are the frames grouped by cycle interleaved (ABCABC...) or separated (AA..BB..CC..)?
 %choiceVAR03 = Interleaved
 %choiceVAR03 = Separated
 Interleaved = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
-%textVAR04 = What do you want to call frame 1 in each group (or / to ignore)?
+%textVAR04 = What do you want to call frame 1 in each cycle (or / to ignore)?
 %defaultVAR04 = OrigDAPI
 %infotypeVAR04 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What do you want to call frame 2 in each group (or / to ignore)?
+%textVAR05 = What do you want to call frame 2 in each cycle (or / to ignore)?
 %defaultVAR05 = /
 %infotypeVAR05 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = What do you want to call frame 3 in each group (or / to ignore)?
+%textVAR06 = What do you want to call frame 3 in each cycle (or / to ignore)?
 %defaultVAR06 = /
 %infotypeVAR06 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = What do you want to call frame 4 in each group (or / to ignore)?
+%textVAR07 = What do you want to call frame 4 in each cycle (or / to ignore)?
 %defaultVAR07 = /
 %infotypeVAR07 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = What do you want to call frame 5 in each group (or / to ignore)?
+%textVAR08 = What do you want to call frame 5 in each cycle (or / to ignore)?
 %defaultVAR08 = /
 %infotypeVAR08 = imagegroup indep
 ImageName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call frame 6 in each group (or / to ignore)?
+%textVAR09 = What do you want to call frame 6 in each cycle (or / to ignore)?
 %defaultVAR09 = /
 %infotypeVAR09 = imagegroup indep
 ImageName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});

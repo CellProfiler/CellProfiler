@@ -206,9 +206,19 @@ for Object = 1:length(ExportInfo.ObjectNames)
         Prefix{k, 1} = sprintf('Set #%d, %s',imageidx,handles.Measurements.Image.(FirstFilename){imageidx});
         imageidx = imageidx + 1;
     end
-    if size(Prefix, 1) < size(Values, 1),
-        Prefix{size(Values, 1), 1} = '';
+    
+    % The following lines try to catch if measurements are missing
+    % If it is, the corresponding Values are not written, so there is a mismatch
+    % betwene the size of Prefix and Values. So we need to make sure the length
+    % of Prefix matches the size of Values
+    if size(Prefix, 1) < size(Values, 1),   % Missing set before the last cycle: Expand Prefix
+        Prefix{size(Values, 1), 1} = [];
     end
+    if size(Prefix,1) > size(Values,1),     % Missing set is the last cycle: Truncate Prefix
+        Prefix = Prefix(1:size(Values,1),:);
+    end
+    
+    % Concatenate Prefix and Values together
     Values = [Prefix Values];
 
     %%% Write tab-separated file that can be imported into Excel
@@ -226,7 +236,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
                     fprintf(fid, '\t');
                 end
                 val = Values{row, col};
-                if isempty(val),
+                if isempty(val) || (isnumeric(val) && isnan(val)),
                     fprintf(fid, '');
                 elseif ischar(val),
                     fprintf(fid, '%s', val);
@@ -248,7 +258,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
             % loop over rows of the data
             for row = 1:size(Values, 1),
                 val = Values{row, col};
-                if isempty(val),
+                if isempty(val) || (isnumeric(val) && isnan(val)),
                     fprintf(fid, '\t');
                 elseif ischar(val),
                     fprintf(fid, '\t%s', val);

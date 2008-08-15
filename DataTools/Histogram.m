@@ -128,9 +128,8 @@ function Histogram(handles)
 if RawFileName == 0
     return
 end
-
+fn = fullfile(RawPathname, RawFileName);
 try
-    fn = fullfile(RawPathname, RawFileName);
     temp = load(fn);
     handles = CP_convert_old_measurements(temp.handles);
 catch

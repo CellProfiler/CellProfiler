@@ -870,6 +870,22 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
             SavedVarRevNum = 2;
         end
 
+
+        %% RescaleIntensity.m got two new arguments
+        if strcmp(CurrentModuleName, 'RescaleIntensity')
+            if SavedVarRevNum < 3
+                Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,8};
+                Settings.VariableInfoTypes{ModuleNum-Skipped,10} = Settings.VariableInfoTypes{ModuleNum-Skipped,8};
+                Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,7};
+                Settings.VariableInfoTypes{ModuleNum-Skipped,9} = Settings.VariableInfoTypes{ModuleNum-Skipped,7};
+                Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,6};
+                Settings.VariableInfoTypes{ModuleNum-Skipped,8} = Settings.VariableInfoTypes{ModuleNum-Skipped,6};
+                Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
+                SavedVarRevNum = 3;
+                CPwarndlg('Note: The module ''RescaleIntensity'' has been updated.  New settings have been added for your convenience.')
+            end
+        end
+
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
         %%% load is the same

@@ -27,13 +27,13 @@ function handles = RescaleIntensity(handles)
 % by taking the maximum and minimum pixel values in all the images in the 
 % set. 
 %
-% The user also has the option of selecting the value that pixels 
-% above/below the rescaled range are set to, by entering numbers in
-% the "For pixels above/below the chosen value..." boxes. If the user wants
-% these pixels to be set to the rescaled highest/lowest intensity values, 
+% The user also has the option of selecting the values that pixels 
+% outside the original min/max range are set to, by entering numbers in
+% the "For pixels above/below the chosen value..." boxes. If you want
+% these pixels to be set to the highest/lowest rescaled intensity values, 
 % enter the same number in these boxes as was entered in the highest/lowest
 % rescaled intensity boxes. However, using other values permits a simple form of
-% thresholding (e.g., setting the high bounding value to 0 can be used for
+% thresholding (e.g., setting the upper bounding value to 0 can be used for
 % removing bright pixels above a specified value)
 %
 % To convert 12-bit images saved in 16-bit format to the correct 
@@ -103,19 +103,19 @@ LowestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %defaultVAR05 = AA
 HighestPixelOrig = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = (Method E only): What should the lowest intensity of the rescaled image be (range [0,1])?
+%textVAR06 = (Method E only): What value should pixels at the low end of the original intensity range be mapped to (range [0,1])?
 %defaultVAR06 = 0
 LowestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = (Method E only): For pixels below the chosen value above, what value do you want them to have (range [0,1])?
-%defaultVAR07 = 0
-LowestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+%textVAR07 = (Method E only): What value should pixels at the high end of the original intensity range be mapped to (range [0,1])?
+%defaultVAR07 = 1
+HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = (Method E only): What should the highest intensity of the rescaled image be (range [0,1])?
-%defaultVAR08 = 1
-HighestPixelRescale = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+%textVAR08 = (Method E only): What value should pixels *below* the low end of the original intensity range be mapped to (range [0,1])?
+%defaultVAR08 = 0
+LowestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = (Method E only): For pixels above the chosen value above, what value do you want them to have (range [0,1])?
+%textVAR09 = (Method E only): What value should pixels *above* the high end of the original intensity range be mapped to (range [0,1])?
 %defaultVAR09 = 1
 HighestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
@@ -124,7 +124,7 @@ HighestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{Cu
 OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

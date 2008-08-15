@@ -258,6 +258,7 @@ function HelpDeveloperInfo
 %               the list of categories in [???? TO DO: Where????] so that
 %               your new category will be selectable from drop down menus
 %               for modules that ask the user to choose a category.
+%               The current list of Categories is:
 %           * SpecificFeatureName = specific feature recorded by a module
 %               (e.g., Perimeter). Usually the module recording the
 %               measurement assigns this name, but a few modules allow the
@@ -273,6 +274,15 @@ function HelpDeveloperInfo
 %               used for Channel or scale of Texture. Multiple parameters
 %               can be separated by underscores.
 %               (someday, CP will look at upstream modules and make dropdowns)
+%
+%           Category List, with their necessary extra parameters:
+%               No extra parameters: AreaShape, Ratio
+%               Image: Imageintensity, Granularity, Children, Parent
+%               SizeScale: Neighbors
+%               SizeScale and Image: Texture and RadialDistribution
+%           When thse categories are altered, please update the code in:
+%               CPgetfeaturenamesfromnumbers and any module that uses this
+%               subfunction
 %
 %       Note: CPjoinstrings can be helpful in constructing feature
 %       names from strings and integers.  (If you are just joining

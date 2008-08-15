@@ -123,11 +123,9 @@ drawnow
     if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
         iObj = 0;
         for thisParent = ParentName %% Will need to change if we add more StepParents
-            iObj = iObj + 1;
-            
             %% Calculate perimeters for all parents simultaneously
-            DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' ParentName{iObj}]));
-            
+            DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' thisParent{1}]));
+            Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
             if max(ParentsOfChildren) > 0,
                 for iParentsOfChildren = 1:max(ParentsOfChildren)
                     %% Calculate distance transform to perimeter of Parent objects
@@ -141,12 +139,11 @@ drawnow
                     roundedChLocY= round(ChildrenLocationsY);
                     idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
                     Dist = DistTrans(idx);
-
-                    %% SAVE Distance to 'handles'
-                    handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed}(ChList,iObj) = Dist;
+                    Dists(ChList) = Dist;
                 end
+                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], Dists);
             else
-                handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed} = NaN;
+                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], nan(max(SubObjectName(:)), 1));
             end
         end
     else
@@ -158,7 +155,6 @@ drawnow
     if length(ParentName) > 1
         Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};   
         %% Initialize NormDistance
-        handles.Measurements.(SubObjectName).NormDistance{handles.Current.SetBeingAnalyzed} = zeros(size(Dist,1),1);
         NormDist = Dist(:,1) ./ sum(Dist,2);
         NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
         

@@ -1,13 +1,14 @@
-function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,FeatureNumber,Image,TextureScale)
-% Get FeatureNames from FeatureNumbers
+function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,FeatureNumberOrName,Image,TextureScale)
+% Get FeatureNames from FeatureNumbers or validate if FeatureName
 %
-% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumber)
-% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumber, Image)
-% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumber, Image, TextureScale)
+% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumberOrName)
+% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumberOrName, Image)
+% handles = CPgetfeaturenamesfromnumbers(handles, ObjectName, Category, FeatureNumberOrName, Image, TextureScale)
 %
 %  where   handles is the handles structure
-%          ObjectNamem & Category are character strings
-%          FeatureNumber, TextureScale are positive integers
+%          ObjectName & Category are character strings
+%          FeatureNumberOrName is a positive integer or a feature name
+%          TextureScale is a positive integers
 %          Image can be can be a string (Image) or Numeric (Texture)
 %
 % where we are finding FeatureName from
@@ -31,13 +32,29 @@ elseif ~strcmp(Category,'Texture')
 end
 
 AllFieldNames = fieldnames(handles.Measurements.(ObjectName));
-CurrentMeasure = [CPjoinstrings(Category,'.*',Image,num2str(TextureScale)),'$'];
-FieldnumsCategoryCell = regexp(AllFieldNames,CurrentMeasure);
-FieldnumsCategory = find(~cellfun('isempty',FieldnumsCategoryCell));
-% Could do error checking here, since the next line is where this subfn usually errors
-% (if it can't find a FeatureName), but we ought to use 'try/catch' in the 
-% calling function, for better error handling
-FeatureName = AllFieldNames(FieldnumsCategory(FeatureNumber));
+if isnumeric(FeatureNumberOrName)
+    CurrentMeasure = [CPjoinstrings(Category,'.*',Image,num2str(TextureScale)),'$'];
+    FieldnumsCategoryCell = regexp(AllFieldNames,CurrentMeasure);
+    FieldnumsCategory = find(~cellfun('isempty',FieldnumsCategoryCell));
+    % Could do error checking here, since the next line is where this subfn usually errors
+    % (if it can't find a FeatureName), but we ought to use 'try/catch' in the 
+    % calling function, for better error handling
+    FeatureName = AllFieldNames(FieldnumsCategory(FeatureNumberOrName));
+else
+    CurrentMeasure = CPjoinstrings(Category,'_',FeatureNumberOrName);
+    if ~ isempty(Image)
+    	CurrentMeasure = CPjoinstrings(CurrentMeasure,'_',Image);
+    	if ~ isempty(TextureScale)
+            CurrentMeasure = CPjoinstrings(CurrentMeasure,'_',num2str(TextureScale));
+    	end
+    end
+    Matches=strcmp(AllFieldNames,CurrentMeasure);
+    FeatureNumber=find(Matches);
+    if length(FeatureNumber) < 1
+	error('No measurement with name "%s" found.', CurrentMeasure);
+    end
+    FeatureName=AllFieldNames(FeatureNumber);
+end
 
 % CHECK: There should be one Measurement that fulfills the above criteria
 if length(FeatureName) < 1

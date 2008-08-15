@@ -76,10 +76,13 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu
 Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Which feature do you want to use? (Enter the feature number - see help for details)
+%textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
-FeatureNum = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
-
+FeatureNumOrName = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
+if isnan(FeatureNumOrName)
+  FeatureNumOrName = ...
+      handles.Settings.VariableValues{CurrentModuleNum,4}
+end
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
@@ -107,7 +110,7 @@ SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if isempty(FeatureNum) || isnan(FeatureNum)
+if isempty(FeatureNumOrName)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
@@ -121,11 +124,11 @@ LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'
 try
     switch lower(Measure)
         case {'intensity','granularity'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName);
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName);
         case {'areashape','neighbors','ratio'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum);
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName);
         case {'texture','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNum, ImageName, UserSpecifiedNumber);
+            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName, UserSpecifiedNumber);
     end
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);

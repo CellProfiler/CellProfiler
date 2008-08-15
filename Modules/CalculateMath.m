@@ -125,7 +125,10 @@ Power = str2double(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR13 = popupmenu
 Operation = char(handles.Settings.VariableValues(CurrentModuleNum, 13));
 
-%%%VariableRevisionNumber = 5
+%textVAR14 = What do you want to call the output calculated by this module? The prefix, "Math_" will be applied to your entry or simply leave as "Automatic" and a sensible name will be generated.'
+%defaultVAR14 = Automatic
+OutputFeatureName = char(handles.Settings.VariableValues(CurrentModuleNum,14));
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
@@ -145,10 +148,10 @@ for idx = 1:2
             ' module (#' num2str(CurrentModuleNum) ...
             ') because an error ocurred when retrieving the data.  '...
             'Likely the category of measurement you chose, ',...
-            Category, ', was not available for ', ...
-            ObjectName,' with feature number ' num2str(FeatureNbr) ...
-            ', possibly specific to image ''' Image ''' and/or ' ...
-            'Texture Scale = ' num2str(TextureScale) '.']);
+            Category{idx}, ', was not available for ', ...
+            ObjectName{idx},' with feature number ' FeatureNumber{idx} ...
+            ', possibly specific to image ''' Image{idx} ''' and/or ' ...
+            'Texture Scale = ' num2str(TextureScale{idx}) '.']);
     end
 end
     
@@ -159,13 +162,16 @@ if length(Measurements{1}) ~= length(Measurements{2}) && ...
 end
 
 %% Construct field name
-FullFeatureName = CPjoinstrings('Math',ObjectName{1},FeatureName{1},...
-                            Operation,ObjectName{2},FeatureName{2});
+if isempty(OutputFeatureName) || strcmp(OutputFeatureName,'Automatic') == 1
+    FullFeatureName = CPjoinstrings('Math',ObjectName{1},FeatureName{1},...
+                                    Operation,ObjectName{2},FeatureName{2});
 
-%% Since Matlab's max name length is 63, we need to truncate the fieldname
-MinStrLen = 5;
-TruncFeatureName = CPtruncatefeaturename(FullFeatureName,MinStrLen);
-
+    %% Since Matlab's max name length is 63, we need to truncate the fieldname
+    MinStrLen = 5;
+    TruncFeatureName = CPtruncatefeaturename(FullFeatureName,MinStrLen);
+else
+    TruncFeatureName = CPjoinstrings('Math',OutputFeatureName);
+end
 %% Do Math
 if( strcmpi(Operation, 'Multiply') )
     FinalMeasurements = Measurements{1} .* Measurements{2};
@@ -193,7 +199,7 @@ else
     if ~strcmp(ObjectName{1}, 'Image'),
         handles = CPaddmeasurements(handles,ObjectName{1},TruncFeatureName,FinalMeasurements);
     end
-    if ~strcmp(ObjectName{2}, 'Image'),
+    if ~strcmp(ObjectName{1}, ObjectName{2}) && ~ strcmp(ObjectName{2},'Image')
         handles = CPaddmeasurements(handles,ObjectName{2},TruncFeatureName,FinalMeasurements);
     end
 end

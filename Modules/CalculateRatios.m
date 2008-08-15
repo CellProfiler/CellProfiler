@@ -75,9 +75,9 @@ ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu custom
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Which feature do you want to use? (Enter the feature number - see help for details)
+%textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
-FeatureNbr{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
+FeatureNbr{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
 
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR05 = imagegroup
@@ -103,9 +103,9 @@ ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR08 = popupmenu custom
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = Which feature do you want to use? (Enter the feature number - see help for details)
+%textVAR09 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR09 = 1
-FeatureNbr{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
+FeatureNbr{2} = handles.Settings.VariableValues{CurrentModuleNum,9};
 
 %textVAR10 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR10 = imagegroup
@@ -132,7 +132,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 %% Check FeatureNbr
 for NumerDenom = 1:2
-    if isempty(FeatureNbr{NumerDenom}) || isnan(FeatureNbr{NumerDenom})
+    if isempty(FeatureNbr{NumerDenom})
         error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
     end
 end

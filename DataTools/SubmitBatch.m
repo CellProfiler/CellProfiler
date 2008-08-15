@@ -52,6 +52,7 @@ function handles=SubmitBatch(handles)
         url=sprintf('http://%s/batchprofiler/cgi-bin/NewBatch.py?email=%s&queue=%s&data_dir=%s&write_data=%s&batch_size=%d&timeout=%f&cpcluster=%s',...
             info.Server,info.Email,info.Queue,info.DataDir,write_data,info.BatchSize,info.Timeout,info.CPCluster);
         result=urlread(url);
+        web(strcat('text://',result));
     end;
 end
 

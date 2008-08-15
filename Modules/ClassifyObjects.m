@@ -68,9 +68,9 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter feature number (see help):
+%textVAR03 = Enter feature number or name (see help):
 %defaultVAR03 = 1
-FeatureNbr = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+FeatureNbr = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup

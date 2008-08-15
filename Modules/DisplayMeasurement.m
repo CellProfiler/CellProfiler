@@ -67,9 +67,9 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu custom
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%textVAR04 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR04 = 1
-FeatureNo = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
+FeatureNo = handles.Settings.VariableValues{CurrentModuleNum,4};
 
 if isempty(FeatureNo)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
@@ -107,9 +107,9 @@ ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR10 = popupmenu custom
 MeasureChoice2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = Which feature do you want to use? (Enter the feature number - see HELP for explanation)
+%textVAR11 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR11 = 1
-FeatureNo2 = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
+FeatureNo2 = handles.Settings.VariableValues{CurrentModuleNum,11};
 
 if isempty(FeatureNo2)
     error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);

@@ -20,7 +20,9 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 % added in the order matching that of each Module's Help text!
 
 error(nargchk(4, 6, nargin, 'string'))
-
+if ~ isnan(str2double(FeatureNumberOrName))
+    FeatureNumberOrName = str2double(FeatureNumberOrName);
+end
 % Parse inputs
 if ~exist('Image','var'), Image = ''; end
 if ~exist('TextureScale','var'), TextureScale = ''; end

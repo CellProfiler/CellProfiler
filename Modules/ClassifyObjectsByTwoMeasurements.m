@@ -67,7 +67,7 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter the first feature number to use (see help):
 %defaultVAR03 = 1
-FeatureNbr{1} = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
+FeatureNbr{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the first feature?
 %infotypeVAR04 = imagegroup
@@ -91,7 +91,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Enter the second feature number to use (see help):
 %defaultVAR07 = 1
-FeatureNbr{2} = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+FeatureNbr{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the second feature?
 %infotypeVAR08 = imagegroup

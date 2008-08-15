@@ -78,11 +78,7 @@ Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
-FeatureNumOrName = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
-if isnan(FeatureNumOrName)
-  FeatureNumOrName = ...
-      handles.Settings.VariableValues{CurrentModuleNum,4}
-end
+FeatureNumOrName = handles.Settings.VariableValues{CurrentModuleNum,4};
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu

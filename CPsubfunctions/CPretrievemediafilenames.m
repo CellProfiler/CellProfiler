@@ -15,7 +15,7 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 %%% Lists all the contents of that path into a structure which includes the
 %%% name of each object as well as whether the object is a file or
 %%% directory.
-FilesAndDirsStructure = dir(Pathname);
+FilesAndDirsStructure = CPdir(Pathname);
 %%% Puts the names of each object into a list.
 FileAndDirNames = sortrows({FilesAndDirsStructure.name}');
 %%% Puts the logical value of whether each object is a directory into a list.

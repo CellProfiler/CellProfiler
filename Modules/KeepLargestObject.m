@@ -4,15 +4,17 @@ function handles = KeepLargestObject(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
+%
 % If there is more than one primary object inside a secondary object,
 % delete all except the largest one.
+%
 % *************************************************************************
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %

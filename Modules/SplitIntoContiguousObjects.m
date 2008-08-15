@@ -4,6 +4,9 @@ function handles = SplitIntoContiguousObjects(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
+%
+% If an object consists of two or more unconnected components, this
+% module relabels them so that the components become separate objects.
 % 
 % *************************************************************************
 %
@@ -16,7 +19,7 @@ function handles = SplitIntoContiguousObjects(handles)
 % See the accompanying file LICENSE for details.
 %
 % Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Copyright 2003--2008.
 %
 % Please see the AUTHORS file for credits.
 %

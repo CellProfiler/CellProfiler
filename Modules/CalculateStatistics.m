@@ -42,6 +42,7 @@ function handles = CalculateStatistics(handles)
 % Zfactor            |      1
 % Vfactor            |      2
 % EC50               |      3
+% One-tailed Zfactor |      4
 %
 %
 % You must load a simple text file with one entry per cycle (using the Load

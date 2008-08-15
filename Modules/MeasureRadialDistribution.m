@@ -17,9 +17,17 @@ function handles = MeasureRadialDistribution(handles)
 % can be used as the center, an example of which would be using Nuclei
 % for centers within Cells.
 %
+% Three features are measured for each object:
+% - Fraction of total stain in an object at a given radius.
+% - Mean fractional intensity at a given radius (Fraction of total 
+%    intenstiy normalized by fraction of pixels at a given radius).
+% - Coefficient of variation of intensity within a ring, calculated 
+%   over 8 slices.
+%
 % Features measured:      Feature Number:
 % FracAtD               |    1
 % MeanFrac              |    2
+% RadialCV              |    3
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -76,7 +76,7 @@ Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
-TextureScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
+SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the second feature type to use:
 %choiceVAR06 = AreaShape
@@ -100,7 +100,7 @@ Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR09 = 1
-TextureScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
+SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Enter threshold for the first set of measurements. Enter a number, "Mean", or "Median"
 %defaultVAR10 = Mean
@@ -140,7 +140,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 for FeatNum=2:-1:1
     try
         FeatureName{FeatNum} = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category{FeatNum},...
-            FeatureNbr{FeatNum},Image{FeatNum},TextureScale{FeatNum}); %#ok<AGROW>
+            FeatureNbr{FeatNum},Image{FeatNum},SizeScale{FeatNum}); %#ok<AGROW>
     catch
         error(['Image processing was canceled in the ', ModuleName, ...
             ' module (#' num2str(CurrentModuleNum) ...
@@ -149,7 +149,7 @@ for FeatNum=2:-1:1
             Category{FeatNum}, ', was not available for ', ...
             ObjectName,' with feature number ' num2str(FeatureNbr{FeatNum}) ...
             ', possibly specific to image ''' Image{FeatNum} ''' and/or ' ...
-            'Texture Scale = ' num2str(TextureScale{FeatNum}) '.']);
+            'Texture Scale = ' num2str(SizeScale{FeatNum}) '.']);
     end
 end
 

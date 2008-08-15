@@ -79,7 +79,7 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
-TextureScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
+SizeScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = To create evenly spaced bins, enter number of bins, or type "C:1 2 3 4" to custom define the bin edges, or type P:XXX, where XXX is the numerical threshold to measure the percent of objects that are above a threshold.
 %defaultVAR06 = 3
@@ -120,7 +120,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 try
     FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,...
-        FeatureNbr,Image,TextureScale);
+        FeatureNbr,Image,SizeScale);
 catch
     error(['Image processing was canceled in the ', ModuleName, ...
         ' module (#' num2str(CurrentModuleNum) ...
@@ -129,7 +129,7 @@ catch
         Category, ', was not available for ', ...
         ObjectName,' with feature number ' num2str(FeatureNbr) ...
         ', possibly specific to image ''' Image ''' and/or ' ...
-        'Texture Scale = ' num2str(TextureScale) '.']);
+        'Texture Scale = ' num2str(SizeScale) '.']);
 end
 
 %%% Retrieves the label matrix image that contains the segmented objects

@@ -86,7 +86,7 @@ Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR06 = 1
-TextureScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,6});
+SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which object would you like to use for the denominator?
 %choiceVAR07 = Image
@@ -114,7 +114,7 @@ Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR11 = 1
-TextureScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
+SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = Do you want the log (base 10) of the ratio?
 %choiceVAR12 = No
@@ -143,7 +143,7 @@ for NumerDenom=1:2
     %% Get measurements
     try
         FeatureName{NumerDenom} = CPgetfeaturenamesfromnumbers(handles,ObjectName{NumerDenom},...
-            Category{NumerDenom},FeatureNbr{NumerDenom},Image{NumerDenom},TextureScale{NumerDenom});
+            Category{NumerDenom},FeatureNbr{NumerDenom},Image{NumerDenom},SizeScale{NumerDenom});
         
         %% NOTE:    Numerator data will be NumerDenomMeasurements{1} and 
         %%          Denominator data will be NumerDenomMeasurements{2} 
@@ -157,7 +157,7 @@ for NumerDenom=1:2
             Category{NumerDenom}, ', was not available for ', ...
             ObjectName{NumerDenom},' with feature number ' num2str(FeatureNbr{NumerDenom}) ...
             ', possibly specific to image ''' Image{NumerDenom} ''' and/or ' ...
-            'Texture Scale = ' num2str(TextureScale{NumerDenom}) '.']);
+            'Texture Scale = ' num2str(SizeScale{NumerDenom}) '.']);
     end
 end
 % Check size of data, and make them the same size

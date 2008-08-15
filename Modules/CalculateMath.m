@@ -77,7 +77,7 @@ Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
-TextureScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
+SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which object would you like to use as the second measurement?
 %choiceVAR06 = Image
@@ -105,7 +105,7 @@ Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR10 = 1
-TextureScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
+SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Do you want the log (base 10) of the ratio?
 %choiceVAR11 = No
@@ -140,7 +140,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 for idx = 1:2
     try
         FeatureName{idx} = CPgetfeaturenamesfromnumbers(handles, ObjectName{idx}, ...
-            Category{idx}, FeatureNumber{idx}, Image{idx},TextureScale{idx});
+            Category{idx}, FeatureNumber{idx}, Image{idx},SizeScale{idx});
 
         Measurements{idx} = handles.Measurements.(ObjectName{idx}).(FeatureName{idx}){SetBeingAnalyzed};
     catch
@@ -151,7 +151,7 @@ for idx = 1:2
             Category{idx}, ', was not available for ', ...
             ObjectName{idx},' with feature number ' FeatureNumber{idx} ...
             ', possibly specific to image ''' Image{idx} ''' and/or ' ...
-            'Texture Scale = ' num2str(TextureScale{idx}) '.']);
+            'Texture Scale = ' num2str(SizeScale{idx}) '.']);
     end
 end
     

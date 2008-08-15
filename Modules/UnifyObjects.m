@@ -4,20 +4,37 @@ function handles = UnifyObjects(handles)
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:
-% 
+%
 % Relabels objects so that objects within a specified distance of each
-% other have the same label.  Optionally, only merge two objects if
-% the straight line connecting their centroids has a relatively
-% uniform intensity in a specified image.
+% other get the same label and thereby become the same object.
+% Optionally, only unify two objects if the straight line connecting
+% their centroids has a relatively uniform intensity in a specified
+% image.
 %
 % *************************************************************************
 %
-% If the distance threshold is zero, only objects that are touching
-% will be unified.
+% This module unifies objects that are within a certain distance of
+% each other.  If the distance threshold is zero (the default), only
+% objects that are touching will be unified.
 %
-% A new "measurement" will be added for each input object.  This
-% "measurement" is a number that indicates the relabeled object
-% number.
+% "Unifying" two objects means to change the labels of the pixels in
+% one object to equal the label of the other object.  Thus, they
+% become one object.  Note that the module does not connect or bridge
+% the two objects by adding any new pixels, so the new, unified object
+% may consist of two or more unconnected components.
+% 
+% As an experimental feature, it is possible to specify a grayscale
+% image to help guide the decision of which objects to unify.  When
+% the module considers merging two objects, it looks at the pixels
+% along the line connecting their centroids in this image.  If the
+% intensity of any of these pixels is below 90 percent of either
+% centroid, the objects are not unified.
+%
+% In order to ensure that objects are labeled consecutively (which
+% other modules depend on), UnifyObjects may change the label (i.e.,
+% the object number) of any object.  A new "measurement" will be added
+% for each input object.  This "measurement" is a number that
+% indicates the relabeled object number.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

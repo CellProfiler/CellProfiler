@@ -24,12 +24,14 @@ function m = CPnanmedian(x)
 
 assert(length(size(x)) <= 2, 'CPnanmedian can only operate on vectors and 2D matrices.');
     
-if ~ any(isnan(x(:))),
+if isempty(x(:)),
+    m = NaN;
+elseif ~any(isnan(x(:))),
     m = median(x);
 else
     % If it's a row vector, just return the median of that vector
     if size(x, 1) == 1,
-        m = median(x(~ isnan(x)));
+        m = median(x(~isnan(x)));
     else
         % 2D matrix 
 
@@ -39,7 +41,7 @@ else
         % work by columns
         for i = 1:size(x, 2),
             col = x(:, i);
-            m(i) = median(col(~ isnan(col)));
+            m(i) = median(col(~isnan(col)));
         end
     end
 end

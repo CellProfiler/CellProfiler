@@ -25,12 +25,14 @@ function m = CPnanmean(x)
 
 assert(length(size(x)) <= 2, 'CPnanmean can only operate on vectors and 2D matrices.');
     
-if ~ any(isnan(x(:))),
+if isempty(x(:)),
+    m = NaN;
+elseif ~any(isnan(x(:))),
     m = mean(x);
 else
     % If it's a row vector, just return the mean of that vector
     if size(x, 1) == 1,
-        m = mean(x(~ isnan(x)));
+        m = mean(x(~isnan(x)));
     else
         % 2D matrix 
 
@@ -40,7 +42,7 @@ else
         % work by columns
         for i = 1:size(x, 2),
             col = x(:, i);
-            m(i) = mean(col(~ isnan(col)));
+            m(i) = mean(col(~isnan(col)));
         end
     end
 end

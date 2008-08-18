@@ -886,6 +886,19 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
             end
         end
 
+        %% SaveImages.m got one new argument
+        if strcmp(CurrentModuleName, 'SaveImages')
+            if SavedVarRevNum < 13
+                % Re-create subdirectories? Default to No.
+                Settings.VariableValues{ModuleNum-Skipped,14} = 'No';
+                % Move overwrite warning down one
+                Settings.VariableValues{ModuleNum-Skipped,15} = 'n/a';
+                Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+                SavedVarRevNum = 13;
+                CPwarndlg('Note: The module ''SaveImages'' has been updated.  New settings have been added for your convenience.')
+            end
+        end
+        
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
         %%% load is the same

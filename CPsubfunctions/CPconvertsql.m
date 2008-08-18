@@ -127,10 +127,11 @@ if (FirstSet == 1)
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
 
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
+            msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-image and per-object .CSV files that the cluster job will create.';
             if isfield(handles.Current,'BatchInfo')
-                warning('Please refer to the User help for more information');
+                warning(msg);
             else
-                CPwarndlg('Please refer to the User help for more information');
+                CPwarndlg(msg);
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -256,10 +257,11 @@ if (FirstSet == 1)
         fimageloader = fopen(fullfile(OutDir, [DBname, '_LOADIMAGE.CTL']), 'W');
         fprintf(fimageloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
+            msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-image .CSV files that the cluster job will create.';
             if isfield(handles.Current,'BatchInfo')
-                warning('Please refer to the User help for more information');
+                warning(msg);
             else
-                CPwarndlg('Please refer to the User help for more information');
+                CPwarndlg(msg);
             end
             fprintf(fimageloader, 'INFILE %s1_1_image.CSV\n', OutfilePrefix);
         else
@@ -281,10 +283,11 @@ if (FirstSet == 1)
         fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
         fprintf(fobjectloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
+            msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-object .CSV files that the cluster job will create.';
             if isfield(handles.Current,'BatchInfo')
-                warning('Please refer to the User help for more information');
+                warning(msg);
             else
-                CPwarndlg('Please refer to the User help for more information');
+                CPwarndlg(msg);
             end
             fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
         else

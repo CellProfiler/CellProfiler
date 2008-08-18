@@ -29,7 +29,7 @@ function handles = GroupMovieFrames(handles)
 %%%%%%%%%%%%%%%%%
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the movie you want to group?
+%textVAR01 = What did you call the movie you want to extract from?
 %infotypeVAR01 = imagegroup
 MovieName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu

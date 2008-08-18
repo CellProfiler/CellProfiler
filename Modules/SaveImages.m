@@ -38,6 +38,12 @@ function handles = SaveImages(handles)
 % files. Because this function is rarely needed and may introduce
 % complications, the default answer is "No".
 %
+% Do you want to create the image subdirectory structure in the default 
+% output directory?
+% If the input images are located in subdirectories (such that you used 
+% "Analyze all subfolders within the selected folder" in LoadImages), you 
+% can re-create the subdirectory structure in the output directory.
+% 
 % Special notes for saving in movie format (avi):
 % The movie will be saved after the last cycle is processed. You have the
 % option to also save the movie periodically during image processing, so
@@ -194,14 +200,20 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Warning! It is possible to overwrite existing files using this module!
+%textVAR14 = Do you want to create the image subdirectory structure in the default output directory?
+%choiceVAR14 = No
+%choiceVAR14 = Yes
+CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
+
+%textVAR15 = Warning! It is possible to overwrite existing files using this module!
 
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %If you change anything here, make sure the image tool SaveImageAs is
 %consistent, in CPimagetool.
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%VariableRevisionNumber = 12
+%%%VariableRevisionNumber = 13
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% FILE PROCESSING %%%
@@ -278,20 +290,39 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     FileName = [FileName '.' FileFormat];
     
-    PathName = FileDirectory;
-    if strncmp(PathName,'.',1)
-	PathName = fullfile(handles.Current.DefaultOutputDirectory, ...
-			    FileDirectory(2:end));
+    if strncmp(FileDirectory,'.',1)
+        PathName = fullfile(handles.Current.DefaultOutputDirectory, FileDirectory(2:end));
     elseif strncmp(FileDirectory, '&', 1)
-	PathName = handles.Measurements.Image.(['PathName_', ImageFileName]);
-	if iscell(PathName), PathName = PathName{SetBeingAnalyzed}; end
+        PathName = handles.Measurements.Image.(['PathName_', ImageFileName]);
+        if iscell(PathName), PathName = PathName{SetBeingAnalyzed}; end
+    else
+        PathName = FileDirectory;
+        % Strip ending slash if inserted
+        if strcmp(PathName(end),'/') || strcmp(PathName(end),'\'), PathName = PathName(1:end-1); end
     end
 
-    %%% Makes sure that the File Directory specified by the user exists.
-    if ~isdir(PathName)
-        error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
+    % If the user wants to add subdirectories, alter the path accordingly
+    if strncmpi(CreateSubdirectories,'y',1)
+        p = handles.Measurements.Image.(['PathName_', ImageFileName]){SetBeingAnalyzed};
+        SubDir = p(length(handles.Current.DefaultImageDirectory)+1:end);
+        if ~isempty(SubDir) && (strcmp(SubDir(1),'/') || strcmp(SubDir(1),'\')), SubDir = SubDir(2:end); end
+        PathName = [PathName filesep SubDir];
+    end
+                
+    %%% Makes sure that the output file directory specified by the user exists,
+    %%% unless the user asked for it to be created
+    if strncmpi(CreateSubdirectories,'y',1)
+        if ~isdir(PathName),    % If the directory doesn't already exist, create it
+            [success,ignore,ignore] = mkdir(PathName);
+            if ~success, error(['Image processing was canceled in the ', ModuleName, ' module because the specified subdirectory "', PathName, '" could not be created.']); end
+        end
+    else
+        if ~isdir(PathName)
+            error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
+        end
     end
 
+    %%% However
     if ~strcmpi(FileFormat,'fig')
         if ~isfield(handles.Pipeline, ImageName)
             %%% Checks if this might be a number, intended to save an
@@ -331,9 +362,9 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
         handles.Pipeline.(['Pathname',ImageName]) = PathName;
 
-	handles = CPaddmeasurements(handles, 'Image', ...
+        handles = CPaddmeasurements(handles, 'Image', ...
 				    ['FileName_', ImageName], FileName);
-	handles = CPaddmeasurements(handles, 'Image', ...
+        handles = CPaddmeasurements(handles, 'Image', ...
 				    ['PathName_', ImageName], PathName);
     end
 

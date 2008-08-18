@@ -18,3 +18,16 @@
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 5583 $
+
+% The following code is there just as a backup, in case the Mex is
+% missing.
+
+function result = CPdir(directory)
+if nargin == 0
+    result = dir();
+else
+    result = dir(directory);
+end
+result = rmfield(result, 'date');
+result = rmfield(result, 'bytes');
+result = rmfield(result, 'datenum');

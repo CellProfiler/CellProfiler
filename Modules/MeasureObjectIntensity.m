@@ -194,8 +194,15 @@ for i = 1:length(ObjectNameList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     drawnow
 
+    %%% Get pixel indexes (fastest way), and count objects
+    [sr sc] = size(LabelMatrixImage);        
+    props = regionprops(LabelMatrixImage,'PixelIdxList');
+    ObjectCount = length(props);    
+
+    %%% Label-aware boundary finding (even when two objects are adjacent)
+    LabelBoundaryImage = CPlabelperim(LabelMatrixImage);
+    
     %%% Initialize measurement structure
-    Basic = [];
     BasicFeatures    = {'IntegratedIntensity',...
         'MeanIntensity',...
         'StdIntensity',...
@@ -207,33 +214,25 @@ for i = 1:length(ObjectNameList)
         'MinIntensityEdge',...
         'MaxIntensityEdge',...
         'MassDisplacement'};
-
-    %%% Get pixel indexes (fastest way), and count objects
-    [sr sc] = size(LabelMatrixImage);        
-    props = regionprops(LabelMatrixImage,'PixelIdxList');
-    ObjectCount = length(props);    
-
-    %%% Label-aware boundary finding (even when two objects are adjacent)
-    LabelBoundaryImage = CPlabelperim(LabelMatrixImage);
     
     if ObjectCount > 0
-        Basic = zeros(ObjectCount,4);
-
+        Basic = cell(ObjectCount,11);
+        
         for Object = 1:ObjectCount
             %%% It's possible for objects not to have any pixels,
             %%% particularly tertiary objects (such as cytoplasm from
             %%% cells the exact same size as their nucleus).
             if isempty(props(Object).PixelIdxList),
-                Basic(Object,1:11) = 0;
+                [Basic{Object,:}] = deal(0);
                 continue;
             end
          
             %%% Measure basic set of Intensity features
-            Basic(Object,1) = sum(OrigImage(props(Object).PixelIdxList));
-            Basic(Object,2) = mean(OrigImage(props(Object).PixelIdxList));
-            Basic(Object,3) = std(OrigImage(props(Object).PixelIdxList));
-            Basic(Object,4) = min(OrigImage(props(Object).PixelIdxList));
-            Basic(Object,5) = max(OrigImage(props(Object).PixelIdxList));     
+            Basic{Object,1} = sum(OrigImage(props(Object).PixelIdxList));
+            Basic{Object,2} = mean(OrigImage(props(Object).PixelIdxList));
+            Basic{Object,3} = std(OrigImage(props(Object).PixelIdxList));
+            Basic{Object,4} = min(OrigImage(props(Object).PixelIdxList));
+            Basic{Object,5} = max(OrigImage(props(Object).PixelIdxList));     
      
             %%% Kyungnam, 2007-Aug-06: optimized code
             %%% Cut patch so that we don't have to deal with entire image
@@ -245,12 +244,12 @@ for i = 1:length(ObjectNameList)
             BWim = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
             Greyim = OrigImage(rmin:rmax,cmin:cmax);
             Boundaryim = LabelBoundaryImage(rmin:rmax,cmin:cmax) == Object;
-            perim = Greyim(find(Boundaryim));
-            Basic(Object,6)  = sum(perim);
-            Basic(Object,7)  = mean(perim);
-            Basic(Object,8)  = std(perim);
-            Basic(Object,9)  = min(perim);
-            Basic(Object,10) = max(perim);
+            perim = Greyim(Boundaryim(:));
+            Basic{Object,6}  = sum(perim);
+            Basic{Object,7}  = mean(perim);
+            Basic{Object,8}  = std(perim);
+            Basic{Object,9}  = min(perim);
+            Basic{Object,10} = max(perim);
           
             %%% Kyungnam, 2007-Aug-06: the original old code left commented below
             %%%                        'bwperim' is slow!                         
@@ -271,16 +270,17 @@ for i = 1:length(ObjectNameList)
             BWy = sum((1:size(BWim,1))'.*sum(BWim,2))/sum(1:size(BWim,1));
             Greyx = sum((1:size(Greyim,2)).*sum(Greyim,1))/sum(1:size(Greyim,2));
             Greyy = sum((1:size(Greyim,1))'.*sum(Greyim,2))/sum(1:size(Greyim,1));
-            Basic(Object,11) = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
+            Basic{Object,11} = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
     else
-        Basic = zeros(0,11);
+        % Fill in with empty sets
+        Basic = cell(1,11);
     end
     %%% Save measurements
-    for j=1:size(Basic,2)
+    for j = 1:size(Basic,2)
         feature_name = CPjoinstrings('Intensity',BasicFeatures{j},ImageName);
         handles = CPaddmeasurements(handles, ObjectName, ...
-            feature_name, Basic(:,j));
+            feature_name, cat(1,Basic{:,j}));
     end
     
     %%% Report measurements
@@ -328,7 +328,7 @@ for i = 1:length(ObjectNameList)
             for k = 1:11
                 uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Basic(:,k))));
+                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(cat(1,Basic{:,k}))));
             end
         end
         %%% This variable is used to write results in the correct column

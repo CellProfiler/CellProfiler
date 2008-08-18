@@ -127,24 +127,15 @@ if (FirstSet == 1)
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
 
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
-            if isnan(BatchSize)
-                error('STOP!  Batchsize is NaN.');
+            if isfield(handles.Current,'BatchInfo')
+                warning('Please refer to the User help for more information');
+            else
+                CPwarndlg('Please refer to the User help for more information');
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
-            for n = 2:BatchSize:handles.Current.NumberOfImageSets
-                StartImage = n;
-                EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-                ImageSQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
-                ObjectSQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',ImageSQLFileName,TablePrefix);
-                fprintf(fmain, 'SHOW WARNINGS;\n');
-                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',ObjectSQLFileName,TablePrefix);
-                fprintf(fmain, 'SHOW WARNINGS;\n');
-            end
         else
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
@@ -265,17 +256,12 @@ if (FirstSet == 1)
         fimageloader = fopen(fullfile(OutDir, [DBname, '_LOADIMAGE.CTL']), 'W');
         fprintf(fimageloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
-            if isnan(BatchSize)
-                error('STOP!  BatchSize is NaN');
+            if isfield(handles.Current,'BatchInfo')
+                warning('Please refer to the User help for more information');
+            else
+                CPwarndlg('Please refer to the User help for more information');
             end
             fprintf(fimageloader, 'INFILE %s1_1_image.CSV\n', OutfilePrefix);
-            for n = 2:BatchSize:handles.Current.NumberOfImageSets
-                StartImage = n;
-                EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-                SQLFileName = sprintf('%s%d_%d_image.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fimageloader, 'INFILE %s\n', SQLFileName);
-            end
         else
             fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
         end
@@ -295,17 +281,12 @@ if (FirstSet == 1)
         fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
         fprintf(fobjectloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            BatchSize = str2double(char(handles.Settings.VariableValues{handles.Current.NumberOfModules,2}));
-            if isnan(BatchSize)
-                error('STOP!  Batchsize is NaN');
+            if isfield(handles.Current,'BatchInfo')
+                warning('Please refer to the User help for more information');
+            else
+                CPwarndlg('Please refer to the User help for more information');
             end
             fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
-            for n = 2:BatchSize:handles.Current.NumberOfImageSets
-                StartImage = n;
-                EndImage = min(StartImage + BatchSize - 1, handles.Current.NumberOfImageSets);
-                SQLFileName = sprintf('%s%d_%d_object.CSV', OutfilePrefix, StartImage, EndImage);
-                fprintf(fobjectloader, 'INFILE %s\n', SQLFileName);
-            end
         else
             fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
         end
@@ -321,10 +302,14 @@ end
 
 %start to write data file
 
-fimage = fopen(fullfile(OutDir, [basename '_image.CSV']), 'W');
-fobject = fopen(fullfile(OutDir, [basename '_object.CSV']), 'W');
-
-
+[fimage,msg] = fopen(fullfile(OutDir, [basename '_image.CSV']), 'W');
+if fimage == -1,
+    error(msg);
+end
+[fobject,msg]= fopen(fullfile(OutDir, [basename '_object.CSV']), 'W');
+if fobject == -1,
+    error(msg);
+end
 
 perobjectvals = [];
 
@@ -353,11 +338,11 @@ for img_idx = FirstSet:LastSet
             FeatureName = FeatureCell{1};
             
             %%% Certain features are not exported
-	    if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
-				    features_not_to_be_exported, ...
-				    'UniformOutput', false)))
-		continue
-	    end
+            if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
+                        features_not_to_be_exported, ...
+                        'UniformOutput', false)))
+                continue
+            end
 
             %%% Old code checked if data for img_idx existed, but this one always should (entry should be [] if no objects).
             try
@@ -371,10 +356,10 @@ for img_idx = FirstSet:LastSet
                 if ischar(vals)
                     fprintf(fimage, ',%s', vals);
                 elseif isnumeric(vals)
-                    if (~ isscalar(vals)),
+                    if (~isscalar(vals)),
                         error(['Attempt to write non-scalar numeric value in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);
                     end
-                    vals(~ isfinite(vals)) = 0;
+                    vals(~isfinite(vals)) = 0;
                     fprintf(fimage, ',%g', vals);
                     %%% Test that counts are integers
                     if strcmp(FeatureName(max(findstr(FeatureName, 'Count')):end), 'Count') && (floor(vals) ~= vals),
@@ -405,8 +390,8 @@ for img_idx = FirstSet:LastSet
                 vals = vals(:);
 
                 %%% There might be different numbers of different types of objects, unfortunately.  These will be filled with zeros, later.
-                if maxnumobj <numobj
-                    maxnumobj=numobj;
+                if maxnumobj < numobj
+                    maxnumobj = numobj;
                 end
 
                 %%% Add the values into the output 

@@ -263,7 +263,9 @@ for i = 1:length(ObjectNameList)
     if  NumObjects > 0
 
         %%% Get the basic shape features, excluding FormFactor
+        warning('off', 'MATLAB:divideByZero'); %%% Matlab failing atan vs atan2 in regionprops line 672.
         props = regionprops(LabelMatrixImage, BasicFeatures(~strcmp(BasicFeatures,'FormFactor')));
+        warning('on', 'MATLAB:divideByZero'); %%% Matlab failing atan vs atan2 in regionprops line 672.
         % Add 1 to perimeter to avoid divide by zero
         FormFactor = (4*pi*cat(1,props.Area)) ./ ((cat(1,props.Perimeter)+1).^2);
         Basic = [cat(1,props.Area)*PixelSize^2,...

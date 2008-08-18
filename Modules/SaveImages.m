@@ -264,7 +264,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         FileName = ImageFileName(2:end);
     else
         try
-	    FileName=handles.Measurements.Image.(['FileName_', ImageFileName]);
+            FileName = handles.Measurements.Image.(['FileName_', ImageFileName]);
             if iscell(FileName), FileName = FileName{SetBeingAnalyzed}; end
         catch
             % If the user has selected an image name that is not

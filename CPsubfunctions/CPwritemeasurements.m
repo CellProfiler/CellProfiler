@@ -177,6 +177,21 @@ for Object = 1:length(ExportInfo.ObjectNames)
         ValueNames{k} = fieldname;
 
         %%% Some measurements might not exist for all objects, so we need to bring them to full size
+        if length(FieldValues) > length(ImageOffsets),
+            if strncmp(fieldname, 'LoadedText', length('LoadedText')),
+                append = '  The AddData data tool can be used to reload the data if necessary.';
+            else
+                append = '';
+            end
+            CPwarndlg(['The ' ObjectName '.' fieldname ' feature contained too many measurements relative to number of images, and has been truncated.' append])
+            FieldValues = {FieldValues{1:length(ImageOffsets)}};
+        end
+
+
+        if length(FieldValues) < length(ImageOffsets) && strncmp(fieldname, 'LoadedText', length('LoadedText')),
+            CPwarndlg(['The ' ObjectName '.' fieldname ' feature contained too few measurements relative to number of images, and has been extended with empty values.  The AddData data tool can be used to reload the data if necessary.']);
+        end
+
         for l = 1:length(FieldValues),
             if ischar(FieldValues{l}),
                 Values{ImageOffsets(l), k} = FieldValues{l};

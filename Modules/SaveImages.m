@@ -200,7 +200,7 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Do you want to create the image subdirectory structure in the default output directory?
+%textVAR14 = Do you want to create subdirectories in the output directory to match the input image directory structure?
 %choiceVAR14 = No
 %choiceVAR14 = Yes
 CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14});

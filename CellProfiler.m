@@ -850,54 +850,9 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
             SavedVarRevNum = 0;
         end
         
-        %%% Adjust old 'LoadImages' variables to new ones. This is applied to 
-        %%% the pipelines saved with the LoadImages variable revision number less than 2
-        %%% VariableValues is a cell structure, please use {} rather than ().
-        if strcmp('LoadImages',CurrentModuleName) && (SavedVarRevNum == 1)
-            ImageOrMovie = Settings.VariableValues{ModuleNum-Skipped,11};
-            if strcmp(ImageOrMovie,'Image')
-                new_variablevalue = 'individual images';
-            else
-                if strcmp(Settings.VariableValues{ModuleNum-Skipped,12},'avi')
-                    new_variablevalue = 'avi movies';
-                elseif strcmp(Settings.VariableValues{ModuleNum-Skipped,12},'stk')
-                    new_variablevalue = 'stk movies';
-                end
-            end
-            Settings.VariableValues{ModuleNum-Skipped,11} = new_variablevalue;
-            Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,13};
-            Settings.VariableValues{ModuleNum-Skipped,13} = Settings.VariableValues{ModuleNum-Skipped,14};   
-            SavedVarRevNum = 2;
-        end
-
-
-        %% RescaleIntensity.m got two new arguments
-        if strcmp(CurrentModuleName, 'RescaleIntensity')
-            if SavedVarRevNum == 2
-                Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,8};
-                Settings.VariableInfoTypes{ModuleNum-Skipped,10} = Settings.VariableInfoTypes{ModuleNum-Skipped,8};
-                Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,7};
-                Settings.VariableInfoTypes{ModuleNum-Skipped,9} = Settings.VariableInfoTypes{ModuleNum-Skipped,7};
-                Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,6};
-                Settings.VariableInfoTypes{ModuleNum-Skipped,8} = Settings.VariableInfoTypes{ModuleNum-Skipped,6};
-                Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
-                SavedVarRevNum = 3;
-                CPwarndlg('Note: The module ''RescaleIntensity'' has been updated.  New settings have been added for your convenience.')
-            end
-        end
-
-        %% SaveImages.m got one new argument
-        if strcmp(CurrentModuleName, 'SaveImages')
-            if SavedVarRevNum == 12
-                % Re-create subdirectories? Default to No.
-                Settings.VariableValues{ModuleNum-Skipped,14} = 'No';
-                % Move overwrite warning down one
-                Settings.VariableValues{ModuleNum-Skipped,15} = 'n/a';
-                Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
-                SavedVarRevNum = 13;
-                CPwarndlg('Note: The module ''SaveImages'' has been updated.  New settings have been added for your convenience.')
-            end
-        end
+        % If necessary (and doable), import settings from prior versions of
+        % modules into newer ones
+        [Settings,SavedVarRevNum] = CPImportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to

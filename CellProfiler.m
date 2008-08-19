@@ -853,7 +853,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         %%% Adjust old 'LoadImages' variables to new ones. This is applied to 
         %%% the pipelines saved with the LoadImages variable revision number less than 2
         %%% VariableValues is a cell structure, please use {} rather than ().
-        if strcmp('LoadImages',CurrentModuleName) && (SavedVarRevNum < 2)
+        if strcmp('LoadImages',CurrentModuleName) && (SavedVarRevNum == 1)
             ImageOrMovie = Settings.VariableValues{ModuleNum-Skipped,11};
             if strcmp(ImageOrMovie,'Image')
                 new_variablevalue = 'individual images';
@@ -873,7 +873,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
 
         %% RescaleIntensity.m got two new arguments
         if strcmp(CurrentModuleName, 'RescaleIntensity')
-            if SavedVarRevNum < 3
+            if SavedVarRevNum == 2
                 Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,8};
                 Settings.VariableInfoTypes{ModuleNum-Skipped,10} = Settings.VariableInfoTypes{ModuleNum-Skipped,8};
                 Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,7};
@@ -888,7 +888,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
 
         %% SaveImages.m got one new argument
         if strcmp(CurrentModuleName, 'SaveImages')
-            if SavedVarRevNum < 13
+            if SavedVarRevNum == 12
                 % Re-create subdirectories? Default to No.
                 Settings.VariableValues{ModuleNum-Skipped,14} = 'No';
                 % Move overwrite warning down one

@@ -6127,9 +6127,11 @@ else
     ImageFile = fullfile(fileparts(which('CellProfiler.m')),'CPsubfunctions','CPsplash.jpg');
     logo = imread(ImageFile,'jpg');
 end
-SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9]);
+SplashScreenHandle = figure('MenuBar','None','NumberTitle','off','color',[1 1 1],'tag','SplashScreenTag','name','CellProfiler is loading...','color',[0.7,0.7,0.9],'Visible', 'off');
 iptsetpref('ImshowBorder','tight')
 imshow(logo);
+set(SplashScreenHandle, 'Visible', 'on');
+drawnow;
 
 function u = memusage(h)
 m = whos;

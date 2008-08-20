@@ -33,6 +33,8 @@ CompileWizard
 movefile( 'CellProfiler.m', 'Old_CellProfiler.m');
 movefile( 'CompileWizard_CellProfiler.m', 'CellProfiler.m');
 
+restoredefaultpath
+
 %% Compile
 %%  -I including folders manually, since they don't get added otherwise
 %%  -C generate separarte CTF archive

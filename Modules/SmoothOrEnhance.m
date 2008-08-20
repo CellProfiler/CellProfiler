@@ -19,10 +19,13 @@ function handles = SmoothOrEnhance(handles)
 % morphological tophat filtering, which has the effect of enhancing round 
 % objects with size equal to, or slightly smaller than, the ObjectWidth setting. 
 %   'Remove BrightRoundSpeckles' is a filtering method to remove bright, round 
-% speckles, equivalent to a morphological open operation.  When followed by 
-% a Subtract module which subtracts the smoothed image from the original,
+% speckles, equivalent to a morphological open operation (an erosion followed by a dilation).  
+% When followed by a Subtract module which subtracts the smoothed image from the original,
 % bright round-shaped speckles will be enhanced. This is effectively the 
-% same as 'Enhance BrightRoundSpeckles', or tophat filtering.
+% same as 'Enhance BrightRoundSpeckles', or tophat filtering.  We used
+% MATLAB's built-in imtophat and imopen function to perform these
+% operations; more information can be found by accessing MATLAB's help at
+% http://www.mathworks.com.
 %   Then, you could use the ApplyThreshold module to make a binary 
 % speckles/non-speckles image. Furthermore, the IdentifyPrimAutomatic can 
 % be used on the thresholded image to label each speckle for your analysis.

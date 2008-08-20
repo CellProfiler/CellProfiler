@@ -41,14 +41,18 @@ mcc -m -C CellProfiler -I Modules -I ./DataTools -I ./ImageTools ...
     -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg'
 
 %% Move files and cleanup
-mkdir('..', 'CompiledCellProfiler')
-mkdir('../CompiledCellProfiler', 'Modules')
+if ~exist('../CompiledCellProfiler','dir')
+    mkdir('..', 'CompiledCellProfiler')
+end
+if ~exist('../CompiledCellProfiler/Modules','dir')
+    mkdir('../CompiledCellProfiler', 'Modules')
+end
+
+movefile('CellProfiler*.*','../CompiledCellProfiler/')
 movefile('./Modules/*.txt', '../CompiledCellProfiler/Modules')
 movefile('readme.txt','../CompiledCellProfiler/')
 movefile( 'Old_CellProfiler.m', 'CellProfiler.m');
 movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
-
-movefile('*CellProfiler*.*','../CompiledCellProfiler/')
 
 %% Copy some useful scripts and files
 copyfile('../CompiledCellProfiler/CellProfilerManual.pdf','.')

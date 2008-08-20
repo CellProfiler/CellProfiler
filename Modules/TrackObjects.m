@@ -134,7 +134,8 @@ SegmentedObjectName = ['Segmented' ObjectName];
 handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage = handles.Pipeline.(SegmentedObjectName);
 %%% Saves the location of each segmented object
 handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed} = ...
-    handles.Measurements.(ObjectName).Location{handles.Current.SetBeingAnalyzed};
+    cat(2,  handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed},...
+            handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed});
 
 % ObjectProperties = handles.Pipeline.TrackObjects.(ObjectName);
 CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed};

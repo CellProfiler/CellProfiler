@@ -1226,6 +1226,8 @@ PipelinePathnames = PipelinePathnames(IndicesOfPipelinesToRun);
 handles.Current.PipelineDirectories.Pathnames = PipelinePathnames;
 handles.Current.PipelineDirectories.Filenames = PipelineFilenames;
 
+ErrorsInPipeline = cell(1,length(PipelineFilenames));
+
 %%% Start processing each pipeline in order
 for i = 1:length(PipelineFilenames);
     handles = guidata(FrontEndFigure);
@@ -1269,9 +1271,35 @@ for i = 1:length(PipelineFilenames);
         errFlg = 1;
     end
 
-    if errFlg ~= 0
+    %%% Record where errors (if any) took place
+    handles = guidata(FrontEndFigure);
+    ModuleNames = handles.Settings.ModuleNames;
+    prefix = 'ModuleError_';
+    ismoduleerror = false(length(ModuleNames),1); 
+    j = 1; fdname = [prefix,num2str(j,'%02d'),ModuleNames{j}];
+    while (j < length(ModuleNames)) && isfield(handles.Measurements.Image,fdname),
+        ismoduleerror(j) = handles.Measurements.Image.(fdname){:}; 
+        j = j+1; fdname = [prefix,num2str(j,'%02d'),ModuleNames{j}];
+    end
+    if any(ismoduleerror),
+        ErrorsInPipeline{i} = {find(ismoduleerror),ModuleNames{ismoduleerror},};
+    end
+    
+    if errFlg ~= 0,     %%% This would have to be an error that doesn't get flagged by AnalyzeImages; not sure if that can happen
         error(['Image processing was canceled in RunMultiplePipelines due to an error.']);
     end
+end
+
+%%% If any errors occured in the pipelines, let the user know where they happened
+ismoduleerror = ~cellfun('isempty',ErrorsInPipeline);
+if any(ismoduleerror)
+    str = cell(1+length(find(ismoduleerror)),1);
+    str{1} = 'Errors occured in the following pipelines:';
+    error_locations = find(ismoduleerror);
+    for i = error_locations(:)',
+        str{i} = ['      ',PipelineFilenames{i},', in module ',num2str(ErrorsInPipeline{i}{1},'%02d'),': ',ErrorsInPipeline{i}{2},'RunMultiplePipelines','modal'];
+    end
+    CPwarndlg(str);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

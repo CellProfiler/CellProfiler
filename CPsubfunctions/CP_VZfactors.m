@@ -1,22 +1,26 @@
-function [v, z, z_strict, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(xcol, ymatr)
+function [v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(xcol, ymatr)
 % xcol is (Nobservations,1) column vector of grouping values
 % (in terms of dose curve it may be Dose).
 % ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to 
 % observations and columns corresponds to different measures.
-% v, z and z_strict are (1, Nmeasures) row vectors containing V-, Z- and 
-% strict Z-factors for the corresponding measures.
-% 
-% The strict Z' factor is an attempt to overcome the limitation of the
+% v, z and z_bwtn_mean are (1, Nmeasures) row vectors containing V-, Z- and 
+% between-mean Z-factors for the corresponding measures.
+%
+% The one-tailed Z' factor is an attempt to overcome the limitation of the
 % Z'-factor formulation used upon populations with moderate or high amounts
-% of skewness. In these cases, the tails may lead to a high standard
-% deviation which will give a low Z' factor even though the population 
-% means and samples between the means are well separated. Therefore, the 
-% strict Z'factor is calculated with the same formula but using only those 
-% samples that lie between the population means.
+% of skewness. In these cases, the tails opposite to the mid-range point
+% may lead to a high standard deviation for either population. This will 
+% give a low Z' factor even though the population means and samples between
+% the means are well-separated. Therefore, the one-tailed Z'factor is 
+% calculated with the same formula but using only those samples that lie 
+% between the population means. 
+% 
+% NOTE: The statistical robustness of the one-tailed Z' factor has not been
+% determined, and hence should probably not be used at this time.
 %
 % When ranges are zero, we set the V and Z' factors to a very negative
 % value.
-
+%
 % Code for the calculation of Z' and V factors was kindly donated by Ilya
 % Ravkin: http://www.ravkin.net
 
@@ -35,7 +39,7 @@ zstd(zrange == 0) = 1;
 zrange(zrange == 0) = 0.000001;
 z = 1 - 3 .* (zstd ./ zrange);
 
-% The strict Z factor is defined by using only the samples between the
+% The one-tailed Z factor is defined by using only the samples between the
 % means, again defined by DOSE extremes
 zrange = abs(avers(1, :) - avers(length(xs), :));
 exp1_vals = ymatr(xcol == xs(1),:);
@@ -44,18 +48,22 @@ sort_avers = sort([avers(1,:); avers(length(xs),:)],1,'ascend');
 stds = zeros(2,size(sort_avers,2));
 warning('off','MATLAB:divideByZero');
 for i = 1:size(sort_avers,2),
-    stds(:,i) = cat(1,  std(exp1_vals(exp1_vals >= sort_avers(1,i) & exp1_vals <= sort_avers(2,i))),...
-                        std(exp2_vals(exp2_vals >= sort_avers(1,i) & exp2_vals <= sort_avers(2,i))));
+    % Here the std must be calculated using the full formula
+    vals1 = exp1_vals(exp1_vals >= sort_avers(1,i) & exp1_vals <= sort_avers(2,i));
+    vals2 = exp2_vals(exp2_vals >= sort_avers(1,i) & exp2_vals <= sort_avers(2,i));
+    exp1_std = sqrt(sum((vals1 - sort_avers(1,i)).^2)/length(vals1));
+    exp2_std = sqrt(sum((vals2 - sort_avers(2,i)).^2)/length(vals2));
+    stds(:,i) = cat(1, exp1_std, exp2_std);
 end
 warning('on','MATLAB:divideByZero');
 zstd = stds(1, :) + stds(end, :);
 
 % If means aren't the same and stdev aren't NaN, calculate the value
 warning('off','MATLAB:divideByZero');
-z_strict = 1 - 3 .* (zstd ./ zrange);
+z_one_tailed = 1 - 3 .* (zstd ./ zrange);
 warning('on','MATLAB:divideByZero');
 % Otherwise, set it to a really negative value
-z_strict(~isfinite(zstd) | zrange == 0) = -1e5;
+z_one_tailed(~isfinite(zstd) | zrange == 0) = -1e5;
 
 OrderedUniqueDoses = xs;
 OrderedAverageValues = avers;

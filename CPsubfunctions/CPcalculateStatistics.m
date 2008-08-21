@@ -59,7 +59,7 @@ for i = 1:length(ObjectFields)
             close(waitbarhandle)
             return;
         else
-            [v, z, z_strict, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(GroupingValues,Ymatrix);
+            [v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(GroupingValues,Ymatrix);
             if LicenseStats == 1
                 if ~strcmpi(FigureName,'Do not save')
                     PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
@@ -83,7 +83,7 @@ for i = 1:length(ObjectFields)
         handles.Measurements.Experiment.(CPjoinstrings('Zfactor', ObjectName, MeasureFeatureName)) = z;
         handles.Measurements.Experiment.(CPjoinstrings('Vfactor', ObjectName, MeasureFeatureName)) = v;
         handles.Measurements.Experiment.(CPjoinstrings('EC50', ObjectName, MeasureFeatureName)) = ec;
-        handles.Measurements.Experiment.(CPjoinstrings('StrictZfactor', ObjectName, MeasureFeatureName)) = z_strict;
+        handles.Measurements.Experiment.(CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName)) = z_one_tailed;
     end
     %%% Update waitbar
     CPwaitbar(i./length(ObjectFields),waitbarhandle);

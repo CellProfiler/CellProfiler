@@ -154,7 +154,11 @@ for ObjectNameNbr = 1:6
     end
 end
 %%% Get rid of 'Do not use' in the ObjectName cell array so we don't have to care about them later.
-ObjectName = tmpObjectName;
+if exist('tmpObjectName','var')
+    ObjectName = tmpObjectName;
+else
+    error(['There are no objects or images defined.  Please choose at least one object or image in the settings for ' ModuleName '.'])
+end
 
 %%% Check so that at least one object type have been entered
 if ObjectNameCount < 1

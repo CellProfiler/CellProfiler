@@ -77,12 +77,12 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
-FeatureNbr{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
+FeatureNumber{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
 
 %textVAR05 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
-Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR06 = 1
@@ -105,12 +105,12 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR09 = 1
-FeatureNbr{2} = handles.Settings.VariableValues{CurrentModuleNum,9};
+FeatureNumber{2} = handles.Settings.VariableValues{CurrentModuleNum,9};
 
 %textVAR10 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR10 = imagegroup
 %inputtypeVAR10 = popupmenu
-Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR11 = 1
@@ -130,9 +130,9 @@ LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%% Check FeatureNbr
+%% Check FeatureNumber
 for NumerDenom = 1:2
-    if isempty(FeatureNbr{NumerDenom})
+    if isempty(FeatureNumber{NumerDenom})
         error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
     end
 end
@@ -143,7 +143,7 @@ for NumerDenom=1:2
     %% Get measurements
     try
         FeatureName{NumerDenom} = CPgetfeaturenamesfromnumbers(handles,ObjectName{NumerDenom},...
-            Category{NumerDenom},FeatureNbr{NumerDenom},Image{NumerDenom},SizeScale{NumerDenom});
+            Category{NumerDenom},FeatureNumber{NumerDenom},ImageName{NumerDenom},SizeScale{NumerDenom});
         
         %% NOTE:    Numerator data will be NumerDenomMeasurements{1} and 
         %%          Denominator data will be NumerDenomMeasurements{2} 
@@ -155,11 +155,12 @@ for NumerDenom=1:2
             ') because an error ocurred when retrieving the data.  '...
             'Likely the category of measurement you chose, ',...
             Category{NumerDenom}, ', was not available for ', ...
-            ObjectName{NumerDenom},' with feature number ' num2str(FeatureNbr{NumerDenom}) ...
-            ', possibly specific to image ''' Image{NumerDenom} ''' and/or ' ...
+            ObjectName{NumerDenom},' with feature number ' num2str(FeatureNumber{NumerDenom}) ...
+            ', possibly specific to image ''' ImageName{NumerDenom} ''' and/or ' ...
             'Texture Scale = ' num2str(SizeScale{NumerDenom}) '.']);
     end
 end
+
 % Check size of data, and make them the same size
 if length(NumerDenomMeasurements{1}) ~= length(NumerDenomMeasurements{2})
     if strcmp(ObjectName{1},'Image')
@@ -247,12 +248,12 @@ if any(findobj == ThisModuleFigureNumber)
 
         % Text for Name of measurement
         if strcmp(Category{1},'Intensity') || strcmp(Category{1},'Texture')
-            DisplayName1 = [ObjectName{1} ' ' FeatureName{1} ' in ' Image{1}];
+            DisplayName1 = [ObjectName{1} ' ' FeatureName{1} ' in ' ImageName{1}];
         else
             DisplayName1 = [ObjectName{1} ' ' FeatureName{1}];
         end
         if strcmp(Category{2},'Intensity') || strcmp(Category{2},'Texture')
-            DisplayName2 = [ObjectName{2} ' ' FeatureName{2} ' in ' Image{2}];
+            DisplayName2 = [ObjectName{2} ' ' FeatureName{2} ' in ' ImageName{2}];
         else
             DisplayName2 = [ObjectName{2} ' ' FeatureName{2}];
         end

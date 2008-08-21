@@ -35,7 +35,6 @@ CompileWizard
 movefile('CellProfiler.m', 'Old_CellProfiler.m');
 movefile('CompileWizard_CellProfiler.m', 'CellProfiler.m');
 
-% Compile
 % Save the current search path, to be restored later
 current_search_path = pathdef;
 restoredefaultpath;
@@ -67,11 +66,12 @@ movefile('readme.txt','../CompiledCellProfiler/')
 movefile('Old_CellProfiler.m', 'CellProfiler.m');
 movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
 
-% Copy some useful scripts and files
+% Copy some useful scripts and files back into the CP root folder
+% that are in the SVN repository 
 copyfile('../CompiledCellProfiler/CellProfilerManual.pdf','.')
 copyfile('../CompiledCellProfiler/CellProfiler*.command','.')
 
-% Set Permissions
+% Set Permissions on scripts
 if ismac || isunix,
     unix('chmod 775 ../CompiledCellProfiler/CellProfiler*.command');
 end

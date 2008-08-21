@@ -88,7 +88,7 @@ FeatureNumOrName = handles.Settings.VariableValues{CurrentModuleNum,4};
 %inputtypeVAR05 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale do you want to use?
+%textVAR06 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR06 = 1
 SizeScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,06});
 

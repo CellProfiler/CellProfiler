@@ -82,7 +82,7 @@ end
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = For TEXTURE or RADIALDISTRIBUTION features, what previously measured texture scale (TEXTURE) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
+%textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
 UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 

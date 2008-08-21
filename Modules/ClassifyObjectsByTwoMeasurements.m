@@ -72,7 +72,7 @@ FeatureNbr{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the first feature?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
@@ -96,7 +96,7 @@ FeatureNbr{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the second feature?
 %infotypeVAR08 = imagegroup
 %inputtypeVAR08 = popupmenu
-Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR09 = 1
@@ -140,7 +140,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 for FeatNum=2:-1:1
     try
         FeatureName{FeatNum} = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category{FeatNum},...
-            FeatureNbr{FeatNum},Image{FeatNum},SizeScale{FeatNum}); %#ok<AGROW>
+            FeatureNbr{FeatNum},ImageName{FeatNum},SizeScale{FeatNum}); %#ok<AGROW>
     catch
         error(['Image processing was canceled in the ', ModuleName, ...
             ' module (#' num2str(CurrentModuleNum) ...
@@ -148,7 +148,7 @@ for FeatNum=2:-1:1
             'Likely the category of measurement you chose, ',...
             Category{FeatNum}, ', was not available for ', ...
             ObjectName,' with feature number ' num2str(FeatureNbr{FeatNum}) ...
-            ', possibly specific to image ''' Image{FeatNum} ''' and/or ' ...
+            ', possibly specific to image ''' ImageName{FeatNum} ''' and/or ' ...
             'Texture Scale = ' num2str(SizeScale{FeatNum}) '.']);
     end
 end

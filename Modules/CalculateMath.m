@@ -59,10 +59,14 @@ ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %choiceVAR02 = AreaShape
+%choiceVAR02 = Children
+%choiceVAR02 = Parent
 %choiceVAR02 = Correlation
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
 %choiceVAR02 = Texture
+%choiceVAR02 = RadialDistribution
 %inputtypeVAR02 = popupmenu custom
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
@@ -73,7 +77,7 @@ FeatureNumber{1} = handles.Settings.VariableValues{CurrentModuleNum,3};
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-Image{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
@@ -87,10 +91,14 @@ ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which category of measurements would you like to use?
 %choiceVAR07 = AreaShape
+%choiceVAR07 = Children
+%choiceVAR07 = Parent
 %choiceVAR07 = Correlation
 %choiceVAR07 = Intensity
 %choiceVAR07 = Neighbors
+%choiceVAR07 = Ratio
 %choiceVAR07 = Texture
+%choiceVAR07 = RadialDistribution
 %inputtypeVAR07 = popupmenu custom
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
@@ -101,7 +109,7 @@ FeatureNumber{2} = handles.Settings.VariableValues{CurrentModuleNum,8};
 %textVAR09 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR09 = imagegroup
 %inputtypeVAR09 = popupmenu
-Image{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR10 = 1
@@ -140,7 +148,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 for idx = 1:2
     try
         FeatureName{idx} = CPgetfeaturenamesfromnumbers(handles, ObjectName{idx}, ...
-            Category{idx}, FeatureNumber{idx}, Image{idx},SizeScale{idx});
+            Category{idx}, FeatureNumber{idx}, ImageName{idx},SizeScale{idx});
 
         Measurements{idx} = handles.Measurements.(ObjectName{idx}).(FeatureName{idx}){SetBeingAnalyzed};
     catch
@@ -150,7 +158,7 @@ for idx = 1:2
             'Likely the category of measurement you chose, ',...
             Category{idx}, ', was not available for ', ...
             ObjectName{idx},' with feature number ' FeatureNumber{idx} ...
-            ', possibly specific to image ''' Image{idx} ''' and/or ' ...
+            ', possibly specific to image ''' ImageName{idx} ''' and/or ' ...
             'Texture Scale = ' num2str(SizeScale{idx}) '.']);
     end
 end

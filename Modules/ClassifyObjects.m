@@ -59,6 +59,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = Enter the feature type:
+%choiceVAR02 = AreaOccupied
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Children
 %choiceVAR02 = Parent

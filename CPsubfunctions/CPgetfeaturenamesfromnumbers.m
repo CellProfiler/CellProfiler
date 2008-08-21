@@ -30,7 +30,8 @@ if strcmp(Category,'AreaShape') || strcmp(Category,'Ratio')
     SizeScale = '';
     Image = '';
 elseif strcmp(Category,'Intensity') || strcmp(Category,'Granularity') || ...
-        strcmp(Category,'Children') || strcmp(Category,'Parent')
+        strcmp(Category,'Children') || strcmp(Category,'Parent') || ...
+        strcmp(Category,'AreaOccupied')
     SizeScale = '';
 elseif strcmp(Category,'Texture') || strcmp(Category,'RadialDistribution')
     % Nothing to do.  These should have all arguments specified

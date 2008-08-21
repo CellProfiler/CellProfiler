@@ -58,12 +58,17 @@ PlotType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Which category of measurements would you like to use? (For Texture, you must use Other... and include the scale of texture, e.g. Texture_3)
+%textVAR03 = Which category of measurements would you like to use?
+%choiceVAR03 = AreaOccupied
 %choiceVAR03 = AreaShape
+%choiceVAR03 = Children
+%choiceVAR03 = Parent
 %choiceVAR03 = Correlation
 %choiceVAR03 = Intensity
 %choiceVAR03 = Neighbors
 %choiceVAR03 = Ratio
+%choiceVAR03 = Texture
+%choiceVAR03 = RadialDistribution
 %inputtypeVAR03 = popupmenu custom
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -98,12 +103,16 @@ PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Which category of measurements would you like to use?
+%choiceVAR10 = AreaOccupied
 %choiceVAR10 = AreaShape
+%choiceVAR10 = Children
+%choiceVAR10 = Parent
 %choiceVAR10 = Correlation
 %choiceVAR10 = Intensity
 %choiceVAR10 = Neighbors
 %choiceVAR10 = Ratio
 %choiceVAR10 = Texture
+%choiceVAR10 = RadialDistribution
 %inputtypeVAR10 = popupmenu custom
 MeasureChoice2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

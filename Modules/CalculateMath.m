@@ -58,6 +58,7 @@ drawnow
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
+%choiceVAR02 = AreaOccupied
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Children
 %choiceVAR02 = Parent
@@ -90,6 +91,7 @@ SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Which category of measurements would you like to use?
+%choiceVAR07 = AreaOccupied
 %choiceVAR07 = AreaShape
 %choiceVAR07 = Children
 %choiceVAR07 = Parent

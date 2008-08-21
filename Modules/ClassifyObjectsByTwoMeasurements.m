@@ -57,6 +57,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
 %textVAR02 = Enter the first feature type to use:
+%choiceVAR02 = AreaOccupied
 %choiceVAR02 = AreaShape
 %choiceVAR02 = Children
 %choiceVAR02 = Parent
@@ -83,15 +84,16 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the second feature type to use:
-%choiceVAR02 = AreaShape
-%choiceVAR02 = Children
-%choiceVAR02 = Parent
-%choiceVAR02 = Correlation
-%choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
-%choiceVAR02 = Ratio
-%choiceVAR02 = Texture
-%choiceVAR02 = RadialDistribution
+%choiceVAR06 = AreaOccupied
+%choiceVAR06 = AreaShape
+%choiceVAR06 = Children
+%choiceVAR06 = Parent
+%choiceVAR06 = Correlation
+%choiceVAR06 = Intensity
+%choiceVAR06 = Neighbors
+%choiceVAR06 = Ratio
+%choiceVAR06 = Texture
+%choiceVAR06 = RadialDistribution
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu custom
 

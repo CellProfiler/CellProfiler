@@ -65,6 +65,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you want to filter by?
+%choiceVAR03 = AreaOccupied
 %choiceVAR03 = AreaShape
 %choiceVAR03 = Children
 %choiceVAR03 = Parent

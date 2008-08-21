@@ -343,11 +343,11 @@ drawnow
 handles.Pipeline.(OutputName) = EdgedImage;
 if ~strcmpi(Method,'ratio') || ~strcmpi(BinaryOrGray,'Grayscale')
     if strcmpi(Method,'canny')        
-        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Threshold','OrigThreshold',OutputName),ThresholdUsed(1));
-        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Threshold','OrigCannyLowThreshold',OutputName),ThresholdUsed(2));
+        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Edges','OrigThreshold',OutputName),ThresholdUsed(1));
+        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Edges','OrigCannyLowThreshold',OutputName),ThresholdUsed(2));
     else
         if ~(strcmpi(Method,'ratio') && strcmp(BinaryOrGray,'Binary') && CalculateThreshold)
-            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Threshold','OrigThreshold',OutputName),ThresholdUsed);
+            handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Edges','OrigThreshold',OutputName),ThresholdUsed);
         end
     end
 end

@@ -75,7 +75,7 @@ FeatureNbr = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
@@ -120,7 +120,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 try
     FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,...
-        FeatureNbr,Image,SizeScale);
+        FeatureNbr,ImageName,SizeScale);
 catch
     error(['Image processing was canceled in the ', ModuleName, ...
         ' module (#' num2str(CurrentModuleNum) ...
@@ -128,7 +128,7 @@ catch
         'Likely the category of measurement you chose, ',...
         Category, ', was not available for ', ...
         ObjectName,' with feature number ' num2str(FeatureNbr) ...
-        ', possibly specific to image ''' Image ''' and/or ' ...
+        ', possibly specific to image ''' ImageName ''' and/or ' ...
         'Texture Scale = ' num2str(SizeScale) '.']);
 end
 

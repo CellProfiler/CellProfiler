@@ -136,7 +136,7 @@ if ImageCount < 2
 end
 
 %%% Get rid of 'Do not use' in the ImageName cell array so we don't have to care about them later.
-ImageName = tmpImageName;   
+ImageName = tmpImageName;
 
 %%% Get the masks of segmented objects
 ObjectNameCount = 0;
@@ -182,33 +182,33 @@ end
 for ObjectNameNbr = 1:ObjectNameCount
 
     for i=1:ImageCount
-	%%% For the cases where the label matrix was produced from a cropped
-	%%% image, the sizes of the images will not be equal. So, we crop the
-	%%% LabelMatrix and try again to see if the matrices are then the
-	%%% proper size. Removes Rows and Columns that are completely blank.
-	if any(size(Image{i}) < size(LabelMatrixImage{ObjectNameNbr}))
-	    ColumnTotals = sum(LabelMatrixImage{ObjectNameNbr},1);
-	    RowTotals = sum(LabelMatrixImage{ObjectNameNbr},2)';
-	    warning off all
-	    ColumnsToDelete = ~logical(ColumnTotals);
-	    RowsToDelete = ~logical(RowTotals);
-	    warning on all
-	    drawnow
-	    CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
-	    CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
-	    CroppedLabelMatrix(RowsToDelete,:,:) = [];
-	    LabelMatrixImage{ObjectNameNbr} = [];
-	    LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
-	    %%% In case the entire image has been cropped away, we store a
-	    %%% single zero pixel for the variable.
-	    if isempty(LabelMatrixImage{ObjectNameNbr})
-		LabelMatrixImage{ObjectNameNbr} = 0;
-	    end
-	end
+        %%% For the cases where the label matrix was produced from a cropped
+        %%% image, the sizes of the images will not be equal. So, we crop the
+        %%% LabelMatrix and try again to see if the matrices are then the
+        %%% proper size. Removes Rows and Columns that are completely blank.
+        if any(size(Image{i}) < size(LabelMatrixImage{ObjectNameNbr}))
+            ColumnTotals = sum(LabelMatrixImage{ObjectNameNbr},1);
+            RowTotals = sum(LabelMatrixImage{ObjectNameNbr},2)';
+            warning off all
+            ColumnsToDelete = ~logical(ColumnTotals);
+            RowsToDelete = ~logical(RowTotals);
+            warning on all
+            drawnow
+            CroppedLabelMatrix = LabelMatrixImage{ObjectNameNbr};
+            CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+            CroppedLabelMatrix(RowsToDelete,:,:) = [];
+            LabelMatrixImage{ObjectNameNbr} = [];
+            LabelMatrixImage{ObjectNameNbr} = CroppedLabelMatrix;
+            %%% In case the entire image has been cropped away, we store a
+            %%% single zero pixel for the variable.
+            if isempty(LabelMatrixImage{ObjectNameNbr})
+                LabelMatrixImage{ObjectNameNbr} = 0;
+            end
+        end
 
-	if any(size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr}))
-	    error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
-	end
+        if any(size(Image{i}) ~= size(LabelMatrixImage{ObjectNameNbr}))
+            error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName{ObjectNameNbr},' objects were identified.'])
+        end
     end
 
     %%% Calculate the correlation in all objects for all pairwise image combinations
@@ -237,13 +237,13 @@ for ObjectNameNbr = 1:ObjectNameCount
                                 sizeerr = 1;
                                 error(['Image processing was cancelled in the ', ModuleName, ' module because the images are not the same size.']);
                             else
-                            SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
-                            x = Image{i}(:);
-                            y = Image{j}(:);
-                            p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope
-                            SlopeForCurrentObject = p(1);
-                            Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
-                            sizeerr = 0;
+                                SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
+                                x = Image{i}(:);
+                                y = Image{j}(:);
+                                p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope
+                                SlopeForCurrentObject = p(1);
+                                Slope(ObjectNbr,FeatureNbr) = SlopeForCurrentObject; % Store the slope
+                                sizeerr = 0;
                             end
                         end
                     end
@@ -259,19 +259,21 @@ for ObjectNameNbr = 1:ObjectNameCount
             end
         end
     end
-    
+
     %%% Store the correlation and slope measurements
+    %%% Note: we end up with 'Correlation_Correclation_*', but that's OK since 
+    %%% both the Category and FeatureName are both 'Correlation' here 
     for f=1:size(Correlation,2)
-	handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
-				    CPjoinstrings('Correlation', CorrelationFeatures{f}), ...
-				    Correlation(:, f));
+        handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
+            CPjoinstrings('Correlation', CorrelationFeatures{f}), ...
+            Correlation(:, f));
     end
     if strcmp(ObjectName{ObjectNameNbr},'Image')
-	for f = 1:size(Slope,2)
-	    handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
-					CPjoinstrings('Correlation', SlopeFeatures{f}), ...
-					Slope(:, f));
-	end
+        for f = 1:size(Slope,2)
+            handles = CPaddmeasurements(handles, ObjectName{ObjectNameNbr}, ...
+                CPjoinstrings('Correlation', SlopeFeatures{f}), ...
+                Slope(:, f));
+        end
     end
     correlations{ObjectNameNbr} = Correlation;
 end
@@ -300,7 +302,7 @@ if any(findobj == ThisModuleFigureNumber)
         row = 1;
         %%% Write object names
         %%% Don't write any object type name in the first colum
-        if ObjectNameNbr > 0         
+        if ObjectNameNbr > 0
             h = uicontrol(ThisModuleFigureNumber,'style','text','position',[110+60*ObjectNameNbr Height-110 70 25],...
                 'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','center',...
                 'fontweight','bold');
@@ -311,7 +313,7 @@ if any(findobj == ThisModuleFigureNumber)
         for i = 1:ImageCount-1
             for j = i+1:ImageCount
                 %%% First column, write image names
-                if ObjectNameNbr == 0               
+                if ObjectNameNbr == 0
                     h = uicontrol(ThisModuleFigureNumber,'style','text','position',[20 Height-120-40*row 120 40],...
                         'fontname','Helvetica','FontSize',handles.Preferences.FontSize,'backgroundcolor',[.7 .7 .9],'horizontalalignment','left',...
                         'fontweight','bold');

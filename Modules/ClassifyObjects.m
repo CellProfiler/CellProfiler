@@ -69,6 +69,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Ratio
 %choiceVAR02 = Texture
 %choiceVAR02 = RadialDistribution
+%choiceVAR02 = Granularity
 Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 

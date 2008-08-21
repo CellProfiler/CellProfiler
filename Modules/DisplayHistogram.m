@@ -64,8 +64,8 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Ratio
 %choiceVAR02 = Texture
 %choiceVAR02 = ImageQuality
-%choiceVAR02 = Granularity
 %choiceVAR02 = RadialDistribution
+%choiceVAR02 = Granularity
 %inputtypeVAR02 = popupmenu custom
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 

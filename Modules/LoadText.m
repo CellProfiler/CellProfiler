@@ -46,7 +46,10 @@ function handles = LoadText(handles)
 % Be sure that the file is saved in plain text format (.txt), not Rich Text
 % Format (.rtf).
 %
-% While not thoroughly tested, most likely you can load numerical data too.
+% Path Name: 
+% Type period (.) for the default image folder, or ampersand (&) for the 
+% default output folder.
+% NOTE: this nomenclature is opposite that in SaveImages for historical purposes.
 %
 % See also DisplayGridInfo module and AddData data tool.
 
@@ -77,7 +80,7 @@ TextFileName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = datagroup indep
 FieldName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%pathnametextVAR03 = Enter the path name to the folder where the text file to be loaded is located.  Type period (.) for the default image folder.
+%pathnametextVAR03 = Enter the path name to the folder where the text file to be loaded is located.  Type period (.) for the default image folder, or ampersand (&) for the default output folder.
 PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 2
@@ -89,11 +92,12 @@ PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 drawnow
 
 if strncmp(PathName,'.',1)
-    if length(PathName) == 1
-        PathName = handles.Current.DefaultImageDirectory;
-    else
-        PathName = fullfile(handles.Current.DefaultImageDirectory,PathName(2:end));
-    end
+    PathName = fullfile(handles.Current.DefaultImageDirectory, PathName(2:end));
+elseif strncmp(PathName, '&', 1)
+    PathName = fullfile(handles.Current.DefaultOutputDirectory, PathName(2:end));
+else
+    % Strip ending slash if inserted
+    if strcmp(PathName(end),'/') || strcmp(PathName(end),'\'), PathName = PathName(1:end-1); end
 end
 
 %%% Note that all the text data is loaded and placed in the handles

@@ -66,12 +66,15 @@ RatioName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
-%choiceVAR03 = AreaShape
-%choiceVAR03 = Children
-%choiceVAR03 = Correlation
-%choiceVAR03 = Intensity
-%choiceVAR03 = Neighbors
-%choiceVAR03 = Texture
+%choiceVAR02 = AreaShape
+%choiceVAR02 = Children
+%choiceVAR02 = Parent
+%choiceVAR02 = Correlation
+%choiceVAR02 = Intensity
+%choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
+%choiceVAR02 = Texture
+%choiceVAR02 = RadialDistribution
 %inputtypeVAR03 = popupmenu custom
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -95,11 +98,15 @@ SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Which category of measurements would you like to use?
-%choiceVAR08 = AreaShape
-%choiceVAR08 = Correlation
-%choiceVAR08 = Intensity
-%choiceVAR08 = Neighbors
-%choiceVAR08 = Texture
+%choiceVAR02 = AreaShape
+%choiceVAR02 = Children
+%choiceVAR02 = Parent
+%choiceVAR02 = Correlation
+%choiceVAR02 = Intensity
+%choiceVAR02 = Neighbors
+%choiceVAR02 = Ratio
+%choiceVAR02 = Texture
+%choiceVAR02 = RadialDistribution
 %inputtypeVAR08 = popupmenu custom
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 

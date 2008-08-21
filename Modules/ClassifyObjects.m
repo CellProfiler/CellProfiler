@@ -60,11 +60,14 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Enter the feature type:
 %choiceVAR02 = AreaShape
+%choiceVAR02 = Children
+%choiceVAR02 = Parent
 %choiceVAR02 = Correlation
-%choiceVAR02 = Texture
 %choiceVAR02 = Intensity
 %choiceVAR02 = Neighbors
 %choiceVAR02 = Ratio
+%choiceVAR02 = Texture
+%choiceVAR02 = RadialDistribution
 Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 

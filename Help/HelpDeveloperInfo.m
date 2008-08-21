@@ -277,7 +277,8 @@ function HelpDeveloperInfo
 %
 %           Category List, with their necessary extra parameters:
 %               No extra parameters: AreaShape, Ratio
-%               Image: Imageintensity, Granularity, Children, Parent
+%               Image: Imageintensity, Granularity, Children, Parent,
+%                   AreaOccupied
 %               SizeScale: Neighbors
 %               SizeScale and Image: Texture and RadialDistribution
 %           When thse categories are altered, please update the code in:

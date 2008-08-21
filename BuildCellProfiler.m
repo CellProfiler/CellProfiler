@@ -17,21 +17,20 @@ function BuildCellProfiler
 %   Try this command at the terminal (Mac) or command (PC) prompt:
 %   <matlabroot>/bin/matlab -nojvm -r "cd <CellProfiler trunk directory>; BuildCellProfiler; quit" 
 %   where <matlabroot> is the MATLAB installation directory and
-%   <CellProfiler trunk directory> is (you guessed it) the CellProfiler trunk directory
+%   <CellProfiler trunk directory> is (you guessed it) the CellProfiler 
+%   trunk directory
 
-% Check that the basic files and folders are in the right place
-err_txt = 'BuildCellProfiler needs to be in the trunk CellProfiler directory';
-assert(exist('./CellProfiler.m','file') == 2, err_txt)
-assert(exist('./Modules','dir') == 7, err_txt)
-assert(exist('./DataTools','dir') == 7, err_txt)
-assert(exist('./ImageTools','dir') == 7, err_txt)
-assert(exist('./CPsubfunctions','dir') == 7, err_txt)
-assert(exist('./Help','dir') == 7, err_txt)
+% Confirm that the basic files and folders are in the right place
+err_txt = [mfilename,': BuildCellProfiler needs to be in the trunk CellProfiler directory'];
+directory_str = {'Modules','DataTools','ImageTools','CPsubfunctions','Help'};
+for i = 1:length(directory_str),
+    assert(exist(['./',directory_str{i}],'dir') == 7, err_txt);
+end
 
 CompileWizard
 
 % CellProfiler.m gets overwritten by CompileWizard_CellProfiler.m, 
-%  so we save a tmp copy that will be moved back at the end
+%  so we save a temporary copy that will be moved back at the end
 movefile('CellProfiler.m', 'Old_CellProfiler.m');
 movefile('CompileWizard_CellProfiler.m', 'CellProfiler.m');
 
@@ -40,10 +39,11 @@ current_search_path = pathdef;
 restoredefaultpath;
 addpath(pwd);
 
-% Compile
-%  -I including folders manually, since they don't get added otherwise
-%  -C generate separarte CTF archive
-%  -a Needed to add non-matlab .jpg file
+% Compile CellProfiler, checking for compiler version
+% Description of flags:
+%  -I: including folders manually, since they don't get added otherwise
+%  -C: generate separarte CTF archive
+%  -a: Needed to add non-matlab .jpg file
 version_info = ver('matlab');
 if str2double(version_info.Version) >= 7.6, %Must include -C to produce separate CTF file
     mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
@@ -71,10 +71,10 @@ movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
 copyfile('../CompiledCellProfiler/CellProfilerManual.pdf','.')
 copyfile('../CompiledCellProfiler/CellProfiler*.command','.')
 
-% Set Permissions on scripts
+% Set Permissions on scripts (on unix and Mac systems)
 if ismac || isunix,
     unix('chmod 775 ../CompiledCellProfiler/CellProfiler*.command');
 end
 
-% Restore paths
+% Restore pre-existing paths
 path(current_search_path);

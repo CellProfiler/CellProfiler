@@ -75,7 +75,7 @@ TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Texture
 %choiceVAR03 = RadialDistribution
 %inputtypeVAR03 = popupmenu
-Measure = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+Category = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = 1
@@ -116,7 +116,7 @@ if isempty(FeatureNumOrName)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
-if strcmp(Measure,'Intensity') || strcmp(Measure,'Texture')
+if strcmp(Category,'Intensity') || strcmp(Category,'Texture')
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 else
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
@@ -124,20 +124,19 @@ end
 LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 
 try
-    switch lower(Measure)
-        case {'areashape','ratio'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName);
-        case {'intensity','granularity','children','parent'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName);
-        case {'texture','neighbors','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, Measure, FeatureNumOrName, ImageName, SizeScale);
-        otherwise
-            error('Measurement category could not be found.')
-    end
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', Measure, ', was not available for ', ObjectName]);
-end
+    FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, ...
+        Category, FeatureNumOrName, ImageName, SizeScale);
 
+catch
+    error(['Image processing was canceled in the ', ModuleName, ...
+        ' module (#' num2str(CurrentModuleNum) ...
+        ') because an error ocurred when retrieving the data.  '...
+        'Likely the category of measurement you chose, ',...
+        Category, ', was not available for ', ...
+        ObjectName,' with feature ' num2str(FeatureNumOrName) ...
+        ', possibly specific to image ''' ImageName ''' and/or ' ...
+        'Texture Scale = ' num2str(SizeScale) '.']);
+end
 MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed};
 
 if strcmpi(MinValue1, 'No minimum')
@@ -198,27 +197,27 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    
+
     %%% A subplot of the figure window is set to display the original
     %%% image.
     subplot(2,2,1);
     CPimagesc(OrigImage,handles);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    
+
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
     subplot(2,2,3);
     UnfilteredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
     CPimagesc(UnfilteredLabelMatrixImage,handles);
     title(['Original ',ObjectName]);
-    
+
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     subplot(2,2,2);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     CPimagesc(ColoredLabelMatrixImage,handles);
     title([ObjectName,' filtered by ',FeatureName]);
-    
+
     subplot(2,2,4);
     CPimagesc(ObjectOutlinesOnOrigImage,handles);
     title([TargetName, ' Outlines on Input Image']);

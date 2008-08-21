@@ -104,12 +104,6 @@ B = imresize(OrigImage, SubSampleSize, 'bilinear'); %RESULTS ON iCyte IMAGES WIT
 C = backgroundremoval(B, ImageSampleSize, ElementSize);
 gs = granspectr(C, GranularSpectrumLength);
 
-for i = 1:GranularSpectrumLength
-    handles = CPaddmeasurements ...
-	      (handles, 'Image', ...
-	       CPjoinstrings('GranularSpectrum', num2str(i), ImageName), gs(:,i));
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -138,6 +132,16 @@ if any(findobj == ThisModuleFigureNumber)
     subplot(2,1,2);
     CPimagesc(C,handles);
     title('Background Subtracted Image');
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for i = 1:GranularSpectrumLength
+    handles = CPaddmeasurements ...
+	      (handles, 'Image', ...
+	       CPjoinstrings('Granularity', ImageName, num2str(i)), gs(:,i));
 end
 
 %%%%%%%%%%%%%%%%%%%%

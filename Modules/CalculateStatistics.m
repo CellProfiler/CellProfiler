@@ -31,7 +31,19 @@ function handles = CalculateStatistics(handles)
 % (positive and negative controls only), the V factor will equal the Z'
 % factor.
 %
-% Note that if the standard deviation of a measured feature is zero for a
+% The one-tailed Z' factor is an attempt to overcome the limitation of the
+% Z'-factor formulation used upon populations with moderate or high amounts
+% of skewness. In these cases, the tails opposite to the mid-range point
+% may lead to a high standard deviation for either population. This will 
+% give a low Z' factor even though the population means and samples between
+% the means are well-separated. Therefore, the one-tailed Z'factor is 
+% calculated with the same formula but using only those samples that lie 
+% between the population means. 
+% 
+% NOTE: The statistical robustness of the one-tailed Z' factor has not been
+% determined, and hence should probably not be used at this time.
+%
+% NOTE: If the standard deviation of a measured feature is zero for a
 % particular set of samples (e.g. all the positive controls), the Z' and V
 % factors will equal 1 despite the fact that this is not a useful feature
 % for the assay. This occurs when you have only one sample at each dose.

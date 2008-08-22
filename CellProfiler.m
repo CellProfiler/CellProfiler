@@ -3914,10 +3914,11 @@ else
             timerFig = figure('name','Status',...
                 'NumberTitle','off','IntegerHandle','off', 'HandleVisibility', 'off', ...
                 'color',[0.7,0.7,0.9],'UserData',userData,'Resize','off');
+            %% Pause helps to place the window where you actualley tell it to go (Matlab, why??) 
+            pause(.1)
             set(timerFig, 'Position', [0 BottomOfTimer 350 120]);
             set(timerFig, 'Toolbar', 'none');
             set(timerFig, 'Menubar', 'none');
-            set(timerFig, 'Position', [0 BottomOfTimer 350 120]);
             TimerData.timerFig = timerFig;
             TimerData.SetBeingAnalyzed = 1;
             TimerData.NumberOfImageSets = 1;

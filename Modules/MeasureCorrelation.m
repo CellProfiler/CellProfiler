@@ -13,10 +13,10 @@ function handles = MeasureCorrelation(handles)
 % pixel intensities. The correlation can be measured for the entire
 % images, or individual correlation measurements can be made within each
 % individual object. For example:
-%                                        Image overall:    In Nuclei:
-% OrigBlue  /OrigGreen      Correlation:    0.49955        -0.07395
-% OrigBlue  /OrigRed        Correlation:    0.59886        -0.02752
-% OrigGreen /OrigRed        Correlation:    0.83605         0.68489
+%                                     Image overall:  In Nuclei:
+% OrigBlue_OrigGreen    Correlation:    0.49955        -0.07395
+% OrigBlue_OrigRed      Correlation:    0.59886        -0.02752
+% OrigGreen_OrigRed     Correlation:    0.83605         0.68489
 %
 % Features measured:      Feature Number:
 % Correlation          |         1

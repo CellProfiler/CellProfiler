@@ -42,6 +42,15 @@ if nargin>0 && isfield(varargin{1},'Pipeline')
     end
     userData.MyHandles = FixedHandles;
     FigHandle=figure(varargin{3:end});
+    
+    %% Try to correct for odd Figure placement
+    idx = find(strcmp('Position',varargin), 1);
+    if ~isempty(idx)
+        pos = varargin{idx+1};
+        pause(.05)
+        set(FigHandle,'Position',pos)
+    end
+    
     if nargin>=2
         %%% This is for the typical usage:
         %%% CPfigure(handles,'Image',ThisModuleFigureNumber)

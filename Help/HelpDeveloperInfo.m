@@ -291,9 +291,9 @@ function HelpDeveloperInfo
 %                   Align, Ratio, ClassifyObjects, ClassifyObjsByTwoMeas,
 %                   ModuleError, Crop (though Crop could be added to the
 %                   Image group above if needed), DefinedGrid
-%           When thse categories are altered, please update the code in:
+%           When these categories are altered, please update the code in
 %               CPgetfeaturenamesfromnumbers and any module that uses this
-%               subfunction
+%               subfunction.
 %
 %       Note: CPjoinstrings can be helpful in constructing feature
 %       names from strings and integers.  (If you are just joining

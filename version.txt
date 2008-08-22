@@ -1,3 +1,14 @@
+Version 1.1
+-ImageMath, LabelImages, MeasureRadialDistribution, Multiply and MeasureImageQuality (formerly known as ImageSaturationAndBlur) added as modules
+-ExportToDatabase, SaveImages, RescaleIntensity: changes in settings; old settings will automatically be updated to the new version when a pipeline is loaded.
+-ClassifyObjectsByTwoMeasurements, FilterByObjectMeasurements, CalculateMath, CreateBatchFiles, GroupMovieFrames, Align, MaskImage, ClassifyObjects, CalculateRatios, DisplayDataOnImage DisplayHistogram, DisplayMeasurement: major variable description changes; settings loaded from modules created with older versions will need to be updated manually.
+-MeasureObjectAreaShape: bugfix to deal with zero objects
+-Align: minor bugfix.
+-DisplayHistogram: minor bugfix.
+-New feature: overlay outlines functionality in IdentifyPrimLoG
+-How measurements are stored internally was overhauled for this version.  All modules that record measurements should now use the subfunction CPaddmeasurements.
+
+
 Version 1.0.5122
 - New feature: Added checkbox to toggle image intensity scaling
 - Smooth: Changed 'Smooth' module to 'SmoothOrEnhance'and renamed 'RemoveBrightRoundSpeckles' to 'Tophat filter.'

@@ -255,10 +255,11 @@ function HelpDeveloperInfo
 %               feature name = ObjectCount there is no category).
 %               - Note: Do not include the word "Measure" when naming.
 %               - Note: If you create a new category, be sure to add it to
-%               the list of categories in [???? TO DO: Where????] so that
-%               your new category will be selectable from drop down menus
-%               for modules that ask the user to choose a category.
-%               The current list of Categories is:
+%               the list of categories below, as well as in 
+%               CPgetfeaturenamesfromnumbers, and all choiceVAR lists so that
+%               your new category will be selectable (in the future, this will
+%               be a drop down menu) for modules that ask the user to 
+%               choose a category.
 %           * SpecificFeatureName = specific feature recorded by a module
 %               (e.g., Perimeter). Usually the module recording the
 %               measurement assigns this name, but a few modules allow the
@@ -275,12 +276,21 @@ function HelpDeveloperInfo
 %               can be separated by underscores.
 %               (someday, CP will look at upstream modules and make dropdowns)
 %
-%           Category List, with their necessary extra parameters:
-%               No extra parameters: AreaShape, Ratio
-%               Image: Imageintensity, Granularity, Children, Parent,
-%                   AreaOccupied
-%               SizeScale: Neighbors
-%               SizeScale and Image: Texture and RadialDistribution
+%           Category List:
+%           These reflect choiceVAR lists in many modules, with their 
+%           necessary extra parameters:
+%               No extra parameters:
+%                   AreaShape, Math
+%               Image:
+%                   Imageintensity, Granularity, Children, Parent, AreaOccupied
+%               SizeScale: 
+%                   Neighbors
+%               SizeScale and Image:
+%                   Texture and RadialDistribution
+%               Not to include in choiceVAR lists:
+%                   Align, Ratio, ClassifyObjects, ClassifyObjsByTwoMeas,
+%                   ModuleError, Crop (though Crop could be added to the
+%                   Image group above if needed), DefinedGrid
 %           When thse categories are altered, please update the code in:
 %               CPgetfeaturenamesfromnumbers and any module that uses this
 %               subfunction

@@ -53,27 +53,27 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Ratio
 %choiceVAR02 = Texture
 %choiceVAR02 = ImageQuality
-%choiceVAR02 = Granularity
 %choiceVAR02 = RadialDistribution
+%choiceVAR02 = Granularity
 %inputtypeVAR02 = popupmenu custom
-MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR03 = 1
-FeatureNo = handles.Settings.VariableValues{CurrentModuleNum,3};
+FeatureNbr = handles.Settings.VariableValues{CurrentModuleNum,3};
 
-if isempty(FeatureNo) 
+if isempty(FeatureNbr) 
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
 %textVAR04 = For AREASHAPE, INTENSITY or TEXTURE features, which image was used to make the measurements?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
-Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
-UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+SizeScale = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which image do you want to display the data on?
 %infotypeVAR06 = imagegroup
@@ -109,18 +109,18 @@ drawnow
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Get the correct fieldname where measurements are located
 try
-    switch lower(MeasureChoice)
-        case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image);
-        case {'areashape','neighbors','ratio'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo);
-        case {'texture','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image, UserSpecifiedNumber);
-    end
+    FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,...
+        FeatureNbr,ImageName,SizeScale);
 catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', MeasureChoice, ', was not available for ', ObjectName]);
+    error(['Image processing was canceled in the ', ModuleName, ...
+        ' module (#' num2str(CurrentModuleNum) ...
+        ') because an error ocurred when retrieving the data.  '...
+        'Likely the category of measurement you chose, ',...
+        Category, ', was not available for ', ...
+        ObjectName,' with feature number ' num2str(FeatureNbr) ...
+        ', possibly specific to image ''' ImageName ''' and/or ' ...
+        'Texture Scale = ' num2str(SizeScale) '.']);
 end
 
 %%% Reads the image.
@@ -181,13 +181,13 @@ else
     
     % Now extract the FeatureName itself
     % (1) Strip Category prefix + slash
-    justtheFeatureName = FeatureName(length([MeasureChoice,'_'])+1:end);
+    justtheFeatureName = FeatureName(length([Category,'_'])+1:end);
     % (2) Find position of next slash (if there is one)
     slash_index = regexp(justtheFeatureName,'_');
     % (3) FeatureName is the string prior to the slash
     if ~isempty(slash_index), slash_index = slash_index(1); justtheFeatureName = justtheFeatureName(1:slash_index-1); end
 
-    Title = [ObjectName,', ',justtheFeatureName,' on ',Image];
+    Title = [ObjectName,', ',justtheFeatureName,' on ',ImageName];
     title(Title);
 
     %%% Overlays the values in the proper location in the image.

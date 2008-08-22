@@ -25,7 +25,7 @@ function handles = ClassifyObjects(handles)
 % list of the features measured by that module.
 %
 % If you are selecting Ratio, this is the order of ratio measurements that
-% you calculated for the numerator. For instance, if you previously
+% you calculated, i.e. module order in pipeline. For instance, if you previously
 % calculated the ratio of Area to Perimeter for nuclei, MajorAxisLength to
 % MinorAxisLength for cells, and MeanIntensity to MaxIntensity for nuclei,
 % the value for the Area to Perimeter for nuclei would be 1, the value for

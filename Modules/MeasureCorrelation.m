@@ -174,7 +174,7 @@ drawnow
 CorrelationFeatures = {};
 for i = 1:ImageCount-1
     for j = i+1:ImageCount
-        CorrelationFeatures{end+1} = ['Correlation_',ImageName{i},'_',ImageName{j}];
+        CorrelationFeatures{end+1} = ['Correlation_',ImageName{i},ImageName{j}];
     end
 end
 
@@ -237,7 +237,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                                 sizeerr = 1;
                                 error(['Image processing was cancelled in the ', ModuleName, ' module because the images are not the same size.']);
                             else
-                                SlopeFeatures{end+1} = ['Slope_',ImageName{i},'_',ImageName{j}];
+                                SlopeFeatures{end+1} = ['Slope_',ImageName{i},ImageName{j}];
                                 x = Image{i}(:);
                                 y = Image{j}(:);
                                 p = polyfit(x,y,1); % Get the values for the luminescence in these images and calculate the slope

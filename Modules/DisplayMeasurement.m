@@ -56,7 +56,7 @@ PlotType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %choiceVAR02 = Image
 %infotypeVAR02 = objectgroup
 %inputtypeVAR02 = popupmenu
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
 %choiceVAR03 = AreaOccupied
@@ -71,24 +71,24 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = RadialDistribution
 %choiceVAR03 = Granularity
 %inputtypeVAR03 = popupmenu custom
-MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR04 = 1
-FeatureNo = handles.Settings.VariableValues{CurrentModuleNum,4};
+FeatureNbr{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
 
-if isempty(FeatureNo)
+if isempty(FeatureNbr{1})
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
 %textVAR05 = For INTENSITY or TEXTURE features, which image would you like to process?
 %infotypeVAR05 = imagegroup
-%inputtypeVAR05 = popupmenu
-Image = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+%inputtypeVAR05 = popupmenu custom
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR06 = 1
-UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+SizeScale{1} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = What do you want to call the generated plots?
 %defaultVAR07 = OrigPlot
@@ -101,7 +101,7 @@ PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %choiceVAR09 = Image
 %infotypeVAR09 = objectgroup
 %inputtypeVAR09 = popupmenu
-ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Which category of measurements would you like to use?
 %choiceVAR10 = AreaOccupied
@@ -116,24 +116,24 @@ ObjectName2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %choiceVAR10 = RadialDistribution
 %choiceVAR10 = Granularity
 %inputtypeVAR10 = popupmenu custom
-MeasureChoice2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR11 = 1
-FeatureNo2 = handles.Settings.VariableValues{CurrentModuleNum,11};
+FeatureNbr{2} = handles.Settings.VariableValues{CurrentModuleNum,11};
 
-if isempty(FeatureNo2)
+if isempty(FeatureNbr{2})
     error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);
 end
 
 %textVAR12 = For INTENSITY or TEXTURE features, which image would you like to process?
 %infotypeVAR12 = imagegroup
-%inputtypeVAR12 = popupmenu
-Image2 = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu custom
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %textVAR13 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR13 = 1
-UserSpecifiedNumber2 = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+SizeScale{2} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
 %%%VariableRevisionNumber = 2
 
@@ -142,38 +142,21 @@ UserSpecifiedNumber2 = char(handles.Settings.VariableValues{CurrentModuleNum,13}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Determines which cycle is being analyzed.
-% SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-% NumberOfImageSets = handles.Current.NumberOfImageSets;
-
-%%% Get the correct fieldname where measurements are located
-try
-    switch lower(MeasureChoice)
-        case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image);
-        case {'areashape','neighbors','ratio'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo);
-        case {'texture','radialdistribution'}
-            FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNo, Image, UserSpecifiedNumber);
-    end
-catch
-    error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', MeasureChoice, ', was not available for ', ObjectName]);
-end
-
-if strcmp(PlotType,'Scatter 2')
-    %%% Get the correct fieldname where measurements are located for second
-    %%% scatterplot measures
+for idx = 1:2
+    if idx == 2 && ~strcmp(PlotType,'Scatter 2'), break, end
     try
-        switch lower(MeasureChoice2)
-            case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
-                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2, Image2);
-            case {'areashape','neighbors','ratio'}
-                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2);
-            case {'texture','radialdistribution'}
-                FeatureName2 = CPgetfeaturenamesfromnumbers(handles, ObjectName2, MeasureChoice2, FeatureNo2, Image2, UserSpecifiedNumber2);
-        end
+        FeatureName{idx} = CPgetfeaturenamesfromnumbers(handles, ObjectName{idx}, ...
+            Category{idx}, FeatureNbr{idx}, ImageName{idx},SizeScale{idx});
+
     catch
-        error(['Image processing was canceled in the ', ModuleName, ' module because the category of measurement you chose, ', MeasureChoice, ', was not available for ', ObjectName]);
+        error(['Image processing was canceled in the ', ModuleName, ...
+            ' module (#' num2str(CurrentModuleNum) ...
+            ') because an error ocurred when retrieving the data.  '...
+            'Likely the category of measurement you chose, ',...
+            Category{idx}, ', was not available for ', ...
+            ObjectName{idx},' with feature number ' FeatureNbr{idx} ...
+            ', possibly specific to image ''' ImageName{idx} ''' and/or ' ...
+            'Texture Scale = ' num2str(SizeScale{idx}) '.']);
     end
 end
 
@@ -198,18 +181,19 @@ drawnow
 FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
 if PlotType == 4
-%     CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,MeasureChoice,FeatureNo,ObjectName2,MeasureChoice2,FeatureNo2);
-    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureName,ObjectName2,FeatureName2);
+    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName{1},FeatureName{1},ObjectName{2},FeatureName{2});
 else
-    CPplotmeasurement(handles,PlotType,FigHandle,1,ObjectName,FeatureName);
-
-%                     handles,PlotType,FigHandle,ModuleFlag,Object,Feature,Object2,Feature2
+    CPplotmeasurement(handles,PlotType,FigHandle,1,char(ObjectName{1}),char(FeatureName{1}));
 end
 
 %%%%%%%%%%%%%%%
 %%% DISPLAY %%%
 %%%%%%%%%%%%%%%
 drawnow
-
-FigureShot = CPimcapture(FigHandle); %% using defaults of whole figure and 150 dpi
-handles.Pipeline.(PlotImage)=FigureShot;
+%% Handle the case where Cancel button was pushed.  This results in the
+%% Renderer being set to 'None' and will throw an error in CPimcapture
+%% if not handled here.
+if ~strcmp(get(FigHandle,'renderer'),'None')
+    FigureShot = CPimcapture(FigHandle); %% using defaults of whole figure and 150 dpi
+    handles.Pipeline.(PlotImage)=FigureShot;
+end

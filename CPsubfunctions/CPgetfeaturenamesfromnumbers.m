@@ -20,6 +20,7 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 % added in the order matching that of each Module's Help text!
 
 error(nargchk(4, 6, nargin, 'string'))
+%% If string is really a number, then makes its class numeric
 if ~ isnan(str2double(FeatureNumberOrName))
     FeatureNumberOrName = str2double(FeatureNumberOrName);
 end
@@ -31,13 +32,14 @@ if strcmp(Category,'AreaShape') || strcmp(Category,'Ratio')
     Image = '';
 elseif strcmp(Category,'Intensity') || strcmp(Category,'Granularity') || ...
         strcmp(Category,'Children') || strcmp(Category,'Parent') || ...
-        strcmp(Category,'AreaOccupied')
+        strcmp(Category,'AreaOccupied') ||  strcmp(Category,'Correlation')
     SizeScale = '';
 elseif strcmp(Category,'Texture') || strcmp(Category,'RadialDistribution')
     % Nothing to do.  These should have all arguments specified
 elseif strcmp(Category,'Neighbors')
     Image = '';
 else 
+    %% TODO: SaturationBlur
     error('Measurement category could not be found.')
 end
 
@@ -61,7 +63,7 @@ else
     Matches=strcmp(AllFieldNames,CurrentMeasure);
     FeatureNumber=find(Matches);
     if length(FeatureNumber) < 1
-	error('No measurement with name "%s" found.', CurrentMeasure);
+        error('No measurement with name "%s" found.', CurrentMeasure);
     end
     FeatureName=AllFieldNames(FeatureNumber);
 end

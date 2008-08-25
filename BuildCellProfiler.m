@@ -14,6 +14,10 @@ function BuildCellProfiler
 %   run_CellProfiler.sh script at a terminal prompt.
 %   See readme.txt file for more details.
 %
+%   IMPORTANT NOTE: If you have any calls to ADDPATH in your startup.m or
+%   matlabrc.m files, you will need to remove them for compilation,
+%   otherwise the deployed executable will fail to open.
+%
 %   Try this command at the terminal (Mac) or command (PC) prompt:
 %   <matlabroot>/bin/matlab -nojvm -r "cd <CellProfiler trunk directory>; BuildCellProfiler; quit" 
 %   where <matlabroot> is the MATLAB installation directory and
@@ -37,7 +41,6 @@ movefile('CompileWizard_CellProfiler.m', 'CellProfiler.m');
 % Save the current search path, to be restored later
 current_search_path = pathdef;
 restoredefaultpath;
-addpath(pwd);
 
 % Compile CellProfiler, checking for compiler version
 % Description of flags:

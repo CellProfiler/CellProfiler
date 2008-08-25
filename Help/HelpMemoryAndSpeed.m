@@ -10,7 +10,7 @@ function HelpMemoryAndSpeed
 %   whether the features of interest can be processed (and accurate 
 %   data obtained) by using a lower-resolution image. If this is the
 %   case, use the Resize module (under Image Processing) to scale down
-%   the image to a more managable size, and perform the desired
+%   the image to a more manageable size, and perform the desired
 %   operations on the smaller image.
 %
 % (2) Re-use the parameter names

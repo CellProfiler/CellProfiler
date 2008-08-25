@@ -1,5 +1,5 @@
 Version 1.1
--ImageMath, LabelImages, MeasureRadialDistribution, Multiply and MeasureImageQuality (formerly known as ImageSaturationAndBlur) added as modules
+-ImageMath, LabelImages, MeasureRadialDistribution, Multiply, UnifyObjects, KeepLargestObject and MeasureImageQuality (formerly known as ImageSaturationAndBlur) added as modules
 -ExportToDatabase, SaveImages, RescaleIntensity: changes in settings; old settings will automatically be updated to the new version when a pipeline is loaded.
 -ClassifyObjectsByTwoMeasurements, FilterByObjectMeasurements, CalculateMath, CreateBatchFiles, GroupMovieFrames, Align, MaskImage, ClassifyObjects, CalculateRatios, DisplayDataOnImage DisplayHistogram, DisplayMeasurement: major variable description changes; settings loaded from modules created with older versions will need to be updated manually.
 -MeasureObjectAreaShape: bugfix to deal with zero objects

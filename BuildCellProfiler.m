@@ -42,7 +42,7 @@ addpath(pwd);
 % Compile CellProfiler, checking for compiler version
 % Description of flags:
 %  -I: including folders manually, since they don't get added otherwise
-%  -C: generate separarte CTF archive
+%  -C: generate separate CTF archive
 %  -a: Needed to add non-matlab .jpg file
 version_info = ver('matlab');
 if str2double(version_info.Version) >= 7.6, %Must include -C to produce separate CTF file

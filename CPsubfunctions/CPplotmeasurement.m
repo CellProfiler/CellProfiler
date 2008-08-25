@@ -490,7 +490,9 @@ end
 function str = pretty_feature_name(feature_name, object_name)
 [feature_type, feature_subtype, image_name] = ...
     strread(feature_name, '%s%s%s', 'delimiter', '_');
-if strcmp(feature_type, 'Intensity') || strcmp(feature_type, 'Texture')
+if strcmp(feature_type, 'Intensity') ...
+        || strcmp(feature_type, 'Texture') ...
+        || strcmp(feature_type, 'Correlation') 
     str = sprintf('%s of %s in %s', char(feature_subtype), char(image_name), char(object_name));
 else
     str = sprintf('%s of %s', strrep(char(feature_name), '_', ' '), char(object_name));

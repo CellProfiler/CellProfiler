@@ -179,8 +179,7 @@ if isempty(OutputFeatureName) || strcmp(OutputFeatureName,'Automatic') == 1
                                     Operation,ObjectName{2},FeatureName{2});
 
     %% Since Matlab's max name length is 63, we need to truncate the fieldname
-    MinStrLen = 5;
-    TruncFeatureName = CPtruncatefeaturename(FullFeatureName,MinStrLen);
+    TruncFeatureName = CPtruncatefeaturename(FullFeatureName);
 else
     TruncFeatureName = CPjoinstrings('Math',OutputFeatureName);
 end

@@ -217,7 +217,7 @@ end
 if strcmpi(RatioName, 'Automatic')
     RatioName = CPjoinstrings('Ratio',ObjectName{1},FeatureName{1},...
                           'DividedBy',ObjectName{2},FeatureName{2});
-    RatioName = CPtruncatefeaturename(RatioName,5);
+    RatioName = CPtruncatefeaturename(RatioName);
 else
     RatioName = CPjoinstrings('Ratio', RatioName);
 end

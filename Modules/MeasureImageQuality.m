@@ -17,10 +17,19 @@ function handles = MeasureImageQuality(handles)
 % WindowSize           |         3
 % PercentSaturation    |         4
 % PercentMaximal       |         5
-% OrigThreshold        |         6
-% MeanThreshold        |         7
-% MedianThreshold      |         8
-% StdevThreshold       |         9
+%
+% In addition, an OrigThreshold value is added to the Image measurements
+% under the MeasureImageQuality category. 
+%
+% Lastly, the following measurements are placed in the Experiment category: 
+% MeanThreshold 
+% MedianThreshold
+% StdevThreshold
+%
+% Please note that these Experiment measurements are calculated once the
+% pipeline has run through all of the cycles consecutively. It will not
+% produce a result for a batch run, since the cycles are processed
+% independently from each other.
 %
 % The percentage of pixels that are saturated is calculated and stored as a
 % measurement in the output file. 'Saturated' means that the pixel's
@@ -351,20 +360,27 @@ for ImageNumber = 1:length(NameImageToCheck);
         LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
 
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('SaturationBlur','FocusScore',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber}), ...
             FocusScore{ImageNumber});
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('SaturationBlur','LocalFocusScore',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber}), ...
             LocalFocusScore{ImageNumber});
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('SaturationBlur','LocalFocusScoreWindowSize',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber}), ...
             WindowSize);
+    else
+        handles = CPaddmeasurements(handles, 'Image', ...
+            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber}),[]);
+        handles = CPaddmeasurements(handles, 'Image', ...
+            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber}),[]);
+        handles = CPaddmeasurements(handles, 'Image', ...
+            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber}),[]);
     end
     handles = CPaddmeasurements(handles, 'Image', ...
-        CPjoinstrings('SaturationBlur','PercentSaturated',NameImageToCheck{ImageNumber}), ...
+        CPjoinstrings('ImageQuality','PercentSaturated',NameImageToCheck{ImageNumber}), ...
         PercentSaturation{ImageNumber});
     handles = CPaddmeasurements(handles, 'Image', ...
-        CPjoinstrings('SaturationBlur','PercentMaximal',NameImageToCheck{ImageNumber}), ...
+        CPjoinstrings('ImageQuality','PercentMaximal',NameImageToCheck{ImageNumber}), ...
         PercentMaximal{ImageNumber});
 end
 
@@ -377,20 +393,20 @@ ThresholdCorrection=str2num('1');
 
 
 %%% Now, loop through tmp1 to grab the 'OrigThreshold' from CPthreshold
-for ImageNumber=1:length(tmp2);
+for ImageNumber = 1:length(tmp2);
     OrigImageThresh = double(CPretrieveimage(handles,NameImageToThresh{ImageNumber},ModuleName,'MustBeGray','CheckScale'));
     [handles,OrigThreshold,WeightedVariance, SumOfEntropies] = CPthreshold(handles,ThresholdMethod{ImageNumber},pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImageThresh,NameImageToThresh{ImageNumber},ModuleName, '');
-    handles=CPaddmeasurements(handles,'Image',CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}), OrigThreshold);
- 
+    handles = CPaddmeasurements(handles,'Image',CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}), OrigThreshold);
 end
+
 SetBeingAnalyzed=handles.Current.SetBeingAnalyzed;
 TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
+
 %%% At the end of the image set, calculate the mean, median, and stdev
 %%% for the entire image set.
-
 if SetBeingAnalyzed == TotalNumberOfImageSets
-        for ImageNumber=1:length(tmp2);
-        Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}));
+        for ImageNumber = 1:length(tmp2),
+            Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}));
         end
         MeanThreshold = mean(cellfun(@mean,Threshold));
         MedianThreshold = median(cellfun(@median,Threshold));
@@ -439,7 +455,7 @@ if any(findobj == ThisModuleFigureNumber)
         end
     end
 
-    if strcmp(upper(BlurCheck), 'N') ~= 1
+    if strcmpi(BlurCheck, 'N') ~= 1
         DisplayText = strvcat(DisplayText, '      ','      ','Focus Score:'); %#ok We want to ignore MLint error checking for this line.
         for ImageNumber = 1:length(FocusScore)
             if ~isempty(FocusScore{ImageNumber})
@@ -449,7 +465,7 @@ if any(findobj == ThisModuleFigureNumber)
             end
         end
     end
-    if strcmp(upper(BlurCheck), 'N') ~= 1
+    if strcmpi(BlurCheck, 'N') ~= 1
         DisplayText = strvcat(DisplayText, '      ','Local Focus Score:'); %#ok We want to ignore MLint error checking for this line.
         for ImageNumber = 1:length(LocalFocusScore)
             if ~isempty(LocalFocusScore{ImageNumber})

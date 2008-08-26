@@ -2253,7 +2253,7 @@ ModulePipelineListBox_Callback(hObject, eventdata, handles);
 
 function MoveUpButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
-if~(handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
+if ~(isempty(ModuleHighlighted) || handles.Current.NumberOfModules < 1 || ModuleHighlighted(1) == 1)
     MaxInfo = get(handles.slider1,'UserData');
     for ModuleUp1 = 1:length(ModuleHighlighted);
         ModuleUp = ModuleHighlighted(ModuleUp1)-1;
@@ -2329,7 +2329,7 @@ end
 
 function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
-if~(handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
+if ~(isempty(ModuleHighlighted) || handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
     MaxInfo = get(handles.slider1,'UserData');
     for ModuleDown1 = length(ModuleHighlighted):-1:1;
         ModuleDown = ModuleHighlighted(ModuleDown1) + 1;

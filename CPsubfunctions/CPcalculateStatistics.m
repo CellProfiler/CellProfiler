@@ -83,7 +83,9 @@ for i = 1:length(ObjectFields)
         handles.Measurements.Experiment.(CPjoinstrings('Zfactor', ObjectName, MeasureFeatureName)) = z;
         handles.Measurements.Experiment.(CPjoinstrings('Vfactor', ObjectName, MeasureFeatureName)) = v;
         handles.Measurements.Experiment.(CPjoinstrings('EC50', ObjectName, MeasureFeatureName)) = ec;
-        handles.Measurements.Experiment.(CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName)) = z_one_tailed;
+        txtOneTail = CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName);
+        txtOneTail  = CPtruncatefeaturename(txtOneTail);
+        handles.Measurements.Experiment.(txtOneTail) = z_one_tailed;
     end
     %%% Update waitbar
     CPwaitbar(i./length(ObjectFields),waitbarhandle);

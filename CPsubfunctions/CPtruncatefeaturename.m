@@ -1,6 +1,12 @@
-function TruncatedName = CPtruncatefeaturename(FeatureName,MinStrLen,dlmtr)
+function TruncatedName = CPtruncatefeaturename(FeatureName,dlmtr)
+% CPtruncatefeaturename 
+% Reduce length of delimited text strings to overcome Matlab's 63 character limit
+%% Finds max length for each substring which will still allow a Matlab aceptable string
 
-if nargin < 3
+%% Starting value for Minimum (Sub)string Length
+MinStrLenInit = 20;
+
+if nargin < 2
     dlmtr = '_';
 end
 
@@ -8,14 +14,20 @@ if isempty(FeatureName)
     error('FeatureName cannot be an empty string')
 end
 
-TruncatedName = '';
-FeatureNameSubstrings = textscan(FeatureName,'%s','delimiter',dlmtr);
-for idxStr = 1:length(FeatureNameSubstrings{1})
-    Str = FeatureNameSubstrings{1}{idxStr};
-    TruncatedName = CPjoinstrings(TruncatedName,Str(1:min(length(Str),MinStrLen)));
+%% Loop through Minimum String Length, from large to small, and stop when 
+%% length < 64
+for MinStrLen = MinStrLenInit:-1:1
+    TruncatedName = '';
+    FeatureNameSubstrings = textscan(FeatureName,'%s','delimiter',dlmtr);
+    for idxStr = 1:length(FeatureNameSubstrings{1})
+        Str = FeatureNameSubstrings{1}{idxStr};
+        TruncatedName = CPjoinstrings(TruncatedName,Str(1:min(length(Str),MinStrLen)));
+    end
+    
+    if length(TruncatedName) < 64
+        disp(['Minimum String Length ' num2str(MinStrLen)])
+        disp(['Orig FeatureName ' FeatureName])
+        return
+    end
 end
 
-%% Just in case, after all the truncation
-if length(TruncatedName) > 63
-    TruncatedName = TruncatedName(1:63);
-end

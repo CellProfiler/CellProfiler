@@ -12,8 +12,13 @@ function h = CPimagesc(Image,handles)
 %
 % $Revision$
 
+%% Gets the current figure handle based on the CurrentModule setting (which
+%% helps to guard against axes appearing when the user clicks during processing)
+CurrentModule = CPwhichmodule(handles);
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+
 %%% Displays the image.
-h = imagesc(Image);
+h = imagesc(Image,'Parent',get(ThisModuleFigureNumber,'CurrentAxes'));
 
 CurrentAxes = get(h,'parent');
 CurrentFig = get(CurrentAxes,'parent');

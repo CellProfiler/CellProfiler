@@ -852,7 +852,7 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
-        [Settings,SavedVarRevNum] = CPImportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+        [Settings,SavedVarRevNum] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to

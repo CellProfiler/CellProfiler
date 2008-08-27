@@ -1,4 +1,4 @@
-function [Settings,SavedVarRevNum] = CPImportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
+function [Settings,SavedVarRevNum] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
 
 % This function attempts to import the settings of older modules into newer
 % ones, basically by reordering VariableValues, VariableInfoTypes, and
@@ -71,3 +71,9 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'])
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Standardization of "Do not use" or "/" placeholder
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+disp(1);

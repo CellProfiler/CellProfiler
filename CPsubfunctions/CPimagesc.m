@@ -12,19 +12,7 @@ function h = CPimagesc(Image,handles)
 %
 % $Revision$
 
-%% Gets the current figure handle based on the CurrentModule setting (which
-%% helps to guard against axes appearing when the user clicks during processing)
-CurrentModule = CPwhichmodule(handles);
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-
-%%% Displays the image into the correct figure window.
-%% If the axes doesn't exist yet (usu. via subplot command), then create one
-%% in the proper figure.
-current_axes = get(ThisModuleFigureNumber,'CurrentAxes');
-if isempty(current_axes)
-    current_axes = gca(ThisModuleFigureNumber);
-end
-h = imagesc(Image,'Parent',current_axes);
+h = imagesc(Image);
 
 CurrentAxes = get(h,'parent');
 CurrentFig = get(CurrentAxes,'parent');

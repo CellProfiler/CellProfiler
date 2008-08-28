@@ -17,8 +17,14 @@ function h = CPimagesc(Image,handles)
 CurrentModule = CPwhichmodule(handles);
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 
-%%% Displays the image.
-h = imagesc(Image,'Parent',get(ThisModuleFigureNumber,'CurrentAxes'));
+%%% Displays the image into the correct figure window.
+%% If the axes doesn't exist yet (usu. via subplot command), then create one
+%% in the proper figure.
+current_axes = get(ThisModuleFigureNumber,'CurrentAxes');
+if isempty(current_axes)
+    current_axes = gca(ThisModuleFigureNumber);
+end
+h = imagesc(Image,'Parent',current_axes);
 
 CurrentAxes = get(h,'parent');
 CurrentFig = get(CurrentAxes,'parent');

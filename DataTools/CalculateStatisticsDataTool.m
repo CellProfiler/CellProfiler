@@ -24,9 +24,9 @@ function CalculateStatisticsDataTool(handles)
 %
 % $Revision: 4711 $
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%
+% VARIABLES %
+%%%%%%%%%%%%%
 % drawnow
 
 ModuleName = 'CalculateStatisticsDataTool';
@@ -34,9 +34,9 @@ ModuleName = 'CalculateStatisticsDataTool';
 [FileName, Pathname] = CPuigetfile('*.mat', 'Select the raw measurements file',handles.Current.DefaultOutputDirectory);
 if FileName == 0, return, end   %% CPuigetfile canceled
 
-%% Override the DefaultOutputDirectory since the 'load' command below
-%% may have the denoted the path as on the cluster if CreatebatchFiles 
-%% was used to generate the raw measurements file
+% Override the DefaultOutputDirectory since the 'load' command below
+% may have the denoted the path as on the cluster if CreatebatchFiles 
+% was used to generate the raw measurements file
 origDefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
 origDefaultImageDirectory = handles.Current.DefaultImageDirectory;
 %%% Load the specified CellProfiler output file
@@ -55,7 +55,7 @@ close(MsgBoxLoad)
 ValidGroupings = false;
 
 while ~ValidGroupings,
-    %%% Is there already dosage data available in the measurements?
+    % Is there already dosage data available in the measurements?
     if any(strncmpi(fieldnames(handles.Measurements.Image), 'LoadedText', 10)),
         PreloadedFeatures = get_postfixes(fieldnames(handles.Measurements.Image), 'LoadedText');
         [Selection, ok] = CPlistdlg('ListString', PreloadedFeatures, 'ListSize', [300 400],...
@@ -69,8 +69,8 @@ while ~ValidGroupings,
             FeatureName = PreloadedFeatures{Selection};
 
             Answers = CPinputdlg({'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
-                    'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
-                'Operation', 1, {'Yes', 'Do not save'});
+                    'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not use'''}, ...
+                'Operation', 1, {'Yes', 'Do not use'});
 
             if isempty(Answers), return, end %% Inputdlg canceled
 
@@ -82,7 +82,7 @@ while ~ValidGroupings,
     else PreloadedFeatures = '';
     end
 
-    %%% If no preloaded data, or user selected 'Other file'...
+    % If no preloaded data, or user selected 'Other file'...
     [TextFileName,TextFilePathname] = CPuigetfile('*.txt', ...
         'Select the text file with the grouping values for each image cycle', ...
         handles.Current.DefaultImageDirectory);
@@ -90,8 +90,8 @@ while ~ValidGroupings,
 
     Answers = CPinputdlg({'What name would you like to give this data (what column heading)?',...
             'Would you like to log-transform the grouping values before attempting to fit a sigmoid curve? (Yes/No)', ...
-            'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not save'''}, ...
-        'Operation', 1, {'positives','Yes', 'Do not save'});
+            'Enter the filename to save the plotted dose response data for each feature as an interactive figure in the default output folder (.fig extension will be automatically added). To skip saving figures, enter ''Do not use'''}, ...
+        'Operation', 1, {'positives','Yes', 'Do not use'});
 
     if isempty(Answers), return, end %% Inputdlg cancelled
     
@@ -99,7 +99,7 @@ while ~ValidGroupings,
     Logarithmic = Answers{2};
     FigureName = Answers{3};
 
-    %% Check 'Logarithmic'
+    % Check 'Logarithmic'
     if ~ any(strcmpi({'yes', 'y', 'no', 'n', '/'}, Logarithmic)),
         uiwait(CPerrordlg('Error: there was a problem with your choice for whether to log-transform data.'));
         continue
@@ -107,7 +107,7 @@ while ~ValidGroupings,
         Logarithmic = '/';
     end
     
-    %%% Check if the user used the same name as a previous LoadText module
+    % Check if the user used the same name as a previous LoadText module
     if any(strcmp(PreloadedFeatures, FeatureName)),
         Replace = CPquestdlg(['A feature named ''', FeatureName, ''' already exists in the measurements.  Do you want to replace it?'], 'Existing feature', 'Yes', 'No', 'Cancel', 'Yes');
         if strcmp(Replace, 'No'),
@@ -122,11 +122,11 @@ while ~ValidGroupings,
         handles.Measurements.Image = rmfield(handles.Measurements.Image, CPjoinstrings('LoadedText', FeatureName));
     end
 
-    %% Save temp values that LoadText needs
+    % Save temp values that LoadText needs
     tempVarValues=handles.Settings.VariableValues;
     tempCurrent = handles.Current;
-    %% Change handles that LoadText requires.
-    %% Note that DataTools are denoted as Module #1
+    % Change handles that LoadText requires.
+    % Note that DataTools are denoted as Module #1
     handles.Settings.VariableValues{1,1}=TextFileName;
     handles.Settings.VariableValues{1,2}=FeatureName;
     handles.Settings.VariableValues{1,3}=TextFilePathname;
@@ -134,13 +134,13 @@ while ~ValidGroupings,
     handles.Current.CurrentModuleNumber='01';
     handles.Current.SetBeingAnalyzed=1;
     handles.Current.DefaultImageDirectory = origDefaultImageDirectory; %% In case cluster path is different
-    %% Load Text
+    % Load Text
     handles = LoadText(handles);
-    %% Return previous values
+    % Return previous values
     handles.Settings.VariableValues=tempVarValues;
     handles.Current=tempCurrent;
 
-    %%% success...
+    % success...
     ValidGroupings = true;
 end
     
@@ -150,17 +150,17 @@ Answer = CPinputdlg({'What do you want to call the output file with statistics?'
 if isempty(Answer), return, end
 OutputFileName = Answer{1};
 
-%% Override the DefaultOutputDirectory since the 'load' command above
-%% may have the denoted the path as on the cluster if CreatebatchFiles 
-%% was used to generate the raw measurements file
+% Override the DefaultOutputDirectory since the 'load' command above
+% may have the denoted the path as on the cluster if CreatebatchFiles 
+% was used to generate the raw measurements file
 handles.Current.DefaultOutputDirectory = origDefaultOutputDirectory;
 handles.Current.DefaultImageDirectory = origDefaultImageDirectory;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PRELIMINARY CALCULATIONS %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%% Checks whether the user has the Statistics Toolbox.
+% Checks whether the user has the Statistics Toolbox.
 LicenseStats = license('test','statistics_toolbox');
 if LicenseStats ~= 1
     CPwarndlg('It appears that you do not have a license for the Statistics Toolbox of Matlab.  You will be able to calculate V and Z'' factors, but not EC50 values. Typing ''ver'' or ''license'' at the Matlab command line may provide more information about your current license situation.');
@@ -168,7 +168,7 @@ end
 
 handles = CPcalculateStatistics(handles,CPjoinstrings('LoadedText', FeatureName),Logarithmic,FigureName,ModuleName,LicenseStats); %#ok<NASGU>
 
-%%% Save the updated CellProfiler output file
+% Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, OutputFileName),'handles');
     CPmsgbox(['Updated ',OutputFileName,' successfully saved.']);

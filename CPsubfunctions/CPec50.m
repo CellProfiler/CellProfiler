@@ -40,7 +40,7 @@ for i=1:n
     catch
         tes=eps;
     end
-    if ~strcmpi(PartialFigureName,'Do not save')
+    if ~strcmpi(PartialFigureName,'Do not use')
         %%% This produces the figure with the interactive graph.
         if strcmpi(Logarithmic,'Yes')
             XaxisLabel = ['log(',ConcName,')'];

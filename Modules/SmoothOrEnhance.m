@@ -82,8 +82,8 @@ SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,4};
 
-%textVAR05 = If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave '/'. If you entered a width for the previous variable, this will override it.
-%defaultVAR05 = /
+%textVAR05 = If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave "Do not use". If you entered a width for the previous variable, this will override it.
+%defaultVAR05 = Do not use
 SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).
@@ -134,7 +134,7 @@ end
 
 %%% Some variable checking:
 
-if ~strcmp(SizeOfSmoothingFilter,'/')
+if ~strcmp(SizeOfSmoothingFilter,'Do not use')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
     if isnan(SizeOfSmoothingFilter) || (SizeOfSmoothingFilter < 1)
         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing size invalid']))

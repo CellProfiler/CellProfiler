@@ -21,7 +21,7 @@ if ~isfield(handles,'Measurements')
     error('There are no measurements to be converted to SQL.')
 end
 
-if strcmp(TablePrefix,'/')
+if strcmp(TablePrefix,'Do not use')
     TablePrefix = '';
 else
     TablePrefix = [TablePrefix,'_'];

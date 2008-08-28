@@ -51,13 +51,13 @@ DataName1 = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What is the second set of text information that you would like to display in the grid pattern (will be green)?
-%choiceVAR04 = /
+%choiceVAR04 = Do not use
 %infotypeVAR04 = datagroup
 DataName2 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = What is the third set of text information that you would like to display in the grid pattern (will be blue)?
-%choiceVAR05 = /
+%choiceVAR05 = Do not use
 %infotypeVAR05 = datagroup
 DataName3 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
@@ -172,7 +172,7 @@ if any(findobj == ThisModuleFigureNumber)
     %%% probably not the perfect place for text where multiple pieces of text
     %%% are to be associated with a single image, but it seems like it won't
     %%% hurt to keep it as is.
-    if ~strcmp(DataName1,'/')
+    if ~strcmp(DataName1,'Do not use')
         Text1 = handles.Measurements.Image.(['LoadedText_',DataName1]);
 
         temp=reshape(SpotTable,1,[]);
@@ -219,7 +219,7 @@ if any(findobj == ThisModuleFigureNumber)
             'Callback',GridLineColorCallback);
     end
 
-    if ~strcmp(DataName2,'/')
+    if ~strcmp(DataName2,'Do not use')
         Text2 = handles.Measurements.Image.(['LoadedText_',DataName2]);
 
         temp=reshape(SpotTable,1,[]);
@@ -267,7 +267,7 @@ if any(findobj == ThisModuleFigureNumber)
             'Callback',GridLineColorCallback);
     end
 
-    if ~strcmp(DataName3,'/')
+    if ~strcmp(DataName3,'Do not use')
         Text3 = handles.Measurements.Image.(['LoadedText_',DataName3]);
 
         temp=reshape(SpotTable,1,[]);

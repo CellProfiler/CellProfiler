@@ -140,8 +140,8 @@ DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 Logarithmic = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added). Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
-%defaultVAR03 = Do not save
+%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added); otherwise, leave at "Do not use." Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
+%defaultVAR03 = Do not use
 %infotypeVAR03 = imagegroup indep
 FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -165,8 +165,8 @@ DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 Logarithmic = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added). Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
-%defaultVAR03 = Do not save
+%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added); otherwise, leave at "Do not use." Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
+%defaultVAR03 = Do not use
 %infotypeVAR03 = imagegroup indep
 FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

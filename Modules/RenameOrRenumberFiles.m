@@ -73,12 +73,12 @@ NumberCharactersPrefix = str2double(char(handles.Settings.VariableValues{Current
 %defaultVAR03 = 8
 NumberCharactersSuffix = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,3}));
 
-%textVAR04 = Enter any text you want to place between those two portions of filename. Leave "/" to leave as is.
-%defaultVAR04 = /
+%textVAR04 = Enter any text you want to place between those two portions of filename. Type  "Do not use" to leave as is.
+%defaultVAR04 = Do not use
 TextToAdd = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = How many numerical digits would you like to use between those two portions of filename, for renumbering purposes? Leave "/" to leave as is.
-%defaultVAR05 = /
+%textVAR05 = How many numerical digits would you like to use between those two portions of filename, for renumbering purposes? Type "Do not use" to leave as is.
+%defaultVAR05 = Do not use
 NumberDigits = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %%%VariableRevisionNumber = 1
@@ -107,7 +107,7 @@ for n = 1:length(FileNames)
     Suffix = OldFilename((end-NumberCharactersSuffix+1):end);
 
     %Renumbering Stage
-    if ~strcmp(NumberDigits,'/')
+    if ~strcmp(NumberDigits,'Do not use')
         OldNumber = OldFilename(NumberCharactersPrefix+1:end-NumberCharactersSuffix);
         NumberOfZerosToAdd = AmtDigits - length(OldNumber);
         if NumberOfZerosToAdd < 0
@@ -121,7 +121,7 @@ for n = 1:length(FileNames)
     end
 
     %Renaming Stage
-    if strcmp(TextToAdd,'/')
+    if strcmp(TextToAdd,'Do not use')
         NewFilename = [Prefix,NewText,Suffix];
     else
         NewFilename = [Prefix,TextToAdd,NewText,Suffix];

@@ -127,7 +127,7 @@ function handles = CorrectIllumination_Calculate(handles)
 % $Revision$
 
 %%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
+% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
 
@@ -188,26 +188,26 @@ SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = Automatic
 ObjectWidth = handles.Settings.VariableValues{CurrentModuleNum,10};
 
-%%% TODO: it is unclear why we ask for width of objects and then allow
-%%% overriding, since one is calculated from the other. I asked Rodrigo
-%%% about it 8-31-06  Most likely we will remove the following variable and
-%%% instead provide instructions in the help to tell you how the
-%%% SizeOfSmoothingFilter is calculate from Artifact width, in case someone
-%%% wants to enter a precise vaule. We should then also check the
-%%% Average/Smooth module as well -Anne.
+% TODO: it is unclear why we ask for width of objects and then allow
+% overriding, since one is calculated from the other. I asked Rodrigo
+% about it 8-31-06  Most likely we will remove the following variable and
+% instead provide instructions in the help to tell you how the
+% SizeOfSmoothingFilter is calculate from Artifact width, in case someone
+% wants to enter a precise vaule. We should then also check the
+% Average/Smooth module as well -Anne.
 
-%textVAR11 = If you want override the above width of artifacts and set your own filter size (in pixels), please specify it here. Otherwise leave '/'.
-%defaultVAR11 = /
+%textVAR11 = If you want override the above width of artifacts and set your own filter size (in pixels), please specify it here. Otherwise leave 'Do not use'.
+%defaultVAR11 = Do not use
 SizeOfSmoothingFilter = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %textVAR12 = (For 'All' mode only) What do you want to call the averaged image (prior to dilation or smoothing)? (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR12 = Do not save
+%choiceVAR12 = Do not use
 %infotypeVAR12 = imagegroup indep
 AverageImageName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu custom
 
 %textVAR13 = What do you want to call the image after dilation but prior to smoothing?  (This is an image produced during the calculations - it is typically not needed for downstream modules)
-%choiceVAR13 = Do not save
+%choiceVAR13 = Do not use
 %infotypeVAR13 = imagegroup indep
 DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu custom
@@ -215,7 +215,7 @@ DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
@@ -223,10 +223,10 @@ if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images modu
     error(['Image processing was canceled in the ', ModuleName, ' module because you must choose Pipeline mode if you are using Each mode.'])
 end
 
-%%% If the illumination correction function was to be calculated using
-%%% all of the incoming images from a Load Images module, it will already have been calculated
-%%% the first time through the cycle. No further calculations are
-%%% necessary.
+% If the illumination correction function was to be calculated using
+% all of the incoming images from a Load Images module, it will already have been calculated
+% the first time through the cycle. No further calculations are
+% necessary.
 if strcmp(EachOrAll,'All') && handles.Current.SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
     return
 end
@@ -236,20 +236,20 @@ catch
     error(['Image processing was canceled in the ', ModuleName, ' module because you must enter a number for the radius to use to dilate objects. If you do not want to dilate objects enter 0 (zero).'])
 end
 
-%%% Checks smooth method variables
-if ~strcmp(SizeOfSmoothingFilter,'/')
+% Checks smooth method variables
+if ~strcmp(SizeOfSmoothingFilter,'Do not use')
     SizeOfSmoothingFilter = str2double(SizeOfSmoothingFilter);
     if isnan(SizeOfSmoothingFilter) || (SizeOfSmoothingFilter < 0)
         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing filter invalid']))
             CPwarndlg(['The size of smoothing filter you specified in the ' ModuleName ' module was invalid. It is being reset to automatically calculated.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Smoothing filter invalid'],'replace');
         end
-        SizeOfSmoothingFilter = '/';
+        SizeOfSmoothingFilter = 'Do not use';
     else
         SizeOfSmoothingFilter = floor(SizeOfSmoothingFilter);
         WidthFlg = 0;
     end
 end
-if strcmp(SizeOfSmoothingFilter,'/')
+if strcmp(SizeOfSmoothingFilter,'Do not use')
     if ~strcmpi(ObjectWidth,'Automatic')
         ObjectWidth = str2double(ObjectWidth);
         if isnan(ObjectWidth) || ObjectWidth<0
@@ -268,12 +268,12 @@ if strcmp(SizeOfSmoothingFilter,'/')
     end
 end
 
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
+% Reads (opens) the image you want to analyze and assigns it to a
+% variable.
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 if strcmp(IntensityChoice,'Background')
-    %%% Checks whether the chosen block size is larger than the image itself.
+    % Checks whether the chosen block size is larger than the image itself.
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);
     if BlockSize <= 0
@@ -291,11 +291,11 @@ if strcmp(IntensityChoice,'Background')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
+% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if strcmp(AverageImageName,'Do not save')
+if strcmp(AverageImageName,'Do not use')
     AverageImageSaveFlag = 0;
     AverageImageName = ['Averaged',ImageName];
 else AverageImageSaveFlag = 1;
@@ -305,11 +305,11 @@ ReadyFlag = 'Not Ready';
 if strcmp(EachOrAll,'All')
     try
         if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
-            %%% The first time the module is run, the averaged image is
-            %%% calculated.
-            %%% Notifies the user that the first cycle will take much longer than
-            %%% subsequent sets.
-            %%% Obtains the screen size.
+            % The first time the module is run, the averaged image is
+            % calculated.
+            % Notifies the user that the first cycle will take much longer than
+            % subsequent sets.
+            % Obtains the screen size.
             [ScreenWidth,ScreenHeight] = CPscreensize;
             PotentialBottom = [0, (ScreenHeight-720)];
             BottomOfMsgBox = max(PotentialBottom);
@@ -321,22 +321,22 @@ if strcmp(EachOrAll,'All')
             if strcmp(IntensityChoice,'Regular')
                 [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
             elseif strcmp(IntensityChoice,'Background')
-                %%% Retrieves the path where the images are stored from the handles
-                %%% structure.
+                % Retrieves the path where the images are stored from the handles
+                % structure.
                 fieldname = ['Pathname', ImageName];
                 try Pathname = handles.Pipeline.(fieldname);
                 catch error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.'])
                 end
-                %%% Retrieves the list of filenames where the images are stored from the
-                %%% handles structure.
+                % Retrieves the list of filenames where the images are stored from the
+                % handles structure.
                 fieldname = ['FileList', ImageName];
                 FileList = handles.Pipeline.(fieldname);
                 [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-                %%% Calculates a coarse estimate of the background
-                %%% illumination by determining the minimum of each block
-                %%% in the image.  If the minimum is zero, it is recorded
-                %%% as the minimum non-zero number to prevent divide by
-                %%% zero errors later.
+                % Calculates a coarse estimate of the background
+                % illumination by determining the minimum of each block
+                % in the image.  If the minimum is zero, it is recorded
+                % as the minimum non-zero number to prevent divide by
+                % zero errors later.
                 LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
                 SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
                 for i=2:length(FileList)
@@ -344,9 +344,9 @@ if strcmp(EachOrAll,'All')
                     SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
                 end
                 MiniIlluminationImage = SumMiniIlluminationImage / length(FileList);
-                %%% The coarse estimate is then expanded in size so that it is the same
-                %%% size as the original image. Bilinear interpolation is used to ensure the
-                %%% values do not dip below zero.
+                % The coarse estimate is then expanded in size so that it is the same
+                % size as the original image. Bilinear interpolation is used to ensure the
+                % values do not dip below zero.
                 LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
                 IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
                 ReadyFlag = 'Ready';
@@ -355,27 +355,27 @@ if strcmp(EachOrAll,'All')
             if strcmp(IntensityChoice,'Regular')
                 [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AverageImageName);
             elseif strcmp(IntensityChoice,'Background')
-                %%% In Pipeline mode, each time through the cycle,
-                %%% the minimums from the image are added to the existing cumulative image.
+                % In Pipeline mode, each time through the cycle,
+                % the minimums from the image are added to the existing cumulative image.
                 [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
                 if handles.Current.SetBeingAnalyzed == 1
-                    %%% Creates the empty variable so it can be retrieved later
-                    %%% without causing an error on the first cycle.
+                    % Creates the empty variable so it can be retrieved later
+                    % without causing an error on the first cycle.
                     handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))')));
                 end
-                %%% Retrieves the existing illumination image, as accumulated so
-                %%% far.
+                % Retrieves the existing illumination image, as accumulated so
+                % far.
                 SumMiniIlluminationImage = handles.Pipeline.(IlluminationImageName);
-                %%% Adds the current image to it.
+                % Adds the current image to it.
                 SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
-                %%% If the last cycle has just been processed, indicate that
-                %%% the projection image is ready.
+                % If the last cycle has just been processed, indicate that
+                % the projection image is ready.
                 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-                    %%% Divides by the total number of images in order to average.
+                    % Divides by the total number of images in order to average.
                     MiniIlluminationImage = SumMiniIlluminationImage / handles.Current.NumberOfImageSets;
-                    %%% The coarse estimate is then expanded in size so that it is the same
-                    %%% size as the original image. Bilinear interpolation is used to ensure the
-                    %%% values do not dip below zero.
+                    % The coarse estimate is then expanded in size so that it is the same
+                    % size as the original image. Bilinear interpolation is used to ensure the
+                    % values do not dip below zero.
                     IlluminationImage = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
                     ReadyFlag = 'Ready';
                 end
@@ -398,26 +398,26 @@ elseif strcmp(EachOrAll,'Each')
 %         end
         
         [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-        %%% Calculates a coarse estimate of the background
-        %%% illumination by determining the minimum of each block
-        %%% in the image.  If the minimum is zero, it is recorded
-        %%% as the minimum non-zero number to prevent divide by
-        %%% zero errors later.
-        %%% Not sure why this line differed from the one above for 'A'
-        %%% mode, so I changed it to use the padarray version.
+        % Calculates a coarse estimate of the background
+        % illumination by determining the minimum of each block
+        % in the image.  If the minimum is zero, it is recorded
+        % as the minimum non-zero number to prevent divide by
+        % zero errors later.
+        % Not sure why this line differed from the one above for 'A'
+        % mode, so I changed it to use the padarray version.
         % MiniIlluminationImage = blkproc(OrigImage,[BlockSize BlockSize],'min(x(x>0))');
         MiniIlluminationImage = blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(min(x))');
         drawnow
-        %%% The coarse estimate is then expanded in size so that it is the same
-        %%% size as the original image. Bilinear interpolation is used to ensure the
-        %%% values do not dip below zero.
+        % The coarse estimate is then expanded in size so that it is the same
+        % size as the original image. Bilinear interpolation is used to ensure the
+        % values do not dip below zero.
         IlluminationImage = imresize(MiniIlluminationImage, size(OrigImage), 'bilinear');
     end
     ReadyFlag = 'Ready';
 else error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either Each or All.']);
 end
 
-%%% Dilates the objects, and/or smooths the RawImage if the user requested.
+% Dilates the objects, and/or smooths the RawImage if the user requested.
 if strcmp(ReadyFlag, 'Ready')
     if strcmp(IntensityChoice,'Regular')
         if (NumericalObjectDilationRadius > 0)
@@ -429,8 +429,8 @@ if strcmp(ReadyFlag, 'Ready')
         end
 
         if ~strcmp(SmoothingMethod,'No smoothing')
-            %%% Smooths the averaged image, if requested, but saves a raw copy
-            %%% first.
+            % Smooths the averaged image, if requested, but saves a raw copy
+            % first.
 
             if exist('DilatedImage','var')
                 SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
@@ -441,8 +441,8 @@ if strcmp(ReadyFlag, 'Ready')
         end
 
         drawnow
-        %%% Which image is the final function depends on whether we chose to
-        %%% dilate or smooth.
+        % Which image is the final function depends on whether we chose to
+        % dilate or smooth.
         if exist('SmoothedImage','var')
             FinalIlluminationFunction = SmoothedImage;
         elseif exist('DilatedImage','var')
@@ -452,8 +452,8 @@ if strcmp(ReadyFlag, 'Ready')
 
     elseif strcmp(IntensityChoice,'Background')
         if ~strcmp(SmoothingMethod,'No smoothing')
-            %%% Smooths the Illumination image, if requested, but saves a raw copy
-            %%% first.
+            % Smooths the Illumination image, if requested, but saves a raw copy
+            % first.
             AverageMinimumsImage = IlluminationImage;
             FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else
@@ -461,39 +461,39 @@ if strcmp(ReadyFlag, 'Ready')
         end
     end
 
-    %%% The resulting image is rescaled to be in the range 1
-    %%% to infinity, if requested.
+    % The resulting image is rescaled to be in the range 1
+    % to infinity, if requested.
     if strcmp(RescaleOption,'Yes') == 1
-        %%% To save time, the handles argument is not fed to this
-        %%% subfunction because it is not needed.
+        % To save time, the handles argument is not fed to this
+        % subfunction because it is not needed.
         [ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
+% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     drawnow
-    %%% Activates the appropriate figure window.
+    % Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     if strcmp(IntensityChoice,'Regular')
-        %%% Whether these images exist depends on whether the images have
-        %%% been calculated yet (if running in pipeline mode, this won't occur
-        %%% until the last cycle is processed).  It also depends on
-        %%% whether the user has chosen to dilate or smooth the averaged
-        %%% image.
+        % Whether these images exist depends on whether the images have
+        % been calculated yet (if running in pipeline mode, this won't occur
+        % until the last cycle is processed).  It also depends on
+        % whether the user has chosen to dilate or smooth the averaged
+        % image.
 
-        %%% If we are in Each mode, the Raw image will be identical to the
-        %%% input image so there is no need to display it again.  If we
-        %%% are in All mode, there is no OrigImage, so we can plot both to
-        %%% the 2,2,1 location.
+        % If we are in Each mode, the Raw image will be identical to the
+        % input image so there is no need to display it again.  If we
+        % are in All mode, there is no OrigImage, so we can plot both to
+        % the 2,2,1 location.
         if strcmp(EachOrAll,'All')
             subplot(2,2,1);
             CPimagesc(RawImage,handles);
@@ -524,8 +524,8 @@ if any(findobj == ThisModuleFigureNumber)
             title('Final illumination function');
         end
     elseif strcmp(IntensityChoice,'Background')
-        %%% A subplot of the figure window is set to display the original
-        %%% image, some intermediate images, and the final corrected image.
+        % A subplot of the figure window is set to display the original
+        % image, some intermediate images, and the final corrected image.
         subplot(2,2,1);
         CPimagesc(OrigImage,handles);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
@@ -538,11 +538,11 @@ if any(findobj == ThisModuleFigureNumber)
         else subplot(2,2,4);
             title('Illumination correction function is not yet calculated');
         end
-        %%% Whether these images exist depends on whether the images have
-        %%% been calculated yet (if running in pipeline mode, this won't occur
-        %%% until the last cycle is processed).  It also depends on
-        %%% whether the user has chosen to smooth the average minimums
-        %%% image.
+        % Whether these images exist depends on whether the images have
+        % been calculated yet (if running in pipeline mode, this won't occur
+        % until the last cycle is processed).  It also depends on
+        % whether the user has chosen to smooth the average minimums
+        % image.
         if exist('AverageMinimumsImage','var') == 1
             subplot(2,2,3);
             CPimagesc(AverageMinimumsImage,handles);
@@ -552,24 +552,24 @@ if any(findobj == ThisModuleFigureNumber)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
+% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves images to the handles structure.
-%%% If running in non-cycling mode (straight from the hard drive using
-%%% a Load Images module), the average image and its flag need only
-%%% be saved to the handles structure after the first cycle is
-%%% processed. If running in cycling mode (Pipeline mode), the
-%%% average image and its flag are saved to the handles structure
-%%% after every cycle is processed.
+% Saves images to the handles structure.
+% If running in non-cycling mode (straight from the hard drive using
+% a Load Images module), the average image and its flag need only
+% be saved to the handles structure after the first cycle is
+% processed. If running in cycling mode (Pipeline mode), the
+% average image and its flag are saved to the handles structure
+% after every cycle is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && handles.Current.SetBeingAnalyzed == 1)
     if strcmp(ReadyFlag, 'Ready') == 1
         handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
     end
     if strcmp(IntensityChoice,'Regular')
-        %%% Whether these images exist depends on whether the user has chosen
-        %%% to dilate or smooth the average image.
+        % Whether these images exist depends on whether the user has chosen
+        % to dilate or smooth the average image.
         if AverageImageSaveFlag == 1
             if strcmp(EachOrAll,'Each')
                 error(['Image processing was canceled in the ', ModuleName, ' module because you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.'])
@@ -577,47 +577,47 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
             try handles.Pipeline.(AverageImageName) = RawImage;
             catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the averaged image. This image can only be passed along if you choose to dilate.'])
             end
-            %%% Saves the ready flag to the handles structure so it can be used by
-            %%% subsequent modules.
+            % Saves the ready flag to the handles structure so it can be used by
+            % subsequent modules.
             fieldname = [AverageImageName,'ReadyFlag'];
             handles.Pipeline.(fieldname) = ReadyFlag;
         end
-        if ~strcmpi(DilatedImageName,'Do not save')
+        if ~strcmpi(DilatedImageName,'Do not use')
             try handles.Pipeline.(DilatedImageName) = DilatedImage;
             catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the dilated image. This image can only be passed along if you choose to dilate.'])
             end
         end
     elseif strcmp(IntensityChoice,'Background')
-        %%% Whether these images exist depends on whether the user has chosen
-        %%% to smooth the averaged minimums image.
+        % Whether these images exist depends on whether the user has chosen
+        % to smooth the averaged minimums image.
         %if exist('AverageMinimumsImage','var') == 1
         %    fieldname = [AverageMinimumsImageName];
         %    handles.Pipeline.(fieldname) = AverageMinimumsImage;
         %end
-        %%% Saves the ready flag to the handles structure so it can be used by
-        %%% subsequent modules.
+        % Saves the ready flag to the handles structure so it can be used by
+        % subsequent modules.
         fieldname = [IlluminationImageName,'ReadyFlag'];
         handles.Pipeline.(fieldname) = ReadyFlag;
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%
-%%% SUBFUNCTIONS %%%
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
+% SUBFUNCTIONS %
+%%%%%%%%%%%%%%%%
 drawnow
 
 function [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize)
-%%% Calculates the best block size that minimizes padding with
-%%% zeros, so that the illumination function will not have dim
-%%% artifacts at the right and bottom edges. (Based on Matlab's
-%%% bestblk function, but changing the minimum of the range
-%%% searched to be 75% of the suggested block size rather than
-%%% 50%.
-%%% Defines acceptable block sizes.  m and n were
-%%% calculated above as the size of the original image.
+% Calculates the best block size that minimizes padding with
+% zeros, so that the illumination function will not have dim
+% artifacts at the right and bottom edges. (Based on Matlab's
+% bestblk function, but changing the minimum of the range
+% searched to be 75% of the suggested block size rather than
+% 50%.
+% Defines acceptable block sizes.  m and n were
+% calculated above as the size of the original image.
 MM = floor(BlockSize):-1:floor(min(ceil(m/10),ceil(BlockSize*3/4)));
 NN = floor(BlockSize):-1:floor(min(ceil(n/10),ceil(BlockSize*3/4)));
-%%% Chooses the acceptable block that has the minimum padding.
+% Chooses the acceptable block that has the minimum padding.
 [dum,ndx] = min(ceil(m./MM).*MM-m); %#ok We want to ignore MLint error checking for this line.
 BestBlockSize(1) = MM(ndx);
 [dum,ndx] = min(ceil(n./NN).*NN-n); %#ok We want to ignore MLint error checking for this line.

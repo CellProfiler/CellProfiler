@@ -477,11 +477,11 @@ UseLowRes = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
 %textVAR16 = Enter the following information, separated by commas, if you would like to use the Laplacian of Gaussian method for identifying objects instead of using the above settings: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Wiener Filter(height,width),Threshold
-%defaultVAR16 = /
+%defaultVAR16 = Do not use
 LaplaceValues = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 
 %textVAR17 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR17 = Do not save
+%defaultVAR17 = Do not use
 %infotypeVAR17 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 
@@ -532,7 +532,7 @@ end
 % GetThreshold = 1;
 
 %%% Checks that the Laplace parameters have valid values
-if ~strcmp(LaplaceValues,'/')
+if ~strcmp(LaplaceValues,'Do not use')
     index = strfind(LaplaceValues,',');
     if isempty(index) || (length(index) ~= 6)
         error(['Image processing was canceled in the ', ModuleName, ' module because the Laplace Values are invalid.']);
@@ -629,7 +629,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         WatershedTransformImageType = WatershedTransformImageTypeList{WatershedTransformImageTypeNumber};
         Threshold = OrigThreshold;
 
-        if strcmp(LaplaceValues,'/')
+        if strcmp(LaplaceValues,'Do not use')
 
             %%% Apply a slight smoothing before thresholding to remove
             %%% 1-pixel objects and to smooth the edges of the objects.
@@ -1007,7 +1007,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
         if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
-            if strcmp(LaplaceValues,'/')
+            if strcmp(LaplaceValues,'Do not use')
                 %%% Indicate objects in original image and color excluded objects in red
                 tmp = OrigImage/max(OrigImage(:));
                 OutlinedObjectsR = tmp;
@@ -1071,7 +1071,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 end
             else
                 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-                if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
+                if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not use') %#ok Ignore MLint
                     %%% Calculates the ColoredLabelMatrixImage for displaying in the figure
                     %%% window in subplot(2,2,2).
                     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
@@ -1137,7 +1137,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
-            if ~strcmpi(SaveOutlines,'Do not save')
+            if ~strcmpi(SaveOutlines,'Do not use')
                 try    handles.Pipeline.(SaveOutlines) = FinalOutline;
                 catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
                 end

@@ -47,7 +47,7 @@ function handles = ClassifyObjects(handles)
 % $Revision$
 
 %%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
+% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
 
@@ -90,8 +90,8 @@ SizeScale = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 %defaultVAR06 = 3
 NbrOfBins = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
-%textVAR07 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3), if the number of bins does not equal the number of labels, this step will be ignored. Leave "/" for default labels.
-%defaultVAR07 = /
+%textVAR07 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3), if the number of bins does not equal the number of labels, this step will be ignored. Leave "Do not use" for default labels.
+%defaultVAR07 = Do not use
 Labels = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = To create evenly spaced bins, enter the lower limit for the lower bin
@@ -103,7 +103,7 @@ LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8
 UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
 %textVAR10 = What do you want to call the resulting color-coded image?
-%choiceVAR10 = Do not save
+%choiceVAR10 = Do not use
 %choiceVAR10 = ColorClassifiedNuclei
 %inputtypeVAR10 = popupmenu custom
 %infotypeVAR10 = imagegroup indep
@@ -118,7 +118,7 @@ AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,11}
 %%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -137,14 +137,14 @@ catch
         'Texture Scale = ' num2str(SizeScale) '.']);
 end
 
-%%% Retrieves the label matrix image that contains the segmented objects
+% Retrieves the label matrix image that contains the segmented objects
 SegmentedField = ['Segmented', ObjectName];
 
-%%% Checks whether the image exists in the handles structure.
+% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, SegmentedField)
     LabelMatrixImage = CPretrieveimage(handles,SegmentedField,ModuleName);
-    %%% If we are using a user defined field, there is no corresponding
-    %%% image.
+    % If we are using a user defined field, there is no corresponding
+    % image.
 elseif strcmpi(Category,'Ratio')
     LabelMatrixImage = zeros(100);
 else
@@ -159,7 +159,7 @@ else
 end
 
 if ~strcmp(Category,'Ratio')
-    %%% Checks whether the feature type exists in the handles structure.
+    % Checks whether the feature type exists in the handles structure.
     if ~isfield(handles.Measurements.(ObjectName),FeatureName)
         error(['Image processing was canceled in the ', ModuleName, ...
             ' module because the feature type entered does not exist.']);
@@ -172,7 +172,7 @@ if isempty(LowerBinMin) || isempty(UpperBinMax) || LowerBinMin > UpperBinMax
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
+% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
@@ -224,9 +224,9 @@ if any(isinf(edges)) == 1
         'please enter an actual numerical value.']);
 end
 
-edges(1) = edges(1) - sqrt(eps);    %% Just a fix so that objects with a 
-                                    %% measurement that equals the lower 
-                                    %% bin edge of the lowest bin are counted
+edges(1) = edges(1) - sqrt(eps);    % Just a fix so that objects with a 
+                                    % measurement that equals the lower 
+                                    % bin edge of the lowest bin are counted
 QuantizedMeasurements = zeros(size(Measurements));
 bins = zeros(1,NbrOfBins);
 RemainingLabels = Labels;
@@ -236,13 +236,13 @@ for BinNum = 1:NbrOfBins
     QuantizedMeasurements(bin_index{BinNum}) = BinNum;
     bins(BinNum) = length(bin_index{BinNum});
     if length(strfind(Labels,',')) == (NbrOfBins - 1)
-        [BinLabel,RemainingLabels]=strtok(RemainingLabels,',');
+        [BinLabel,RemainingLabels] = strtok(RemainingLabels,',');
         if ~isvarname(BinLabel)
-            BinLabel=['Module',CurrentModule,'Bin',num2str(BinNum),];
+            BinLabel = ['Module',CurrentModule,'Bin',num2str(BinNum),];
         end
     else
-        %% Assign bins with generic names
-        BinLabel=['Module',CurrentModule,'Bin',num2str(BinNum),];
+        % Assign bins with generic names
+        BinLabel = ['Module',CurrentModule,'Bin',num2str(BinNum),];
     end
     ClassifyFeatureNames{BinNum} = ['ClassifyObjects_' BinLabel];
 end
@@ -268,27 +268,27 @@ if ~strcmpi(Category,'Ratio')
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+% DISPLAY RESULTS %
+%%%%%%%%%%%%%%%%%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    %%% Activates the appropriate figure window.
+    % Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    %%% If we are using a user defined field, there is no corresponding
-    %%% image.
+    % If we are using a user defined field, there is no corresponding
+    % image.
     if ~strcmpi(Category,'Ratio')
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(NonQuantizedImage,'TwoByTwo',ThisModuleFigureNumber);
         end
     end
  
-    %%% If we are using a user defined field, there is no corresponding
-    %%% image.
+    % If we are using a user defined field, there is no corresponding
+    % image.
     if ~strcmpi(Category,'Ratio')
-        %%% A subplot of the figure window is set to display the original image.
+        % A subplot of the figure window is set to display the original image.
         subplot(2,2,1)
         CPimagesc(NonQuantizedImage,handles);
         IntensityColormap = handles.Preferences.IntensityColorMap;
@@ -298,57 +298,57 @@ if any(findobj == ThisModuleFigureNumber)
         title([ObjectName,' shaded according to ',FeatureName])
     end
 
-    %%% Produce and plot histogram of original data
+    % Produce and plot histogram of original data
     subplot(2,2,2)
     Nbins = min(round(NbrOfObjects),40);
     hist(Measurements,Nbins);
-    %%% Took this out: don't want to use misleading colors.
-    %%%    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
+    % Took this out: don't want to use misleading colors.
+    %    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
     xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
     ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
     title(['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
-    %%% Using "axis tight" here is ok, I think, because we are displaying
-    %%% data, not images.
+    % Using "axis tight" here is ok, I think, because we are displaying
+    % data, not images.
     ylimits = ylim;
     axis tight
     xlimits = xlim;
     axis([xlimits ylimits]);
 
-    %%% If we are using a user defined field, there is no corresponding
-    %%% image.
+    % If we are using a user defined field, there is no corresponding
+    % image.
     if ~strcmpi(Category,'Ratio')
-        %%% A subplot of the figure window is set to display the quantized image.
+        % A subplot of the figure window is set to display the quantized image.
         subplot(2,2,3)
         CPimagesc(QuantizedRGBimage,handles);
         title(['Classified ', ObjectName]);
-        %% TODO add legend
+        % TODO add legend
     end
-    %%% Produce and plot histogram
+    % Produce and plot histogram
     subplot(2,2,4)
     bar_ctr = edges(1:end-1) + (edges(2)-edges(1))/2;
     h = bar(bar_ctr,bins,1);
     xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
     ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
     title(['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
-    %%% Using "axis tight" here is ok, I think, because we are displaying
-    %%% data, not images.
+    % Using "axis tight" here is ok, I think, because we are displaying
+    % data, not images.
     axis tight
     xlimits(1) = min(xlimits(1),LowerBinMin);   % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));   % so they can be used for the second histogram
     axis([xlimits ylim]);
-    %%% Took this out: don't want to use misleading colors.
+    % Took this out: don't want to use misleading colors.
     %     handlescmap = handles.Preferences.LabelColorMap;
     %     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NbrOfBins)));
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SAVE DATA TO HANDLES STRUCTURE %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% If we are using a user defined field, there is no corresponding
-%%% image.
-if strcmpi(Category,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
+% If we are using a user defined field, there is no corresponding
+% image.
+if strcmpi(Category,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not use')
     error(['Image processing was canceled in the ', ModuleName, ' module ' ...
         'because you have requested to save the resulting color-coded image' ...
         'called ',SaveColoredObjects,' but that image cannot be produced by' ...
@@ -356,25 +356,25 @@ if strcmpi(Category,'Ratio') && ~strcmpi(SaveColoredObjects,'Do not save')
         'when using measurements straight from a Measure module, not when ' ...
         'using measurements from a CalculateRatios module. Sorry for the inconvenience.']);
 end
-if ~strcmpi(SaveColoredObjects,'Do not save')
-    %%% Saves images to the handles structure so they can be saved to the hard
-    %%% drive, if the user requests.
+if ~strcmpi(SaveColoredObjects,'Do not use')
+    % Saves images to the handles structure so they can be saved to the hard
+    % drive, if the user requests.
     handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
-%% Calculate Objects per Bin (Absolute or Percentage)
+% Calculate Objects per Bin (Absolute or Percentage)
 if strcmp(AbsoluteOrPercentage,'Percentage')
     ObjsPerBin = bins/length(Measurements);
 else
     ObjsPerBin = bins;
 end
 
-%% Save FeatureNames and the indices of the objects that fall into each
-%% bin, as well as ObjsPerBin
+% Save FeatureNames and the indices of the objects that fall into each
+% bin, as well as ObjsPerBin
 for BinNum = 1:NbrOfBins
     handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames{BinNum} 'indices'], bin_index{BinNum});
     handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames{BinNum} 'ObjsPerBin'], ObjsPerBin(:,BinNum));
 end
 
-%% Save Bin Edges
+% Save Bin Edges
 handles = CPaddmeasurements(handles,ObjectName,[ClassifyFeatureNames{BinNum} 'BinEdges'],edges');

@@ -5,7 +5,7 @@ function CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix,
 
 ExportInfo.DataPath = DataPath;
 
-if strcmp(TablePrefix,'/')
+if strcmp(TablePrefix,'Do not use')
     TablePrefix = '';
 else
     TablePrefix = [TablePrefix,'_'];

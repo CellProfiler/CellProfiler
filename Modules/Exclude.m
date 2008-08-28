@@ -91,7 +91,7 @@ Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 = What do you want to call the outlines of the remaining objects (optional)?
-%defaultVAR05 = Do not save
+%defaultVAR05 = Do not use
 %infotypeVAR05 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -162,7 +162,7 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not save') %#ok Ignore MLint
+if any(findobj == ThisModuleFigureNumber) | ~strcmpi(SaveOutlines,'Do not use') %#ok Ignore MLint
     %%% Calculates the object outlines, which are overlaid on the original
     %%% image and displayed in figure.
     %%% Creates the structuring element that will be used for dilation.
@@ -222,7 +222,7 @@ handles.Pipeline.(fieldname) = NewSegmentedObjectImage;
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
-if ~strcmp(SaveOutlines,'Do not save')
+if ~strcmp(SaveOutlines,'Do not use')
     try    handles.Pipeline.(SaveOutlines) = PrimaryObjectOutlines;
     catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end

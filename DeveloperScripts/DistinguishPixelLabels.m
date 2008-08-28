@@ -84,12 +84,12 @@ CellsOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %infotypeVAR04 = imagegroup indep
 
 %textVAR05 = What do you want to call the binary image representing area labeled as background?
-%defaultVAR05 = Do not save
+%defaultVAR05 = Do not use
 BackgroundOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %infotypeVAR05 = imagegroup indep
 
 %textVAR06 = What do you want to call the grayscale image showing all three binaries?
-%defaultVAR06 = Do not save
+%defaultVAR06 = Do not use
 GrayscaleOutputName = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %infotypeVAR06 = imagegroup indep
 
@@ -484,13 +484,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if ~strcmpi(NucleiOutputName,'Do not save')
+if ~strcmpi(NucleiOutputName,'Do not use')
     handles.Pipeline.(NucleiOutputName) = FinalBinaryNuclei;
 end
-if ~strcmpi(CellsOutputName,'Do not save')
+if ~strcmpi(CellsOutputName,'Do not use')
     handles.Pipeline.(CellsOutputName) = FinalBinaryCells|FinalBinaryNuclei;
 end
-if ~strcmpi(BackgroundOutputName,'Do not save')
+if ~strcmpi(BackgroundOutputName,'Do not use')
     handles.Pipeline.(BackgroundOutputName) = FinalBinaryBackground;
 end
 
@@ -501,7 +501,7 @@ end
 % handles.Pipeline.BPProbableBeliefMatrix = AllNormalizedBeliefs;
 %%%
 
-if ~strcmpi(GrayscaleOutputName,'Do not save')
+if ~strcmpi(GrayscaleOutputName,'Do not use')
     handles.Pipeline.(GrayscaleOutputName) = (AllBeliefs-1)/2;
 end
 

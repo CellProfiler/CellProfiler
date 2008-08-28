@@ -89,12 +89,12 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 NeighborDistance = str2double(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What do you want to call the objects colored by number of neighbors, which are compatible for converting to a color image using the Convert To Image and Save Images modules?
-%defaultVAR03 = Do not save
+%defaultVAR03 = Do not use
 %infotypeVAR03 = objectgroup indep
 ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call the image of the objects with grayscale values corresponding to the number of neighbors, which is compatible for saving in .mat format using the Save Images module for further analysis in Matlab?
-%defaultVAR04 = Do not save
+%defaultVAR04 = Do not use
 %infotypeVAR04 = imagegroup indep
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -338,7 +338,7 @@ drawnow
 %%% up to the highest number of neighbors. The -1 value makes it
 %%% incompatible with the Convert To Image module which expects a label
 %%% matrix starting at zero.
-if ~strcmpi(GrayscaleNeighborsName,'Do not save')
+if ~strcmpi(GrayscaleNeighborsName,'Do not use')
     handles.Pipeline.(GrayscaleNeighborsName) = ImageOfNeighbors;
 end
 
@@ -348,6 +348,6 @@ end
 %%% is zero and the objects are from 1 up to the highest number of 
 %%% neighbors, plus one. This makes the objects compatible with the Convert
 %%% To Image module.
-if ~strcmpi(ColoredNeighborsName,'Do not save')
+if ~strcmpi(ColoredNeighborsName,'Do not use')
     handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ImageOfNeighbors + 1;
 end

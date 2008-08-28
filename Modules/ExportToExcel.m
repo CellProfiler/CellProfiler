@@ -44,7 +44,7 @@ Object{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 =
 %infotypeVAR02 = objectgroup
-%choiceVAR02 = /
+%choiceVAR02 = Do not use
 %choiceVAR02 = Image
 %choiceVAR02 = Experiment
 Object{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -52,7 +52,7 @@ Object{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 =
 %infotypeVAR03 = objectgroup
-%choiceVAR03 = /
+%choiceVAR03 = Do not use
 %choiceVAR03 = Image
 %choiceVAR03 = Experiment
 Object{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -60,7 +60,7 @@ Object{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 =
 %infotypeVAR04 = objectgroup
-%choiceVAR04 = /
+%choiceVAR04 = Do not use
 %choiceVAR04 = Image
 %choiceVAR04 = Experiment
 Object{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -68,7 +68,7 @@ Object{4} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 =
 %infotypeVAR05 = objectgroup
-%choiceVAR05 = /
+%choiceVAR05 = Do not use
 %choiceVAR05 = Image
 %choiceVAR05 = Experiment
 Object{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -76,7 +76,7 @@ Object{5} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 =
 %infotypeVAR06 = objectgroup
-%choiceVAR06 = /
+%choiceVAR06 = Do not use
 %choiceVAR06 = Image
 %choiceVAR06 = Experiment
 Object{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
@@ -84,7 +84,7 @@ Object{6} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 =
 %infotypeVAR07 = objectgroup
-%choiceVAR07 = /
+%choiceVAR07 = Do not use
 %choiceVAR07 = Image
 %choiceVAR07 = Experiment
 Object{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
@@ -92,7 +92,7 @@ Object{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 =
 %infotypeVAR08 = objectgroup
-%choiceVAR08 = /
+%choiceVAR08 = Do not use
 %choiceVAR08 = Image
 %choiceVAR08 = Experiment
 Object{8} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
@@ -106,7 +106,7 @@ Object{8} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 drawnow
 tmp = {};
 for n = 1:8
-    if ~strcmp(Object{n}, '/')
+    if ~strcmp(Object{n}, 'Do not use')
         tmp{end+1} = Object{n};
     end
 end

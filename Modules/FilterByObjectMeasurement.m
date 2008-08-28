@@ -103,7 +103,7 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR09 = Do not save
+%defaultVAR09 = Do not use
 %infotypeVAR09 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -247,7 +247,7 @@ end
 handles = CPsaveObjectCount(handles, TargetName, FinalLabelMatrixImage);
 handles = CPsaveObjectLocations(handles, TargetName, FinalLabelMatrixImage);
 
-if ~strcmpi(SaveOutlines,'Do not save')
+if ~strcmpi(SaveOutlines,'Do not use')
     try handles.Pipeline.(SaveOutlines) = LogicalOutlines;
     catch
         error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])

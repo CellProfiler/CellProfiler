@@ -45,7 +45,7 @@ function handles = ClassifyObjectsByTwoMeasurements(handles)
 % $Revision$
 
 %%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
+% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 drawnow
 
@@ -120,12 +120,12 @@ Separator{1} = handles.Settings.VariableValues{CurrentModuleNum,10};
 %defaultVAR11 = Mean
 Separator{2} = handles.Settings.VariableValues{CurrentModuleNum,11};
 
-%textVAR12 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3,bin4). If the number of labels does not equal the number of bins (which is 4), this step will be ignored. Leave "/" for default labels.
-%defaultVAR12 = /
+%textVAR12 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3,bin4). If the number of labels does not equal the number of bins (which is 4), this step will be ignored. Leave "Do not use" for default labels.
+%defaultVAR12 = Do not use
 Labels = handles.Settings.VariableValues{CurrentModuleNum,12};
 
 %textVAR13 = What do you want to call the resulting color-coded image?
-%choiceVAR13 = Do not save
+%choiceVAR13 = Do not use
 %choiceVAR13 = ColorClassifiedNuclei
 %inputtypeVAR13 = popupmenu custom
 %infotypeVAR13 = imagegroup indep
@@ -139,14 +139,14 @@ AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 
 %%%VariableRevisionNumber = 2
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PRELIMINARY CALCULATIONS & FILE HANDLING %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Get the correct fieldnames where measurements are located
+% Get the correct fieldnames where measurements are located
 for FeatNum=2:-1:1
     try
         FeatureName{FeatNum} = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category{FeatNum},...
@@ -163,17 +163,17 @@ for FeatNum=2:-1:1
     end
 end
 
-%%% Retrieves the label matrix image that contains the segmented objects
+% Retrieves the label matrix image that contains the segmented objects
 fieldname = ['Segmented', ObjectName];
-%%% Checks whether the image exists in the handles structure.
+% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
     LabelMatrixImage = CPretrieveimage(handles,fieldname,ModuleName);
 else
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have run a module that generates an image with the objects identified. You specified in the ', ModuleName, ' module that the objects were named ',ObjectName,', which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);
 end
 
-%%% Check labels
-if strcmp(Labels,'/')
+% Check labels
+if strcmp(Labels,'Do not use')
     BinLabels = {'LowLow' 'LowHigh' 'HighLow' 'HighHigh'};
 else
     BinLabels = cell(1,4);
@@ -186,12 +186,12 @@ else
     end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%
-%%% IMAGE ANALYSIS %%%
-%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
+% IMAGE ANALYSIS %
+%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Get Measurements, and limits for bins
+% Get Measurements, and limits for bins
 SetNumber = {'first' 'second'};
 Measurements = cell(1,2); % Preallocate
 LowerBinMin = zeros(1,2);
@@ -227,7 +227,7 @@ else
     NbrOfObjects = length(Measurements{1});
 end
 
-%%% Separate objects into bins
+% Separate objects into bins
 QuantizedMeasurements = zeros(NbrOfObjects,1);
 bins = zeros(1,4);
 bin_index{1} = find(Measurements{1} <= Separator{1} & Measurements{2} <= Separator{2});  %LowLow
@@ -239,27 +239,27 @@ for BinNum=4:-1:1
     bins(BinNum) = length(bin_index{BinNum});
 end
 
-%%% Produce color image
+% Produce color image
 QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
 QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
 handlescmap = handles.Preferences.LabelColorMap;
 cmap = [0 0 0;feval(handlescmap,length(bins))];
 QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+% DISPLAY RESULTS %
+%%%%%%%%%%%%%%%%%%%
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
-    %%% Activates the appropriate figure window.
+    % Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(QuantizedRGBimage,'TwoByTwo',ThisModuleFigureNumber);
     end
 
-    %%% Produce and plot histograms of first and second sets of data
+    % Produce and plot histograms of first and second sets of data
     FontSize = handles.Preferences.FontSize;
     for FeatNum=1:2
         subplot(2,2,FeatNum)
@@ -268,42 +268,42 @@ if any(findobj == ThisModuleFigureNumber)
         xlabel(FeatureName{FeatNum},'Fontsize',FontSize);
         ylabel(['# of ' ObjectName],'Fontsize',FontSize);
         title(['Histogram of ' FeatureName{FeatNum}],'Fontsize',FontSize);
-        %%% Using "axis tight" here is ok, I think, because we are displaying
-        %%% data, not images.
+        % Using "axis tight" here is ok, I think, because we are displaying
+        % data, not images.
         ylimits = ylim;
         axis tight
         xlimits = xlim;
         axis([xlimits ylimits]);
     end
 
-    %%% A subplot of the figure window is set to display the quantized image.
+    % A subplot of the figure window is set to display the quantized image.
     subplot(2,2,3)
     CPimagesc(QuantizedRGBimage,handles);
     title(['Classified ', ObjectName]);
 
-    %%% Produce and plot histogram
+    % Produce and plot histogram
     subplot(2,2,4)
     x = 1:4;
     bar(x,bins,1);
     xlabel(['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
     ylabel(['# of ',ObjectName],'fontsize',FontSize);
     title(['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);
-    %%% Using "axis tight" here is ok, I think, because we are displaying
-    %%% data, not images.
+    % Using "axis tight" here is ok, I think, because we are displaying
+    % data, not images.
     axis tight
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SAVE DATA TO HANDLES STRUCTURE %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Save QuantizedRGBimage or not?
-if ~strcmpi(SaveColoredObjects,'Do not save')
+% Save QuantizedRGBimage or not?
+if ~strcmpi(SaveColoredObjects,'Do not use')
     handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
-%% Calculate Objects per Bin (Absolute or Percentage)
+% Calculate Objects per Bin (Absolute or Percentage)
 for FeatNum = 2:-1:1
     if strcmp(AbsoluteOrPercentage,'Percentage')
         ObjsPerBin{FeatNum} = bins/length(Measurements{FeatNum}); %#ok<AGROW>
@@ -312,13 +312,13 @@ for FeatNum = 2:-1:1
     end
 end
 
-%% Save FeatureNames and the indices of the objects that fall into each
-%% bin, as well as ObjsPerBin
+% Save FeatureNames and the indices of the objects that fall into each
+% bin, as well as ObjsPerBin
 for BinNum = 1:4
     ClassifyFeatureNames = ['ClassifyObjsByTwoMeas_Module',CurrentModule,'Bin',num2str(BinNum)];
     handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames '_indices'], bin_index{BinNum});
     handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames '_ObjsPerBin'], ObjsPerBin{FeatNum}(:,BinNum));
 end
 
-%% Note: no need to save 'edges' here, as in ClassifyObjects, since the bins here
-%% are simply categories 1:4
+% Note: no need to save 'edges' here, as in ClassifyObjects, since the bins here
+% are simply categories 1:4

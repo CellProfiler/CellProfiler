@@ -95,7 +95,7 @@ OldObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 Diameter = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR06 = Do not save
+%defaultVAR06 = Do not use
 %infotypeVAR06 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -361,6 +361,6 @@ handles.Pipeline.(['SmallRemovedSegmented',NewObjectName]) = FinalLabelMatrixIma
 handles = CPsaveObjectCount(handles, NewObjectName, FinalLabelMatrixImage);
 handles = CPsaveObjectLocations(handles, NewObjectName, FinalLabelMatrixImage);
 
-if ~strcmpi(SaveOutlines,'Do not save')
+if ~strcmpi(SaveOutlines,'Do not use')
     handles.Pipeline.(SaveOutlines) = FinalOutline;
 end

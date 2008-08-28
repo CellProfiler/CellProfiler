@@ -96,7 +96,7 @@ Modality2 = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 = What do you want to call the second illumination correction image?
-%defaultVAR10 = Do not save
+%defaultVAR10 = Do not use
 %infotypeVAR10 = imagegroup indep
 IlluminationImageName2 = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
@@ -119,7 +119,7 @@ Modality3 = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
 %textVAR14 = What do you want to call the third illumination correction image?
-%defaultVAR14 = Do not save
+%defaultVAR14 = Do not use
 %infotypeVAR14 = imagegroup indep
 IlluminationImageName3 = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
@@ -142,7 +142,7 @@ Modality4 = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %inputtypeVAR17 = popupmenu
 
 %textVAR18 = What do you want to call the fourth illumination correction image?
-%defaultVAR18 = Do not save
+%defaultVAR18 = Do not use
 %infotypeVAR18 = imagegroup indep
 IlluminationImageName4 = char(handles.Settings.VariableValues{CurrentModuleNum,18});
 
@@ -285,7 +285,7 @@ if strcmpi(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Cur
     count = 2;
     
     if ~ strcmpi(ImageName2, 'None')
-        if (~ strcmpi(IlluminationImageName2, 'Do not save')) ,
+        if (~ strcmpi(IlluminationImageName2, 'Do not use')) ,
             handles.Pipeline.(IlluminationImageName2) = PostTreatImage(IlluminationField(:,:,count), Modality2);
         end
         count = count + 1;
@@ -293,14 +293,14 @@ if strcmpi(EachOrAll, 'Each') | (handles.Current.SetBeingAnalyzed == handles.Cur
     
     
     if ~ strcmpi(ImageName3, 'None')
-        if (~ strcmpi(IlluminationImageName3, 'Do not save')) ,
+        if (~ strcmpi(IlluminationImageName3, 'Do not use')) ,
             handles.Pipeline.(IlluminationImageName3) = PostTreatImage(IlluminationField(:,:,count), Modality3);
         end
         count = count + 1;
     end
     
     if ~ strcmpi(ImageName4, 'None')
-        if (~ strcmpi(IlluminationImageName4, 'Do not save')) ,
+        if (~ strcmpi(IlluminationImageName4, 'Do not use')) ,
             handles.Pipeline.(IlluminationImageName4) = PostTreatImage(IlluminationField(:,:,count), Modality4);
         end
     end

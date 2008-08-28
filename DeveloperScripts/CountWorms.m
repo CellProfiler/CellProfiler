@@ -54,7 +54,7 @@ MinWidth = str2double(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = If you have an accurate estimate of an objects average area (in pixels),
 %please specify it here. Otherwise it will be estimated from the minimum
 %and maximum diameteres.
-%defaultVAR05 = /
+%defaultVAR05 = Do not use
 MeanArea = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Select an automatic thresholding method or enter an absolute threshold in the range [0,1]. Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. Set interactively will allow you to manually adjust the threshold during the first cycle to determine what will work well.
@@ -151,7 +151,7 @@ if MinDiameter > MaxDiameter
 end
 
 %%% Check parameter MeanArea
-if strcmp(MeanArea,'/')
+if strcmp(MeanArea,'Do not use')
     MinArea = pi*(MinDiameter.^2)/4;
     MaxArea = pi*(MaxDiameter.^2)/4;
     MeanArea = mean([MinArea,MaxArea]);

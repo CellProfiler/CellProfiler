@@ -106,8 +106,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 OutputName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Enter an absolute threshold in the range [0,1], or type '/' to calculate automatically.
-%defaultVAR03 = /
+%textVAR03 = Enter an absolute threshold in the range [0,1], or type 'Do not use' to calculate automatically.
+%defaultVAR03 = Do not use
 OrigThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Enter the Threshold Adjustment Factor, or leave it = 1.
@@ -147,12 +147,12 @@ Thinning = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 Direction = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = For LoG and CANNY methods, enter the value of sigma. Use '/' to calculate automatically.
-%defaultVAR10 = /
+%textVAR10 = For LoG and CANNY methods, enter the value of sigma. Use 'Do not use' to calculate automatically.
+%defaultVAR10 = Do not use
 Sigma = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = For CANNY method, enter the low threshold. Use '/' to calculate automatically.
-%defaultVAR11 = /
+%textVAR11 = For CANNY method, enter the low threshold. Use 'Do not use' to calculate automatically.
+%defaultVAR11 = Do not use
 CannyLowThreshold = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 3
@@ -173,13 +173,13 @@ elseif strcmpi(Thinning, 'No')
 end
 
 CalculateThreshold = 0;
-if strcmp(OrigThreshold,'/')
+if strcmp(OrigThreshold,'Do not use')
     CalculateThreshold = 1;
 else
     AutoThresh = str2double(OrigThreshold);
     if isnan(AutoThresh)
         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad threshold entry']))
-            CPwarndlg(['The threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. It has been changed to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad threshold entry'],'replace');
+            CPwarndlg(['The threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''Do not use'' to use the default value. It has been changed to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad threshold entry'],'replace');
         end
         CalculateThreshold = 1;
     end
@@ -187,37 +187,37 @@ end
 if strcmpi(Method, 'roberts')
     FourthVariable = Thinning;
 elseif strcmpi(Method, 'canny')
-    if strcmp(Sigma,'/')
+    if strcmp(Sigma,'Do not use')
         Sigma = 1; %canny's default is 1
     else
         Sigma = str2double(Sigma);
         if isnan(Sigma) || Sigma <= 0
             if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Sigma entry']))
-                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Sigma entry'],'replace');
+                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''Do not use'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Sigma entry'],'replace');
             end
             Sigma = 1;
         end
     end
     FourthVariable = Sigma;
-    if strcmp(CannyLowThreshold,'/')
+    if strcmp(CannyLowThreshold,'Do not use')
         CannyLowThreshold = [];
     else
         CannyLowThreshold = str2double(CannyLowThreshold);
         if isnan(CannyLowThreshold)
             if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Canny low threshold entry']))
-                CPwarndlg(['The low threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Canny low threshold entry'],'replace');
+                CPwarndlg(['The low threshold value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''Do not use'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad Canny low threshold entry'],'replace');
             end
             CannyLowThreshold = [];
         end
     end
 elseif  strcmpi(Method, 'log')
-    if strcmp(Sigma,'/')
+    if strcmp(Sigma,'Do not use')
         Sigma = 2; %log's default is 1
     else
         Sigma = str2double(Sigma);
         if isnan(Sigma) || Sigma <= 0
             if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad LoG Sigma entry']))
-                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''/'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad LoG Sigma entry'],'replace');
+                CPwarndlg(['The Sigma value you have entered in ', ModuleName, ' is out of bounds. It must be greater than 0 or ''Do not use'' to use the default value. Changing to the default value.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Bad LoG Sigma entry'],'replace');
             end
             Sigma = 2;
         end

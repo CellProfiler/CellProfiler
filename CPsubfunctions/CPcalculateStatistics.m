@@ -61,7 +61,7 @@ for i = 1:length(ObjectFields)
         else
             [v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues] = CP_VZfactors(GroupingValues,Ymatrix);
             if LicenseStats == 1
-                if ~strcmpi(FigureName,'Do not save')
+                if ~strcmpi(FigureName,'Do not use')
                     PartialFigureName = fullfile(handles.Current.DefaultOutputDirectory,FigureName);
                 else PartialFigureName = FigureName;
                 end

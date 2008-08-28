@@ -44,7 +44,7 @@ if FileName == 0
     return
 end
 
-%%% Load the specified CellProfiler output file
+% Load the specified CellProfiler output file
 try
     temp = load(fullfile(Pathname, FileName));
     handles = CP_convert_old_measurements(temp.handles);
@@ -55,7 +55,7 @@ end
 
 promptLoop = 0;
 while promptLoop == 0
-    Answers = inputdlg({'Operation? Multiply or Divide, Add Or Subtract', 'Take Log10? Yes or no', 'Raise to what power? "/" to ignore'}, 'Operation', 1, {'Multiply', '/', '/'}); 
+    Answers = inputdlg({'Operation? Multiply or Divide, Add Or Subtract', 'Take Log10? Yes or no', 'Raise to what power? "Do not use" to ignore'}, 'Operation', 1, {'Multiply', 'Do not use', 'Do not use'}); 
     Operation = Answers{1};
     Log = Answers{2};
     Power = Answers{3};
@@ -64,14 +64,14 @@ while promptLoop == 0
         continue
     end
 
-    if ~strcmpi(Log, 'yes') &&  ~strcmpi(Log, 'y') && ~strcmpi(Log, 'no') && ~strcmpi(Log, 'n') && ~strcmpi(Log, '/')
+    if ~strcmpi(Log, 'yes') &&  ~strcmpi(Log, 'y') && ~strcmpi(Log, 'no') && ~strcmpi(Log, 'n') && ~strcmpi(Log, 'Do not use')
         uiwait(CPerrordlg('Error: there was a problem with your choice for log10'));
         continue
     elseif strcmpi(Log, 'no') || strcmpi(Log, 'n')
-        Log = '/';
+        Log = 'Do not use';
     end
 
-    if isnan(str2double(Power)) && ~strcmpi(Power,'/')
+    if isnan(str2double(Power)) && ~strcmpi(Power,'Do not use')
         uiwait(CPerrordlg('Error: there was a problem with your choice for power'));
         continue
     end
@@ -105,11 +105,11 @@ end
 
 for i = 1:length(Measure1)
        
-    %% Extract the measures of interest
+    % Extract the measures of interest
     NumeratorMeasurements = handles.Measurements.(Measure1Object).(Measure1fieldname){i};
     DenominatorMeasurements = handles.Measurements.(Measure2Object).(Measure2fieldname){i};
     
-    %%% Calculate the new measure. 
+    % Calculate the new measure. 
     if strcmpi(Operation,'Multiply')
         FinalMeasurements = NumeratorMeasurements.*DenominatorMeasurements;
     elseif strcmpi(Operation,'Divide')
@@ -120,15 +120,15 @@ for i = 1:length(Measure1)
         FinalMeasurements = NumeratorMeasurements-DenominatorMeasurements;
     end
     
-    if ~strcmp(Log, '/')
+    if ~strcmp(Log, 'Do not use')
         FinalMeasurements = log10(FinalMeasurements);
     end
     
-    if ~strcmp(Power,'/')
+    if ~strcmp(Power,'Do not use')
     	FinalMeasurements = FinalMeasurements .^ str2double(Power);
     end
     
-    %%% Record the new measure in the handles structure.
+    % Record the new measure in the handles structure.
     NewFieldName = CPjoinstrings(Measure1fieldname, char(Operation), Measure2Object, Measure2fieldname);
     handles.Current.SetBeingAnalyzed = i;
     try
@@ -139,7 +139,7 @@ for i = 1:length(Measure1)
     end
 end
 
-%%% Save the updated CellProfiler output file
+% Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, FileName),'handles');
     CPmsgbox(['Updated ',FileName,' successfully saved.']);

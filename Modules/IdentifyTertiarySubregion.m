@@ -61,7 +61,7 @@ PrimaryObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 SubregionObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR04 = Do not save
+%defaultVAR04 = Do not use
 %infotypeVAR04 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -200,6 +200,6 @@ handles.Pipeline.(fieldname) = SubregionObjectImage;
 handles = CPsaveObjectCount(handles, SubregionObjectName, SubregionObjectImage);
 handles = CPsaveObjectLocations(handles, SubregionObjectName, SubregionObjectImage);
 
-if ~strcmpi(SaveOutlines,'Do not save')
+if ~strcmpi(SaveOutlines,'Do not use')
     handles.Pipeline.(SaveOutlines) = FinalOutline;
 end

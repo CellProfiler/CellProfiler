@@ -57,7 +57,7 @@ MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = What do you want to call the image with the outlines displayed?
-%defaultVAR04 = Do not save
+%defaultVAR04 = Do not use
 %infotypeVAR04 = imagegroup indep
 SavedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
@@ -151,6 +151,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if ~strcmp(SavedImageName,'Do not save')
+if ~strcmp(SavedImageName,'Do not use')
     handles.Pipeline.(SavedImageName) = NewImage;
 end

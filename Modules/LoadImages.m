@@ -247,30 +247,30 @@ TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
-%defaultVAR04 = /
+%textVAR04 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option). Type "Do not use" to ignore:
+%defaultVAR04 = Do not use
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = What do you want to call these images within CellProfiler?
-%defaultVAR05 = /
+%textVAR05 = What do you want to call these images within CellProfiler? (Type "Do not use" to ignore)
+%defaultVAR05 = Do not use
 %infotypeVAR05 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
-%defaultVAR06 = /
+%defaultVAR06 = Do not use
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = What do you want to call these images within CellProfiler?
-%defaultVAR07 = /
+%defaultVAR07 = Do not use
 %infotypeVAR07 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):
-%defaultVAR08 = /
+%defaultVAR08 = Do not use
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = What do you want to call these images within CellProfiler?
-%defaultVAR09 = /
+%defaultVAR09 = Do not use
 %infotypeVAR09 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
@@ -314,12 +314,12 @@ end
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Remove slashes entries with N/A or no filename from the input,
+%%% Remove "Do not use" entries from the input,
 %%% i.e., store only valid entries
 tmp1 = {};
 tmp2 = {};
 for n = 1:4
-    if ~strcmp(TextToFind{n}, '/') && ~strcmp(ImageName{n}, '/')
+    if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
         tmp1{end+1} = TextToFind{n};
         tmp2{end+1} = ImageName{n};
     end

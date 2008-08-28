@@ -74,7 +74,7 @@ CellProfilerDataFileNames = Files(selection);
 
 %%% Ask for database name and name of SQL script, should probably use some
 %%% sort of drop down menue for type of database
-answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix'},'Export SQL',1,{'Default','SQL_','MySQL','/'});
+answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix'},'Export SQL',1,{'Default','SQL_','MySQL','Do not use'});
 if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
@@ -113,8 +113,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     filename = CellProfilerDataFileNames{FileNo};
     index = strfind(filename,'.');
     if ~isempty(index)
-        filename = [filename(1:index-1)]%,everything before . will be kept
-
+        filename = [filename(1:index-1)];%,everything before . will be kept
     end
 
     for ObjectTypeNo = 1:length(ObjectTypes)    % Loop over the objects

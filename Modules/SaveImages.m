@@ -191,8 +191,8 @@ RescaleImage = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR11 = popupmenu
 ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Enter any optional parameters here ('Quality',1 or 'Quality',100 etc.) or leave / for no optional parameters.
-%defaultVAR12 = /
+%textVAR12 = Enter any optional parameters here ('Quality',1 or 'Quality',100 etc.) or leave "Do not use" for no optional parameters.
+%defaultVAR12 = Do not use
 OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %textVAR13 = Update file names within CellProfiler? See help for details.
@@ -415,7 +415,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         Image = bitshift(Image2, 8);        
     end
      
-    if ~strcmp(OptionalParameters,'/')
+    if ~strcmp(OptionalParameters,'Do not use')
         FileSavingParameters = [',',OptionalParameters,FileSavingParameters];
     end
 

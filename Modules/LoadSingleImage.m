@@ -76,7 +76,7 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call that image?
-%defaultVAR06 = Do not load
+%defaultVAR06 = Do not use
 %infotypeVAR06 = imagegroup indep
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -84,7 +84,7 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = What do you want to call that image?
-%defaultVAR08 = Do not load
+%defaultVAR08 = Do not use
 %infotypeVAR08 = imagegroup indep
 ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -92,7 +92,7 @@ ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 TextToFind{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = What do you want to call that image?
-%defaultVAR10 = Do not load
+%defaultVAR10 = Do not use
 %infotypeVAR10 = imagegroup indep
 ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
@@ -110,7 +110,7 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 tmp1 = {};
 tmp2 = {};
 for n = 1:4
-    if ~strcmp(TextToFind{n}, 'NO FILE LOADED') && ~strcmp(ImageName{n}, 'Do not load')
+    if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
         tmp1{end+1} = TextToFind{n};
         tmp2{end+1} = ImageName{n};
     end

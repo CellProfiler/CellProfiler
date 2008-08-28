@@ -53,19 +53,19 @@ drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the first image to be combined?
-%choiceVAR01 = Leave this blank
+%choiceVAR01 = Do not use
 %infotypeVAR01 = imagegroup
 ImageNames{1} = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What did you call the second image to be combined?
-%choiceVAR02 = Leave this blank
+%choiceVAR02 = Do not use
 %infotypeVAR02 = imagegroup
 ImageNames{2} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
 %textVAR03 = What did you call the third image to be combined?
-%choiceVAR03 = Leave this blank
+%choiceVAR03 = Do not use
 %infotypeVAR03 = imagegroup
 ImageNames{3} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
@@ -100,7 +100,7 @@ Weights = str2double(ImageWeights);
 %%% If selected, load images and create existance flag matrix for them
 Images = {};
 for i = 1:3
-    if ~strcmpi(ImageNames{i},'Leave this blank')
+    if ~strcmpi(ImageNames{i},'Do not use')
         try
             Images{end+1} = CPretrieveimage(handles,ImageNames{i},ModuleName,'DontCheckColor','CheckScale'); %#ok Ignore MLint
         catch

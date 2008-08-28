@@ -88,7 +88,7 @@ ShrinkingNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
 %textVAR06 = What do you want to call the outlines of the identified objects (optional)?
-%defaultVAR06 = Do not save
+%defaultVAR06 = Do not use
 %infotypeVAR06 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
@@ -260,7 +260,7 @@ end
 fieldname = ['Segmented',ShrunkenObjectName];
 handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
 
-if ~strcmpi(SaveOutlines,'Do not save')
+if ~strcmpi(SaveOutlines,'Do not use')
     %%% Calculates object outlines
     MaxFilteredImage = ordfilt2(FinalShrunkenSegmentedImage,9,ones(3,3),'symmetric');
     %%% Determines the outlines.

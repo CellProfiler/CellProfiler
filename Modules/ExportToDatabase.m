@@ -60,7 +60,7 @@ function handles = ExportToDatabase(handles)
 %
 % Table Prefix: 
 % Here you can choose what to append to the table names Per_Image and
-% Per_Object. If you choose "/", no prefix will be appended. If you choose
+% Per_Object. If you choose "Do not use", no prefix will be appended. If you choose
 % a prefix, the tables will become PREFIX_Per_Image and PREFIX_Per_Object
 % in the database. If you are using the same database for all of your
 % experiments, the table prefix is necessary and will be the only way to
@@ -155,8 +155,8 @@ DatabaseType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "/" to have generic Per_Image and Per_Object tables)?
-%defaultVAR03 = /
+%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?
+%defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = What prefix should be used to name the SQL files?

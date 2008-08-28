@@ -5,7 +5,7 @@ function [Settings,SavedVarRevNum] = CPimportPreviousModuleSettings(Settings,Cur
 % updating NumbersOfVariables and SavedVarRevNum
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Changes to LoadImages
+% Changes to LoadImages
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp('LoadImages',CurrentModuleName) 
     if (SavedVarRevNum == 1)
@@ -23,12 +23,12 @@ if strcmp('LoadImages',CurrentModuleName)
         Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,13};
         Settings.VariableValues{ModuleNum-Skipped,13} = Settings.VariableValues{ModuleNum-Skipped,14};   
         SavedVarRevNum = 2;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'])
+        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Changes to RescaleIntensity
+% Changes to RescaleIntensity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'RescaleIntensity')
     if SavedVarRevNum == 2      % RescaleIntensity.m got two new arguments
@@ -40,12 +40,12 @@ if strcmp(CurrentModuleName, 'RescaleIntensity')
         Settings.VariableInfoTypes{ModuleNum-Skipped,8} = Settings.VariableInfoTypes{ModuleNum-Skipped,6};
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
         SavedVarRevNum = 3;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'])
+        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Changes to SaveImages
+% Changes to SaveImages
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'SaveImages')
     if SavedVarRevNum == 12     % SaveImages.m got one new argument
@@ -55,12 +55,12 @@ if strcmp(CurrentModuleName, 'SaveImages')
         Settings.VariableValues{ModuleNum-Skipped,15} = 'n/a';
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
         SavedVarRevNum = 13;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'])
+        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Changes to ExportToDatabase
+% Changes to ExportToDatabase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'ExportToDatabase')
     if SavedVarRevNum == 4      % ExportToDatabase.m got one new argument
@@ -68,12 +68,15 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         Settings.VariableValues{ModuleNum-Skipped,6} = 'No';
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
         SavedVarRevNum = 5;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'])
+        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Standardization of "Do not use" or "/" placeholder
+% Standardization of non-used parameter text placeholders
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%disp(1);
+idx = ismember(cellstr(lower(strvcat(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Do not load','Do not save','/'}));
+if any(idx),
+    [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
+    CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','Some entries updated','modal');
+end

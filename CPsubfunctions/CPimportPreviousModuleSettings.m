@@ -75,7 +75,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Standardization of non-used parameter text placeholders
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-idx = ismember(cellstr(lower(strvcat(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Do not load','Do not save','/'}));
+idx = ismember(cellstr(lower(char(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Do not load','Do not save','/'}));
 if any(idx),
     [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
     CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','Some entries updated','modal');

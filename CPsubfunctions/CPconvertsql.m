@@ -54,9 +54,9 @@ for ObjectCell = ObjectNames,
 	end
 
         if strcmp(ObjectName, 'Image')
-            per_image_names{end+1} = cleanup(CPjoinstrings('Image', FeatureName));
+            per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
         else
-            per_object_names{end+1} = cleanup(CPjoinstrings(ObjectName, FeatureName));
+            per_object_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)));
         end
     end %end of loop over feature names
 end %end of loop over object names
@@ -375,8 +375,8 @@ for img_idx = FirstSet:LastSet
                 end
             else
                 %%% Sanity check
-                if ~ strcmp(per_object_names{feature_idx}, cleanup(CPjoinstrings(ObjectName, FeatureName))),
-                    error(['Mismatched feature names #', int2str(feature_idx), ' ', per_object_names{feature_idx}, '!=', cleanup(CPjoinstrings(ObjectName, FeatureName))])
+                if ~ strcmp(per_object_names{feature_idx}, cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))),
+                    error(['Mismatched feature names #', int2str(feature_idx), ' ', per_object_names{feature_idx}, '!=', cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))])
                 end
                 feature_idx = feature_idx + 1;
 

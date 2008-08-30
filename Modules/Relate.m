@@ -28,6 +28,9 @@ function handles = Relate(handles)
 % too, as well as normalized distances.  Normalized distances for each
 % child have a range [0 1] and are calculated as: 
 % (distance to the Parent) / sum(distances to parent and Other object)
+%
+% Measurement Categories (each with only one Feature):
+% Parent, Children, SubObjectFlag, Distance, NormDistance 
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -191,7 +194,6 @@ drawnow
             CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
         end
     end
-
 
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to

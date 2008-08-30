@@ -23,20 +23,29 @@ error(nargchk(4, 6, nargin, 'string'))
 %% If string is really a number, then makes its class numeric
 if ~ isnan(str2double(FeatureNumberOrName))
     FeatureNumberOrName = str2double(FeatureNumberOrName);
+        if strcmp(Category,'Count')
+            error('The Category ''Count'' requires that you type in the object name in the setting entry for ''What feature do you want to use?'' ')
+        end
 end
 % Parse inputs
 if ~exist('Image','var'), Image = ''; end
 if ~exist('SizeScale','var'), SizeScale = ''; end
-if strcmp(Category,'AreaShape') || strcmp(Category,'Ratio')
+if strcmp(Category,'AreaShape') || ...
+        strcmp(Category,'Ratio') || ...
+        strcmp(Category,'Count') 
     SizeScale = '';
     Image = '';
-elseif strcmp(Category,'Intensity') || strcmp(Category,'Granularity') || ...
-        strcmp(Category,'Children') || strcmp(Category,'Parent') || ...
-        strcmp(Category,'AreaOccupied') ||  strcmp(Category,'Correlation')
+elseif strcmp(Category,'Intensity') || ...
+        strcmp(Category,'Granularity') || ...
+        strcmp(Category,'Children') || ...
+        strcmp(Category,'Parent') || ...
+        strcmp(Category,'AreaOccupied')
     SizeScale = '';
-elseif strcmp(Category,'Texture') || strcmp(Category,'RadialDistribution')
+elseif strcmp(Category,'Texture') ...
+        || strcmp(Category,'RadialDistribution')
     % Nothing to do.  These should have all arguments specified
-elseif strcmp(Category,'Neighbors')
+elseif strcmp(Category,'Neighbors') ||  ...
+        strcmp(Category,'Correlation')
     Image = '';
 else 
     %% TODO: SaturationBlur
@@ -56,9 +65,9 @@ else
     CurrentMeasure = CPjoinstrings(Category,'_',FeatureNumberOrName);
     if ~ isempty(Image)
     	CurrentMeasure = CPjoinstrings(CurrentMeasure,'_',Image);
-    	if ~ isempty(SizeScale)
-            CurrentMeasure = CPjoinstrings(CurrentMeasure,'_',num2str(SizeScale));
-    	end
+    end
+    if ~ isempty(SizeScale)
+        CurrentMeasure = CPjoinstrings(CurrentMeasure,'_',num2str(SizeScale));
     end
     Matches=strcmp(AllFieldNames,CurrentMeasure);
     FeatureNumber=find(Matches);

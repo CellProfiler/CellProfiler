@@ -231,10 +231,8 @@ else
         handles = CPaddmeasurements(handles,ObjectName{1},RatioName,FinalMeasurements);
     end
     %% Add to second object (if different from the first)
-    if ~strcmp(ObjectName{1}, ObjectName{2})
-        if ~strcmp(ObjectName{2}, 'Image'),
-            handles = CPaddmeasurements(handles,ObjectName{2},RatioName,FinalMeasurements);
-        end
+    if ~strcmp(ObjectName{1}, ObjectName{2}) && ~strcmp(ObjectName{2}, 'Image'),
+        handles = CPaddmeasurements(handles,ObjectName{2},RatioName,FinalMeasurements);
     end
 end
 

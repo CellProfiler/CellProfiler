@@ -157,30 +157,22 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
+%% Do Filtering
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
 for i = 1:numel(Filter)
     FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
 end
-
+%% Renumber Objects
 x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
 x(x(:,2) > 0,2) = 1:sum(x(:,2) > 0);
 LookUpColumn = x(:,2);
 
 FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
 
-%%% Note: these outlines are not perfectly accurate; for some reason it
-%%% produces more objects than in the original image.  But it is OK for
-%%% display purposes.
-%%% Maximum filters the image with a 3x3 neighborhood.
-MaxFilteredImage = ordfilt2(FinalLabelMatrixImage,9,ones(3,3),'symmetric');
-%%% Determines the outlines.
-IntensityOutlines = FinalLabelMatrixImage - MaxFilteredImage;
-%%% Converts to logical.
-warning off MATLAB:conversionToLogical
-LogicalOutlines = logical(IntensityOutlines);
-warning on MATLAB:conversionToLogical
+%%%% Find outlines
+LogicalOutlines = bwperim(FinalLabelMatrixImage);
+
 %%% Determines the grayscale intensity to use for the cell outlines.
 LineIntensity = max(OrigImage(:));
 %%% Overlays the outlines on the original image.

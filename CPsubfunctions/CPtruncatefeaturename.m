@@ -25,8 +25,6 @@ for MinStrLen = MinStrLenInit:-1:1
     end
     
     if length(TruncatedName) < 64
-        disp(['Minimum String Length ' num2str(MinStrLen)])
-        disp(['Orig FeatureName ' FeatureName])
         return
     end
 end

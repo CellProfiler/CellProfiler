@@ -325,6 +325,15 @@ function HelpDeveloperInfo
 % where new measures are appended to the end of an existing substructure
 % (i.e. forming a new column). See Calculate Ratios.
 %
+% handles.Measurements: Order
+% Be certain that the order in which measurements are added correspond to
+% the Feature & FeatureNumber in each function's Help section.  This
+% FeatureNumber will correspond to the order of CPaddmeasurements
+% statements within each function.  In the future, this will be superceded
+% by a more intelligent measurement selection system using context dependent
+% drop-down slectors.
+%
+%%%%%
 % Why are file names stored in several places in the handles
 % structure?  The Load Images module creates all of the following:
 %  - handles.Pipeline.FileListIMAGENAME

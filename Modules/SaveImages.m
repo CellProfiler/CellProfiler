@@ -38,11 +38,14 @@ function handles = SaveImages(handles)
 % files. Because this function is rarely needed and may introduce
 % complications, the default answer is "No".
 %
-% Do you want to create the image subdirectory structure in the default 
+% Do you want to create the input image subdirectory structure in the  
 % output directory?
 % If the input images are located in subdirectories (such that you used 
 % "Analyze all subfolders within the selected folder" in LoadImages), you 
-% can re-create the subdirectory structure in the output directory.
+% can re-create the subdirectory structure in the output directory. Note:
+% This option can only be applied if you specified an original image for the
+% filename prefix above, and not with "N" or "=DesiredFilename" options.
+% Otherwise, all images will be saved in the output directory.
 % 
 % Special notes for saving in movie format (avi):
 % The movie will be saved after the last cycle is processed. You have the
@@ -201,7 +204,7 @@ OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%textVAR14 = Do you want to create subdirectories in the output directory to match the input image directory structure?
+%textVAR14 = Do you want to create subdirectories in the output directory to match the input image directory structure? (Note: This option cannot be used with the "N" or "=DesiredFilename" option above)
 %choiceVAR14 = No
 %choiceVAR14 = Yes
 CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14});
@@ -304,7 +307,16 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     % If the user wants to add subdirectories, alter the path accordingly
     if strncmpi(CreateSubdirectories,'y',1)
-        p = handles.Measurements.Image.(['PathName_', ImageFileName]){SetBeingAnalyzed};
+        if strcmpi(ImageFileName,'N') || strncmpi(ImageFileName,'=',1)
+            % If a sequential number or specific filename is entered, the
+            % pathname cannot be directly pulled from the handles structure
+            % based on the name. So we will use the default image
+            % directory, no subdirectories and warn the user accordingly
+            p = PathName;
+            CPwarndlg('Since you specfied a number or desired filename for the new image, the subdirectories cannot be recreated. All images will be saved to the root pathname specified.',[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Cannot recreate subdirectories'],'replace');
+        else % ... otherwise take the path from the image file name entered
+            p = handles.Measurements.Image.(['PathName_', ImageFileName]){SetBeingAnalyzed};
+        end
         SubDir = p(length(handles.Current.DefaultImageDirectory)+1:end);
         if ~isempty(SubDir) && (strcmp(SubDir(1),'/') || strcmp(SubDir(1),'\')), SubDir = SubDir(2:end); end
         PathName = [PathName filesep SubDir];

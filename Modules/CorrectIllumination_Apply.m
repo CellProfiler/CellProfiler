@@ -169,14 +169,22 @@ if any(findobj == ThisModuleFigureNumber)
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
-    subplot(2,2,2);
+    ax1 = subplot(2,2,2);
     CPimagesc(CorrectedImage,handles);
     title('Illumination Corrected Image');
-    subplot(2,2,3);
+    ax2 = subplot(2,2,3);
     CPimagesc(IllumCorrectFunctionImage,handles);
     title('Illumination Correction Function Image');
-    text(1,50,['Min Value: ' num2str(min(min(IllumCorrectFunctionImage)))],'Color','red','fontsize',handles.Preferences.FontSize);
-    text(1,150,['Max Value: ' num2str(max(max(IllumCorrectFunctionImage)))],'Color','red','fontsize',handles.Preferences.FontSize);
+
+    %%% Report numbers
+    posx = get(ax1,'Position');
+    posy = get(ax2,'Position');
+    bgcolor = get(ThisModuleFigureNumber,'Color');
+    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Min value: ',num2str(min(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize);
+    uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Max value: ',num2str(max(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize);
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

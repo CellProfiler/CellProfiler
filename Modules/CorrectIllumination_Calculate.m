@@ -494,48 +494,87 @@ if any(findobj == ThisModuleFigureNumber)
         % input image so there is no need to display it again.  If we
         % are in All mode, there is no OrigImage, so we can plot both to
         % the 2,2,1 location.
+        ax = cell(1,4);
         if strcmp(EachOrAll,'All')
-            subplot(2,2,1);
+            ax{1} = subplot(2,2,1);
             CPimagesc(RawImage,handles);
             if strcmp(ReadyFlag, 'Ready')
                 title('Averaged image');
             else
                 title('Averaged image calculated so far');
             end
-        else subplot(2,2,1);
+        else
+            ax{1} = subplot(2,2,1);
             CPimagesc(OrigImage,handles);
             title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
-                subplot(2,2,3);
+                ax{3} = subplot(2,2,3);
                 CPimagesc(DilatedImage,handles);
                 title('Dilated image');
             end
             if exist('SmoothedImage','var')
-                subplot(2,2,4);
+                ax{4} = subplot(2,2,4);
                 CPimagesc(SmoothedImage,handles);
                 title('Smoothed image');
             end
-            subplot(2,2,2);
+
+            ax{2} = subplot(2,2,2);
             CPimagesc(FinalIlluminationFunction,handles);
-            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
-            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
             title('Final illumination function');
+            
+            if ~isempty(ax{3}) && ~isempty(ax{4}),
+                % If subplots 3 and 4 exist (in addition to 1 and 2), report numbers on the graph itself
+                text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+                text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+            else
+                pos = get(ax{1},'Position');    % Position of text (roughly subplot 3) if only subplots 1 and 2 exist
+                pos = [pos(1)-0.05 pos(2)-0.1 pos(3)+0.1 0.04];
+                if ~isempty(ax{4}),             % If subplot 4 exists, place in subplot 3
+                    posx = get(ax{1},'Position');
+                    posy = get(ax{4},'Position');
+                    pos = [posx(1)-0.05 posy(2)+posy(4) posx(3)+0.1 0.04];
+                end
+                bgcolor = get(ThisModuleFigureNumber,'Color');
+                str{1} =        ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))];
+                str{end+1} =    ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))];
+                str{end+1} =    ['Calculation type: ',IntensityChoice];
+                switch lower(IntensityChoice),
+                    case 'regular',     str{end+1} = ['Radius: ',num2str(ObjectDilationRadius)];
+                    case 'background',  str{end+1} = ['Block size: ',num2str(BlockSize)];
+                end
+                switch lower(RescaleOption),
+                    case 'yes', str{end+1} = ['Rescaling?: ',RescaleOption];
+                    case 'no',  str{end+1} = ['Rescaling?: ',RescaleOption];
+                end
+                switch lower(EachOrAll),
+                    case 'each', str{end+1} = ['Each or all?: ',EachOrAll];
+                    case 'all',str{end+1} = ['Each or all?: ',EachOrAll];
+                end
+                str{end+1} = ['Smoothing method: ',SmoothingMethod];
+                switch lower(SmoothingMethod),
+                    case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
+                end
+                for i = 1:length(str),
+                    h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
+                        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);
+                end
+            end
         end
     elseif strcmp(IntensityChoice,'Background')
         % A subplot of the figure window is set to display the original
         % image, some intermediate images, and the final corrected image.
-        subplot(2,2,1);
+        ax = cell(1,4);
+        ax{1} = subplot(2,2,1);
         CPimagesc(OrigImage,handles);
         title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         if exist('FinalIlluminationFunction','var') == 1
-            subplot(2,2,4);
+            ax{4} = subplot(2,2,4);
             CPimagesc(FinalIlluminationFunction,handles);
-            text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
-            text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
             title('Final illumination correction function');
-        else subplot(2,2,4);
+        else
+            ax{4} = subplot(2,2,4);
             title('Illumination correction function is not yet calculated');
         end
         % Whether these images exist depends on whether the images have
@@ -544,10 +583,52 @@ if any(findobj == ThisModuleFigureNumber)
         % whether the user has chosen to smooth the average minimums
         % image.
         if exist('AverageMinimumsImage','var') == 1
-            subplot(2,2,3);
+            ax{3} = subplot(2,2,3);
             CPimagesc(AverageMinimumsImage,handles);
             title('Average minimums image');
         end
+        
+        if ~isempty(ax{2}) && (~isempty(ax{4}) && ~exist('FinalIlluminationFunction','var')),
+            % Report numbers on the graph itself
+            text(1,50,  ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+            text(1,150, ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+        else
+            %%% Report numbers in the empty subplot space
+            if isempty(ax{2})
+                posx = get(ax{4},'Position');
+                posy = get(ax{1},'Position');
+                pos = [posx(1)-0.05 posy(2)+posy(4) posx(3)+0.1 0.04];
+            elseif isempty(ax{4}),
+                posx = get(ax{2},'Position');
+                posy = get(ax{3},'Position');
+                pos = [posx(1)-0.05 posy(2) posx(3)+0.1 0.04];
+            end
+            bgcolor = get(ThisModuleFigureNumber,'Color');
+            str{1} =        ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))];
+            str{end+1} =    ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))];
+            str{end+1} =    ['Calculation type: ',IntensityChoice];
+            switch lower(IntensityChoice),
+                case 'regular',     str{end+1} = ['Radius: ',num2str(ObjectDilationRadius)];
+                case 'background',  str{end+1} = ['Block size: ',num2str(BlockSize)];
+            end
+            switch lower(RescaleOption),
+                case 'yes', str{end+1} = ['Rescaling?: ',RescaleOption];
+                case 'no',  str{end+1} = ['Rescaling?: ',RescaleOption];
+            end
+            switch lower(EachOrAll),
+                case 'each', str{end+1} = ['Each or all?: ',EachOrAll];
+                case 'all',str{end+1} = ['Each or all?: ',EachOrAll];
+            end
+            str{end+1} = ['Smoothing method: ',SmoothingMethod];
+            switch lower(SmoothingMethod),
+                case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
+            end
+            for i = 1:length(str),
+                h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
+                    'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);
+            end
+        end
+
     end
 end
 

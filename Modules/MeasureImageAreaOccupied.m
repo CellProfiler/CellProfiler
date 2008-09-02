@@ -124,7 +124,7 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = What do you want to call the staining measured by this module?
+%textVAR02 = What do you want to call the image showing the area occupied?
 %defaultVAR02 = CellStain
 %infotypeVAR02 = imagegroup indep
 StainName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
@@ -245,12 +245,12 @@ end
 drawnow
 
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','AreaOccupied',ImageName), AreaOccupied);
+			    CPjoinstrings('AreaOccupied','AreaOccupied',StainName), AreaOccupied);
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','TotalImageArea',ImageName), TotalImageArea);
+			    CPjoinstrings('AreaOccupied','TotalImageArea',StainName), TotalImageArea);
 % Store the average threshold, namely for adaptive threshold methods.
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','ThresholdUsed',ImageName), mean(Threshold(:)));
+			    CPjoinstrings('AreaOccupied','ThresholdUsed',StainName), mean(Threshold(:)));
 
 %%% Save the thresholded image in handles.Pipeline for later use.
 handles.Pipeline.(StainName) = ThresholdedOrigImage;

@@ -245,12 +245,12 @@ end
 drawnow
 
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','AreaOccupied',StainName), AreaOccupied);
+			    CPjoinstrings('AreaOccupied','AreaOccupied',ImageName), AreaOccupied);
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','TotalImageArea',StainName), TotalImageArea);
+			    CPjoinstrings('AreaOccupied','TotalImageArea',ImageName), TotalImageArea);
 % Store the average threshold, namely for adaptive threshold methods.
 handles = CPaddmeasurements(handles, 'Image', ...
-			    CPjoinstrings('AreaOccupied','ThresholdUsed',StainName), mean(Threshold(:)));
+			    CPjoinstrings('AreaOccupied','ThresholdUsed',ImageName), mean(Threshold(:)));
 
 %%% Save the thresholded image in handles.Pipeline for later use.
 handles.Pipeline.(StainName) = ThresholdedOrigImage;

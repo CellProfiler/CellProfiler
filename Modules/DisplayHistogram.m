@@ -77,7 +77,7 @@ if isempty(FeatureNumber)
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
 end
 
-%textVAR04 = For AREASHAPE, INTENSITY or TEXTURE features, which image's measurements do you want to use?
+%textVAR04 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});

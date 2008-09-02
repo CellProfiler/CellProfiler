@@ -81,7 +81,7 @@ if isempty(FeatureNbr{1})
     error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the Feature Number is invalid.']);
 end
 
-%textVAR05 = For INTENSITY or TEXTURE features, which image would you like to process?
+%textVAR05 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image would you like to process?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu custom
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -126,7 +126,7 @@ if isempty(FeatureNbr{2})
     error(['Image processing was canceled in the ', ModuleName, ' module because you entered an incorrect Feature Number.']);
 end
 
-%textVAR12 = For INTENSITY or TEXTURE features, which image would you like to process?
+%textVAR12 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image would you like to process?
 %infotypeVAR12 = imagegroup
 %inputtypeVAR12 = popupmenu custom
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,12});

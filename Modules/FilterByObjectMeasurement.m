@@ -83,7 +83,7 @@ Category = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 1
 FeatureNumOrName = handles.Settings.VariableValues{CurrentModuleNum,4};
 
-%textVAR05 = For INTENSITY or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
+%textVAR05 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
 %infotypeVAR05 = imagegroup
 %inputtypeVAR05 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});

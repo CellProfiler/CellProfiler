@@ -83,7 +83,7 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 1
 FeatureNumber{1} = handles.Settings.VariableValues{CurrentModuleNum,3};
 
-%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
+%textVAR04 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -117,7 +117,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = 1
 FeatureNumber{2} = handles.Settings.VariableValues{CurrentModuleNum,8};
 
-%textVAR09 = For INTENSITY or TEXTURE features, which image's measurements would you like to use?
+%textVAR09 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?
 %infotypeVAR09 = imagegroup
 %inputtypeVAR09 = popupmenu
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});

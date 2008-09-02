@@ -75,7 +75,7 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 1
 FeatureNbr{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the first feature?
+%textVAR04 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use for the first feature?
 %infotypeVAR04 = imagegroup
 %inputtypeVAR04 = popupmenu
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -103,7 +103,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %defaultVAR07 = 1
 FeatureNbr{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = For INTENSITY or TEXTURE features, which image's measurements would you like to use for the second feature?
+%textVAR08 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use for the second feature?
 %infotypeVAR08 = imagegroup
 %inputtypeVAR08 = popupmenu
 ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});

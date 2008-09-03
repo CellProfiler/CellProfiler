@@ -136,17 +136,21 @@ LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = 1
 Power = str2double(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Operation?
-%choiceVAR13 = Multiply
-%choiceVAR13 = Divide
-%choiceVAR13 = Add
-%choiceVAR13 = Subtract
-%inputtypeVAR13 = popupmenu
-Operation = char(handles.Settings.VariableValues(CurrentModuleNum, 13));
+%textVAR13 = What factor would you like to multiply the result by (*after* chosen operation below)?
+%defaultVAR13 = 1
+MultiplyFactor = str2double(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = What do you want to call the output calculated by this module? The prefix, "Math_" will be applied to your entry or simply leave as "Automatic" and a sensible name will be generated.'
-%defaultVAR14 = Automatic
-OutputFeatureName = char(handles.Settings.VariableValues(CurrentModuleNum,14));
+%textVAR14 = Operation?
+%choiceVAR14 = Multiply
+%choiceVAR14 = Divide
+%choiceVAR14 = Add
+%choiceVAR14 = Subtract
+%inputtypeVAR14 = popupmenu
+Operation = char(handles.Settings.VariableValues(CurrentModuleNum, 14));
+
+%textVAR15 = What do you want to call the output calculated by this module? The prefix, "Math_" will be applied to your entry or simply leave as "Automatic" and a sensible name will be generated.'
+%defaultVAR15 = Automatic
+OutputFeatureName = char(handles.Settings.VariableValues(CurrentModuleNum,15));
 %%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,6 +211,10 @@ end
 
 if ~isnan(Power)
     FinalMeasurements = FinalMeasurements .^ Power;
+end
+
+if ~isnan(MultiplyFactor)
+    FinalMeasurements = FinalMeasurements.*MultiplyFactor;
 end
 
 %% Save, depending on type of measurement (ObjectName)

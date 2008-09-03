@@ -90,6 +90,7 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
+%inputtypeVAR05 = popupmenu scale
 SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which object would you like to use as the second measurement?
@@ -124,6 +125,7 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR10 = 1
+%inputtypeVAR10 = popupmenu scale
 SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Do you want the log (base 10) of the ratio?

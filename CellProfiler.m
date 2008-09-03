@@ -2057,6 +2057,19 @@ if ModuleNamedotm ~= 0,
                 StrSet(Count) = {'Other..'};
                 Count = Count + 1;
             end
+            if strcmp(output(29:end),'scale')
+                scales = CPgetpriorscales(handles,ModuleNums);
+                for scale = scales
+                    StrSet(Count)={ num2str(scale) };
+                    Count=Count+1;
+                end
+                if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (ischar(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
+                    StrSet(Count) = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
+                    Count = Count + 1;
+                end
+                StrSet(Count) = {'Other..'};
+                Count = Count + 1;
+            end
 
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'string',StrSet);
             guidata(handles.figure1,handles);

@@ -829,7 +829,9 @@ set(handles.figure1,'name',['CellProfiler - ',SettingsFileName]);
 %%% For each module, extract its settings and check if they seem alright
 revisionConfirm = 0;
 Skipped = 0;
-for ModuleNum=1:length(handles.Settings.ModuleNames)
+UpdatedModules = false(1,length(handles.Settings.ModuleNames));
+
+for ModuleNum = 1:length(handles.Settings.ModuleNames)
     CurrentModuleName = handles.Settings.ModuleNames{ModuleNum-Skipped};
     %%% Replace names of modules whose name changed
     if strcmp('CreateBatchScripts',CurrentModuleName) || strcmp('CreateClusterFiles',CurrentModuleName)
@@ -852,7 +854,8 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
         
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
-        [Settings,SavedVarRevNum] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+        [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+        if IsModuleModified, UpdatedModules(ModuleNum) = true; end
         
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
@@ -935,6 +938,18 @@ for ModuleNum=1:length(handles.Settings.ModuleNames)
             return
         end
     end
+end
+
+% Let the user know which modules have changed (if any)
+if any(UpdatedModules),
+    str = cell(1+length(find(UpdatedModules)),1);
+    str{1} = 'The following module(s) have been updated and your previous settings have been transferred. Please see the Release Notes for more details.';
+    updated_module_locations = find(UpdatedModules);
+    for i = updated_module_locations(:)',
+        str{i} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
+    end
+    str = str(~cellfun('isempty',str));
+    CPwarndlg(str,'LoadPipelines: Some modules updated','modal');
 end
 
 delete(get(handles.variablepanel,'children'));

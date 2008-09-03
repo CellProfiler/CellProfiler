@@ -1,8 +1,10 @@
-function [Settings,SavedVarRevNum] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
+function [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
 
 % This function attempts to import the settings of older modules into newer
 % ones, basically by reordering VariableValues, VariableInfoTypes, and
 % updating NumbersOfVariables and SavedVarRevNum
+
+IsModuleModified = false;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Changes to LoadImages
@@ -23,7 +25,7 @@ if strcmp('LoadImages',CurrentModuleName)
         Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,13};
         Settings.VariableValues{ModuleNum-Skipped,13} = Settings.VariableValues{ModuleNum-Skipped,14};   
         SavedVarRevNum = 2;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
+        IsModuleModified = true;
     end
 end
 
@@ -40,7 +42,7 @@ if strcmp(CurrentModuleName, 'RescaleIntensity')
         Settings.VariableInfoTypes{ModuleNum-Skipped,8} = Settings.VariableInfoTypes{ModuleNum-Skipped,6};
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
         SavedVarRevNum = 3;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
+        IsModuleModified = true;
     end
 end
 
@@ -55,7 +57,7 @@ if strcmp(CurrentModuleName, 'SaveImages')
         Settings.VariableValues{ModuleNum-Skipped,15} = 'n/a';
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
         SavedVarRevNum = 13;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
+        IsModuleModified = true;
     end
 end
 
@@ -68,7 +70,7 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         Settings.VariableValues{ModuleNum-Skipped,6} = 'No';
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
         SavedVarRevNum = 5;
-        CPwarndlg(['Note: The module ''',CurrentModuleName,''' has been updated.  New settings have been added for your convenience.'],[CurrentModuleName,' updated'],'modal')
+        IsModuleModified = true;
     end
 end
 
@@ -78,5 +80,5 @@ end
 idx = ismember(cellstr(lower(char(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Do not load','Do not save','/'}));
 if any(idx),
     [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
-    CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','Some entries updated','modal');
+    CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','LoadPipelines: Some entries updated','modal');
 end

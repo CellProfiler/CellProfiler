@@ -105,7 +105,7 @@ if ~any(Matches)
    CPwarndlg('MergeOutputFiles cannot find any files that match [0-9]*_to_[0-9]*_OUT.mat.  Be sure that the ''...data.mat'' file is in the same directory as the ''...OUT.mat'' files') 
 end
 
-waitbarhandle = CPwaitbar(0,['Merging ' num2str(length(FileList) + 1) ' files ...']);
+waitbarhandle = CPwaitbar(0,'Merging files...');
 for i = 1:length(FileList)
     % Turn off function handle warning. Presumably due to cluster vs. local named function
     LoadWarning = warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle');
@@ -134,7 +134,7 @@ for i = 1:length(FileList)
     end
 
     %%% Update the waitbar.
-    CPwaitbar(i/length(FileList),waitbarhandle);
+    CPwaitbar(i/length(FileList),waitbarhandle,['Merging: ',num2str(i+1),' of ',num2str(length(FileList)+1),' files']);
     drawnow
 end
 

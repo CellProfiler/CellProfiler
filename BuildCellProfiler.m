@@ -38,13 +38,13 @@ function BuildCellProfiler(usage)
 %   Try this command at the terminal (Mac) or command (PC) prompt:
 %   <matlabroot>/bin/matlab -nojvm -r "cd <CellProfiler trunk directory>; BuildCellProfiler(<usage>); quit" 
 %   where <matlabroot> is the MATLAB installation directory, <usage> is
-%   'single' or 'sluster', and <CellProfiler trunk directory> is (you 
+%   'single' or 'cluster', and <CellProfiler trunk directory> is (you 
 %   guessed it) the CellProfiler trunk directory
 
 % Check number of input arguments
 if nargin < 1,
     error(['Arguments needed. Correct usage: BuildCellProfiler(<usage>) where ',...
-        '<usage> is either ''sluster'' or ''single''.']);
+        '<usage> is either ''cluster'' or ''single''.']);
 end
 
 % Confirm that the basic files and folders are in the right place

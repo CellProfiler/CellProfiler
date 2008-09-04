@@ -82,6 +82,7 @@ ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
 %defaultVAR05 = 1
+%inputtypeVAR05 = popupmenu scale
 SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Enter the second feature type to use:

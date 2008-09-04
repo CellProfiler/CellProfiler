@@ -73,6 +73,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
+%inputtypeVAR05 = popupmenu scale
 SizeScale = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Which image do you want to display the data on?

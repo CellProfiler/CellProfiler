@@ -2097,7 +2097,7 @@ if ModuleNamedotm ~= 0,
     end
 
     fclose(fid);
-    if ~isfield(handles.Settings,'VariableInfoTypes')||size(handles.Settings.VariableInfoTypes,1)==size(handles.Settings.VariableValues,1)-1
+    if ~isfield(handles.Settings,'VariableInfoTypes') || size(handles.Settings.VariableInfoTypes,1) < size(handles.Settings.VariableValues,1),
         handles.Settings.VariableInfoTypes(size(handles.Settings.VariableValues,1),:)={[]};
     end
     

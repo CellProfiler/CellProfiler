@@ -56,17 +56,7 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
-%choiceVAR02 = AreaOccupied
-%choiceVAR02 = AreaShape
-%choiceVAR02 = Children
-%choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
-%choiceVAR02 = Ratio
-%choiceVAR02 = Texture
-%choiceVAR02 = ImageQuality
-%choiceVAR02 = RadialDistribution
-%choiceVAR02 = Granularity
-%inputtypeVAR02 = popupmenu custom
+%inputtypeVAR02 = popupmenu category
 MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)

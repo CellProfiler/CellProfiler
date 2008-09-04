@@ -2048,27 +2048,41 @@ if ModuleNamedotm ~= 0,
                     end
                 end
             end
-
+            CurrentValue = handles.Settings.VariableValues{ModuleNums,lastVariableCheck};
             if strcmp(output(29:end),'custom')
-                if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (ischar(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
-                    StrSet(Count) = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
+                if  (~isempty(CurrentValue)) && ( Count == 1 || (ischar(CurrentValue) && isempty(strmatch(CurrentValue, StrSet, 'exact'))))
+                    StrSet(Count) = { CurrentValue };
                     Count = Count + 1;
                 end
                 StrSet(Count) = {'Other..'};
                 Count = Count + 1;
-            end
-            if strcmp(output(29:end),'scale')
+            elseif strcmp(output(29:end),'scale')
                 scales = CPgetpriorscales(handles,ModuleNums);
                 for scale = scales
                     StrSet(Count)={ num2str(scale) };
                     Count=Count+1;
                 end
-                if  (~isempty(handles.Settings.VariableValues{ModuleNums,lastVariableCheck})) && ( Count == 1 || (ischar(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}) && isempty(strmatch(handles.Settings.VariableValues{ModuleNums,lastVariableCheck}, StrSet, 'exact'))))
+                if  (~isempty(CurrentValue)) && ( Count == 1 || (ischar(CurrentValue) && isempty(strmatch(CurrentValue, StrSet, 'exact'))))
                     StrSet(Count) = handles.Settings.VariableValues(ModuleNums,lastVariableCheck);
                     Count = Count + 1;
                 end
                 StrSet(Count) = {'Other..'};
                 Count = Count + 1;
+            elseif strcmp(output(29:end),'category')
+                categories= CPgetpriorcategories(handles, ModuleNums);
+                for category = categories
+                    StrSet(Count)= category;
+                    Count=Count+1;
+                end
+                if  (~isempty(CurrentValue)) && ( Count == 1 || (ischar(CurrentValue) && isempty(strmatch(CurrentValue, StrSet, 'exact'))))
+                    StrSet(Count) = { CurrentValue };
+                    Count = Count + 1;
+                end
+                StrSet(Count) = {'Other..'};
+                Count = Count + 1;
+                if (isempty(CurrentValue))
+                    handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = { StrSet(1) };
+                end
             end
 
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'string',StrSet);

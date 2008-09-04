@@ -66,18 +66,7 @@ RatioName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
-%choiceVAR03 = AreaOccupied
-%choiceVAR03 = AreaShape
-%choiceVAR03 = Children
-%choiceVAR03 = Parent
-%choiceVAR03 = Correlation
-%choiceVAR03 = Intensity
-%choiceVAR03 = Neighbors
-%choiceVAR03 = Ratio
-%choiceVAR03 = Texture
-%choiceVAR03 = RadialDistribution
-%choiceVAR03 = Granularity
-%inputtypeVAR03 = popupmenu custom
+%inputtypeVAR03 = popupmenu category
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
@@ -101,18 +90,7 @@ SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Which category of measurements would you like to use?
-%choiceVAR08 = AreaOccupied
-%choiceVAR08 = AreaShape
-%choiceVAR08 = Children
-%choiceVAR08 = Parent
-%choiceVAR08 = Correlation
-%choiceVAR08 = Intensity
-%choiceVAR08 = Neighbors
-%choiceVAR08 = Ratio
-%choiceVAR08 = Texture
-%choiceVAR08 = RadialDistribution
-%choiceVAR08 = Granularity
-%inputtypeVAR08 = popupmenu custom
+%inputtypeVAR08 = popupmenu category
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = Which feature do you want to use? (Enter the feature number or name - see help for details)

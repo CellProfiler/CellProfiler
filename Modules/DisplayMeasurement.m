@@ -59,18 +59,7 @@ PlotType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you like to use?
-%choiceVAR03 = AreaOccupied
-%choiceVAR03 = AreaShape
-%choiceVAR03 = Children
-%choiceVAR03 = Parent
-%choiceVAR03 = Correlation
-%choiceVAR03 = Intensity
-%choiceVAR03 = Neighbors
-%choiceVAR03 = Ratio
-%choiceVAR03 = Texture
-%choiceVAR03 = RadialDistribution
-%choiceVAR03 = Granularity
-%inputtypeVAR03 = popupmenu custom
+%inputtypeVAR03 = popupmenu category
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
@@ -105,18 +94,7 @@ PlotImage = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Which category of measurements would you like to use?
-%choiceVAR10 = AreaOccupied
-%choiceVAR10 = AreaShape
-%choiceVAR10 = Children
-%choiceVAR10 = Parent
-%choiceVAR10 = Correlation
-%choiceVAR10 = Intensity
-%choiceVAR10 = Neighbors
-%choiceVAR10 = Ratio
-%choiceVAR10 = Texture
-%choiceVAR10 = RadialDistribution
-%choiceVAR10 = Granularity
-%inputtypeVAR10 = popupmenu custom
+%inputtypeVAR10 = popupmenu category
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)

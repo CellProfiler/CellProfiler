@@ -65,18 +65,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you want to filter by?
-%choiceVAR03 = AreaOccupied
-%choiceVAR03 = AreaShape
-%choiceVAR03 = Children
-%choiceVAR03 = Parent
-%choiceVAR03 = Correlation
-%choiceVAR03 = Intensity
-%choiceVAR03 = Neighbors
-%choiceVAR03 = Ratio
-%choiceVAR03 = Texture
-%choiceVAR03 = RadialDistribution
-%choiceVAR03 = Granularity
-%inputtypeVAR03 = popupmenu
+%inputtypeVAR03 = popupmenu category
 Category = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)

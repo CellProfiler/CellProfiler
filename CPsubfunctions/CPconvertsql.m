@@ -110,11 +110,11 @@ if (FirstSet == 1)
 
         %add columns for mean and stddev for per_object_names
         for j=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', ['Mean_', j{1}]);
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
         end
 
         for k=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', ['StDev_', k{1}]);
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', k{1}]));
         end
 
         fprintf(fmain, ');\n\n');

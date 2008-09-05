@@ -2,7 +2,7 @@ function BuildCellProfiler(usage)
 % BuildCellProfiler Build a self-contained executable of CellProfiler for 
 %   use on a single machine or for cluster computing. 
 %
-%   The argument 'Usage' is atring and is either be:
+%   The argument 'Usage' is a string and can either be:
 %   'single': Create a CellProfiler executable appropriate for the host
 %       machine it's compiled on (e.g., PC, Macs, Unix)
 %   'cluster': Create a CellProfiler executable appropriate for use on a

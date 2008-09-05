@@ -166,7 +166,7 @@ else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     
     %%% Activates the appropriate figure window.
-    DataHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
+    FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
     %%% Modules won't create a figure window if the user has requested not
     %%% to. But in this case, we need a figure window in order to get a 
@@ -175,19 +175,32 @@ else
     %%% invisible. The image capture will still work anyway.
     userdoesntwantwindow = ~handles.Preferences.DisplayWindows(str2num(handles.Current.CurrentModuleNumber));
     if userdoesntwantwindow,
-        set(DataHandle,'visible','off');
+        set(FigHandle,'visible','off');
     end
-    CPimagesc(OrigImage,handles);
+    
+    %% Put outlines of objects on image
+    LabelMatrixObjectImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
+    Outlines = bwperim(LabelMatrixObjectImage);
+    OutlinesOnImage = OrigImage;
+    OutlinesOnImage(logical(Outlines)) = 1;
+    
+    CPimagesc(OutlinesOnImage,handles);
     colormap(gray);
     
-    % Now extract the FeatureName itself
+    uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
+        'UserData',{OrigImage OutlinesOnImage},'backgroundcolor',[.7 .7 .9],...
+        'Callback',@CP_OrigNewImage_Callback);
+    
+    % Now extract the FeatureName itself for the Title
     % (1) Strip Category prefix + slash
     justtheFeatureName = FeatureName(length([Category,'_'])+1:end);
     % (2) Find position of next slash (if there is one)
     slash_index = regexp(justtheFeatureName,'_');
     % (3) FeatureName is the string prior to the slash
-    if ~isempty(slash_index), slash_index = slash_index(1); justtheFeatureName = justtheFeatureName(1:slash_index-1); end
-
+    if ~isempty(slash_index)
+        slash_index = slash_index(1);
+        justtheFeatureName = justtheFeatureName(1:slash_index-1);
+    end
     Title = [ObjectName,', ',justtheFeatureName,' on ',ImageName];
     title(Title);
 
@@ -196,10 +209,10 @@ else
         'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
 
     %%% Create structure and save it to the UserData property of the window
-    Info = get(DataHandle,'UserData');
+    Info = get(FigHandle,'UserData');
     Info.ListOfMeasurements = ListOfMeasurements;
     Info.TextHandles = TextHandles;
-    set(DataHandle,'UserData',Info);
+    set(FigHandle,'UserData',Info);
 
     dpi = str2double(DPIToSave);
     if isnan(dpi),
@@ -211,12 +224,12 @@ else
         case 'figure',  opt = 'all';
     end
     drawnow;    % Need this here for the CPimcapture to work correctly
-    handles.Pipeline.(DataImage)= CPimcapture(DataHandle,opt,dpi);
+    handles.Pipeline.(DataImage)= CPimcapture(FigHandle,opt,dpi);
 
     % if the user didn't want to display the window in the first place,
     % destroy this one so we don't have an invisible window hanging
     % around
-    if userdoesntwantwindow && ishandle(DataHandle),
+    if userdoesntwantwindow && ishandle(FigHandle),
         CPclosefigure(handles,CurrentModule);
     end
 end

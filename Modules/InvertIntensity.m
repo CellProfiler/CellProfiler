@@ -4,11 +4,13 @@ function handles = InvertIntensity(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Converts the intensities of a grayscale image so that black becomes white.
+% Converts the intensities of an image so that black becomes white.
 % *************************************************************************
 %
-% The module does not work on color images. It takes a grayscale image and
-% inverts it (makes a negative) so that black is white and vice versa.
+% This module takes an image and inverts it, i.e, makes a negative. In the 
+% inversion of a binary image, black becomes white and white becomes
+% black.  In the case of a grayscale or truecolor image, dark areas become 
+% lighter and light areas become darker.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

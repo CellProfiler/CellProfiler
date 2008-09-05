@@ -106,6 +106,7 @@ switch lower(usage),
         delete('../CompiledCellProfiler/CellProfiler.prj');
         
         % Extract the CTF archive (without running the executable)
+        disp('Extracting the CTF archive....');
         if ispc,    % Need quotes for PC
             [status,result] = unix(['"',matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF" ../CompiledCellProfiler/CellProfiler.ctf']);
         elseif ismac || isunix,
@@ -113,12 +114,16 @@ switch lower(usage),
         end
         if status,  % If status isn't zero, something went wrong
             error(result);
+        else
+            disp('Expansion successful');
         end
         
         % Set permissions on scripts (on unix and Mac systems)
+        disp('Setting permissions...');
         if ismac || isunix,
             [status,result] = unix('chmod 775 ../CompiledCellProfiler/CellProfiler*.command');
         end
+        disp('Done');
 
         % Restore pre-existing paths
         path(current_search_path);
@@ -140,13 +145,18 @@ switch lower(usage),
         delete('CPCluster.prj');
         
         % Extract the CTF archive (without running the executable)
+        disp('Extracting the CTF archive....');
         [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF CPCluster.ctf']);
         if status,  % If status isn't zero, something went wrong
             error(result);
+        else
+            disp('Expansion successful');
         end
         
         % Change the permissions
+        disp('Setting permissions...');
         [status,result] = unix('chmod -R 775 *');
+        disp('Done');
     otherwise
         error('Unrecognized arguments. Please use either ''cluster'' or ''single''.');
 end

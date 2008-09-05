@@ -76,6 +76,10 @@ else
     return
 end
 
+if length(handles.Measurements.(ObjectTypename).Location_Center_X) > 1,
+    CPwarndlg('The data file you selected has more than one image.  Locations will be exported only for the first image.');
+end
+
 AcceptableAnswers = 0;
 Prompts{1} = 'What do you want the x,y location of the first object to be (in final units)?';
 Prompts{2} = 'How many units per pixel (e.g. microns)?';

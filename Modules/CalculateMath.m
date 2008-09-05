@@ -30,8 +30,9 @@ function handles = CalculateMath(handles)
 % be stored associated with the object, one calculation per object.  If both are 
 % objects, then the calculations are stored with both objects.
 %
-% Features measured:                Feature Number:
-% (As named in last setting)     |       1
+% Category: 'Math'
+% Features measured:                         Feature Number:
+% (As named in module's last setting)     |       1
 %
 % Note: If you want to use the output of this module in a subsequesnt
 % calculation, we suggest you specify the output name rather than use

@@ -140,12 +140,12 @@ if any(size(SecondaryObjectImage) ~= size(PrimaryObjectImage))
     error(['Image processing was canceled in the ',ModuleName,' module due to an error in aligning the two object types'' images. They are not the same size.'])
 end
 
-ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
-
+%%% Mask the secondary image with the primary image, but not at the
+%%% boundaries of the primary image
+PrimaryObjectImageBoundary = CPlabelperim(PrimaryObjectImage,8);
 SubregionObjectImage = SecondaryObjectImage;
 SubregionObjectImage(PrimaryObjectImage~=0) = PrimaryObjectImage(PrimaryObjectImage~=0);
-SubregionObjectImage(ErodedPrimaryObjectImage~=0) = 0;
-
+SubregionObjectImage(PrimaryObjectImage~=0 & PrimaryObjectImageBoundary==0) = 0;
 %%% Calculates object outlines
 MaxFilteredImage = ordfilt2(SubregionObjectImage,9,ones(3,3),'symmetric');
 %%% Determines the outlines.

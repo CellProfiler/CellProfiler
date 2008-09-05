@@ -143,6 +143,7 @@ end
 ErodedPrimaryObjectImage = imerode(PrimaryObjectImage, ones(3));
 
 SubregionObjectImage = SecondaryObjectImage;
+SubregionObjectImage(PrimaryObjectImage~=0) = PrimaryObjectImage(PrimaryObjectImage~=0);
 SubregionObjectImage(ErodedPrimaryObjectImage~=0) = 0;
 
 %%% Calculates object outlines

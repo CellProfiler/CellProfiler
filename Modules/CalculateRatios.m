@@ -34,6 +34,13 @@ function handles = CalculateRatios(handles)
 % will be used for the ratio. See each Measure module's help for the
 % numbered list of the features measured by that module.
 %
+% Features measured:                         Feature Number:
+% (As named in module's first setting)     |       1
+%
+% Note: If you want to use the output of this module in a subsequesnt
+% calculation, we suggest you specify the output name rather than use
+% Automatic naming.
+%
 % See also CalculateRatiosDataTool, all Measure modules.
 
 % CellProfiler is distributed under the GNU General Public License.

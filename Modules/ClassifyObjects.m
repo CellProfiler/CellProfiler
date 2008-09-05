@@ -32,6 +32,12 @@ function handles = ClassifyObjects(handles)
 % MajorAxisLength to MinorAxisLength for cells would be 2, and the value
 % for MeanIntensity to MaxIntensity for nuclei would be 3.
 %
+% Saving:
+%
+% Category = 'ClassifyObjects'
+% Features measured:                         Feature Number:
+% (As named in module's last setting)     |       1
+%
 % See also ClassifyObjectsByTwoMeasurements, FilterByObjectMeasurement.
 
 % CellProfiler is distributed under the GNU General Public License.

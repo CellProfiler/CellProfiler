@@ -1,9 +1,9 @@
 function Dirname = CPuigetdir(start_path,txt)
 % This CP function is present only because Matlab's uigetdir 
-%% does not display the expected text in thte title bar.
-%% This adds a dialog box which displays the text which belongs 
-%% in the title bar.
-%% See documentation for uigetdir for more information.
+% does not display the expected text in thte title bar.
+% This adds a dialog box which displays the text which belongs 
+% in the title bar.
+% See documentation for uigetdir for more information.
 
 if ismac
     [ScreenWidth,ScreenHeight] = CPscreensize;
@@ -14,4 +14,6 @@ end
 
 Dirname = uigetdir(start_path,txt);
 
-close(h)
+if ismac,
+    close(h);
+end

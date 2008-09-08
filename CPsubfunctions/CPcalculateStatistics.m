@@ -80,12 +80,10 @@ for i = 1:length(ObjectFields)
         %%% Write measurements.  We don't use CPaddmeasurements,
         %%% because this function writes out measurements for the
         %%% entire experiment at once.
-        handles.Measurements.Experiment.(CPjoinstrings('Zfactor', ObjectName, MeasureFeatureName)) = z;
-        handles.Measurements.Experiment.(CPjoinstrings('Vfactor', ObjectName, MeasureFeatureName)) = v;
-        handles.Measurements.Experiment.(CPjoinstrings('EC50', ObjectName, MeasureFeatureName)) = ec;
-        txtOneTail = CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName);
-        txtOneTail  = CPtruncatefeaturename(txtOneTail);
-        handles.Measurements.Experiment.(txtOneTail) = z_one_tailed;
+        handles.Measurements.Experiment.(CPtruncatefeaturename(CPjoinstrings('Zfactor', ObjectName, MeasureFeatureName))) = z;
+        handles.Measurements.Experiment.(CPtruncatefeaturename(CPjoinstrings('Vfactor', ObjectName, MeasureFeatureName))) = v;
+        handles.Measurements.Experiment.(CPtruncatefeaturename(CPjoinstrings('EC50', ObjectName, MeasureFeatureName))) = ec;
+        handles.Measurements.Experiment.(CPtruncatefeaturename(CPjoinstrings('OneTailedZfactor', ObjectName, MeasureFeatureName))) = z_one_tailed;
     end
     %%% Update waitbar
     CPwaitbar(i./length(ObjectFields),waitbarhandle);

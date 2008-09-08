@@ -35,7 +35,7 @@ if ~isdeployed
     CellProfilerPathname = fileparts(which('CellProfiler'));
     Pathname = fullfile(CellProfilerPathname,'ImageTools');
 else
-    uigetdir(cd,'Choose the folder where the image tools are located');
+    CPuigetdir(cd,'Choose the folder where the image tools are located');
     pause(.1);
     figure(gcf);
 end

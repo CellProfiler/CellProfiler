@@ -35,7 +35,7 @@ if strcmp(Answer,'All folders') == 1
 %    OutdatedFileNames = RetrieveMFilesFromDirectory(fullfile(CellProfilerPathname,'Outdated'));
     AlgorithmFileNames = horzcat(fullfile(CellProfilerPathname,Filename),ModulesFileNames, DataToolsFileNames, ImageToolsFileNames, CPsubfunctionsFileNames, HelpFileNames);
 else
-    PathName = uigetdir(pwd,'Choose the folder in which you want to search and replace')
+    PathName = CPuigetdir(pwd,'Choose the folder in which you want to search and replace')
     if PathName == 0
         return
     end

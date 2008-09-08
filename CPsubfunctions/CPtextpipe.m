@@ -31,7 +31,7 @@ if exist(ModuleNamedotm,'file')
 else
     %%% If the module.m file is not on the path, it won't be
     %%% found, so ask the user where the modules are.
-    PathnameModules = uigetdir('','Please select directory where modules are located');
+    PathnameModules = CPuigetdir('','Please select directory where modules are located');
     pause(.1);
     figure(handles.figure1);
     if PathnameModules == 0

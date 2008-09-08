@@ -90,7 +90,7 @@ function resultdir=browsedir_cb(textctl,dlgcaption)
     else
         tempdir=pwd;
     end;
-    resultdir = uigetdir(tempdir,dlgcaption);
+    resultdir = CPuigetdir(tempdir,dlgcaption);
     if resultdir ~= 0 
         set(textctl,'String', resultdir);
     end;

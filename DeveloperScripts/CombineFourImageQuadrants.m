@@ -21,7 +21,7 @@ function CombineFourImageQuadrants
 % you want to call the illumination correction image.
 
 
-PathName = uigetdir(pwd,'Select the folder with the four images in .mat format');
+PathName = CPuigetdir(pwd,'Select the folder with the four images in .mat format');
 if PathName == 0
     return
 end

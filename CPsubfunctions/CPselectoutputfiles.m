@@ -16,7 +16,7 @@ function [Pathname SelectedFiles] = CPselectoutputfiles(handles)
 if exist(handles.Current.DefaultOutputDirectory, 'dir')
     Pathname = CPuigetdir(handles.Current.DefaultOutputDirectory,'Choose the folder that contains the output file(s) to use');
 else
-    Pathname = uigetdir(pwd,'Choose the folder that contains the output file(s) to use');
+    Pathname = CPuigetdir(pwd,'Choose the folder that contains the output file(s) to use');
 end
 
 if Pathname ~= 0

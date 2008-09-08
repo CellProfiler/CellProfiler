@@ -95,7 +95,13 @@ Renumber = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %infotypeVAR05 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%VariableRevisionNumber = 1
+%textVAR06 = Should partially overlapping objects be removed?
+%defaultVAR06 = Retain
+%choiceVAR06 = Retain
+%choiceVAR06 = Remove
+%inputtypeVAR06 = popupmenu
+RemoveOverlapping = char(handles.Settings.VariableValues(CurrentModuleNum,6));
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -127,10 +133,9 @@ MaskRegionObjectImage = CPretrieveimage(handles,['Segmented',MaskRegionName],Mod
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Pixels in the objects are deleted if they are not
-%%% within the regions identified in the MaskRegionObjectImage.
-NewSegmentedObjectImage = SegmentedObjectImage;
-NewSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+NewSegmentedObjectImage = ExcludeMaskingFn(SegmentedObjectImage,...
+                                           MaskRegionObjectImage,...
+                                           RemoveOverlapping);
 if strcmp(Renumber,'Renumber') == 1
     %%% In case some objects are entirely deleted, the label matrix is
     %%% compacted so that labels are not skipped. This is done by
@@ -142,15 +147,19 @@ end
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
 if exist('UneditedSegmentedObjectImage','var') == 1
-    NewUneditedSegmentedObjectImage = UneditedSegmentedObjectImage;
-    NewUneditedSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+    NewUneditedSegmentedObjectImage = ...
+        ExcludeMaskingFn(UneditedSegmentedObjectImage,...
+                         MaskRegionObjectImage,...
+                         RemoveOverlapping);
     if strcmp(Renumber,'Renumber') == 1
         NewUneditedSegmentedObjectImage = bwlabel(NewUneditedSegmentedObjectImage);
     end
 end
 if exist('SmallRemovedSegmentedObjectImage','var') == 1
-    NewSmallRemovedSegmentedObjectImage = SmallRemovedSegmentedObjectImage;
-    NewSmallRemovedSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+    NewSmallRemovedSegmentedObjectImage = ...
+        ExcludeMaskingFn(SmallRemovedSegmentedObjectImage,...
+                         MaskRegionObjectImage,...
+                         RemoveOverlapping);
     if strcmp(Renumber,'Renumber') == 1
         NewSmallRemovedSegmentedObjectImage = bwlabel(NewSmallRemovedSegmentedObjectImage);
     end
@@ -241,4 +250,27 @@ if exist('NewSmallRemovedSegmentedObjectImage','var') == 1
 %%% handles structure.
 fieldname = ['SmallRemovedSegmented',RemainingObjectName];
 handles.Pipeline.(fieldname) = NewSmallRemovedSegmentedObjectImage;
+end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%% ExcludeMaskingFn
+%%%    SegmentedObjectImage - Image to be masked
+%%%    MaskRegionObjectImage - Masking image: 0 to mask, non-zero to keep
+%%%    RemoveOverlapping     - 'Retain' = only remove parts outside of mask
+%%%                            'Remove' = remove object entirely if any is outside of mask
+%%%%%%%%%%%%%%%%%%%%%%%%
+function NewSegmentedObjectImage=ExcludeMaskingFn(SegmentedObjectImage, MaskRegionObjectImage, RemoveOverlapping)
+    NewSegmentedObjectImage = SegmentedObjectImage;
+    if strcmp(RemoveOverlapping,'Retain')
+        %%% Pixels in the objects are deleted if they are not
+        %%% within the regions identified in the MaskRegionObjectImage.
+        NewSegmentedObjectImage(MaskRegionObjectImage == 0) = 0;
+    elseif strcmp(RemoveOverlapping,'Remove')
+        %%% Find any label that is not in the mask, then erase any pixel
+        %%% whose label is in that set of labels
+        Filter = unique(NewSegmentedObjectImage(MaskRegionObjectImage == 0));
+        NewSegmentedObjectImage(ismember(NewSegmentedObjectImage,Filter)) = 0;
+    else
+        error(['Unknown option for remove/retain overlapping: ',RemoveOverlapping]);
+    end
 end

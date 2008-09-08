@@ -1,44 +1,79 @@
-function parse_filenames( image_file )
+function parse_filenames(varargin)
 %PARSE_FILENAMES Parse image numbers and filenames from a concatenated image.CSV file
-%                   into a file with well, site, and wavelength info.
+%   into a file with well, site, and wavelength info.  
 %
-%  parse_filenames('/PATH/image.CSV') 
+%   parse_filenames
+%   parse_filenames('/PATH/image.CSV')
 %
-% OUTPUT: '/PATH/image_well_info.csv'
+%   OUTPUT: '<same directory as input files>/image_well_info.csv'
 %
-% NB!! Assumes a concatenated image.csv file!  The order will be incorrect
-% otherwise!!!
-%
-% For now, this only works for files & filenames of this construction ->
-% image number, "..._A01_s1_w2...", etc.
+% User can subsequntly add columns indicating treatment conditions manually, 
+% and subsequently upload to a database meta-data table.
 
-if nargin == 0
-    error('Parse_filenames requires a filename in quotes as input.')
+error(nargchk(0, 1, nargin, 'string'))
+if nargin < 1
+	image_dir = CPuigetdir('HOME', 'Choose the directory where your *image.CSV files are located');
+    if image_dir == 0
+        return
+    end
+else
+    image_dir = varargin{1};
+end
+
+%DEBUG example dir
+% image_dir = '/Volumes/imaging_analysis/2008_04_15_Lithium_Neurons_JenPan/2008_08_expts/output_plate1';
+
+if ~ispc
+%     cd(image_dir)
+    files = dir(fullfile(image_dir,'*_image.CSV'));
+%     !cat `ls *_image.CSV | grep image` >image.CSV
+else
+    error('Does not work on PCs yet')
 end
 
 %% READ IMAGE.CSV FILE
-fid = fopen(image_file);
-C = textscan(fid, '%u16 %s %*[^\n]','delimiter',',');
-fclose(fid);
+image_num = [];
+filename = '';
+h_bar = CPwaitbar(0,'Parsing files...');
 
-image_num = C{1};
-filename = C{2};
+for idx = 1:length(files)
+    this_file = fullfile(image_dir,files(idx).name);
+    fid = fopen(this_file);
+    C = textscan(fid, '%u16 %s %*[^\n]','delimiter',',','BufSize',8192);
+    image_num = cat(1,image_num,C{1});
+    filename = cat(1,filename,C{2});
+    fclose(fid);
+    waitbar(idx./length(files))
+end
+close(h_bar)
 
-%% PARSE filename
-%% for filenames of this construction -> "..._A01_s1_w2..."
-[PreFilename, remain] = strtok(filename,'_');
-[well, remain] = strtok(remain,'_');
-[site, remain] = strtok(remain,'_');
-for i = length(remain):-1:1
-    w = remain{i};
-    wavelength{i,1} = w(2:3); %#ok<AGROW>
+if ~all(sort(image_num) == (1:length(image_num))')
+    CPwarndlg('The list of image numbers is not complete from 1:end')
 end
 
-%% TREATMENT column
-% NB will need to be changed for each platemap!
-% 
-% NOT DONE.  Will be more complicated and require user inputs depending on 
-%           platemap layout
+%% PARSE filename
+choice = menu('Choose the filename construction which matches your files',...
+    '..._A01_s1_w2...',...
+    'PANDORA_123456789_A01f01d0.TIF');
+switch choice
+    case 1
+        %% for filenames of this construction -> "..._A01_s1_w2..."
+        [PreFilename, remain] = strtok(filename,'_');
+        [well, remain] = strtok(remain,'_');
+        [site, remain] = strtok(remain,'_');
+        for i = length(remain):-1:1
+            w = remain{i};
+            wavelength{i,1} = w(2:3); %#ok<AGROW>
+        end
+    case 2
+        %% for filenames of this construction -> 'PANDORA_123456789_A01f01d0.TIF'
+        [PreFilename, remain] = strtok(filename,'_');
+        [date, remain] = strtok(remain,'_');
+        [WellFieldChannel, remain] = strtok(remain,'_');
+        [well, remain] = strtok(WellFieldChannel,'f');
+        [site, wavelength] = strtok(remain,'d');
+        
+end
 
 %% Split off WELL into 2 columns (e.g. 'A01' -> 'A' and '01')
 wellCharArray = cell2mat(well);
@@ -53,9 +88,7 @@ rowCellArray = cellstr(row);
 colCellArray = cellstr(col);
 
 %% OUTPUT .csv file
-% [pathstr, name, ext] = fileparts(image_file);
-[pathstr, name] = fileparts(image_file);
-well_file = fullfile(pathstr, [name '_well_info.csv']);
+well_file = fullfile(image_dir, 'image_well_info.csv');
 if ~exist(well_file,'file')
     %% Note: cannot use xlswrite, because Mac's can't run Excel COM server
     %%  nor dlmwrite because it outputs one character at a time

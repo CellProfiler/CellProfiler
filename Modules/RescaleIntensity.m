@@ -54,6 +54,8 @@ function handles = RescaleIntensity(handles)
 % be in the standard 0 to 1 range, so this conversion may cause downstream
 % modules to behave unexpectedly.
 %
+% (T) Text: rescale by dividing by a value loaded from a text file with LoadText.
+%
 % See also SubtractBackground.
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -85,12 +87,13 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 RescaledImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. See the help for details.
+%textVAR03 = Rescaling method. (S) Stretch the image (0 to 1). (E) Enter the minimum and maximum values in the boxes below. (G) rescale so all pixels are equal to or Greater than one. (M) Match the maximum of one image to the maximum of another. (C) Convert to 8 bit. (T) Divide by loaded text value.  See the help for details.
 %choiceVAR03 = Stretch 0 to 1
 %choiceVAR03 = Enter min/max below
 %choiceVAR03 = Greater than one
 %choiceVAR03 = Match Maximum
 %choiceVAR03 = Convert to 8 bit
+%choiceVAR03 = Text: Divide by loaded text value.
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 RescaleOption = RescaleOption(1);
 %inputtypeVAR03 = popupmenu
@@ -124,7 +127,13 @@ HighestPixelOrigPinnedValue = str2double(char(handles.Settings.VariableValues{Cu
 OtherImageName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%%%VariableRevisionNumber = 3
+%textVAR11 = (Method T only): What did you call the loaded text in the LoadText module?
+%infotypeVAR11 = datagroup
+TextName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -138,8 +147,6 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
 if strncmpi(RescaleOption,'S',1)
     MethodSpecificArguments = [];
 elseif strncmpi(RescaleOption,'M',1)
@@ -158,6 +165,8 @@ elseif strncmpi(RescaleOption,'E',1)
     MethodSpecificArguments{7} = ImageName;
 elseif strncmpi(RescaleOption,'C',1)
     MethodSpecificArguments = [];
+elseif strncmpi(RescaleOption, 'T', 1)
+    MethodSpecificArguments = TextName;
 end
 
 %%% Uses a CellProfiler subfunction.

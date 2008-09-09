@@ -150,5 +150,9 @@ elseif strncmpi(RescaleOption,'E',1) == 1
     
 elseif strncmpi(RescaleOption,'C',1) == 1
     OutputImage = uint8(InputImage*255);
-else error(['For the rescaling option, you must enter N, S, M, G, E, or C for the method by which to rescale the image. Your entry was ', RescaleOption])
+elseif strncmpi(RescaleOption, 'T', 1) == 1
+    TextName = MethodSpecificArguments;
+    rescale = str2num(handles.Measurements.Image.(['LoadedText_',TextName]){handles.Current.SetBeingAnalyzed});
+    OutputImage = InputImage / rescale;
+else error(['For the rescaling option, you must enter N, S, M, G, E, C, or T for the method by which to rescale the image. Your entry was ', RescaleOption])
 end

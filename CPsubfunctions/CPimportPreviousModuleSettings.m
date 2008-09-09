@@ -47,6 +47,20 @@ if strcmp(CurrentModuleName, 'RescaleIntensity')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to RescaleIntensity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'RescaleIntensity')
+    if SavedVarRevNum == 3      % RescaleIntensity got one new argument, but at the end.
+        Settings.VariableValues{ModuleNum-Skipped,11} = '';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 4;
+        IsModuleModified = true;
+    end
+end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Changes to SaveImages
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'SaveImages')

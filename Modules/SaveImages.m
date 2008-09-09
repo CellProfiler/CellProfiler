@@ -106,8 +106,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter text to append to the image name, type N to use sequential numbers, or leave "\" to not append anything.
-%defaultVAR03 = \
+%textVAR03 = Enter text to append to the image name, type N to use sequential numbers, or leave "Do not use" to not append anything.
+%defaultVAR03 = Do not use
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = In what file format do you want to save images (figures must be saved as fig, which is only openable in Matlab)?
@@ -283,7 +283,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     if strcmpi(Appendage,'N')
         FileName = [FileName DigitString(handles.Current.NumberOfImageSets,SetBeingAnalyzed)];
     else
-        if ~strcmpi(Appendage,'\')
+        if ~strcmpi(Appendage,'Do not use')
             Spaces = isspace(Appendage);
             if any(Spaces)
                 error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])

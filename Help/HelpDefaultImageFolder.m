@@ -36,6 +36,8 @@ function HelpDefaultImageFolder
 % Save the file.  You do not need to relaunch MATLAB or CellProfiler for
 % this change to take effect.
 
+% $Revision$
+
 helpdlg(help('HelpDefaultImageFolder'))
 
 % We have one line of actual code in these files so that the help is

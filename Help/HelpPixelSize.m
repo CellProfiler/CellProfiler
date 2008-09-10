@@ -37,6 +37,8 @@ function HelpPixelSize
 % and produce data in pixel length units no matter what pixel size is set.
 % We are working to fix this.
 
+% $Revision$
+
 helpdlg(help('HelpPixelSize'))
 
 % We have one line of actual code in these files so that the help is

@@ -1,5 +1,7 @@
 function max_svn_ver_num = CPsvnloopfunctions
 
+% $Revision: 0000 $
+
 str_to_find = '% $Revision:';
 max_svn_ver_num = 0;
 dirs_to_loop = {'.','./Modules','./CPsubfunctions','DataTools','ImageTools','Help'};

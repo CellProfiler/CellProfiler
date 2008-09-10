@@ -3,6 +3,8 @@ function TruncatedName = CPtruncatefeaturename(FeatureName,dlmtr)
 % Reduce length of delimited text strings to overcome Matlab's 63 character limit
 %% Finds max length for each substring which will still allow a Matlab aceptable string
 
+% $Revision$
+
 %% Starting value for Minimum (Sub)string Length
 MinStrLenInit = 20;
 

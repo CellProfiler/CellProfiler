@@ -13,4 +13,7 @@ function pmask = ljosaprobseg(image, restartprobability, nwalks, seed)
 %
 % The resulting probabilistic mask is clipped at the lowest stationary
 % probability within the seed and scaled to [0, 1].
+% $Revision$
+
+
 error('ljosaprobseg mexFunction not found');

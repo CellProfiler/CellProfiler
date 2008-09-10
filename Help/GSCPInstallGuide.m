@@ -82,6 +82,8 @@ function GSCPInstallGuide
 % within CellProfiler. In CellProfiler, set some basic preferences in File
 % > Set preferences, which will make it easier to use CellProfiler.
 
+% $Revision$
+
 helpdlg(help('GSCPInstallGuide'))
 
 % We have one line of actual code in these files so that the help is

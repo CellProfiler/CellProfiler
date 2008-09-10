@@ -62,6 +62,8 @@ function ImageToolWindow(handles)
 %
 % Website: http://www.cellprofiler.org
 
+% $Revision$
+
 % This function itself is simply a menu item in the CellProfiler Image Tools
 % menu which informs the user that more tools can be accessed by clicking
 % on an individual image within a figure window. Its help is accessible via

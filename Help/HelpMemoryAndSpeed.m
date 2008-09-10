@@ -64,6 +64,8 @@ function HelpMemoryAndSpeed
 %   exclude small objects you are not interested in, or use a FilterObjects 
 %   module to eliminate objects that are not of interest.
 
+% $Revision$
+
 helpdlg(help('HelpMemoryAndSpeed'))
 
 % We have one line of actual code in these files so that the help is

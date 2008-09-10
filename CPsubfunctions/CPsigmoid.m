@@ -9,6 +9,8 @@ function yhat=CPsigmoid(params4,x)
 % send comments to CCEvangelista@aol.com
 % Version 1.0    01/07/2004
 
+% $Revision$
+
 min=params4(1);
 max=params4(2);
 ec=params4(3);

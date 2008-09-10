@@ -4,6 +4,8 @@ function [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSett
 % ones, basically by reordering VariableValues, VariableInfoTypes, and
 % updating NumbersOfVariables and SavedVarRevNum
 
+% $Revision$
+
 IsModuleModified = false;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

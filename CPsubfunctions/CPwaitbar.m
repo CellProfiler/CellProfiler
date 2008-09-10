@@ -4,6 +4,7 @@ function fout = CPwaitbar(varargin)
 % waitbar if necessary, and also to change colors and fonts to match
 % CP's preferences.  See documentation for waitbar for usage.
 
+% $Revision$
 
 fout = waitbar(varargin{:});
 userData.Application = 'CellProfiler';

@@ -4,7 +4,9 @@ function CPvalidfieldname(fieldname)
 % an alphabetic character, if it contains characters other
 % than alphanumerics and underbar or if it is more than 63
 % characters long.
-%
+
+% $Revision$
+
 if length(fieldname) > namelengthmax
     error(['The field name, "',fieldname,'", is more than ',num2str(namelengthmax),' characters long.']);
 end

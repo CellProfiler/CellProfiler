@@ -9,6 +9,8 @@ function HelpSkipErrors
 % ModuleError field for each module. If any of these values are above 0,
 % that means the module failed at some point in the analysis.
 
+% $Revision$
+
 helpdlg(help('HelpSkipErrors'))
 
 % We have one line of actual code in these files so that the help is

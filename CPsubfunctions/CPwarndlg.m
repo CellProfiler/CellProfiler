@@ -3,6 +3,8 @@ function varargout = CPwarndlg(varargin)
 % This CP function is present only so we can easily replace the
 % warndlg if necessary.  See documentation for warndlg for usage.
 
+% $Revision$
+
 if nargout > 0,
     varargout = {warndlg(varargin{:})};
     h = varargout{1};

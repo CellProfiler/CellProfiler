@@ -1,5 +1,7 @@
 function varargout = CPhelpdlg(varargin)
 
+% $Revision$
+
 % This CP function is present only so we can easily replace the
 % helpdlg if necessary.  See documentation for helpdlg for usage.
 

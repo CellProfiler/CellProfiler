@@ -264,6 +264,8 @@ function GSBatchProcessing
 % 
 % ********* END OF SUBMITTING FILES FOR BATCH PROCESSING ******************
 
+% $Revision$
+
 helpdlg(help('BatchProcessing'))
 
 % We have one line of actual code in these files so that the help is

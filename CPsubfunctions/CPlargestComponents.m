@@ -1,4 +1,7 @@
 function components_labels = CPlargestComponents(labels)
+
+% $Revision$
+
 components = bwlabel(labels > 0);
 components = regionprops(components, {'Area', 'PixelIdxList'});
 n = length(components);

@@ -34,6 +34,8 @@ function [mask,probabilities] = random_walker(img,seeds,labels,beta)
 %Note: Requires installation of the Graph Analysis Toolbox available at:
 %http://eslab.bu.edu/software/graphanalysis/
 
+% $Revision$
+
 %Read inputs
 if nargin < 4
     beta = 90;

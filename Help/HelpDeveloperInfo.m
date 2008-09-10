@@ -583,6 +583,8 @@ function HelpDeveloperInfo
 % look like, run a sample analysis and then go to File -> Tech Diagnosis.
 % This will let you manipulate the handles variable in MATLAB.
 
+% $Revision$
+
 helpdlg(help('HelpDeveloperInfo'))
 
 % We have one line of actual code in these files so that the help is

@@ -1,6 +1,7 @@
-function max_svn_ver_num = CPsvnloopfunctions
+function max_svn_ver_num = CPsvnloopfunctions(debug)
 
-% $Revision: 0000 $
+% $Revision$
+
 
 str_to_find = '% $Revision:';
 max_svn_ver_num = 0;
@@ -17,7 +18,7 @@ for current_dir = dirs_to_loop
         current_file = files(idx).name;
         fid = fopen(current_file);
         
-        %% Find first line like this: "% $Revision: 5721 $"
+        %% Find first line like this: "% $Revision$"
         while feof(fid) == 0
             current_line = fgetl(fid);
             if strncmp(current_line,str_to_find,length(str_to_find))

@@ -3,7 +3,7 @@ function svn_ver_char = CPsvnversionnumber
 %% First, try using the 'svn info' command, but if svn is not
 %% installed, or if deployed, loop all functions and parse out
 
-% $Revision: 0000 $
+% $Revision$
 
 str_to_find = 'Revision: ';
 

@@ -1,20 +1,30 @@
 function handles = CalculateImageOverlap(handles)
 
-% Help for the Calculate Math module:
+% Help for the Calculate Image Overlap module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% This module can takes two binary images, one defined as ground truth and
+% This module takes two binary images, one defined as ground truth and
 % one the result of an algorithm, and finds the true positive, true
 % negative, false positive, and false negative areas.  The F-factor is
 % calculated from these areas.
 % *************************************************************************
-%
+% Settings:
+% "Which image represents the ground truth?" : This image is a binary (ie
+% masked) image in which user-identified objects are represented.
+% "Which image do you want to test against the ground truth?" : This image
+% is a binary (ie masked) image which is the result of some image
+% processing algorithm (either in CellProfiler or any image processing
+% software) that you would like to compare with the ground truth image.  
+
+% The module calculates the overlap of the two image sets, and determines
+% the F-factor, a measure of the algorithm's precision and recall.
+
 % Note: If you want to use the output of this module in a subsequesnt
 % calculation, we suggest you specify the output name rather than use
 % Automatic naming.
 %
-% See also 
+% 
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

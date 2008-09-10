@@ -1,7 +1,6 @@
-function max_svn_ver_num = CPsvnloopfunctions(debug)
+function max_svn_ver_num = CPsvnloopfunctions
 
 % $Revision$
-
 
 str_to_find = '% $Revision:';
 max_svn_ver_num = 0;

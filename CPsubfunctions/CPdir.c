@@ -11,7 +11,7 @@
  *
  * $Revision: 5583 $
  */
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 #include <windows.h>
 
 #else
@@ -78,7 +78,7 @@ struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;
      int size;
-#ifndef WIN32
+#if ! (defined(WIN32) || defined(_WIN32))
      DIR *dir;
      struct dirent *dirent;
      char *name;

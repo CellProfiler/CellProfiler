@@ -16,10 +16,10 @@ function handles = CalculateImageOverlap(handles)
 % is a binary (ie masked) image which is the result of some image
 % processing algorithm (either in CellProfiler or any image processing
 % software) that you would like to compare with the ground truth image.  
-
+%
 % The module calculates the overlap of the two image sets, and determines
 % the F-factor, a measure of the algorithm's precision and recall.
-
+%
 % Note: If you want to use the output of this module in a subsequesnt
 % calculation, we suggest you specify the output name rather than use
 % Automatic naming.

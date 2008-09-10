@@ -104,7 +104,7 @@ function handles = MeasureImageQuality(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5237 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -61,7 +61,7 @@ function [objectC,IA,IB] = objdiff(objectA,objectB,varargin)
 %     SETDIFF, SETXOR, ISSTRUCT, ISJAVA, ISHGHANDLE, ISOBJECT, ISCELL
 
 % Programmed by Yair M. Altman: altmany(at)gmail.com
-% $Revision: 1.2 $  $Date: 2007/07/26 23:41:20 $
+% $Revision$  $Date$
 
   % Process input args
   if (nargin<1) %|| ~isstruct(objectA) || ~isstruct(objectB)

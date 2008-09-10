@@ -46,7 +46,7 @@ function handles = UnifyObjects(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5039 $
+% $Revision$
 
 %%% VARIABLES
 drawnow

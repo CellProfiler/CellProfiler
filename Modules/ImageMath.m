@@ -34,7 +34,7 @@ function handles = ImageMath(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5025 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

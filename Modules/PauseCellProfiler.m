@@ -16,7 +16,7 @@ function handles = PauseCellProfiler(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4436 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

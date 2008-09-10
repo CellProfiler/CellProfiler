@@ -25,7 +25,7 @@ function handles = SplitIntoContiguousObjects(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 42 $
+% $Revision$
 
 %%% VARIABLES
 drawnow

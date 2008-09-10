@@ -22,7 +22,7 @@ function handles = Multiply(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5167 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

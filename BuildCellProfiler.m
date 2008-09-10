@@ -41,7 +41,7 @@ function BuildCellProfiler(usage)
 %   'single' or 'cluster', and <CellProfiler trunk directory> is (you 
 %   guessed it) the CellProfiler trunk directory
 %
-% $Revision: 0001 $
+% $Revision$
 
 % Check number of input arguments
 if nargin < 1,

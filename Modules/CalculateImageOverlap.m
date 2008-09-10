@@ -26,7 +26,7 @@ function handles = CalculateImageOverlap(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5724 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

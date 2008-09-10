@@ -20,7 +20,7 @@ function handles = KeepLargestObject(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

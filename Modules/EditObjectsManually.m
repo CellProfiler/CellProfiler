@@ -33,7 +33,7 @@ function handles = EditObjectsManually(handles)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5759 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

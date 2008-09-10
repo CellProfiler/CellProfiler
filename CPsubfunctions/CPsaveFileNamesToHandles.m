@@ -22,7 +22,7 @@ function handles = CPsaveFileNamesToHandles(handles, ImageName, ...
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5228 $
+% $Revision$
 for i = 1:length(ImageName)
     [subpart, filenamepart] = fileparts(FileNames{i});
     pathname = fullfile(BasePathName, subpart);

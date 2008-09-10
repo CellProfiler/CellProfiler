@@ -16,7 +16,7 @@ function scales=CPgetpriorscales(handles, CurrentModuleNum)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5025 $
+% $Revision$
 
 if (nargin < 2)
     [CurrentModule, CurrentModuleNum] = CPwhichmodule(handles);

@@ -11,7 +11,7 @@ function CPupdatefigurecycle(SetBeingAnalyzed,FigureNumber)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 4931 $
+% $Revision$
 
 OldText = get(FigureNumber,'name');
 NumberSignIndex = find(OldText=='#');

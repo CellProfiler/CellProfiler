@@ -17,7 +17,7 @@
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5583 $
+% $Revision$
 
 % The following code is there just as a backup, in case the Mex is
 % missing.

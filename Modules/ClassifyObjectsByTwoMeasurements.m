@@ -1,6 +1,6 @@
 function handles = ClassifyObjectsByTwoMeasurements(handles)
 
-% Help for the Classify Objects module:
+% Help for the Classify Objects By Two Measurements module:
 % Category: Object Processing
 %
 % SHORT DESCRIPTION:

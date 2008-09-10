@@ -139,6 +139,9 @@ function HelpDeveloperInfo
 % revision number at the end of the license info at the top of the m-file
 % for our source-control revisions - this revision number does not affect
 % the user's previously saved settings files and you can ignore it.
+% However, a line with "% $Revision$" should be added to any new
+% function, so that the version-control system will find and update the 
+% number upon new commits.
 %
 % *** STORING AND RETRIEVING DATA: THE HANDLES STRUCTURE ***
 % 

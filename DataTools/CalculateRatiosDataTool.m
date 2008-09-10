@@ -130,6 +130,7 @@ for i = 1:length(Measure1)
     
     % Record the new measure in the handles structure.
     NewFieldName = CPjoinstrings(Measure1fieldname, char(Operation), Measure2Object, Measure2fieldname);
+    NewFieldName = CPtruncatefeaturename(NewFieldName);
     handles.Current.SetBeingAnalyzed = i;
     try
         handles = CPaddmeasurements(handles,Measure1Object,NewFieldName,FinalMeasurements);    

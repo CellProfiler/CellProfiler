@@ -1,5 +1,7 @@
 function figurenumber = CPdensity_plot(xvals, yvals, figurenumber)
 
+% $Revision$
+
 if nargin == 3,
     CPfigure(figurenumber);
 else

@@ -16,6 +16,8 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 %  handles.Measurements.ObjectName.Category_FeatureName_Image (for Image) OR
 %  handles.Measurements.ObjectName.Category_FeatureName_Image_SizeScale (for Texture)
 
+% $Revision$
+
 % Note!!  We are relying on the fact that the features should have been 
 % added in the order matching that of each Module's Help text!
 

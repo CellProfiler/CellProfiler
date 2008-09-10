@@ -1,5 +1,7 @@
 function CPdynamizescrollbar(scrollbar)
 
+% $Revision$
+
 if usejava('awt'),
     callback = get(scrollbar, 'Callback');
     parent = get(scrollbar, 'Parent');

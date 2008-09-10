@@ -1,5 +1,7 @@
 function CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType)
 
+% $Revision$
+
 % This function produces a CellProfiler Analyst properties file based on
 % the input handles structure.
 

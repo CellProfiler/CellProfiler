@@ -1,5 +1,7 @@
 function handles = CPcalculateStatistics(handles,DataName,Logarithmic,FigureName,ModuleName,LicenseStats)
 
+% $Revision$
+
 FigureIncrement = 1;
 
 %%% Get all fieldnames in Measurements

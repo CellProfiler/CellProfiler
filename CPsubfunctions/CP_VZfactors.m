@@ -24,6 +24,8 @@ function [v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues] = CP_VZf
 % Code for the calculation of Z' and V factors was kindly donated by Ilya
 % Ravkin: http://www.ravkin.net
 
+% $Revision$
+
 [xs, avers, stds] = LocShrinkMeanStd(xcol, ymatr);
 vrange = max(avers) - min(avers);
 vstd(vrange == 0) = 1;

@@ -3,6 +3,7 @@ function CompileWizard
 % This function, when run in the default CellProfiler path, will produce a
 % file with help information stored in variables to be used in the compiled
 % version of CellProfiler.
+% $Revision$
 
 
 

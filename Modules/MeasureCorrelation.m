@@ -125,7 +125,8 @@ for ImageNbr = 1:4
             %%% Checks whether image has been loaded.
             Image{ImageCount} = CPretrieveimage(handles,ImageName{ImageNbr},ModuleName,'MustBeGray','DontCheckScale'); %#ok Ignore MLint
             tmpImageName{ImageCount} = ImageName{ImageNbr}; %#ok Ignore MLint
-        catch error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem loading the image you called ', ImageName{ImageNbr}, '.'])
+        catch
+            error(['Image processing was canceled in the ', ModuleName, ' module because there was a problem loading the image you called ', ImageName{ImageNbr}, '.'])
         end
     end
 end

@@ -4710,10 +4710,22 @@ elseif strcmp(ImageDataOrHelp,'Data Tools')
     TextString = sprintf(['To view help for individual ' ImageDataOrHelp ', choose one below.\nYou can add your own tools by writing Matlab m-files, placing them in the ', ImageDataOrHelp, ' folder, and restarting CellProfiler.']);
 elseif strcmp(ImageDataOrHelp,'Help')
     set(ToolsHelpWindowHandle,'name','General Help');
-    TextString = sprintf('CellProfiler version 1.0.4684\n\nPlease choose specific help below:');
+    svn_ver_char = CPsvnversionnumber;
+    if isdeployed
+        CompiledOrNot = 'Compiled';
+    else
+        CompiledOrNot = 'Developer''s Version';
+    end
+    TextString = sprintf(['CellProfiler version 1.0.' svn_ver_char ' ' CompiledOrNot '\n\nPlease choose specific help below:']);
 elseif strcmp(ImageDataOrHelp,'Getting Started')
     set(ToolsHelpWindowHandle,'name','Getting Started');
-    TextString = sprintf('CellProfiler version 1.0.4684\n\nPlease choose specific help below:');
+    svn_ver_char = CPsvnversionnumber;
+    if isdeployed
+        CompiledOrNot = 'Compiled';
+    else
+        CompiledOrNot = 'Developer''s Version';
+    end
+    TextString = sprintf(['CellProfiler version 1.0.' svn_ver_char ' ' CompiledOrNot '\n\nPlease choose specific help below:']);
 end
 
 FontSize = handles.Preferences.FontSize;

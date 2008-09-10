@@ -1,6 +1,6 @@
 function handles = CorrectIllumination_Calculate(handles)
 
-% Help for the Correct Illumination Calculate module:
+% Help for the Correct Illumination Calculate module: 
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
@@ -389,14 +389,21 @@ if strcmp(EachOrAll,'All')
 elseif strcmp(EachOrAll,'Each')
     if strcmp(IntensityChoice,'Regular')
         RawImage = OrigImage;
+
+        %         %% TODO - DL 2008.02.07
+        %         fieldname = ['CropMask', RawImage];
+        %         if isfield(handles.Pipeline,fieldname)
+        %             %%% Retrieves previously selected cropping mask from handles
+        %             %%% structure.
+        %             BinaryCropImage = handles.Pipeline.(fieldname);
+        %             try Objects = Objects & BinaryCropImage;
+        %             catch
+        %                 error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
+        %             end
+        %         end
+
     elseif strcmp(IntensityChoice,'Background')
 
-        %% TODO - DL 2008.02.07
-%         %% Apply CropMask
-%         if exist(handles.Pipeline.(['CropMask',ImageName]))
-%             CropMask = handles.Pipeline.(['CropMask',OrigImage]);
-%         end
-        
         [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
         % Calculates a coarse estimate of the background
         % illumination by determining the minimum of each block

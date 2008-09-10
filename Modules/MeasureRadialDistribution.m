@@ -1,6 +1,6 @@
 function handles = MeasureRadialDistribution(handles)
 
-% Help for the Measure Object Intensity module:
+% Help for the Measure Radial Distribution module:
 % Category: Measurement
 %
 % SHORT DESCRIPTION:

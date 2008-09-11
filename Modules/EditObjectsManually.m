@@ -51,12 +51,21 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = FilteredObjects
 %infotypeVAR02 = objectgroup indep
 RemainingObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+CPvalidfieldname(RemainingObjectName);
 
 %textVAR03 = What do you want to call the outlines of the remaining objects (optional)?
 %defaultVAR03 = Do not use
 %infotypeVAR03 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%%%VariableRevisionNumber = 1
+
+%textVAR04 = Do you want to renumber the objects created by this module or retain the original numbering?
+%defaultVAR04 = Renumber
+%choiceVAR04 = Renumber
+%choiceVAR04 = Retain
+%inputtypeVAR04 = popupmenu
+RenumberOrRetain = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%
 %%% SETUP      %%%
@@ -95,92 +104,93 @@ my_data = struct(...
 drawnow;
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    %%% Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(img,'TwoByTwo',ThisModuleFigureNumber);
-    end
-    %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);
-    my_data.hOriginal=CPimagesc(img,handles);
-    set(my_data.hOriginal,'ButtonDownFcn',{@ImageClickCallback,'toggle'});
-    title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%%
-    %%% The continue button exits the modal state
-    %%%
-    hContinue=uicontrol('Position',[30 30 100 20],'String','Continue',...
-                        'Callback','set(gcbo,''UserData'',0);uiresume(gcbf)',...
-                        'UserData',struct('operation','none'),...
-                        'DeleteFcn','uiresume(gcbf)'...
-                    );
-    my_data.hContinue = hContinue;
-    uibuttons = [...
-    uicontrol('Position',[30,120,100,20],...
-              'String','Keep all',...
-              'Callback',{@CommandCallback, hContinue,'keepall'}),...
-    uicontrol('Position',[30,90,100,20],...
-              'String','Remove all',...
-              'Callback',{@CommandCallback, hContinue,'removeall'}),...
-    uicontrol('Position',[30,60,100,20],...
-              'String','Reverse selection',...
-              'Callback',{@CommandCallback, hContinue,'toggleall'})];
-    set(my_data.hOriginal,'UserData',my_data);
-    my_data = Update('keepall',[1,1],my_data,handles);
-    set(gcf,'CloseRequestFcn','uiresume(gcbf);closereq');
-    while (ishandle(hContinue) && isstruct(get(hContinue,'UserData')))
-        x = get(hContinue,'UserData');
-        if ~ strcmp(x.operation,'none')
-            my_data = Update(x.operation,x.pos,my_data,handles);
-        end
-        drawnow;
-        uiwait(gcf);
-    end;
-    set(hContinue,'Visible','off');
-    set(uibuttons,'Visible','off');
-    set(my_data.hOriginal,'ButtonDownFcn',@CPimagetool);
-    set(my_data.hIncluded,'ButtonDownFcn',@CPImagetool);
-    set(my_data.hExcluded,'ButtonDownFcn',@CPImagetool);
-    
-    %%% Keep points in optional image whose labels are in the filter array
-    if ~ isempty(UneditedSegmentedObjectImage)
-        NewUneditedSegmentedObjectImage = UneditedSegmentedObjectImage;
-        NewUneditedSegmentedObjectImage(~ ismember(NewUneditedSegmentedObjectImage,my_data.Filter))=0;
-    end
-    
-    if ~ isempty(SmallRemovedSegmentedObjectImage)
-        NewSmallRemovedSegmentedObjectImage = SmallRemovedSegmentedObjectImage;
-        NewSmallRemovedSegmentedObjectImage(~ ismember(SmallRemovedSegmentedObjectImage,my_data.Filter))=0;
-    end
-    %%%%%%%%%%%%%%%%%%%%%%%
-    %%% Add object      %%%
-    %%%%%%%%%%%%%%%%%%%%%%%
-    
-    %%% Saves the final segmented label matrix image to the handles structure.
-    fieldname = ['Segmented',RemainingObjectName];
-    handles.Pipeline.(fieldname) = my_data.IncludedSegmentedObjectImage;
+hFigure = CPfigure(handles,'Image',ThisModuleFigureNumber);
+set(hFigure,'Name',['EditObjectsManually, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
-    %%% Saves images to the handles structure so they can be saved to the hard
-    %%% drive, if the user requested.
-    if ~strcmp(SaveOutlines,'Do not use')
-        handles.Pipeline.(SaveOutlines) = CPlabelperim(my_data.IncludedSegmentedObjectImage,8);
-    end
-    %%% The following is only relevant for objects identified using
-    %%% Identify Primary modules, not Identify Secondary modules.
-    if ~isempty(UneditedSegmentedObjectImage)
-        %%% Saves the segmented image, not edited for objects along the edges or
-        %%% for size, to the handles structure.
-        fieldname = ['UneditedSegmented',RemainingObjectName];
-        handles.Pipeline.(fieldname) = NewUneditedSegmentedObjectImage;
-    end
-    if ~ isempty(SmallRemovedSegmentedObjectImage)
-        %%% Saves the segmented image, only edited for small objects, to the
-        %%% handles structure.
-        fieldname = ['SmallRemovedSegmented',RemainingObjectName];
-        handles.Pipeline.(fieldname) = NewSmallRemovedSegmentedObjectImage;
-    end
-   
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    CPresizefigure(img,'TwoByTwo',ThisModuleFigureNumber);
 end
+%%% A subplot of the figure window is set to display the original image.
+subplot(2,2,1);
+my_data.hOriginal=CPimagesc(img,handles);
+set(my_data.hOriginal,'ButtonDownFcn',{@ImageClickCallback,'toggle'});
+title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+%%%
+%%% The continue button exits the modal state
+%%%
+hContinue=uicontrol('Position',[30 30 100 20],'String','Continue',...
+                    'Callback','set(gcbo,''UserData'',0);uiresume(gcbf)',...
+                    'UserData',struct('operation','none'),...
+                    'DeleteFcn','uiresume(gcbf)'...
+                );
+my_data.hContinue = hContinue;
+uibuttons = [...
+uicontrol('Position',[30,120,100,20],...
+          'String','Keep all',...
+          'Callback',{@CommandCallback, hContinue,'keepall'}),...
+uicontrol('Position',[30,90,100,20],...
+          'String','Remove all',...
+          'Callback',{@CommandCallback, hContinue,'removeall'}),...
+uicontrol('Position',[30,60,100,20],...
+          'String','Reverse selection',...
+          'Callback',{@CommandCallback, hContinue,'toggleall'})];
+set(my_data.hOriginal,'UserData',my_data);
+my_data = Update('keepall',[1,1],my_data,handles);
+set(gcf,'CloseRequestFcn','uiresume(gcbf);closereq');
+while (ishandle(hContinue) && isstruct(get(hContinue,'UserData')))
+    x = get(hContinue,'UserData');
+    if ~ strcmp(x.operation,'none')
+        my_data = Update(x.operation,x.pos,my_data,handles);
+    end
+    drawnow;
+    uiwait(gcf);
+end;
+set(hContinue,'Visible','off');
+set(uibuttons,'Visible','off');
+set(my_data.hOriginal,'ButtonDownFcn',@CPimagetool);
+set(my_data.hIncluded,'ButtonDownFcn',@CPImagetool);
+set(my_data.hExcluded,'ButtonDownFcn',@CPImagetool);
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% Add object      %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+OutputImages = struct('image', my_data.IncludedSegmentedObjectImage,...
+                      'fieldname',['Segmented',RemainingObjectName]);
+
+%%% Keep points in optional image whose labels are in the filter array
+if ~ isempty(UneditedSegmentedObjectImage)
+    NewUneditedSegmentedObjectImage = UneditedSegmentedObjectImage;
+    NewUneditedSegmentedObjectImage(my_data.IncludedSegmentedObjectImage==0)=0;
+    OutputImages(length(OutputImages)+1) = ...
+        struct('image',NewUneditedSegmentedObjectImage,...
+               'fieldname',['UneditedSegmented',RemainingObjectName]);
+end
+
+if ~ isempty(SmallRemovedSegmentedObjectImage)
+    NewSmallRemovedSegmentedObjectImage = SmallRemovedSegmentedObjectImage;
+    NewSmallRemovedSegmentedObjectImage(my_data.IncludedSegmentedObjectImage==0)=0;
+    OutputImages(length(OutputImages)+1) = ...
+        struct('image',NewSmallRemovedSegmentedObjectImage,...
+               'fieldname',['SmallRemovedSegmented',RemainingObjectName]);
+end
+
+%%% Saves images to the handles structure so they can be saved to the hard
+%%% drive, if the user requested.
+if ~strcmp(SaveOutlines,'Do not use')
+    OutputImages(length(OutputImages)+1) = struct(...
+        'image',CPlabelperim(my_data.IncludedSegmentedObjectImage,8),...
+        'fieldname',SaveOutlines);
+end
+
+for imgstruct =OutputImages
+    if strcmp(RenumberOrRetain,'Renumber')
+        handles.Pipeline.(imgstruct.fieldname) = bwlabel(imgstruct.image);
+    else
+        handles.Pipeline.(imgstruct.fieldname) = imgstruct.image;
+    end
+end
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

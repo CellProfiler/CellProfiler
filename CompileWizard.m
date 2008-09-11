@@ -17,10 +17,16 @@ function CompileWizard
 
 addpath Modules CPsubfunctions DataTools ImageTools Help
 
+%% Current SVN version number
+svn_ver_char = CPsvnversionnumber;
+
 %%% AUTOMATIC EDITING CHANGES
 % First, the help text.
 assert(~ exist('CompileWizardText_help.m','file'), 'CompileWizardText_help.m should not exist.');
 fid = fopen('CompileWizardText_help.m','wt');
+
+%% Piggyback the SVN version number code onto CompileWizardText_help
+fprintf(fid,['handles.Current.svn_version_number = ''' svn_ver_char ''';\n']);
 
 ImageToolfilelist = dir('ImageTools/*.m');
 fprintf(fid,'%%%%%% IMAGE TOOL HELP\n');

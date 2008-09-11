@@ -217,7 +217,7 @@ CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 %consistent, in CPimagetool.
 %%%%%%%%%%%%%%%%%%%%%%%%   WARNING   %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%VariableRevisionNumber = 13
+%%%VariableRevisionNumber = 14
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% FILE PROCESSING %%%

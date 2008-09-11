@@ -7,6 +7,7 @@ function [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSett
 % $Revision$
 
 IsModuleModified = false;
+NeedsPlaceholderUpdateMsg = false;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Changes to LoadImages
@@ -75,6 +76,17 @@ if strcmp(CurrentModuleName, 'SaveImages')
         SavedVarRevNum = 13;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 13    % Picky revision for specific use of "\"
+        
+        for fixup=[3,12]
+            if strcmp(Settings.VariableValues{ModuleNum-Skipped,fixup},'\')
+                Settings.VariableValues{ModuleNum-Skipped,fixup} = 'Do not use';
+                NeedsPlaceholderUpdateMsg = true;
+                IsModuleModified = true;
+            end
+        end
+        SavedVarRevNum = 14;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,5 +108,8 @@ end
 idx = ismember(cellstr(lower(char(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Do not load','Do not save','/'}));
 if any(idx),
     [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
+    NeedsPlaceholderUpdateMsg = true;
+end
+if NeedsPlaceholderUpdateMsg
     CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','LoadPipelines: Some entries updated');
 end

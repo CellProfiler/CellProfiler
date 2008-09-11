@@ -1,4 +1,5 @@
-function max_svn_ver_num = CPsvnloopfunctions
+function svn_ver_char = CPsvnloopfunctions
+% Loops appropriate .m files and parses out svn Revision #
 
 % $Revision$
 
@@ -13,7 +14,7 @@ for current_dir = dirs_to_loop
     
     %% File loop
     for idx = 1:length(files)
-        found = 0;
+%         found = 0;
         current_file = files(idx).name;
         fid = fopen(current_file);
         
@@ -21,7 +22,7 @@ for current_dir = dirs_to_loop
         while feof(fid) == 0
             current_line = fgetl(fid);
             if strncmp(current_line,str_to_find,length(str_to_find))
-%                 disp(['Found in ' current_file])
+
                 %% Grab the number
                 first = length(str_to_find)+1;
                 last = first+4;
@@ -32,13 +33,16 @@ for current_dir = dirs_to_loop
                     break
                 end
                 max_svn_ver_num = max([max_svn_ver_num; current_svn_ver_num]);
-                found = 1;
+%                 found = 1;
                 break
             end
         end
         %% DEBUG
-        if ~found
-            disp(['Could not find a Revision # for ' current_file])
-        end
+%         if ~found
+%             disp(['Could not find a Revision # for ' current_file])
+%         end
     end
 end
+
+
+svn_ver_char = num2str(max_svn_ver_num);

@@ -95,7 +95,9 @@ switch lower(usage),
         movefile('readme.txt','../CompiledCellProfiler/')
         movefile('Old_CellProfiler.m', 'CellProfiler.m');
         movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
-        movefile('run_CellProfiler.sh','../CompiledCellProfiler/')
+        if ~ ispc
+            movefile('run_CellProfiler.sh','../CompiledCellProfiler/')
+        end
         
         % Copy some useful scripts and files back into the CP root folder
         % that are in the SVN repository 

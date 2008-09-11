@@ -20,10 +20,7 @@ try
             pos = findstr(info,str_to_find);
             if length(pos) == 1
                 first = pos+length(str_to_find);
-                %% The '+4' gets an extra space for vers < 9999, and should
-                %% be good 'til 99,999!
-                last = first+4; 
-                svn_ver_char = info(first:last);
+                svn_ver_char = strtok(info(first:end));
                 return
             end
         end
@@ -33,6 +30,6 @@ catch
     return
 end
 
-%% If you've gotten here without returning
+%% If you've gotten here without returning (e.g.  if not deployed)
 %% then just do the loop
 svn_ver_char = CPsvnloopfunctions;

@@ -18,7 +18,9 @@ function CompileWizard
 addpath Modules CPsubfunctions DataTools ImageTools Help
 
 %% Current SVN version number
-svn_ver_char = CPsvnversionnumber;
+%% Note that the working directory must be the CP root, since
+%% BuildCellProfiler, which calls this function, requires it
+svn_ver_char = CPsvnversionnumber(pwd);
 
 %%% AUTOMATIC EDITING CHANGES
 % First, the help text.

@@ -1,9 +1,12 @@
-function svn_ver_char = CPsvnversionnumber
+function svn_ver_char = CPsvnversionnumber(CP_root_dir)
 %% Find the current svn version number
 %% First, try using the 'svn info' command, but if svn is not
 %% installed, or if deployed, loop all functions and parse out
 
 % $Revision$
+
+current_dir = pwd;
+cd(CP_root_dir);
 
 str_to_find = 'Revision: ';
 
@@ -21,15 +24,18 @@ try
             if length(pos) == 1
                 first = pos+length(str_to_find);
                 svn_ver_char = strtok(info(first:end));
+                cd(current_dir)
                 return
             end
         end
     end
 catch
     svn_ver_char = CPsvnloopfunctions;
+    cd(current_dir)
     return
 end
 
 %% If you've gotten here without returning (e.g.  if not deployed)
 %% then just do the loop
 svn_ver_char = CPsvnloopfunctions;
+cd(current_dir)

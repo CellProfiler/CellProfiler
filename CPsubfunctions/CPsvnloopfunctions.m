@@ -37,6 +37,7 @@ for current_dir = dirs_to_loop
                 break
             end
         end
+        fclose(fid);
         %% DEBUG
 %         if ~found
 %             disp(['Could not find a Revision # for ' current_file])

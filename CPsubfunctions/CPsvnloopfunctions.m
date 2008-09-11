@@ -1,4 +1,4 @@
-function svn_ver_char = CPsvnloopfunctions(handles)
+function svn_ver_char = CPsvnloopfunctions
 % Loops appropriate .m files and parses out svn Revision #
 
 % $Revision$

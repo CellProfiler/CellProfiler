@@ -57,7 +57,7 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
 %inputtypeVAR02 = popupmenu category
-MeasureChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
@@ -75,7 +75,7 @@ Image = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
 %inputtypeVAR05 = popupmenu scale
-UserSpecifiedNumber = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+SizeScale = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = What do you want to call the resulting histogram image?
 %defaultVAR06 = OrigHist
@@ -143,14 +143,18 @@ drawnow
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-% FeatureName = CPgetfeaturenameFromMeasureChoice(handles, ObjectName, MeasureChoice, FeatureNumber, Image, UserSpecifiedNumber);
-switch lower(MeasureChoice)
-    case {'areaoccupied','intensity','granularity','imagequality','radialdistribution'}
-        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber, Image);
-    case {'areashape','neighbors','ratio'}
-        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber);
-    case {'texture','radialdistribution'}
-        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, MeasureChoice, FeatureNumber, Image, UserSpecifiedNumber);
+try
+    FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,...
+        FeatureNumber,Image,SizeScale);
+catch
+    error([lasterr '  Image processing was canceled in the ', ModuleName, ...
+        ' module (#' num2str(CurrentModuleNum) ...
+        ') because an error ocurred when retrieving the data.  '...
+        'Likely the category of measurement you chose, ',...
+        Category, ', was not available for ', ...
+        ObjectName,' with feature number ' num2str(FeatureNbr) ...
+        ', possibly specific to image ''' Image ''' and/or ' ...
+        'Texture Scale = ' num2str(SizeScale) '.']);
 end
 
 %%% Checks that the Min and Max have valid values

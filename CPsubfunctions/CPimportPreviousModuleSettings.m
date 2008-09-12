@@ -1,4 +1,4 @@
-function [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
+function [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
 
 % This function attempts to import the settings of older modules into newer
 % ones, basically by reordering VariableValues, VariableInfoTypes, and
@@ -110,6 +110,6 @@ if any(idx),
     [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
     NeedsPlaceholderUpdateMsg = true;
 end
-if NeedsPlaceholderUpdateMsg
-    CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','LoadPipelines: Some entries updated');
-end
+% if NeedsPlaceholderUpdateMsg
+%     CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','LoadPipelines: Some entries updated');
+% end

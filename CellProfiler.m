@@ -830,6 +830,7 @@ set(handles.figure1,'name',['CellProfiler - ',SettingsFileName]);
 revisionConfirm = 0;
 Skipped = 0;
 UpdatedModules = false(1,length(handles.Settings.ModuleNames));
+PlaceholderUpdate = false(1,length(handles.Settings.ModuleNames));
 
 for ModuleNum = 1:length(handles.Settings.ModuleNames)
     CurrentModuleName = handles.Settings.ModuleNames{ModuleNum-Skipped};
@@ -854,8 +855,10 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
         
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
-        [Settings,SavedVarRevNum,IsModuleModified] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+        [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg] = ...
+            CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         if IsModuleModified, UpdatedModules(ModuleNum) = true; end
+        if NeedsPlaceholderUpdateMsg, PlaceholderUpdate(ModuleNum) = true; end
         
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
@@ -947,6 +950,18 @@ if any(UpdatedModules),
     updated_module_locations = find(UpdatedModules);
     for i = updated_module_locations(:)',
         str{i} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
+    end
+    str = str(~cellfun('isempty',str));
+    CPwarndlg(str,'LoadPipelines: Some modules updated','modal');
+end
+
+% Let the user know which module had their empty placeholder setting changed to "Do not use"
+if any(PlaceholderUpdate),
+    str = cell(1+length(find(PlaceholderUpdate)),1);
+    str{1} = 'Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.';
+    updated_module_locations = find(PlaceholderUpdate);
+    for i = updated_module_locations(:)',
+        str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
     end
     str = str(~cellfun('isempty',str));
     CPwarndlg(str,'LoadPipelines: Some modules updated','modal');

@@ -398,7 +398,9 @@ for img_idx = FirstSet:LastSet
                 end
 
                 %%% Add the values into the output 
-                perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1)) = vals;
+                if numobj > 0,
+                    perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1)) = vals;
+                end
                 perobjectvals_mean(1:numobj, (objectbasecol-2+1)) = vals;
 
                 %%% shift right

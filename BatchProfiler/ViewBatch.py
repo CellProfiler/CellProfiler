@@ -39,108 +39,20 @@ else:
     print "<body>"
     print "<div>"
     print "<h1>View batch # %d</h1>"%(batch_id)
-    print "<table class='run_table'>"
-    print "<thead><tr>"
-    print "<th>Start</th><th>End</th><th>Job #</th><th>Status</th><th>Text output file</th><th>Results file</th>"
-    print "<th><div>"
-    print "<div style='position:relative; float=top'>Delete files</div>"
-    print """<div style='position:relative; float=top'>
-    <form action='DeleteFile.py' method='POST'>
-    <input type='hidden' name='batch_id' value='%(batch_id)d'/>
-    <input type='submit' 
-                         name='delete_action' 
-                         value='Text'   
-                         title='Delete all text files' 
-                         onclick='return confirm("Do you really want to delete all text files for this batch?")'/>
-    <input type='submit' 
-                         name='delete_action' 
-                         value='Output'   
-                         title='Delete output files' 
-                         onclick='return confirm("Do you really want to delete all output files for this batch?")'/>
-    <input type='submit' 
-                         name='delete_action' 
-                         value='Done'   
-                         title='Delete done files' 
-                         onclick='return confirm("Do you really want to delete all done files for this batch?")'/>
-    <input type='submit' 
-                         name='delete_action' 
-                         value='All'   
-                         title='Delete all files for this batch' 
-                         onclick='return confirm("Do you really want to delete all files for this batch?")'/>
-    </form>
-    </div>"""%(my_batch)
-    print "</div></th>"
-    print "</tr></thead>"
-    print "<tbody>"
     jobs_by_state = {}
     for run in my_batch["runs"]:
-        x = my_batch.copy()
-        x.update(run)
-        x["text_file"] = RunBatch.RunTextFile(run)
-        x["text_path"] = RunBatch.RunTextFilePath(my_batch,run)
-        x["done_file"] = RunBatch.RunDoneFile(run)
-        x["done_path"]=  RunBatch.RunDoneFilePath(my_batch,run)
-        x["out_file"] =  RunBatch.RunOutFile(run)
-        x["out_path"] =  RunBatch.RunOutFilePath(my_batch,run)
-        print "<tr>"
-        print "<td>%(start)d</td><td>%(end)d</td><td>%(job_id)s</td>"%(x)
-        if os.path.isfile(x["done_path"]):
-            cpu = RunBatch.GetCPUTime(my_batch,run)
-            print "<td style='color:green'>"
-            if cpu:
-                print "Complete (%.2f sec)"%(cpu)
-            else:
-                print "Complete"
+        stat  = "Unknown"
+        if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
             stat = "Complete"
-        else:
+        else :
             job_status = RunBatch.GetJobStatus(run["job_id"])
-            stat = "Unknown"
             if job_status and job_status.has_key("STAT"):
-                stat=job_status["STAT"]
-            print """
-<td style='color:red'>%s<br/>
-    <form action='ViewBatch.py' method='POST' target='ResubmitWindow'>
-    <input type='hidden' name='batch_id' value='%d' />
-    <input type='hidden' name='submit_run' value='%d' />
-    <input type='submit' value='Resubmit' />
-    </form>
-</td>"""%(stat,batch_id,run["run_id"])
+                stat = job_status["STAT"]
+        run["status"]=stat;
         if jobs_by_state.has_key(stat):
             jobs_by_state[stat].append(run)
-        else :
-            jobs_by_state[stat] = [ run ]
-        print "<td><a href='ViewTextFile.py?run_id=%(run_id)d' title=%(text_path)s>%(text_file)s</a></td>"%(x)
-        print "<td title='%(out_path)s'>%(out_file)s</td>"%(x)
-        #
-        # This cell contains the form that deletes things
-        #
-        print "<td><form action='DeleteFile.py' method='POST'>"
-        print "<input type='hidden' name='run_id' value='%(run_id)d' />"%(x)
-        print """<input type='submit' 
-                         name='delete_action' 
-                         value='Text'   
-                         title='Delete file %(text_path)s' 
-                         onclick='return confirm("Do you really want to delete %(text_file)s?")'/>"""%(x)
-        print """<input type='submit' 
-                         name='delete_action' 
-                         value='Output'   
-                         title='Delete file %(out_path)s' 
-                         onclick='return confirm("Do you really want to delete %(out_file)s?")'/>"""%(x)
-        print """<input type='submit' 
-                         name='delete_action' 
-                         value='Done'   
-                         title='Delete file %(done_path)s' 
-                         onclick='return confirm("Do you really want to delete %(done_file)s?")'/>"""%(x)
-        print """<input type='submit' 
-                         name='delete_action' 
-                         value='All'   
-                         title='Delete all files for this run' 
-                         onclick='return confirm("Do you really want to delete %(text_file)s, %(out_file)s and %(done_file)s?")'/>"""%(x)
-        print "</form></td>"
-        print "</tr>"
-    print "</tbody>"
-    print "</table>"
-    print "</div>"
+        else:
+            jobs_by_state[stat] = [run]
     print "<div style='padding:5px'>"
     #
     # The summary table
@@ -187,5 +99,110 @@ else:
             print "</form>"
             print "</div>"
     print "</div>"
+    print "</div>"
+    #
+    # The big table
+    #
+    print "<table class='run_table'>"
+    print "<thead><tr>"
+    print "<th>Start</th><th>End</th><th>Job #</th><th>Status</th><th>Text output file</th><th>Results file</th>"
+    print "<th><div>"
+    print "<div style='position:relative; float=top'>Delete files</div>"
+    print """<div style='position:relative; float=top'>
+    <form action='DeleteFile.py' method='POST'>
+    <input type='hidden' name='batch_id' value='%(batch_id)d'/>
+    <input type='submit' 
+                         name='delete_action' 
+                         value='Text'   
+                         title='Delete all text files' 
+                         onclick='return confirm("Do you really want to delete all text files for this batch?")'/>
+    <input type='submit' 
+                         name='delete_action' 
+                         value='Output'   
+                         title='Delete output files' 
+                         onclick='return confirm("Do you really want to delete all output files for this batch?")'/>
+    <input type='submit' 
+                         name='delete_action' 
+                         value='Done'   
+                         title='Delete done files' 
+                         onclick='return confirm("Do you really want to delete all done files for this batch?")'/>
+    <input type='submit' 
+                         name='delete_action' 
+                         value='All'   
+                         title='Delete all files for this batch' 
+                         onclick='return confirm("Do you really want to delete all files for this batch?")'/>
+    </form>
+    </div>"""%(my_batch)
+    print "</div></th>"
+    print "</tr></thead>"
+    print "<tbody>"
+    for run in my_batch["runs"]:
+        x = my_batch.copy()
+        x.update(run)
+        x["text_file"] = RunBatch.RunTextFile(run)
+        x["text_path"] = RunBatch.RunTextFilePath(my_batch,run)
+        x["done_file"] = RunBatch.RunDoneFile(run)
+        x["done_path"]=  RunBatch.RunDoneFilePath(my_batch,run)
+        x["out_file"] =  RunBatch.RunOutFile(run)
+        x["out_path"] =  RunBatch.RunOutFilePath(my_batch,run)
+        print "<tr>"
+        print "<td>%(start)d</td><td>%(end)d</td><td>%(job_id)s</td>"%(x)
+        if run["status"] == "Complete":
+            cpu = RunBatch.GetCPUTime(my_batch,run)
+            print "<td style='color:green'>"
+            if cpu:
+                print "Complete (%.2f sec)"%(cpu)
+            else:
+                print "Complete"
+            stat = "Complete"
+        else:
+            print """
+<td style='color:red'>%s<br/>
+    <form action='ViewBatch.py' method='POST' target='ResubmitWindow'>
+    <input type='hidden' name='batch_id' value='%d' />
+    <input type='hidden' name='submit_run' value='%d' />
+    <input type='submit' value='Resubmit' />
+    </form>
+</td>"""%(run["status"],batch_id,run["run_id"])
+        if jobs_by_state.has_key(stat):
+            jobs_by_state[stat].append(run)
+        else :
+            jobs_by_state[stat] = [ run ]
+        print "<td>"
+        if os.path.isfile(x["text_path"]):
+            print "<a href='ViewTextFile.py?run_id=%(run_id)d' title=%(text_path)s>%(text_file)s</a>"%(x)
+        else :
+            print "<span title='Text file not yet available'>%(text_file)s</span>"%(x)
+        print "</td>"
+        print "<td title='%(out_path)s'>%(out_file)s</td>"%(x)
+        #
+        # This cell contains the form that deletes things
+        #
+        print "<td><form action='DeleteFile.py' method='POST'>"
+        print "<input type='hidden' name='run_id' value='%(run_id)d' />"%(x)
+        print """<input type='submit' 
+                         name='delete_action' 
+                         value='Text'   
+                         title='Delete file %(text_path)s' 
+                         onclick='return confirm("Do you really want to delete %(text_file)s?")'/>"""%(x)
+        print """<input type='submit' 
+                         name='delete_action' 
+                         value='Output'   
+                         title='Delete file %(out_path)s' 
+                         onclick='return confirm("Do you really want to delete %(out_file)s?")'/>"""%(x)
+        print """<input type='submit' 
+                         name='delete_action' 
+                         value='Done'   
+                         title='Delete file %(done_path)s' 
+                         onclick='return confirm("Do you really want to delete %(done_file)s?")'/>"""%(x)
+        print """<input type='submit' 
+                         name='delete_action' 
+                         value='All'   
+                         title='Delete all files for this run' 
+                         onclick='return confirm("Do you really want to delete %(text_file)s, %(out_file)s and %(done_file)s?")'/>"""%(x)
+        print "</form></td>"
+        print "</tr>"
+    print "</tbody>"
+    print "</table>"
     print "</div>"
     print "</body>"

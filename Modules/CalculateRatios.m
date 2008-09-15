@@ -1,4 +1,4 @@
-function handles = CalculateRatios(handles)
+function handles = CalculateRatios(handles,varargin)
 
 % Help for the Calculate Ratios module:
 % Category: Measurement
@@ -76,8 +76,9 @@ ObjectName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR03 = popupmenu category
 Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Which feature do you want to use? (Enter the feature number or name - see help for details)
+%textVAR04 = Which feature do you want to use? 
 %defaultVAR04 = 1
+%inputtypeVAR04 = popupmenu measurement
 FeatureNumber{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
 
 %textVAR05 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?
@@ -100,8 +101,9 @@ ObjectName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR08 = popupmenu category
 Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = Which feature do you want to use? (Enter the feature number or name - see help for details)
+%textVAR09 = Which feature do you want to use?
 %defaultVAR09 = 1
+%inputtypeVAR09 = popupmenu measurement
 FeatureNumber{2} = handles.Settings.VariableValues{CurrentModuleNum,9};
 
 %textVAR10 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?
@@ -122,6 +124,34 @@ SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
 LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 6
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FEATURES          %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin > 1
+    switch(varargin{1})
+%feature:categories
+        case 'categories'
+            result = {};
+            if nargin == 1 || ismember(varargin{2},ObjectName)
+                result = { 'Ratio' };
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if all(isnan(str2double(FeatureNumber))) % is numerator or denominator a legacy feature number?
+                if ismember(varargin{2},ObjectName) &&...
+                    strcmp(varargin{3},'Ratio')
+                    result = { getRatioName(RatioName,ObjectName,FeatureNumber) };
+                end
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS %%%
@@ -202,13 +232,8 @@ if ~isvarname(RatioName)
     CPwarndlg(['The ratio name you entered was invalid, and has been replaced '...
         'with an automatically generated name based on your inputs (equivalent to ''Automatic'' setting).']);
 end
-if strcmpi(RatioName, 'Automatic')
-    RatioName = CPjoinstrings('Ratio',ObjectName{1},FeatureName{1},...
-                          'DividedBy',ObjectName{2},FeatureName{2});
-    RatioName = CPtruncatefeaturename(RatioName);
-else
-    RatioName = CPjoinstrings('Ratio', RatioName);
-end
+RatioName = getRatioName(RatioName,ObjectName,FeatureName);
+RatioName = CPtruncatefeaturename(CPjoinstrings(RatioName));
 
 %% Save, depending on type of measurement (ObjectName)
 %% Note that Image measurements are scalars, while Objects are potentially vectors
@@ -278,4 +303,12 @@ if any(findobj == ThisModuleFigureNumber)
     uicontrol(ThisModuleFigureNumber, 'style', 'text', 'units','normalized', 'position', [0.3 0.75 0.1 0.03],...
         'HorizontalAlignment', 'center', 'Background', [.7 .7 .9], 'fontname', 'Helvetica', ...
         'fontsize',FontSize,'string',sprintf('%4.2f',mean(FinalMeasurements)),'UserData',SetBeingAnalyzed);
+end
+end
+function RatioName = getRatioName(RatioName,ObjectName, FeatureName)
+if strcmpi(RatioName, 'Automatic')
+    RatioName = CPjoinstrings(ObjectName{1},FeatureName{1},...
+                          'DividedBy',ObjectName{2},FeatureName{2});
+end
+
 end

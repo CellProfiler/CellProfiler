@@ -30,6 +30,15 @@ if strcmp('LoadImages',CurrentModuleName)
         SavedVarRevNum = 2;
         IsModuleModified = true;
     end
+    if (SavedVarRevNum == 2)
+        Settings.VariableValues{ModuleNum-Skipped,14} = 'grayscale';
+        %%% The last variable is bogus...
+        Settings.VariableValues{ModuleNum-Skipped,15} = [];
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = 15;
+        SavedVarRevNum = 3;
+        IsModuleModified = true;
+    end
+        
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

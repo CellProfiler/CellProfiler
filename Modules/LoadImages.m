@@ -124,6 +124,12 @@ function handles = LoadImages(handles)
 % you are in TEXT mode, the names of the folders themselves must not
 % contain the text you are searching for or an error will result.
 %
+% If the images you are loading are binary (black/white only), in what 
+% format do you want to store them?
+% CellProfiler will save your image in binary format if your image has 
+% only two distinct values and you have selected "binary" instead of
+% "grayscale".
+%
 % Notes about loading images:
 %
 % CellProfiler can open and read .ZVI files. .ZVI files are Zeiss files
@@ -296,9 +302,16 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %defaultVAR13 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+%textVAR14 = If the images you are loading are binary (black/white only), in what format do you want to store them?
+%defaultVAR14 = grayscale
+%choiceVAR14 = grayscale
+%choiceVAR14 = binary
+%inputtypeVAR14 = popupmenu
+SaveAsBinary = strcmp(char(handles.Settings.VariableValues(CurrentModuleNum,14)),'binary');
 
-%%%VariableRevisionNumber = 2
+%textVAR15 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -348,6 +361,7 @@ if SetBeingAnalyzed == 1
         if isfield(handles.Pipeline,ImageName{i})
             error(['Image processing was cancelled in the ', ModuleName, ' module because you are trying to load two sets of images with the same name (e.g. OrigBlue). The last set loaded will always overwrite the first set and make it obselete. Please remove one of these modules.']);
         end
+        CPvalidfieldname(ImageName{i});
     end
 
     %%% Get the pathname and check that it exists
@@ -663,6 +677,15 @@ for n = 1:length(ImageName)
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
             LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}));
+            if SaveAsBinary
+                minval=min(LoadedImage(:));
+                maxval=max(LoadedImage(:));
+                %%% If any member of LoadedImage is not the min or max 
+                %%% value, then the image is not binary
+                if all(ismember(LoadedImage,[minval,maxval]))
+                    LoadedImage = (LoadedImage==maxval);
+                end
+            end
             %%% Note, we are not using the CPretrieveimage subfunction because we are
             %%% here retrieving the image from the hard drive, not from the handles
             %%% structure.

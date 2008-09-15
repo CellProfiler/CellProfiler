@@ -1,4 +1,4 @@
-function handles = MeasureObjectAreaShape(handles)
+function handles = MeasureObjectAreaShape(handles, varargin)
 
 % Help for the Measure Object Area Shape module:
 % Category: Measurement
@@ -14,48 +14,6 @@ function handles = MeasureObjectAreaShape(handles)
 % the image in Identify modules.
 %
 % Basic shape features:     Feature Number:
-% Area                    |       1
-% Eccentricity            |       2
-% Solidity                |       3
-% Extent                  |       4
-% EulerNumber             |       5
-% Perimeter               |       6
-% FormFactor              |       7
-% MajorAxisLength         |       8
-% MinorAxisLength         |       9
-% Orientation             |      10
-%
-% Zernike shape features:
-%     'Zernike_0_0'       |      11
-%     'Zernike_1_1'       |      12
-%     'Zernike_2_0'       |      13
-%     'Zernike_2_2'       |      14
-%     'Zernike_3_1'       |      15
-%     'Zernike_3_3'       |      16
-%     'Zernike_4_0'       |      17
-%     'Zernike_4_2'       |      18
-%     'Zernike_4_4'       |      19
-%     'Zernike_5_1'       |      20
-%     'Zernike_5_3'       |      21
-%     'Zernike_5_5'       |      22
-%     'Zernike_6_0'       |      23
-%     'Zernike_6_2'       |      24
-%     'Zernike_6_4'       |      25
-%     'Zernike_6_6'       |      26
-%     'Zernike_7_1'       |      27
-%     'Zernike_7_3'       |      28
-%     'Zernike_7_5'       |      29
-%     'Zernike_7_7'       |      30
-%     'Zernike_8_0'       |      31
-%     'Zernike_8_2'       |      32
-%     'Zernike_8_4'       |      33
-%     'Zernike_8_6'       |      34
-%     'Zernike_8_8'       |      35
-%     'Zernike_9_1'       |      36
-%     'Zernike_9_3'       |      37
-%     'Zernike_9_5'       |      38
-%     'Zernike_9_7'       |      39
-%     'Zernike_9_9'       |      40
 %
 % Zernike shape features measure shape by describing a binary object (or
 % more precisely, a patch with background and an object in the center) in a
@@ -223,6 +181,43 @@ ZernikeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%VariableRevisionNumber = 3
 
+%%%%%%%%%%%%%%%%%
+%%% Features  %%%
+%%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},ObjectNameList)
+                result = { 'AreaShape' };
+            else
+                result = {};
+            end
+
+%feature:measurements
+        case 'measurements'
+            if ismember(varargin{2},ObjectNameList) && ...
+                    strcmp(varargin{3},'AreaShape')
+                result = {...
+                    'Area','Eccentricity','Solidity','Extent','EulerNumber',...
+                    'Perimeter','FormFactor','MajorAxisLength',...
+                    'MinorAxisLength','Orientation' };
+                if strcmp(ZernikeChoice,'Yes')
+                    for i = 0:9
+                        result = [result,...
+                            arrayfun(@(x) {sprintf(sprintf('Zernike_%d_%%d',i),x)},(0:i)*2+mod(i+2,2))]; %#ok<AGROW>
+                    end
+                end
+            else
+                result = {};
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 %%% Set up the window for displaying the results
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);

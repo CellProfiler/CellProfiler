@@ -818,6 +818,7 @@ handles.Settings.VariableInfoTypes = {};
 handles.Settings.VariableRevisionNumbers = [];
 handles.Settings.ModuleRevisionNumbers = [];
 handles.Settings.NumbersOfVariables = [];
+handles.Settings.ModuleSupportedFeatures = {};
 handles.VariableBox = {};
 handles.VariableDescription = {};
 
@@ -845,7 +846,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
 
     try
         %%% First load the module with its default settings
-        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
+        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum SupportedFeatures] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
         %%% If no VariableRevisionNumber was extracted, default it to 0
         if isfield(Settings,'VariableRevisionNumbers')
             SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum-Skipped);
@@ -899,6 +900,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
              handles.Settings.ModuleRevisionNumbers(ModuleNum-Skipped) = ModuleRevNum;
             revisionConfirm = 1;
         end
+        handles.Settings.ModuleSupportedFeatures{ModuleNum-Skipped} = SupportedFeatures;
         clear defVariableInfoTypes;
     catch
         %%% It is very unlikely to get here, because this means the
@@ -1021,7 +1023,7 @@ if isfield(LoadedSettings, 'handles'),
 end
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum ModuleRevNum] = LoadSettings_Helper(Pathname, ModuleName)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum ModuleRevNum SupportedFeatures] = LoadSettings_Helper(Pathname, ModuleName)
 
 VariableValues = {[]};
 VariableInfoTypes = {[]};
@@ -1029,6 +1031,8 @@ VariableDescriptions = {[]};
 VarRevNum = 0;
 ModuleRevNum = 0;
 NumbersOfVariables = 0;
+SupportedFeatures = {[]};
+NumberOfFeatures = 0;
 if isdeployed
     ModuleNamedotm = [ModuleName '.txt'];
 else
@@ -1093,6 +1097,9 @@ while 1
         catch
             ModuleRevNum = str2double(output(14:18));
         end
+    elseif strncmp(output,'%feature:',9)
+        NumberOfFeatures = NumberOfFeatures+1;
+        SupportedFeatures{NumberOfFeatures} = output(10:end);
     end
 end
 fclose(fid);
@@ -2084,20 +2091,19 @@ if ModuleNamedotm ~= 0,
                 StrSet(Count) = {'Other..'};
                 Count = Count + 1;
             elseif strcmp(output(29:end),'category')
-                categories= CPgetpriorcategories(handles, ModuleNums);
-                for category = categories
-                    StrSet(Count)= category;
-                    Count=Count+1;
-                end
-                if  (~isempty(CurrentValue)) && ( Count == 1 || (ischar(CurrentValue) && isempty(strmatch(CurrentValue, StrSet, 'exact'))))
-                    StrSet(Count) = { CurrentValue };
-                    Count = Count + 1;
-                end
-                StrSet(Count) = {'Other..'};
-                Count = Count + 1;
-                if (isempty(CurrentValue))
-                    handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = { StrSet(1) };
-                end
+                %%% NOTE: depends on a strict order of Object/Image, then category
+                categories= CPgetpriorcategories(handles, ModuleNums,...
+                    handles.Settings.VariableValues(ModuleNums,lastVariableCheck-1));
+                [handles,StrSet,Count]=getStrSet(handles,categories,ModuleNums,lastVariableCheck,StrSet);
+                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData','category');
+            elseif strcmp(output(29:end),'measurement')
+                %%% NOTE: depends on a strict order of Object/Image, category and measurement
+                measurements=CPgetpriormeasurements(...
+                    handles, ModuleNums,...
+                    handles.Settings.VariableValues(ModuleNums,lastVariableCheck-2),...
+                    handles.Settings.VariableValues(ModuleNums,lastVariableCheck-1));
+                [handles,StrSet,Count] = getStrSet(handles,measurements,ModuleNums,lastVariableCheck,StrSet);
+                set(handles.VariableBox{ModuleNums}(lastVariableCheck),'UserData','measurement');
             end
 
             set(handles.VariableBox{ModuleNums}(lastVariableCheck),'string',StrSet);
@@ -2220,6 +2226,29 @@ if ModuleNamedotm ~= 0,
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% getStrSet - build a set of strings for a popupmenu
+%%%             including information about the current state
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [handles,StrSet,Count] = getStrSet(handles, my_list, ModuleNums,lastVariableCheck,StrSet)
+    Count=0;
+    CurrentValue = handles.Settings.VariableValues{ModuleNums,lastVariableCheck};
+    if ~ isempty(my_list)
+        for element = my_list
+            Count=Count+1;
+            StrSet(Count)= element;
+        end
+    end
+    if  (~isempty(CurrentValue)) && ( Count == 0 || (ischar(CurrentValue) && isempty(strmatch(CurrentValue, StrSet, 'exact'))))
+        Count = Count + 1;
+        StrSet(Count) = { CurrentValue };
+    end
+    Count = Count + 1;
+    StrSet(Count) = {'Other..'};
+    if (isempty(CurrentValue))
+        handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = { StrSet(1) };
+    end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% REMOVE MODULE BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2664,17 +2693,17 @@ function storevariable(ModuleNumber, VariableNumber, UserEntry, handles)
 %%% when given the Module Number, the Variable Number,
 %%% the UserEntry (from the Edit box), and the initial handles
 %%% structure.
-
-InfoType = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'UserData');
-StrSet = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'string');
-% Type = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'Style');
+vn=str2double(VariableNumber);
+InfoType = get(handles.VariableBox{ModuleNumber}(vn),'UserData');
+StrSet = get(handles.VariableBox{ModuleNumber}(vn),'string');
+% Type = get(handles.VariableBox{ModuleNumber}(vn),'Style');
 
 if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
-    PrevValue = handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber));
+    PrevValue = handles.Settings.VariableValues(ModuleNumber, vn);
     ModList = findobj('UserData',InfoType(1:end-6));
     %Filter out objects that are over this one
     ModList2 = findobj('UserData',InfoType(1:end));
-    ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(str2double(VariableNumber)));
+    ModList2 = ModList2(ModList2 ~= handles.VariableBox{ModuleNumber}(vn));
     %ModList3 = nonzeros(ModList2(strcmp(get(ModList2,'String'),PrevValue)));
     for i = 1:length(ModList2)
         Values = get(ModList2(i),'value');
@@ -2721,7 +2750,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                 end
             end
         else
-            OrigValues = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'value');
+            OrigValues = get(handles.VariableBox{ModuleNumber}(vn),'value');
             for i = 1:length(ModList2)
                 Values = get(ModList2(i),'value');
                 PrevStrSet = get(ModList2(i),'string');
@@ -2859,7 +2888,7 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
                         end
                         set(ModList(i),'String',CurrentString);
                     else
-                        OrigValues = get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'value');
+                        OrigValues = get(handles.VariableBox{ModuleNumber}(vn),'value');
                         if ~strcmp(StrSet{OrigValues},'n/a') && ~strcmp(StrSet{OrigValues},'/')
                             CurrentString(numel(CurrentString)+1) = {StrSet{OrigValues}};
                         end
@@ -2876,17 +2905,72 @@ if length(InfoType) >= 5 && strcmp(InfoType(end-4:end),'indep')
     end
 end
 
-if strcmp(get(handles.VariableBox{ModuleNumber}(str2double(VariableNumber)),'style'),'edit')
-    handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
+if strcmp(get(handles.VariableBox{ModuleNumber}(vn),'style'),'edit')
+    handles.Settings.VariableValues(ModuleNumber, vn) = {UserEntry};
 else
     if ischar(UserEntry)
-        handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = {UserEntry};
+        handles.Settings.VariableValues(ModuleNumber, vn) = {UserEntry};
     else
-        handles.Settings.VariableValues(ModuleNumber, str2double(VariableNumber)) = StrSet(UserEntry);
+        handles.Settings.VariableValues(ModuleNumber, vn) = StrSet(UserEntry);
+    end
+end
+%%% After the value is stored, we might redo subsequent if they are
+%%% one of the dependent types.
+for i=1:2
+    if handles.Settings.NumbersOfVariables(ModuleNumber) > vn
+        switch get(handles.VariableBox{ModuleNumber}(vn+i),'UserData')
+            case 'category'
+                if i==1
+                    handles = updateCategoryPopupmenu(handles, ModuleNumber, vn+i);
+                end
+            case 'measurement'
+                handles = updateMeasurementPopupmenu(handles, ModuleNumber, vn+i);
+        end
     end
 end
 guidata(handles.figure1, handles);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% updateCategoryPopupmenu - update a category popupmenu after its object
+%%%                           has changed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function handles = updateCategoryPopupmenu(handles, ModuleNumber, lastVariableNumber)
+    ObjectOrImageName = handles.Settings.VariableValues(ModuleNumber, lastVariableNumber-1);
+    ObjectOrImageName = ObjectOrImageName{1};
+    categories = CPgetpriorcategories(handles, ModuleNumber, ObjectOrImageName);
+    [handles,StrSet] = getStrSet(handles,categories,ModuleNumber,lastVariableNumber,[]);
+    updatePopup(handles,ModuleNumber,lastVariableNumber,StrSet);
+    if handles.Settings.NumbersOfVariables(ModuleNumber) < lastVariableNumber &&...
+        strcmp(get(handles.Settings.VariableBox{ModuleNumber}(lastVariableNumber+1),'UserData'),'measurement')
+        handles = updateMeasurementPopupmenu(handles, ModuleNumber,lastVariableNumber+1);
+    end
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% updateMeasurementPopupmenu - update a category popupmenu after its object
+%%%                              has changed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function handles = updateMeasurementPopupmenu(handles, ModuleNumber, lastVariableNumber)
+    ObjectOrImageName = handles.Settings.VariableValues(ModuleNumber, lastVariableNumber-2);
+    ObjectOrImageName = ObjectOrImageName{1};
+    Category = handles.Settings.VariableValues(ModuleNumber, lastVariableNumber-1);
+    measurements = CPgetpriormeasurements(handles, ModuleNumber, ObjectOrImageName,Category);
+    [handles,StrSet] = getStrSet(handles,measurements,ModuleNumber,lastVariableNumber,[]);
+    updatePopup(handles,ModuleNumber,lastVariableNumber,StrSet);
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% updatePopup - update a popup menu, trying to keep the value stable
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function updatePopup(handles,ModuleNumber,lastVariableNumber,StrSet)
+    idx = find(strcmp(handles.Settings.VariableValues(ModuleNumber, lastVariableNumber),StrSet));
+    hVariable=handles.VariableBox{ModuleNumber}(lastVariableNumber);
+    set(hVariable,'Value',1); % For stability, set the value to 1 in case the set shrinks
+    set(handles.VariableBox{ModuleNumber}(lastVariableNumber),'String',StrSet);
+    if ~ isempty(idx)
+        set(hVariable,'Value',idx);
+    end
+    
 function [ModuleNumber] = whichactive(handles)
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 ModuleNumber = ModuleHighlighted(1);

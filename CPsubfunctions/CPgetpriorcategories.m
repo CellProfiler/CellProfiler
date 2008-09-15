@@ -1,4 +1,4 @@
-function categories=CPgetpriorcategories(handles, CurrentModuleNum)
+function categories=CPgetpriorcategories(handles, CurrentModuleNum, ObjectOrImageName)
 
 % Get the measurement categories created by modules prior to
 % CurrentModuleNum, returning them as cells.
@@ -16,8 +16,20 @@ function categories=CPgetpriorcategories(handles, CurrentModuleNum)
 % Website: http://www.cellprofiler.org
 %
 % $Revision$
-categories = sort({ ...
-    'AreaOccupied','AreaShape','Children','Parent','Correlation',...
-    'Intensity','Neighbors','Ratio','Texture','RadialDistribution',...
-    'Granularity'});
+categories=[];
+for i = 1:(CurrentModuleNum-1)
+    SupportsCategories=false;
+    for feature=handles.Settings.ModuleSupportedFeatures{i}
+        if strcmp(feature,'categories')
+            SupportsCategories=true;
+        end
+    end
+    if SupportsCategories
+        handles.Current.CurrentModuleNumber=num2str(i);
+        categories=unique([categories,...
+            feval(handles.Settings.ModuleNames{i},handles,...
+                  'categories', ObjectOrImageName)]);
+    end
+end
+categories=sort(categories);
 end

@@ -123,8 +123,6 @@ SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR12 = popupmenu
 LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%%%VariableRevisionNumber = 6
-
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FEATURES          %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -152,6 +150,8 @@ if nargin > 1
     handles=result;
     return;
 end
+
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MAKE MEASUREMENTS %%%

@@ -179,8 +179,6 @@ ObjectNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 ZernikeChoice = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%%%VariableRevisionNumber = 3
-
 %%%%%%%%%%%%%%%%%
 %%% Features  %%%
 %%%%%%%%%%%%%%%%%
@@ -218,6 +216,9 @@ if nargin > 1
     handles=result;
     return;
 end
+
+%%%VariableRevisionNumber = 3
+
 %%% Set up the window for displaying the results
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);

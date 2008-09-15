@@ -605,6 +605,7 @@ if strcmp(Answer,'Yes')
     handles.Settings.VariableInfoTypes = {};
     handles.Settings.VariableRevisionNumbers = [];
     handles.Settings.ModuleRevisionNumbers = [];
+    handles.Settings.ModuleSupportedFeatures = {};    
     delete(get(handles.variablepanel,'children'));
     set(handles.slider1,'visible','off');
     handles.VariableBox = {};
@@ -846,7 +847,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
 
     try
         %%% First load the module with its default settings
-        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum SupportedFeatures] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
+        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
         %%% If no VariableRevisionNumber was extracted, default it to 0
         if isfield(Settings,'VariableRevisionNumbers')
             SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum-Skipped);
@@ -900,7 +901,6 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
              handles.Settings.ModuleRevisionNumbers(ModuleNum-Skipped) = ModuleRevNum;
             revisionConfirm = 1;
         end
-        handles.Settings.ModuleSupportedFeatures{ModuleNum-Skipped} = SupportedFeatures;
         clear defVariableInfoTypes;
     catch
         %%% It is very unlikely to get here, because this means the
@@ -1023,7 +1023,7 @@ if isfield(LoadedSettings, 'handles'),
 end
 
 %%% SUBFUNCTION %%%
-function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum ModuleRevNum SupportedFeatures] = LoadSettings_Helper(Pathname, ModuleName)
+function [VariableValues VariableInfoTypes VariableDescriptions NumbersOfVariables VarRevNum ModuleRevNum] = LoadSettings_Helper(Pathname, ModuleName)
 
 VariableValues = {[]};
 VariableInfoTypes = {[]};
@@ -1031,8 +1031,6 @@ VariableDescriptions = {[]};
 VarRevNum = 0;
 ModuleRevNum = 0;
 NumbersOfVariables = 0;
-SupportedFeatures = {[]};
-NumberOfFeatures = 0;
 if isdeployed
     ModuleNamedotm = [ModuleName '.txt'];
 else
@@ -1097,9 +1095,6 @@ while 1
         catch
             ModuleRevNum = str2double(output(14:18));
         end
-    elseif strncmp(output,'%feature:',9)
-        NumberOfFeatures = NumberOfFeatures+1;
-        SupportedFeatures{NumberOfFeatures} = output(10:end);
     end
 end
 fclose(fid);
@@ -1742,6 +1737,9 @@ if ModuleNamedotm ~= 0,
     end
     ModuleNumber = CPtwodigitstring(ModuleNums);
 
+    if handles.Current.NumberOfModules == 0
+        handles.Settings.ModuleSupportedFeatures = {};
+    end
     for ModuleCurrent = handles.Current.NumberOfModules:-1:ModuleNums;
         %%% 1. Switches ModuleNames
         handles.Settings.ModuleNames{ModuleCurrent+1} = handles.Settings.ModuleNames{ModuleCurrent};
@@ -1768,6 +1766,8 @@ if ModuleNamedotm ~= 0,
         contents = get(handles.ModulePipelineListBox,'String');
         contents{ModuleCurrent+1} = handles.Settings.ModuleNames{ModuleCurrent};
         set(handles.ModulePipelineListBox,'String',contents);
+        %%% 7. Start a new module features list
+        handles.Settings.ModuleSupportedFeatures{ModuleCurrent+1} = {};
     end
 
     if ModuleNums <= handles.Current.NumberOfModules
@@ -1780,6 +1780,8 @@ if ModuleNamedotm ~= 0,
         end
     end
 
+    NumberOfFeatures = 0;
+    handles.Settings.ModuleSupportedFeatures{ModuleNums} = {};
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
 
@@ -2128,6 +2130,9 @@ if ModuleNamedotm ~= 0,
                 handles.Settings.VariableRevisionNumbers(ModuleNums) = str2double(output(29:29));
             end
             break;
+        elseif strncmp(output,'%feature:',9)
+            NumberOfFeatures = NumberOfFeatures+1;
+            handles.Settings.ModuleSupportedFeatures{ModuleNums}{NumberOfFeatures} = output(10:end);
         end
     end
 

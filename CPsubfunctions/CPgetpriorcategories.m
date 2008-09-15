@@ -31,5 +31,12 @@ for i = 1:(CurrentModuleNum-1)
                   'categories', ObjectOrImageName)]);
     end
 end
+if isempty(categories)
+    %%% If no categories apparently available, revert to old behavior
+    categories = sort({ ...
+        'AreaOccupied','AreaShape','Children','Parent','Correlation',...
+        'Intensity','Neighbors','Ratio','Texture','RadialDistribution',...
+        'Granularity'});
+end
 categories=sort(categories);
 end

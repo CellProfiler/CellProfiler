@@ -147,7 +147,7 @@ switch Operation
     case 'Log transform (base 2)'
         if max(FirstImage(:)) > 0,
             ImageNoZeros = max(FirstImage, min(FirstImage(FirstImage > 0)));
-            ImageAfterMath = log2(ImageNoZeros)
+            ImageAfterMath = log2(ImageNoZeros);
         else
             ImageAfterMath = zeros(size(FirstImage));
         end

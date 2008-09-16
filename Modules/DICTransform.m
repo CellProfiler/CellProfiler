@@ -4,14 +4,29 @@ function handles = DICTransform(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Transforms a DIC image to bas relief so that standard segmentation algorithms
+% Transforms a DIC image so that standard segmentation algorithms
 % will function.
-% *************************************************************************
+% 
+% ************************************************************************
+%
+% Thresholding algorithms (such as the IdentifyPrimaryAutomatic
+% module) cannot be used to identify the foreground of an
+% untransformed DIC image because the interior of the objects has
+% similar intensity to the background.  This module provides several
+% algorithms for transforming the image so that the objects have a
+% different intensity than the background.
+% 
+% On most images, the line integration and the energy minimization
+% algorithms perform the best.  However, these algorithms don't work
+% as well when the objects in the images are heavily textured (e.g.,
+% mice embryos).  On such images, a simple normally weighted variance
+% filter is usually more helpful.
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
-% Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
+% Developed by the Broad Institute of MIT and Harvard.
+% Copyright 2008.
 %
 % Please see the AUTHORS file for credits.
 %
@@ -32,23 +47,23 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = What do you want to call the transformed image?
-%defaultVAR02 = TransformDIC
+%defaultVAR02 = TransformedDIC
 %infotypeVAR02 = imagegroup indep
 TransformedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Choose a shear angle:
-%choiceVAR03 = Main Diagonal
-%choiceVAR03 = Anti Diagonal
+%choiceVAR03 = Main diagonal
+%choiceVAR03 = Antidiagonal
 %choiceVAR03 = Vertical
 %choiceVAR03 = Horizontal
 Shear = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 = Choose a transformation method:
-%choiceVAR04 = Line Integration
-%choiceVAR04 = Variance Filter
-%choiceVAR04 = Hilbert Transform
-%choiceVAR04 = Minimize Energy
+%choiceVAR04 = Line integration
+%choiceVAR04 = Variance filter
+%choiceVAR04 = Hilbert transform
+%choiceVAR04 = Energy minimization
 Method = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -80,31 +95,31 @@ Alpha = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 %defaultVAR11 = 20
 HTIterations = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,11}));
 
-%textVAR12 = For MINIMIZE ENERGY method, choose the error function:
+%textVAR12 = For ENERGY MINIMIZATION method, choose the error function:
 %choiceVAR12 = Square
-%choiceVAR12 = Absolute Value
-%choiceVAR12 = Approximate Absolute Value
+%choiceVAR12 = Absolute value
+%choiceVAR12 = Approximate absolute value
 %choiceVAR12 = Cosine
 ErrorFunction = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = For MINIMIZE ENERGY method, enter the weight given to smoothness:
+%textVAR13 = For ENERGY MINIMIZATION method, enter the weight given to smoothness:
 %defaultVAR13 = .1
 SmoothFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,13}));
 
-%textVAR14 = For MINIMIZE ENERGY method, enter the weight given to flatness:
+%textVAR14 = For ENERGY MINIMIZATION method, enter the weight given to flatness:
 %defaultVAR14 = .01
 FlatFactor = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,14}));
 
-%textVAR15 = For MINIMIZE ENERGY method, enter the number of iterations:
+%textVAR15 = For ENERGY MINIMIZATION method, enter the number of iterations:
 %defaultVAR15 = 400
 MEIterations = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,15}));
 
-%textVAR16 = For MINIMIZE ENERGY method with APPROXIMATE ABSOLUTE VALUE error, enter the exponent (higher more closely approximates absolute value):
+%textVAR16 = For ENERGY MINIMIZATION method with APPROXIMATE ABSOLUTE VALUE error, enter the exponent (higher more closely approximates absolute value):
 %defaultVAR16 = 400
 Abs2Exp = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,16}));
 
-%textVAR17 = For MINIMIZE ENERGY method with SIN error, enter the range:
+%textVAR17 = For ENERGY MINIMIZATION method with SIN error, enter the range:
 %defaultVAR17 = 1.5
 SinRange = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,17}));
 
@@ -125,34 +140,34 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','DontCheck
 drawnow
 
 %%% Rotate accordingly.
-if strcmpi(Shear, 'Anti Diagonal') || strcmpi(Shear, 'Horizontal')
+if strcmpi(Shear, 'Antidiagonal') || strcmpi(Shear, 'Horizontal')
     AlignedImage = imrotate(OrigImage,90);
 else
     AlignedImage = OrigImage;
 end
 
 %%% Choose direction.
-if strcmpi(Shear, 'Main Diagonal') || strcmpi(Shear, 'Anti Diagonal')
+if strcmpi(Shear, 'Main Diagonal') || strcmpi(Shear, 'Antidiagonal')
     Direction = 'diagonal';
 else
     Direction = 'vertical';
 end
 
 %%% Transforms the image.
-if strcmpi(Method, 'Line Integration')
+if strcmpi(Method, 'Line integration')
 	TransformedImage = CPlineintegration(AlignedImage, DecayRate, PerpDecayRate, Direction);
-elseif strcmpi(Method, 'Variance Filter')
+elseif strcmpi(Method, 'Variance filter')
 	TransformedImage = CPvariancefilter(AlignedImage, FilterSize, FilterStdev);
-elseif strcmpi(Method, 'Hilbert Transform')
+elseif strcmpi(Method, 'Hilbert transform')
 	TransformedImage = CPhilberttransform(AlignedImage, HTIterations, Alpha, FreqSuppress, Direction);
-elseif strcmpi(Method, 'Minimize Energy')
+elseif strcmpi(Method, 'Energy minimization')
     if strcmpi(ErrorFunction, 'Square')
     	TransformedImage = CPminimizeenergy(AlignedImage, SmoothFactor, FlatFactor, MEIterations, Direction);
-    elseif strcmpi(ErrorFunction, 'Absolute Value')
+    elseif strcmpi(ErrorFunction, 'Absolute value')
         SmoothFactor = SmoothFactor * 200;
         FlatFactor = FlatFactor * 20;
         TransformedImage = CPminimizeenergy2(AlignedImage, SmoothFactor, FlatFactor, MEIterations, 4e-4, 'abs', Direction);
-    elseif strcmpi(ErrorFunction, 'Approximate Absolute Value')
+    elseif strcmpi(ErrorFunction, 'Approximate absolute value')
         SmoothFactor = SmoothFactor * 200;
         TransformedImage = CPminimizeenergy2(AlignedImage, SmoothFactor, FlatFactor, MEIterations, 1e-3, 'abs2', Direction, Abs2Exp);
     elseif strcmpi(ErrorFunction, 'Cosine')
@@ -160,7 +175,7 @@ elseif strcmpi(Method, 'Minimize Energy')
     end
 end
 
-if strcmpi(Shear, 'Anti Diagonal') || strcmpi(Shear, 'Horizontal')
+if strcmpi(Shear, 'Antidiagonal') || strcmpi(Shear, 'Horizontal')
     TransformedImage = imrotate(TransformedImage,-90);
 end
 

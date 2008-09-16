@@ -71,6 +71,7 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR03 = 1
+%inputtypeVAR03 = popupmenu measurement
 FeatureNumber{1} = handles.Settings.VariableValues{CurrentModuleNum,3};
 
 %textVAR04 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?
@@ -95,6 +96,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR08 = 1
+%inputtypeVAR08 = popupmenu measurement
 FeatureNumber{2} = handles.Settings.VariableValues{CurrentModuleNum,8};
 
 %textVAR09 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?

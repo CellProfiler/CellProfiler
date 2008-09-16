@@ -61,6 +61,7 @@ Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number - see help for details)
 %defaultVAR03 = 1
+%inputtypeVAR03 = popupmenu measurement
 FeatureNumber = handles.Settings.VariableValues{CurrentModuleNum,3};
 
 if isempty(FeatureNumber)

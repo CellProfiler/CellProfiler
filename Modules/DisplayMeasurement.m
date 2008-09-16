@@ -64,6 +64,7 @@ Category{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR04 = 1
+%inputtypeVAR04 = popupmenu measurement
 FeatureNbr{1} = handles.Settings.VariableValues{CurrentModuleNum,4};
 
 if isempty(FeatureNbr{1})
@@ -99,6 +100,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
 %textVAR11 = Which feature do you want to use? (Enter the feature name or number - see HELP for explanation)
 %defaultVAR11 = 1
+%inputtypeVAR11 = popupmenu measurement
 FeatureNbr{2} = handles.Settings.VariableValues{CurrentModuleNum,11};
 
 if isempty(FeatureNbr{2})

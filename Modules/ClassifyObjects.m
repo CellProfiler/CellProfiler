@@ -70,6 +70,7 @@ Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Enter feature number or name (see help):
 %defaultVAR03 = 1
+%inputtypeVAR03 = popupmenu measurement
 FeatureNbr = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %textVAR04 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use?

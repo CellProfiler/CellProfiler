@@ -1,4 +1,4 @@
-function handles = MeasureImageIntensity(handles)
+function handles = MeasureImageIntensity(handles,varargin)
 
 % Help for the Measure Image Intensity module:
 % Category: Measurement
@@ -78,6 +78,34 @@ ExpansionDistance = str2double(char(handles.Settings.VariableValues{CurrentModul
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},'Image')
+                result = { 'Intensity' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'Intensity') &&...
+                strcmp(varargin{2},'Image')
+                result = {'TotalIntensity','MeanIntensity','TotalArea' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 2
 

@@ -1,4 +1,4 @@
-function handles = MeasureRadialDistribution(handles)
+function handles = MeasureRadialDistribution(handles,varargin)
 
 % Help for the Measure Radial Distribution module:
 % Category: Measurement
@@ -68,6 +68,34 @@ CenterObjects = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %defaultVAR04 = 4
 BinCount = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4}));
 
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},MainObjects)
+                result = { 'RadialIntensityDist' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'RadialIntensityDist') &&...
+                strcmp(varargin{2},MainObjects)
+                result = { 'FracAtD','MeanFrac','RadialCV' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
+
 %%%VariableRevisionNumber = 1
 
 %%% Set up the window for displaying the results
@@ -99,7 +127,7 @@ else
     %%% Find the centroids of the objects
     props = regionprops(LabelMatrixImage, 'Centroid');
     Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
-    CenterLabels = full(sparse(centroids(1,:), centroids(2,:), 1:size(centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
+    CenterLabels = full(sparse(Centroids(1,:), Centroids(2,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
 end
 
 

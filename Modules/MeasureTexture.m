@@ -1,4 +1,4 @@
-function handles = MeasureTexture(handles)
+function handles = MeasureTexture(handles,varargin)
 
 % Help for the Measure Texture module:
 % Category: Measurement
@@ -166,6 +166,39 @@ ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %textVAR08 = What is the scale of texture?
 %defaultVAR08 = 3
 ScaleOfTexture = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},ObjectNameList)
+                result = { 'Texture' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'Texture') &&...
+                ismember(varargin{2},ObjectNameList)
+                result = { ...
+                    'AngularSecondMoment','Contrast','Correlation',...
+                    'Variance','InverseDifferenceMoment',...
+                    'SumAverage','SumVariance','SumEntropy',...
+                    'Entropy','DifferenceVariance','DifferenceEntropy',...
+                    'InfoMeas','InfoMeas2','GaborX','GaborY' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 2
 

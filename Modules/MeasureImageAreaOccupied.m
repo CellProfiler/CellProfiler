@@ -1,4 +1,4 @@
-function handles = MeasureImageAreaOccupied(handles)
+function handles = MeasureImageAreaOccupied(handles,varargin)
 
 % Help for the Measure Image Area Occupied module:
 % Category: Measurement
@@ -172,6 +172,34 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
 PixelSize = str2double(handles.Settings.PixelSize);
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},'Image')
+                result = { 'AreaOccupied' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'AreaOccupied') &&...
+                strcmp(varargin{2},'Image')
+                result = {'AreaOccupied','TotalImageArea','ThresholdUsed' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 1
 

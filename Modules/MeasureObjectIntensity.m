@@ -1,4 +1,4 @@
-function handles = MeasureObjectIntensity(handles)
+function handles = MeasureObjectIntensity(handles,varargin)
 
 % Help for the Measure Object Intensity module:
 % Category: Measurement
@@ -121,6 +121,47 @@ ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
+%%% Initialize measurement structure
+BasicFeatures    = {'IntegratedIntensity',...
+    'MeanIntensity',...
+    'StdIntensity',...
+    'MinIntensity',...
+    'MaxIntensity',...
+    'IntegratedIntensityEdge',...
+    'MeanIntensityEdge',...
+    'StdIntensityEdge',...
+    'MinIntensityEdge',...
+    'MaxIntensityEdge',...
+    'MassDisplacement'};
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},ObjectNameList)
+                result = { 'Intensity' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'Intensity') &&...
+                ismember(varargin{2},ObjectNameList)
+                result = BasicFeatures;
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
+
 %%%VariableRevisionNumber = 2
 
 %%% Set up the window for displaying the results
@@ -201,19 +242,6 @@ for i = 1:length(ObjectNameList)
 
     %%% Label-aware boundary finding (even when two objects are adjacent)
     LabelBoundaryImage = CPlabelperim(LabelMatrixImage);
-    
-    %%% Initialize measurement structure
-    BasicFeatures    = {'IntegratedIntensity',...
-        'MeanIntensity',...
-        'StdIntensity',...
-        'MinIntensity',...
-        'MaxIntensity',...
-        'IntegratedIntensityEdge',...
-        'MeanIntensityEdge',...
-        'StdIntensityEdge',...
-        'MinIntensityEdge',...
-        'MaxIntensityEdge',...
-        'MassDisplacement'};
     
     if ObjectCount > 0
         Basic = cell(ObjectCount,11);

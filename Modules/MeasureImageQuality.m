@@ -1,4 +1,4 @@
-function handles = MeasureImageQuality(handles)
+function handles = MeasureImageQuality(handles,varargin)
 
 % Help for the Measure Image Quality module:
 % Category: Measurement
@@ -260,6 +260,35 @@ NameImageToThresh{4} = char(handles.Settings.VariableValues{CurrentModuleNum,13}
 ThresholdMethod{4} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu
 
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},'Image')
+                result = { 'ImageQuality' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'ImageQuality') &&...
+                strcmp(varargin{2},'Image')
+                result = {...
+                    'FocusScore','LocalFocusScore','WindowSize',...
+                    'PercentSaturation','PercentMaximal' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 1
 

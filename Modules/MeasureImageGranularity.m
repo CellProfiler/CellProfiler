@@ -1,4 +1,4 @@
-function handles = MeasureImageGranularity(handles)
+function handles = MeasureImageGranularity(handles,varargin)
 
 % Help for the Measure Image Granularity module:
 % Category: Measurement
@@ -90,6 +90,36 @@ ElementSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,4
 %textVAR05 = What do you want to be the length of the granular spectrum?
 %defaultVAR05 = 16
 GranularSpectrumLength = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},'Image')
+                result = { 'Granularity' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'Granularity') &&...
+                strcmp(varargin{2},'Image')
+                result = arrayfun(...
+                    @(x) num2str(x),...
+                    1:GranularSpectrumLength,'UniformOutput',false);
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 1
 

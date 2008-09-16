@@ -1,4 +1,4 @@
-function handles = MeasureCorrelation(handles)
+function handles = MeasureCorrelation(handles,varargin)
 
 % Help for the Measure Correlation module:
 % Category: Measurement
@@ -109,6 +109,43 @@ ObjectName{5} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 ObjectName{6} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
+%%%%%%%%%%%%%%%%%
+%%% FEATURES  %%%
+%%%%%%%%%%%%%%%%%
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},ObjectName)
+                result = { 'Correlation' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if strcmp(varargin{3},'Correlation') &&...
+                ismember(varargin{2},ObjectName)
+                imgnames = { ImageName{~strcmp(ImageName,'Do not use')}};
+                %%% Take all combinations of images in pairs of two
+                %%% and join them.
+                combos = nchoosek(1:length(imgnames),2);
+                result = arrayfun(@(z) CPjoinstrings(...
+                    imgnames{combos(z,1)},...
+                    imgnames{combos(z,2)}),1:size(combos,1),'UniformOutput',false);
+                if strcmp(varargin{2}, 'Image')
+                    result = cat(2,result,arrayfun(@(z) CPjoinstrings(...
+                        'Slope',...
+                        imgnames{combos(z,1)},...
+                        imgnames{combos(z,2)}),1:size(combos,1),'UniformOutput',false));
+                end
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 %%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

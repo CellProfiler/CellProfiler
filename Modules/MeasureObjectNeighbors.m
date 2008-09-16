@@ -1,4 +1,4 @@
-function handles = MeasureObjectNeighbors(handles)
+function handles = MeasureObjectNeighbors(handles,varargin)
 
 % Help for the Measure Object Neighbors module:
 % Category: Measurement
@@ -99,6 +99,37 @@ ColoredNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,3})
 GrayscaleNeighborsName = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %textVAR05 = This text is left for consistency with prior versions. Any saved settings shown to the right are not used.
+
+%%%%%%%%%%%%%%%%
+%%% FEATURES %%%
+%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || strcmp(varargin{2},ObjectName)
+                result = { 'Neighbors' };
+            else
+                result = {};
+            end
+%feature:measurements
+        case 'measurements'
+            result = {};
+            if nargin >= 3 &&...
+                strcmp(varargin{3},'Neighbors') &&...
+                strcmp(varargin{2},ObjectName)
+                result = {...
+                    'NumberOfNeighbors','PercentTouching','FirstClosestObjectNumber',...
+                    'FirstClosestXVector','FirstClosestYVector','SecondClosestObjectNumber',...
+                    'SecondClosestXVector','SecondClosestYVector','AngleBetweenNeighbors' };
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles=result;
+    return;
+end
 
 %%%VariableRevisionNumber = 5
 

@@ -233,7 +233,7 @@ if ~isvarname(RatioName)
         'with an automatically generated name based on your inputs (equivalent to ''Automatic'' setting).']);
 end
 RatioName = getRatioName(RatioName,ObjectName,FeatureName);
-RatioName = CPtruncatefeaturename(RatioName);
+RatioName = CPtruncatefeaturename(CPjoinstrings('Ratio',RatioName));
 
 %% Save, depending on type of measurement (ObjectName)
 %% Note that Image measurements are scalars, while Objects are potentially vectors

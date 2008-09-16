@@ -2921,8 +2921,8 @@ else
 end
 %%% After the value is stored, we might redo subsequent if they are
 %%% one of the dependent types.
-for i=1:2
-    if handles.Settings.NumbersOfVariables(ModuleNumber) > vn
+if handles.Settings.NumbersOfVariables(ModuleNumber) >= vn+2
+    for i=1:2
         switch get(handles.VariableBox{ModuleNumber}(vn+i),'UserData')
             case 'category'
                 if i==1
@@ -2933,6 +2933,7 @@ for i=1:2
         end
     end
 end
+
 guidata(handles.figure1, handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%

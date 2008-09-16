@@ -93,6 +93,7 @@ switch lower(usage),
         movefile('CellProfiler*.*','../CompiledCellProfiler/')
         movefile('./Modules/*.txt', '../CompiledCellProfiler/Modules')
         movefile('readme.txt','../CompiledCellProfiler/')
+        movefile('version.txt','../CompiledCellProfiler/')
         movefile('Old_CellProfiler.m', 'CellProfiler.m');
         movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
         if ~ ispc

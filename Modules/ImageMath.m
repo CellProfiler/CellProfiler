@@ -53,7 +53,7 @@ ImageAfterMathName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 FirstImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Choose second image, or "Other..." and enter a constant. Note: if the operation chosen below is 'Complement', this second image will not be used
+%textVAR03 = Choose second image, or "Other..." and enter a constant. Note: if the operation chosen below is 'Complement' or 'Log transform', this second image will not be used
 %infotypeVAR03 = imagegroup
 SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
@@ -64,6 +64,7 @@ SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = Multiply
 %choiceVAR04 = Divide
 %choiceVAR04 = Complement
+%choiceVAR04 = Log transform (base 2)
 Operation = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -143,6 +144,13 @@ switch Operation
         ImageAfterMath = imdivide(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
     case 'Complement'
         ImageAfterMath = imcomplement(MultiplyFactor1*FirstImage);
+    case 'Log transform (base 2)'
+        if max(FirstImage(:)) > 0,
+            ImageNoZeros = max(FirstImage, min(FirstImage(FirstImage > 0)));
+            ImageAfterMath = log2(ImageNoZeros)
+        else
+            ImageAfterMath = zeros(size(FirstImage));
+        end
 end
 
 %% Apply thresholds

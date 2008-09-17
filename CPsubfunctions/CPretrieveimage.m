@@ -77,14 +77,17 @@ elseif ColorFlag == 3
     end
 elseif ColorFlag ==4
       fieldname = ['Pathname', ImageName];
-      Pathname = handles.Pipeline.(fieldname);
-                
-      % Retrieves the list of filenames where the images are stored from the
-      % handles structure.
-      fieldname = ['FileList', ImageName];
-      FileList = handles.Pipeline.(fieldname);
-      idx = handles.Current.SetBeingAnalyzed;
-      Image = imread(fullfile(Pathname,char(FileList(idx))));
+      % Preferentially load from file unless the image was generated
+      if isfield(handles.Pipeline,fieldname) 
+          Pathname = handles.Pipeline.(fieldname);
+
+          % Retrieves the list of filenames where the images are stored from the
+          % handles structure.
+          fieldname = ['FileList', ImageName];
+          FileList = handles.Pipeline.(fieldname);
+          idx = handles.Current.SetBeingAnalyzed;
+          Image = imread(fullfile(Pathname,char(FileList(idx))));
+      end
     if islogical(Image)==0
            error(['Image processing was canceled in the ', ModuleName, ' module because it requires an input image that is binary, but the image loaded does not fit this requirement. This may be because the image is grayscale.']);
 

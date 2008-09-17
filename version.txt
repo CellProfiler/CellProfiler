@@ -1,6 +1,73 @@
 Version 1.0.5811
-New functionalityRunMuliplePipelines – Allows sequential execution of any/all pipelines located in a directory, including subdirectories. Pipelines are identified as .mat files with the identifier “PIPE” in the name. This function is located in the main toolbar under “File”New modules
-CalculateImageOverlap - Compares two binary images for overlap.ImageMath – Performs simple mathematical operations on image intensities.LabelImages – Labels images by assigning them a row and column annotation based on a plate layout.MeasureRadialDistribution – Measures the radial distribution of staining intensity on a per-object basis.Multiply -This module multiplies two images.MeasureImageQuality – Formerly known as MeasureImageSaturationandBlurUnifyObjects – Relabels objects so that objects within a specified distance of each other get the same label and thereby become the same object Note: The UnifyObjects module was listed in the previous release but not accessible by usersModified ModulesThe following modules had changes in their settings. Old settings will automatically be updated to the new version when a pipeline is loaded.ExportToDatabaseSaveImagesRescaleIntensityThe following modules had major variable description changes.  Settings loaded from modules created with older versions will need to be updated manually:ClassifyObjectsByTwoMeasurementsFilterbyObjectMeasurementsCalculateMathCreatBatchFilesGroupMovieFramesAlignMaskImageClassifyObjectsCalculateRAtiosDisplayDataOnImageDisplayHistogramDisplayMeasurementBugfixesMeasureObjectAreaShape to deal with zero objectsMinor bugfix in Align.mMinor bugfix in DisplayHistogram.mModules Help “off by one” bug fixedOutlines on IdentifyPrimLoG can now be overlaidInternal/Programming ChangesHow measurements are stored was overhauled for this version.All modules that record measurements should use the subfunction CPaddmeasurements.  Typical usage is:       handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data);This will create or add to the data structure:	handles.Measurements.(ObjectName).(FeatureNameSee CPaddmeasurements for more details and optional arguments.Individual features are now stored in separate substructures of the handles.Measurements.ObjectName structure.  Perusing the CP_convert_old_measurements.m code may be illuminating.  This function updates the previous measurement structure to the new style.Consider whether measurements you are storing will overwrite each other if more than one of the same module is placed in the pipeline.  Features may need more specific names to prevent name collision.The Data Tools should be able to parse measurement files from the previous version of CellProfiler.  Please let us know if this does not work.The placeholder text for variable boxes indicating that an entry is to be ignored or that nothing is currently entered varied from ‘/’, ‘Do not save, ‘Leave this blank,’ among others. It has now been standardized to “Do not use”Bug Reports and HelpThe forums at http://cellprofiler.org are the best place to report bugs and to ask for help from the CellProfiler development team.
+--New functionality
+RunMuliplePipelines - Allows sequential execution of any/all pipelines located in a directory, including subdirectories. Pipelines are identified as .mat files with the identifier "PIPE" in the name. This function is located in the main toolbar under "File"
+
+--New modules
+CalculateImageOverlap - Compares two binary images for overlap.
+ImageMath - Performs simple mathematical operations on image intensities.
+LabelImages - Labels images by assigning them a row and column annotation based on a plate layout.
+MeasureRadialDistribution - Measures the radial distribution of staining intensity on a per-object basis.
+Multiply -This module multiplies two images.
+MeasureImageQuality - Formerly known as MeasureImageSaturationandBlur
+UnifyObjects - Relabels objects so that objects within a specified distance of each other get the same label and thereby become the same object 
+Note: The UnifyObjects module was listed in the previous release but not accessible by users
+
+--Modified Modules
+The following modules had changes in their settings. Old settings will automatically be updated to the new version when a pipeline is loaded.
+ExportToDatabase
+SaveImages
+RescaleIntensity
+
+The following modules had major variable description changes.  Settings loaded from modules created with older versions will need to be updated manually:
+ClassifyObjectsByTwoMeasurements
+FilterbyObjectMeasurements
+CalculateMath
+CreatBatchFiles
+GroupMovieFrames
+Align
+MaskImage
+ClassifyObjects
+CalculateRAtios
+DisplayDataOnImage
+DisplayHistogram
+DisplayMeasurement
+
+--Bugfixes
+MeasureObjectAreaShape to deal with zero objects
+Minor bugfix in Align.m
+Minor bugfix in DisplayHistogram.m
+Modules Help "off by one" bug fixed
+Outlines on IdentifyPrimLoG can now be overlaid
+
+--Known Bugs
+If MeasureTexture is used on an empty image, it records a single object with all zero features, even though the number of objects recorded in the image data is zero.
+The ExportDatabase DataTool does not work (the ExportToDatabase module does, though).
+
+
+Internal/Programming Changes
+How measurements are stored was overhauled for this version.
+
+All modules that record measurements should use the subfunction CPaddmeasurements.  Typical usage is: 
+      handles = CPaddmeasurements(handles, ObjectName, FeatureName, Data);
+
+This will create or add to the data structure:
+	handles.Measurements.(ObjectName).(FeatureName
+See CPaddmeasurements for more details and optional arguments.
+
+Individual features are now stored in separate substructures of the handles.Measurements.ObjectName structure.  
+
+Perusing the CP_convert_old_measurements.m code may be illuminating.  This function updates the previous measurement structure to the new style.
+
+Consider whether measurements you are storing will overwrite each other if more than one of the same module is placed in the pipeline.  Features may need more specific names to prevent name collision.
+
+The Data Tools should be able to parse measurement files from the previous version of CellProfiler.  Please let us know if this does not work.
+
+The placeholder text for variable boxes indicating that an entry is to be ignored or that nothing is currently entered varied from "/", "Do not save", "Leave this blank", among others. It has now been standardized to "Do not use"
+
+Bug Reports and Help
+The forums at http://cellprofiler.org are the best place to report bugs and to ask for help from the CellProfiler development team.
+
+
 
 
 Version 1.0.5122

@@ -421,8 +421,8 @@ for ObjectNameListNum = 1:6
             end
         end
     else
-        Haralick = zeros(1,13);
-        Gabor = zeros(1,2);
+        Haralick = zeros(0,13);
+        Gabor = zeros(0,2);
     end
     %%% Save measurements
     AllFeatures = cat(2,HaralickFeatures,GaborFeatures);

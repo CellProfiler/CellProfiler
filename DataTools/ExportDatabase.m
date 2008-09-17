@@ -133,7 +133,9 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         LastSet = handles.Measurements.BatchInfo.End;
     else
         FirstSet = 1;
-        LastSet = length(handles.Measurements.Image.FileNames);
+        fields = fieldnames(handles.Measurements.Image);
+        filefields = fields(strncmp(fields,'FileName',8));
+        LastSet = length(handles.Measurements.Image.(filefields{1}));
     end
 
     % for calling from data tool, no tableprefix is asked from user, leave

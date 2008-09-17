@@ -1,4 +1,4 @@
-function h = CPimagesc(Image,handles)
+function [h,CurrentAxes,CurrentFig] = CPimagesc(Image,handles,varargin)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -12,10 +12,26 @@ function h = CPimagesc(Image,handles)
 %
 % $Revision$
 
-h = imagesc(Image);
-
-CurrentAxes = get(h,'parent');
-CurrentFig = get(CurrentAxes,'parent');
+if nargin < 3
+    warning('CPimagesc:NoAxisHandle','Deprecated use of CPimagesc - proper use is CPimagesc(Image,handles,hAxis)');
+    h = imagesc(Image);
+    CurrentAxes = get(h,'parent');
+    CurrentFig = get(CurrentAxes,'parent');
+elseif ishandle(varargin{1})
+    switch(get(varargin{1},'Type'))
+        case 'axes'
+            CurrentAxes = varargin{1};
+            CurrentFig = get(CurrentAxes,'Parent');
+        case 'figure'
+            CurrentFig = varargin{1};
+            CurrentAxes = axes('Parent',CurrentFig);
+        otherwise
+            error(['Unhandled graphics handle type: ',get(varargin{1},'Type')]);
+    end
+    h=imagesc(Image,'Parent',CurrentAxes,varargin{2:end});
+else
+    error('CPimagesc argument # 3 must be an axis or figure handle');
+end
 
 %%% Link any image axis limits together so zoom/pan is reflected in all axes
 if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)

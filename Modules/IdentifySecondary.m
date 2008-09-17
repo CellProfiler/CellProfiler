@@ -718,27 +718,27 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
             %%% A subplot of the figure window is set to display the original image.
-            subplot(2,2,1);
-            CPimagesc(OrigImage,handles);
-            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+            hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+            CPimagesc(OrigImage,handles,hAx);
+            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'Parent',hAx);
             %%% A subplot of the figure window is set to display the colored label
             %%% matrix image.
-            subplot(2,2,2);
+            hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
             %%% Calculates the ColoredLabelMatrixImage for display
             ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-            CPimagesc(ColoredLabelMatrixImage,handles);
-            title(['Outlined ',SecondaryObjectName]);
+            CPimagesc(ColoredLabelMatrixImage,handles,hAx);
+            title(['Outlined ',SecondaryObjectName],'Parent',hAx);
             %%% A subplot of the figure window is set to display the original image
             %%% with secondary object outlines drawn on top.
-            subplot(2,2,3);
-            CPimagesc(ObjectOutlinesOnOrigImage,handles);
-            title([SecondaryObjectName, ' Outlines on Input Image']);
+            hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+            CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
+            title([SecondaryObjectName, ' Outlines on Input Image'],'Parent',hAx);
             %%% A subplot of the figure window is set to display the original
             %%% image with outlines drawn for both the primary and secondary
             %%% objects.
-            subplot(2,2,4);
-            CPimagesc(BothOutlinesOnOrigImage,handles);
-            title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image']);
+            hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+            CPimagesc(BothOutlinesOnOrigImage,handles,hAx);
+            title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image'],'Parent',hAx);
             drawnow
         end
 

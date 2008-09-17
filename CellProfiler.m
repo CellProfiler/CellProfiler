@@ -3854,10 +3854,10 @@ if strcmp(get(gcf,'SelectionType'),'open')
             try
                 %%% Reads the image.
                 Image = CPimread(fullfile(PathName, FileName));
-                CPfigure(handles,'image','name',FileName);
-                CPimagesc(Image,handles);
-                colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
-                title(FileName);
+                hFig = CPfigure(handles,'image','name',FileName);
+                [hImage,hAx] = CPimagesc(Image,handles,hFig);
+                colormap(hAx,gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
+                title(FileName,'Parent',hAx);
             catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
             end
         elseif isfield(test,'SavedPreferences')
@@ -3872,10 +3872,10 @@ if strcmp(get(gcf,'SelectionType'),'open')
         try
             %%% Reads the image.
             Image = CPimread(fullfile(PathName, FileName));
-            CPfigure(handles,'image','name',FileName);
-            CPimagesc(Image,handles);
-            colormap(gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
-            title(FileName);
+            hFig = CPfigure(handles,'image','name',FileName);
+            [hImage,hAx] = CPimagesc(Image,handles,hFig);
+            colormap(hAx,gray); % is this needed/correct? CPfigure sets the default intensity colormap. CPimagesc does too. What if it's a label image?
+            title(FileName,'Parent',hAx);
         catch CPerrordlg('There was an error opening this file. It is possible that it is not an image, figure, pipeline file, or output file.');
         end
     end

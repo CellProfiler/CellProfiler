@@ -371,16 +371,16 @@ else
             %%% click on it to mark the control spot.
             ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
             CPfigure(handles,'Image',ThisModuleFigureNumber);
-            CPimagesc(OrigImage,handles);
+            [hImage, hAx] = CPimagesc(OrigImage,handles,ThisModuleFigureNumber);
             %%% Sets the top, left of the grid based on mouse clicks.
-            title({'Click on the center of the top left control spot, then press Enter.','If you make an error, the Delete or Backspace key will delete the previously selected point.','If multiple points are clicked, the last point clicked will be used.', 'Use Edit > Colormap to adjust the contrast of the image. BE PATIENT!'})
+            title(hAx,{'Click on the center of the top left control spot, then press Enter.','If you make an error, the Delete or Backspace key will delete the previously selected point.','If multiple points are clicked, the last point clicked will be used.', 'Use Edit > Colormap to adjust the contrast of the image. BE PATIENT!'})
             drawnow
             %pixval
             [x,y] = getpts(ThisModuleFigureNumber);
             if length(x) < 1
                 error(['Image processing was canceled in the ', ModuleName, ' module because you must click on one point then press enter.'])
             end
-            title('')
+            title(hAx,'')
             XControlSpot = x(end);
             YControlSpot = y(end);
             %%% Converts units to pixels if they were given in spot
@@ -479,32 +479,32 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    CPimagesc(OrigImage,handles);
+    [hImage,hAx]=CPimagesc(OrigImage,handles,ThisModuleFigureNumber);
     %%% Draws the lines.
-    line(VertLinesX,VertLinesY);
-    line(HorizLinesX,HorizLinesY);
+    line(VertLinesX,VertLinesY,'Parent',hAx);
+    line(HorizLinesX,HorizLinesY,'Parent',hAx);
     set(findobj(FigHandle,'type','line'), 'color',[1 0 0])
     TextToShow = cellstr(num2str(reshape(SpotTable,1,[])'))';
-    TextHandles = text((floor(XLocations+XSpacing/6)),(YLocations+floor(YSpacing/2)),TextToShow,'color','yellow','fontsize',handles.Preferences.FontSize);
+    TextHandles = text((floor(XLocations+XSpacing/6)),(YLocations+floor(YSpacing/2)),TextToShow,'color','yellow','fontsize',handles.Preferences.FontSize,'Parent',hAx);
     drawnow
 
     %%% Sets the location of Tick marks.
-    set(gca, 'XTick', GridXLocations(1,:)+floor(XSpacing/2))
-    set(gca, 'YTick', GridYLocations(:,1)+floor(YSpacing/2))
+    set(hAx, 'XTick', GridXLocations(1,:)+floor(XSpacing/2))
+    set(hAx, 'YTick', GridYLocations(:,1)+floor(YSpacing/2))
 
     %%% Sets the Tick Labels.
     if strcmp(LeftOrRight,'Right')
-        set(gca, 'XTickLabel',fliplr(1:Columns))
+        set(hAx, 'XTickLabel',fliplr(1:Columns))
     else
-        set(gca, 'XTickLabel',{1:Columns})
+        set(hAx, 'XTickLabel',{1:Columns})
     end
     if strcmp(TopOrBottom,'Bottom')
-        set(gca, 'YTickLabel',{fliplr(1:Rows)})
+        set(hAx, 'YTickLabel',{fliplr(1:Rows)})
     else
-        set(gca, 'YTickLabel',{1:Rows})
+        set(hAx, 'YTickLabel',{1:Rows})
     end
-    set(gca,'XAxisLocation','top');
-    set(gca,'YAxisLocation','right');
+    set(hAx,'XAxisLocation','top');
+    set(hAx,'YAxisLocation','right');
     TextButtonCallback = [...
         'if strcmp(get(gcbo,''String''),''Hide Text''),'...
         'set(gcbo,''String'',''Show Text'');'...

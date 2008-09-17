@@ -338,10 +338,10 @@ if strcmp(EachOrAll,'All')
                 % as the minimum non-zero number to prevent divide by
                 % zero errors later.
                 LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
-                SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
+                SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero);
                 for i=2:length(FileList)
                     LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
-                    SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
+                    SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero);
                 end
                 MiniIlluminationImage = SumMiniIlluminationImage / length(FileList);
                 % The coarse estimate is then expanded in size so that it is the same
@@ -361,13 +361,13 @@ if strcmp(EachOrAll,'All')
                 if handles.Current.SetBeingAnalyzed == 1
                     % Creates the empty variable so it can be retrieved later
                     % without causing an error on the first cycle.
-                    handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))')));
+                    handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero)));
                 end
                 % Retrieves the existing illumination image, as accumulated so
                 % far.
                 SumMiniIlluminationImage = handles.Pipeline.(IlluminationImageName);
                 % Adds the current image to it.
-                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],'min(x(x>0))');
+                SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero);
                 % If the last cycle has just been processed, indicate that
                 % the projection image is ready.
                 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
@@ -503,38 +503,38 @@ if any(findobj == ThisModuleFigureNumber)
         % the 2,2,1 location.
         ax = cell(1,4);
         if strcmp(EachOrAll,'All')
-            ax{1} = subplot(2,2,1);
-            CPimagesc(RawImage,handles);
+            ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+            CPimagesc(RawImage,handles,ax{1});
             if strcmp(ReadyFlag, 'Ready')
-                title('Averaged image');
+                title(ax{1},'Averaged image');
             else
-                title('Averaged image calculated so far');
+                title(ax{1},'Averaged image calculated so far');
             end
         else
-            ax{1} = subplot(2,2,1);
-            CPimagesc(OrigImage,handles);
-            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+            ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+            CPimagesc(OrigImage,handles,ax{1});
+            title(ax{1},['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         end
         if strcmp(ReadyFlag, 'Ready')
             if exist('DilatedImage','var')
-                ax{3} = subplot(2,2,3);
-                CPimagesc(DilatedImage,handles);
-                title('Dilated image');
+                ax{3} = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+                CPimagesc(DilatedImage,handles,ax{3});
+                title(ax{3},'Dilated image');
             end
             if exist('SmoothedImage','var')
-                ax{4} = subplot(2,2,4);
-                CPimagesc(SmoothedImage,handles);
-                title('Smoothed image');
+                ax{4} = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+                CPimagesc(SmoothedImage,handles,ax{4});
+                title(ax{4},'Smoothed image');
             end
 
-            ax{2} = subplot(2,2,2);
-            CPimagesc(FinalIlluminationFunction,handles);
-            title('Final illumination function');
+            ax{2} = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+            CPimagesc(FinalIlluminationFunction,handles,ax{2});
+            title(ax{2},'Final illumination function');
             
             if ~isempty(ax{3}) && ~isempty(ax{4}),
                 % If subplots 3 and 4 exist (in addition to 1 and 2), report numbers on the graph itself
-                text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
-                text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
+                text(1,50,['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',ax{2});
+                text(1,150,['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',ax{2});
             else
                 pos = get(ax{1},'Position');    % Position of text (roughly subplot 3) if only subplots 1 and 2 exist
                 pos = [pos(1)-0.05 pos(2)-0.1 pos(3)+0.1 0.04];
@@ -573,16 +573,16 @@ if any(findobj == ThisModuleFigureNumber)
         % A subplot of the figure window is set to display the original
         % image, some intermediate images, and the final corrected image.
         ax = cell(1,4);
-        ax{1} = subplot(2,2,1);
-        CPimagesc(OrigImage,handles);
-        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+        CPimagesc(OrigImage,handles,ax{1});
+        title(ax{1},['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         if exist('FinalIlluminationFunction','var') == 1
-            ax{4} = subplot(2,2,4);
-            CPimagesc(FinalIlluminationFunction,handles);
-            title('Final illumination correction function');
+            ax{4} = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+            CPimagesc(FinalIlluminationFunction,handles,ax{4});
+            title(ax{4},'Final illumination correction function');
         else
-            ax{4} = subplot(2,2,4);
-            title('Illumination correction function is not yet calculated');
+            ax{4} = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+            title(ax{4},'Illumination correction function is not yet calculated');
         end
         % Whether these images exist depends on whether the images have
         % been calculated yet (if running in pipeline mode, this won't occur
@@ -590,16 +590,16 @@ if any(findobj == ThisModuleFigureNumber)
         % whether the user has chosen to smooth the average minimums
         % image.
         if exist('AverageMinimumsImage','var') == 1
-            ax{3} = subplot(2,2,3);
-            CPimagesc(AverageMinimumsImage,handles);
-            title('Average minimums image');
+            ax{3} = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+            CPimagesc(AverageMinimumsImage,handles,ax{3});
+            title(ax{3},'Average minimums image');
         end
         
-        if ~isempty(ax{2}) && (~isempty(ax{4}) && ~exist('FinalIlluminationFunction','var')),
+        if ~isempty(ax{2}) && (~isempty(ax{4}) && exist('FinalIlluminationFunction','var')),
             % Report numbers on the graph itself
-            text(1,50,  ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
-            text(1,150, ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize);
-        else
+            text(1,50,  ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',ax{3});
+            text(1,150, ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',ax{4});
+        elseif exist('FinalIlluminationFunction','var')
             %%% Report numbers in the empty subplot space
             if isempty(ax{2})
                 posx = get(ax{4},'Position');
@@ -714,3 +714,9 @@ BestRows = BestBlockSize(1)*ceil(m/BestBlockSize(1));
 BestColumns = BestBlockSize(2)*ceil(n/BestBlockSize(2));
 RowsToAdd = BestRows - m;
 ColumnsToAdd = BestColumns - n;
+
+function lowest = minnotzero(x)
+    lowest=min(x(x>0));
+    if isempty(lowest)
+        lowest=.0001;
+    end

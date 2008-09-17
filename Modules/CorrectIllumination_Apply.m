@@ -162,19 +162,19 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original
     %%% image, some intermediate images, and the final corrected image.
-    subplot(2,2,1);
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% The mean image does not absolutely have to be present in order to
     %%% carry out the calculations if the illumination image is provided,
     %%% so the following subplot is only shown if MeanImage exists in the
     %%% workspace.
-    ax1 = subplot(2,2,2);
-    CPimagesc(CorrectedImage,handles);
-    title('Illumination Corrected Image');
-    ax2 = subplot(2,2,3);
-    CPimagesc(IllumCorrectFunctionImage,handles);
-    title('Illumination Correction Function Image');
+    ax1 = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(CorrectedImage,handles,ax1);
+    title(ax1,'Illumination Corrected Image');
+    ax2 = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(IllumCorrectFunctionImage,handles,ax2);
+    title(ax2,'Illumination Correction Function Image');
 
     %%% Report numbers
     posx = get(ax1,'Position');

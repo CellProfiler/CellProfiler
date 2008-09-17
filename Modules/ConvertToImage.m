@@ -129,12 +129,12 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(LabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
-    subplot(2,1,1);
-    CPimagesc(ColoredLabelMatrixImage,handles);
-    title(['Original Identified ', ObjectName]);
-    subplot(2,1,2);
-    CPimagesc(Image,handles);
-    title(ImageName);
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ColoredLabelMatrixImage,handles,hAx);
+    title(hAx,['Original Identified ', ObjectName]);
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(Image,handles,hAx);
+    title(hAx,ImageName);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

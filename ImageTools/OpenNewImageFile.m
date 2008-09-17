@@ -54,7 +54,7 @@ else
     if ~isfield(handles,'Pipeline')
         handles.Pipeline = [];
     end
-    CPfigure(handles,'Image',FigureHandle);
-    CPimagesc(Image,handles);
-    title(FileName);
+    hFigure = CPfigure(handles,'Image',FigureHandle);
+    [hImage,hAx] = CPimagesc(Image,handles,hFigure);
+    title(FileName,'Parent',hAx);
 end

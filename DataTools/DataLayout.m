@@ -91,9 +91,9 @@ MeanImage = reshape(Measurements,NumberRows,NumberColumns);
 
 %%% Shows the results.
 TitleString = sprintf('Objects: %s, Feature: %s',ObjectName, FeatureName);
-CPfigure;
+hFigure=CPfigure;
 get(get(gca, 'Title'))
-CPimagesc(MeanImage,handles);
+CPimagesc(MeanImage,handles,hFigure);
 get(get(gca, 'Title'))
 title(TitleString);
 get(get(gca, 'Title'))

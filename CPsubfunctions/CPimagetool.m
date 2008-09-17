@@ -39,10 +39,10 @@ if ~isempty(varargin)
                 %%% Opens a new figure window and sets image, colormap and title.
                 FigureHandle = figure;
                 CPfigure(handles,'Image',FigureHandle);
-                CPimagesc(data,handles);
-                colormap(cmap);
+                [hImage,hAx] = CPimagesc(data,handles,FigureHandle);
+                colormap(hAx, cmap);
                 Title = char(get(get(get(ImageHandle,'parent'),'title'),'string'));
-                title(Title);
+                title(Title,'Parent',hAx);
                 Title = strrep(Title,'_','_');
                 set(FigureHandle,'Name',Title);
             case {'Histogram'}                                % Produce histogram (only for scalar images)

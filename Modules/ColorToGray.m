@@ -117,17 +117,17 @@ if strcmp(GrayOrSplit,'Combine')
 elseif strcmp(GrayOrSplit,'Split')
     %%% Determines whether the user has specified an image to be loaded in
     %%% red.
-    if ~strcmp(upper(RedImageName), 'N')
+    if ~strcmpi(RedImageName, 'N')
         RedImage = OrigImage(:,:,1);
     else
         RedImage = zeros(size(OrigImage(:,:,1)));
     end
-    if ~strcmp(upper(GreenImageName), 'N')
+    if ~strcmpi(GreenImageName, 'N')
         GreenImage = OrigImage(:,:,2);
     else
         GreenImage = zeros(size(OrigImage(:,:,1)));
     end
-    if ~strcmp(upper(BlueImageName), 'N')
+    if ~strcmpi(BlueImageName, 'N')
         BlueImage = OrigImage(:,:,3);
     else
         BlueImage = zeros(size(OrigImage(:,:,1)));
@@ -148,14 +148,14 @@ if strcmp(GrayOrSplit,'Combine')
             CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
         end
         %%% A subplot of the figure window is set to display the original image.
-        subplot(2,1,1);
-        CPimagesc(OrigImage,handles);
-        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+        CPimagesc(OrigImage,handles,hAx);
+        title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the Grayscale
         %%% Image.
-        subplot(2,1,2);
-        CPimagesc(GrayscaleImage,handles);
-        title('Grayscale Image');
+        hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+        CPimagesc(GrayscaleImage,handles,hAx);
+        title(hAx,'Grayscale Image');
     end
 elseif strcmp(GrayOrSplit,'Split')
     if any(findobj == ThisModuleFigureNumber)
@@ -167,21 +167,21 @@ elseif strcmp(GrayOrSplit,'Split')
         %%% A subplot of the figure window is set to display the Splitd RGB
         %%% image.  Using CPimagesc or image instead of imshow doesn't work when
         %%% some of the pixels are saturated.
-        subplot(2,2,1);
-        CPimagesc(OrigImage,handles);
-        title(['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+        CPimagesc(OrigImage,handles,hAx);
+        title(hAx,['Input Color Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% A subplot of the figure window is set to display the blue image.
-        subplot(2,2,2);
-        CPimagesc(BlueImage,handles);
-        title('Blue Image');
+        hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+        CPimagesc(BlueImage,handles,hAx);
+        title(hAx,'Blue Image');
         %%% A subplot of the figure window is set to display the green image.
-        subplot(2,2,3);
-        CPimagesc(GreenImage,handles);
-        title('Green Image');
+        hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+        CPimagesc(GreenImage,handles,hAx);
+        title(hAx,'Green Image');
         %%% A subplot of the figure window is set to display the red image.
-        subplot(2,2,4);
-        CPimagesc(RedImage,handles);
-        title('Red Image');
+        hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+        CPimagesc(RedImage,handles,hAx);
+        title(hAx,'Red Image');
     end
 end
 

@@ -695,7 +695,7 @@ elseif strcmpi(UserInput.Style,'Heatmap') == 1 && strcmpi(UserInput.Display,'Yes
     end
 
     if strcmpi(UserInput.EachRow,'Image') == 1
-        CPimagesc(FinalHistogramData,handles);
+        CPimagesc(FinalHistogramData,handles,FigureHandle);
         set(heatmp,'XTickLabel',XTickLabels)
         NewPlotBinLocations = 1:length(FinalHistogramData');
         set(heatmp,'XTick',NewPlotBinLocations)
@@ -714,7 +714,7 @@ elseif strcmpi(UserInput.Style,'Heatmap') == 1 && strcmpi(UserInput.Display,'Yes
         ylabel(gca,'Image number','fontname','Helvetica','fontsize',FontSize+2)
         title(MeasurementToExtract,'Fontname','Helvetica','fontsize',FontSize+2)
     else
-        CPimagesc(flipud(FinalHistogramData'),handles);
+        CPimagesc(flipud(FinalHistogramData'),handles,FigureHandle);
         XTickLabels=fliplr(XTickLabels);
         set(heatmp,'YTickLabel',XTickLabels);
         NewPlotBinLocations = 1:length(FinalHistogramData');

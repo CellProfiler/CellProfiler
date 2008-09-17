@@ -139,21 +139,21 @@ if any(findobj == ThisModuleFigureNumber)
     % Subplots of the various images to show overlap
         ax = cell(1,6);
        
-            ax{1} = subplot(2,3,1);
-            CPimagesc(TruePosImg,handles);
-            title(['True Positive Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)]);
+            ax{1} = subplot(2,3,1,'Parent',ThisModuleFigureNumber);
+            CPimagesc(TruePosImg,handles,ax{1});
+            title(['True Positive Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)],'Parent',ax{1});
        
-            ax{2} = subplot(2,3,2);
-            CPimagesc(TrueNegImg,handles);
-            title(['True Negative Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)]);
+            ax{2} = subplot(2,3,2,'Parent',ThisModuleFigureNumber);
+            CPimagesc(TrueNegImg,handles,ax{2});
+            title(['True Negative Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)],'Parent',ax{2});
          
-            ax{3} = subplot(2,3,3);
-            CPimagesc(FalsePosImg,handles);
-            title(['False Positive Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)]);
+            ax{3} = subplot(2,3,3,'Parent',ThisModuleFigureNumber);
+            CPimagesc(FalsePosImg,handles,ax{3});
+            title(['False Positive Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)],'Parent',ax{3});
             
-            ax{4} = subplot(2,3,4);
-            CPimagesc(FalseNegImg,handles);
-            title(['False Negative Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)]);
+            ax{4} = subplot(2,3,4,'Parent',ThisModuleFigureNumber);
+            CPimagesc(FalseNegImg,handles,ax{4});
+            title(['False Negative Image, cycle #',num2str(handles.Current.SetBeingAnalyzed)],'Parent',ax{4});
            
             % Place the text in position 5
             posx = get(ax{2},'Position');

@@ -286,53 +286,53 @@ if any(findobj == ThisModuleFigureNumber)
     % image.
     if ~strcmpi(Category,'Ratio')
         % A subplot of the figure window is set to display the original image.
-        subplot(2,2,1)
-        CPimagesc(NonQuantizedImage,handles);
+        hAx = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+        CPimagesc(NonQuantizedImage,handles,hAx);
         IntensityColormap = handles.Preferences.IntensityColorMap;
         if max(Measurements) > length(colormap)
-            colormap(feval(IntensityColormap,max(Measurements)))
+            colormap(hAx,feval(IntensityColormap,max(Measurements)))
         end
-        title([ObjectName,' shaded according to ',FeatureName])
+        title([ObjectName,' shaded according to ',FeatureName],'Parent',hAx)
     end
 
     % Produce and plot histogram of original data
-    subplot(2,2,2)
+    hAx = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
     Nbins = min(round(NbrOfObjects),40);
-    hist(Measurements,Nbins);
+    hist(hAx,Measurements,Nbins);
     % Took this out: don't want to use misleading colors.
     %    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-    xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
-    ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
-    title(['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
+    xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(hAx,['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
     % Using "axis tight" here is ok, I think, because we are displaying
     % data, not images.
     ylimits = ylim;
-    axis tight
+    axis(hAx,'tight')
     xlimits = xlim;
-    axis([xlimits ylimits]);
+    axis(hAx,[xlimits ylimits]);
 
     % If we are using a user defined field, there is no corresponding
     % image.
     if ~strcmpi(Category,'Ratio')
         % A subplot of the figure window is set to display the quantized image.
-        subplot(2,2,3)
-        CPimagesc(QuantizedRGBimage,handles);
-        title(['Classified ', ObjectName]);
+        hAx = subplot(2,2,3,'Parent',ThisModuleFigureNumber)
+        CPimagesc(QuantizedRGBimage,handles,hAx);
+        title(hAx,['Classified ', ObjectName]);
         % TODO add legend
     end
     % Produce and plot histogram
-    subplot(2,2,4)
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
     bar_ctr = edges(1:end-1) + (edges(2)-edges(1))/2;
-    h = bar(bar_ctr,bins,1);
-    xlabel(FeatureName,'fontsize',handles.Preferences.FontSize);
-    ylabel(['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
-    title(['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
+    h = bar(hAx,bar_ctr,bins,1);
+    xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(hAx,['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
     % Using "axis tight" here is ok, I think, because we are displaying
     % data, not images.
-    axis tight
+    axis(hAx,'tight');
     xlimits(1) = min(xlimits(1),LowerBinMin);   % Extend limits if necessary and save them
     xlimits(2) = max(UpperBinMax,edges(end));   % so they can be used for the second histogram
-    axis([xlimits ylim]);
+    axis(hAx,[xlimits ylim]);
     % Took this out: don't want to use misleading colors.
     %     handlescmap = handles.Preferences.LabelColorMap;
     %     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NbrOfBins)));

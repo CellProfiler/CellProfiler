@@ -686,9 +686,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             %%% Updates the cycle number on the window.
             CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,SecondaryTestFigureNumber);
 
-            subplot(2,2,IdentChoiceNumber);
-            CPimagesc(ObjectOutlinesOnOrigImage,handles);
-            title(IdentChoiceList(IdentChoiceNumber));
+            hAx = subplot(2,2,IdentChoiceNumber,'Parent',SecondaryTestFigureNumber);
+            CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
+            title(IdentChoiceList(IdentChoiceNumber),'Parent',hAx);
         end
     end
 

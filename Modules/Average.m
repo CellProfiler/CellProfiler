@@ -129,17 +129,17 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(AveragedImage,'OneByOne',ThisModuleFigureNumber)
     end
-    CPimagesc(AveragedImage,handles);
+    [hImage,hAx] = CPimagesc(AveragedImage,handles,ThisModuleFigureNumber);
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to
         %%% prevent the need to load the averaged image from the handles
         %%% structure.
-        title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
+        title(['Final Averaged Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images'],'Parent',hAx);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         %%% The accumulated averaged image so far is displayed each time
         %%% through the pipeline.
-        title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
+        title(['Averaged Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)],'Parent',hAx);
     end
 end
 

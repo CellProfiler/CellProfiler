@@ -242,35 +242,35 @@ if any(findobj == ThisModuleFigureNumber)
     % Produce and plot histograms of first and second sets of data
     FontSize = handles.Preferences.FontSize;
     for FeatNum=1:2
-        subplot(2,2,FeatNum)
+        hAx = subplot(2,2,FeatNum,'Parent',ThisModuleFigureNumber);
         Nbins = min(round(NbrOfObjects),40);
-        hist(Measurements{FeatNum},Nbins);
-        xlabel(FeatureName{FeatNum},'Fontsize',FontSize);
-        ylabel(['# of ' ObjectName],'Fontsize',FontSize);
-        title(['Histogram of ' FeatureName{FeatNum}],'Fontsize',FontSize);
+        hist(hAx,Measurements{FeatNum},Nbins);
+        xlabel(hAx,FeatureName{FeatNum},'Fontsize',FontSize);
+        ylabel(hAx,['# of ' ObjectName],'Fontsize',FontSize);
+        title(hAx,['Histogram of ' FeatureName{FeatNum}],'Fontsize',FontSize);
         % Using "axis tight" here is ok, I think, because we are displaying
         % data, not images.
         ylimits = ylim;
-        axis tight
+        axis(hAx,'tight');
         xlimits = xlim;
-        axis([xlimits ylimits]);
+        axis(hAx,[xlimits ylimits]);
     end
 
     % A subplot of the figure window is set to display the quantized image.
-    subplot(2,2,3)
-    CPimagesc(QuantizedRGBimage,handles);
-    title(['Classified ', ObjectName]);
+    hAx = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(QuantizedRGBimage,handles,hAx);
+    title(hAx,['Classified ', ObjectName]);
 
     % Produce and plot histogram
-    subplot(2,2,4)
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
     x = 1:4;
-    bar(x,bins,1);
-    xlabel(['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
-    ylabel(['# of ',ObjectName],'fontsize',FontSize);
-    title(['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);
+    bar(hAx,x,bins,1);
+    xlabel(hAx,['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
+    ylabel(hAx,['# of ',ObjectName],'fontsize',FontSize);
+    title(hAx,['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);
     % Using "axis tight" here is ok, I think, because we are displaying
     % data, not images.
-    axis tight
+    axis(hAx,'tight');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

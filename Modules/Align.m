@@ -268,13 +268,13 @@ if any(findobj == ThisModuleFigureNumber)
         set(ThisModuleFigureNumber,'position',[Position(1),Position(2)-40,Position(3),Position(4)+40])
     end
     
-    subplot(5,1,1:2);
-    CPimagesc(OriginalRGB,handles);
-    title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx = subplot(5,1,1:2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OriginalRGB,handles,hAx);
+    title(['Input Images, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'Parent',hAx);
     % A subplot of the figure window is set to display the adjusted image
-    subplot(5,1,3:4);
-    CPimagesc(AlignedRGB,handles);
-    title('Aligned Images');
+    hAx = subplot(5,1,3:4,'Parent',ThisModuleFigureNumber);
+    CPimagesc(AlignedRGB,handles,hAx);
+    title('Aligned Images','Parent',hAx);
 
     if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 40],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);

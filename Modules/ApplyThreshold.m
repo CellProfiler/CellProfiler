@@ -155,14 +155,14 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,1,1);
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx = subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage,handles,hAx);
+    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'Parent',hAx);
     %%% A subplot of the figure window is set to display the Thresholded
     %%% image.
-    subplot(2,1,2);
-    CPimagesc(ThresholdedImage,handles);
-    title('Thresholded Image');
+    hAx = subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ThresholdedImage,handles,hAx);
+    title('Thresholded Image','Parent',hAx);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

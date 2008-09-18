@@ -207,16 +207,16 @@ if MinimumTenthMinimumPixelValue ~= 0
         end
         %%% A subplot of the figure window is set to display the original
         %%% image, some intermediate images, and the final corrected image.
-        subplot(2,1,1); 
-        CPimagesc(OrigImage,handles);
-        title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+        hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber); 
+        CPimagesc(OrigImage,handles,hAx);
+        title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
         %%% The mean image does not absolutely have to be present in order to
         %%% carry out the calculations if the illumination image is provided,
         %%% so the following subplot is only shown if MeanImage exists in the
         %%% workspace.
-        subplot(2,1,2); 
-        CPimagesc(CorrectedImage,handles);
-        title('Corrected Image');
+        hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber); 
+        CPimagesc(CorrectedImage,handles,hAx);
+        title(hAx,'Corrected Image');
         %%% Displays the text.
         if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
             displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 20],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);

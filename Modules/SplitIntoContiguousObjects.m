@@ -94,12 +94,12 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(Orig,'TwoByOne',ThisModuleFigureNumber)
     end
-    subplot(2,1,1);
-    CPimagesc(OrigRGB,handles);
-    title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,1,2);
-    CPimagesc(RelabeledRGB,handles);
-    title(RelabeledObjectName);
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigRGB,handles,hAx);
+    title(hAx,[ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(RelabeledRGB,handles,hAx);
+    title(hAx,RelabeledObjectName);
 end
 
 %

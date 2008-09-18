@@ -281,8 +281,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             CPresizefigure(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,'OneByOne',ThisModuleFigureNumber)
         end
         %%% Displays the image.
-        CPimagesc(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,handles);
-        title('Tiled image')
+        [hImage,hAx] = CPimagesc(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,handles,ThisModuleFigureNumber);
+        title(hAx,'Tiled image')
 
         FontSize = handles.Preferences.FontSize;
         ToggleGridButtonFunction = ...

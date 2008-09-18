@@ -121,8 +121,8 @@ if any(findobj == ThisModuleFigureNumber)
   RelabeledRGB = CPlabel2rgb(handles, vislabel);
   
   CPfigure(handles,'Image',ThisModuleFigureNumber);
-  CPimagesc(RelabeledRGB,handles);
-  title(RelabeledObjectName);
+  [hImage,hAx]=CPimagesc(RelabeledRGB,handles,ThisModuleFigureNumber);
+  title(hAx,RelabeledObjectName);
 end
 
 

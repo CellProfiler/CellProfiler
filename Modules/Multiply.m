@@ -70,17 +70,17 @@ if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,'Image',ThisModuleFigureNumber);
 
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);
-    CPimagesc(OrigImage1,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2);
-    CPimagesc(OrigImage2,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage1,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage2,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the adjusted
     %%%  image.
-    subplot(2,2,3);
-    CPimagesc(FinalImage,handles);
-    title('Multiplied Image');
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(FinalImage,handles,hAx);
+    title(hAx,'Multiplied Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

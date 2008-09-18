@@ -153,8 +153,8 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(AdjacentImage,'OneByOne',ThisModuleFigureNumber)
     end
-    CPimagesc(AdjacentImage,handles);
-    title(['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    [hImage,hAx]=CPimagesc(AdjacentImage,handles,ThisModuleFigureNumber);
+    title(hAx,['Adjacent Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

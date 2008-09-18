@@ -108,10 +108,10 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','Check
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 FigureHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-subplot(3,2,[1 2 3 4])
-CPimagesc(OrigImage,handles);
+hAx=subplot(3,2,[1 2 3 4],'Parent',ThisModuleFigureNumber)
+CPimagesc(OrigImage,handles,hAx);
 %%% OK to use axis image here.
-axis image
+axis(hAx,'image');
 drawnow
 
 % If this is the first image set, get the angle to rotate from the
@@ -247,14 +247,14 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,1,1);
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the rotated
     %%% Image.
-    subplot(2,1,2);
-    CPimagesc(RotatedImage,handles);
-    title('Rotated Image');
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(RotatedImage,handles,hAx);
+    title(hAx,'Rotated Image');
 end
 
 

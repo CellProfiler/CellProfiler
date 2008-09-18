@@ -217,16 +217,16 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(ParentObjectLabelMatrix,'TwoByTwo',ThisModuleFigureNumber);
     end
-    subplot(2,2,1);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    CPimagesc(ColoredParentLabelMatrixImage,handles);
-    title(['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2);
+    CPimagesc(ColoredParentLabelMatrixImage,handles,hAx);
+    title(hAx,['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    CPimagesc(ColoredSubObjectLabelMatrixImage,handles);
-    title('Original Sub Objects');
-    subplot(2,2,3);
+    CPimagesc(ColoredSubObjectLabelMatrixImage,handles,hAx);
+    title(hAx,'Original Sub Objects');
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
-    CPimagesc(ColoredNewObjectParentLabelMatrix,handles);
-    title('New Sub Objects');
+    CPimagesc(ColoredNewObjectParentLabelMatrix,handles,hAx);
+    title(hAx,'New Sub Objects');
 end

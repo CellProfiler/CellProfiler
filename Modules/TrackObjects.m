@@ -230,8 +230,8 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    CPimagesc(DisplayImage, handles);
-    title('Tracked Objects');
+    [hImage,hAx]=CPimagesc(DisplayImage, handles,ThisModuleFigureNumber);
+    title(hAx,'Tracked Objects');
 end
 
 CStringObjectID = cellstr(num2str((CurrLabels)'));
@@ -247,7 +247,7 @@ end
 if ~isempty(strfind(DisplayType, 'Number'))
     TextHandles = text(CurrLocations(:,1) , CurrLocations(:,2) , CStringOfMeas,...
         'HorizontalAlignment','center', 'color', [.6 .6 .6],'fontsize',10,...%handles.Preferences.FontSize,...
-        'fontweight','bold');
+        'fontweight','bold','Parent',hAx);
 else 
     TextHandles = [];
 end

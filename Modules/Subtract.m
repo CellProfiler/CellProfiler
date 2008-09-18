@@ -118,17 +118,17 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(BasicImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1); 
-    CPimagesc(BasicImage,handles); 
-    title([BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(BasicImage,handles,hAx); 
+    title(hAx,[BasicImageName, ' image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,2); 
-    CPimagesc(SubtractImage,handles); 
-    title([SubtractImageName, ' image']);
-    subplot(2,2,3); 
-    CPimagesc(ResultingImage,handles); 
-    title([BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(SubtractImage,handles,hAx); 
+    title(hAx,[SubtractImageName, ' image']);
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(ResultingImage,handles,hAx); 
+    title(hAx,[BasicImageName,' minus ',SubtractImageName,' = ',ResultingImageName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

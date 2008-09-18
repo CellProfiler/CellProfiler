@@ -196,24 +196,24 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     %%% First image subplot
-    subplot(2,NumColumns,1);
-    CPimagesc(MultiplyFactor1*FirstImage,handles); 
-    title([FirstText ' image, cycle # ' num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,NumColumns,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(MultiplyFactor1*FirstImage,handles,hAx); 
+    title(hAx,[FirstText ' image, cycle # ' num2str(handles.Current.SetBeingAnalyzed)]);
 
     if ~strcmp(Operation,'Complement')
         %%% Second image subplot
-        subplot(2,NumColumns,3);
-        CPimagesc(MultiplyFactor2*SecondImage,handles);
-        title([SecondText ' image']);
+        hAx=subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
+        CPimagesc(MultiplyFactor2*SecondImage,handles,hAx);
+        title(hAx,[SecondText ' image']);
     end
     
     %% ImageAfterMath
-    subplot(2,NumColumns,2);
-    CPimagesc(ImageAfterMath,handles);
+    hAx=subplot(2,NumColumns,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ImageAfterMath,handles,hAx);
     if ~strcmp(Operation,'Complement')
-        title([FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);
+        title(hAx,[FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);
     else
-        title([FirstText ' ' Operation ' = ' ImageAfterMathName]);
+        title(hAx,[FirstText ' ' Operation ' = ' ImageAfterMathName]);
     end
 end
 

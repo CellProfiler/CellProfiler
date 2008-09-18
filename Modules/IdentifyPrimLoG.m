@@ -1,4 +1,4 @@
-function handles = IdentifyPrimLog(handles)
+function handles = IdentifyPrimLoG(handles)
 
 % Help for the Identify Primary LoG module:
 % Category: Object Processing
@@ -132,8 +132,8 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
   h_fig = CPfigure(handles,'Image',ThisModuleFigureNumber);
-  CPimagesc(visRGB, handles);
-  title([ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+  [hImage,hAx] = CPimagesc(visRGB, handles,ThisModuleFigureNumber);
+  title(hAx,[ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
   
   uicontrol(h_fig,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
       'UserData',{OrigImage visRGB},'backgroundcolor',[.7 .7 .9],...

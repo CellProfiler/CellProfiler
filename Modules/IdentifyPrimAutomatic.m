@@ -786,9 +786,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         FigureHandle = CPfigure(IdPrimDistinguishClumpedObjManualFigureNumber(1));
                         %%% Updates the cycle number on the window.
                         CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimDistinguishClumpedObjManualFigureNumber);
-                        CPimagesc(OrigImage,handles);
-                        AxisHandle = gca;
-                        title([{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),...
+                        [hImage,AxisHandle] = CPimagesc(OrigImage,handles,IdPrimDistinguishClumpedObjManualFigureNumber);
+                        title(AxisHandle,[{['Cycle #',num2str(handles.Current.SetBeingAnalyzed),...
                             '. Click on approximate cell center points to outline the region of interest.']},...
                             {'The backspace key or right mouse button will erase the last clicked point.'},...
                             {'Use Edit > Colormap to adjust the contrast of the image if needed.'},...
@@ -1032,17 +1031,17 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber)
                     end
-                    subplot(2,2,1)
-                    CPimagesc(OrigImage,handles);
-                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-                    hx = subplot(2,2,2);
+                    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+                    CPimagesc(OrigImage,handles,hAx);
+                    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+                    hx = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
                     im = CPlabel2rgb(handles,Objects);
-                    CPimagesc(im,handles);
-                    title(['Identified ',ObjectName]);
-                    hy = subplot(2,2,3);
+                    CPimagesc(im,handles,hx);
+                    title(hx,['Identified ',ObjectName]);
+                    hy = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                    CPimagesc(OutlinedObjects,handles);
-                    title(['Outlined ', ObjectName]);
+                    CPimagesc(OutlinedObjects,handles,hy);
+                    title(hy,['Outlined ', ObjectName]);
                     
                     %%% Report numbers
                     posx = get(hx,'Position');
@@ -1097,22 +1096,22 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
                     end
                     %%% A subplot of the figure window is set to display the original image.
-                    subplot(2,2,1);
-                    CPimagesc(OrigImage,handles);
-                    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+                    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+                    CPimagesc(OrigImage,handles,hAx);
+                    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
                     %%% A subplot of the figure window is set to display the colored label
                     %%% matrix image.
-                    subplot(2,2,2);
-                    CPimagesc(ColoredLabelMatrixImage,handles);
-                    title(['Identified ',ObjectName]);
+                    hAx = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+                    CPimagesc(ColoredLabelMatrixImage,handles,hAx);
+                    title(hAx,['Identified ',ObjectName]);
                     %%% A subplot of the figure window is set to display the Overlaid image,
                     %%% where the maxima are imposed on the inverted original image
                     % subplot(2,2,3); CPimagesc(Overlaid);  title([ObjectName, ' markers']);
                     %%% A subplot of the figure window is set to display the inverted original
                     %%% image with watershed lines drawn to divide up clusters of objects.
-                    subplot(2,2,4);
-                    CPimagesc(ObjectOutlinesOnOrigImage,handles);
-                    title([ObjectName, ' Outlines on Input Image']);
+                    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+                    CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
+                    title(hAx,[ObjectName, ' Outlines on Input Image']);
                 end
             end
 

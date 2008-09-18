@@ -102,14 +102,14 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     %%% A subplot of the Original image.
-    subplot(2,1,1)
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
     %%% A subplot of the Masked image.
-    subplot(2,1,2)
-    CPimagesc(CropMask,handles);
-    title([MaskedImageName ' from ' ObjectName]);
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(CropMask,handles,hAx);
+    title(hAx,[MaskedImageName ' from ' ObjectName]);
 end
 
 

@@ -76,8 +76,8 @@ if any(findobj == ThisModuleFigureNumber)
 %    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
 %        CPresizefigure(Orig,'TwoByOne',ThisModuleFigureNumber)
 %    end
-    CPimagesc(LargestRGB,handles);
-    title([LargestObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    [hImage,hAx] = CPimagesc(LargestRGB,handles,ThisModuleFigureNumber);
+    title(hAx,[LargestObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

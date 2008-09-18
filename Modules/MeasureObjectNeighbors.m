@@ -330,31 +330,31 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(IncomingLabelMatrixImage,'TwoByTwo',ThisModuleFigureNumber)
     end
-    subplot(2,2,1);
-    CPimagesc(ColoredIncomingObjectsImage,handles);
-    axis image;
-    title(ObjectName)
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ColoredIncomingObjectsImage,handles,hAx);
+    axis(hAx,'image');
+    title(hAx,ObjectName);
 
-    subplot(2,2,2);
-    CPimagesc(ImageOfNeighbors,handles);
-    axis image;
-    colormap(handles.Preferences.LabelColorMap)
-    colorbar('EastOutside')
-    title([ObjectName,' colored by number of neighbors'])
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ImageOfNeighbors,handles,hAx);
+    axis(hAx,'image');
+    colormap(hAx,handles.Preferences.LabelColorMap);
+    colorbar('EastOutside','peer',hAx);
+    title(hAx,[ObjectName,' colored by number of neighbors']);
 
     if (NeighborDistance == 0),
-        subplot(2,2,3);
-        CPimagesc(CPlabel2rgb(handles, DilatedLabels), handles);
-        axis image;
-        title(['Fully expanded ' ObjectName]);
+        hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+        CPimagesc(CPlabel2rgb(handles, DilatedLabels), handles,hAx);
+        axis(hAx,'image');
+        title(hAx,['Fully expanded ' ObjectName]);
     end
 
-    subplot(2,2,4);
-	CPimagesc(ImageOfPercentTouching,handles);
-	axis image;
-	colormap(handles.Preferences.LabelColorMap)
-	colorbar('EastOutside')
-	title([ObjectName,' colored by percent touching'])
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+	CPimagesc(ImageOfPercentTouching,handles,hAx);
+	axis(hAx,'image');
+	colormap(hAx,handles.Preferences.LabelColorMap)
+	colorbar('EastOutside','peer',hAx)
+	title(hAx,[ObjectName,' colored by percent touching'])
 
 end
 

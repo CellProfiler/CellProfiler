@@ -157,14 +157,14 @@ if any(findobj == ThisModuleFigureNumber)
     end
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,1,1); 
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(OrigImage,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the processed
     %%% image.
-    subplot(2,1,2); 
-    CPimagesc(ThresholdedOrigImage,handles); 
-    title('Thresholded Image');
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(ThresholdedOrigImage,handles,hAx); 
+    title(hAx,'Thresholded Image');
     if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
         displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 60],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     else

@@ -174,18 +174,18 @@ if any(findobj == ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(PrimaryObjectImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    subplot(2,2,1); 
-    CPimagesc(PrimaryObjectImage,handles); 
-    title([PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2); 
-    CPimagesc(SecondaryObjectImage,handles); 
-    title([SecondaryObjectName, ' Image']);
-    subplot(2,2,3); 
-    CPimagesc(ColoredLabelMatrixImage,handles); 
-    title([SubregionObjectName, ' Image']);
-    subplot(2,2,4); 
-    CPimagesc(FinalOutline,handles); 
-    title([SubregionObjectName, ' Outlines']);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(PrimaryObjectImage,handles,hAx); 
+    title(hAx,[PrimaryObjectName, ' Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(SecondaryObjectImage,handles,hAx); 
+    title(hAx,[SecondaryObjectName, ' Image']);
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(ColoredLabelMatrixImage,handles,hAx); 
+    title(hAx,[SubregionObjectName, ' Image']);
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(FinalOutline,handles,hAx); 
+    title(hAx,[SubregionObjectName, ' Outlines']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

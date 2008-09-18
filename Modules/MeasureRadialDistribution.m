@@ -218,17 +218,17 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(Image,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the distance image.
-    subplot(2,2,1);
-    CPimagesc(NormalizedDistance, handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(NormalizedDistance, handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% subplot to display distance/intensity histogram
-    subplot(2,2,2);
-    CPimagesc(FractionAtDistance, handles);
-    title('FractionAtDistance');
-    subplot(2,2,3);
-    CPimagesc(MeanPixelFraction, handles);
-    title('MeanPixelFraction');
-    subplot(2,2,4);
-    CPimagesc(RadialCV, handles);
-    title('RadialCV');
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(FractionAtDistance, handles,hAx);
+    title(hAx,'FractionAtDistance');
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(MeanPixelFraction, handles,hAx);
+    title(hAx,'MeanPixelFraction');
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    CPimagesc(RadialCV, handles,hAx);
+    title(hAx,'RadialCV');
 end

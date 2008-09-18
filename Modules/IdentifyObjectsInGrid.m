@@ -336,17 +336,17 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(FinalLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    subplot(2,1,1); 
-    CPimagesc(ColoredLabelMatrixImage,handles);
-    line(VertLinesX,VertLinesY);
-    line(HorizLinesX,HorizLinesY);
-    title(['Identified ',NewObjectName]);
-    subplot(2,1,2); 
-    CPimagesc(FinalOutline,handles);
-    line(VertLinesX,VertLinesY);
-    line(HorizLinesX,HorizLinesY);
-    title(['Outlined ',NewObjectName]);
-    set(findobj('type','line'), 'color',[.15 .15 .15])
+    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(ColoredLabelMatrixImage,handles,hAx);
+    color = [.15 .15 .15];
+    line(VertLinesX,VertLinesY,'Parent',hAx,'color',color);
+    line(HorizLinesX,HorizLinesY,'Parent',hAx,'color',color);
+    title(hAx,['Identified ',NewObjectName]);
+    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(FinalOutline,handles,hAx);
+    line(VertLinesX,VertLinesY,'Parent',hAx,'color',color);
+    line(HorizLinesX,HorizLinesY,'Parent',hAx,'color',color);
+    title(hAx,['Outlined ',NewObjectName]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

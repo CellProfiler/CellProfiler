@@ -105,45 +105,54 @@ drawnow;
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 hFigure = CPfigure(handles,'Image',ThisModuleFigureNumber);
+my_data.hFigure = ThisModuleFigureNumber;
 set(hFigure,'Name',['EditObjectsManually, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     CPresizefigure(img,'TwoByTwo',ThisModuleFigureNumber);
 end
 %%% A subplot of the figure window is set to display the original image.
-subplot(2,2,1);
-my_data.hOriginal=CPimagesc(img,handles);
+hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+my_data.hOriginal=CPimagesc(img,handles,hAx);
 set(my_data.hOriginal,'ButtonDownFcn',{@ImageClickCallback,'toggle'});
-title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+title(hAx,['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+my_data.hAxIncluded=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+title(my_data.hAxIncluded,'Objects to keep');
+my_data.hAxExcluded=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+title(my_data.hAxExcluded,'Objects to remove');
 %%%
 %%% The continue button exits the modal state
 %%%
 hContinue=uicontrol('Position',[30 30 100 20],'String','Continue',...
-                    'Callback','set(gcbo,''UserData'',0);uiresume(gcbf)',...
+                    'Callback',{@Continue_Callback,ThisModuleFigureNumber},...
                     'UserData',struct('operation','none'),...
-                    'DeleteFcn','uiresume(gcbf)'...
+                    'DeleteFcn','uiresume(gcbf)',...
+                    'Parent',ThisModuleFigureNumber...
                 );
 my_data.hContinue = hContinue;
 uibuttons = [...
-uicontrol('Position',[30,120,100,20],...
-          'String','Keep all',...
-          'Callback',{@CommandCallback, hContinue,'keepall'}),...
-uicontrol('Position',[30,90,100,20],...
-          'String','Remove all',...
-          'Callback',{@CommandCallback, hContinue,'removeall'}),...
-uicontrol('Position',[30,60,100,20],...
-          'String','Reverse selection',...
-          'Callback',{@CommandCallback, hContinue,'toggleall'})];
+uicontrol('Position', [30,120,100,20],...
+          'String',   'Keep all',...
+          'Callback', {@CommandCallback, hContinue,'keepall'},...
+          'Parent',   ThisModuleFigureNumber),...
+uicontrol('Position', [30,90,100,20],...
+          'String',   'Remove all',...
+          'Callback', {@CommandCallback, hContinue,'removeall'},...
+          'Parent',   ThisModuleFigureNumber),...
+uicontrol('Position', [30,60,100,20],...
+          'String',   'Reverse selection',...
+          'Callback', {@CommandCallback, hContinue,'toggleall'},...
+          'Parent',   ThisModuleFigureNumber)];
 set(my_data.hOriginal,'UserData',my_data);
 my_data = Update('keepall',[1,1],my_data,handles);
-set(gcf,'CloseRequestFcn','uiresume(gcbf);closereq');
+set(ThisModuleFigureNumber,'CloseRequestFcn','uiresume(gcbf);closereq');
 while (ishandle(hContinue) && isstruct(get(hContinue,'UserData')))
     x = get(hContinue,'UserData');
     if ~ strcmp(x.operation,'none')
         my_data = Update(x.operation,x.pos,my_data,handles);
     end
     drawnow;
-    uiwait(gcf);
+    uiwait(ThisModuleFigureNumber);
 end;
 set(hContinue,'Visible','off');
 set(uibuttons,'Visible','off');
@@ -186,8 +195,12 @@ for imgstruct =OutputImages
         handles.Pipeline.(imgstruct.fieldname) = imgstruct.image;
     end
 end
-
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Continue_Callback - handle the continue button
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function Continue_Callback(hObject, eventdata, ThisModuleFigureNumber) %#ok<INUSL>
+    set(hObject,'UserData',0);
+    uiresume(ThisModuleFigureNumber);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% ImageClickCallback - handle a click on one of the images
@@ -201,14 +214,14 @@ function ImageClickCallback(hObject,eventdata,operation) %#ok<INUSL>
         set(hData.hContinue,'UserData',x);
     end
     uiresume(gcf);
-end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% CommandCallback - handle a command button
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function CommandCallback(hObject, eventdata, hContinue, operation) %#ok<INUSL>
     set(hContinue,'UserData',struct('operation',operation,'pos',[]));
     uiresume(gcf);
-end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Update - update the GUI and data for a image click
 %%%    operation - 'toggle','keep' or 'remove'
@@ -251,32 +264,26 @@ function hDataOut=Update(operation, pos, hData, handles)
     hData.ExcludedSegmentedObjectImage = hData.SegmentedObjectImage;
     hData.IncludedSegmentedObjectImage(~ismember(hData.IncludedSegmentedObjectImage,hData.Filter))=0;
     hData.ExcludedSegmentedObjectImage(ismember(hData.ExcludedSegmentedObjectImage,hData.Filter))=0;
-    subplot(2,2,2,'replace');
     if max(hData.IncludedSegmentedObjectImage(:)) == 0
         img = zeros(size(hData.IncludedSegmentedObjectImage,1),...
                     size(hData.IncludedSegmentedObjectImage,2),3);
     else
         img = CPlabel2rgb(handles, hData.IncludedSegmentedObjectImage);
     end
-    hData.hIncluded=CPimagesc(img, handles);
-    title('Objects to keep');
+    hData.hIncluded=CPimagesc(img, handles,hData.hAxIncluded);
     set(hData.hIncluded,'ButtonDownFcn',{@ImageClickCallback,'remove'});
-    subplot(2,2,4,'replace');
     if max(hData.ExcludedSegmentedObjectImage(:)) == 0
         img = zeros(size(hData.ExcludedSegmentedObjectImage,1),...
                     size(hData.ExcludedSegmentedObjectImage,2),3);
     else
         img = CPlabel2rgb(handles, hData.ExcludedSegmentedObjectImage);
     end
-    hData.hExcluded=CPimagesc(img, handles);
-    title('Objects to remove');
+    hData.hExcluded=CPimagesc(img, handles,hData.hAxExcluded);
     set(hData.hExcluded,'ButtonDownFcn',{@ImageClickCallback,'keep'});
     set(hData.hOriginal,'UserData',hData);
     set(hData.hIncluded,'UserData',hData);
     set(hData.hExcluded,'UserData',hData);
     hDataOut = hData;
-end
 
 function Filter=AllLabels(SegmentedObjectImage)
     Filter=unique(SegmentedObjectImage(SegmentedObjectImage ~= 0));
-end

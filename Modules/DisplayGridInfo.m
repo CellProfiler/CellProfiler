@@ -107,27 +107,27 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
 
-    CPimagesc(OrigImage,handles);
-    title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with text info displayed'])
-    line(VertLinesX,VertLinesY);
-    line(HorizLinesX,HorizLinesY);
-    title(['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with text info displayed']);
+    [hImage,hAx]=CPimagesc(OrigImage,handles,ThisModuleFigureNumber);
+    title(hAx,['Cycle #', num2str(handles.Current.SetBeingAnalyzed),', with text info displayed'])
+    line(VertLinesX,VertLinesY,'Parent',hAx);
+    line(HorizLinesX,HorizLinesY,'Parent',hAx);
+    title(hAx,['Cycle #', num2str(handles.Current.SetBeingAnalyzed), ' with text info displayed']);
     set(findobj(FigHandle,'type','line'),'color',[.15 1 .15])
 
     %%% Sets the location of Tick marks.
-    set(gca, 'XTick', GridXLocations(1,:)+floor(XSpacing/2))
-    set(gca, 'YTick', GridYLocations(:,1)+floor(YSpacing/2))
+    set(hAx, 'XTick', GridXLocations(1,:)+floor(XSpacing/2))
+    set(hAx, 'YTick', GridYLocations(:,1)+floor(YSpacing/2))
 
     %%% Sets the Tick Labels.
     if strcmp(LeftOrRight,'Right')
-        set(gca, 'XTickLabel',fliplr(1:Columns))
+        set(hAx, 'XTickLabel',fliplr(1:Columns))
     else
-        set(gca, 'XTickLabel',{1:Columns})
+        set(hAx, 'XTickLabel',{1:Columns})
     end
     if strcmp(TopOrBottom,'Bottom')
-        set(gca, 'YTickLabel',{fliplr(1:Rows)})
+        set(hAx, 'YTickLabel',{fliplr(1:Rows)})
     else
-        set(gca, 'YTickLabel',{1:Rows})
+        set(hAx, 'YTickLabel',{1:Rows})
     end
 
     GridLineCallback = [...
@@ -181,7 +181,7 @@ if any(findobj == ThisModuleFigureNumber)
             Text1{i} = tempText{temp(i)};
         end
 
-        TextHandles1 = text(XLocations,YLocations+floor(YSpacing/3),Text1,'Color','red','fontsize',handles.Preferences.FontSize);
+        TextHandles1 = text(XLocations,YLocations+floor(YSpacing/3),Text1,'Color','red','fontsize',handles.Preferences.FontSize,'Parent',hAx);
 
         ButtonCallback = [...
             'button = gco;'...
@@ -228,7 +228,7 @@ if any(findobj == ThisModuleFigureNumber)
             Text2{i} = tempText{temp(i)};
         end
 
-        TextHandles2 = text(XLocations,YLocations+2*floor(YSpacing/3),Text2,'Color','green','fontsize',handles.Preferences.FontSize);
+        TextHandles2 = text(XLocations,YLocations+2*floor(YSpacing/3),Text2,'Color','green','fontsize',handles.Preferences.FontSize,'Parent',hAx);
 
         ButtonCallback = [...
             'button = gco;'...
@@ -276,7 +276,7 @@ if any(findobj == ThisModuleFigureNumber)
             Text3{i} = tempText{temp(i)};
         end
 
-        TextHandles3 = text(XLocations,YLocations+YSpacing,Text3,'Color','blue','fontsize',handles.Preferences.FontSize);
+        TextHandles3 = text(XLocations,YLocations+YSpacing,Text3,'Color','blue','fontsize',handles.Preferences.FontSize,'Parent',hAx);
 
         ButtonCallback = [...
             'button = gco;'...

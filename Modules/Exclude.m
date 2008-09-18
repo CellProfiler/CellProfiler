@@ -202,22 +202,22 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure(ColoredSegmentedObjectImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     %%% A subplot of the figure window is set to display the original image.
-    subplot(2,2,1);
-    CPimagesc(ColoredSegmentedObjectImage,handles);
-    title(['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ColoredSegmentedObjectImage,handles,hAx);
+    title(hAx,['Previously identified ', ObjectName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display the inverted original
     %%% image with outlines drawn on top.
-    subplot(2,2,2);
-    CPimagesc(ColoredNewSegmentedObjectImage,handles);
-    title(RemainingObjectName);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ColoredNewSegmentedObjectImage,handles,hAx);
+    title(hAx,RemainingObjectName);
     %%% A subplot of the figure window is set to display the colored label
     %%% matrix image.
-    subplot(2,2,3);
-    CPimagesc(ColoredMaskRegionObjectImage,handles);
-    title(['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,4); 
-    CPimagesc(ObjectOutlinesOnOrigImage,handles); 
-    title([ObjectName, ' Outlines on Input Image']);
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ColoredMaskRegionObjectImage,handles,hAx);
+    title(hAx,['Previously identified ', MaskRegionName,', cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber); 
+    CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx); 
+    title(hAx,[ObjectName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -251,7 +251,7 @@ if exist('NewSmallRemovedSegmentedObjectImage','var') == 1
 fieldname = ['SmallRemovedSegmented',RemainingObjectName];
 handles.Pipeline.(fieldname) = NewSmallRemovedSegmentedObjectImage;
 end
-end
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 %%% ExcludeMaskingFn
 %%%    SegmentedObjectImage - Image to be masked
@@ -273,4 +273,4 @@ function NewSegmentedObjectImage=ExcludeMaskingFn(SegmentedObjectImage, MaskRegi
     else
         error(['Unknown option for remove/retain overlapping: ',RemoveOverlapping]);
     end
-end
+

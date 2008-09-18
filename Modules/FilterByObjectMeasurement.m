@@ -185,27 +185,27 @@ if any(findobj == ThisModuleFigureNumber)
 
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    subplot(2,2,1);
-    CPimagesc(OrigImage,handles);
-    title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    CPimagesc(OrigImage,handles,hAx);
+    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
 
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
-    subplot(2,2,3);
+    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
     UnfilteredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
-    CPimagesc(UnfilteredLabelMatrixImage,handles);
-    title(['Original ',ObjectName]);
+    CPimagesc(UnfilteredLabelMatrixImage,handles,hAx);
+    title(hAx,['Original ',ObjectName]);
 
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
-    subplot(2,2,2);
+    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-    CPimagesc(ColoredLabelMatrixImage,handles);
-    title([ObjectName,' filtered by ',FeatureName]);
+    CPimagesc(ColoredLabelMatrixImage,handles,hAx);
+    title(hAx,[ObjectName,' filtered by ',FeatureName]);
 
-    subplot(2,2,4);
-    CPimagesc(ObjectOutlinesOnOrigImage,handles);
-    title([TargetName, ' Outlines on Input Image']);
+    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
+    title(hAx,[TargetName, ' Outlines on Input Image']);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

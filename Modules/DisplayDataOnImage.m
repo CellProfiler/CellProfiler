@@ -45,21 +45,12 @@ drawnow
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
 %textVAR02 = Which category of measurements would you like to use?
-%choiceVAR02 = AreaOccupied
-%choiceVAR02 = AreaShape
-%choiceVAR02 = Children
-%choiceVAR02 = Intensity
-%choiceVAR02 = Neighbors
-%choiceVAR02 = Ratio
-%choiceVAR02 = Texture
-%choiceVAR02 = ImageQuality
-%choiceVAR02 = RadialDistribution
-%choiceVAR02 = Granularity
-%inputtypeVAR02 = popupmenu custom
+%inputtypeVAR02 = popupmenu category
 Category = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which feature do you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR03 = 1
+%inputtypeVAR03 = popupmenu measurement
 FeatureNbr = handles.Settings.VariableValues{CurrentModuleNum,3};
 
 if isempty(FeatureNbr) 
@@ -184,8 +175,8 @@ else
     OutlinesOnImage = OrigImage;
     OutlinesOnImage(logical(Outlines)) = 1;
     
-    CPimagesc(OutlinesOnImage,handles);
-    colormap(gray);
+    [hImage,hAx] = CPimagesc(OutlinesOnImage,handles,ThisModuleFigureNumber);
+    colormap(hAx,gray);
     
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage OutlinesOnImage},'backgroundcolor',[.7 .7 .9],...
@@ -202,11 +193,11 @@ else
         justtheFeatureName = justtheFeatureName(1:slash_index-1);
     end
     Title = [ObjectName,', ',justtheFeatureName,' on ',ImageName];
-    title(Title);
+    title(hAx,Title);
 
     %%% Overlays the values in the proper location in the image.
     TextHandles = text(Xlocations , Ylocations , StringListOfMeasurements,...
-        'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize);
+        'HorizontalAlignment','center', 'color', [1 1 0],'fontsize',handles.Preferences.FontSize,'Parent',hAx);
 
     %%% Create structure and save it to the UserData property of the window
     Info = get(FigHandle,'UserData');

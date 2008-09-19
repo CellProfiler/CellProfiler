@@ -101,6 +101,8 @@ Separator{1} = handles.Settings.VariableValues{CurrentModuleNum,10};
 Separator{2} = handles.Settings.VariableValues{CurrentModuleNum,11};
 
 %textVAR12 = If you want to label your bins, enter the bin labels separated by commas (e.g. bin1,bin2,bin3,bin4). If the number of labels does not equal the number of bins (which is 4), this step will be ignored. Leave "Do not use" for default labels.
+%%%TODO: Instead of "Do not use", this should just list the actual default
+%%%names that will be used (which are what? bin1,bin2,bin3,bin4?)
 %defaultVAR12 = Do not use
 Labels = handles.Settings.VariableValues{CurrentModuleNum,12};
 

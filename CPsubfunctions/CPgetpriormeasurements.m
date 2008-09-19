@@ -16,7 +16,7 @@ function measurements=CPgetpriormeasurements(handles, CurrentModuleNum, ObjectOr
 % Website: http://www.cellprofiler.org
 %
 % $Revision: 5777 $
-measurements=[];
+measurements={};
 for i = 1:(CurrentModuleNum-1)
     SupportsMeasurements=false;
     for feature=handles.Settings.ModuleSupportedFeatures{i}
@@ -26,12 +26,11 @@ for i = 1:(CurrentModuleNum-1)
     end
     if SupportsMeasurements
         handles.Current.CurrentModuleNumber=num2str(i);
-        measurements=unique([measurements,...
-            feval(handles.Settings.ModuleNames{i},...
-                  handles,...
-                  'measurements',ObjectOrImageName, CategoryName)]);
+        more_measurements=feval(handles.Settings.ModuleNames{i},...
+            handles,'measurements',ObjectOrImageName, CategoryName);
+        more_measurements=more_measurements(~ismember(more_measurements,measurements));
+        measurements = [measurements, more_measurements];
     end
 end
-measurements=sort(measurements);
 
 end

@@ -961,7 +961,7 @@ if any(UpdatedModules),
     str{1} = 'The following module(s) have been updated and your previous settings have been transferred. Please see the Release Notes for more details.';
     updated_module_locations = find(UpdatedModules);
     for i = updated_module_locations(:)',
-        str{i} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
+        str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
     end
     str = str(~cellfun('isempty',str));
     CPwarndlg(str,'LoadPipelines: Some modules updated','modal');

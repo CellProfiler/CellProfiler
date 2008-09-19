@@ -115,25 +115,33 @@ SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR11 = popupmenu
 LogChoice = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Raise to what power (*after* chosen operation below)?
+%textVAR12 = Enter a factor to multiply the first feature by (before other operations):
 %defaultVAR12 = 1
-Power = str2double(handles.Settings.VariableValues{CurrentModuleNum,12});
+MultiplyFactor1 = str2double(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = What factor would you like to multiply the result by (*after* chosen operation below)?
+%textVAR13 = Enter a factor to multiply the second feature by (before other operation):
 %defaultVAR13 = 1
-MultiplyFactor = str2double(handles.Settings.VariableValues{CurrentModuleNum,13});
+MultiplyFactor2 = str2double(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = Operation?
-%choiceVAR14 = Multiply
-%choiceVAR14 = Divide
-%choiceVAR14 = Add
-%choiceVAR14 = Subtract
-%inputtypeVAR14 = popupmenu
-Operation = char(handles.Settings.VariableValues(CurrentModuleNum, 14));
+%textVAR14 = Enter an exponent to raise the result to (*after* chosen operation below)?
+%defaultVAR14 = 1
+Power = str2double(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%textVAR15 = What do you want to call the output calculated by this module? The prefix, "Math_" will be applied to your entry or simply leave as "Automatic" and a sensible name will be generated.'
-%defaultVAR15 = Automatic
-OutputFeatureName = char(handles.Settings.VariableValues(CurrentModuleNum,15));
+%textVAR15 = Enter a factor to multiply the result by (*after* chosen operation below)?
+%defaultVAR15 = 1
+MultiplyFactor3 = str2double(handles.Settings.VariableValues{CurrentModuleNum,15});
+
+%textVAR16 = Operation?
+%choiceVAR16 = Multiply
+%choiceVAR16 = Divide
+%choiceVAR16 = Add
+%choiceVAR16 = Subtract
+%inputtypeVAR16 = popupmenu
+Operation = char(handles.Settings.VariableValues(CurrentModuleNum, 16));
+
+%textVAR17 = What do you want to call the output calculated by this module? The prefix, "Math_" will be applied to your entry or simply leave as "Automatic" and a sensible name will be generated.'
+%defaultVAR17 = Automatic
+OutputFeatureName = char(handles.Settings.VariableValues(CurrentModuleNum,17));
 %%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

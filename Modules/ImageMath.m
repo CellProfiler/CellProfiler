@@ -10,6 +10,14 @@ function handles = ImageMath(handles)
 % Operation:
 % The complement of a grayscale image inverts the intensities 
 % (dark areas become brighter, and bright areas become darker).  
+%
+% Average in the ImageMath module is the numerical average of the two images loaded in
+% the module.  If you would like to average many images (all of the images
+% in an entire pipeline), please use the CorrectIllumination_Calculate
+% module and chose the option "(For 'All' mode only) What do you want to
+% call the averaged image (prior to dilation or smoothing)? 
+% (This is an image produced during the calculations - it is typically not
+% needed for downstream modules)"  This will be an average over all images.
 % 
 % Multiply factors:
 % The final image may have a substantially different range of pixel
@@ -65,6 +73,7 @@ SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = Divide
 %choiceVAR04 = Complement
 %choiceVAR04 = Log transform (base 2)
+%choiceVAR04 = Average
 Operation = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -76,17 +85,25 @@ MultiplyFactor1 = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 %defaultVAR06 = 1
 MultiplyFactor2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Do you want negative values in the image to be set to zero?
-%choiceVAR07 = Yes
-%choiceVAR07 = No
-FloorZero = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR07 = Enter an exponent to raise the result to *after* chosen operation:
+%defaultVAR07 = 1
+Power = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Do you want values greater than one in the image to be set to one?
-%choiceVAR08 = Yes
-%choiceVAR08 = No
-CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,8});
-%inputtypeVAR08 = popupmenu
+%textVAR08 = Enter a factor to multipy the result by *after* chosen operation:
+%defaultVAR08 = 1
+MultiplyFactor3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+
+%textVAR09 = Do you want negative values in the image to be set to zero?
+%choiceVAR09 = Yes
+%choiceVAR09 = No
+FloorZero = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%textVAR09 = Do you want values greater than one in the image to be set to one?
+%choiceVAR09 = Yes
+%choiceVAR09 = No
+CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
 
 %%%VariableRevisionNumber = 1
 
@@ -151,6 +168,17 @@ switch Operation
         else
             ImageAfterMath = zeros(size(FirstImage));
         end
+    case 'Average'
+       TotalImage = imadd(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
+       ImageAfterMath = TotalImage/2;
+end
+
+if ~isnan(Power)
+    ImageAfterMath = ImageAfterMath .^ Power;
+end
+
+if ~isnan(MultiplyFactor3)
+    ImageAfterMath = ImageAfterMath.*MultiplyFactor3;
 end
 
 %% Apply thresholds

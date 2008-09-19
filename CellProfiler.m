@@ -605,6 +605,7 @@ if strcmp(Answer,'Yes')
     handles.Settings.VariableInfoTypes = {};
     handles.Settings.VariableRevisionNumbers = [];
     handles.Settings.ModuleRevisionNumbers = [];
+    handles.Settings.ModuleNotes = {};
     handles.Settings.ModuleSupportedFeatures = {};    
     delete(get(handles.variablepanel,'children'));
     set(handles.slider1,'visible','off');
@@ -928,6 +929,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
             Settings.NumbersOfVariables(ModuleNum-Skipped) = [];
             try Settings.VariableRevisionNumbers(ModuleNum-Skipped) = []; end
             try Settings.ModuleRevisionNumbers(ModuleNum-Skipped) = []; end
+            try Settings.ModuleNotes{ModuleNum-Skipped} = {}; end
             Skipped = Skipped+1;
         end
         if Abort
@@ -989,6 +991,14 @@ for i=1:length(handles.Settings.ModuleNames)
     handles=guidata(handles.figure1);
     handles.Current.NumberOfModules = i;
     CPwaitbar(i/length(handles.Settings.ModuleNames),WaitBarHandle,'Loading Pipeline...');
+end
+if (isfield(Settings,'ModuleNotes') && length(Settings.ModuleNotes) == length(Settings.ModuleNames))
+    handles.Settings.ModuleNotes = Settings.ModuleNotes;
+else
+    handles.Settings.ModuleNotes = cell(length(Settings.ModuleNames));
+    for i=1:length(handles.Settings.ModuleNotes)
+        handles.Settings.ModuleNotes{i}={};
+    end
 end
 
 if exist('FixList','var')
@@ -1603,6 +1613,9 @@ if FileName ~= 0
     if isfield(handles.Settings,'ModuleRevisionNumbers'),
         Settings.ModuleRevisionNumbers = handles.Settings.ModuleRevisionNumbers;
     end
+    if isfield(handles.Settings,'ModuleNotes')
+        Settings.ModuleNotes = handles.Settings.ModuleNotes;
+    end
     
     %%% Save current name and location of saved pipeline to handles
     handles.Current.SavedPipeline.Info.Pathname = Pathname;
@@ -1763,11 +1776,13 @@ if ModuleNamedotm ~= 0,
         if size(handles.Settings.VariableInfoTypes,1) >= ModuleCurrent
             handles.Settings.VariableInfoTypes(ModuleCurrent+1,:) = handles.Settings.VariableInfoTypes(ModuleCurrent,:);
         end
+        %%% 7. Copy the module features list
+        handles.Settings.ModuleSupportedFeatures{ModuleCurrent+1} = handles.Settings.ModuleSupportedFeatures{ModuleCurrent};
+        %%% 8. Copy the module notes
+        handles.Settings.ModuleNotes{ModuleCurrent+1} = handles.Settings.ModuleNotes{ModuleCurrent};
         contents = get(handles.ModulePipelineListBox,'String');
         contents{ModuleCurrent+1} = handles.Settings.ModuleNames{ModuleCurrent};
         set(handles.ModulePipelineListBox,'String',contents);
-        %%% 7. Start a new module features list
-        handles.Settings.ModuleSupportedFeatures{ModuleCurrent+1} = {};
     end
 
     if ModuleNums <= handles.Current.NumberOfModules
@@ -1782,6 +1797,7 @@ if ModuleNamedotm ~= 0,
 
     NumberOfFeatures = 0;
     handles.Settings.ModuleSupportedFeatures{ModuleNums} = {};
+    handles.Settings.ModuleNotes{ModuleNums} = {};
     fid=fopen(fullfile(Pathname,ModuleNamedotm));
     lastVariableCheck = 0;
 
@@ -2309,6 +2325,10 @@ for ModuleDelete = 1:length(ModuleHighlighted);
     handles.Settings.VariableRevisionNumbers(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     %%% 6. Clears the Module Revision Numbers in each module slot from handles structure.
     handles.Settings.ModuleRevisionNumbers(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
+    %%% 7. Clears supported features from handles structure.
+    handles.Settings.ModuleSupportedFeatures(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
+    %%% 8. Clears module notes from handles structure.
+    handles.Settings.ModuleNotes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1) = [];
     if size(handles.Settings.VariableInfoTypes,1) >= (ModuleHighlighted(ModuleDelete)-ModuleDelete+1)
         handles.Settings.VariableInfoTypes(ModuleHighlighted(ModuleDelete)-ModuleDelete+1,:) = [];
     end
@@ -2368,44 +2388,8 @@ if ~(isempty(ModuleHighlighted) || handles.Current.NumberOfModules < 1 || Module
     for ModuleUp1 = 1:length(ModuleHighlighted);
         ModuleUp = ModuleHighlighted(ModuleUp1)-1;
         ModuleNow = ModuleHighlighted(ModuleUp1);
-        %%% 1. Switches ModuleNames
-        ModuleUpName = char(handles.Settings.ModuleNames(ModuleUp));
-        ModuleName = char(handles.Settings.ModuleNames(ModuleNow));
-        handles.Settings.ModuleNames{ModuleUp} = ModuleName;
-        handles.Settings.ModuleNames{ModuleNow} = ModuleUpName;
-        %%% 2. Copy then clear the variable values in the handles structure.
-        copyVariables = handles.Settings.VariableValues(ModuleNow,:);
-        handles.Settings.VariableValues(ModuleNow,:) = handles.Settings.VariableValues(ModuleUp,:);
-        handles.Settings.VariableValues(ModuleUp,:) = copyVariables;
-        %%% 3. Copy then clear the num of variables in the handles
-        %%% structure.
-        copyNumVariables = handles.Settings.NumbersOfVariables(ModuleNow);
-        handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleUp);
-        handles.Settings.NumbersOfVariables(ModuleUp) = copyNumVariables;
-        %%% 4. Copy then clear the variable revision numbers in the handles
-        %%% structure.
-        copyVarRevNums = handles.Settings.VariableRevisionNumbers(ModuleNow);
-        handles.Settings.VariableRevisionNumbers(ModuleNow) = handles.Settings.VariableRevisionNumbers(ModuleUp);
-        handles.Settings.VariableRevisionNumbers(ModuleUp) = copyVarRevNums;
-        %%% 5. Copy then clear the module revision numbers in the handles
-        %%% structure.
-        copyModRevNums = handles.Settings.ModuleRevisionNumbers(ModuleNow);
-        handles.Settings.ModuleRevisionNumbers(ModuleNow) = handles.Settings.ModuleRevisionNumbers(ModuleUp);
-        handles.Settings.ModuleRevisionNumbers(ModuleUp) = copyModRevNums;
-        %%% 6. Copy then clear the variable infotypes in the handles
-        %%% structure.
-        copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
-        handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleUp,:);
-        handles.Settings.VariableInfoTypes(ModuleUp,:) = copyVarInfoTypes;
 
-        CopyVariableDescription = handles.VariableDescription(ModuleNow);
-        handles.VariableDescription(ModuleNow) = handles.VariableDescription(ModuleUp);
-        handles.VariableDescription(ModuleUp) = CopyVariableDescription;
-
-        CopyVariableBox = handles.VariableBox(ModuleNow);
-        handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleUp);
-        handles.VariableBox(ModuleUp) = CopyVariableBox;
-
+        handles = ExchangeModules(handles, ModuleNow, ModuleUp);
         if isfield(handles,'BrowseButton')
             if length(handles.BrowseButton) >= ModuleNow
                 CopyBrowseButton = handles.BrowseButton(ModuleNow);
@@ -2437,6 +2421,55 @@ if length(handles.Settings.NumbersOfVariables) ~= length(handles.Settings.Module
     CPmsgbox('STOP! Somehow the NumbersOfVariable was not set correctly! Please record EVERYTHING you have done in the past few minutes and send to mrl@wi.mit.edu! Be sure to include what modules are in your pipeline and what you tried to do to cause this error (Adding, Subtracting, Moving modules, how many?).');
 end
 
+function handles = ExchangeModules(handles, ModuleNow, ModuleUp)
+%%% 1. Switches ModuleNames
+ModuleUpName = char(handles.Settings.ModuleNames(ModuleUp));
+ModuleName = char(handles.Settings.ModuleNames(ModuleNow));
+handles.Settings.ModuleNames{ModuleUp} = ModuleName;
+handles.Settings.ModuleNames{ModuleNow} = ModuleUpName;
+%%% 2. Copy then clear the variable values in the handles structure.
+copyVariables = handles.Settings.VariableValues(ModuleNow,:);
+handles.Settings.VariableValues(ModuleNow,:) = handles.Settings.VariableValues(ModuleUp,:);
+handles.Settings.VariableValues(ModuleUp,:) = copyVariables;
+%%% 3. Copy then clear the num of variables in the handles
+%%% structure.
+copyNumVariables = handles.Settings.NumbersOfVariables(ModuleNow);
+handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleUp);
+handles.Settings.NumbersOfVariables(ModuleUp) = copyNumVariables;
+%%% 4. Copy then clear the variable revision numbers in the handles
+%%% structure.
+copyVarRevNums = handles.Settings.VariableRevisionNumbers(ModuleNow);
+handles.Settings.VariableRevisionNumbers(ModuleNow) = handles.Settings.VariableRevisionNumbers(ModuleUp);
+handles.Settings.VariableRevisionNumbers(ModuleUp) = copyVarRevNums;
+%%% 5. Copy then clear the module revision numbers in the handles
+%%% structure.
+copyModRevNums = handles.Settings.ModuleRevisionNumbers(ModuleNow);
+handles.Settings.ModuleRevisionNumbers(ModuleNow) = handles.Settings.ModuleRevisionNumbers(ModuleUp);
+handles.Settings.ModuleRevisionNumbers(ModuleUp) = copyModRevNums;
+%%% 6. Copy then clear the variable infotypes in the handles
+%%% structure.
+copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
+handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleUp,:);
+handles.Settings.VariableInfoTypes(ModuleUp,:) = copyVarInfoTypes;
+
+%%% 7. Copy then clear the module features
+copyModuleFeatures = handles.Settings.ModuleSupportedFeatures{ModuleNow};
+handles.Settings.ModuleSupportedFeatures{ModuleNow} = handles.Settings.ModuleSupportedFeatures{ModuleUp};
+handles.Settings.ModuleSupportedFeatures{ModuleUp} = copyModuleFeatures;
+
+%%% 8. Copy the module notes
+copyModuleNotes = handles.Settings.ModuleNotes{ModuleNow};
+handles.Settings.ModuleNotes{ModuleNow} = handles.Settings.ModuleNotes{ModuleUp};
+handles.Settings.ModuleNotes{ModuleUp} = copyModuleNotes;
+
+CopyVariableDescription = handles.VariableDescription(ModuleNow);
+handles.VariableDescription(ModuleNow) = handles.VariableDescription(ModuleUp);
+handles.VariableDescription(ModuleUp) = CopyVariableDescription;
+
+CopyVariableBox = handles.VariableBox(ModuleNow);
+handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleUp);
+handles.VariableBox(ModuleUp) = CopyVariableBox;
+
 function MoveDownButton_Callback(hObject,eventdata,handles) %#ok We want to ignore MLint error checking for this line.
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 if ~(isempty(ModuleHighlighted) || handles.Current.NumberOfModules<1 || ModuleHighlighted(length(ModuleHighlighted)) >= handles.Current.NumberOfModules)
@@ -2444,44 +2477,7 @@ if ~(isempty(ModuleHighlighted) || handles.Current.NumberOfModules<1 || ModuleHi
     for ModuleDown1 = length(ModuleHighlighted):-1:1;
         ModuleDown = ModuleHighlighted(ModuleDown1) + 1;
         ModuleNow = ModuleHighlighted(ModuleDown1);
-        %%% 1. Saves the ModuleName
-        ModuleDownName = char(handles.Settings.ModuleNames(ModuleDown));
-        ModuleName = char(handles.Settings.ModuleNames(ModuleNow));
-        handles.Settings.ModuleNames{ModuleDown} = ModuleName;
-        handles.Settings.ModuleNames{ModuleNow} = ModuleDownName;
-        %%% 2. Copy then clear the variable values in the handles structure.
-        copyVariables = handles.Settings.VariableValues(ModuleNow,:);
-        handles.Settings.VariableValues(ModuleNow,:) = handles.Settings.VariableValues(ModuleDown,:);
-        handles.Settings.VariableValues(ModuleDown,:) = copyVariables;
-        %%% 3. Copy then clear the num of variables in the handles
-        %%% structure.
-        copyNumVariables = handles.Settings.NumbersOfVariables(ModuleNow);
-        handles.Settings.NumbersOfVariables(ModuleNow) = handles.Settings.NumbersOfVariables(ModuleDown);
-        handles.Settings.NumbersOfVariables(ModuleDown) = copyNumVariables;
-        %%% 4. Copy then clear the variable revision numbers in the handles
-        %%% structure.
-        copyVarRevNums = handles.Settings.VariableRevisionNumbers(ModuleNow);
-        handles.Settings.VariableRevisionNumbers(ModuleNow) = handles.Settings.VariableRevisionNumbers(ModuleDown);
-        handles.Settings.VariableRevisionNumbers(ModuleDown) = copyVarRevNums;
-        %%% 5. Copy then clear the module revision numbers in the handles
-        %%% structure.
-        copyModRevNums = handles.Settings.ModuleRevisionNumbers(ModuleNow);
-        handles.Settings.ModuleRevisionNumbers(ModuleNow) = handles.Settings.ModuleRevisionNumbers(ModuleDown);
-        handles.Settings.ModuleRevisionNumbers(ModuleDown) = copyModRevNums;
-        %%% 6. Copy then clear the variable infotypes in the handles
-        %%% structure.
-        copyVarInfoTypes = handles.Settings.VariableInfoTypes(ModuleNow,:);
-        handles.Settings.VariableInfoTypes(ModuleNow,:) = handles.Settings.VariableInfoTypes(ModuleDown,:);
-        handles.Settings.VariableInfoTypes(ModuleDown,:) = copyVarInfoTypes;
-
-        CopyVariableDescription = handles.VariableDescription(ModuleNow);
-        handles.VariableDescription(ModuleNow) = handles.VariableDescription(ModuleDown);
-        handles.VariableDescription(ModuleDown) = CopyVariableDescription;
-
-        CopyVariableBox = handles.VariableBox(ModuleNow);
-        handles.VariableBox(ModuleNow) = handles.VariableBox(ModuleDown);
-        handles.VariableBox(ModuleDown) = CopyVariableBox;
-
+        handles = ExchangeModules(handles, ModuleNow, ModuleDown);
         if isfield(handles,'BrowseButton')
             if length(handles.BrowseButton) >= ModuleNow
                 CopyBrowseButton = handles.BrowseButton(ModuleNow);
@@ -3925,6 +3921,21 @@ TimerHandles = findall(findobj, 'Name', 'Status');
 try
     delete(TimerHandles);
     delete(timerfind);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MODULE NOTES DIALOG BOX   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ModuleNotes_Callback(hObject, eventdata, handles)
+ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
+if ~isempty(ModuleHighlighted)
+    ModuleNumber = ModuleHighlighted(1);
+    text = handles.Settings.ModuleNotes{ModuleNumber};
+    [text,ok] = CPeditbox(text,'Name',['Edit module notes for ',handles.Settings.ModuleNames{ModuleNumber}]);
+    if ok
+        handles.Settings.ModuleNotes{ModuleNumber} = text;
+        guidata(hObject,handles);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5748,7 +5759,9 @@ h9 = uicontrol(...
 
 appdata = [];
 appdata.lastValidTag = 'ModulePipelineListBox';
-
+mplb_context_menu=uicontextmenu('Parent',h1);
+uimenu(mplb_context_menu,'Label','Module help','Callback','CellProfiler(''IndividualModuleHelp_Callback'',gcbo,[],guidata(gcbo))');
+uimenu(mplb_context_menu,'Label','Module notes','Callback','CellProfiler(''ModuleNotes_Callback'',gcbo,[],guidata(gcbo))');
 h10 = uicontrol(...
     'Parent',h2,...
     'BackgroundColor',[1 1 1],...
@@ -5761,6 +5774,7 @@ h10 = uicontrol(...
     'Value',1,...
     'Tag','ModulePipelineListBox',...
     'KeyPressFcn',@RemoveModuleByKeyPressFcn,...
+    'UIContextMenu',mplb_context_menu,...
     'UserData',[],...
     'Behavior',get(0,'defaultuicontrolBehavior')); %#ok Ignore MLint
 

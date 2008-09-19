@@ -202,9 +202,20 @@ else
 end
 %% Do Math
 if( strcmpi(Operation, 'Multiply') )
-    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) .* (MultiplyFactor2.*Measurements{2};
+    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) .* (MultiplyFactor2.*Measurements{2});
 elseif( strcmpi(Operation, 'Divide') )
+    Measurements{2}(Measurements{2}==0) = NaN;
+    Measurements{2}(isnan(Measurements{2})) = CPnanmean(Measurements{2});
+    
+    if ~all(isnan(Measurements{2}))
     FinalMeasurements = (MultiplyFactor1.*Measurements{1}) ./ (MultiplyFactor2.*Measurements{2});
+    else
+    FinalMeasurements = NaN;
+    CPwarndlg(['A ratio of ' NumerDenomMeasurements{1} ' and ' NumerDenomMeasurements{2} ...
+        ' within ' ModuleName ' on cycle '  str2double(SetBeingAnalyzed) ...
+        ' resulted in all NaNs.  You may want to check your settings.'])
+    end
+
 elseif( strcmpi(Operation, 'Add') )
     FinalMeasurements = (MultiplyFactor1.*Measurements{1}) + (MultiplyFactor2.*Measurements{2});
 elseif( strcmpi(Operation, 'Subtract') )

@@ -168,6 +168,21 @@ for idx = 1:2
             'Texture Scale = ' num2str(SizeScale{idx}) '.']);
     end
 end
+
+%%% Check to make sure multiply factors are valid entries. If not change to
+%%% default and warn user.
+if isnan(MultiplyFactor1)
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid']))
+        CPwarndlg(['The first image multiply factor you have entered in the ', ModuleName, ' module is invalid, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid'],'replace');
+    end
+    MultiplyFactor1 = 1;
+end
+if isnan(MultiplyFactor2)
+    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Second multiply factor invalid']))
+        CPwarndlg(['The second image multiply factor you have entered in the ', ModuleName, ' module is invalid, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Second multiply factor invalid'],'replace');
+    end
+    MultiplyFactor2 = 1;
+end
     
 %% Check sizes (note, 'Image' measurements have length=1)
 if length(Measurements{1}) ~= length(Measurements{2}) && ...
@@ -187,13 +202,13 @@ else
 end
 %% Do Math
 if( strcmpi(Operation, 'Multiply') )
-    FinalMeasurements = Measurements{1} .* Measurements{2};
+    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) .* (MultiplyFactor2.*Measurements{2};
 elseif( strcmpi(Operation, 'Divide') )
-    FinalMeasurements = Measurements{1} ./ Measurements{2};
+    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) ./ (MultiplyFactor2.*Measurements{2});
 elseif( strcmpi(Operation, 'Add') )
-    FinalMeasurements = Measurements{1} + Measurements{2};
+    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) + (MultiplyFactor2.*Measurements{2});
 elseif( strcmpi(Operation, 'Subtract') )
-    FinalMeasurements = Measurements{1} - Measurements{2};
+    FinalMeasurements = (MultiplyFactor1.*Measurements{1}) - (MultiplyFactor2.*Measurements{2});
 end
     
 if strcmp(LogChoice,'Yes')
@@ -204,8 +219,8 @@ if ~isnan(Power)
     FinalMeasurements = FinalMeasurements .^ Power;
 end
 
-if ~isnan(MultiplyFactor)
-    FinalMeasurements = FinalMeasurements.*MultiplyFactor;
+if ~isnan(MultiplyFactor3)
+    FinalMeasurements = FinalMeasurements.*MultiplyFactor3;
 end
 
 %% Save, depending on type of measurement (ObjectName)

@@ -1,4 +1,4 @@
-function [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
+function [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg,CurrentModuleName] = CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum)
 
 % This function attempts to import the settings of older modules into newer
 % ones, basically by reordering VariableValues, VariableInfoTypes, and
@@ -109,6 +109,40 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         SavedVarRevNum = 5;
         IsModuleModified = true;
     end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Flip
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Flip')
+    CurrentModuleName = 'FlipAndRotate';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,5}='None'; %Don't rotate
+    Settings.VariableValues{ModuleNum-Skipped,6}='Yes';  %Crop
+    Settings.VariableValues{ModuleNum-Skipped,7}='Individually';
+    Settings.VariableValues{ModuleNum-Skipped,8}='horizontally';
+    Settings.VariableValues{ModuleNum-Skipped,9}='1,1';
+    Settings.VariableValues{ModuleNum-Skipped,10}='100,5';
+    Settings.VariableValues{ModuleNum-Skipped,11}='5';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=11;
+    SavedVarRevNum = 1;
+    IsModuleModified = true;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Rotate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Rotate')
+    CurrentModuleName = 'FlipAndRotate';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    for i=9:-1:3
+        Settings.VariableValues{ModuleNum-Skipped,i+2} =...
+            Settings.VariableValues{ModuleNum-Skipped,i};
+    end
+    Settings.VariableValues{ModuleNum-Skipped,3}='No';
+    Settings.VariableValues{ModuleNum-Skipped,4}='No';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=11;
+    SavedVarRevNum = 1;
+    IsModuleModified = true;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

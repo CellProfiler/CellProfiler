@@ -728,6 +728,13 @@ for k = 1:NumberOfModules
             CPwarndlg('Note: The module ''Smooth'' has been replaced with ''SmoothOrEnhance''.  The settings have been transferred for your convenience.')
         end
         
+        %% Flip and Rotate.m were combined - the fixup for this is handled in CPimportPreviousModuleSettings
+        if strcmp(CurrentModuleNamedotm,'Flip.m') || strcmp(CurrentModuleNamedotm,'Rotate.m')
+            CurrentModuleNamedotm  = 'FlipAndRotate.m'; %% 
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+
         if exist(CurrentModuleNamedotm,'file')
             Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm)); %#ok Ignore MLint
         else
@@ -847,21 +854,21 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
     %%% Load the module's settings
 
     try
-        %%% First load the module with its default settings
-        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
         %%% If no VariableRevisionNumber was extracted, default it to 0
         if isfield(Settings,'VariableRevisionNumbers')
             SavedVarRevNum = Settings.VariableRevisionNumbers(ModuleNum-Skipped);
         else
             SavedVarRevNum = 0;
         end
-        
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
-        [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg] = ...
+        [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg,CurrentModuleName] = ...
             CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         if IsModuleModified, UpdatedModules(ModuleNum) = true; end
         if NeedsPlaceholderUpdateMsg, PlaceholderUpdate(ModuleNum) = true; end
+        
+        %%% Load the module with its default settings
+        [defVariableValues defVariableInfoTypes defDescriptions handles.Settings.NumbersOfVariables(ModuleNum-Skipped) DefVarRevNum ModuleRevNum] = LoadSettings_Helper(Pathnames{ModuleNum-Skipped}, CurrentModuleName);
         
         %%% Using the VariableRevisionNumber and the number of variables,
         %%% check if the loaded module and the module the user is trying to
@@ -871,6 +878,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
             handles.Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped)) = Settings.VariableValues(ModuleNum-Skipped,1:Settings.NumbersOfVariables(ModuleNum-Skipped));
             %%% save module revision number
             handles.Settings.ModuleRevisionNumbers(ModuleNum-Skipped) = ModuleRevNum;
+            handles.Settings.ModuleNames{ModuleNum-Skipped} = Settings.ModuleNames{ModuleNum-Skipped};
         else
             %%% If not, show the saved settings. Note: This will always
             %%% appear if user selects another module when they search for

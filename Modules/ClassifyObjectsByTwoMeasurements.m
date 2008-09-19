@@ -105,9 +105,7 @@ Separator{2} = handles.Settings.VariableValues{CurrentModuleNum,11};
 Labels = handles.Settings.VariableValues{CurrentModuleNum,12};
 
 %textVAR13 = What do you want to call the resulting color-coded image?
-%choiceVAR13 = Do not use
-%choiceVAR13 = ColorClassifiedNuclei
-%inputtypeVAR13 = popupmenu custom
+%defaultVAR13 = Do not use
 %infotypeVAR13 = imagegroup indep
 SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 

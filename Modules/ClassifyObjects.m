@@ -100,9 +100,7 @@ LowerBinMin = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8
 UpperBinMax = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
 %textVAR10 = What do you want to call the resulting color-coded image?
-%choiceVAR10 = Do not use
-%choiceVAR10 = ColorClassifiedNuclei
-%inputtypeVAR10 = popupmenu custom
+%defaultVAR10 = Do not use
 %infotypeVAR10 = imagegroup indep
 SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 

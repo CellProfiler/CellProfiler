@@ -99,11 +99,11 @@ MultiplyFactor3 = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 FloorZero = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR09 = Do you want values greater than one in the image to be set to one?
-%choiceVAR09 = Yes
-%choiceVAR09 = No
-CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR10 = Do you want values greater than one in the image to be set to one?
+%choiceVAR10 = Yes
+%choiceVAR10 = No
+CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
 
 %%%VariableRevisionNumber = 1
 

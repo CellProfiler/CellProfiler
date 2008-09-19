@@ -3638,11 +3638,6 @@ CancelButton = uicontrol(...
 
 %%% Waits for the user to respond to the window.
 uiwait(SetPreferencesWindowHandle)
-%%% Prevent switching current directories to the preferences location.
-if ~isempty(EnteredPreferences)
-    EnteredPreferences.DefaultImageDirectory = handles.Current.DefaultImageDirectory;
-    EnteredPreferences.DefaultOutputDirectory = handles.Current.DefaultOutputDirectory;
-end
 %%% Allows canceling by checking whether EnteredPreferences exists.
 LoadPreferences_Helper(hObject,eventdata,handles,EnteredPreferences);
 

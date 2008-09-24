@@ -82,7 +82,7 @@ drawnow
 
 %%% If this isn't the first cycle, we are running on the
 %%% cluster, and should just continue.
-if (handles.Current.SetBeingAnalyzed > 1)
+if (handles.Current.SetBeingAnalyzed > 1) || isfield(handles.Current, 'BatchInfo')
     return;
 end
 if handles.Current.NumberOfImageSets == 1 

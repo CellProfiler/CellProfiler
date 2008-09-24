@@ -65,6 +65,15 @@ elseif strcmp(Layout,'TwoByOne')
         %%% 40 is added to allow for axes labels.
         FigureWidth = 40 + FigureHeight * ImageWidth / (2*ImageHeight);
     end
+elseif strcmp(Layout, 'TwobyThree')
+    FigureWidth = FigureWidth+0.5*FigureWidth;
+    if (FigureWidth/FigureHeight) < (3*ImageWidth/(2*ImageHeight))
+        %%% 40 is added to allow for axes labels.
+        FigureHeight = 40 + FigureWidth * (2*ImageHeight) / (3*ImageWidth);
+    else
+        %%% 40 is added to allow for axes labels.
+        FigureWidth = 40 + FigureHeight * (3*ImageWidth) / (2*ImageHeight);
+    end
 end
 
 %%% Checks whether the resulting figure would take up more than 40% of

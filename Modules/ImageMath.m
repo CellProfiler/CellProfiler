@@ -19,6 +19,11 @@ function handles = ImageMath(handles)
 % (This is an image produced during the calculations - it is typically not
 % needed for downstream modules)"  This will be an average over all images.
 % 
+% If you choose "Subtract", please note that you will subtract the second
+% image from the first image.
+%
+%
+%
 % Multiply factors:
 % The final image may have a substantially different range of pixel
 % intensities than the originals, so each image can be multiplied by a 
@@ -51,19 +56,19 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What do you want to call the resulting image?
-%defaultVAR01 = ImageAfterMath
-%infotypeVAR01 = imagegroup indep
-ImageAfterMathName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = Choose first image:
+%infotypeVAR01 = imagegroup
+FirstImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%inputtypeVAR01 = popupmenu custom
 
-%textVAR02 = Choose first image:
+%textVAR02 = Choose second image, or "Other..." and enter a constant. Note: if the operation chosen below is 'Invert' or 'Log transform', this second image will not be used
 %infotypeVAR02 = imagegroup
-FirstImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Choose second image, or "Other..." and enter a constant. Note: if the operation chosen below is 'Complement' or 'Log transform', this second image will not be used
+%textVAR03 = Choose third image, or "Other..." and enter a constant. Note: This image will ONLY be used if the option selected is "Combine".
 %infotypeVAR03 = imagegroup
-SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+ThirdImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu custom
 
 %textVAR04 = What operation would you like performed?
@@ -71,9 +76,10 @@ SecondImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %choiceVAR04 = Subtract
 %choiceVAR04 = Multiply
 %choiceVAR04 = Divide
-%choiceVAR04 = Complement
+%choiceVAR04 = Invert
 %choiceVAR04 = Log transform (base 2)
 %choiceVAR04 = Average
+%choiceVAR04 = Combine
 Operation = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
@@ -85,27 +91,36 @@ MultiplyFactor1 = str2double(char(handles.Settings.VariableValues{CurrentModuleN
 %defaultVAR06 = 1
 MultiplyFactor2 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,6}));
 
-%textVAR07 = Enter an exponent to raise the result to *after* chosen operation:
+%textVAR07 = Enter a factor to multiply the third image by (before other operations):
 %defaultVAR07 = 1
-Power = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
+MultiplyFactor3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7}));
 
-%textVAR08 = Enter a factor to multipy the result by *after* chosen operation:
+%textVAR08 = Enter an exponent to raise the result to *after* chosen operation:
 %defaultVAR08 = 1
-MultiplyFactor3 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+Power = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
 
-%textVAR09 = Do you want negative values in the image to be set to zero?
-%choiceVAR09 = Yes
-%choiceVAR09 = No
-FloorZero = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%textVAR09 = Enter a factor to multipy the result by *after* chosen operation:
+%defaultVAR09 = 1
+MultiplyFactor4 = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,9}));
 
-%textVAR10 = Do you want values greater than one in the image to be set to one?
+%textVAR10 = Do you want negative values in the image to be set to zero?
 %choiceVAR10 = Yes
 %choiceVAR10 = No
-CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+FloorZero = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
-%%%VariableRevisionNumber = 1
+%textVAR11 = Do you want values greater than one in the image to be set to one?
+%choiceVAR11 = Yes
+%choiceVAR11 = No
+CeilingOne = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 = What do you want to call the resulting image?
+%defaultVAR12 = ImageAfterMath
+%infotypeVAR12 = imagegroup indep
+ImageAfterMathName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -118,7 +133,8 @@ if ~isempty(str2num(FirstImageName))
         ' is not allowed.  If you need to access a user-defined image name,'...
         'please enter an image previously defined.'])
 end
-SecondImageConstant = str2num(SecondImageName);    %% This will be empty unless a constant was input
+SecondImageConstant = str2num(SecondImageName);  %% This will be empty unless a constant was input
+ThirdImageConstant = str2num(ThirdImageName);
 
 %%% Reads (opens) the images you want to analyze and assigns them to
 %%% variables.
@@ -129,6 +145,13 @@ else
     SecondImage = SecondImageConstant;
     clear SecondImageConstant
 end
+if isempty(ThirdImageConstant)
+    ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'MustBeGray','CheckScale');
+else
+    ThirdImage = ThirdImageConstant;
+    clear ThirdImageConstant
+end
+
 
 %%% Check to make sure multiply factors are valid entries. If not change to
 %%% default and warn user.
@@ -159,7 +182,7 @@ switch Operation
         ImageAfterMath = immultiply(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
     case 'Divide'
         ImageAfterMath = imdivide(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
-    case 'Complement'
+    case 'Invert'
         ImageAfterMath = imcomplement(MultiplyFactor1*FirstImage);
     case 'Log transform (base 2)'
         if max(FirstImage(:)) > 0,
@@ -171,6 +194,10 @@ switch Operation
     case 'Average'
        TotalImage = imadd(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
        ImageAfterMath = TotalImage/2;
+    case 'Combine'
+        ImageAddend1 = imadd(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
+        TotalImage = imadd(ImageAddend1,MultiplyFactor3*ThirdImage);
+        ImageAfterMath = TotalImage/(MultiplyFactor1+MultiplyFactor2+MultiplyFactor3);
 end
 
 if ~isnan(Power)
@@ -178,7 +205,7 @@ if ~isnan(Power)
 end
 
 if ~isnan(MultiplyFactor3)
-    ImageAfterMath = ImageAfterMath.*MultiplyFactor3;
+    ImageAfterMath = ImageAfterMath.*MultiplyFactor4;
 end
 
 %% Apply thresholds
@@ -198,18 +225,26 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-    %% NumColumns is useful since 'Complement' has only one "before" image  
-    if ~strcmp(Operation,'Complement')
+    %% NumColumns is useful since 'Invert' has only one "before" image  
+    if strcmp(Operation, 'Combine')
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(FirstImage, 'TwobyThree', ThisModuleFigureNumber);
+        end
+        NumColumns = 3;
+    elseif ~strcmp(Operation,'Invert')
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage,'TwoByTwo',ThisModuleFigureNumber);
         end
         NumColumns = 2; 
+   
     else
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage,'TwoByOne',ThisModuleFigureNumber);
         end
         NumColumns = 1;
     end
+end
+
     
     %% Set title text
     if MultiplyFactor1 == 1
@@ -222,28 +257,43 @@ if any(findobj == ThisModuleFigureNumber)
     else 
         SecondText = [SecondImageName '*' num2str(MultiplyFactor2)];
     end
+    if MultiplyFactor3 == 1;
+        ThirdText = (ThirdImageName);
+    else
+        ThirdText = [ThirdImageName '*' num2str(MultiplyFactor3)];
+    end
     
     %%% First image subplot
     hAx=subplot(2,NumColumns,1,'Parent',ThisModuleFigureNumber);
     CPimagesc(MultiplyFactor1*FirstImage,handles,hAx); 
     title(hAx,[FirstText ' image, cycle # ' num2str(handles.Current.SetBeingAnalyzed)]);
 
-    if ~strcmp(Operation,'Complement')
+    if strcmp(Operation, 'Combine')
+        hAx=subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
+        CPimagesc(MultiplyFactor2*SecondImage,handles,hAx);
+        title(hAx,[SecondText ' image']);
+        hAx1=subplot(2,NumColumns,4,'Parent',ThisModuleFigureNumber);
+        CPimagesc(MultiplyFactor3*ThirdImage,handles,hAx1);
+        title(hAx1,[ThirdText  '  image']);
+    elseif ~strcmp(Operation,'Invert')
         %%% Second image subplot
         hAx=subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
         CPimagesc(MultiplyFactor2*SecondImage,handles,hAx);
+        title(hAx,[SecondText ' image']);
+    else
         title(hAx,[SecondText ' image']);
     end
     
     %% ImageAfterMath
     hAx=subplot(2,NumColumns,2,'Parent',ThisModuleFigureNumber);
     CPimagesc(ImageAfterMath,handles,hAx);
-    if ~strcmp(Operation,'Complement')
+    if strcmp(Operation, 'Combine')
+        title(hAx,[FirstText ' ' Operation ' ' SecondText ' ' ThirdText ' = ' ImageAfterMathName]);
+    elseif ~strcmp(Operation,'Invert')
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);
     else
         title(hAx,[FirstText ' ' Operation ' = ' ImageAfterMathName]);
     end
-end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

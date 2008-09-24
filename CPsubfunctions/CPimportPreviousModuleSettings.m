@@ -156,3 +156,94 @@ end
 % if NeedsPlaceholderUpdateMsg
 %     CPwarndlg('Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.','LoadPipelines: Some entries updated');
 % end
+
+
+%The variables in ImageMath are so different from those in the modules it
+%combines, we just show the user what they had before in the order it was
+%there
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Subtract
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Subtract')
+    CurrentModuleName = 'ImageMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Average
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Average')
+    if strcmp(Settings.VariableValues{ModuleNum-Skipped,3},'Pipeline')
+        CPwarndlg('Note: The Pipeline option previously available in the Average module is now available using CorrectIllumination_Calculate module and selecting the option "(For All mode only) What do you want to call the averaged image (prior to dilation or smoothing)?  (This is an image produced during the calculations - it is typically not needed for downstream modules)"  This will be an average over all images.');
+    end
+    CurrentModuleName = 'ImageMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Combine
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Combine')
+    CurrentModuleName = 'ImageMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
+    Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,7};
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: InvertIntensity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'InvertIntensity')
+    CurrentModuleName = 'ImageMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: Average
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Multiply')
+    CurrentModuleName = 'ImageMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: CalculateRatios
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'CalculateRatios')
+    CurrentModuleName = 'CalculateMath';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
+    Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,7};
+    Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,8};
+    Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,9};
+    Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,10};
+    Settings.VariableValues{ModuleNum-Skipped,11} = Settings.VariableValues{ModuleNum-Skipped,11};
+    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,12};
+end

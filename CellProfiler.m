@@ -734,7 +734,45 @@ for k = 1:NumberOfModules
             Pathname = handles.Preferences.DefaultModuleDirectory;
             Pathnames{k-Skipped} = Pathname;
         end
-
+        
+        if strcmp(CurrentModuleNamedotm,'Subtract.m')
+            CurrentModuleNamedotm = 'ImageMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        if strcmp(CurrentModuleNamedotm,'Average.m')
+            CurrentModuleNamedotm = 'ImageMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        
+        if strcmp(CurrentModuleNamedotm,'Combine.m')
+            CurrentModuleNamedotm = 'ImageMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        if strcmp(CurrentModuleNamedotm,'InvertIntensity.m')
+            CurrentModuleNamedotm = 'ImageMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        if strcmp(CurrentModuleNamedotm,'Multiply.m')
+            CurrentModuleNamedotm = 'ImageMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        if strcmp(CurrentModuleNamedotm,'CalculateRatios.m')
+            CurrentModuleNamedotm = 'CalculateMath.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        
         if exist(CurrentModuleNamedotm,'file')
             Pathnames{k-Skipped} = fileparts(which(CurrentModuleNamedotm)); %#ok Ignore MLint
         else
@@ -863,7 +901,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
         [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg,CurrentModuleName] = ...
-            CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+            CPimportPreviousModuleSettingsMINE(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         if IsModuleModified, UpdatedModules(ModuleNum) = true; end
         if NeedsPlaceholderUpdateMsg, PlaceholderUpdate(ModuleNum) = true; end
         

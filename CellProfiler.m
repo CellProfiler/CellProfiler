@@ -921,7 +921,7 @@ for ModuleNum = 1:length(handles.Settings.ModuleNames)
         % If necessary (and doable), import settings from prior versions of
         % modules into newer ones
         [Settings,SavedVarRevNum,IsModuleModified,NeedsPlaceholderUpdateMsg,CurrentModuleName] = ...
-            CPimportPreviousModuleSettingsMINE(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
+            CPimportPreviousModuleSettings(Settings,CurrentModuleName,ModuleNum,Skipped,SavedVarRevNum);
         if IsModuleModified, UpdatedModules(ModuleNum) = true; end
         if NeedsPlaceholderUpdateMsg, PlaceholderUpdate(ModuleNum) = true; end
         

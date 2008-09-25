@@ -516,7 +516,8 @@ OrigImage = double(CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','Ch
 
 
 %%% Chooses the first word of the method name (removing 'Global' or 'Adaptive').
-ThresholdMethod = strtok(Threshold);
+[ThresholdMethod ThresholdModifier]= strtok(Threshold);
+ThresholdModifier = strtrim(ThresholdModifier);
 %%% Checks if a custom entry was selected for Threshold, which means we are using an incoming binary image rather than calculating a threshold.
 if isempty(strmatch(ThresholdMethod,{'Otsu','MoG','Background','RobustBackground','RidlerCalvard','Kapur','All','Set'},'exact'))
     if isnan(str2double(Threshold))
@@ -1154,7 +1155,14 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 	    handles = CPaddmeasurements(handles, 'Image', ...
 					['Threshold_FinalThreshold_', ObjectName], ...
 					Threshold);
-            
+        if strcmp(ThresholdModifier,'PerObject')
+            %%% If per-object, add the threshold as an object measurement
+            [UniqueLabels,LabelIndices]=unique(Objects);
+            ThresholdsPerObjectsIncludingZero = OrigThreshold(LabelIndices);
+            ThresholdsPerObjects = ThresholdsPerObjectsIncludingZero(2:end);
+            handles = CPaddmeasurements ...
+                (handles, ObjectName,'Threshold_PerObject',ThresholdsPerObjects);
+        end
             %%% Also add the thresholding quality metrics to the measurements
             if exist('WeightedVariance', 'var')
 	      handles = CPaddmeasurements ...

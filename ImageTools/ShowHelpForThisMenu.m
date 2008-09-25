@@ -1,4 +1,4 @@
-function ShowHelpForThisMenu(vaargin)
+function ShowHelpForThisMenu(varargin)
 
 % Help for the Show Toolbox Help function:
 % Category: Image Tools

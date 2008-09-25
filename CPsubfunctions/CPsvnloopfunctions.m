@@ -7,6 +7,10 @@ str_to_find = '% $Revision:';
 max_svn_ver_num = 0;
 dirs_to_loop = {'.','./Modules','./CPsubfunctions','DataTools','ImageTools','Help'};
 
+%% Outputs list of files that are missing the svn Revision keyword.
+%% Run DEBUG = 1 as a standalone function.
+DEBUG = 0;
+
 %% Directory loop
 for current_dir = dirs_to_loop
     current_dir_char = char(current_dir);
@@ -14,7 +18,7 @@ for current_dir = dirs_to_loop
     
     %% File loop
     for idx = 1:length(files)
-%         found = 0;
+        if DEBUG, found = 0; end
         current_file = files(idx).name;
         fid = fopen(current_file);
         
@@ -33,15 +37,15 @@ for current_dir = dirs_to_loop
                     break
                 end
                 max_svn_ver_num = max([max_svn_ver_num; current_svn_ver_num]);
-%                 found = 1;
+                if DEBUG, found = 1; end
                 break
             end
         end
         fclose(fid);
-        %% DEBUG
-%         if ~found
-%             disp(['Could not find a Revision # for ' current_file])
-%         end
+        % DEBUG
+        if DEBUG && ~found
+            disp(['Could not find a Revision # for ' current_file])
+        end
     end
 end
 

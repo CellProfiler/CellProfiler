@@ -572,6 +572,18 @@ uimenu(HelpMenu,'Label','Data Tools Help','Callback','CellProfiler(''DataToolsHe
 
 % Set default output filename
 set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
+%
+% Check the website for a new version of CellProfiler
+%
+try %#ok<TRYNC>
+    CurrentSVNVersion = get_svn_info(handles);
+    WebsiteSVNVersion = urlread('http://www.cellprofiler.org/CPupdate.txt');
+    if str2double(CurrentSVNVersion) < str2double(WebsiteSVNVersion)
+        CPmsgbox({'A new version of CellProfiler is available at www.cellprofiler.org',...
+            sprintf('You are still running version %s. The new one is version %s',CurrentSVNVersion, WebsiteSVNVersion)},...
+            sprintf('Upgrade to version %s of CellProfiler',WebsiteSVNVersion));
+    end
+end
 
 function call_data_tool(tool_name, foo)
 try
@@ -728,6 +740,14 @@ for k = 1:NumberOfModules
             CPwarndlg('Note: The module ''Smooth'' has been replaced with ''SmoothOrEnhance''.  The settings have been transferred for your convenience.')
         end
         
+        %% SmoothKeepingEdges.m was merged into SmoothOrEnhance.m
+        if strcmp(CurrentModuleNamedotm,'SmoothKeepingEdges.m')
+            CurrentModuleNamedotm  = 'SmoothOrEnhance.m'; %% 
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+            CPwarndlg('Note: The module ''SmoothKeepingEdges'' has been merged into ''SmoothOrEnhance''.  The settings have been transferred for your convenience.')
+        end
+
         %% Flip and Rotate.m were combined - the fixup for this is handled in CPimportPreviousModuleSettings
         if strcmp(CurrentModuleNamedotm,'Flip.m') || strcmp(CurrentModuleNamedotm,'Rotate.m')
             CurrentModuleNamedotm  = 'FlipAndRotate.m'; %% 

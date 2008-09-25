@@ -144,7 +144,35 @@ if strcmp(CurrentModuleName, 'Rotate')
     SavedVarRevNum = 1;
     IsModuleModified = true;
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to SmoothOrEnhance
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName,'SmoothOrEnhance')
+    if SavedVarRevNum == 4
+        Settings.VariableValues{ModuleNum-Skipped,7}='16.0';
+        Settings.VariableValues{ModuleNum-Skipped,8}='0.1';
+        Settings.NumbersOfVariables(ModuleNum-Skipped)=8;
+        SavedVarRevNum = 5;
+        IsModuleModified = true;
+    end
+end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete: SmoothKeepingEdges
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName,'SmoothKeepingEdges')
+    CurrentModuleName='SmoothOrEnhance';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,3} = 'Smooth Keeping Edges';
+    Settings.VariableValues{ModuleNum-Skipped,4} = 'Automatic';
+    Settings.VariableValues{ModuleNum-Skipped,5} = 'Do not use';
+    Settings.VariableValues{ModuleNum-Skipped,6} = 'No';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=8;
+    SavedVarRevNum = 5;
+    IsModuleModified = true;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Standardization of non-used parameter text placeholders
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

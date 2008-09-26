@@ -57,7 +57,9 @@ for i = 1:length(directory_str),
 end
 
 %% Get svn version number
+cd CPsubfunctions
 svn_ver = CPsvnloopfunctions;
+cd ..
 output_dir = ['CompiledCellProfiler_' svn_ver];
 
 % Move files and cleanup

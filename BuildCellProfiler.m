@@ -1,6 +1,6 @@
 function BuildCellProfiler(usage)
-% BuildCellProfiler Build a self-contained executable of CellProfiler for 
-%   use on a single machine or for cluster computing. 
+% BuildCellProfiler Build a self-contained executable of CellProfiler for
+%   use on a single machine or for cluster computing.
 %
 %   The argument 'Usage' is a string and can either be:
 %   'single': Create a CellProfiler executable appropriate for the host
@@ -8,21 +8,21 @@ function BuildCellProfiler(usage)
 %   'cluster': Create a CellProfiler executable appropriate for use on a
 %       cluster (assumed to be Unix-based)
 %
-%   The output will be an executable called CellProfiler (Usage: 'single') 
-%   or CPCluster (Usage: 'cluster'), along with any associated files 
+%   The output will be an executable called CellProfiler (Usage: 'single')
+%   or CPCluster (Usage: 'cluster'), along with any associated files
 %   neccesary to set up environment variables.
 %
-%   Before running this function, set the current directory to 
-%   your root (or trunk) CellProfiler directory, which includes 
+%   Before running this function, set the current directory to
+%   your root (or trunk) CellProfiler directory, which includes
 %   CellProfiler.m and the Modules, CPsubfunctions, etc folders.
 %
 %   NOTES ON "SINGLE" USAGE
-%   A new folder called CompiledCellProfiler will be created at the 
+%   A new folder called CompiledCellProfiler will be created at the
 %   same level as the CP root folder.  This placement is to avoid duplicate
 %   function names if you run CP from the root directory after building.
 %
 %   Read the readme.txt file created, and set your path variables either
-%   manually, try the CellProfiler*.command scripts, or use the 
+%   manually, try the CellProfiler*.command scripts, or use the
 %   run_CellProfiler.sh script at a terminal prompt.
 %   See readme.txt file for more details.
 %
@@ -36,9 +36,9 @@ function BuildCellProfiler(usage)
 %   otherwise the deployed executable will fail to open.
 %
 %   Try this command at the terminal (Mac) or command (PC) prompt:
-%   <matlabroot>/bin/matlab -nojvm -r "cd <CellProfiler trunk directory>; BuildCellProfiler(<usage>); quit" 
+%   <matlabroot>/bin/matlab -nojvm -r "cd <CellProfiler trunk directory>; BuildCellProfiler(<usage>); quit"
 %   where <matlabroot> is the MATLAB installation directory, <usage> is
-%   'single' or 'cluster', and <CellProfiler trunk directory> is (you 
+%   'single' or 'cluster', and <CellProfiler trunk directory> is (you
 %   guessed it) the CellProfiler trunk directory
 %
 % $Revision$
@@ -56,12 +56,23 @@ for i = 1:length(directory_str),
     assert(exist(['./',directory_str{i}],'dir') == 7, err_txt);
 end
 
+%% Get svn version number
+svn_ver = CPsvnloopfunctions;
+output_dir = ['CompiledCellProfiler_' svn_ver];
+
+% Move files and cleanup
+if ~exist(['../' output_dir],'dir')
+    mkdir('..', output_dir)
+end
+
 switch lower(usage),
     case 'single',
         CompileWizard
 
-        % CellProfiler.m gets overwritten by CompileWizard_CellProfiler.m, 
-        %  so we save a temporary copy that will be moved back at the end
+        % CellProfiler.m is overwritten by
+        % CompileWizard_CellProfiler.m, which has additional code (Help files, etc)
+        % which then gets compiled.  So we save a temporary copy that
+        % will be moved back after compilation
         movefile('CellProfiler.m', 'Old_CellProfiler.m');
         movefile('CompileWizard_CellProfiler.m', 'CellProfiler.m');
 
@@ -77,79 +88,108 @@ switch lower(usage),
         version_info = ver('matlab');
         if str2double(version_info.Version) >= 7.6, %Must include -C to produce separate CTF file
             mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
-                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg';
+                -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg';
         else
             error('You need to have MATLAB version 7.6 (2008a) or above to run this command.')
         end
 
-        % Move files and cleanup
-        if ~exist('../CompiledCellProfiler','dir')
-            mkdir('..', 'CompiledCellProfiler')
-        end
-        if ~exist('../CompiledCellProfiler/Modules','dir')
-            mkdir('../CompiledCellProfiler', 'Modules')
+        if ~exist(['../' output_dir '/Modules'],'dir')
+            mkdir(['../' output_dir '/Modules'])
         end
 
-        movefile('CellProfiler*.*','../CompiledCellProfiler/')
-        movefile('./Modules/*.txt', '../CompiledCellProfiler/Modules')
-        movefile('readme.txt','../CompiledCellProfiler/')
-        movefile('version.txt','../CompiledCellProfiler/')
+        movefile('CellProfiler*.*',['../' output_dir])
+        movefile('./Modules/*.txt', ['../' output_dir '/Modules'])
+        movefile('readme.txt',['../' output_dir])
+        copyfile('version.txt',['../' output_dir])
         movefile('Old_CellProfiler.m', 'CellProfiler.m');
-        movefile('mccExcludedFiles.log','../CompiledCellProfiler/')
+        movefile('mccExcludedFiles.log',['../' output_dir])
         if ~ ispc
-            movefile('run_CellProfiler.sh','../CompiledCellProfiler/')
+            movefile('run_CellProfiler.sh',['../' output_dir])
         end
-        
+
         % Copy some useful scripts and files back into the CP root folder
-        % that are in the SVN repository 
-        copyfile('../CompiledCellProfiler/CellProfilerManual.pdf','.')
-        copyfile('../CompiledCellProfiler/CellProfiler*.command','.')
+        % that are in the SVN repository
+        copyfile(['../' output_dir '/CellProfilerManual.pdf'],'.')
+        copyfile(['../' output_dir '/CellProfiler*.command'],'.')
 
         % Delete unneccesary files
-        delete('../CompiledCellProfiler/CellProfiler_main.c');
-        delete('../CompiledCellProfiler/CellProfiler_mcc_component_data.c');
-        delete('../CompiledCellProfiler/mccExcludedFiles.log');
-        delete('../CompiledCellProfiler/CellProfiler.prj');
-        
+        delete(['../' output_dir '/CellProfiler_main.c']);
+        delete(['../' output_dir '/CellProfiler_mcc_component_data.c']);
+        delete(['../' output_dir '/mccExcludedFiles.log']);
+        delete(['../' output_dir '/CellProfiler.prj']);
+
         % Extract the CTF archive (without running the executable)
         disp('Extracting the CTF archive....');
         if ispc,    % Need quotes for PC
-            [status,result] = unix(['"',matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF" ../CompiledCellProfiler/CellProfiler.ctf']);
+            [status,result] = unix(['"',matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF" ../' output_dir '/CellProfiler.ctf']);
         elseif ismac || isunix,
-            [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF ../CompiledCellProfiler/CellProfiler.ctf']);
+            [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF ../' output_dir '/CellProfiler.ctf']);
         end
         if status,  % If status isn't zero, something went wrong
             error(result);
         else
             disp('Expansion successful');
         end
-        
+
         % Set permissions on scripts (on unix and Mac systems)
         disp('Setting permissions...');
         if ismac || isunix,
-            [status,result] = unix('chmod 775 ../CompiledCellProfiler/CellProfiler*.command');
+            [status,result] = unix(['chmod 775 ../' output_dir '/CellProfiler*.command']);
         end
         disp('Done');
 
         % Restore pre-existing paths
         path(current_search_path);
+
     case 'cluster',
         % Attempt to build CPCluster.m
-        if exist('CPCluster.m','file'),
-            disp('Building CPCluster.m....');
-            mcc -C -R -nodisplay -m CPCluster.m -I ./Modules -I ./DataTools -I ./ImageTools ...
-                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg'
-            disp('Finished building');
-        else
-            error('CPCluster.m is not present in the current directory. Please check to see if it exists and try again.');
+        assert(exist('CPCluster.m','file') == 2,...
+            'CPCluster.m is not present in the current directory. Please check to see if it exists and try again.')
+
+        %%%% Repopulate functions in the #function list
+
+        %% Get list of functions
+        FunctionDirectories = {'Modules','CPsubfunctions'};
+        fn_filelist = ['%#function'];
+        for this_dir = FunctionDirectories
+            this_dir = char(this_dir);
+
+            filelist = dir([this_dir '/*.m']);
+
+            for i=1:length(filelist)
+                ToolName = filelist(i).name;
+                ToolNameNoExt = strtok(ToolName,'.');
+                fn_filelist = [fn_filelist,' ',ToolNameNoExt];
+            end
         end
 
-        % Delete unneccesary files
-        delete('CPCluster_main.c');
-        delete('CPCluster_mcc_component_data.c');
-        delete('mccExcludedFiles.log');
-        delete('CPCluster.prj');
-        
+        % read the current CPCluster.m into memory
+        fid = fopen('CPCluster.m', 'r');
+        CPClustercode = fread(fid, inf, '*char')';
+        fclose(fid);
+
+        % CPCluster.m is overwritten by
+        % CompileWizard_CPCluster.m, which has additional code (Help files, etc)
+        % which then gets compiled.  So we save a temporary copy that
+        % will be moved back after compilation
+        movefile('CPCluster.m', 'Old_CPCluster.m');
+
+        %% Find keyword string, and then do the insertion
+        function_idx = strfind(CPClustercode, '%%% BuildCellProfiler: INSERT FUNCTIONS HERE');
+        assert(length(function_idx) == 1, 'Could not find place to put %%#functions line in CPCluster.m.');
+        CPClustercode = [CPClustercode(1:function_idx-1) fn_filelist CPClustercode(function_idx:end)];
+
+        % write out the result
+        fid = fopen('CPCluster.m', 'w');
+        fprintf(fid, '%s', CPClustercode);
+        fclose(fid);
+
+        %% Compile
+        disp('Building CPCluster.m....');
+        mcc -C -R -nodisplay -m CPCluster.m -I ./Modules -I ./DataTools -I ./ImageTools ...
+            -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg'
+        disp('Finished building');
+
         % Extract the CTF archive (without running the executable)
         disp('Extracting the CTF archive....');
         [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF CPCluster.ctf']);
@@ -158,7 +198,27 @@ switch lower(usage),
         else
             disp('Expansion successful');
         end
-        
+
+        % Delete unneccesary files
+        delete('CPCluster_main.c');
+        delete('CPCluster_mcc_component_data.c');
+%         delete('mccExcludedFiles.log');
+        delete('CPCluster.prj');
+
+        %% Replace original CPCluster.m
+        movefile('Old_CPCluster.m','CPCluster.m');
+
+        %% Move necessary files to output directory
+        movefile('readme.txt',['../' output_dir])
+        copyfile('version.txt',['../' output_dir])
+        movefile('mccExcludedFiles.log',['../' output_dir])
+        if ~ ispc
+            movefile('run_CPCluster.sh',['../' output_dir])
+        end
+        movefile('CPCluster.ctf',['../' output_dir])
+        movefile('CPCluster',['../' output_dir])
+        movefile('CPCluster_mcr',['../' output_dir '/'])
+
         % Change the permissions
         disp('Setting permissions...');
         [status,result] = unix('chmod -R 775 *');

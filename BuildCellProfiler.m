@@ -60,15 +60,17 @@ end
 cd CPsubfunctions
 svn_ver = CPsvnloopfunctions;
 cd ..
-output_dir = ['CompiledCellProfiler_' svn_ver];
-
-% Move files and cleanup
-if ~exist(['../' output_dir],'dir')
-    mkdir('..', output_dir)
-end
 
 switch lower(usage),
     case 'single',
+        
+        output_dir = ['CompiledCellProfiler_' svn_ver];
+
+        % Move files and cleanup
+        if ~exist(['../' output_dir],'dir')
+            mkdir('..', output_dir)
+        end
+
         CompileWizard
 
         % CellProfiler.m is overwritten by
@@ -144,6 +146,14 @@ switch lower(usage),
         path(current_search_path);
 
     case 'cluster',
+        
+        output_dir = ['CompiledCPCluster_' svn_ver];
+
+        % Move files and cleanup
+        if ~exist(['../' output_dir],'dir')
+            mkdir('..', output_dir)
+        end
+
         % Attempt to build CPCluster.m
         assert(exist('CPCluster.m','file') == 2,...
             'CPCluster.m is not present in the current directory. Please check to see if it exists and try again.')

@@ -15,7 +15,7 @@ function measurements=CPgetpriormeasurements(handles, CurrentModuleNum, ObjectOr
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5777 $
+% $Revision$
 measurements={};
 for i = 1:(CurrentModuleNum-1)
     SupportsMeasurements=false;

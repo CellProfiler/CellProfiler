@@ -39,7 +39,7 @@ function handles = FlipAndRotate(handles,varargin)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5836 $
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

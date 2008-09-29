@@ -36,8 +36,8 @@ function handles = MeasureImageGranularity(handles,varargin)
 %
 % References for Granular Spectrum:
 % J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
-% Press, London, 1989 Maragos,P. “Pattern spectrum and multiscale shape
-% representation”, IEEE Transactions on Pattern Analysis and Machine
+% Press, London, 1989 Maragos,P. "Pattern spectrum and multiscale shape
+% representation", IEEE Transactions on Pattern Analysis and Machine
 % Intelligence, 11, N 7, pp. 701-716, 1989
 %
 % L.Vincent "Granulometries and Opening Trees", Fundamenta Informaticae,
@@ -47,7 +47,7 @@ function handles = MeasureImageGranularity(handles,varargin)
 % Proc. NATO Shape in Picture Workshop, Driebergen, The Netherlands, pp.
 % 197-208, 1992.
 %
-% I.Ravkin, V.Temov “Bit representation techniques and image processing”,
+% I.Ravkin, V.Temov "Bit representation techniques and image processing",
 % Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
 % 1988 (in Russian)
 

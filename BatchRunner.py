@@ -14,7 +14,9 @@ batch_size = int(argv[3])
 write_data = argv[4]
 timeout = int(argv[5])
 
+############ SET TO LOCATION OF CPCLUSTER DIRECTORY ###########
 CPCluster='/imaging/analysis/CPCluster/XXXX'
+###############################################################
 
 # Load Batch_data and figure out the sets that need running
 batch_info = loadmat("%(datadir)s/Batch_data.mat"%(locals()))

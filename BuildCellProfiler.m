@@ -56,7 +56,7 @@ for i = 1:length(directory_str),
     assert(exist(['./',directory_str{i}],'dir') == 7, err_txt);
 end
 
-%% Get svn version number
+% Get svn version number
 cd CPsubfunctions
 svn_ver = CPsvnloopfunctions;
 cd ..
@@ -124,6 +124,8 @@ switch lower(usage),
 
         % Extract the CTF archive (without running the executable)
         disp('Extracting the CTF archive....');
+        [success,msg,msgid] = rmdir(['../' output_dir '/CellProfiler_mcr'],'s');    % Remove pre-existing MCR directory
+        if ~success && ~strcmpi(msgid,'MATLAB:RMDIR:NotADirectory'), warning([mfilename,': Unable to remove previous MCR directory']); end
         if ispc,    % Need quotes for PC
             [status,result] = unix(['"',matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF" ../' output_dir '/CellProfiler.ctf']);
         elseif ismac || isunix,
@@ -160,7 +162,7 @@ switch lower(usage),
 
         %%%% Repopulate functions in the #function list
 
-        %% Get list of functions
+        % Get list of functions
         FunctionDirectories = {'Modules','CPsubfunctions'};
         fn_filelist = ['%#function'];
         for this_dir = FunctionDirectories
@@ -186,7 +188,7 @@ switch lower(usage),
         % will be moved back after compilation
         movefile('CPCluster.m', 'Old_CPCluster.m');
 
-        %% Find keyword string, and then do the insertion
+        % Find keyword string, and then do the insertion
         function_idx = strfind(CPClustercode, '%%% BuildCellProfiler: INSERT FUNCTIONS HERE');
         assert(length(function_idx) == 1, 'Could not find place to put %%#functions line in CPCluster.m.');
         CPClustercode = [CPClustercode(1:function_idx-1) fn_filelist CPClustercode(function_idx:end)];
@@ -196,7 +198,7 @@ switch lower(usage),
         fprintf(fid, '%s', CPClustercode);
         fclose(fid);
 
-        %% Compile
+        % Compile
         disp('Building CPCluster.m....');
         mcc -C -R -nodisplay -m CPCluster.m -I ./Modules -I ./DataTools -I ./ImageTools ...
             -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg'
@@ -204,6 +206,8 @@ switch lower(usage),
 
         % Extract the CTF archive (without running the executable)
         disp('Extracting the CTF archive....');
+        [success,msg,msgid] = rmdir('CPCluster_mcr','s');    % Remove pre-existing MCR directory
+        if ~success && ~strcmpi(msgid,'MATLAB:RMDIR:NotADirectory'), warning([mfilename,': Unable to remove previous MCR directory']); end
         [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF CPCluster.ctf']);
         if status,  % If status isn't zero, something went wrong
             error(result);
@@ -217,10 +221,10 @@ switch lower(usage),
 %         delete('mccExcludedFiles.log');
         delete('CPCluster.prj');
 
-        %% Replace original CPCluster.m
+        % Replace original CPCluster.m
         movefile('Old_CPCluster.m','CPCluster.m');
 
-        %% Move necessary files to output directory
+        % Move necessary files to output directory
         movefile('readme.txt',['../' output_dir])
         copyfile('version.txt',['../' output_dir])
         movefile('mccExcludedFiles.log',['../' output_dir])

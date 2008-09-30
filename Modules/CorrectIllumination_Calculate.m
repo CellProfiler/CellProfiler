@@ -304,7 +304,7 @@ end
 ReadyFlag = 'Not Ready';
 if strcmp(EachOrAll,'All')
     try
-        if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
+        if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             % The first time the module is run, the averaged image is
             % calculated.
             % Notifies the user that the first cycle will take much longer than

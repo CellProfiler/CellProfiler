@@ -104,7 +104,7 @@ end
 %%% structure during the first image cycle. So if the user cancels
 %%% processing earlier, there will be too many image measurements present.
 %%% This is probably OK with the Export modules/data tools.
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Parse text file %%%
     fid = fopen(fullfile(PathName,TextFileName),'r');
     if fid == -1

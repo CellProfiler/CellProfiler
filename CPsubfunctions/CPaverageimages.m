@@ -84,7 +84,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
     fieldname = ['', ImageName];
     %%% Performs certain error-checking and initializing functions the
     %%% first time throught the image set.
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         %%% Checks whether the image to be analyzed exists in the
         %%% handles structure.
         if isfield(handles.Pipeline, ImageName)==0,

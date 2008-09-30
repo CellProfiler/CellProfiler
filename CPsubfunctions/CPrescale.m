@@ -52,7 +52,7 @@ elseif strncmpi(RescaleOption,'E',1) == 1
         FindLowestIntensity =   strcmp(upper(LowestPixelOrig), 'AA');
         FindHighestIntensity =  strcmp(upper(HighestPixelOrig),'AA');
         
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             try
                 %%% Notifies the user that the first image set will take much longer than
                 %%% subsequent sets.

@@ -279,7 +279,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     end
 
 elseif strcmp(Threshold,'All')
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         try
             %%% Notifies the user that the first image set will take much
             %%% longer than subsequent sets. Obtains the screen size.
@@ -345,7 +345,7 @@ elseif strcmp(Threshold,'All')
     end
 elseif strcmp(Threshold,'Set interactively')
     fieldname = ['Threshold',ImageName];
-    if handles.Current.SetBeingAnalyzed == 1
+    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         Threshold = CPthresh_tool(OrigImage(:,:,1));
         handles.Pipeline.(fieldname) = Threshold;
     else

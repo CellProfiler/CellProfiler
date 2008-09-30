@@ -155,7 +155,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     try SaveWhen = str2double(SaveWhen);
     catch error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles must be entered as a number.'])
     end

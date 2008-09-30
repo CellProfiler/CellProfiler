@@ -113,7 +113,7 @@ if strncmp(FinalPath,'.',1)
     end
 end
 
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     if strcmp(SplitOrSplice,'Split')
         AviMovieInfo = aviinfo(fullfile(ExistingPath,TargetMovieFileName));
 

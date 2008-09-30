@@ -99,7 +99,7 @@ drawnow
 
 %%% The first time the module is run, the threshold shifting value must be
 %%% calculated.
-if handles.Current.SetBeingAnalyzed == 1
+if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     try
         drawnow
         %%% Retrieves the path where the images are stored from the handles

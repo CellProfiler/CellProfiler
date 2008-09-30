@@ -141,7 +141,7 @@ handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.Set
 CurrLocations = handles.Pipeline.TrackObjects.(ObjectName).Current.Locations{handles.Current.SetBeingAnalyzed};
 CurrSegImage = handles.Pipeline.TrackObjects.(ObjectName).Current.SegmentedImage;
 
-if ~(handles.Current.SetBeingAnalyzed == 1)
+if ~(handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet)
     %%% Extracts data from the handles structure
     %%% I THINK THIS LINE IS NEEDED FOR INTENSITY ONLY:
     PrevImage = handles.Pipeline.TrackObjects.(ObjectName).Previous.(ImageName);

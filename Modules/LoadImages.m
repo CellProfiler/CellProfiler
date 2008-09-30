@@ -690,7 +690,7 @@ for n = 1:length(ImageName)
             %%% here retrieving the image from the hard drive, not from the handles
             %%% structure.
 
-            if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == 1)
+            if (max(LoadedImage(:)) <= .0625) && (handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet)
                 A = strmatch('RescaleIntensity', handles.Settings.ModuleNames);
                 if length(A) < length(ImageName)
                     CPwarndlg(['Warning: the images loaded by ', ModuleName, ' are very dim (they are using 1/16th or less of the dynamic range of the image file format). This often happens when a 12-bit camera saves in 16-bit image format. If this is the case, use the Rescale Intensity module in "Enter max and min" mode to rescale the images using the values 0, 0.0625, 0, 1, 0, 1.'],'Outside 0-1 Range','replace');

@@ -290,8 +290,9 @@ if strcmp(CurrentModuleName,'UnifyObjects')
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,3};
     Settings.VariableValues{ModuleNum-Skipped,3} = 'Unify';
-    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,5};
     Settings.NumbersOfVariables(ModuleNum-Skipped)= 5;
     SavedVarRevNum = 1;
     IsModuleModified = true;
@@ -302,8 +303,9 @@ end
 if strcmp(CurrentModuleName,'SplitIntoContiguousObjects')
     CurrentModuleName = 'RelabelObjects';
     Settings.ModuleNames{ModueNum-Skipped} = CurrentModuleName;
-    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
-    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = 'Split';
+    Settings.VariableValues{ModuleNum-Skipped,4} = '';
+    Settings.VariableValues{ModuleNum-Skipped,5} = '';
     Settings.NumbersOfVariables(ModuleNum-Skipped)= 5;
     SavedVarRevNum = 1;
     IsModuleModified = true;

@@ -159,7 +159,7 @@ end
 if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
     %%% Any of these conditions means the grid doesn't make sense.
     if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-        if handles.Current.SetBeingAnalyzed == 1
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
         else
             if strcmp(FailedGridChoice,'The First')

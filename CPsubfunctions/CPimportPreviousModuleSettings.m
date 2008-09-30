@@ -299,7 +299,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Obsolete module: SplitIntoContiguousObjects
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(CurrentModuleName,'SplitIntoContinguousObjects')
+if strcmp(CurrentModuleName,'SplitIntoContiguousObjects')
     CurrentModuleName = 'RelabelObjects';
     Settings.ModuleNames{ModueNum-Skipped} = CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};

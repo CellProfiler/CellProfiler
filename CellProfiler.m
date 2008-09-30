@@ -767,6 +767,18 @@ for k = 1:NumberOfModules
             Pathnames{k-Skipped} = Pathname;
         end
         
+        if strcmp(CurrentModuleNamedotm, 'UnifyObjects.m')
+            CurrentModuleNamedotm = 'RelabelObjects.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
+        if strcmp(CurrentModuleNamedotm, 'SplitIntoContiguousObjects.m')
+            CurrentModuleNamedotm = 'RelabelObjects.m';
+            Pathname = handles.Preferences.DefaultModuleDirectory;
+            Pathnames{k-Skipped} = Pathname;
+        end
+        
         
         if strcmp(CurrentModuleNamedotm,'Combine.m')
             CurrentModuleNamedotm = 'ImageMath.m';

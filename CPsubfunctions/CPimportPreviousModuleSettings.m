@@ -203,6 +203,7 @@ if strcmp(CurrentModuleName, 'Subtract')
     Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
     Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
     Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
+    SavedVarRevNum = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,6 +218,7 @@ if strcmp(CurrentModuleName, 'Average')
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
     Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    SavedVarRevNum = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,6 +234,7 @@ if strcmp(CurrentModuleName, 'Combine')
     Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
     Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
     Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,7};
+    SavedVarRevNum = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,6 +245,7 @@ if strcmp(CurrentModuleName, 'InvertIntensity')
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    SavedVarRevNum = 1;
     
 end
 
@@ -254,6 +258,7 @@ if strcmp(CurrentModuleName, 'Multiply')
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
     Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    SavedVarRevNum = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,4 +279,33 @@ if strcmp(CurrentModuleName, 'CalculateRatios')
     Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,10};
     Settings.VariableValues{ModuleNum-Skipped,11} = Settings.VariableValues{ModuleNum-Skipped,11};
     Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,12};
+    SavedVarRevNum = 1;
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: UnifyObjects
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName,'UnifyObjects')
+    CurrentModuleName = 'RelabelObjects';
+    Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,3} = 'Unify';
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.NumbersOfVariables(ModuleNum-Skipped)= 5;
+    SavedVarRevNum = 1;
+    IsModuleModified = true;
+end 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obsolete module: SplitIntoContiguousObjects
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName,'SplitIntoContinguousObjects')
+    CurrentModuleName = 'RelabelObjects';
+    Settings.ModuleNames{ModueNum-Skipped} = CurrentModuleName;
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.NumbersOfVariables(ModuleNum-Skipped)= 5;
+    SavedVarRevNum = 1;
+    IsModuleModified = true;
+end
+

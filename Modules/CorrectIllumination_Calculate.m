@@ -358,7 +358,7 @@ if strcmp(EachOrAll,'All')
                 % In Pipeline mode, each time through the cycle,
                 % the minimums from the image are added to the existing cumulative image.
                 [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-                if handles.Current.SetBeingAnalyzed == 1
+                if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                     % Creates the empty variable so it can be retrieved later
                     % without causing an error on the first cycle.
                     handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero)));
@@ -651,7 +651,7 @@ drawnow
 % processed. If running in cycling mode (Pipeline mode), the
 % average image and its flag are saved to the handles structure
 % after every cycle is processed.
-if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && handles.Current.SetBeingAnalyzed == 1)
+if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet)
     if strcmp(ReadyFlag, 'Ready') == 1
         handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
     end

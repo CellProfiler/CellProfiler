@@ -563,6 +563,7 @@ if any(findobj == ThisModuleFigureNumber)
                 switch lower(SmoothingMethod),
                     case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
                 end
+                str{end+1} = ['Size of Smoothing Filter: ', num2str(SizeOfSmoothingFilter)];
                 for i = 1:length(str),
                     h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);
@@ -630,6 +631,7 @@ if any(findobj == ThisModuleFigureNumber)
             switch lower(SmoothingMethod),
                 case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
             end
+            str{end+1} = ['Size of Smoothing Filter: ',num2str(SizeOfSmoothingFilter)];
             for i = 1:length(str),
                 h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
                     'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);

@@ -127,7 +127,7 @@ ImageAfterMathName = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%% Check for user-set constants
+% Check for user-set constants
 if ~isempty(str2num(FirstImageName))
     error(['Choosing a number for the first image name within ' ModuleName ...
         ' is not allowed.  If you need to access a user-defined image name,'...
@@ -136,8 +136,8 @@ end
 SecondImageConstant = str2num(SecondImageName);  %% This will be empty unless a constant was input
 ThirdImageConstant = str2num(ThirdImageName);
 
-%%% Reads (opens) the images you want to analyze and assigns them to
-%%% variables.
+% Reads (opens) the images you want to analyze and assigns them to
+% variables.
 FirstImage = CPretrieveimage(handles,FirstImageName,ModuleName,'MustBeGray','CheckScale');
 if isempty(SecondImageConstant)
     SecondImage = CPretrieveimage(handles,SecondImageName,ModuleName,'MustBeGray','CheckScale');
@@ -153,8 +153,8 @@ else
 end
 
 
-%%% Check to make sure multiply factors are valid entries. If not change to
-%%% default and warn user.
+% Check to make sure multiply factors are valid entries. If not change to
+% default and warn user.
 if isnan(MultiplyFactor1)
     if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid']))
         CPwarndlg(['The first image multiply factor you have entered in the ', ModuleName, ' module is invalid, it is being reset to 1.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': First multiply factor invalid'],'replace');
@@ -208,7 +208,7 @@ if ~isnan(MultiplyFactor3)
     ImageAfterMath = ImageAfterMath.*MultiplyFactor4;
 end
 
-%% Apply thresholds
+% Apply thresholds
 if strcmpi(FloorZero,'Yes')
     ImageAfterMath(ImageAfterMath < 0) = 0;
 end
@@ -225,7 +225,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-    %% NumColumns is useful since 'Invert' has only one "before" image  
+    % NumColumns is useful since 'Invert' has only one "before" image  
     if strcmp(Operation, 'Combine')
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage, 'TwobyThree', ThisModuleFigureNumber);
@@ -243,10 +243,9 @@ if any(findobj == ThisModuleFigureNumber)
         end
         NumColumns = 1;
     end
-end
-
     
-    %% Set title text
+    
+    % Set title text
     if MultiplyFactor1 == 1
         FirstText = (FirstImageName);
     else 
@@ -284,7 +283,7 @@ end
         title(hAx,[SecondText ' image']);
     end
     
-    %% ImageAfterMath
+    % ImageAfterMath
     hAx=subplot(2,NumColumns,2,'Parent',ThisModuleFigureNumber);
     CPimagesc(ImageAfterMath,handles,hAx);
     if strcmp(Operation, 'Combine')
@@ -294,11 +293,12 @@ end
     else
         title(hAx,[FirstText ' ' Operation ' = ' ImageAfterMathName]);
     end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the processed image to the handles structure.
+% Saves the processed image to the handles structure.
 handles.Pipeline.(ImageAfterMathName) = ImageAfterMath;

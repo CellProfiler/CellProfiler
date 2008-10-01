@@ -204,7 +204,7 @@ try
         SmoothedImage = bilateralFilter(OrigImage, OrigImage, SpatialRadius, IntensityRadius,...
             SpatialRadius / 2.0, IntensityRadius / 2.0);
     else
-        SmoothedImage = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+        [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
     end
 catch
     ErrorMessage = lasterr;
@@ -231,6 +231,7 @@ if any(findobj == ThisModuleFigureNumber)
     hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
     CPimagesc(SmoothedImage,handles,hAx);
     title(hAx,'Smoothed Image');
+    text(1,50,['Size of Smoothing Filter: ' num2str(SizeOfSmoothingFilterUsed)],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',hAx);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

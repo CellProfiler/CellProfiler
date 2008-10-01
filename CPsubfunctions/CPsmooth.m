@@ -1,4 +1,4 @@
-function [SmoothedImage RealFilterLength] = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg)
+function [SmoothedImage RealFilterLength SizeOfSmoothingFilterUsed] = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg)
 
 % This subfunction is used for several modules, including SMOOTH, AVERAGE,
 % CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE,
@@ -28,6 +28,8 @@ LARGESIZE_OF_SMOOTHINGFILTER = 50;
 
 SmoothedImage = OrigImage;
 RealFilterLength = 0;
+SizeOfSmoothingFilterUsed =0;
+
 
 %%% For now, nothing fancy is done to calculate the size automatically. We
 %%% just choose 1/40 the size of the image, with a min of 1 and max of 30.
@@ -117,6 +119,7 @@ switch lower(SmoothingMethod)
         end        
         SmoothedImage = medfilt2(im2uint16(OrigImage),[SizeOfSmoothingFilter SizeOfSmoothingFilter],'symmetric');
         SmoothedImage = im2double(SmoothedImage);
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
         if (RESCALE_FLAG) % return to the original range of OrigImage;
             SmoothedImage = SmoothedImage.*range + minval;
         end
@@ -134,6 +137,7 @@ switch lower(SmoothingMethod)
         end
         h = fspecial('gaussian', [round(SizeOfSmoothingFilter) round(SizeOfSmoothingFilter)], sigma);
         SmoothedImage = imfilter(OrigImage, h, 'replicate');
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
 %       [Kyungnam Jul-30-2007: The following old code that was replaced with the above code has been left for reference]        
 %         FiltLength = min(30,max(1,ceil(2*sigma))); % Determine filter size, min 3 pixel, max 61
 %         [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid

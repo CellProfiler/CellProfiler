@@ -440,9 +440,9 @@ if strcmp(ReadyFlag, 'Ready')
             % first.
 
             if exist('DilatedImage','var')
-                SmoothedImage = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
             elseif exist('RawImage','var')
-                SmoothedImage = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
             else error(['Image processing was canceled in the ', ModuleName, ' due to some sort of programming error.']);
             end
         end
@@ -462,7 +462,7 @@ if strcmp(ReadyFlag, 'Ready')
             % Smooths the Illumination image, if requested, but saves a raw copy
             % first.
             AverageMinimumsImage = IlluminationImage;
-            FinalIlluminationFunction = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+            [FinalIlluminationFunction ignore SizeOfSmoothingFilterUsed] = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else
             FinalIlluminationFunction = IlluminationImage;
         end
@@ -563,7 +563,7 @@ if any(findobj == ThisModuleFigureNumber)
                 switch lower(SmoothingMethod),
                     case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
                 end
-                str{end+1} = ['Size of Smoothing Filter: ', num2str(SizeOfSmoothingFilter)];
+                str{end+1} = ['Size of Smoothing Filter: ', num2str(SizeOfSmoothingFilterUsed)];
                 for i = 1:length(str),
                     h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);
@@ -631,7 +631,7 @@ if any(findobj == ThisModuleFigureNumber)
             switch lower(SmoothingMethod),
                 case {'median filter','gaussian filter'}, str{end+1} = ['Artifact width: ',num2str(ObjectWidth)];
             end
-            str{end+1} = ['Size of Smoothing Filter: ',num2str(SizeOfSmoothingFilter)];
+            str{end+1} = ['Size of Smoothing Filter: ',num2str(SizeOfSmoothingFilterUsed)];
             for i = 1:length(str),
                 h = uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[pos(1) pos(2)-0.04*i pos(3:4)],...
                     'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',str{i},'FontSize',handles.Preferences.FontSize);

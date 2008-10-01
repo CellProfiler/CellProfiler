@@ -139,8 +139,9 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(OrigImage,'OneByOne',ThisModuleFigureNumber)
     end
-    CPimagesc(NewImage,handles);
-    title(['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
+    hAx = axes('parent',FigHandle);
+    CPimagesc(NewImage,handles,hAx);
+    title(hAx,['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     uicontrol(FigHandle,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
         'UserData',{OrigImage NewImage},'backgroundcolor',[.7 .7 .9],...
         'Callback',@CP_OrigNewImage_Callback);

@@ -186,9 +186,6 @@ end
 % end
 
 
-%The variables in ImageMath are so different from those in the modules it
-%combines, we just show the user what they had before in the order it was
-%there
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -251,7 +248,10 @@ if strcmp(CurrentModuleName, 'InvertIntensity')
     CurrentModuleName = 'ImageMath';
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
-    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,4} = 'Invert';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=12;
+    IsModuleModified = true;
     SavedVarRevNum = 2;
     
 end

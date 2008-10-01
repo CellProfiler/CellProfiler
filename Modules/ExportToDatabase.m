@@ -155,7 +155,7 @@ DatabaseType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?
+%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?  An underscore will be added to the end of the prefix automatically
 %defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

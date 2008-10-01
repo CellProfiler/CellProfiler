@@ -4,6 +4,7 @@
 """
 import CPFrame
 import CellProfiler.Pipeline
+from CellProfiler.CellProfilerGUI.AddModuleFrame import AddModuleFrame
 import wx
 import os
 import scipy.io.mio
@@ -15,6 +16,8 @@ class PipelineController:
     def __init__(self,pipeline,frame):
         self.__pipeline =pipeline
         self.__frame = frame
+        self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
+        self.__add_module_frame.AddListener(self.__OnAddToPipeline) 
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
     
     def AttachToPipelineListView(self,pipeline_list_view):
@@ -69,7 +72,7 @@ class PipelineController:
         print "No help yet"
         
     def __OnAddModule(self,event):
-        print "No add module yet"
+        self.__add_module_frame.Show()
     
     def __GetSelectedModules(self):
         return self.__pipeline_list_view.GetSelectedModules()
@@ -89,4 +92,11 @@ class PipelineController:
         selected_modules.reverse()
         for module in selected_modules:
             self.__pipeline.MoveModule(module.ModuleNum(),CellProfiler.Pipeline.DIRECTION_DOWN);
-        
+    
+    def __OnAddToPipeline(self,caller,event):
+        selected_modules = self.__GetSelectedModules()
+        ModuleNum = 1
+        if len(selected_modules):
+            ModuleNum=selected_modules[-1].ModuleNum()+1
+        self.__pipeline.AddModule(event.ModulePath,ModuleNum)
+            

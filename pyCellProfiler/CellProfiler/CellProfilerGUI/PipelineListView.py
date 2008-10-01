@@ -4,6 +4,9 @@
 import wx
 import CellProfiler.Pipeline
 
+NO_PIPELINE_LOADED = 'No pipeline loaded'
+PADDING = 1
+
 class PipelineListView:
     """View on a set of modules
     
@@ -12,10 +15,18 @@ class PipelineListView:
         self.__panel=panel
         self.__sizer=wx.BoxSizer(wx.VERTICAL)
         self.__list_box=wx.ListBox(self.__panel,-1,
-                                   choices=['No pipeline loaded'],
+                                   choices=[NO_PIPELINE_LOADED],
                                    style=wx.LB_EXTENDED)
-        self.__sizer.Add(self.__list_box,1,wx.EXPAND|wx.ALL,1)
+        self.__sizer.Add(self.__list_box,1,wx.EXPAND|wx.LEFT|wx.RIGHT,PADDING)
         self.__panel.SetSizer(self.__sizer)
+        self.__set_min_width()
+        
+    def __set_min_width(self):
+        """Make the minimum width of the panel be the best width
+           of the list box + the padding
+        """
+        width = self.__list_box.GetBestSize()[0]+2*PADDING
+        self.__panel.SetMinSize(wx.Size(width,self.__panel.GetMinSize()[1]))
 
     def AttachToPipeline(self,pipeline,controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
@@ -52,13 +63,18 @@ class PipelineListView:
         self.__list_box.Clear()
         for module in pipeline.Modules():
             self.__list_box.Append(module.ModuleName(),module)
+        self.__set_min_width()
             
     def __OnModuleAdded(self,pipeline,event):
         module=pipeline.Modules()[event.ModuleNum-1]
+        if len(self.__list_box.GetItems()) == 1 and self.__list_box.GetItems()[0]==NO_PIPELINE_LOADED:
+            self.__list_box.Clear()
         self.__list_box.Insert(module.ModuleName(),event.ModuleNum-1,module)
+        self.__set_min_width()
     
     def __OnModuleRemoved(self,pipeline,event):
         self.__list_box.Delete(event.ModuleNum-1)
+        self.__set_min_width()
         
     def __OnModuleMoved(self,pipeline,event):
         module=pipeline.Modules()[event.ModuleNum-1]

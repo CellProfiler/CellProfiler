@@ -1,0 +1,64 @@
+Saved Pipeline, in file PIPE.txt, Saved on 23-Sep-2008
+
+Pixel Size: 1
+
+Pipeline:
+	LoadImages
+	SmoothOrEnhance
+	IdentifyPrimAutomatic
+	MeasureObjectIntensity
+
+Module #1: LoadImages revision - 3
+     How do you want to load these files?    Text-Exact match
+     Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):    Channel 1-01-A-01-00.tif
+     What do you want to call these images within CellProfiler?    OrigCytoplasm
+     Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option). Type "Do not use" to ignore:    Channel 2-01-A-01-00.tif
+     What do you want to call these images within CellProfiler? (Type "Do not use" to ignore)    OrigDNA
+     Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):    Do not use
+     What do you want to call these images within CellProfiler?    Do not use
+     Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option):    Do not use
+     What do you want to call these images within CellProfiler?    Do not use
+     If using ORDER, how many images are there in each group (i.e. each field of view)?    3
+     What type of files are you loading?    individual images
+     Analyze all subfolders within the selected folder?    No
+     Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.    .
+     If the images you are loading are binary (black/white only), in what format do you want to store them?    grayscale
+     Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.    n/a
+
+Module #2: SmoothOrEnhance revision - 4
+     What did you call the image to be smoothed?    OrigDNA
+     What do you want to call the smoothed image?    SmoothedDNA
+     Enter the smoothing method you would like to use.    Gaussian Filter
+     If you choose any setting besides 'Fit Polynomial' as your smoothing method, please specify the approximate width of the objects in your image (in pixels). This will be used to calculate an adequate filter size. If you don't know the width of your objects, you can use the ShowOrHidePixelData image tool to find out or leave the word 'Automatic'.    20
+     If you want to use your own filter size (in pixels), please specify it here. Otherwise, leave "Do not use". If you entered a width for the previous variable, this will override it.    Do not use
+     Are you using this module to smooth an image that results from processing multiple cycles?  (If so, this module will wait until it sees a flag that the other module has completed its calculations before smoothing is performed).    No
+
+Module #3: IdentifyPrimAutomatic revision - 12
+     What did you call the images you want to process?    OrigCytoplasm
+     What do you want to call the objects identified by this module?    Nuclei
+     Typical diameter of objects, in pixel units (Min,Max):    10,40
+     Discard objects outside the diameter range?    Yes
+     Try to merge too small objects with nearby larger objects?    No
+     Discard objects touching the border of the image?    Yes
+     Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.    Otsu Global
+     Threshold correction factor    1
+     Lower and upper bounds on threshold, in the range [0,1]    0,1
+     For MoG thresholding, what is the approximate fraction of image covered by objects?    0.01
+     Method to distinguish clumped objects (see help for details):    Intensity
+      Method to draw dividing lines between clumped objects (see help for details):    Intensity
+     Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.    Automatic
+     Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)    Automatic
+     Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)    Yes
+     Enter the following information, separated by commas, if you would like to use the Laplacian of Gaussian method for identifying objects instead of using the above settings: Size of neighborhood(height,width),Sigma,Minimum Area,Size for Wiener Filter(height,width),Threshold    Do not use
+     What do you want to call the outlines of the identified objects (optional)?    Do not use
+     Do you want to fill holes in identified objects?    Yes
+     Do you want to run in test mode where each method for distinguishing clumped objects is compared?    No
+
+Module #4: MeasureObjectIntensity revision - 2
+     What did you call the greyscale images you want to measure?    OrigCytoplasm
+     What did you call the objects that you want to measure?    Nuclei
+        Do not use
+        Do not use
+        Do not use
+        Do not use
+        Do not use

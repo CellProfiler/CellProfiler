@@ -36,7 +36,7 @@ class Variable:
         """Notify listeners of an event happening to a variable
         
         """
-        for listener in listeners:
+        for listener in self.__listeners:
             listener.Notify(self,event)
         
     def AddListener(self,listener):

@@ -8,7 +8,7 @@ from CellProfiler.CellProfilerGUI.CPFrame import CPFrame
 class CellProfilerApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
-        Frame = CPFrame(None, -1, "")
+        Frame = CPFrame(None, -1, "Cell Profiler")
         self.SetTopWindow(Frame)
         Frame.Show()
         return 1

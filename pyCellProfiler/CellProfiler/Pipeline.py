@@ -78,6 +78,7 @@ class Pipeline:
         self.__modules = self.__modules[:idx]+[module]+self.__modules[idx:]
         for module in self.__modules[idx+1:]:
             module.SetModuleNum(module.ModuleNum())
+        self.NotifyListeners(ModuleAddedPipelineEvent(ModuleNum))
     
     def RemoveModule(self,ModuleNum):
         """Remove a module from the pipeline
@@ -91,7 +92,7 @@ class Pipeline:
         module.Delete()
         for module in self.__modules[idx:]:
             module.SetModuleNum(module.ModuleNum()-1)
-        NotifyListeners(ModuleRemovedPipelineEvent(ModuleNum))
+        self.NotifyListeners(ModuleRemovedPipelineEvent(ModuleNum))
 
     def NotifyListeners(self,event):
         """Notify listeners of an event that happened to this pipeline

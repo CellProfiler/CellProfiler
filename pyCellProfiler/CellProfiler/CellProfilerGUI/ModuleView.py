@@ -25,6 +25,7 @@ class ModuleView:
         self.__sizer.Add(self.__grid,0,wx.EXPAND|wx.ALL,1)
         module_panel.SetSizer(self.__sizer)
         self.__set_columns()
+        self.__grid.AutoSize()
 
     def __set_columns(self):
         self.__grid.SetColLabelValue(0,'Variable description')

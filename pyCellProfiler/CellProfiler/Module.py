@@ -52,6 +52,26 @@ class AbstractModule:
     def CreateFromFile(self,file_path,ModuleNum):
         """Parse a file to get the default variables for a module
         """
+        self.__module_num = ModuleNum
+        self.__module_name = os.path.splitext(os.path.split(file_path)[1])[0]
+        fid = open(file_path,'r')
+        try:
+            (self.__annotations, self.__variable_revision_number) = self.__read_annotations(fid)
+        finally:
+            fid.close()
+        variable_dict = {}
+        max_variable = 0
+        for annotation in self.__annotations:
+            vn = annotation.VariableNumber
+            if annotation.Kind == 'default':
+                variable_dict[vn] = annotation.Value
+            elif annotation.Kind == 'choice' and not variable_dict.has_key(vn):
+                variable_dict[vn] = annotation.Value
+            if vn > max_variable:
+                max_variable = vn
+        self.__variables=[CellProfiler.Variable.Variable(self,i,'') for i in range(1,max_variable+1)]
+        for key in variable_dict.keys():
+            self.__variables[key-1].SetValue(variable_dict[key])
         
     def ModuleNum(self):
         """Get the module's index number

@@ -32,7 +32,7 @@ objs = fieldnames(handles.Measurements);
 objs(strcmp(objs,'Image') | strcmp(objs,'Experiment') | strcmp(objs,'Neighbors')) = [];
 supposed_primary_obj = objs{1};
 
-ExportInfo.Entries.db_type = DatabaseType;                                                  % Database Type
+ExportInfo.Entries.db_type = lower(DatabaseType);                                                  % Database Type
 ExportInfo.Entries.db_host = '';                                                            % Database Host Name/IP Address
 switch lower(DatabaseType),                                                                 % Database Port
     case 'mysql', ExportInfo.Entries.db_port = '3306';

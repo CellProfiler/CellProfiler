@@ -257,14 +257,17 @@ if strcmp(CurrentModuleName, 'InvertIntensity')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Obsolete module: Average
+% Obsolete module: Multiply
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'Multiply')
     CurrentModuleName = 'ImageMath';
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
-    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,4} = 'Multiply';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=12;
+    IsModuleModified = true;
     SavedVarRevNum = 2;
 end
 
@@ -274,18 +277,21 @@ end
 if strcmp(CurrentModuleName, 'CalculateRatios')
     CurrentModuleName = 'CalculateMath';
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
-    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
-    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
-    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
-    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
-    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
-    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
-    Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,7};
-    Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,8};
-    Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,9};
-    Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,10};
-    Settings.VariableValues{ModuleNum-Skipped,11} = Settings.VariableValues{ModuleNum-Skipped,11};
-    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,12};
+    Settings.VariableValues{ModuleNum-Skipped,17} = Settings.VariableValues{ModuleNum-Skipped,1};
+    Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,2};
+    Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,3};
+    Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,6};
+    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,7};
+    Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,8};
+    Settings.VariableValues{ModuleNum-Skipped,8} = Settings.VariableValues{ModuleNum-Skipped,9};
+    Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,10};
+    Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,11};
+    Settings.VariableValues{ModuleNum-Skipped,11} = Settings.VariableValues{ModuleNum-Skipped,12};
+    Settings.VariableValues{ModuleNum-Skipped,16} = 'Divide';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=17;
+    IsModuleModified = true;
     SavedVarRevNum = 2;
 end
 

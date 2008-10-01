@@ -1009,7 +1009,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
             if strcmp(LaplaceValues,'Do not use')
                 %%% Indicate objects in original image and color excluded objects in red
-                tmp = OrigImage/max(OrigImage(:));
+                tmp = OrigImage - min(OrigImage(:));
+                tmp = tmp/max(tmp(:));
                 OutlinedObjectsR = tmp;
                 OutlinedObjectsG = tmp;
                 OutlinedObjectsB = tmp;
@@ -1207,10 +1208,10 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% Updates the cycle number on the window.
                     CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeSegmentedFigureNumber);
                     
-                    subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                    hAx = subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                     im = CPlabel2rgb(handles,Objects);
-                    CPimagesc(im,handles);
-                    title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                    CPimagesc(im,handles,hAx);
+                    title(hAx,sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
                 end
 
                 %%% Repeat what we've done for the segmented test mode window, now
@@ -1228,7 +1229,8 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     CPfigure(IdPrimTestModeOutlinedFigureNumber(1));
                     CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,IdPrimTestModeOutlinedFigureNumber);
 
-                    tmp = OrigImage/max(OrigImage(:));
+                    tmp = OrigImage - min(OrigImage(:));
+                    tmp = tmp/max(tmp(:));
                     OutlinedObjectsR = tmp;
                     OutlinedObjectsG = tmp;
                     OutlinedObjectsB = tmp;
@@ -1239,10 +1241,10 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     OutlinedObjectsR(PerimDiameter) = 1; OutlinedObjectsG(PerimDiameter)   = 0; OutlinedObjectsB(PerimDiameter)   = 0;
                     OutlinedObjectsR(PerimBorder) = 1; OutlinedObjectsG(PerimBorder) = 1; OutlinedObjectsB(PerimBorder) = 0;
 
-                    subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
+                    hAx = subplot(2,3,WatershedTransformImageTypeNumber+3*(LocalMaximaTypeNumber-1));
                     OutlinedObjects = cat(3,OutlinedObjectsR,OutlinedObjectsG,OutlinedObjectsB);
-                    CPimagesc(OutlinedObjects,handles);
-                    title(sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
+                    CPimagesc(OutlinedObjects,handles,hAx);
+                    title(hAx,sprintf('%s and %s',LocalMaximaTypeList{LocalMaximaTypeNumber},WatershedTransformImageTypeList{WatershedTransformImageTypeNumber}));
                 end
             end
         end

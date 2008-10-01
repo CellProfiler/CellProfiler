@@ -199,13 +199,14 @@ if strcmp(CurrentModuleName, 'Subtract')
     Settings.ModuleNames{ModuleNum-Skipped}=CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
-    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,3};
     Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,5};
     Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,4};
     Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,5};
     Settings.VariableValues{ModuleNum-Skipped,10} = Settings.VariableValues{ModuleNum-Skipped,6};
     Settings.VariableValues{ModuleNum-Skipped,4} = 'Subtract';
+    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,3};
     Settings.NumbersOfVariables(ModuleNum-Skipped)=12;
+    IsModuleModified = true;
     SavedVarRevNum = 2;
 end
 
@@ -233,10 +234,13 @@ if strcmp(CurrentModuleName, 'Combine')
     Settings.VariableValues{ModuleNum-Skipped,1} = Settings.VariableValues{ModuleNum-Skipped,1};
     Settings.VariableValues{ModuleNum-Skipped,2} = Settings.VariableValues{ModuleNum-Skipped,2};
     Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,3};
-    Settings.VariableValues{ModuleNum-Skipped,4} = Settings.VariableValues{ModuleNum-Skipped,4};
-    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
-    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
     Settings.VariableValues{ModuleNum-Skipped,7} = Settings.VariableValues{ModuleNum-Skipped,7};
+    Settings.VariableValues{ModuleNum-Skipped,6} = Settings.VariableValues{ModuleNum-Skipped,6};
+    Settings.VariableValues{ModuleNum-Skipped,5} = Settings.VariableValues{ModuleNum-Skipped,5};
+    Settings.VariableValues{ModuleNum-Skipped,12} = Settings.VariableValues{ModuleNum-Skipped,4};
+    Settings.VariableValues{ModuleNum-Skipped,4} = 'Combine';
+    Settings.NumbersOfVariables(ModuleNum-Skipped)=12;
+    IsModuleModified = true;
     SavedVarRevNum = 2;
 end
 
@@ -305,7 +309,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName,'SplitIntoContiguousObjects')
     CurrentModuleName = 'RelabelObjects';
-    Settings.ModuleNames{ModueNum-Skipped} = CurrentModuleName;
+    Settings.ModuleNames{ModuleNum-Skipped} = CurrentModuleName;
     Settings.VariableValues{ModuleNum-Skipped,3} = 'Split';
     Settings.VariableValues{ModuleNum-Skipped,4} = '';
     Settings.VariableValues{ModuleNum-Skipped,5} = '';

@@ -8,8 +8,6 @@ function handles = ImageMath(handles)
 % *************************************************************************
 %
 % Operation:
-% The complement of a grayscale image inverts the intensities 
-% (dark areas become brighter, and bright areas become darker).  
 %
 % Average in the ImageMath module is the numerical average of the two images loaded in
 % the module.  If you would like to average many images (all of the images

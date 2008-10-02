@@ -358,7 +358,8 @@ drawnow
 if SetBeingAnalyzed == 1
 
     for i = 1:length(ImageName)
-        if isfield(handles.Pipeline,ImageName{i})
+        %%% Only complain about reloads if not running on the cluster (to allow rerunning batch 1)
+        if isfield(handles.Pipeline,ImageName{i}) && (~ isfield(handles.Current, 'BatchInfo')),
             error(['Image processing was cancelled in the ', ModuleName, ' module because you are trying to load two sets of images with the same name (e.g. OrigBlue). The last set loaded will always overwrite the first set and make it obselete. Please remove one of these modules.']);
         end
         CPvalidfieldname(ImageName{i});

@@ -231,7 +231,9 @@ if any(findobj == ThisModuleFigureNumber)
     hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
     CPimagesc(SmoothedImage,handles,hAx);
     title(hAx,'Smoothed Image');
-    text(1,50,['Size of Smoothing Filter: ' num2str(SizeOfSmoothingFilterUsed)],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',hAx);
+    if ~ strcmp(SmoothingMethod,'Smooth Keeping Edges')
+        text(1,50,['Size of Smoothing Filter: ' num2str(SizeOfSmoothingFilterUsed)],'Color','red','fontsize',handles.Preferences.FontSize,'Parent',hAx);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

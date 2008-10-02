@@ -2,9 +2,28 @@
 
     $Revision$
 """
+import numpy
 import CellProfiler.Module
 import CellProfiler.Preferences
+from CellProfiler.Matlab.Utils import NewStringCellArray
 
+SETTINGS = 'Settings'
+VARIABLE_VALUES = 'VariableValues'
+VARIABLE_INFO_TYPES = 'VariableInfoTypes'
+MODULE_NAMES = 'ModuleNames'
+PIXEL_SIZE = 'PixelSize'
+NUMBERS_OF_VARIABLES = 'NumbersOfVariables'
+VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
+MODULE_REVISION_NUMBERS = 'ModuleRevisionNumbers'
+MODULE_NOTES = 'ModuleNotes'
+SETTINGS_DTYPE = numpy.dtype([(VARIABLE_VALUES, '|O4'), 
+                            (VARIABLE_INFO_TYPES, '|O4'), 
+                            (MODULE_NAMES, '|O4'), 
+                            (NUMBERS_OF_VARIABLES, '|O4'), 
+                            (PIXEL_SIZE, '|O4'), 
+                            (VARIABLE_REVISION_NUMBERS, '|O4'), 
+                            (MODULE_REVISION_NUMBERS, '|O4'), 
+                            (MODULE_NOTES, '|O4')])
 class Pipeline:
     """A pipeline represents the modules that a user has put together
     to analyze their images.
@@ -19,12 +38,38 @@ class Pipeline:
         
         """
         self.__modules = [];
-        Settings = handles['Settings']
-        for ModuleNum in range(1,len(Settings.ModuleNames)+1):
+        Settings = handles[SETTINGS][0,0]
+        module_names = Settings[MODULE_NAMES]
+        module_count = module_names.shape[1]
+        for ModuleNum in range(1,module_count+1):
             module = CellProfiler.Module.MatlabModule()
             module.CreateFromHandles(handles, ModuleNum)
             self.__modules.append(module)
         self.NotifyListeners(PipelineLoadedEvent())
+        
+    def SaveToHandles(self):
+        """Create a numpy array representing this pipeline
+        
+        """
+        settings = numpy.ndarray(shape=[1,1],dtype=SETTINGS_DTYPE)
+        handles = {SETTINGS:settings }
+        setting = settings[0,0]
+        # The variables are a (modules,max # of variables) array of cells (objects)
+        # where an empty cell is a (1,0) array of float64
+        variable_count = max([len(module.Variables()) for module in self.Modules()])
+        module_count = len(self.Modules())
+        setting[VARIABLE_VALUES] =          NewStringCellArray((module_count,variable_count))
+        # The variable info types are similarly shaped
+        setting[VARIABLE_INFO_TYPES] =      NewStringCellArray((module_count,variable_count))
+        setting[MODULE_NAMES] =             NewStringCellArray((1,module_count))
+        setting[NUMBERS_OF_VARIABLES] =     numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
+        setting[PIXEL_SIZE] =               CellProfiler.Preferences.GetPixelSize()
+        setting[VARIABLE_REVISION_NUMBERS] =numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
+        setting[MODULE_REVISION_NUMBERS] =  numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint16'))
+        setting[MODULE_NOTES] =             NewStringCellArray((1,module_count))
+        for module in self.Modules():
+            module.SaveToHandles(handles)
+        return handles
     
     def MoveModule(self,ModuleNum,direction):
         """Move module # ModuleNum either DIRECTION_UP or DIRECTION_DOWN in the list

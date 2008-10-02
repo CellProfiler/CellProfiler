@@ -1,10 +1,13 @@
 """Module.py - represents a CellProfiler pipeline module
     
     $Revision$
+    
+    TO-DO: capture and save module revision #s in the handles
     """
 import CellProfiler.Variable
 import re
 import os
+import CellProfiler.Pipeline
 
 class AbstractModule:
     """ Derive from the abstract module class to create your own module in Python
@@ -22,25 +25,20 @@ class AbstractModule:
         """Fill a module with the information stored in the handles structure for module # ModuleNum 
         
         """
-        Settings = handles['Settings']
+        Settings = handles['Settings'][0,0]
         self.__module_num = ModuleNum
         idx = ModuleNum-1
-        self.__module_name = Settings.ModuleNames[idx]
-        if 'ModuleNotes' in Settings._fieldnames:
-            #
-            # There are two cases - for a single line, text comes across as a Unicode string
-            # and for multiple lines, text comes across as the class, 'numpy.ndarray'
-            #
-            if type(Settings.ModuleNotes[idx]) == 'numpy.ndarray':
-                self.__notes = [line for line in Settings.ModuleNotes[idx]]
-            else:
-                self.__notes = [Settings.ModuleNotes[idx]]
+        self.__module_name = Settings['ModuleNames'][0,idx][0]
+        if Settings.dtype.fields.has_key('ModuleNotes'):
+            n=Settings['ModuleNotes'][0,idx]
+            self.__notes = [n[i,0][0] for i in range(0,n.size)]
         else:
             self.__notes = []
-        self.__variable_revision_number = Settings.VariableRevisionNumbers[idx]
-        variable_values = [v for v in Settings.VariableValues[idx][0:Settings.NumbersOfVariables[idx]]]
+        variable_count=Settings['NumbersOfVariables'][0,idx]
+        self.__variable_revision_number = Settings['VariableRevisionNumbers'][0,idx]
+        variable_values = [Settings['VariableValues'][idx,i][0] for i in range(0,variable_count)]
         self.__variables = [CellProfiler.Variable.Variable(self,VariableIdx+1,variable_values[VariableIdx])
-                            for VariableIdx in range(0,Settings.NumbersOfVariables[idx])]
+                            for VariableIdx in range(0,variable_count)]
         
         filename = os.path.join(CellProfiler.Preferences.ModuleDirectory(),self.ModuleName()+CellProfiler.Preferences.ModuleExtension())
         file = open(filename)
@@ -72,6 +70,22 @@ class AbstractModule:
         self.__variables=[CellProfiler.Variable.Variable(self,i,'') for i in range(1,max_variable+1)]
         for key in variable_dict.keys():
             self.__variables[key-1].SetValue(variable_dict[key])
+            
+    def SaveToHandles(self,handles):
+        module_idx = self.ModuleNum()-1
+        setting = handles[CellProfiler.Pipeline.SETTINGS][0,0]
+        setting[CellProfiler.Pipeline.MODULE_NAMES][0,module_idx] = unicode(self.ModuleName())
+        setting[CellProfiler.Pipeline.MODULE_NOTES][0,module_idx] = self.Notes()
+        setting[CellProfiler.Pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.Variables())
+        annotation_dict = CellProfiler.Variable.GetAnnotationsAsDictionary(self.Annotations())
+        for i in range(0,len(self.Variables())):
+            variable = self.Variables()[i]
+            setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value())
+            vn = variable.VariableNumber()
+            if annotation_dict.has_key(vn) and annotation_dict[vn].has_key('infotype'):
+                setting[CellProfiler.Pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotation_dict[vn]['infotype'][0].Value)
+        setting[CellProfiler.Pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.__variable_revision_number
+        setting[CellProfiler.Pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
         
     def ModuleNum(self):
         """Get the module's index number

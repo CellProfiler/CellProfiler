@@ -37,6 +37,7 @@ class PreferencesView:
                               (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__status_text,0,wx.EXPAND|wx.ALL)])
         panel.SetSizer(self.__sizer)
+        self.__errors = set()
         
     def __make_folder_panel(self,panel,value, text,helpfile,action):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -77,19 +78,27 @@ class PreferencesView:
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpPixelSize.m"),pixel_help_button)
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpOutputFileName.m"),output_filename_help_button)
         panel.Bind(wx.EVT_BUTTON,self.__OnAnalyzeImages, analyze_images_button)
+        panel.Bind(wx.EVT_TEXT, self.__OnPixelSizeChanged, self.__pixel_size_edit_box)
     
     def SetMessageText(self,text):
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)
         self.__status_text.SetSize(saved_size)
     
-    def PopMessageText(self,error_text):
-        if self.__status_text.Label == error_text:
-            self.SetMessageColor(wx.Color(0,0,0))
-            self.SetMessageText(WELCOME_MESSAGE)
+    def PopErrorText(self,error_text):
+        if error_text in self.__errors:
+            self.__errors.remove(error_text)
+            if len(self.__errors) == 0:
+                self.SetMessageColor(wx.Color(0,0,0))
+                self.SetMessageText(WELCOME_MESSAGE)
         
     def SetMessageColor(self,color):
         self.__status_text.SetForegroundColour(color)
+    
+    def SetErrorText(self,error_text):
+        self.SetMessageText(error_text)
+        self.SetMessageColor(wx.Color(255,0,0))
+        self.__errors.add(error_text)
         
     def __OnBrowse(self,event,edit_box,text,action):
         dir_dialog = wx.DirDialog(self.__panel,string.capitalize(text),edit_box.GetValue())
@@ -101,13 +110,21 @@ class PreferencesView:
         error_text = 'The %s is not a directory'%(text)
         if os.path.isdir(path):
             action(path)
-            self.PopMessageText(error_text)
+            self.PopErrorText(error_text)
         else:
-            self.SetMessageText(error_text)
-            self.SetMessageColor(wx.Color(255,0,0))
+            self.SetErrorText(error_text)
     
     def __OnHelp(self,event,helpfile):
         pass
     
     def __OnAnalyzeImages(self,event):
         pass
+    
+    def __OnPixelSizeChanged(self,event):
+        error_text = 'Pixel size must be a number'
+        text = self.__pixel_size_edit_box.Value
+        if text.isdigit():
+            CellProfiler.Preferences.SetPixelSize(int(text))
+            self.PopErrorText(error_text)
+        else:
+            self.SetErrorText(error_text)

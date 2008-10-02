@@ -61,4 +61,11 @@ def SetDefaultOutputDirectory(path):
     assert os.path.isdir(path),'Default output directory, "%s", is not a directory'%(path)
     globals()['__default_output_directory']=path
 
+__pixel_size = 1
+
+def GetPixelSize():
+    return __pixel_size
+
+def SetPixelSize(pixel_size):
+    __pixel_size = pixel_size
  

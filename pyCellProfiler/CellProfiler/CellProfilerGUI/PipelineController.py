@@ -7,7 +7,8 @@ import CellProfiler.Pipeline
 from CellProfiler.CellProfilerGUI.AddModuleFrame import AddModuleFrame
 import wx
 import os
-import scipy.io.mio
+import scipy.io.matlab.mio
+import cPickle
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -19,6 +20,7 @@ class PipelineController:
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.AddListener(self.__OnAddToPipeline) 
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
+        wx.EVT_MENU(frame,CPFrame.ID_FILE_SAVE_PIPELINE,self.__OnSavePipeline)
     
     def AttachToPipelineListView(self,pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
@@ -59,7 +61,7 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             try:
-                handles=scipy.io.mio.loadmat(pathname)
+                handles=scipy.io.matlab.mio.loadmat(pathname)
             except Exception,instance:
                 self.__frame.DisplayError('Failed to open %s'%(pathname),instance)
                 return
@@ -67,7 +69,17 @@ class PipelineController:
                 self.__pipeline.CreateFromHandles(handles)
             except Exception,instance:
                 self.__frame.DisplayError('Failed during loading of %s'%(pathname),instance)
-    
+
+    def __OnSavePipeline(self,event):
+        dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+        if dlg.ShowModal() == wx.ID_OK:
+            pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
+            handles = self.__pipeline.SaveToHandles()
+            try:
+                scipy.io.matlab.mio.savemat(pathname,handles,format='5')
+            except:
+                print 'foo'
+            
     def __OnHelp(self,event):
         print "No help yet"
         

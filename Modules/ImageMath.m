@@ -16,9 +16,6 @@ function handles = ImageMath(handles)
 % call the averaged image (prior to dilation or smoothing)? 
 % (This is an image produced during the calculations - it is typically not
 % needed for downstream modules)"  This will be an average over all images.
-% 
-% If you choose "Subtract", please note that you will subtract the second
-% image from the first image.
 %
 %
 %

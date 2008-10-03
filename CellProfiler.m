@@ -82,6 +82,10 @@ handles.Current.StartupDirectory = pwd;
 if ~isdeployed
     addpath(pwd);
 end
+if isdeployed
+    handles.Current.StartupDirectory = ctfroot;
+end
+
 handles.FunctionHandles.LoadPipelineCallback = @LoadPipeline_Callback;
 %%% Retrieves preferences from CellProfilerPreferences.mat, if possible.
 %%% Try loading CellProfilerPreferences.mat first from the matlabroot
@@ -3222,7 +3226,7 @@ if strcmp(Answer, 'No')
     end
 else
     if isdeployed
-        FullFileName = fullfile(pwd,'CellProfilerPreferences.mat');
+        FullFileName = fullfile(ctfroot,'CellProfilerPreferences.mat');
         DefaultVal = 1;
     else
         FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');

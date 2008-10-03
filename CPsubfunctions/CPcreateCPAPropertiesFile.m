@@ -33,26 +33,26 @@ objs(strcmp(objs,'Image') | strcmp(objs,'Experiment') | strcmp(objs,'Neighbors')
 supposed_primary_obj = objs{1};
 
 ExportInfo.Entries.db_type = lower(DatabaseType);                                                  % Database Type
-ExportInfo.Entries.db_host = '';                                                            % Database Host Name/IP Address
+ExportInfo.Entries.db_host = 'imgdb01';                                                            % Database Host Name/IP Address
 switch lower(DatabaseType),                                                                 % Database Port
     case 'mysql', ExportInfo.Entries.db_port = '3306';
     case 'oracle', ExportInfo.Entries.db_port = '1521';
 end
 ExportInfo.Entries.db_pwd = '';                                                             % Database Username/Password
 ExportInfo.Entries.db_name = DatabaseName;                                                  % Database Name
-ExportInfo.Entries.db_user = '';
+ExportInfo.Entries.db_user = 'cpuser';
 ExportInfo.Entries.spot_tables = [TablePrefix,'Per_Image'];                                 % Image/Object Tables
 ExportInfo.Entries.cell_tables = [TablePrefix,'Per_Object'];
 ExportInfo.Entries.uniqueID = 'ImageNumber';                                                % Unique Image Identifier
-ExportInfo.Entries.objectCount = ['Image_ObjectCount_ObjectCount_',supposed_primary_obj];   % Image Primary Object Count Column
-ExportInfo.Entries.objectID = 'objectnumber';                                               % Unique Object Identifier in Image
+ExportInfo.Entries.objectCount = ['Image_Count_',supposed_primary_obj];   % Image Primary Object Count Column
+ExportInfo.Entries.objectID = 'ObjectNumber';                                               % Unique Object Identifier in Image
 ExportInfo.Entries.info_table = '';                                                         % Information Table
 ExportInfo.Entries.info_to_spot = '';                                                       % Linker Column for Information and Image Tables
 ExportInfo.Entries.geneinfo_table = '';                                                     % Treatment Information Column
 ExportInfo.Entries.webinfo_col = '';                                                        % Web Information Column
-ExportInfo.Entries.webinfo_url_prepend = '';                                                % Web Information URL Prepend
-ExportInfo.Entries.image_transfer_protocol = '';                                            % Image Transfer Protocol/Image Access Prepend
-ExportInfo.Entries.image_size_info = '';                                                   % Image Format Information
+ExportInfo.Entries.webinfo_url_prepend = 'http://imageweb/images/CPALinks';                 % Web Information URL Prepend
+ExportInfo.Entries.image_transfer_protocol = 'http';                                        % Image Transfer Protocol/Image Access Prepend
+ExportInfo.Entries.image_size_info = '';                                                    % Image Format Information
 ExportInfo.Entries.red_image_path = ['Image_',names{idx_path(1)}];                          % Image Pathways and Filenames
 ExportInfo.Entries.red_image_col = ['Image_',names{idx_file(1)}];
 if length(idx_path) > 1,
@@ -65,10 +65,11 @@ if length(idx_path) > 2,
 end
 ExportInfo.Entries.cell_x_loc = [supposed_primary_obj,'_Location_CenterX'];                 % X/Y Coordinates for Primary Object Center
 ExportInfo.Entries.cell_y_loc = [supposed_primary_obj,'_Location_CenterY']; 
-ExportInfo.Entries.classifier_per_object_ignore_substr = '';                                % Columns to Ignore when Classifying
+ExportInfo.Entries.classifier_per_object_ignore_substr = ...
+                                    'ImageNumber,ObjectNumber,parent,Location';             % Columns to Ignore when Classifying
 ExportInfo.Entries.classifier_group_table = '';                                             % Classify by Group Table 
 ExportInfo.Entries.classifier_group_col = '';                                               % Classify by Group Column(s)
-ExportInfo.Entries.cell_size = '';                                                          % Width of Object Cropping Square
+ExportInfo.Entries.cell_size = '50';                                                          % Width of Object Cropping Square
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 if ~strcmp(ModuleName,'ExportToDatabase')

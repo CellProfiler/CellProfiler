@@ -52,7 +52,7 @@ if ~all(sort(image_num) == (1:length(image_num))')
 end
 
 %% PARSE filename
-choice = menu('Choose the filename construction which matches your files',...
+choice = menu({'Choose the filename construction which matches your files',['Example: ' filename{1}]},...
     '..._A01_s1_w2...',...
     'PANDORA_123456789_A01f01d0.TIF');
 switch choice
@@ -104,6 +104,7 @@ if ~exist(well_file,'file')
            M_sorted{i,1},M_sorted{i,2},M_sorted{i,3},M_sorted{i,4});
     end
     fclose(fid);
+    disp(['DONE!  An image_well_info.csv file was written to the same directory a your image.csv file'])
 else 
     disp(['Cannot write ' well_file ' since it already exists'])
 end

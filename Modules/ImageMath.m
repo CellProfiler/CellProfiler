@@ -137,13 +137,13 @@ ThirdImageConstant = str2num(ThirdImageName);
 % Reads (opens) the images you want to analyze and assigns them to
 % variables.
 FirstImage = CPretrieveimage(handles,FirstImageName,ModuleName,'MustBeGray','CheckScale');
-if isempty(SecondImageConstant)
+if isempty(SecondImageConstant) && ~any(strcmp(Operation,{'Invert', 'Log transform (base 2)'})),
     SecondImage = CPretrieveimage(handles,SecondImageName,ModuleName,'MustBeGray','CheckScale');
 else 
     SecondImage = SecondImageConstant;
     clear SecondImageConstant
 end
-if isempty(ThirdImageConstant)
+if isempty(ThirdImageConstant) && any(strcmp(Operation,{'Combine'})),
     ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'MustBeGray','CheckScale');
 else
     ThirdImage = ThirdImageConstant;
@@ -229,12 +229,11 @@ if any(findobj == ThisModuleFigureNumber)
             CPresizefigure(FirstImage, 'TwobyThree', ThisModuleFigureNumber);
         end
         NumColumns = 3;
-    elseif ~strcmp(Operation,'Invert')
+    elseif ~any(strcmp(Operation,{'Invert','Log transform (base 2)'}))
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage,'TwoByTwo',ThisModuleFigureNumber);
         end
         NumColumns = 2; 
-   
     else
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(FirstImage,'TwoByOne',ThisModuleFigureNumber);
@@ -261,20 +260,20 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     %%% First image subplot
-    hAx=subplot(2,NumColumns,1,'Parent',ThisModuleFigureNumber);
+    hAx = subplot(2,NumColumns,1,'Parent',ThisModuleFigureNumber);
     CPimagesc(MultiplyFactor1*FirstImage,handles,hAx); 
     title(hAx,[FirstText ' image, cycle # ' num2str(handles.Current.SetBeingAnalyzed)]);
 
     if strcmp(Operation, 'Combine')
-        hAx=subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
+        hAx = subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
         CPimagesc(MultiplyFactor2*SecondImage,handles,hAx);
         title(hAx,[SecondText ' image']);
-        hAx1=subplot(2,NumColumns,4,'Parent',ThisModuleFigureNumber);
+        hAx1 = subplot(2,NumColumns,4,'Parent',ThisModuleFigureNumber);
         CPimagesc(MultiplyFactor3*ThirdImage,handles,hAx1);
         title(hAx1,[ThirdText  '  image']);
-    elseif ~strcmp(Operation,'Invert')
+    elseif ~any(strcmp(Operation,{'Invert', 'Log transform (base 2)'}))
         %%% Second image subplot
-        hAx=subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
+        hAx = subplot(2,NumColumns,3,'Parent',ThisModuleFigureNumber);
         CPimagesc(MultiplyFactor2*SecondImage,handles,hAx);
         title(hAx,[SecondText ' image']);
     else
@@ -286,7 +285,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ImageAfterMath,handles,hAx);
     if strcmp(Operation, 'Combine')
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' ' ThirdText ' = ' ImageAfterMathName]);
-    elseif ~strcmp(Operation,'Invert')
+    elseif strcmp(Operation,{'Add','Subtract','Multiply','Divide','Average','Combine'})
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);
     else
         title(hAx,[FirstText ' ' Operation ' = ' ImageAfterMathName]);

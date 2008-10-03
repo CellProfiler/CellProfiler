@@ -4,9 +4,7 @@
    """
 import re
 
-BEFORE_CHANGE_NOTIFICATION = 'BeforeChange'
-AFTER_CHANGE_NOTIFICATION = 'AfterChange'
-DELETE_NOTIFICATION = 'Delete'
+DO_NOT_USE = 'Do not use'
 
 class Variable:
     """A module variable which holds a single string value
@@ -22,9 +20,14 @@ class Variable:
         self.__value = value
     
     def SetValue(self,value):
-        self.NotifyListeners(BEFORE_CHANGE_NOTIFICATION)
+        old_value = self.__value
+        before_change_event = BeforeChangeVariableEvent(old_value,value)
+        self.NotifyListeners(before_change_event)
+        if not before_change_event.AllowChange():
+            return False
         self.__value=value
-        self.NotifyListeners(AFTER_CHANGE_NOTIFICATION)
+        self.NotifyListeners(AfterChangeVariableEvent(old_value,value))
+        return True
 
     def Value(self):
         return self.__value
@@ -37,19 +40,19 @@ class Variable:
         
         """
         for listener in self.__listeners:
-            listener.Notify(self,event)
+            listener(self,event)
         
     def AddListener(self,listener):
         """Add a variable listener
         
         """
-        listeners.append(listener)
+        self.__listeners.append(listener)
         
     def RemoveListener(self,listener):
         """Remove a variable listener
         
         """
-        listeners.remove(listener)
+        self.__listeners.remove(listener)
         
     def Module(self):
         """Return the enclosing module for this variable
@@ -63,6 +66,40 @@ class AbstractVariableListener:
     """
     def Notify(self, variable, event):
         raise("notify not implemented")
+
+class ChangeVariableEvent:
+    """Abstract class representing either the event that a variable will be
+    changed or has been changed
+    
+    """
+    def __init__(self,old_value, new_value):
+        self.__old_value = old_value
+        self.__new_value = new_value
+
+class BeforeChangeVariableEvent(ChangeVariableEvent):
+    """Indicates that a variable is about to change, allows a listener to cancel the change
+    
+    """
+    def __init__(self,old_value,new_value):
+        ChangeVariableEvent.__init__(self,old_value,new_value)
+        self.__allow_change = True
+        
+    def CancelChange(self):
+        self.__allow_change = False
+    
+    def AllowChange(self):
+        return self.__allow_change
+    
+class AfterChangeVariableEvent(ChangeVariableEvent):
+    """Indicates that a variable has changed its value
+    
+    """
+    def __init__(self,old_value,new_value):
+        ChangeVariableEvent.__init__(self,old_value,new_value)
+
+class DeleteVariableEvent():
+    def __init__(self):
+        pass
 
 class Annotation:
     """Annotations are the bits of comments parsed out of a .m file that provide metadata on a variable

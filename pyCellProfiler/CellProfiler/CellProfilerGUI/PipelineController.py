@@ -5,6 +5,7 @@
 import CPFrame
 import CellProfiler.Pipeline
 from CellProfiler.CellProfilerGUI.AddModuleFrame import AddModuleFrame
+import CellProfiler.CellProfilerGUI.ModuleView
 import wx
 import os
 import scipy.io.matlab.mio
@@ -21,12 +22,20 @@ class PipelineController:
         self.__add_module_frame.AddListener(self.__OnAddToPipeline) 
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_SAVE_PIPELINE,self.__OnSavePipeline)
+        wx.EVT_MENU(frame,CPFrame.ID_FILE_CLEAR_PIPELINE,self.__OnClearPipeline)
     
     def AttachToPipelineListView(self,pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
         
         """
         self.__pipeline_list_view = pipeline_list_view
+        
+    def AttachToModuleView(self,module_view):
+        """Listen for variable changes from the module view
+        
+        """
+        self.__module_view = module_view
+        module_view.AddListener(self.__OnModuleViewEvent)
     
     def AttachToModuleControlsPanel(self,module_controls_panel):
         """Attach the pipeline controller to the module controls panel
@@ -75,10 +84,13 @@ class PipelineController:
         if dlg.ShowModal() == wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             handles = self.__pipeline.SaveToHandles()
-            try:
-                scipy.io.matlab.mio.savemat(pathname,handles,format='5')
-            except:
-                print 'foo'
+            scipy.io.matlab.mio.savemat(pathname,handles,format='5')
+            
+    def __OnClearPipeline(self,event):
+        if wx.MessageBox("Do you really want to remove all modules from the pipeline?",
+                         "Clearing pipeline",
+                         wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
+            self.__pipeline.Clear()
             
     def __OnHelp(self,event):
         print "No help yet"
@@ -111,4 +123,11 @@ class PipelineController:
         if len(selected_modules):
             ModuleNum=selected_modules[-1].ModuleNum()+1
         self.__pipeline.AddModule(event.ModulePath,ModuleNum)
+        
+    def __OnModuleViewEvent(self,caller,event):
+        assert isinstance(event,CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent'%(str(event))
+        variable = event.GetVariable()
+        proposed_value = event.GetProposedValue()
+        if not variable.SetValue(proposed_value):
+            event.Cancel()
             

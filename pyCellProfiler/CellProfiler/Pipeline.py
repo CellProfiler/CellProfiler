@@ -6,6 +6,7 @@ import numpy
 import CellProfiler.Module
 import CellProfiler.Preferences
 from CellProfiler.Matlab.Utils import NewStringCellArray
+import CellProfiler.VariableChoices
 
 SETTINGS = 'Settings'
 VARIABLE_VALUES = 'VariableValues'
@@ -32,6 +33,7 @@ class Pipeline:
     def __init__(self):
         self.__modules = [];
         self.__listeners = [];
+        self.__infogroups = {};
     
     def CreateFromHandles(self,handles):
         """Read a pipeline's modules out of the handles structure
@@ -45,6 +47,7 @@ class Pipeline:
             module = CellProfiler.Module.MatlabModule()
             module.CreateFromHandles(handles, ModuleNum)
             self.__modules.append(module)
+            self.__HookModuleVariables(module)
         self.NotifyListeners(PipelineLoadedEvent())
         
     def SaveToHandles(self):
@@ -70,6 +73,13 @@ class Pipeline:
         for module in self.Modules():
             module.SaveToHandles(handles)
         return handles
+    
+    def Clear(self):
+        old_modules = self.__modules
+        self.__modules = []
+        for module in old_modules:
+            module.Delete()
+        self.NotifyListeners(PipelineClearedEvent())
     
     def MoveModule(self,ModuleNum,direction):
         """Move module # ModuleNum either DIRECTION_UP or DIRECTION_DOWN in the list
@@ -117,12 +127,13 @@ class Pipeline:
         'file_name' - the path to the file containing the variables for the module.
         ModuleNum - the one-based index for the placement of the module in the pipeline
         """
-        module = CellProfiler.Module.MatlabModule()
-        module.CreateFromFile(file_name, ModuleNum)
+        new_module = CellProfiler.Module.MatlabModule()
+        new_module.CreateFromFile(file_name, ModuleNum)
         idx = ModuleNum-1
-        self.__modules = self.__modules[:idx]+[module]+self.__modules[idx:]
+        self.__modules = self.__modules[:idx]+[new_module]+self.__modules[idx:]
         for module in self.__modules[idx+1:]:
             module.SetModuleNum(module.ModuleNum())
+        self.__HookModuleVariables(new_module)
         self.NotifyListeners(ModuleAddedPipelineEvent(ModuleNum))
     
     def RemoveModule(self,ModuleNum):
@@ -138,13 +149,40 @@ class Pipeline:
         for module in self.__modules[idx:]:
             module.SetModuleNum(module.ModuleNum()-1)
         self.NotifyListeners(ModuleRemovedPipelineEvent(ModuleNum))
-
+    
+    def __HookModuleVariables(self,module):
+        """Create whatever VariableChoices are needed
+        to represent variable dependencies, groups, etc.
+        
+        """
+        for variable in module.Variables():
+            annotations = module.VariableAnnotations(variable.VariableNumber())
+            if annotations.has_key('infotype'):
+                info = annotations['infotype'][0].Value.split(' ')
+                if not self.__infogroups.has_key(info[0]):
+                    self.__infogroups[info[0]] = CellProfiler.VariableChoices.InfoGroupVariableChoices(self)
+                if len(info) > 1 and info[-1] == 'indep':
+                    self.__infogroups[info[0]].AddIndepVariable(variable)
+    
+    def GetVariableChoices(self,variable):
+        """Get the variable choices instance that provides choices for this variable. Return None if not a choices variable
+        """
+        module = variable.Module()
+        annotations = module.VariableAnnotations(variable.VariableNumber())
+        if annotations.has_key('infotype'):
+            info = annotations['infotype'][0].Value.split(' ')
+            if info[-1] != 'indep':
+                return self.__infogroups[info[0]]
+        elif annotations.has_key('choice'):
+            choices = [annotation.Value for annotation in annotations['choice']]
+            return CellProfiler.VariableChoices.StaticVariableChoices(choices)
+        
     def NotifyListeners(self,event):
         """Notify listeners of an event that happened to this pipeline
         
         """
         for listener in self.__listeners:
-            listener.Notify(self,event)
+            listener(self,event)
     
     def AddListener(self,listener):
         self.__listeners.append(listener)
@@ -164,6 +202,13 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
     """
     def EventType(self):
         return "PipelineLoaded"
+
+class PipelineClearedEvent(AbstractPipelineEvent):
+    """Indicates that all modules have been removed from the pipeline
+    
+    """
+    def EventType(self):
+        return "PipelineCleared"
 
 DIRECTION_UP = "up"
 DIRECTION_DOWN = "down"

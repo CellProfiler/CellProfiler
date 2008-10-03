@@ -33,7 +33,7 @@ class PipelineListView:
         
         """
         self.__pipeline =pipeline
-        pipeline.AddListener(self)
+        pipeline.AddListener(self.Notify)
         controller.AttachToPipelineListView(self)
         
     def AttachToModuleView(self, module_view):
@@ -52,6 +52,8 @@ class PipelineListView:
             self.__OnModuleMoved(pipeline,event)
         elif isinstance(event,CellProfiler.Pipeline.ModuleRemovedPipelineEvent):
             self.__OnModuleRemoved(pipeline,event)
+        elif isinstance(event,CellProfiler.Pipeline.PipelineClearedEvent):
+            self.__OnPipelineCleared(pipeline, event)
     
     def GetSelectedModules(self):
         return [self.__list_box.GetClientData(i) for i in self.__list_box.GetSelections()]
@@ -64,6 +66,9 @@ class PipelineListView:
         for module in pipeline.Modules():
             self.__list_box.Append(module.ModuleName(),module)
         self.__set_min_width()
+    
+    def __OnPipelineCleared(self,pipeline,event):
+        self.__list_box.Clear()
             
     def __OnModuleAdded(self,pipeline,event):
         module=pipeline.Modules()[event.ModuleNum-1]

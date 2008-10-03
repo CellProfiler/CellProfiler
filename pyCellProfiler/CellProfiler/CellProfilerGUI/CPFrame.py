@@ -21,6 +21,7 @@ ID_FILE_LOAD_PIPELINE=100
 ID_FILE_EXIT=101
 ID_FILE_WIDGET_INSPECTOR=102
 ID_FILE_SAVE_PIPELINE=103
+ID_FILE_CLEAR_PIPELINE=104
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -41,6 +42,7 @@ class CPFrame(wx.Frame):
         self.__attach_views()
         self.__set_properties()
         self.__set_icon()
+        self.__layout_logo()
         self.__do_layout()
  
     def __set_properties(self):
@@ -55,6 +57,8 @@ class CPFrame(wx.Frame):
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...','Load a pipeline from a .MAT file')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...','Save a pipeline as a .MAT file')
+        self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
+        self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit','Quit the application')
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
@@ -71,6 +75,7 @@ class CPFrame(wx.Frame):
         self.__PipelineListView.AttachToPipeline(self.__Pipeline,self.__PipelineController)
         self.__PipelineController.AttachToModuleControlsPanel(self.__ModuleControlsPanel)
         self.__ModuleView = ModuleView(self.__ModulePanel,self.__Pipeline)
+        self.__PipelineController.AttachToModuleView(self.__ModuleView)
         self.__PipelineListView.AttachToModuleView((self.__ModuleView))
         self.__PreferencesView = PreferencesView(self.__PreferencesPanel)
         self.__DirectoryView = DirectoryView(self.__FileListPanel)
@@ -93,9 +98,21 @@ class CPFrame(wx.Frame):
         self.SetSizer(self.__sizer)
         self.Layout()
         self.__DirectoryView.SetHeight(self.__PreferencesPanel.GetBestSize()[1])
-        
+
+    def __layout_logo(self):
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        image = wx.Image(self.__get_icon_filename(),wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        logopic = wx.StaticBitmap(self.__LogoPanel,-1,image)
+        logotext = wx.StaticText(self.__LogoPanel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
+        sizer.AddMany([(logopic,0,wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL,5),
+                       (logotext,1,wx.EXPAND)])
+        self.__LogoPanel.SetSizer(sizer)
+    
+    def __get_icon_filename(self):
+        return os.path.join(CellProfiler.Preferences.PythonRootDirectory(),'CellProfilerIcon.png')
+    
     def __set_icon(self):
-        filename=os.path.join(CellProfiler.Preferences.PythonRootDirectory(),'CellProfilerIcon.png')
+        filename = self.__get_icon_filename()
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
  

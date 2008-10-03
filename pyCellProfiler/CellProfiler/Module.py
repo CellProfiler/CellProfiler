@@ -43,6 +43,7 @@ class AbstractModule:
                             for VariableIdx in range(0,variable_count)]
         
         filename = os.path.join(CellProfiler.Preferences.ModuleDirectory(),self.ModuleName()+CellProfiler.Preferences.ModuleExtension())
+        print filename
         file = open(filename)
         try:
             (self.__annotations, self.__variable_revision_number) = self.__read_annotations(file)

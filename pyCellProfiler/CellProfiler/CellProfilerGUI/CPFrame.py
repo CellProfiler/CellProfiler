@@ -6,7 +6,6 @@
 import os
 import wx
 import wx.lib.inspection
-import wx.lib.sized_controls
 import CellProfiler.Preferences
 from CellProfiler.CellProfilerGUI.PipelineListView import PipelineListView
 from CellProfiler.Pipeline import Pipeline

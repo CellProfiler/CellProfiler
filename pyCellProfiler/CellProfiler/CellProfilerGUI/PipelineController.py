@@ -70,12 +70,15 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             try:
-                handles=scipy.io.matlab.mio.loadmat(pathname)
+                handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
             except Exception,instance:
                 self.__frame.DisplayError('Failed to open %s'%(pathname),instance)
                 return
             try:
-                self.__pipeline.CreateFromHandles(handles)
+                if handles.has_key('handles'):
+                    self.__pipeline.CreateFromHandles(handles['handles'][0,0])
+                else:
+                    self.__pipeline.CreateFromHandles(handles)
             except Exception,instance:
                 self.__frame.DisplayError('Failed during loading of %s'%(pathname),instance)
 

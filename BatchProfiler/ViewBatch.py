@@ -39,6 +39,7 @@ else:
     print "<body>"
     print "<div>"
     print "<h1>View batch # %d</h1>"%(batch_id)
+    print "</div>"
     jobs_by_state = {}
     for run in my_batch["runs"]:
         stat  = "Unknown"
@@ -103,6 +104,7 @@ else:
     #
     # The big table
     #
+    print "<div style='clear:both; padding-top:10px'>"
     print "<table class='run_table'>"
     print "<thead><tr>"
     print "<th>Start</th><th>End</th><th>Job #</th><th>Status</th><th>Text output file</th><th>Results file</th>"
@@ -155,6 +157,7 @@ else:
             else:
                 print "Complete"
             stat = "Complete"
+            print "</td>"
         else:
             print """
 <td style='color:red'>%s<br/>
@@ -170,7 +173,7 @@ else:
             jobs_by_state[stat] = [ run ]
         print "<td>"
         if os.path.isfile(x["text_path"]):
-            print "<a href='ViewTextFile.py?run_id=%(run_id)d' title=%(text_path)s>%(text_file)s</a>"%(x)
+            print "<a href='ViewTextFile.py?run_id=%(run_id)d' title='%(text_path)s'>%(text_file)s</a>"%(x)
         else :
             print "<span title='Text file not yet available'>%(text_file)s</span>"%(x)
         print "</td>"
@@ -206,3 +209,4 @@ else:
     print "</table>"
     print "</div>"
     print "</body>"
+    print "</html>"

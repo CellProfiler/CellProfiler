@@ -615,6 +615,9 @@ H2 = sum((0:Levels-1)'.^2.*p_xminusy);
 
 % H3. Correlation
 H3 = (sum(sum((1:Levels)'*(1:Levels).*P)) - mux*muy)/(sigmax*sigmay);
+if isinf(H3),
+    H3 = 0;
+end
 
 % H4. Sum of Squares: Variation
 H4 = sigmax^2;

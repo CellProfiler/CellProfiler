@@ -12,12 +12,11 @@ from subprocess import Popen
 import signal
 import copy
 
-############## set up the environment for running that compiled matlab version.
-cpcluster_home = '/imaging/analysis/CPCluster/XXXX'
+# set up the environment for running that compiled matlab version.
+cpcluster_home = sys.path[0]
 os.environ['CPCLUSTERHOME'] = cpcluster_home
 mcr_path = '/imaging/analysis/CPCluster/MCR/v78'
 os.environ['LD_LIBRARY_PATH'] = '%(mcr_path)s/runtime/glnxa64:%(mcr_path)s/sys/os/glnxa64:%(mcr_path)s/bin/glnxa64'%(locals())
-###############
 
 def run_job_with_timeout(full_command, timeout):
     '''

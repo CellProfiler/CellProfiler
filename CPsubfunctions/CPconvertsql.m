@@ -424,11 +424,16 @@ for img_idx = FirstSet:LastSet
         for i= 1:size(perobjectvals_mean,2),
             fprintf(fimage,',0'); %ignore NaN
         end
-    elseif size(perobjectvals_mean, 1) > 0,  % don't write anything if there are no measurements
+    elseif size(perobjectvals_mean, 1) > 0,  
         fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
         fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
+    else % write zeros if there are no measurements
+        fprintf(fimage,',');
+        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+        fprintf(fimage,',');
+        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
     end
     fprintf(fimage,'\n');
 end

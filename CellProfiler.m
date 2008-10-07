@@ -83,7 +83,14 @@ if ~isdeployed
     addpath(pwd);
 end
 if isdeployed
-    handles.Current.StartupDirectory = ctfroot;
+    pathstr = ctfroot;  % No trailing slash
+    % Since the CTF is extracted in the CellProfiler directory, we want the
+    % startup dir to be one level up
+    filesepidx = findstr(pathstr,filesep);
+    if length(filesepidx) > 1,
+        pathstr = pathstr(1:filesepidx(end)-1);
+    end
+    handles.Current.StartupDirectory = pathstr;
 end
 
 handles.FunctionHandles.LoadPipelineCallback = @LoadPipeline_Callback;
@@ -3226,7 +3233,14 @@ if strcmp(Answer, 'No')
     end
 else
     if isdeployed
-        FullFileName = fullfile(ctfroot,'CellProfilerPreferences.mat');
+        pathstr = ctfroot;  % No trailing slash
+        % Since the CTF is extracted in the CellProfiler directory, we want the
+        % startup dir to be one level up
+        filesepidx = findstr(pathstr,filesep);
+        if length(filesepidx) > 1,
+            pathstr = pathstr(1:filesepidx(end)-1);
+        end
+        FullFileName = fullfile(pathstr,'CellProfilerPreferences.mat');
         DefaultVal = 1;
     else
         FullFileName = fullfile(matlabroot,'CellProfilerPreferences.mat');

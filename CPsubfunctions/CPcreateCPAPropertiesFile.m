@@ -63,8 +63,8 @@ if length(idx_path) > 2,
     ExportInfo.Entries.blue_image_path = ['Image_',names{idx_path(3)}];
     ExportInfo.Entries.blue_image_col = ['Image_',names{idx_file(3)}];
 end
-ExportInfo.Entries.cell_x_loc = [supposed_primary_obj,'_Location_CenterX'];                 % X/Y Coordinates for Primary Object Center
-ExportInfo.Entries.cell_y_loc = [supposed_primary_obj,'_Location_CenterY']; 
+ExportInfo.Entries.cell_x_loc = [supposed_primary_obj,'_Location_Center_X'];                 % X/Y Coordinates for Primary Object Center
+ExportInfo.Entries.cell_y_loc = [supposed_primary_obj,'_Location_Center_Y']; 
 ExportInfo.Entries.classifier_per_object_ignore_substr = ...
                                     'ImageNumber,ObjectNumber,parent,Location';             % Columns to Ignore when Classifying
 ExportInfo.Entries.classifier_group_table = '';                                             % Classify by Group Table 

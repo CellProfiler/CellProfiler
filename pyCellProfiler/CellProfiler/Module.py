@@ -9,6 +9,7 @@ import CellProfiler.Variable
 import re
 import os
 import CellProfiler.Pipeline
+import CellProfiler.Matlab.Utils
 
 class AbstractModule:
     """ Derive from the abstract module class to create your own module in Python
@@ -30,15 +31,15 @@ class AbstractModule:
         Settings = handles['Settings'][0,0]
         self.__module_num = ModuleNum
         idx = ModuleNum-1
-        self.__module_name = Settings['ModuleNames'][0,idx][0]
+        self.__module_name = str(Settings['ModuleNames'][0,idx][0])
         if Settings.dtype.fields.has_key('ModuleNotes'):
             n=Settings['ModuleNotes'][0,idx]
-            self.__notes = [n[i,0][0] for i in range(0,n.size)]
+            self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
         else:
             self.__notes = []
         variable_count=Settings['NumbersOfVariables'][0,idx]
         self.__variable_revision_number = Settings['VariableRevisionNumbers'][0,idx]
-        variable_values = [Settings['VariableValues'][idx,i][0] for i in range(0,variable_count)]
+        variable_values = [str(Settings['VariableValues'][idx,i][0]) for i in range(0,variable_count)]
         self.__variables = [CellProfiler.Variable.Variable(self,VariableIdx+1,variable_values[VariableIdx])
                             for VariableIdx in range(0,variable_count)]
         
@@ -201,3 +202,4 @@ class MatlabModule(AbstractModule):
         """Run the module in Matlab
         
         """
+        return CellProfiler.Matlab.Utils.GetMatlabInstance().feval(self.ModuleName(),handles)

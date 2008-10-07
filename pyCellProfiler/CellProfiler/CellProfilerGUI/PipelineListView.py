@@ -68,7 +68,7 @@ class PipelineListView:
         self.__set_min_width()
     
     def __OnPipelineCleared(self,pipeline,event):
-        self.__list_box.Clear()
+        self.__list_box.SetItems([NO_PIPELINE_LOADED])
             
     def __OnModuleAdded(self,pipeline,event):
         module=pipeline.Modules()[event.ModuleNum-1]
@@ -80,6 +80,7 @@ class PipelineListView:
     def __OnModuleRemoved(self,pipeline,event):
         self.__list_box.Delete(event.ModuleNum-1)
         self.__set_min_width()
+        self.__module_view.ClearSelection()
         
     def __OnModuleMoved(self,pipeline,event):
         module=pipeline.Modules()[event.ModuleNum-1]
@@ -99,6 +100,6 @@ class PipelineListView:
     def __OnItemSelected(self,event):
         if self.__module_view:
             selections = self.__list_box.GetSelections()
-            if len(selections):
+            if len(selections) and not (len(selections)==1 and self.__list_box.GetItems()[0] == NO_PIPELINE_LOADED):
                 self.__module_view.SetSelection(self.__list_box.GetClientData(selections[0]).ModuleNum())
 

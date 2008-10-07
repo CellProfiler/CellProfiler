@@ -21,3 +21,16 @@ def NewStringCellArray(shape):
             result[i,j] = numpy.empty((0,0)) 
     return result
 
+__MATLAB = None
+
+def GetMatlabInstance():
+    global __MATLAB
+    if not __MATLAB:
+        import mlabwrap
+        __MATLAB = mlabwrap.mlab
+        try:
+            __MATLAB.desktop()
+        except:
+            pass
+    return __MATLAB
+

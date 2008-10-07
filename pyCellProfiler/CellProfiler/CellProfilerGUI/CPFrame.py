@@ -6,6 +6,7 @@
 import os
 import wx
 import wx.lib.inspection
+import wx.lib.scrolledpanel
 import CellProfiler.Preferences
 from CellProfiler.CellProfilerGUI.PipelineListView import PipelineListView
 from CellProfiler.Pipeline import Pipeline
@@ -21,6 +22,7 @@ ID_FILE_EXIT=101
 ID_FILE_WIDGET_INSPECTOR=102
 ID_FILE_SAVE_PIPELINE=103
 ID_FILE_CLEAR_PIPELINE=104
+ID_FILE_ANALYZE_IMAGES=105
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -33,7 +35,7 @@ class CPFrame(wx.Frame):
         self.__LogoPanel = wx.Panel(self,-1)
         self.__ModuleListPanel = wx.Panel(self.__TopLeftPanel,-1)
         self.__ModuleControlsPanel = wx.Panel(self.__TopLeftPanel,-1)
-        self.__ModulePanel = wx.Panel(self,-1)
+        self.__ModulePanel = wx.lib.scrolledpanel.ScrolledPanel(self,-1)
         self.__FileListPanel = wx.Panel(self,-1)
         self.__PreferencesPanel = wx.Panel(self,-1)
         self.__Pipeline = Pipeline()
@@ -58,6 +60,8 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...','Save a pipeline as a .MAT file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
+        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images','Run the pipeline on the images in the image directory')
+        self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit','Quit the application')
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
@@ -77,6 +81,7 @@ class CPFrame(wx.Frame):
         self.__PipelineController.AttachToModuleView(self.__ModuleView)
         self.__PipelineListView.AttachToModuleView((self.__ModuleView))
         self.__PreferencesView = PreferencesView(self.__PreferencesPanel)
+        self.__PreferencesView.AttachToPipelineController(self.__PipelineController)
         self.__DirectoryView = DirectoryView(self.__FileListPanel)
         
     def __do_layout(self):

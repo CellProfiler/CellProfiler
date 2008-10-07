@@ -3,11 +3,38 @@
     $Revision$
 """
 import numpy
+import scipy.io.matlab.mio
+import os
 import CellProfiler.Module
 import CellProfiler.Preferences
-from CellProfiler.Matlab.Utils import NewStringCellArray
+from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance
 import CellProfiler.VariableChoices
+import tempfile
+import datetime
 
+CURRENT = 'Current'
+NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
+NUMBER_OF_MODULES        = 'NumberOfModules'
+SET_BEING_ANALYZED       = 'SetBeingAnalyzed'
+SAVE_OUTPUT_HOW_OFTEN    = 'SaveOutputHowOften'
+TIME_STARTED             = 'TimeStarted'
+STARTING_IMAGE_SET       = 'StartingImageSet'
+STARTUP_DIRECTORY        = 'StartupDirectory'
+DEFAULT_MODULE_DIRECTORY = 'DefaultModuleDirectory'
+DEFAULT_IMAGE_DIRECTORY  = 'DefaultImageDirectory'
+DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
+IMAGE_TOOLS_FILENAMES    = 'ImageToolsFilenames'
+IMAGE_TOOL_HELP          = 'ImageToolHelp'
+PIXEL_SIZE               = 'PixelSize'
+SKIP_ERRORS              = 'SkipErrors'
+INTENSITY_COLOR_MAP      = 'IntensityColorMap'
+LABEL_COLOR_MAP          = 'LabelColorMap'
+STRIP_PIPELINE           = 'StripPipeline'
+DISPLAY_MODE_VALUE       = 'DisplayModeValue'
+DISPLAY_WINDOWS          = 'DisplayWindows'
+FONT_SIZE                = 'FontSize'
+MEASUREMENTS             = 'Measurements'
+PIPELINE                 = 'Pipeline'    
 SETTINGS = 'Settings'
 VARIABLE_VALUES = 'VariableValues'
 VARIABLE_INFO_TYPES = 'VariableInfoTypes'
@@ -74,6 +101,63 @@ class Pipeline:
             module.SaveToHandles(handles)
         return handles
     
+    def LoadPipelineIntoMatlab(self):
+        """Load the pipeline into the Matlab singleton and return the handles structure
+        
+        The handles structure has all of the goodies needed to run the pipeline including
+        * Settings
+        * Current (set up to run the first image with the first module
+        * Measurements (blank, but set up to take measurements)
+        * Pipeline (blank, but set up to save images)
+        Returns the handles proxy
+        """
+        handles = self.SaveToHandles()
+        (matfd,matpath) = tempfile.mkstemp('.mat')
+        matfh = os.fdopen(matfd,'w')
+        closed = False
+        try:
+            scipy.io.matlab.mio.savemat(matfh,handles,format='5')
+            matfh.close()
+            closed = True
+            matlab = GetMatlabInstance()
+            matlab.handles = matlab.load(matpath)
+        finally:
+            if not closed:
+                matfh.close()
+            os.unlink(matpath)
+        image_tools_dir = os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools')
+        image_tools = [os.path.split(os.path.splitext(filename)[0])[1]
+                       for filename in os.listdir(image_tools_dir)
+                       if os.path.splitext(filename) == '.m']
+        matlab.handles.Current = matlab.struct(NUMBER_OF_IMAGE_SETS,1,
+                                               SET_BEING_ANALYZED,1,
+                                               NUMBER_OF_MODULES, len(self.__modules),
+                                               SAVE_OUTPUT_HOW_OFTEN,1,
+                                               TIME_STARTED, str(datetime.datetime.now()),
+                                               STARTING_IMAGE_SET,1,
+                                               STARTUP_DIRECTORY, CellProfiler.Preferences.CellProfilerRootDirectory(),
+                                               DEFAULT_OUTPUT_DIRECTORY, CellProfiler.Preferences.GetDefaultOutputDirectory(),
+                                               DEFAULT_IMAGE_DIRECTORY, CellProfiler.Preferences.GetDefaultImageDirectory(),
+                                               IMAGE_TOOLS_FILENAMES, image_tools,
+                                               IMAGE_TOOL_HELP,[]
+                                               )
+
+        matlab.handles.Preferences = matlab.struct(PIXEL_SIZE, CellProfiler.Preferences.GetPixelSize(),
+                                                   DEFAULT_MODULE_DIRECTORY, CellProfiler.Preferences.ModuleDirectory(),
+                                                   DEFAULT_OUTPUT_DIRECTORY, CellProfiler.Preferences.GetDefaultOutputDirectory(),
+                                                   DEFAULT_IMAGE_DIRECTORY, CellProfiler.Preferences.GetDefaultImageDirectory(),
+                                                   INTENSITY_COLOR_MAP, 'gray',              # TODO - get from preferences
+                                                   LABEL_COLOR_MAP, 'jet',                   # TODO - get from preferences
+                                                   STRIP_PIPELINE, 'Yes',                    # TODO - get from preferences
+                                                   SKIP_ERRORS, 'No',                        # TODO - get from preferences
+                                                   DISPLAY_MODE_VALUE, 1,                    # TODO - get from preferences
+                                                   FONT_SIZE, 10,                            # TODO - get from preferences
+                                                   DISPLAY_WINDOWS,[1 for module in self.__modules] # TODO - UI allowing user to choose whether to display a window
+                                                   )
+        matlab.handles.Measurements = matlab.struct()
+        matlab.handles.Pipeline = matlab.struct()
+        return matlab.handles
+
     def Clear(self):
         old_modules = self.__modules
         self.__modules = []

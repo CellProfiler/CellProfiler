@@ -65,7 +65,7 @@ class PreferencesView:
         output_filename_text = wx.StaticText(panel,-1,'Output filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
         output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(15,15))
-        analyze_images_button = wx.Button(panel,-1,'Analyze images',(0,0),(80,20))
+        self.__analyze_images_button = wx.Button(panel,-1,'Analyze images',(0,0),(80,20))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(pixel_help_button,0,wx.ALL,1),
                        (pixel_size_text,0,wx.ALL,1),
@@ -73,13 +73,17 @@ class PreferencesView:
                        (output_filename_text,0,wx.ALL,1),
                        (self.__output_filename_edit_box,3,wx.EXPAND|wx.ALL,1),
                        (output_filename_help_button,0,wx.ALL,1),
-                       (analyze_images_button,0,wx.ALL,1)])
+                       (self.__analyze_images_button,0,wx.ALL,1)])
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpPixelSize.m"),pixel_help_button)
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpOutputFileName.m"),output_filename_help_button)
-        panel.Bind(wx.EVT_BUTTON,self.__OnAnalyzeImages, analyze_images_button)
         panel.Bind(wx.EVT_TEXT, self.__OnPixelSizeChanged, self.__pixel_size_edit_box)
-    
+        panel.Bind(wx.EVT_TEXT, self.__OnOutputFilenameChanged, self.__output_filename_edit_box)
+        CellProfiler.Preferences.AddOutputFileNameListener(self.__OnPreferencesOutputFilenameEvent)
+
+    def AttachToPipelineController(self,pipeline_controller):
+        self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.OnAnalyzeImages, self.__analyze_images_button)
+        
     def SetMessageText(self,text):
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)
@@ -117,9 +121,6 @@ class PreferencesView:
     def __OnHelp(self,event,helpfile):
         pass
     
-    def __OnAnalyzeImages(self,event):
-        pass
-    
     def __OnPixelSizeChanged(self,event):
         error_text = 'Pixel size must be a number'
         text = self.__pixel_size_edit_box.Value
@@ -128,3 +129,11 @@ class PreferencesView:
             self.PopErrorText(error_text)
         else:
             self.SetErrorText(error_text)
+    
+    def __OnOutputFilenameChanged(self,event):
+        CellProfiler.Preferences.SetOutputFileName(self.__output_filename_edit_box.Value)
+    
+    def __OnPreferencesOutputFilenameEvent(self,event):
+        if self.__output_filename_edit_box.Value != CellProfiler.Preferences.GetOutputFileName():
+            self.__output_filename_edit_box.Value = CellProfiler.Preferences.GetOutputFileName()
+        

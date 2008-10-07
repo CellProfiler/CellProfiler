@@ -72,6 +72,7 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE,self.__onClose, self)
         self.Bind(wx.EVT_LISTBOX,self.__onCategorySelected,self.__module_categories_list_box)
         self.Bind(wx.EVT_BUTTON,self.__onAddToPipeline,add_to_pipeline_button)
+        self.Bind(wx.EVT_BUTTON,self.__onClose,done_button)
         self.__get_module_files()
         self.__set_categories()
         self.__listeners = []

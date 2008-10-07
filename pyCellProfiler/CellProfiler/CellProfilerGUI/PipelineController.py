@@ -4,12 +4,15 @@
 """
 import CPFrame
 import CellProfiler.Pipeline
+import CellProfiler.Preferences
 from CellProfiler.CellProfilerGUI.AddModuleFrame import AddModuleFrame
 import CellProfiler.CellProfilerGUI.ModuleView
+import math
 import wx
 import os
+import re
 import scipy.io.matlab.mio
-import cPickle
+import CellProfiler.Matlab.Utils
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -23,6 +26,7 @@ class PipelineController:
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_SAVE_PIPELINE,self.__OnSavePipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_CLEAR_PIPELINE,self.__OnClearPipeline)
+        wx.EVT_MENU(frame,CPFrame.ID_FILE_ANALYZE_IMAGES,self.OnAnalyzeImages)
     
     def AttachToPipelineListView(self,pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
@@ -134,3 +138,85 @@ class PipelineController:
         if not variable.SetValue(proposed_value):
             event.Cancel()
             
+    def OnAnalyzeImages(self,event):
+        output_path = self.GetOutputFilePath()
+        if output_path:
+            handles = self.__pipeline.LoadPipelineIntoMatlab()
+            handles = self.RunPipeline(handles)
+            matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+            matlab.output_struct = matlab.struct('handles',handles)
+            #
+            # Here, foo._name is the undocumented variable name in the
+            # matlab instance.
+            #
+            matlab.save(output_path,'-struct',str(matlab.output_struct._name))
+
+    def GetOutputFilePath(self):
+        path = os.path.join(CellProfiler.Preferences.GetDefaultOutputDirectory(),
+                            CellProfiler.Preferences.GetOutputFileName())
+        if os.path.exists(path):
+            (first_part,ext)=os.path.splitext(path)
+            start = 1
+            match = re.match('^(.+)__([0-9]+)$',first_part)
+            if match:
+                first_part = match.groups()[0]
+                start = int(match.groups()[1])
+            for i in range(start,1000):
+                alternate_name = '%(first_part)s__%(i)d%(ext)s'%(locals())
+                if not os.path.exists(alternate_name):
+                    break
+            result = wx.MessageDialog(parent=self.__frame,
+                                message='%s already exists. Would you like to create %s instead?'%(path, alternate_name),
+                                caption='Output file exists',
+                                style = wx.YES_NO+wx.ICON_QUESTION)
+            user_choice = result.ShowModal()
+            if user_choice & wx.YES:
+                path = alternate_name
+                CellProfiler.Preferences.SetOutputFileName(os.path.split(alternate_name)[1])
+            else:
+                return None
+        return path
+        
+    def RunPipeline(self,handles):
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        self.SetMatlabPath()
+        DisplaySize = wx.GetDisplaySize()
+        while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets:
+            NumberofWindows = 0;
+            SlotNumber = 0
+            for module in self.__pipeline.Modules():
+                handles.Current.CurrentModuleNumber = str(module.ModuleNum())
+                if handles.Current.SetBeingAnalyzed == 1:
+                    figure_field = 'FigureNumberForModule%d'%(module.ModuleNum())
+                    if handles.Preferences.DisplayWindows[SlotNumber] == 0:
+                        # Make up a fake figure for the module if we're not displaying its window
+                        unused_figure_handle = math.ceil(max(matlab.findobj()))+1 
+                        handles.Current = matlab.setfield(handles.Current,figure_field,unused_figure_handle)
+                        figure = unused_figure_handle
+                    else:
+                        NumberofWindows = NumberofWindows+1;
+                        LeftPos = DisplaySize.width * ((NumberofWindows-1)%12)/12;
+                        figure = matlab.CPfigure(handles,'',
+                                                 'Name','%s Display, cycle # '%(module.ModuleName()),
+                                                 'Position',[LeftPos,DisplaySize.height-522, 560, 442])
+                        handles.Current = matlab.setfield(handles.Current, figure_field, figure)
+                module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
+                failure = 1
+                try:
+                    handles = module.Run(handles)
+                    failure = 0
+                except Exception,instance:
+                    self.__frame.DisplayError('Failed during run of module %s (module # %d)'%(module.ModuleName(),module.ModuleNum()),instance)
+                if module.ModuleName() != 'Restart':
+                    handles = matlab.CPaddmeasurements(handles,'Image',module_error_measurement,failure);
+                SlotNumber+=1
+            handles.Current.SetBeingAnalyzed += 1
+        return handles
+    
+    def SetMatlabPath(self):
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'DataTools'),matlab.path())
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools'),matlab.path())
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'CPsubfunctions'),matlab.path())
+        matlab.path(CellProfiler.Preferences.ModuleDirectory(),matlab.path())
+        matlab.path(CellProfiler.Preferences.CellProfilerRootDirectory(),matlab.path())

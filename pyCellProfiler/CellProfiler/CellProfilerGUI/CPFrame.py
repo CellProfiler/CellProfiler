@@ -24,6 +24,8 @@ ID_FILE_SAVE_PIPELINE=103
 ID_FILE_CLEAR_PIPELINE=104
 ID_FILE_ANALYZE_IMAGES=105
 
+ID_HELP_MODULE=200
+
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         """Initialize the frame and its layout
@@ -32,10 +34,10 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.__TopLeftPanel = wx.Panel(self,-1)
-        self.__LogoPanel = wx.Panel(self,-1)
+        self.__LogoPanel = wx.Panel(self,-1,style=wx.RAISED_BORDER)
         self.__ModuleListPanel = wx.Panel(self.__TopLeftPanel,-1)
         self.__ModuleControlsPanel = wx.Panel(self.__TopLeftPanel,-1)
-        self.__ModulePanel = wx.lib.scrolledpanel.ScrolledPanel(self,-1)
+        self.__ModulePanel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
         self.__FileListPanel = wx.Panel(self,-1)
         self.__PreferencesPanel = wx.Panel(self,-1)
         self.__Pipeline = Pipeline()
@@ -56,22 +58,54 @@ class CPFrame(wx.Frame):
         """
         self.__menu_bar = wx.MenuBar()
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...','Load a pipeline from a .MAT file')
+        self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+P','Load a pipeline from a .MAT file')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...','Save a pipeline as a .MAT file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images','Run the pipeline on the images in the image directory')
+        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+L','Run the pipeline on the images in the image directory')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
-        self.__menu_file.Append(ID_FILE_EXIT,'E&xit','Quit the application')
+        self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
+        self.__menu_bar.Append(self.__menu_file,'&File')
+        self.__menu_help = wx.Menu()
+        self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
+        self.__menu_bar.Append(self.__menu_help,'&Help')
+        self.SetMenuBar(self.__menu_bar)
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__OnWidgetInspector)
-        self.__menu_bar.Append(self.__menu_file,'&File')
-        self.SetMenuBar(self.__menu_bar)
+        wx.EVT_MENU(self,ID_HELP_MODULE,self.__OnHelpModule)
+        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
+                                                 (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
+                                                 (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT)])
+        self.SetAcceleratorTable(accelerator_table)
     
     def __OnWidgetInspector(self, evt):
         wx.lib.inspection.InspectionTool().Show()
 
+    def __OnHelpModule(self,event):
+        modules = self.__PipelineListView.GetSelectedModules()
+        filename = self.__get_icon_filename()
+        icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
+        font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
+        bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
+        for module in modules:
+            helpframe = wx.Frame(self,-1,'Help for module, "%s"'%(module.ModuleName()),size=(640,480))
+            sizer = wx.BoxSizer()
+            panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
+            panel.SetBackgroundColour(bgcolor)
+            sizer.Add(panel,1,wx.EXPAND)
+            helpframe.SetSizer(sizer)
+            statictext = wx.StaticText(panel,-1,module.GetHelp())
+            statictext.SetFont(font)
+            statictext.SetBackgroundColour(bgcolor)
+            sizer = wx.BoxSizer()
+            sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
+            panel.SetSizer(sizer)
+            panel.SetupScrolling()
+            helpframe.SetIcon(icon)
+            helpframe.Layout()
+            helpframe.Show()
+        
     def __attach_views(self):
         self.__PipelineListView = PipelineListView(self.__ModuleListPanel)
         self.__PipelineController = PipelineController(self.__Pipeline,self)
@@ -90,7 +124,7 @@ class CPFrame(wx.Frame):
         self.__TopLeftSizer = wx.FlexGridSizer(3,1,1,1)
         self.__TopLeftSizer.Add(self.__LogoPanel,0,wx.EXPAND|wx.ALL,1)
         self.__TopLeftSizer.Add(self.__ModuleListPanel,1,wx.EXPAND|wx.ALL,1)
-        self.__TopLeftSizer.Add(self.__ModuleControlsPanel,0,wx.EXPAND|wx.ALL,1)
+        self.__TopLeftSizer.Add(self.__ModuleControlsPanel,0,wx.EXPAND|wx.ALL,2)
         self.__TopLeftSizer.AddGrowableRow(1)
         self.__TopLeftPanel.SetSizer(self.__TopLeftSizer)
         self.__sizer.AddMany([(self.__TopLeftPanel,0,wx.EXPAND),

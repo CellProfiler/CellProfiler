@@ -21,11 +21,9 @@ def NewStringCellArray(shape):
             result[i,j] = numpy.empty((0,0)) 
     return result
 
-__MATLAB = None
-
 def GetMatlabInstance():
     global __MATLAB
-    if not __MATLAB:
+    if not globals().has_key('__MATLAB'):
         import mlabwrap
         __MATLAB = mlabwrap.mlab
         try:
@@ -34,3 +32,8 @@ def GetMatlabInstance():
             pass
     return __MATLAB
 
+def GCellFun():
+    return GetMatlabInstance().eval('@(cell,x) cell{x+1}')
+
+def SCellFun():
+    return GetMatlabInstance().eval('@(cell,x,value) {cell{1:x},value,cell{x+2:end}}')

@@ -47,11 +47,14 @@ class AbstractModule:
         print filename
         file = open(filename)
         try:
-            (self.__annotations, self.__variable_revision_number) = self.__read_annotations(file)
+            (self.__annotations, self.__variable_revision_number,self.__help) = self.__read_annotations(file)
         finally:
             file.close()
         self.__annotation_dict = CellProfiler.Variable.GetAnnotationsAsDictionary(self.Annotations()) 
-        
+    
+    def GetHelp(self):
+        return self.__help
+    
     def CreateFromFile(self,file_path,ModuleNum):
         """Parse a file to get the default variables for a module
         """
@@ -186,7 +189,18 @@ class AbstractModule:
         """
         annotations = []
         variable_revision_number = 0
+        before_help = True
+        after_help = False
+        help = []
         for line in file:
+            if before_help and line[0]=='%':
+                before_help = False
+            if (not before_help) and (not after_help):
+                if line[0]=='%':
+                    help.append(line[2:-1])
+                    continue
+                else:
+                    after_help=True
             try:
                 annotations.append(CellProfiler.Variable.Annotation(line))
             except:
@@ -195,7 +209,7 @@ class AbstractModule:
                 if match:
                     variable_revision_number = int(match.groups()[0]) 
                     break
-        return annotations,variable_revision_number
+        return annotations,variable_revision_number,'\n'.join(help)
 
 class MatlabModule(AbstractModule):
     def Run(self,handles):

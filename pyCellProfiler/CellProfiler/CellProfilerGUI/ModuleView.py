@@ -94,19 +94,26 @@ class ModuleView:
             sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
             variable_choices = self.__pipeline.GetVariableChoices(variable)
             if variable_choices:
-                style = (variable_choices.CanAcceptOther() and wx.CB_DROPDOWN) or wx.CB_READONLY
-                control = wx.ComboBox(self.__module_panel,-1,variable.Value(),
-                                      choices=variable_choices.GetChoices(variable),
-                                      style=style)
-                self.__module_panel.Bind(wx.EVT_COMBOBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable,control),control)
-                if variable_choices.CanChange():
-                    listener = lambda sender,event,vn=vn: self.__OnVariableChoicesChanged(sender,event,vn)
-                    listener_dict = {'notifier':variable_choices,
-                                     'listener':listener }
-                    variable_choices.AddListener(listener)
-                    self.__value_listeners.append(listener_dict)
-                if variable_choices.CanAcceptOther():
-                    self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
+                choices = variable_choices.GetChoices(variable)
+                if (not variable_choices.CanChange() and not variable_choices.CanAcceptOther()
+                    and all([x in ['Yes','No'] for x in choices])):
+                    control = wx.CheckBox(self.__module_panel,-1)
+                    control.SetValue(variable.Value()=='Yes')
+                    self.__module_panel.Bind(wx.EVT_CHECKBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
+                else:
+                    style = (variable_choices.CanAcceptOther() and wx.CB_DROPDOWN) or wx.CB_READONLY
+                    control = wx.ComboBox(self.__module_panel,-1,variable.Value(),
+                                          choices=choices,
+                                          style=style)
+                    self.__module_panel.Bind(wx.EVT_COMBOBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable,control),control)
+                    if variable_choices.CanChange():
+                        listener = lambda sender,event,vn=vn: self.__OnVariableChoicesChanged(sender,event,vn)
+                        listener_dict = {'notifier':variable_choices,
+                                         'listener':listener }
+                        variable_choices.AddListener(listener)
+                        self.__value_listeners.append(listener_dict)
+                    if variable_choices.CanAcceptOther():
+                        self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
             else:
                  control = wx.TextCtrl(self.__module_panel,-1,variable.Value())
                  self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable,control),control)
@@ -130,7 +137,10 @@ class ModuleView:
     
     def __OnCellChange(self,event,variable,control):
         old_value = variable.Value()
-        proposed_value = control.GetValue()
+        if isinstance(control,wx.CheckBox):
+            proposed_value = (control.GetValue() and 'Yes') or 'No'
+        else:
+            proposed_value = control.GetValue()
         variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
         self.Notify(variable_edited_event)
         if not variable_edited_event.AcceptChange():

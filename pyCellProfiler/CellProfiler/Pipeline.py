@@ -7,7 +7,7 @@ import scipy.io.matlab.mio
 import os
 import CellProfiler.Module
 import CellProfiler.Preferences
-from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance
+from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun
 import CellProfiler.VariableChoices
 import tempfile
 import datetime
@@ -126,9 +126,12 @@ class Pipeline:
                 matfh.close()
             os.unlink(matpath)
         image_tools_dir = os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools')
-        image_tools = [os.path.split(os.path.splitext(filename)[0])[1]
+        image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
                        for filename in os.listdir(image_tools_dir)
-                       if os.path.splitext(filename) == '.m']
+                       if os.path.splitext(filename)[1] == '.m']
+        image_tools.insert(0,'Image tools')
+        itstring = "{[{'"+"'},{'".join(image_tools)+"'}]}"
+        matlab.image_cells = matlab.eval(itstring)
         matlab.handles.Current = matlab.struct(NUMBER_OF_IMAGE_SETS,1,
                                                SET_BEING_ANALYZED,1,
                                                NUMBER_OF_MODULES, len(self.__modules),
@@ -138,7 +141,7 @@ class Pipeline:
                                                STARTUP_DIRECTORY, CellProfiler.Preferences.CellProfilerRootDirectory(),
                                                DEFAULT_OUTPUT_DIRECTORY, CellProfiler.Preferences.GetDefaultOutputDirectory(),
                                                DEFAULT_IMAGE_DIRECTORY, CellProfiler.Preferences.GetDefaultImageDirectory(),
-                                               IMAGE_TOOLS_FILENAMES, image_tools,
+                                               IMAGE_TOOLS_FILENAMES, matlab.image_cells,
                                                IMAGE_TOOL_HELP,[]
                                                )
 

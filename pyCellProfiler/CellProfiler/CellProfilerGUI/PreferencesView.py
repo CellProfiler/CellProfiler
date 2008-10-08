@@ -35,7 +35,7 @@ class PreferencesView:
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__status_text,0,wx.EXPAND|wx.ALL)])
+                              (self.__status_text,0,wx.EXPAND|wx.ALL,2)])
         panel.SetSizer(self.__sizer)
         self.__errors = set()
         

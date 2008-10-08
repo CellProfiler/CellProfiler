@@ -553,6 +553,7 @@ HelpMenu=uimenu(hObject,'Label','Help');
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Clear Pipeline','Callback','CellProfiler(''ClearPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Save Pipeline as text','Callback','CellProfiler(''SavePipelineAsText_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Accelerator','P','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Run Multiple Pipelines','Callback','CellProfiler(''RunMultiplePipelines_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Set Preferences','Callback','CellProfiler(''SetPreferences_Callback'',gcbo,[],guidata(gcbo));');
@@ -1674,11 +1675,6 @@ if FileName ~= 0
             return
         end
     end
-    %%% Allows user to save pipeline setting as a readable text file (.txt)
-    SaveText = CPquestdlg('Do you want to save the pipeline as a text file also?','Save as text?','No');
-    if strcmp(SaveText,'Cancel')
-        return
-    end
     %%% Checks if a field is present, and if it is, the value is stored in the
     %%% structure 'Settings' with the same name.
     if isfield(handles.Settings,'VariableValues'),
@@ -1716,11 +1712,14 @@ if FileName ~= 0
     %%% Save the pipeline
     save(fullfile(Pathname,FileName),'Settings');
     
-    %%% Writes settings into a readable text file.
-    if strcmp(SaveText,'Yes')
-        CPtextpipe(handles,0,0,0);
-    end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE PIPELINE AS TEXT %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function SavePipelineAsText_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
+%%% Writes settings into a readable text file.
+CPtextpipe(handles,0,0,0);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIGURE DISPLAY BUTTONS %%%
@@ -2336,6 +2335,7 @@ if ModuleNamedotm ~= 0,
     end
 end
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% getStrSet - build a set of strings for a popupmenu
 %%%             including information about the current state
@@ -2359,6 +2359,7 @@ function [handles,StrSet,Count] = getStrSet(handles, my_list, ModuleNums,lastVar
     if (isempty(CurrentValue))
         handles.Settings.VariableValues(ModuleNums,lastVariableCheck) = { StrSet(1) };
     end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% REMOVE MODULE BUTTON %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

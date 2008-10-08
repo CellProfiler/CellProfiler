@@ -101,6 +101,12 @@ RevNums = handles.Settings.VariableRevisionNumbers;
 for p = 1:VariableSize(1)
     Module = char(ModuleNames(p));
     fprintf(fid,['\nModule #' num2str(p) ': ' Module ' revision - ' num2str(RevNums(p)) '\n']);
+    if length(handles.Settings.ModuleNotes{p}) > 0
+        fprintf(fid,'    Module notes:\n');
+        for i = 1:length(handles.Settings.ModuleNotes{p})
+            fprintf(fid,'        %s\n',handles.Settings.ModuleNotes{p}{i})
+        end
+    end
     if isdeployed
         ModuleNamedotm = [Module '.txt'];
     else

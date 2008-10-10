@@ -41,7 +41,7 @@ class PreferencesView:
         
     def __make_folder_panel(self,panel,value, text,helpfile,action):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        help_button = wx.Button(panel,-1,'?',(0,0),(15,15))
+        help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         text_static = wx.StaticText(panel,-1,string.capitalize(text)+':',(0,0),(120,30))
         text_static.Wrap(120)
         edit_box = wx.TextCtrl(panel,-1)
@@ -59,12 +59,12 @@ class PreferencesView:
     
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        pixel_help_button = wx.Button(panel,-1,'?',(0,0),(15,15))
+        pixel_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         pixel_size_text = wx.StaticText(panel,-1,'Pixel size:')
         self.__pixel_size_edit_box = wx.TextCtrl(panel,-1,'1',(0,0),(25,20))
         output_filename_text = wx.StaticText(panel,-1,'Output filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
-        output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(15,15))
+        output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images',(0,0),(80,20))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(pixel_help_button,0,wx.ALL,1),

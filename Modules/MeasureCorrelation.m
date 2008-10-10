@@ -263,6 +263,11 @@ for ObjectNameNbr = 1:ObjectNameCount
                     else
                         c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
                         CorrelationForCurrentObject = c(1,2);
+                        
+                        %% Checks for undefined values, and sets them to zero
+                        if isnan(CorrelationForCurrentObject) || isinf(CorrelationForCurrentObject)
+                            CorrelationForCurrentObject = 0;
+                        end
 
                         %%% Gets slope measurement if objects are images
                         if (strcmp(ObjectName{ObjectNameNbr},'Image'))

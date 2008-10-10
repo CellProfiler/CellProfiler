@@ -86,6 +86,9 @@ if isfield(handles.Pipeline,fieldname)
     end
 end
 
+MaskedImage = OrigImage;
+MaskedImage(~CropMask) = 0;
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -118,5 +121,5 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(MaskedImageName)=OrigImage;
+handles.Pipeline.(MaskedImageName)=MaskedImage;
 handles.Pipeline.(['CropMask',MaskedImageName])=CropMask;

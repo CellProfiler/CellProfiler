@@ -88,8 +88,12 @@ function handles = CorrectIllumination_Calculate(handles)
 % you would apply smoothing until you obtain a fairly smooth pattern
 % without sharp bright or dim regions.  Note that smoothing is a
 % time-consuming process, and fitting a polynomial is fastest but does not
-% allow a very tight fit as compared to the slower median filtering method.
-% Another option is to *completely* smooth the entire image by choosing
+% allow a very tight fit as compared to the slower median and gaussian 
+% filtering methods. We typically recommend median vs. gaussian because median 
+% is less sensitive to outliers, although the results are also slightly 
+% less smooth and the fact that images are in the range of 0 to 1 means that
+% outliers typically will not dominate too strongly anyway. A less commonly
+% used option is to *completely* smooth the entire image by choosing
 % "Smooth to average", which will create a flat, smooth image where every
 % pixel of the image is the average of what the illumination function would
 % otherwise have been.

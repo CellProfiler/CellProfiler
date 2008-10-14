@@ -117,6 +117,7 @@ class CPFrame(wx.Frame):
         self.__PreferencesView = PreferencesView(self.__PreferencesPanel)
         self.__PreferencesView.AttachToPipelineController(self.__PipelineController)
         self.__DirectoryView = DirectoryView(self.__FileListPanel)
+        self.__PipelineController.AttachToDirectoryView(self.__DirectoryView)
         
     def __do_layout(self):
         #self.__sizer = wx.FlexGridSizer(2,2,1,1)

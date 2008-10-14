@@ -6,6 +6,14 @@
 import os
 import wx
 import CellProfiler.Preferences
+import scipy.io.mio
+import PIL.Image
+import matplotlib
+matplotlib.use('WX')
+import matplotlib.image
+import matplotlib.figure
+import matplotlib.backends.backend_wx
+
 
 class DirectoryView:
     """A directory viewer that displays file names and has smartish clicks
@@ -24,7 +32,29 @@ class DirectoryView:
         self.__best_height = 0
         self.Refresh()
         CellProfiler.Preferences.AddImageDirectoryListener(self.__OnImageDirectoryChanged)
+        panel.Bind(wx.EVT_LISTBOX_DCLICK,self.__OnListBoxDClick,self.__list_box)
+        self.__pipeline_listeners = []
     
+    def AddPipelineListener(self,listener):
+        """Add a listener that will be informed when the user wants to open a pipeline
+        
+        The listener should be a function to be called back with the parameters:
+        * caller - the directory view
+        * event - a LoadPipelineRequestEvent whose Path is the pipeline to open
+        """
+        self.__pipeline_listeners.append(listener)
+        
+    def RemovePipelineListener(self,listener):
+        self.__pipeline_listeners.remove(listener)
+        
+    def NotifyPipelineListeners(self,event):
+        """Notify all pipeline listeners of an event that indicates that the user
+        wants to open a pipeline
+        
+        """
+        for listener in self.__pipeline_listeners:
+            listener(self,event)
+            
     def SetHeight(self,height):
         self.__best_height = height
     
@@ -32,11 +62,59 @@ class DirectoryView:
         self.__list_box.Clear()
         files = [x 
                  for x in os.listdir(CellProfiler.Preferences.GetDefaultImageDirectory()) 
-                     if os.path.splitext(x)[1][1:] in self.__image_extensions]
+                     if os.path.splitext(x)[1][1:].lower() in self.__image_extensions]
         files.sort()
         self.__list_box.AppendItems(files)
     
     def __OnImageDirectoryChanged(self,event):
         self.Refresh()
     
+    def __OnListBoxDClick(self,event):
+        selections = self.__list_box.GetSelections()
+        if len(selections) > 0:
+            selection = self.__list_box.GetItems()[selections[0]]
+        filename = os.path.join(CellProfiler.Preferences.GetDefaultImageDirectory(),selection)
+        if os.path.splitext(selection)[1].lower() =='.mat':
+            # A matlab file might be an image or a pipeline
+            handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
+            if handles.has_key('Image'):
+                self.__DisplayMatlabImage(handles)
+            else:
+                self.NotifyPipelineListeners(LoadPipelineRequestEvent(filename))
+        else:
+            self.__DisplayImage(filename)
     
+    def __DisplayMatlabImage(self,handles):
+        wx.MessageBox('Matlab image display has not been implemented','Not yet implemented',parent=self.__list_box,style=wx.ICON_INFORMATION)
+    
+    def __DisplayImage(self,filename):
+        frame = ImageFrame(self.__list_box.GetTopLevelParent(),filename)
+        frame.Show()
+
+class ImageFrame(wx.Frame):
+    def __init__(self,parent,filename):
+        wx.Frame.__init__(self,parent,-1,filename)
+        pil_image = PIL.Image.open(filename)
+        self.__image = matplotlib.image.pil_to_array(pil_image)
+        sizer = wx.BoxSizer()
+        self.__figure= matplotlib.figure.Figure()
+        self.__axes = self.__figure.add_subplot(111)
+        self.__axes.imshow(self.__image)
+        self.__panel = matplotlib.backends.backend_wx.FigureCanvasWx(self,-1,self.__figure)
+        sizer.Add(self.__panel,1,wx.EXPAND)
+        self.SetSizerAndFit(sizer)
+        self.Bind(wx.EVT_PAINT,self.OnPaint)
+        
+    def OnPaint(self,event):
+        dc = wx.PaintDC(self)
+        self.__panel.draw(dc)
+        
+class LoadPipelineRequestEvent:
+    """The user wants to load a pipeline
+    
+    This event represents some user action that might indicate that
+    they want to load a pipeline. The Path attribute is the path+filename
+    of the file to open.
+    """
+    def __init__(self,path):
+        self.Path = path

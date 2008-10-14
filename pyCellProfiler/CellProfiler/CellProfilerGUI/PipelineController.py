@@ -41,6 +41,13 @@ class PipelineController:
         self.__module_view = module_view
         module_view.AddListener(self.__OnModuleViewEvent)
     
+    def AttachToDirectoryView(self,directory_view):
+        """Listen for requests to load pipelines
+        
+        """
+        self.__directory_view = directory_view
+        directory_view.AddPipelineListener(self.__OnDirLoadPipeline)
+    
     def AttachToModuleControlsPanel(self,module_controls_panel):
         """Attach the pipeline controller to the module controls panel
         
@@ -73,18 +80,26 @@ class PipelineController:
         dlg = wx.FileDialog(self.__frame,"Choose a pipeline file to open",wildcard="*.mat")
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
-            try:
-                handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
-            except Exception,instance:
-                self.__frame.DisplayError('Failed to open %s'%(pathname),instance)
-                return
-            try:
-                if handles.has_key('handles'):
-                    self.__pipeline.CreateFromHandles(handles['handles'][0,0])
-                else:
-                    self.__pipeline.CreateFromHandles(handles)
-            except Exception,instance:
-                self.__frame.DisplayError('Failed during loading of %s'%(pathname),instance)
+            self.__do_load_pipeline(pathname)
+    
+    def __OnDirLoadPipeline(self,caller,event):
+        if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
+                         'Load path', wx.YES_NO|wx.ICON_QUESTION ,self.__frame) & wx.YES:
+            self.__do_load_pipeline(event.Path)
+    
+    def __do_load_pipeline(self,pathname):
+        try:
+            handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
+        except Exception,instance:
+            self.__frame.DisplayError('Failed to open %s'%(pathname),instance)
+            return
+        try:
+            if handles.has_key('handles'):
+                self.__pipeline.CreateFromHandles(handles['handles'][0,0])
+            else:
+                self.__pipeline.CreateFromHandles(handles)
+        except Exception,instance:
+            self.__frame.DisplayError('Failed during loading of %s'%(pathname),instance)
 
     def __OnSavePipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)

@@ -62,7 +62,7 @@ class AbstractModule:
         self.__module_name = os.path.splitext(os.path.split(file_path)[1])[0]
         fid = open(file_path,'r')
         try:
-            (self.__annotations, self.__variable_revision_number) = self.__read_annotations(fid)
+            (self.__annotations, self.__variable_revision_number,self.__help) = self.__read_annotations(fid)
         finally:
             fid.close()
         self.__annotation_dict = CellProfiler.Variable.GetAnnotationsAsDictionary(self.Annotations()) 

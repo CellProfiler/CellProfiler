@@ -770,7 +770,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 elseif strcmp(LocalMaximaType, 'Manual') || strcmp(LocalMaximaType, 'Manual_for_IdSecondary')
                     %%% Do the manual clicking for local maximas
                     IdPrimDistinguishClumpedObjManualFigureNumber = findobj('Tag','IdPrimDistinguishClumpedObjManualFigure');
-                    if isempty(IdPrimDistinguishClumpedObjManualFigureNumber) && handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet;
+                    if isempty(IdPrimDistinguishClumpedObjManualFigureNumber) && handles.Current.SetBeingAnalyzed == 1;
                         %%% Creates the window, sets its tag, and puts some
                         %%% text in it. The first lines are meant to find a suitable
                         %%% figure number for the window, so we don't choose a

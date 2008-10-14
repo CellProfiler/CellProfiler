@@ -134,7 +134,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+if handles.Current.SetBeingAnalyzed == 1
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.
     fieldname = ['Pathname', OrigImageName];

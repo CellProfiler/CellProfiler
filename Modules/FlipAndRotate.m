@@ -186,7 +186,7 @@ drawnow
 if ~strcmp(RotateMethod,'None')
     % If this is the first image set, get the angle to rotate from the
     % user.  If not, get the value that was used for the first set.
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet || strcmp(IndividualOrOnce,'Individually')
+    if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce,'Individually')
         if strcmp(RotateMethod, 'Mouse')
             displaytexthandle = uicontrol(ThisModuleFigureNumber,'style','text','position',[80 10 400 100],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
             displaytext = 'Click on points in the image that are supposed to be aligned horizontally (e.g. a marker spot at the top left and the top right of the image). Then press the Enter key. If you make an error, the Delete or Backspace key will delete the previously selected point. You can use the zoom tools of matlab before clicking on this point by selecting Tools > Zoom in, click to zoom as desired, then select Tools > Zoom in again to deselect the tool. This will return you to the regular cursor so you can click the marker points. Use Edit > Colormap to adjust the contrast of the image if needed.';

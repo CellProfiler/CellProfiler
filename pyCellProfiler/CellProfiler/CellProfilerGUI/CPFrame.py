@@ -160,8 +160,10 @@ class CPFrame(wx.Frame):
         
         """
         tb = sys.exc_info()[2]
+        traceback.print_tb(tb)
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
-        wx.MessageBox(text,error.message)
+        text = error.message + '\n'+text
+        wx.MessageBox(text,"Caught exception during operation")
 
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column

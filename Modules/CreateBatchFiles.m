@@ -29,6 +29,10 @@ function handles = CreateBatchFiles(handles)
 % for the remote machine you would type "/remoteserver2". As of now, this
 % is hardcoded to always use Linux and Macintosh style slashes (/).
 %
+% If your input image folder and output folder are located on different 
+% machines, you can specify the input image paths followed by the output 
+% path separated by a comma.
+%
 % Note: This module produces a Batch_data.mat file. This contains the
 % first image set's measurements plus information about the processing
 % that each batch file needs access to in order to initialize the
@@ -63,11 +67,11 @@ drawnow
 %defaultVAR01 = .
 BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%pathnametextVAR02 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting trailing slashes. Otherwise, leave a period (.)
+%pathnametextVAR02 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting trailing slashes. Otherwise, leave a period (.). If your image and output folder paths are different, enter the input then the output path separated by a comma.
 %defaultVAR02 = .
 OldPathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%pathnametextVAR03 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting trailing slashes. Otherwise, leave a period (.)
+%pathnametextVAR03 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting trailing slashes. Otherwise, leave a period (.). See above for entering multiple paths.
 %defaultVAR03 = .
 NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -112,28 +116,53 @@ PreservedHandles = handles;
 %%% Changes parts of several pathnames if the user has
 %%% specified that parts of the pathname are named differently from
 %%% the perspective of the local computer vs. the cluster
-%%% machines.
-if ~ strcmp(OldPathname, '.')
-    %%% Changes the default output and image pathnames.
-    NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname,NewPathname),'\','/');
-    handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
-    NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname,NewPathname),'\','/');
-    handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+%%% machines
 
+%%% Parse OldPathname, checking for comma separating multiple paths
+if ~strcmp(OldPathname,strtok(OldPathname,',')),
+    [firstpathstr,secondpathstr] = strtok(OldPathname,',');
+    s = cell(1,2); s{1} = strtrim(firstpathstr); s{2} = strtrim(secondpathstr(2:end));
+    OldPathname = s;
+    if ~strcmp(NewPathname,strtok(NewPathname,',')),
+        [firstpathstr,secondpathstr] = strtok(NewPathname,',');
+        s = cell(1,2); s{1} = strtrim(firstpathstr); s{2} = strtrim(secondpathstr(2:end));
+        s = cell(1,2); s{1} = firstpathstr; s{2} = secondpathstr(2:end);
+        NewPathname = s;
+    else
+        error(['Processing was canceled in the ', ModuleName, 'module because if there are two pathnames specified for the local machine, there need to be two pathnames for the cluster machine.']);
+    end
+else    % If no comma, one path only. Duplicate to both strings
+    s = cell(1,2); [s{:}] = deal(strtrim(OldPathname));
+    OldPathname = s;
+    s = cell(1,2); [s{:}] = deal(strtrim(NewPathname));
+    NewPathname = s;
+end
+
+if ~any(strcmp(OldPathname, '.'))
+    %%% Changes the default output and image pathnames
+    if ~strcmp(OldPathname{1}, '.'),
+        NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname{1},NewPathname{1}),'\','/');
+        handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+    end
+    if ~strcmp(OldPathname{2}, '.'),
+        NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname{2},NewPathname{2}),'\','/');
+        handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
+    end
+    
     %%% Replaces \ with / in all image filenames (PC only)
-    Fields=fieldnames(handles.Pipeline);
+    Fields = fieldnames(handles.Pipeline);
     for i = 1:length(Fields)
         if strncmp(Fields{i}, 'FileList', 8)
             FieldName = Fields{i};
-            handles.Pipeline.(FieldName)=strrep(handles.Pipeline.(FieldName),'\','/');
+            handles.Pipeline.(FieldName) = strrep(handles.Pipeline.(FieldName),'\','/');
         end
     end
 
-    %%% Deal with Pathnames
+    %%% Deal with input Pathnames
     Fieldnames = fieldnames(handles.Pipeline);
-    PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8)==1);
+    PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8));
     for i = 1:length(PathFieldnames),
-        handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname,NewPathname),'\','/');
+        handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
     end
 end
 

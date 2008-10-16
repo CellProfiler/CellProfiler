@@ -458,6 +458,8 @@ if strcmp(ReadyFlag, 'Ready')
                 end
             else error(['Image processing was canceled in the ', ModuleName, ' due to some sort of programming error.']);
             end
+        else
+            SizeOfSmoothingFilterUsed = 0;
         end
 
         drawnow
@@ -478,6 +480,7 @@ if strcmp(ReadyFlag, 'Ready')
             [FinalIlluminationFunction ignore SizeOfSmoothingFilterUsed] = CPsmooth(IlluminationImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
         else
             FinalIlluminationFunction = IlluminationImage;
+            SizeOfSmoothingFilterUsed = 0;
         end
     end
 

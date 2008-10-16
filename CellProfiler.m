@@ -552,7 +552,7 @@ HelpMenu=uimenu(hObject,'Label','Help');
 
 uimenu(FileMenu,'Label','Open Image','Callback','CellProfiler(''OpenImage_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Clear Pipeline','Callback','CellProfiler(''ClearPipeline_Callback'',gcbo,[],guidata(gcbo));');
-uimenu(FileMenu,'Label','Save Pipeline','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
+uimenu(FileMenu,'Label','Save Pipeline','Accelerator','S','Callback','CellProfiler(''SavePipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Save Pipeline as text','Callback','CellProfiler(''SavePipelineAsText_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Load Pipeline','Accelerator','P','Callback','CellProfiler(''LoadPipeline_Callback'',gcbo,[],guidata(gcbo));');
 uimenu(FileMenu,'Label','Run Multiple Pipelines','Callback','CellProfiler(''RunMultiplePipelines_Callback'',gcbo,[],guidata(gcbo));');

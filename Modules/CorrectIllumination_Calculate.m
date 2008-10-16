@@ -306,6 +306,12 @@ else AverageImageSaveFlag = 1;
 end
 
 ReadyFlag = 'Not Ready';
+MaskFieldname = ['CropMask', ImageName];
+HasMask = isfield(handles.Pipeline,MaskFieldname);
+if HasMask
+	MaskImage = handles.Pipeline.(MaskFieldname);
+end
+
 if strcmp(EachOrAll,'All')
     try
         if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && handles.Current.SetBeingAnalyzed == 1
@@ -323,7 +329,7 @@ if strcmp(EachOrAll,'All')
             drawnow
 
             if strcmp(IntensityChoice,'Regular')
-                [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore');
+                [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
             elseif strcmp(IntensityChoice,'Background')
                 % Retrieves the path where the images are stored from the handles
                 % structure.
@@ -357,7 +363,7 @@ if strcmp(EachOrAll,'All')
             end
         elseif strcmp(SourceIsLoadedOrPipeline,'Pipeline')
             if strcmp(IntensityChoice,'Regular')
-                [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'Accumulate', ImageName, AverageImageName);
+                [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'Accumulate', ImageName, AverageImageName,['CropMaskCount',AverageImageName]);
             elseif strcmp(IntensityChoice,'Background')
                 % In Pipeline mode, each time through the cycle,
                 % the minimums from the image are added to the existing cumulative image.
@@ -393,18 +399,12 @@ if strcmp(EachOrAll,'All')
 elseif strcmp(EachOrAll,'Each')
     if strcmp(IntensityChoice,'Regular')
         RawImage = OrigImage;
-
-        %         %% TODO - DL 2008.02.07
-        %         fieldname = ['CropMask', RawImage];
-        %         if isfield(handles.Pipeline,fieldname)
-        %             %%% Retrieves previously selected cropping mask from handles
-        %             %%% structure.
-        %             BinaryCropImage = handles.Pipeline.(fieldname);
-        %             try Objects = Objects & BinaryCropImage;
-        %             catch
-        %                 error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
-        %             end
-        %         end
+        if HasMask
+            %%% Retrieves previously selected cropping mask from handles
+            %%% structure.
+            MaskImage = handles.Pipeline.(MaskFieldname);
+            RawImage = RawImage .* MaskImage;
+        end
 
     elseif strcmp(IntensityChoice,'Background')
 
@@ -444,9 +444,17 @@ if strcmp(ReadyFlag, 'Ready')
             % first.
 
             if exist('DilatedImage','var')
-                [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                if HasMask
+                    [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg,MaskImage);
+                else
+                    [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(DilatedImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                end
             elseif exist('RawImage','var')
-                [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                if HasMask
+                    [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg,MaskImage);
+                else
+                    [SmoothedImage ignore SizeOfSmoothingFilterUsed] = CPsmooth(RawImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg);
+                end
             else error(['Image processing was canceled in the ', ModuleName, ' due to some sort of programming error.']);
             end
         end

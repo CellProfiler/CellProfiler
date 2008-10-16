@@ -1,6 +1,8 @@
-function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, ImageName, ProjectionImageName)
+function [handles, OutputImage, ReadyFlag, MaskImage] = CPaverageimages(handles, Mode, ImageName, ProjectionImageName, MaskCountImageName)
 
 % Note: Mode can be Accumulate or DoNow.
+% ProjectionImageName is the name of the field to create in handles.Pipeline for the accumulated image
+% MaskCountImageName is the name of the field to create in handles.Pipeline for the sum of the image masks
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -15,6 +17,7 @@ function [handles, OutputImage, ReadyFlag] = CPaverageimages(handles, Mode, Imag
 % $Revision$
 
 ReadyFlag = 'NotReady';
+
 if strcmpi(Mode,'DoNow') == 1
     %%% Retrieves the path where the images are stored from the
     %%% handles structure.
@@ -74,6 +77,7 @@ if strcmpi(Mode,'DoNow') == 1
     WaitbarText = char(WaitbarText);
     waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
     OutputImage = TotalImage / length(FileList);
+    MaskImage = ones(size(OutputImage));
     ReadyFlag = 'Ready';
 
 elseif strcmpi(Mode,'Accumulate') == 1
@@ -82,6 +86,8 @@ elseif strcmpi(Mode,'Accumulate') == 1
     %%% (opens) the image you want to analyze and assigns it to a
     %%% variable.
     fieldname = ['', ImageName];
+    mask_fieldname = ['CropMask', ImageName];
+    has_mask = isfield(handles.Pipeline,mask_fieldname);
     %%% Performs certain error-checking and initializing functions the
     %%% first time throught the image set.
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -103,6 +109,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
         %%% Creates the empty variable so it can be retrieved later
         %%% without causing an error on the first image set.
         handles.Pipeline.(ProjectionImageName) = zeros(size(OrigImage));
+        handles.Pipeline.(MaskCountImageName) = zeros(size(OrigImage));
     end
     %%% Retrieves the current image.
     OrigImage = handles.Pipeline.(fieldname);
@@ -115,15 +122,28 @@ elseif strcmpi(Mode,'Accumulate') == 1
     %%% Retrieves the existing projection image, as accumulated so
     %%% far.
     ProjectedImage = handles.Pipeline.(ProjectionImageName);
-    %%% Adds the current image to it.
-    OutputImage = ProjectedImage + OrigImage;
-    %%% Saves the updated projection image to the handles structure.
-    handles.Pipeline.(ProjectionImageName) = OutputImage;
-    %%% If the last image set has just been processed, indicate that
-    %%% the projection image is ready.
-    if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-        %%% Divides by the total number of images in order to average.
-        OutputImage = OutputImage/handles.Current.NumberOfImageSets;
-        ReadyFlag = 'Ready';
+    if has_mask
+        mask = handles.Pipeline.(mask_fieldname);
+        OutputImage = ProjectedImage + OrigImage .* mask;
+        handles.Pipeline.(MaskCountImageName) = handles.Pipeline.(MaskCountImageName)+mask;
+        MaskImage = (handles.Pipeline.(MaskCountImageName) > 0);
+        OutputImage = OutputImage./max(handles.Pipeline.(MaskCountImageName),1);
+        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            %%% Divides by the total number of images in order to average.
+            ReadyFlag = 'Ready';
+        end
+    else
+        %%% Adds the current image to it.
+        OutputImage = ProjectedImage + OrigImage;
+        %%% Saves the updated projection image to the handles structure.
+        handles.Pipeline.(ProjectionImageName) = OutputImage;
+        %%% If the last image set has just been processed, indicate that
+        %%% the projection image is ready.
+        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            %%% Divides by the total number of images in order to average.
+            OutputImage = OutputImage/handles.Current.NumberOfImageSets;
+            MaskImage = ones(size(OutputImage));
+            ReadyFlag = 'Ready';
+        end
     end
 end

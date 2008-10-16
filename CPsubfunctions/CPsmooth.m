@@ -1,8 +1,11 @@
-function [SmoothedImage RealFilterLength SizeOfSmoothingFilterUsed] = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg)
+function [SmoothedImage RealFilterLength SizeOfSmoothingFilterUsed] = CPsmooth(OrigImage,SmoothingMethod,SizeOfSmoothingFilter,WidthFlg,varargin)
 
 % This subfunction is used for several modules, including SMOOTH, AVERAGE,
 % CORRECTILLUMINATION_APPLY, CORRECTILLUMINATION_CALCULATE,
 % IDENTIFYPRIMAUTOMATIC
+%
+% The function takes an optional mask parameter which causes the algorithms
+% to ignore points outside of the mask.
 %
 % SizeOfSmoothingFilter = Diameter of the Filter Window (Box).
 %                       ~ roughly equal to object diameter
@@ -30,6 +33,12 @@ SmoothedImage = OrigImage;
 RealFilterLength = 0;
 SizeOfSmoothingFilterUsed =0;
 
+if nargin > 4
+    HasMask = 1;
+    MaskImage = varargin{1};
+else
+    HasMask = 0;
+end
 
 %%% For now, nothing fancy is done to calculate the size automatically. We
 %%% just choose 1/40 the size of the image, with a min of 1 and max of 30.
@@ -62,7 +71,10 @@ if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
     ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER/SizeOfSmoothingFilter;
     original_row = size(OrigImage,1);
     original_col = size(OrigImage,2);
-    OrigImage = imresize(OrigImage, ResizingFactor);    
+    OrigImage = imresize(OrigImage, ResizingFactor);
+    if HasMask
+        MaskImage = imresize(MaskImage, ResizingFactor);
+    end
     SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER; % equal to SizeOfSmoothingFilter * ResizingFactor;
 end
 
@@ -77,7 +89,11 @@ switch lower(SmoothingMethod)
         xy = x.*y;
         o = ones(size(OrigImage));
         drawnow
-        Ind = find(OrigImage > 0);
+        if HasMask
+            Ind = find((OrigImage & MaskImage) > 0);
+        else
+            Ind = find(OrigImage > 0);
+        end
         Coeffs = [x2(Ind) y2(Ind) xy(Ind) x(Ind) y(Ind) o(Ind)] \ double(OrigImage(Ind));
         drawnow
         SmoothedImage = reshape([x2(:) y2(:) xy(:) x(:) y(:) o(:)] * Coeffs, size(OrigImage));
@@ -112,16 +128,27 @@ switch lower(SmoothingMethod)
         %%% Let's get pixel values stretched from [min,max] to [0,1] for the best precision/accuracy
         maxval = max(OrigImage(:));
         minval = min(OrigImage(:));
+        if HasMask
+            %%% If we alternate large and small values for the points
+            %%% in the masked image, then the median will not be these points.
+            SavedImage = im2double(OrigImage);
+            pts = find(~MaskImage);
+            OrigImage(pts(mod(pts,2)>0))= minval;
+            OrigImage(pts(mod(pts,2)>0))= maxval;
+        end
         range = maxval - minval;
         RESCALE_FLAG = maxval ~= minval;
         if (RESCALE_FLAG) % stretch the range to [0,1] for best precision
             OrigImage = (OrigImage-minval)./range;
-        end        
+        end
         SmoothedImage = medfilt2(im2uint16(OrigImage),[SizeOfSmoothingFilter SizeOfSmoothingFilter],'symmetric');
         SmoothedImage = im2double(SmoothedImage);
         SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
+        if HasMask
+            SmoothedImage(~MaskImage)=SavedImage(~MaskImage);
+        end
         if (RESCALE_FLAG) % return to the original range of OrigImage;
-            SmoothedImage = SmoothedImage.*range + minval;
+            SmoothedImage = SmoothedImage.*double(range) + double(minval);
         end
     case {'median filtering','m'}
         %%% We leave this SmoothingMethod to be compatible with previous
@@ -136,8 +163,21 @@ switch lower(SmoothingMethod)
             sigma = SizeOfSmoothingFilter/2.35; % Convert between Full Width at Half Maximum (FWHM) to sigma
         end
         h = fspecial('gaussian', [round(SizeOfSmoothingFilter) round(SizeOfSmoothingFilter)], sigma);
+        if HasMask
+            OrigImage(~MaskImage) = 0;
+        end
         SmoothedImage = imfilter(OrigImage, h, 'replicate');
         SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
+        %%% If the image was masked, the filter will darken the areas near
+        %%% the masked part. We can figure out the fraction darkened by
+        %%% filtering the mask - then, at each point, we get the fraction
+        %%% of the convolution that's not mask. Divide by this to just
+        %%% get the masked convolution.
+        if HasMask
+            SmoothedMask = imfilter(im2double(MaskImage), h, 'replicate');
+            SmoothedImage(MaskImage~=0) = SmoothedImage(MaskImage~=0) ./ SmoothedMask(MaskImage~=0);
+            SmoothedImage(~MaskImage) = 0;
+        end
 %       [Kyungnam Jul-30-2007: The following old code that was replaced with the above code has been left for reference]        
 %         FiltLength = min(30,max(1,ceil(2*sigma))); % Determine filter size, min 3 pixel, max 61
 %         [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);      % Filter kernel grid
@@ -157,7 +197,11 @@ switch lower(SmoothingMethod)
         %%% The following is used for the Smooth to average method.
         %%% Creates an image where every pixel has the value of the mean of the original
         %%% image.
-        SmoothedImage = mean(OrigImage(:))*ones(size(OrigImage));        
+        if HasMask
+            SmoothedImage = mean(OrigImage(MaskImage~=0)) * ones(size(OrigImage));
+        else
+            SmoothedImage = mean(OrigImage(:))*ones(size(OrigImage));        
+        end
 %       [Kyungnam Jul-30-2007: If you want to use the traditional averaging filter, use the following]
 %        h = fspecial('average', [SizeOfSmoothingFilter SizeOfSmoothingFilter]);
 %        SmoothedImage = imfilter(OrigImage, h, 'replicate');

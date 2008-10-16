@@ -161,9 +161,10 @@ ObjectDilationRadius = char(handles.Settings.VariableValues{CurrentModuleNum,4})
 %defaultVAR05 = 60
 BlockSize = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,5}));
 
-%textVAR06 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1.
+%textVAR06 = Do you want to rescale the illumination function so that the pixel intensities are all equal to or greater than one (Y or N)? This is recommended if you plan to use the division option in CorrectIllumination_Apply so that the resulting images will be in the range 0 to 1. The "Median" option chooses the median value in the image to rescale so that division increases some values and decreases others.
 %choiceVAR06 = Yes
 %choiceVAR06 = No
+%choiceVAR06 = Median
 RescaleOption = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
@@ -482,10 +483,31 @@ if strcmp(ReadyFlag, 'Ready')
 
     % The resulting image is rescaled to be in the range 1
     % to infinity, if requested.
-    if strcmp(RescaleOption,'Yes') == 1
+    if ~ strcmp(RescaleOption,'No')
+        % CPrescale not used because of mask...
         % To save time, the handles argument is not fed to this
         % subfunction because it is not needed.
-        [ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
+        %[ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
+        if strcmp(RescaleOption,'Yes')
+            if HasMask
+                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
+            else
+                rescale = max([min(abs(FinalIlluminationFunction(:)));.0001]);
+            end
+        elseif strcmp(RescaleOption,'Median') == 1
+            if HasMask
+                rescale = median(FinalIlluminationFunction(MaskImage ~= 0));
+            else
+                rescale = median(FinalIlluminationFunction(:));
+            end
+            if rescale == 0
+                rescale = 1;
+            end
+        end
+        FinalIlluminationFunction = FinalIlluminationFunction ./ rescale;
+    end
+    if HasMask
+        FinalIlluminationFunction(~MaskImage)=1;
     end
 end
 

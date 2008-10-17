@@ -9,7 +9,10 @@ function handles = IdentifyPrimAutomatic(handles)
 %
 % This module identifies primary objects (e.g. nuclei) in grayscale images
 % that show bright objects on a dark background. The module has many
-% options which vary in terms of speed and sophistication.
+% options which vary in terms of speed and sophistication. The objects that
+% are found are displayed with arbitrary colors - the colors do not mean 
+% anything but simply help you to tell various objects apart. You can 
+% change the colormap in File > Set Preferences.
 %
 % Requirements for the images to be fed into this module:
 % * If the objects are dark on a light background, they must first be

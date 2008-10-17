@@ -102,6 +102,8 @@ class ModuleView:
                     self.__module_panel.Bind(wx.EVT_CHECKBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
                 else:
                     style = (variable_choices.CanAcceptOther() and wx.CB_DROPDOWN) or wx.CB_READONLY
+                    if (len(choices)==0 and variable_choices.CanAcceptOther()):
+                        choices=['None']
                     control = wx.ComboBox(self.__module_panel,-1,variable.Value(),
                                           choices=choices,
                                           style=style)
@@ -157,6 +159,7 @@ class ModuleView:
         control = self.__controls[idx]
         assert isinstance(control,wx.ComboBox)
         control.SetItems(sender.GetChoices(variable))
+        control.SetValue(variable.Value())
     
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the variable edit controls

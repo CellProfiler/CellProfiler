@@ -170,3 +170,77 @@ class InfoGroupVariableChoices(AbstractMutableVariableChoices):
         choices.sort()
         return choices
     
+class CategoryVariableChoices(AbstractMutableVariableChoices):
+    """Variable choices based on the categories that modules produce
+    
+    """
+    def __init__(self,pipeline,object_variable):
+        """Initialize with the parent pipeline and the variable
+        which holds the name of the object being measured
+        """
+        self.__pipeline = pipeline
+        self.__object_variable = object_variable
+        object_variable.AddListener(self.__OnVariableEvent)
+        AbstractMutableVariableChoices.__init__(self,pipeline)
+
+    def __OnVariableEvent(self,sender,event):
+        """Respond to an event on the object variable
+        
+        Notify listeners after a value change.
+        """
+        if isinstance(event,CellProfiler.Variable.AfterChangeVariableEvent):
+            self.Notify(event)
+    
+    def GetChoices(self,variable):
+        """Report the values of the independent variables that appear before this one in the pipeline.
+        
+        """
+        choices = [] 
+        object_name = self.__object_variable.Value()
+        for ModuleNum in range(1,variable.Module().ModuleNum()):
+            module = self.__pipeline.Module(ModuleNum)
+            for choice in module.GetCategories(self.__pipeline,object_name):
+                if not choice in choices:
+                    choices.append(choice)
+        return choices
+
+class MeasurementVariableChoices(AbstractMutableVariableChoices):
+    """Variable choices based on the measurements that modules produce
+    
+    """
+    def __init__(self,pipeline,object_variable, category_variable):
+        """Initialize to supply measurement choices
+        
+        pipeline - the pipeline containing everything
+        object_variable - the variable that supplies the name of the object being measured (or 'Image')
+        category_variable - the variable that holds the measurement category
+        """
+        self.__pipeline = pipeline
+        self.__object_variable = object_variable
+        object_variable.AddListener(self.__OnVariableEvent)
+        self.__category_variable = category_variable
+        self.__category_variable.AddListener(self.__OnVariableEvent)
+        AbstractMutableVariableChoices.__init__(self,pipeline)
+
+    def __OnVariableEvent(self,sender,event):
+        """Respond to an event on the object variable
+        
+        Notify listeners after a value change.
+        """
+        if isinstance(event,CellProfiler.Variable.AfterChangeVariableEvent):
+            self.Notify(event)
+    
+    def GetChoices(self,variable):
+        """Report the possible measurements for this variable
+        
+        """
+        choices = []
+        object_name = self.__object_variable.Value()
+        category = self.__category_variable.Value()
+        for ModuleNum in range(1,variable.Module().ModuleNum()):
+            module = self.__pipeline.Module(ModuleNum)
+            for choice in module.GetMeasurements(self.__pipeline,object_name,category):
+                if not choice in choices:
+                    choices.append(choice)
+        return choices
+        

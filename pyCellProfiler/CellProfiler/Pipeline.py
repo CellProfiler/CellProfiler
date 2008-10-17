@@ -61,12 +61,14 @@ class Pipeline:
         self.__modules = [];
         self.__listeners = [];
         self.__infogroups = {};
+        self.__variable_choices = {}
     
     def CreateFromHandles(self,handles):
         """Read a pipeline's modules out of the handles structure
         
         """
         self.__modules = [];
+        self.__variable_choices = {}
         Settings = handles[SETTINGS][0,0]
         module_names = Settings[MODULE_NAMES]
         module_count = module_names.shape[1]
@@ -164,6 +166,7 @@ class Pipeline:
     def Clear(self):
         old_modules = self.__modules
         self.__modules = []
+        self.__variable_choices = {}
         for module in old_modules:
             module.Delete()
         self.NotifyListeners(PipelineClearedEvent())
@@ -232,6 +235,9 @@ class Pipeline:
         idx =ModuleNum-1
         module = self.__modules[idx]
         self.__modules = self.__modules[:idx]+self.__modules[idx+1:]
+        for variable in module.Variables():
+            if self.__variable_choices.has_key(variable.Key()):
+                self.__variable_choices.pop(variable.Key())
         module.Delete()
         for module in self.__modules[idx:]:
             module.SetModuleNum(module.ModuleNum()-1)
@@ -242,14 +248,43 @@ class Pipeline:
         to represent variable dependencies, groups, etc.
         
         """
+        all_variable_notes = []
         for variable in module.Variables():
             annotations = module.VariableAnnotations(variable.VariableNumber())
+            # variable_notes stores things we find out about variables as we
+            # go along so we can refer back to them for subsequent variables
+            variable_notes = {'dependency':None, 'popuptype':None, 'variable':variable }
+            if annotations.has_key('inputtype'):
+                split = annotations['inputtype'][0].Value.split(' ')
+                if split[0] == 'popupmenu' and len(split) > 1:
+                    variable_notes['popuptype'] = split[1]
+            # Handle both info type producers and consumers
             if annotations.has_key('infotype'):
                 info = annotations['infotype'][0].Value.split(' ')
                 if not self.__infogroups.has_key(info[0]):
                     self.__infogroups[info[0]] = CellProfiler.VariableChoices.InfoGroupVariableChoices(self)
                 if len(info) > 1 and info[-1] == 'indep':
                     self.__infogroups[info[0]].AddIndepVariable(variable)
+                else:
+                    variable_notes['dependency'] = info[0]
+            elif (variable_notes['popuptype'] == 'category' and
+                  len(all_variable_notes) > 0 and
+                  all_variable_notes[-1]['dependency'] == 'objectgroup'):
+                # A category popup with an objectgroup ahead of it.
+                # We guess here that we're looking for categories
+                # of measurements on the selected object
+                vc = CellProfiler.VariableChoices.CategoryVariableChoices(self, all_variable_notes[-1]['variable'])
+                self.__variable_choices[variable.Key()] = vc
+            elif (variable_notes['popuptype'] == 'measurement' and
+                  len(all_variable_notes) > 1 and
+                  all_variable_notes[-1]['popuptype'] == 'category' and
+                  all_variable_notes[-2]['dependency'] == 'objectgroup'):
+                # A measurement popup that follows an objectgroup variable and a category variable
+                vc = CellProfiler.VariableChoices.MeasurementVariableChoices(self,
+                                                                             all_variable_notes[-2]['variable'],
+                                                                             all_variable_notes[-1]['variable'])
+                self.__variable_choices[variable.Key()] = vc
+            all_variable_notes.append(variable_notes)
     
     def GetVariableChoices(self,variable):
         """Get the variable choices instance that provides choices for this variable. Return None if not a choices variable
@@ -263,6 +298,8 @@ class Pipeline:
         elif annotations.has_key('choice'):
             choices = [annotation.Value for annotation in annotations['choice']]
             return CellProfiler.VariableChoices.StaticVariableChoices(choices)
+        elif self.__variable_choices.has_key(variable.Key()):
+            return self.__variable_choices[variable.Key()]
         
     def NotifyListeners(self,event):
         """Notify listeners of an event that happened to this pipeline

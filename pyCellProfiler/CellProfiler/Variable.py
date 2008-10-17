@@ -3,6 +3,7 @@
    $Revision$
    """
 import re
+import uuid
 
 DO_NOT_USE = 'Do not use'
 
@@ -18,6 +19,7 @@ class Variable:
         self.__module = module;
         self.__variable_number = VariableNumber;
         self.__value = value
+        self.__key = uuid.uuid1() 
     
     def SetValue(self,value):
         old_value = self.__value
@@ -29,6 +31,11 @@ class Variable:
         self.NotifyListeners(AfterChangeVariableEvent(old_value,value))
         return True
 
+    def Key(self):
+        """Return a key that can be used in a dictionary to refer to this variable
+        
+        """
+        return self.__key
     def Value(self):
         return self.__value
     

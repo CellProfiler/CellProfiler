@@ -75,7 +75,8 @@ class AbstractModule:
         setting[CellProfiler.Pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.Variables())
         for i in range(0,len(self.Variables())):
             variable = self.Variables()[i]
-            setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value())
+            if len(variable.Value()) > 0:
+                setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value())
             vn = variable.VariableNumber()
             annotations = self.VariableAnnotations(vn)
             if annotations.has_key('infotype'):
@@ -175,7 +176,21 @@ class AbstractModule:
         
         """
         raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
-    
+
+    def GetCategories(self,pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        return []
+      
+    def GetMeasurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        return []
 
 class MatlabModule(AbstractModule):
     """A matlab module, as from a .m file
@@ -187,6 +202,7 @@ class MatlabModule(AbstractModule):
         self.__filename = None
         self.__help = None
         self.__annotations = None
+        self.__features = None
         self.__target_revision_number = None
         
     def CreateFromHandles(self,handles,ModuleNum):
@@ -225,7 +241,7 @@ class MatlabModule(AbstractModule):
         """
         file = open(self.__filename)
         try:
-            (self.__annotations, self.__target_variable_revision_number,self.__help) = self.__read_annotations(file)
+            (self.__annotations, self.__target_variable_revision_number,self.__help,self.__features) = self.__read_annotations(file)
         finally:
             file.close()
         
@@ -244,6 +260,7 @@ class MatlabModule(AbstractModule):
         before_help = True
         after_help = False
         help = []
+        features = []
         for line in file:
             if before_help and line[0]=='%':
                 before_help = False
@@ -261,7 +278,10 @@ class MatlabModule(AbstractModule):
                 if match:
                     variable_revision_number = int(match.groups()[0]) 
                     break
-        return annotations,variable_revision_number,'\n'.join(help)
+                match = re.match('^%feature:([a-zA-Z]+)',line)
+                if match:
+                    features.append(match.groups()[0])
+        return annotations,variable_revision_number,'\n'.join(help),features
 
     def UpgradeModuleFromRevision(self,variable_revision_number):
         """Rewrite the variables to upgrade the module from the given revision number.
@@ -296,6 +316,14 @@ class MatlabModule(AbstractModule):
             self.LoadAnnotations()
         return self.__annotations
 
+    def Features(self):
+        """Return the features that this module supports (e.g. categories & measurements)
+        
+        """
+        if not self.__features:
+            self.LoadAnnotations()
+        return self.__features
+    
     def GetHelp(self):
         """Return help text for the module
         
@@ -303,4 +331,42 @@ class MatlabModule(AbstractModule):
         if not self.__help:
             self.LoadAnnotations()
         return self.__help
+    
+    def GetMeasurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        if 'measurements' in self.Features():
+            handles = pipeline.LoadPipelineIntoMatlab()
+            handles.Current.CurrentModuleNumber = str(self.ModuleNum())
+            matlab=CellProfiler.Matlab.Utils.GetMatlabInstance()
+            measurements = matlab.feval(self.ModuleName(),handles,'measurements',str(object_name),str(category))
+            count=matlab.eval('length(%s)'%(measurements._name))
+            result=[]
+            for i in range(0,count):
+                result.append(matlab.eval('%s{%d}'%(measurements._name,i+1)))
+            return result
+        else:
+            return []
+            
+    def GetCategories(self, pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        if 'categories' in self.Features():
+            handles = pipeline.LoadPipelineIntoMatlab()
+            handles.Current.CurrentModuleNumber = str(self.ModuleNum())
+            matlab=CellProfiler.Matlab.Utils.GetMatlabInstance()
+            categories = matlab.feval(self.ModuleName(),handles,'categories',str(object_name))
+            count=matlab.eval('length(%s)'%(categories._name))
+            result=[]
+            for i in range(0,count):
+                result.append(matlab.eval('%s{%d}'%(categories._name,i+1)))
+            return result
+        else:
+            return []
+            
     

@@ -46,7 +46,7 @@ def PartitionBatches(my_batch):
     """
     result=[]
     dd=my_batch["data_dir"]
-    for start in range(2, my_batch["num_sets"] + 1, my_batch["batch_size"]):
+    for start in range(1, my_batch["num_sets"] + 1, my_batch["batch_size"]):
         end=start+my_batch["batch_size"]-1
         status_file_name = "%(dd)s/status/Batch_%(start)d_to_%(end)d_DONE.mat"%(locals())
         result.append({ 

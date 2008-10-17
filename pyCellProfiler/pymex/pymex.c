@@ -39,7 +39,11 @@ PyObject* mxarray_to_python(const mxArray *a)
      if (class_id == mxCHAR_CLASS) {
           if (dims[0] != 1)
                mexErrMsgTxt("A char can only be passed to Python if it is a row vector.");
-          result = PyString_Decode(d, dims[1] * sizeof(mxChar), "utf_16", "strict");
+          printf("Decoding string of length %d...\n", dims[1]);
+          result = PyString_Decode(d, dims[1] * sizeof(mxChar), "cp1252", "ignore");
+          if (!result)
+               mexErrMsgTxt("Failed to decode string.");
+          printf("Done\n");
      } else {
           result = PyArray_SimpleNew(2, dims, PyArray_OBJECT);
           void **vp = (void **)((PyArrayObject *)result)->data;

@@ -5,7 +5,7 @@ CFLAGS=-I/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5 -I/
 LDFLAGS=-L/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/config
 
 PROGRAMS = py_exec.mexmaci py_funcall.mexmaci simple_embed \
-	minimal_main embed_mex.mexmaci minimal_mex.mexmaci
+	minimal_main embed_mex.mexmaci minimal_mex.mexmaci test_charset
 
 all: $(PROGRAMS)
 
@@ -28,6 +28,9 @@ minimal_mex.mexmaci: minimal_mex.c
 	mex $(CFLAGS) $+ $(LDFLAGS) -lpython2.5
 
 test_pymex: test_pymex.o pymex_py.o
+	$(CC) -o $@ $+ $(LDFLAGS) -lpython2.5
+
+test_charset: test_charset.o
 	$(CC) -o $@ $+ $(LDFLAGS) -lpython2.5
 
 clean:

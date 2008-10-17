@@ -216,13 +216,6 @@ DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 
 DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & DoWriteSQL;
 
-% Special case: We're writing batch files, and this is the first cycle, and we're not on the cluster.
-if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (handles.Current.SetBeingAnalyzed == 1)  && (~ isfield(handles.Current, 'BatchInfo'))
-    DoWriteSQL = 1;
-    FirstSet = 1;
-    LastSet = 1;
-end
-
 if DoWriteSQL,
     % Initial checking of variables
     if isempty(DataPath)

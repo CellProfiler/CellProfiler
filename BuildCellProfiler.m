@@ -149,7 +149,7 @@ switch lower(usage),
 
     case 'cluster',
         
-        output_dir = ['CompiledCPCluster_' svn_ver];
+        output_dir = svn_ver;
 
         % Move files and cleanup
         if ~exist(['../' output_dir],'dir')

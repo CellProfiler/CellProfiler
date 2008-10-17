@@ -1,4 +1,5 @@
 function out = CPlineintegration(im, EXP, EXPD, DIRECTION)
+% $Revision$
 	im = CPjustify(double(im));
 	[H, W] = size(im);
     L = max(H,W);

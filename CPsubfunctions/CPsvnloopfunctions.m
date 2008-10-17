@@ -9,7 +9,7 @@ dirs_to_loop = {'.','./Modules','./CPsubfunctions','DataTools','ImageTools','Hel
 
 %% Outputs list of files that are missing the svn Revision keyword.
 %% Run DEBUG = 1 as a standalone function.
-DEBUG = 0;
+DEBUG = 1;
 
 %% Directory loop
 for current_dir = dirs_to_loop

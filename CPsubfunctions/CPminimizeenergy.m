@@ -1,4 +1,5 @@
 function out = CPminimizeenergy(im, LAMBDA1, LAMBDA2, ITERATIONS, DIRECTION)
+% $Revision$
 	global H W A B C T1 T2 b
 	im = CPjustify(double(im));
 	[H, W] = size(im);

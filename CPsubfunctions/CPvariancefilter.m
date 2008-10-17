@@ -1,4 +1,5 @@
 function out = CPvariancefilter(im, WINDOWSIZE, C)
+% $Revision$
     %tic
     WIND = floor((WINDOWSIZE-1)/2);
     im = CPjustify(double(im));

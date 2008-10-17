@@ -330,7 +330,7 @@ if strcmp(EachOrAll,'All')
             drawnow
 
             if strcmp(IntensityChoice,'Regular')
-                [handles, RawImage, ReadyFlag] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
+                [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
             elseif strcmp(IntensityChoice,'Background')
                 % Retrieves the path where the images are stored from the handles
                 % structure.

@@ -139,6 +139,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
         handles.Pipeline.(ProjectionImageName) = OutputImage;
         %%% If the last image set has just been processed, indicate that
         %%% the projection image is ready.
+        MaskImage = ones(size(OutputImage));
         if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             %%% Divides by the total number of images in order to average.
             OutputImage = OutputImage/handles.Current.NumberOfImageSets;

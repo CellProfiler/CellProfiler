@@ -195,3 +195,8 @@ drawnow
 %%% Saves the corrected image to the
 %%% handles structure so it can be used by subsequent modules.
 handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+OrigMaskFieldname=['CropMask', ImageName];
+if isfield(handles.Pipeline,OrigMaskFieldname)
+    CorrectedMaskFieldname = ['CropMask',CorrectedImageName];
+    handles.Pipeline.(CorrectedMaskFieldname) = handles.Pipeline.(OrigMaskFieldname);
+end

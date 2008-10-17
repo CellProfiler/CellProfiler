@@ -103,52 +103,52 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 if handles.Current.SetBeingAnalyzed == 1
-%%% Determines which cycle is being analyzed.
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    %%% Determines which cycle is being analyzed.
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-%%% Remove slashes '/' from the input
-tmp1 = {};
-tmp2 = {};
-for n = 1:4
-    if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
-        tmp1{end+1} = TextToFind{n};
-        tmp2{end+1} = ImageName{n};
+    %%% Remove slashes '/' from the input
+    tmp1 = {};
+    tmp2 = {};
+    for n = 1:4
+        if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
+            tmp1{end+1} = TextToFind{n};
+            tmp2{end+1} = ImageName{n};
+        end
     end
-end
-TextToFind = tmp1;
-ImageName = tmp2;
+    TextToFind = tmp1;
+    ImageName = tmp2;
 
-%%% Get the pathname and check that it exists
-if strncmp(Pathname,'.',1)
-    if length(Pathname) == 1
-        Pathname = handles.Current.DefaultImageDirectory;
-    else
-        Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+    %%% Get the pathname and check that it exists
+    if strncmp(Pathname,'.',1)
+        if length(Pathname) == 1
+            Pathname = handles.Current.DefaultImageDirectory;
+        else
+            Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+        end
+    elseif strncmp(Pathname, '&', 1)
+        if length(Pathname) == 1
+            Pathname = handles.Current.DefaultOutputDirectory;
+        else
+            Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
+        end
     end
-elseif strncmp(Pathname, '&', 1)
-    if length(Pathname) == 1
-        Pathname = handles.Current.DefaultOutputDirectory;
-    else
-        Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
-    end
-end
- 
-SpecifiedPathname = Pathname;
-if ~exist(SpecifiedPathname,'dir')
-    error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])
-end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% FIRST CYCLE FILE HANDLING %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+    SpecifiedPathname = Pathname;
+    if ~exist(SpecifiedPathname,'dir')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% FIRST CYCLE FILE HANDLING %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    drawnow
 
     if isempty(ImageName)
-    error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
+        error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
     end
 
     for n = 1:length(ImageName)
-    %%% This try/catch will catch any problems in the load images module.
+        %%% This try/catch will catch any problems in the load images module.
         try
             CurrentFileName = TextToFind{n};
             %%% The following runs every time through this module (i.e. for
@@ -172,42 +172,41 @@ drawnow
             CPerrorImread(ModuleName, n);
         end % Goes with: catch
 
-    % Create a cell array with the filenames
-    FileNames(n) = {CurrentFileName};
+        % Create a cell array with the filenames
+        FileNames(n) = {CurrentFileName};
     end
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+    %%%%%%%%%%%%%%%%%%%%%%%
+    %%% DISPLAY RESULTS %%%
+    %%%%%%%%%%%%%%%%%%%%%%%
+    drawnow
 
-ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure('','NarrowText',ThisModuleFigureNumber)
-    end
-    for n = 1:length(ImageName)
-        drawnow
-        %%% Activates the appropriate figure window.
-        currentfig=CPfigure(handles,'Text',ThisModuleFigureNumber);
-        if iscell(ImageName)
-            TextString = [ImageName{n},': ',FileNames{n}];
-        else
-            TextString = [ImageName,': ',FileNames];
+    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    if any(findobj == ThisModuleFigureNumber)
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure('','NarrowText',ThisModuleFigureNumber)
         end
-        uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        for n = 1:length(ImageName)
+            drawnow
+            %%% Activates the appropriate figure window.
+            currentfig=CPfigure(handles,'Text',ThisModuleFigureNumber);
+            if iscell(ImageName)
+                TextString = [ImageName{n},': ',FileNames{n}];
+            else
+                TextString = [ImageName,': ',FileNames];
+            end
+            uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        end
     end
-end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% SAVE DATA TO HANDLES %%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for n = 1:length(ImageName),
-    handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
-    handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
-end
-end
+    for n = 1:length(ImageName),
+        handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
+        handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
+    end
 end

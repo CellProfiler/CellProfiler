@@ -102,7 +102,7 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-
+if handles.Current.SetBeingAnalyzed == 1
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
@@ -143,38 +143,40 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if isempty(ImageName)
+    if isempty(ImageName)
     error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
-end
+    end
 
-for n = 1:length(ImageName)
+    for n = 1:length(ImageName)
     %%% This try/catch will catch any problems in the load images module.
-    try
-        CurrentFileName = TextToFind{n};
-        %%% The following runs every time through this module (i.e. for
-        %%% every cycle).
-        %%% Saves the original image file name to the handles
-        %%% structure.  The field is named appropriately based on
-        %%% the user's input, in the Pipeline substructure so that
-        %%% this field will be deleted at the end of the analysis
-        %%% batch.
-        fieldname = ['Filename', ImageName{n}];
-        handles.Pipeline.(fieldname) = CurrentFileName;
-        fieldname = ['Pathname', ImageName{n}];
-        handles.Pipeline.(fieldname) =  Pathname;
+        try
+            CurrentFileName = TextToFind{n};
+            %%% The following runs every time through this module (i.e. for
+            %%% every cycle).
+            %%% Saves the original image file name to the handles
+            %%% structure.  The field is named appropriately based on
+            %%% the user's input, in the Pipeline substructure so that
+            %%% this field will be deleted at the end of the analysis
+            %%% batch.
+            fieldname = ['Filename', ImageName{n}];
+            handles.Pipeline.(fieldname) = CurrentFileName;
+            fieldname = ['Pathname', ImageName{n}];
+            handles.Pipeline.(fieldname) =  Pathname;
 
-        FileAndPathname = fullfile(Pathname, CurrentFileName);
-        LoadedImage = CPimread(FileAndPathname);
-        %%% Saves the image to the handles structure.
-        handles.Pipeline.(ImageName{n}) = LoadedImage;
+            FileAndPathname = fullfile(Pathname, CurrentFileName);
+            LoadedImage = CPimread(FileAndPathname);
+            %%% Saves the image to the handles structure.
+            handles.Pipeline.(ImageName{n}) = LoadedImage;
 
-    catch
-        CPerrorImread(ModuleName, n);
-    end % Goes with: catch
+        catch
+            CPerrorImread(ModuleName, n);
+        end % Goes with: catch
 
     % Create a cell array with the filenames
     FileNames(n) = {CurrentFileName};
-end
+    end
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -206,4 +208,6 @@ end
 for n = 1:length(ImageName),
     handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
     handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
+end
+end
 end

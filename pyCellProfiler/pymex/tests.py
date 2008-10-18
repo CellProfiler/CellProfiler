@@ -18,6 +18,7 @@ def test_cell(a):
 
 def test_echo(a):
     print a
+    print len(a)
     print type(a)
 
 def test_handles(a):

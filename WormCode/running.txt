@@ -1,49 +1,77 @@
-Things that should be installed:
+* Things that should be installed
+
 1) Matlab
 2) Jboost
 3) python
 4) Digital Notebook
 
-Initializing:
 
-Untar the worm code or if the mercurial is properly setup clone the mercurial repsoitory. Let the directory where you untar be "codeDir".
+* Initializing
 
-Create a workspace directory. Call it procBaseDir. In procBaseDir create a directory "images". Move/Copy the images that need to analyzed to procBaseDir/images.
+[??? Untar the worm code or if the mercurial is properly setup clone
+the mercurial repsoitory. Let the directory where you untar be
+$codeDir.]
 
-Now in codeDir open file microscopyAnalysis/scripts/MicroscopyLearning/src/config.LM. Set the variables that point to path to matlab, jboost directory, procBaseDir. You can leave the rest to be default.
+Create a workspace directory.  Let $procBaseDir be this directory. In
+$procBaseDir create a directory "images". Move/Copy the images that
+need to analyzed to $procBaseDir/images.
+
+Now open
+$codedir/microscopyAnalysis/scripts/MicroscopyLearning/src/config.LM. Set
+the variables that point to path to matlab, jboost directory,
+$procBaseDir. You can leave the rest to be default.
 
 
-Annotation:
+* Annotating
 
 Open the images in Digital Notebook and annotate worms in 2-3 images.
 
 
-Learning:
+* Learning
 
-From codeDir/microscopyAnalysis/scripts/MicroscopyLearning/src/ directory run wormLearningManager.py
+From $codeDir/microscopyAnalysis/scripts/MicroscopyLearning/src/
+directory run `python wormLearningManager.py [runName] [imageNames]`.
+runName is used to distinguish the different learning stages. For
+example we can name the first run as "first" (what else :). Later,
+after correcting some segments for feedback, we have to run
+wormLearningManager.py again. This time we can give the runName as
+"second" or "feedback1" etc.  imageNames are the name of the images
+that have been annotated. The convention right now is that we specify
+only the basename of the file *without* the .tif extension. So if we
+have annotated image BF001.tif in procBaseDir/images then the command
+to run would be: "python wormLearningManager.py first BF001"
 
-The syntax for wormLearningManager.py is:
-"python wormLearningManager.py runName imageNames". 
+At the end of wormLearningManager.py we would have learnt a
+classifier.  To run the classifier: `python wormClassifyManager.py
+runName imageNames` runName should be same as the one used for
+learning. imageNames are the name of the images that need to be
+classified.
 
-runName is used to distinguish the different learning stages. For example we can name the first run as "first" (what else :). Later, after correcting some segments for feedback, we have to run wormLearningManager.py again. This time we can give the runName as "second" or "feedback1" etc.
+Before you classify an image, make sure you create a dummy .bix file.
+[Why?]  You can do this by opening up the image in Digital Notebook
+(DN) and just saying save without annotating anything.
 
-imageNames are the name of the images that have been annotated. The convention right now is that we specify only the basename of the file *without* the .tif extension. So if we have annotated image BF001.tif in procBaseDir/images then the command to run would be:
-"python wormLearningManager.py first BF001"
 
-At the end of wormLearningManager.py we would have learnt a classifier. To run the classifier the command is: 
-"python wormClassifyManager.py runName imageNames"
+* Feedback
 
-runName should be same as the one used for learning. imageNames are the name of the images that need to be classified. 
+If the classification works correctly, it will generate a bix file
+with segments that get the high scores. The name of the bix file will
+be imageName.tif.bixDN_runName. To see these annotations, move
+imageName.tif.bixDN_runName to imageName.tif.bix and open up the image
+in DN.
 
-Before you classify an image, make sure you create a dummy .bix file. You can do this by opening up the image in Digital Notebook (DN) and just saying save without annotating anything.
+To mark segments that are negative, choose the object
+"markNegative". Using it you can draw lines and all the segments that
+cross these "markNegative" lines will get marked as negativ and open
+up the image in DN.
 
-Feedback:
+To mark segments that are negative, choose the object
+"markNegative". Using it you can draw lines and all the segments that
+cross these "markNegative" lines will get marked as
+negative. Currently DN is slow with the large number of segments that
+we use. You may have to be patient with it. I'll ask UCSB guys to
+speed it up.
 
-If the classification works correctly, it will generate a bix file with segments that get the high scores. The name of the bix file will be imageName.tif.bixDN_runName. To see these annotations, move imageName.tif.bixDN_runName to imageName.tif.bix and open up the image in DN.
-
-To mark segments that are negative, choose the object "markNegative". Using it you can draw lines and all the segments that cross these "markNegative" lines will get marked as negativ and open up the image in DN.
-
-To mark segments that are negative, choose the object "markNegative". Using it you can draw lines and all the segments that cross these "markNegative" lines will get marked as negative. Currently DN is slow with the large number of segments that we use. You may have to be patient with it. I'll ask UCSB guys to speed it up.
-
-After marking sufficient number as negative, it's time to run wormLearningManager.py again and continue iterating.
+After marking sufficient number as negative, it's time to run
+wormLearningManager.py again and continue iterating.
 

@@ -1,6 +1,5 @@
 import os,os.path
 
-
 pwd = os.getcwd()
 (sourceBaseDir,src) = os.path.split(pwd)
 (sourceBaseDir,package) = os.path.split(sourceBaseDir)
@@ -13,7 +12,7 @@ matlabDir=sourceBaseDir+'/matlab/detector/'
 
 matlab = '/Applications/MATLAB_R2008a/bin/matlab'
 JBoostDir = '/Users/mkabra/jboost-1.4/'
-procBaseDir = '/Users/mkabra/worms_run/'
+procBaseDir = '/Users/ljosa/research/worms/mayank/worms_run/'
 matlabDir = sourceBaseDir+'/matlab/detector/'
 hostname = 'Moksha'
 DNTemplateLocation = None
@@ -65,4 +64,6 @@ imageDir=procBaseDir+'images/'
 
 print "procBaseDir = %s\n" % procBaseDir
 
-os.environ['CLASSPATH'] = JBoostDir+'/dist/jboost.jar:'+JBoostDir+'/lib/concurrent.jar'
+os.environ['CLASSPATH'] = sourceBaseDir+'/jboost.jar:'+sourceBaseDir+'/concurrent.jar'
+
+print "CLASSPATH =", os.environ['CLASSPATH']

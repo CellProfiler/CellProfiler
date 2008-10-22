@@ -103,29 +103,31 @@ void
 mexFunction(int anlhs, mxArray *aplhs[], int anrhs, const mxArray *aprhs[])
 {
      const char *python_script = get_arg_string(anrhs, aprhs, 0);
+     PyObject *module, *dict, *nargout, *nargin, *argin;
+     FILE *f;
      anrhs--;
      aprhs++;
      
      nlhs = anlhs, plhs = aplhs, nrhs = anrhs, prhs = aprhs;
 
-     Py_Initialize();
+     pymex_init();
 
-     PyObject *module = Py_InitModule("mex", mex_methods);
+     module = Py_InitModule("mex", mex_methods);
      import_array();
 
-     PyObject *dict = PyModule_GetDict(module);
-     PyObject *nargout = Py_BuildValue("i", nlhs);
+     dict = PyModule_GetDict(module);
+     nargout = Py_BuildValue("i", nlhs);
      PyDict_SetItemString(dict, "nargout", nargout);
      Py_DECREF(nargout);
-     PyObject *nargin = Py_BuildValue("i", nrhs);
+     nargin = Py_BuildValue("i", nrhs);
      PyDict_SetItemString(dict, "nargin", nargin);
      Py_DECREF(nargin);
 
-     PyObject *argin = build_argin_list();
+     argin = build_argin_list();
      PyDict_SetItemString(dict, "argin", argin);
      Py_DECREF(argin);
 
-     FILE *f = fopen(python_script, "r");
+     f = fopen(python_script, "r");
      if (!f)
           mexErrMsgTxt("Failed to open python script.");
      PyRun_SimpleFile(f, python_script);

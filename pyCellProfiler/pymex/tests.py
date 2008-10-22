@@ -1,3 +1,6 @@
+import wx.lib
+import wx.lib.inspection
+
 def test_numbers(a):
     print a[0][0]
 
@@ -26,10 +29,35 @@ def test_echo(a):
     print repr(a)
     print a
 
+def test_error():
+    print sadness
+
 def test_handles(a):
     #print a['handles']
     for k in a['handles'][0,0].dtype.names:
         print k
+
+def test_return(a):
+    return a
+
+def test_type(a):
+    print type(a)
+
+def test_dictionary():
+    return { 'foo':0, 'bar':1 }
+
+def test_hello_world():
+    print 'hello, world'
+
+def examine(value):
+    """Examine value in a wx console
+    """
+    app = wx.App()
+    global_variables = globals()
+    inspection_tool = wx.lib.inspection.InspectionTool()
+    inspection_tool.Init(locals=locals())
+    inspection_tool.Show()
+    app.MainLoop()
 
 def test_handles_handles(a):
     for k in a[0,0].dtype.names:

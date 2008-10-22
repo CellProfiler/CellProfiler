@@ -5,7 +5,7 @@
 int
 main(int argc, char *argv[])
 {
-     Py_Initialize();
+     pymex_init();
      import_array();
 
      int dims[2];

@@ -3,9 +3,112 @@
 #include "pymex.h"
 #include <numpy/arrayobject.h>
 
+static PyObject *
+mexMsg(PyObject *self, PyObject *args)
+{
+     char *s;
+     int ok;
+     ok = PyArg_ParseTuple(args,"s",&s);
+     if (ok) {
+          mexPrintf(s);
+     }
+     return Py_None;
+}
+
+static PyObject *
+mexErrMsg(PyObject *self, PyObject *args)
+{
+     char *s;
+     int ok;
+
+     ok = PyArg_ParseTuple(args,"s",&s);
+     if (ok) {
+          mexWarnMsgTxt(s);
+     }
+     return Py_None;
+}
+
+long debug_level = 0;
+static PyObject *
+mexSetDebugLevel(PyObject *self, PyObject *args)
+{
+     int ok = PyArg_ParseTuple(args,"l", &debug_level);
+     if (! ok) {
+          mexWarnMsgTxt("mexSetDebugLevel takes an integer argument");
+     }
+     mexPrintf("Debug level set to %d\n",debug_level);
+     return Py_None;
+}
+
+static PyObject *
+mexGetDebugLevel(PyObject *self, PyObject *args)
+{
+     return PyInt_FromLong(debug_level);
+}
+
+static PyObject *
+mexImplementsMapping(PyObject *self, PyObject *args)
+{
+     PyObject *object;
+     int ok = PyArg_ParseTuple(args,"O",&object);
+     if (! ok) {
+          mexWarnMsgTxt("ImplementsMapping takes a single argument");
+          Py_RETURN_FALSE;
+     } else if (PyMapping_Check(object)) {
+          Py_RETURN_TRUE;
+     }
+     Py_RETURN_FALSE;
+}
+
+static PyMethodDef _pymex_functions[] = {
+     { "mexMsg", (PyCFunction) mexMsg, METH_VARARGS, "Displays a message in Matlab" },
+     { "mexErrMsg", (PyCFunction) mexErrMsg, METH_VARARGS, "Displays an error message in Matlab" },
+     { "mexSetDebugLevel", (PyCFunction) mexSetDebugLevel, METH_VARARGS, "Sets the debug level: 0 = none, higher = more verbose" },
+     { "mexGetDebugLevel", (PyCFunction) mexGetDebugLevel, METH_VARARGS, "Returns the current debug level" },
+     { "ImplementsMapping", (PyCFunction) mexImplementsMapping, METH_VARARGS, "Returns true if the argument supports the mapping interface" },
+     { NULL, NULL, 0}
+};
+
+/*********************************
+ * pymex_init - initialize python with hooks into Matlab
+ *********************************/
+void pymex_init(void)
+{
+     if (!Py_IsInitialized()) {
+          Py_Initialize();
+          Py_InitModule("pymex",_pymex_functions);
+          /*
+           * Create a class that implements the "write"
+           * function by calling pymex.mexMsg and another
+           * that calls pymex.mexErrMsg. Hook these to sys.stdout
+           * and sys.stderr
+           */
+          PyRun_SimpleString(
+               "import pymex\n"
+               "import sys\n"
+               "class __pymex_stdout:\n"
+               "    def write(self,message):\n"
+               "        pymex.mexMsg(message)\n"
+               "sys.stdout = __pymex_stdout()\n"
+               "class __pymex_stderr:\n"
+               "    def write(self,message):\n"
+               "        pymex.mexErrMsg(message)\n"
+               "sys.stderr = __pymex_stderr()\n");
+     }
+}
+
+
 void error(const char *message)
 {
      mexErrMsgTxt(message);
+}
+
+/********************************
+ * Print the stack trace of the last error
+ ********************************/
+void PrintStackTrace(void)
+{
+     PyRun_SimpleString("import traceback\ntraceback.print_last()\n");
 }
 
 const char *get_arg_string(int nrhs, const mxArray *prhs[], int i)
@@ -53,8 +156,12 @@ static PyObject *mxchar_to_python(const mxArray *mx)
 static PyObject *mxnumeric_to_python(const mxArray *mx)
 {
      const void *real, *imag;
-     int n, dims[2], npytype, i;
+     int n, dims[2], i;
      PyObject *result;
+     mxClassID classID;
+     int npytype = 0;
+     PyArrayObject *a;
+     void **vp;
 
      real = mxGetData(mx);
      imag = mxGetImagData(mx);
@@ -176,6 +283,7 @@ static PyObject *mxfunction_to_python(const mxArray *mx)
 
 PyObject* mxarray_to_python(const mxArray *mx)
 {
+     VERBOSEPRINT("Entering mxarray_to_python\n");
      import_array();
 
      switch (mxGetClassID(mx)) {
@@ -204,9 +312,547 @@ PyObject* mxarray_to_python(const mxArray *mx)
      default:
           mexErrMsgTxt("Cannot pass object of unexpected type to Python.");
      }
+     VERBOSEPRINT("Exiting mxarray_to_python\n");
+}
+
+static char *dimstrcpy(char *buffer, long ndims,long *dims)
+{
+     int idx;
+     char *ptr = buffer;
+     *ptr++='(';
+     for (idx = 0; idx<ndims; idx++)
+          ptr += sprintf(ptr,"%d,",dims[idx]);
+     ptr[-1] = ')';
+     return buffer;
+}
+
+static long get_dtype_npy_type(PyObject *dtype)
+{
+     PyObject *dtype_num = PyObject_GetAttrString(dtype,"num");
+     long npy_type = NPY_NOTYPE;
+     if (! (dtype_num && PyInt_Check(dtype_num))) {
+          ERRPRINT("numpy.ndarray.dtype did not have a proper num\n");
+          goto exit;
+     }
+     npy_type = PyInt_AsLong(dtype_num);
+  exit:
+     Py_DECREF(dtype_num);
+     return npy_type;
+}
+
+/************************
+ * ndstruct_to_mxarray - convert a ndarray containing fields to a structure mxArray
+ ************************/
+static mxArray *ndstruct_to_mxarray(PyObject *object, PyObject *dtype, int ndims, long *dims,int length)
+{
+     PyObject *contiguous = NULL;
+     PyObject *fields = NULL;
+     int nfields, i, k, npy_type;
+     char **keys = NULL;
+     PyObject **stringized = NULL;
+     PyObject *names = NULL;
+     PyObject **data;
+     mxArray *result;
+     
+     VERBOSEPRINT("Entering ndstruct_to_mxarray\n");
+     fields = PyObject_GetAttrString(dtype,"fields");
+     if (! PyMapping_Check(fields)) {
+          ERRPRINT("Failed to get fields from dtype\n");
+          goto exit;
+     }
+     names = PyObject_GetAttrString(dtype,"names");
+     if (! PyTuple_Check(names)) {
+          ERRPRINT("Failed to get names from dtype\n");
+          goto exit;
+     }
+     nfields = PyMapping_Size(fields);
+     VERBOSEPRINT1("%d fields detected \n",nfields);
+
+     keys = (char **)mxCalloc(nfields, sizeof(char*));
+     stringized = (PyObject **)mxCalloc(nfields, sizeof(PyObject *));
+     
+     /*
+     ** Get the field names from "dtype.names" - that's an ordered tuple, not a
+     ** dictionary with unpredictable order.
+     */
+     for (i=0; i<nfields; i++) {
+          PyObject *key = PyTuple_GetItem(names, i);
+          if (! key) {
+               ERRPRINT1("Failed to get key from tuple for field # %d\n",i);
+               goto exit;
+          }
+          stringized[i] = PyObject_Str(key);
+          if (! PyString_Check(stringized[i])) {
+               ERRPRINT1("Key # %d couldn't be stringized\n",i);
+               goto exit;
+          }
+          keys[i] = PyString_AsString(stringized[i]);
+          VERBOSEPRINT2("Field #%d is %s\n",i,keys[i]);
+     }
+
+     /*
+     ** Check all fields to make sure they are all objects.
+     */
+     for (i=0; i<nfields; i++) {
+          PyObject *subtype;
+          PyObject *item;
+          VERBOSEPRINT1("Checking field %s\n",keys[i]);
+          item = PyMapping_GetItemString(fields, keys[i]);
+          if (! PyTuple_Check(item)) {
+               ERRPRINT1("Did not get a tuple item for field %s\n",keys[i]);
+               if (item) Py_DECREF(item);
+               goto exit;
+          }
+          subtype = PyTuple_GetItem(item,0);
+          if (! subtype) {
+               ERRPRINT1("Failed to get sub-type from tuple for field %s\n",keys[i]);
+               goto exit;
+          }
+          if (! PyArray_DescrCheck(subtype)) {
+               ERRPRINT2("Subtype for field %s was not an array descriptor.\nIt was type %s\n",keys[i],subtype->ob_type->tp_name);
+               Py_DECREF(item);
+               goto exit;
+          }
+          npy_type = get_dtype_npy_type(subtype);
+          Py_DECREF(item);
+          if (npy_type != NPY_OBJECT) {
+               ERRPRINT1("Subtype for field %s is not object - not supported\n",keys[i]);
+               goto exit;
+          }
+     }
+     result = mxCreateStructArray(ndims, dims, nfields, keys);
+     if (! result) {
+          ERRPRINT("Failed to allocate mx struct array");
+          goto exit;
+     }
+     contiguous = PyArray_GETCONTIGUOUS(object);
+     data = (PyObject **) PyArray_DATA(contiguous);
+
+     for (i = 0; i < length; i++) {
+          VERBOSEPRINT("Encoding element # %d\n",i);
+          for (k = 0; k < nfields; k++) {
+               mxArray *sub;
+               VERBOSEPRINT1("Encoding field %s\n",keys[k]);
+               sub = python_to_mxarray(*data++);
+               if (! sub) {
+                    ERRPRINT2("Failed to encode object at position %d, field %s",i,keys[k]);
+                    goto exit;
+               }
+               mxSetFieldByNumber(result, i, k, sub);
+          }
+     }
+  exit:
+     if (fields)
+          Py_DECREF(fields);
+     if (names)
+          Py_DECREF(names);
+     if (keys)
+          mxFree(keys);
+     if (stringized) {
+          for (i = 0; i<nfields; i++) {
+               if (stringized[i])
+                    Py_DECREF(stringized[i]);
+          }
+          mxFree(stringized);
+     }
+     if (contiguous) {
+          Py_DECREF(contiguous);
+     }
+     VERBOSEPRINT("Exiting ndstruct_to_mxarray\n");
+     return result;
+}
+/***********************
+ * ndarray_to_mxarray - convert an numpy.ndarray to an MX array
+ ***********************/
+static mxArray *ndarray_to_mxarray(PyObject *object)
+{
+     Py_ssize_t ndims;
+     long *dims = NULL;
+     mxArray *result = NULL;
+     void *data = NULL;
+     int i;
+     int length=1;
+     PyObject *shape = NULL;
+     PyObject *dtype = NULL;
+     PyObject *iter = NULL;
+     PyObject *contiguous = NULL;
+     PyObject *dtype_num = NULL;
+     mxClassID mxClass = 0;
+     long npy_type = NPY_NOTYPE;
+     char buffer[1024];
+
+     /* Get the array dimensions */
+     VERBOSEPRINT("Entering ndarray_to_mxarray\n");
+     shape = PyObject_GetAttrString(object, "shape");
+     if (! shape) {
+          ERRPRINT("numpy.ndarray did not have a shape\n");
+          goto error;
+     }
+     if (! PyTuple_Check(shape)) {
+          ERRPRINT("numpy.ndarray did not have a tuple shape\n");
+          goto error;
+     }
+     ndims = PyTuple_Size(shape);
+     VERBOSEPRINT1("Array has %d dimensions.\n",ndims);
+     dims = (long *)mxMalloc(sizeof(long)*ndims);
+     for( i=0; i< ndims; i++) {
+          PyObject *obDim = PyTuple_GetItem(shape,i);
+          if (! PyInt_Check(obDim)) {
+               ERRPRINT("Array shape is not a tuple of integers\n");
+               goto error;
+          }
+          dims[i] = PyInt_AsLong(obDim);
+          length *= dims[i];
+     }
+     VERBOSEPRINT1("array dimensions: %s\n",dimstrcpy(buffer,ndims,dims));
+     /*
+      * Handle different dtypes
+      */
+     dtype = PyObject_GetAttrString(object, "dtype");
+     if (! dtype) {
+          ERRPRINT("numpy.ndarray did not have a dtype\n");
+          goto error;
+     }
+     npy_type = get_dtype_npy_type(dtype);
+     switch(npy_type) {
+     case NPY_VOID: /* This is where structures show up */
+          VERBOSEPRINT("numpy array has type NPY_VOID\n");
+          if (PyArray_HASFIELDS(object)) {
+               result = ndstruct_to_mxarray(object, dtype, ndims, dims, length);
+          } else {
+               ERRPRINT("NPY_VOID array does not have fields\n");
+          }
+          break;
+     case NPY_OBJECT: {
+          PyObject *iter = PyObject_GetAttrString(object,"flat");
+          int idx;
+
+          VERBOSEPRINT("Decoding array of objects\n");
+          if (! (iter && PyIter_Check(iter))) {
+               ERRPRINT("numpy.ndarray.flat did not return a proper iterator\n");
+               goto error;
+          }
+          result = mxCreateCellArray(ndims, dims);
+          if (! result) {
+               strcpy(buffer,"mxCreateCellArray returned NULL for an array of dimension ");
+               strcpy(dimstrcpy(buffer+strlen(buffer), ndims, dims),"\n");
+               ERRPRINT(buffer);
+               goto error;
+          }
+          for (idx = 0; idx < length; idx++) {
+               PyObject *py_value;
+               mxArray *mx_value;
+               py_value = (*iter->ob_type->tp_iternext)(iter);
+               if (! py_value) {
+                    ERRPRINT("numpy.ndarray's __iter__'s next function failed\n");
+                    goto error;
+               }
+               Py_INCREF(py_value);
+               mx_value = python_to_mxarray(py_value);
+               Py_DECREF(py_value);
+               if (! mx_value) {
+                    ERRPRINT("ndarray_to_mxarray failed while trying to translate a subobject to an mxarray\n");
+                    goto error;
+               }
+               mxSetCell(result, idx, mx_value);
+          }
+          break;
+     }
+     case NPY_DOUBLE:
+          mxClass = mxDOUBLE_CLASS;
+          goto NPY_ALL;
+
+     case NPY_FLOAT:
+          mxClass = mxSINGLE_CLASS;
+          goto NPY_ALL;
+     case NPY_BYTE:
+          mxClass = mxINT8_CLASS;
+          goto NPY_ALL;
+     case NPY_UBYTE:
+          mxClass = mxUINT8_CLASS;
+          goto NPY_ALL;
+     case NPY_SHORT:
+          mxClass = mxINT16_CLASS;
+          goto NPY_ALL;
+     case NPY_USHORT:
+          mxClass = mxUINT16_CLASS;
+          goto NPY_ALL;
+     case NPY_INT:
+     case NPY_LONG:
+          mxClass = mxINT32_CLASS;
+          goto NPY_ALL;
+     case NPY_UINT:
+     case NPY_ULONG:
+          mxClass = mxUINT32_CLASS;
+          goto NPY_ALL;
+     case NPY_LONGLONG:
+          mxClass = mxINT64_CLASS;
+          goto NPY_ALL;
+     case NPY_ULONGLONG:
+          mxClass = mxUINT64_CLASS;
+     NPY_ALL:
+          VERBOSEPRINT2("Type #%d, mxClassID = %d\n",npy_type, mxClass);
+          contiguous = PyArray_ContiguousFromAny(object, npy_type, 1,1024);
+          VERBOSEPRINT2("Length = %d, item size = %d\n",length, PyArray_ITEMSIZE(contiguous));
+          result = mxCreateNumericArray(ndims, dims, mxClass,0);
+          VERBOSEPRINT("Created mxArray\n");
+          memcpy(mxGetData(result), PyArray_BYTES(contiguous), length * PyArray_ITEMSIZE(contiguous));
+          VERBOSEPRINT("Copied array\n");
+          Py_DECREF(contiguous);
+          break;
+     case NPY_CFLOAT: {
+          int i;
+          float *real,*imaginary;
+          float *npy_data;
+
+          contiguous = PyArray_ContiguousFromAny(object, NPY_CFLOAT, 1,1024);
+          result = mxCreateNumericArray(ndims, dims, mxSINGLE_CLASS, 1);
+          real = (float *)mxGetData(result);
+          npy_data = (float *)PyArray_BYTES(contiguous);
+          imaginary = (float *)mxGetImagData(result);
+          for (i = 0; i < length; i++) {
+               real[i] = npy_data[2*i];
+               imaginary[i] = npy_data[2*i+1];
+          }
+          break;
+     }
+
+      case NPY_CDOUBLE: {
+          int i;
+          double *real,*imaginary;
+          double *npy_data;
+          contiguous = PyArray_ContiguousFromAny(object, NPY_CDOUBLE, 1,1024);
+          VERBOSEPRINT("Made complex double array contiguous.\n");
+          result = mxCreateNumericArray(ndims, dims, mxDOUBLE_CLASS, 1);
+          VERBOSEPRINT("Created complex mxArray of doubles.\n");
+          real = (double *)mxGetData(result);
+          npy_data = (double *)PyArray_BYTES(contiguous);
+          imaginary = (double *)mxGetImagData(result);
+          for (i = 0; i < length; i++) {
+               real[i] = npy_data[2*i];
+               imaginary[i] = npy_data[2*i+1];
+          }
+          break;
+      }
+     default: {
+          PyObject *dtypename=PyObject_GetAttrString(dtype,"str");
+          ERRPRINT1("Unhandled dtype: %s",PyString_AsString(dtypename));
+          Py_DECREF(dtypename);
+          goto error;
+     }
+     }
+     goto exit;
+  error:
+     if (dims)
+          mxFree(dims);
+     result=mxCreateNumericMatrix(1,1,mxLOGICAL_CLASS,0);
+     data = mxGetData(result);
+     *((bool *)data) = 0;
+  exit:
+     if (dims)
+          mxFree(dims);
+     if (shape)
+          Py_DECREF(shape);
+     if (dtype)
+          Py_DECREF(dtype);
+     if (dtype_num)
+          Py_DECREF(dtype_num);
+     if (iter)
+          Py_DECREF(iter);
+     VERBOSEPRINT("Exiting ndarray_to_mxarray\n");
+     return result;
+}
+
+/******************************
+ * Convert a python dictionary to a 1x1 struct matrix
+ ******************************/
+static mxArray *mapping_to_mxarray(PyObject *object)
+{
+     int nItems,i,pass;
+     PyObject *items=NULL;
+     mxArray *result=NULL;
+     char **keys = NULL;
+     PyObject **stringized = NULL;
+     mxArray *mxValue;
+
+     VERBOSEPRINT("Entering mapping_to_mxarray\n");
+     nItems = PyMapping_Length(object);
+     VERBOSEPRINT1("%d mapping keys\n",nItems);
+     keys = (char **)mxCalloc(nItems, sizeof(char *));
+     stringized = (PyObject **)mxCalloc(nItems, sizeof(PyObject *));
+     if (! keys) {
+          ERRPRINT("Not enough memory for keys array\n");
+          goto exit;
+     }
+     items = PyMapping_Items(object);
+     if (! PyList_Check(items)) {
+          ERRPRINT("Failed to get list of items from dictionary.\n");
+          goto exit;
+     }
+     /*
+     ** Loop twice - once to get the keys from the tuples and make the array
+     **              a second time to fill in the values for the array
+     */
+     for (pass = 0; pass < 2; pass++) {
+          if (pass == 1) {
+               /*
+               ** Create the array on the second pass (after we have the keys)
+               */
+               result = mxCreateStructMatrix(1,1,nItems,keys);
+          }
+          for (i=0; i<nItems; i++) {
+               PyObject *kv;
+               PyObject *item = PyList_GetItem(items,i);
+               if (! PyTuple_Check(item)) {
+                    ERRPRINT1("Item # %d was not a tuple.\n",i);
+                    goto exit;
+               } 
+               kv = PyTuple_GetItem(item, pass);
+               if (! kv) {
+                    ERRPRINT2("Failed to get %s for item # %d\n",pass?"key":"value",i);
+                    goto exit;
+               }
+               switch(pass) {
+               case 0:  /* Key */
+                    stringized[i] = PyObject_Str(kv);
+                    if (! PyString_Check(stringized[i])) {
+                         ERRPRINT("Key # %d did not stringize\n",i);
+                         goto exit;
+                    }
+                    keys[i] = PyString_AsString(stringized[i]);
+                    break;
+               case 1: /* value */
+                    mxValue = python_to_mxarray(kv);
+                    if (! mxValue) {
+                         ERRPRINT1("Value for %s was untranslatable\n",keys[i]);
+                         goto exit;
+                    }
+                    mxSetField(result, 0, keys[i], mxValue);
+                    break;
+               }
+          }
+     }
+  exit:
+     if (items)
+          Py_DECREF(items);
+     if (keys)
+          mxFree(keys);
+     if (stringized) {
+          for (i=0; i<nItems; i++) {
+               if (stringized[i])
+                    Py_DECREF(stringized[i]);
+          }
+          mxFree(stringized);
+     }
+     VERBOSEPRINT("Exiting mapping_to_mxarray\n");
+     return result;
+}
+
+/****************************************
+ * sequence_to_mxarray - convert an object that follows the sequence protocol
+ *                       to an mxArray of the sequence's objects
+ ****************************************/
+static mxArray *sequence_to_mxarray(PyObject *object)
+{
+     mxArray *result=NULL;
+     int nItems = 0;
+     int i;
+
+     VERBOSEPRINT("Entering sequence_to_mxarray\n");
+     nItems = PySequence_Size(object);
+     if (nItems == -1) {
+          ERRPRINT("Failed to get sequence size.\n");
+          goto exit;
+     }
+     VERBOSEPRINT1("%d items found\n",nItems);
+     result = mxCreateCellMatrix(1,nItems);
+     for (i=0; i<nItems; i++) {
+          PyObject *item = PySequence_GetItem(object, i);
+          mxArray *mxItem;
+          if (! item) {
+               ERRPRINT1("Failed to get sequence item # %d",i);
+               goto exit;
+          }
+          mxItem = python_to_mxarray(item);
+          Py_DECREF(item);
+          if (! mxItem) {
+               ERRPRINT1("Failed to encode item # %d",i);
+               goto exit;
+          }
+          mxSetCell(result,i,mxItem);
+     }
+     VERBOSEPRINT("Exiting sequence_to_mxarray\n");
+  exit:
+     return result;
 }
 
 mxArray *python_to_mxarray(PyObject *object)
 {
-
+     void *data;
+     mxArray *result=0;
+     VERBOSEPRINT("Entering python_to_mxarray\n");
+     if (strcmp(object->ob_type->tp_name,"numpy.ndarray")==0) {
+          VERBOSEPRINT("Decoding ndarray\n");
+          result = ndarray_to_mxarray(object);
+     } else if (PyInt_Check(object)) {
+          VERBOSEPRINT("Decoding int\n");
+          result=mxCreateNumericMatrix(1,1,mxINT32_CLASS,0);
+          data = mxGetData(result);
+          *((long *)data) = PyInt_AsLong(object);
+     } else if (PyFloat_Check(object)) {
+          VERBOSEPRINT("Decoding double\n");
+          result=mxCreateNumericMatrix(1,1,mxDOUBLE_CLASS,0);
+          data = mxGetData(result);
+          *((double *)data) = PyFloat_AS_DOUBLE(object);
+     } else if (! PyObject_IsTrue(object)) {
+          VERBOSEPRINT("Decoding False\n");
+          result=mxCreateNumericMatrix(1,1,mxLOGICAL_CLASS,0);
+          data = mxGetData(result);
+          *((bool *)data) = 0;
+     } else if (PyString_Check(object)) {
+          Py_ssize_t length;
+          PyObject *encoded;
+          char *ptr;
+          VERBOSEPRINT("Decoding string\n");
+          encoded = PyObject_CallMethod(object, "encode", "s,s", "utf_16","replace");
+          if (! encoded) {
+               ERRPRINT("Failed to encode string in python_to_mxarray\n");
+               PrintStackTrace();
+               return NULL;
+          }
+          PyString_AsStringAndSize(encoded,&ptr, &length);
+          /* First character is the encoding indicator */
+          length-=sizeof(mxChar);
+          ptr += sizeof(mxChar);
+          VERBOSEPRINT1("String length: %d\n",length);
+          result=mxCreateNumericMatrix(1,length/sizeof(mxChar),mxCHAR_CLASS,0);
+          data = mxGetData(result);
+          memcpy(data,ptr,length);
+     } else if (PyUnicode_Check(object)) {
+          Py_ssize_t length;
+          PyObject *encoded;
+          char *ptr;
+          VERBOSEPRINT("Decoding unicode string.\n");
+          encoded = PyUnicode_AsUTF16String(object);
+          PyString_AsStringAndSize(encoded,&ptr, &length);
+          /* First character is the encoding indicator */
+          length-=sizeof(mxChar);
+          ptr += sizeof(mxChar);
+          VERBOSEPRINT1("String length: %d\n",length);
+          result=mxCreateNumericMatrix(1,length/sizeof(mxChar),mxCHAR_CLASS,0);
+          data = mxGetData(result);
+          memcpy(data,ptr,length);
+     } else if (PyMapping_Check(object)) {
+          VERBOSEPRINT("Decoding mapping\n");
+          result = mapping_to_mxarray(object);
+     } else if (PySequence_Check(object)) {
+          VERBOSEPRINT("Decoding sequence\n");
+          result = sequence_to_mxarray(object);
+     } else {
+          char buffer[1024];
+          sprintf(buffer,"Unknown object type: %s\n",object->ob_type->tp_name);
+          ERRPRINT(buffer);
+     }
+     VERBOSEPRINT("Exiting python_to_mxarray\n");
+     return result;
 }

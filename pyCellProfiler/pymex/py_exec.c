@@ -5,7 +5,7 @@
 void 
 mexFunction(int anlhs, mxArray *aplhs[], int anrhs, const mxArray *aprhs[])
 {
-     Py_Initialize();
+     pymex_init();
 
      PyRun_SimpleString(get_arg_string(anrhs, aprhs, 0));
 

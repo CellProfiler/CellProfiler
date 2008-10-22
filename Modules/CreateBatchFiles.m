@@ -102,6 +102,22 @@ if strncmp(BatchSavePath, '.',1)
     end
 end
 
+%% Check that Batch_data.mat does not already exist
+PathAndFileName = fullfile(BatchSavePath, 'Batch_data.mat');
+if exist(PathAndFileName,'file') == 2
+    button = CPquestdlg('Batch_data.mat already exists in the output directory.  Are you sure you want to overwrite Batch_data.mat?',...
+        'Overwrite Batch_data');
+    if ~strcmp(button,'Yes')
+        
+        set(handles.timertexthandle,'string','Canceling after current module')
+        CPmsgbox(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+        CPclosefigure(handles,CurrentModule)
+        return
+
+    end
+end
+
+
 %%% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
     error(['Image processing was canceled because ', ModuleName, ' must be the last module in the pipeline.']);
@@ -180,7 +196,6 @@ handles = rmfield(handles, 'FunctionHandles');
 
 %%% Saves the altered handles in a file which the user will feed to
 %%% the remote machines.
-PathAndFileName = fullfile(BatchSavePath, ['Batch_data.mat']);
 save(PathAndFileName, 'handles');
 
 %%% Reverts to the preserved handles.  (Probably not necessary, but simpler.)

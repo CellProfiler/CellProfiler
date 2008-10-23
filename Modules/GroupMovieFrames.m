@@ -171,6 +171,8 @@ for n = 1:length(ImageName)
         fieldname = ['Filename', ImageName{n}];
         [SubdirectoryPathName,BareFileName,ext] = fileparts(char(CurrentFileName(1))); %#ok Ignore MLint
         CurrentFileNameWithFrame = [BareFileName, '_', num2str(cell2mat(CurrentFileName(2))),ext];
+        CurrentFileNameWithFrame = fullfile(SubdirectoryPathName, CurrentFileNameWithFrame);
+        
         % Saves the loaded image to the handles structure.  The field is named
         % appropriately based on the user's input, and put into the Pipeline
         % substructure so it will be deleted at the end of the analysis batch.

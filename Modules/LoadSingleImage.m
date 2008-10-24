@@ -205,7 +205,7 @@ if handles.Current.SetBeingAnalyzed == 1
     %%% SAVE DATA TO HANDLES %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    for n = 1:length(ImageName),
+    for n = 1:length(ImageName)*handles.Current.NumberOfImageSets,
         handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
         handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
     end

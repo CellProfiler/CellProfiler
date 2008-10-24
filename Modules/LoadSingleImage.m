@@ -204,9 +204,14 @@ if handles.Current.SetBeingAnalyzed == 1
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% SAVE DATA TO HANDLES %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    for n = 1:length(ImageName)*handles.Current.NumberOfImageSets,
-        handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
-        handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
+    
+    % Since there's no need to re-load the same image multiple times,
+    % replicate the filename/pathname measurement the neccesary number of 
+    % times here
+    for m = 1:handles.Current.NumberOfImageSets,
+        for n = 1:length(ImageName),
+            handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n}, m);
+            handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname, m);
+        end
     end
 end

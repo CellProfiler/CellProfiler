@@ -20,7 +20,7 @@ function LoadedImage = CPimread(CurrentFileName, flex_idx)
 
 if nargin == 0 %returns the vaild image extensions
     formats = imformats;
-    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'}]; %LoadedImage is not a image here, but rather a set
+    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'} {'raw'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 1,
     % The following lines make sure that all directory separation
@@ -30,6 +30,9 @@ elseif nargin == 1,
     
     %%% Handles a non-Matlab readable file format.
     [Pathname, FileName, ext] = fileparts(CurrentFileName);
+    
+    
+    
     if strcmp('.DIB', upper(ext)),
         %%% Opens this non-Matlab readable file format.  Compare to
         %%% Matlab Central file id 11096, which does the same thing.
@@ -78,6 +81,27 @@ elseif nargin == 1,
 	  LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
 	end
         fclose(fid);
+    elseif strcmp('.RAW',upper(ext)),
+        fid = fopen(CurrentFileName,'r');
+        if (fid == -1),
+            error(['The file ', CurrentFileName, ' could not be opened. CellProfiler attempted to open it in RAW file format.']);
+        end
+        A = fread(fid,52,'uint8=>uint8');
+        HeaderLength = from_little_endian(A(1:4))
+        Width = from_little_endian(A(17:20))
+        Height = from_little_endian(A(21:24))
+        BitDepth = from_little_endian(A(25:28))
+        LoadedImage = zeros(Height,Width);
+	
+	  % The 'l' causes convertion from little-endian byte order.
+	  [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
+	  if Count < (Width * Height),
+	    fclose(fid);
+	    error(['End-of-file encountered while reading ', CurrentFileName, '. Have you entered the proper size and number of channels for these images?']);
+	  end
+	  LoadedImage(:,:,1) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
+    fclose(fid);
+    
     elseif strcmp('.MAT',upper(ext))
         load(CurrentFileName);
         if exist('Image','var')

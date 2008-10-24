@@ -87,10 +87,10 @@ elseif nargin == 1,
             error(['The file ', CurrentFileName, ' could not be opened. CellProfiler attempted to open it in RAW file format.']);
         end
         A = fread(fid,52,'uint8=>uint8');
-        HeaderLength = from_little_endian(A(1:4))
-        Width = from_little_endian(A(17:20))
-        Height = from_little_endian(A(21:24))
-        BitDepth = from_little_endian(A(25:28))
+        HeaderLength = from_little_endian(A(1:4));
+        Width = from_little_endian(A(17:20));
+        Height = from_little_endian(A(21:24));
+        BitDepth = from_little_endian(A(25:28));
         LoadedImage = zeros(Height,Width);
 	
 	  % The 'l' causes convertion from little-endian byte order.

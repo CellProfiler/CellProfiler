@@ -388,22 +388,34 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         %%% original file. This check is not done here if this is an avi
         %%% (movie) file, because otherwise the check would be done on each
         %%% frame of the movie.
-        if exist(FileAndPathName) == 2 %#ok Ignore MLint
-            try
-                Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
-            catch
+        
+        %%% If setting up for a batch run, some filenames may be
+        %%% overwritten. Warn the user this could occur and urge them to
+        %%% check their settings
+        if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (handles.Current.SetBeingAnalyzed == 1)  && ~isfield(handles.Current, 'BatchInfo'),
+            CPwarndlg(['You are setting up for a batch run but you have selected that any existing images with the same name should not be overwritten without confirming. When running on the cluster, there is no way to confirm overwriting since no dialog boxes are allowed. Check your overwriting settings in ',ModuleName,'.']);
+        %%% If during a batch run we run into a file that could be
+        %%% overwritten, terminate unconditionally with an error (since we
+        %%% can't confirm)
+        elseif strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && isfield(handles.Current, 'BatchInfo')
+            if exist(FileAndPathName,'file')
                 error(['Image processing was canceled in the ', ModuleName, ' module because the settings will cause the file "', FileAndPathName,'" to be overwritten and you have specified to not allow overwriting without confirming. When running on the cluster there is no way to confirm overwriting (no dialog boxes allowed), so image processing was canceled.'])
             end
-            if strcmpi(Answer,'Skip Module')
-                return;
-            end
-            if strcmpi(Answer,'Cancel')
-                %%% This should cause a cancel so no further processing is done
-                set(handles.timertexthandle,'string','Canceling after current module')
-                CPmsgbox(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
-                CPclosefigure(handles,CurrentModule)
-                return
-                % error(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+        %%% Otherwise, prompt the user to continue or cancel execution
+        %%% during a non-batch run
+        else
+            if exist(FileAndPathName,'file') %#ok Ignore MLint
+                Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
+                switch lower(Answer),
+                    case 'Skip Module', 
+                        return;
+                    case 'Cancel',
+                        %%% This should cause a cancel so no further processing is done
+                        set(handles.timertexthandle,'string','Canceling after current module')
+                        CPmsgbox(['Image processing was canceled in the ', ModuleName, ' module at your request.'])
+                        CPclosefigure(handles,CurrentModule)
+                        return;
+                end
             end
         end
     end

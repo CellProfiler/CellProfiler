@@ -1046,7 +1046,7 @@ if any(UpdatedModules),
         str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
     end
     str = str(~cellfun('isempty',str));
-    CPwarndlg(str,'LoadPipelines: Some modules updated','modal');
+    CPwarndlg(str,'LoadPipelines: Some modules updated','replace');
 end
 
 % Let the user know which module had their empty placeholder setting changed to "Do not use"
@@ -1058,7 +1058,7 @@ if any(PlaceholderUpdate),
         str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
     end
     str = str(~cellfun('isempty',str));
-    CPwarndlg(str,'LoadPipelines: Some modules updated','modal');
+    CPwarndlg(str,'LoadPipelines: Some modules updated','replace');
 end
 
 delete(get(handles.variablepanel,'children'));

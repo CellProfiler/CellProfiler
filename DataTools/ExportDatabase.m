@@ -79,7 +79,7 @@ if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
 DatabaseType = answer(3);
-TablePrefix = answer(4);
+TablePrefix = char(answer(4));
 if isempty(DatabaseName) | isempty(SQLScriptFileName)
     error('A database name and an SQL script name must be specified!');
     return

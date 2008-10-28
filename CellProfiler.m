@@ -4505,9 +4505,9 @@ else
                             FigHandle = -1;
                             try
                                 FigHandle = handles.Current.(['FigureNumberForModule' CPtwodigitstring(SlotNumber)]);
-                            end
-                            if ishandle(FigHandle)
-                                CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,FigHandle);
+                                if ishandle(FigHandle)
+                                    CPupdatefigurecycle(handles.Current.SetBeingAnalyzed,FigHandle);
+                                end
                             end
                             %%% We apparently ran the module successfully, so record a Zero (unless we're restarting)
                             if ~ strcmp(ModuleName, 'Restart')

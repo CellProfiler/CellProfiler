@@ -86,16 +86,18 @@ BatchFilePrefix = Answers{1};
 %%% We want to load the handles from the batch process
 clear handles
 
+%%% Load the data file
+full_file = fullfile(BatchPath,[BatchFilePrefix,'data.mat']);
+MsgBoxLoad = CPmsgbox('Loading first file.  Please wait...');
+load(full_file);
+close(MsgBoxLoad)
+
 %%% Quick check if it seems to be a CellProfiler file or not
-s = whos('-file',fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
-if ~any(strcmp('handles',cellstr(cat(1,s.name)))),
-    CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',[BatchFilePrefix,'data.mat']))
+s = who;
+if ~any(strcmp(s, 'handles')),
+    CPerrordlg(sprintf('The file %s does not seem to be a CellProfiler output file.',full_file))
     return
 end
-%%% Load the data file
-MsgBoxLoad = CPmsgbox('Loading first file.  Please wait...');
-load(fullfile(BatchPath,[BatchFilePrefix,'data.mat']));
-close(MsgBoxLoad)
 
 Fieldnames = fieldnames(handles.Measurements);
 FileList = dir(BatchPath);

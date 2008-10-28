@@ -102,8 +102,10 @@ def CheckParameters(my_batch):
             return 'The %s, "%s", must be writeable'%(dir_key,writeable[dir_key])
     if not os.path.exists(txt_output):
         os.mkdir(txt_output)
+        os.chmod(txt_output,0666)
     if not os.path.exists(status):
         os.mkdir(status)
+        os.chmod(status,0666)
 
 def SendMail(recipient,body):
     if os.name != 'nt':

@@ -20,7 +20,7 @@ function LoadedImage = CPimread(CurrentFileName, flex_idx)
 
 if nargin == 0 %returns the vaild image extensions
     formats = imformats;
-    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'} {'raw'}]; %LoadedImage is not a image here, but rather a set
+    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'} {'raw'},{'flex'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 1,
     % The following lines make sure that all directory separation

@@ -16,6 +16,7 @@
 
 #else
 #include <dirent.h>
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -74,6 +75,22 @@ struct file *add_file(
      return files;
 }
 
+int link_to_dir(const char *dir_name, const char *lnk_name)
+{
+  struct stat st;
+  char *name;
+
+  asprintf(&name, "%s/%s", dir_name, lnk_name);
+  if (stat(name, & st) == -1) {
+    free(name);
+    return 0;
+  }
+  
+  free(name);
+  return S_ISDIR(st.st_mode);
+}
+  
+
 struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;
@@ -94,10 +111,11 @@ struct file *dir(const char *dir_name, int *nfiles)
      }
 
      while (dirent = readdir(dir)) {
+          int is_dir = (dirent->d_type == DT_DIR) || ((dirent->d_type == DT_LNK) && link_to_dir(dir_name, dirent->d_name));
           files = add_file(
                files, 
                dirent->d_name,
-               dirent->d_type == DT_DIR,
+               is_dir,
                nfiles, &size);
      }
      closedir(dir);

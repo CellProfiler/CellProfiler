@@ -166,7 +166,7 @@ endbutton = uicontrol('tag','endzoombutton','style','pushbutton','string','X',..
     'delete(zoomparams.dispbox1);delete(zoomparams.dispbox2);delete(findobj(gcf,''tag'',''endzoombutton''));delete(findobj(gcf,''Type'',''axes'',''Visible'',''off''));clear zoomparams;']);
 zoomparams.dispbox1 = uicontrol('style','frame',...
     'backgroundcolor','k',...
-    'Position',PointsPerPixel*[FigurePosition(3)-160 0 165 27]);
+    'Position',PointsPerPixel*[FigurePosition(3)-160 0 200 27]);
 msgstr = sprintf('x = %3.0f;  y = %3.0f',0,0);
 
 zoomparams.dispbox2 = uicontrol('style','text',...
@@ -183,28 +183,43 @@ children = findobj(zoomparams.currax,'type','image');
 if isempty(children)
     return;
 end
-posn = get(zoomparams.refax,'currentpoint');
-posn = posn(1,:);
 
-x = posn(1,1);
-y = posn(1,2);
-z = posn(1,3);
+axes = findobj(FigHandle,'type','axes');
+AxesHit = 0;
 
-% x and y are already in expressed in proper pixel coordinates
-x1 = min(max(1,x-0.5*zoomparams.xdist),zoomparams.xrange-zoomparams.xdist) + 0.5;
-y1 = min(max(1,y-0.5*zoomparams.ydist),zoomparams.yrange-zoomparams.ydist) + 0.5;
-z1 = min(max(1,z-0.5*zoomparams.zdist),zoomparams.zrange-zoomparams.zdist) + 0.5;
-x2 = x1 + zoomparams.xdist;
-y2 = y1 + zoomparams.ydist;
-z2 = z1 + zoomparams.zdist;
- 
+for i=1:length(axes)
+    posn = get(axes(i),'currentpoint');
+    posn = posn(1,:);
 
-if x >= zoomparams.oldxlim(1) && x <= zoomparams.oldxlim(2) && ...
-        y >= zoomparams.oldylim(1) && y <= zoomparams.oldylim(2) && ...
-    z >= zoomparams.oldzlim(1) && z <= zoomparams.oldzlim(2)
-    set(zoomparams.dispbox2,'string',sprintf('x = %3.2f;  y = %3.2f',x,y));
-    set(zoomparams.currax,'xlim',[x1 x2],'ylim',[y1 y2]);
-else
+    x = posn(1,1);
+    y = posn(1,2);
+    z = posn(1,3);
+
+    xlim = get(axes(i),'xlim');
+    ylim = get(axes(i),'ylim');
+    if x<xlim(1) || x>xlim(2) || y<ylim(1) || y>ylim(2)
+        continue;
+    end
+
+    % x and y are already in expressed in proper pixel coordinates
+    x1 = min(max(1,x-0.5*zoomparams.xdist),zoomparams.xrange-zoomparams.xdist) + 0.5;
+    y1 = min(max(1,y-0.5*zoomparams.ydist),zoomparams.yrange-zoomparams.ydist) + 0.5;
+    z1 = min(max(1,z-0.5*zoomparams.zdist),zoomparams.zrange-zoomparams.zdist) + 0.5;
+    x2 = x1 + zoomparams.xdist;
+    y2 = y1 + zoomparams.ydist;
+    z2 = z1 + zoomparams.zdist;
+
+
+    if x >= zoomparams.oldxlim(1) && x <= zoomparams.oldxlim(2) && ...
+            y >= zoomparams.oldylim(1) && y <= zoomparams.oldylim(2) && ...
+        z >= zoomparams.oldzlim(1) && z <= zoomparams.oldzlim(2)
+        set(zoomparams.dispbox2,'string',sprintf('x=%3.2f; y=%3.2f',x,y));
+        set(zoomparams.currax,'xlim',[x1 x2],'ylim',[y1 y2]);
+        AxesHit = 1;
+        break;
+    end
+end
+if ~ AxesHit
     set(zoomparams.dispbox2,'string',sprintf('x = %3.0f;  y = %3.0f',0,0));
     set(zoomparams.currax,'xlim',zoomparams.oldxlim,'ylim',zoomparams.oldylim);
 end

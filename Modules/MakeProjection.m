@@ -87,7 +87,7 @@ ProjectionType = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %infotypeVAR03 = imagegroup indep
 ProjectionImageName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Are the images you want to use to be loaded straight from a Load Images module, or are they being produced by the pipeline? Warning this only works currently for the Average option !
+%textVAR04 = Are the images you want to use to be loaded straight from a Load Images module, or are they being produced by the pipeline? 
 %choiceVAR04 = Load Images module
 %choiceVAR04 = Pipeline
 SourceIsLoadedOrPipeline = char(handles.Settings.VariableValues{CurrentModuleNum,4});

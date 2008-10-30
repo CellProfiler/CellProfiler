@@ -57,9 +57,11 @@ for i = 1:length(directory_str),
 end
 
 % Get svn version number
-cd CPsubfunctions
+current_search_path = pathdef;
+addpath ./Modules ./CPsubfunctions DataTools ImageTools Help
 svn_ver = CPsvnloopfunctions;
-cd ..
+% Restore pre-existing paths
+path(current_search_path);
 
 switch lower(usage),
     case 'single',

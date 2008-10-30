@@ -13,7 +13,6 @@
  */
 #if defined(WIN32) || defined(_WIN32)
 #include <windows.h>
-
 #else
 #include <dirent.h>
 #include <sys/stat.h>
@@ -21,6 +20,7 @@
 #include <errno.h>
 #include <string.h>
 #endif
+
 #include "mex.h"
 #include "string.h"
 
@@ -36,20 +36,16 @@ int cmp_file(const void *a, const void *b)
      return strcmp(f->name, g->name);
 }
 
-/* * * * * * * 
+/*
  * add_file - add a file to the "file" array
  *    files  - points to current array of files. Initally null.
  *    name   - file name
  *    is_dir - 0 if not a directory otherwise is a directory
  *    pCount - points to place to store # of elements
  *    pSize  - points to array size
- * * * * * * */
-struct file *add_file(
-     struct file *files,
-     const char *name, 
-     int is_dir, 
-     int *pCount, 
-     int *pSize)
+ */
+struct file *add_file(struct file *files, const char *name, int is_dir,
+                      int *pCount, int *pSize)
 {
      char *name_copy;
 
@@ -82,20 +78,76 @@ int link_to_dir(const char *dir_name, const char *lnk_name)
 
   asprintf(&name, "%s/%s", dir_name, lnk_name);
   if (stat(name, & st) == -1) {
-    free(name);
-    return 0;
+       free(name);
+       return 0;
   }
   
   free(name);
   return S_ISDIR(st.st_mode);
 }
   
-
+#if (defined(WIN32) || defined(_WIN32))
 struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;
      int size;
-#if ! (defined(WIN32) || defined(_WIN32))
+     WIN32_FIND_DATA find_data;
+     HANDLE hFind;
+     char buffer[1024];
+     char *search_path;
+     int last_error;
+     const char *search_suffix = "\\*";
+     const char *alt_search_suffix = "*";
+
+     files = NULL;
+     *nfiles=0;
+     search_path = mxMalloc(strlen(dir_name) + strlen(search_suffix) + 1);
+     if (!search_path)
+          mexErrMsgTxt("Failed to allocate memory for search path");
+     strcpy(search_path, dir_name);
+     /* Append "*" if an empty string or string ending in one of the
+      * Windows path separation characters, otherwise add a path
+      * separator and "*". */
+     if (strlen(dir_name) == 0 || 
+         strchr(":/\\", dir_name[strlen(dir_name) - 1]))
+          strcat(search_path, alt_search_suffix);
+     else
+          strcat(search_path, search_suffix);
+     
+     hFind = FindFirstFile(search_path, &find_data);
+     mxFree(search_path);
+     if (hFind == INVALID_HANDLE_VALUE) {
+          if (GetLastError() == ERROR_FILE_NOT_FOUND)
+               return NULL;
+          else {
+               sprintf(buffer,
+                       "Failed when finding directory. Windows error # %d",
+                       GetLastError());
+               mexErrMsgTxt(buffer);
+          }
+     }
+     do {
+          files = add_file(files, find_data.cFileName,
+                           (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
+                           nfiles, &size);
+     } while (FindNextFile(hFind, &find_data) != 0);
+     last_error = GetLastError();
+     FindClose(hFind);
+     if (last_error != ERROR_NO_MORE_FILES) {
+          sprintf(buffer,
+                  "Failed when iterating through directory list. "
+                  "Windows error # %d", last_error);
+          mexErrMsgTxt(buffer);
+     }
+     sprintf(buffer, "Found %d files", *nfiles);
+     qsort(files, *nfiles, sizeof(struct file), cmp_file);
+     return files;
+}
+#else
+struct file *dir(const char *dir_name, int *nfiles)
+{
+     struct file *files;
+     int size;
      DIR *dir;
      struct dirent *dirent;
      char *name;
@@ -119,66 +171,10 @@ struct file *dir(const char *dir_name, int *nfiles)
                nfiles, &size);
      }
      closedir(dir);
-#else
-     WIN32_FIND_DATA find_data;
-     HANDLE hFind;
-     char buffer[1024];
-     char *search_path;
-     int last_error;
-     const char *search_suffix = "\\*";
-     const char *alt_search_suffix = "*";
-
-     files = NULL;
-     *nfiles=0;
-     search_path = mxMalloc(strlen(dir_name)+strlen(search_suffix)+1);
-     if (! search_path)
-          mexErrMsgTxt("Failed to allocate memory for search path");
-     strcpy(search_path,dir_name);
-     /*
-      * Append "*" if an empty string or string ending in
-      * one of the Windows path separation characters, otherwise
-      * add a path separator and "*"
-      */
-     if (strlen(dir_name) == 0 ||
-         strchr(":/\\",dir_name[strlen(dir_name)-1]))
-          strcat(search_path, alt_search_suffix);
-     else
-          strcat(search_path,search_suffix);
-     
-     hFind = FindFirstFile(search_path, &find_data);
-     mxFree(search_path);
-     if (hFind == INVALID_HANDLE_VALUE) {
-          if (GetLastError() == ERROR_FILE_NOT_FOUND) {
-               return NULL;
-          } else {
-               sprintf(
-                    buffer,
-                    "Failed when finding directory. Windows error # %d",
-                    GetLastError());
-               mexErrMsgTxt(buffer);
-          }
-     }
-     do {
-          files = add_file(
-               files,
-               find_data.cFileName,
-               (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0,
-               nfiles, &size);
-     } while (FindNextFile(hFind, &find_data) != 0);
-     last_error = GetLastError();
-     FindClose(hFind);
-     if (last_error != ERROR_NO_MORE_FILES) {
-          sprintf(
-               buffer,
-               "Failed when iterating through directory list. Windows error # %d",
-               last_error);
-          mexErrMsgTxt(buffer);
-     }
-     sprintf(buffer,"Found %d files",*nfiles);
-#endif
      qsort(files, *nfiles, sizeof(struct file), cmp_file);
      return files;
 }
+#endif
 
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])

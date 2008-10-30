@@ -92,6 +92,10 @@ elseif nargin == 1,
         Height = from_little_endian(A(21:24));
         BitDepth = from_little_endian(A(25:28));
         LoadedImage = zeros(Height,Width);
+        %
+        % Skip the rest of the header
+        %
+        [Data, Count] = fread(fid, HeaderLength-52,'uint8',0,'l');
 	
 	  % The 'l' causes convertion from little-endian byte order.
 	  [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');

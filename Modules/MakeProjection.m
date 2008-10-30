@@ -148,17 +148,9 @@ elseif strcmpi(ProjectionType, 'Maximum')
             OrigImage{i} = CPimread(fullfile(Pathname,char(FileList(i))));
         end
         ProjectionImage = OrigImage{1};
-        [l w] = size(ProjectionImage);
-        SizeOrig = l*w;
         %handles.Pipeline.(ProjectionImageName) = zeros(SizeOrig);
-        for i = 1:length(FileList)
-            for j = 1:SizeOrig
-                   if ProjectionImage(j)<OrigImage{i}(j)
-                       ProjectionImage(j) = OrigImage{i}(j);
-                   else
-                       ProjectionImage(j) = ProjectionImage(j);
-                   end
-            end
+        for i = 2:length(FileList)
+            ProjectionImage = max(ProjectionImage,OrigImage{i});
         end
         elseif strncmp(SourceIsLoadedOrPipeline,'P',1)
             fieldname = ['', ImageName];
@@ -178,16 +170,7 @@ elseif strcmpi(ProjectionType, 'Maximum')
             OrigImage = handles.Pipeline.(fieldname);
             %%%Projected Image so far
             ProjectionImage = handles.Pipeline.(ProjectionImageName);
-            [l w] = size(ProjectionImage);
-            SizeOrig = l*w;
-            %handles.Pipeline.(ProjectionImageName) = zeros(SizeOrig);
-            for j = 1:SizeOrig
-                if ProjectionImage(j)<OrigImage(j)
-                   ProjectionImage(j) = OrigImage(j);
-                else
-                   ProjectionImage(j) = ProjectionImage(j);
-                end
-            end
+            ProjectionImage = max(ProjectionImage,OrigImage);
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either "Load images" or "Pipeline".']);
         end
@@ -205,22 +188,22 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    ThisFigure = CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(ProjectionImage,'OneByOne',ThisModuleFigureNumber)
     end
-    hAx = ThisModuleFigureNumber;
-    CPimagesc(ProjectionImage,handles,hAx);
+    
+    [ignore,hAx] = CPimagesc(ProjectionImage,handles,ThisFigure);
     if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
         %%% The averaged image is displayed the first time through the set.
         %%% For subsequent cycles, this figure is not updated at all, to
         %%% prevent the need to load the averaged image from the handles
         %%% structure.
-        title(['Final Projected Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
+        title(hAx,['Final Projected Image, based on all ', num2str(handles.Current.NumberOfImageSets), ' images']);
     elseif strncmpi(SourceIsLoadedOrPipeline, 'P',1)
         %%% The accumulated averaged image so far is displayed each time
         %%% through the pipeline.
-        title(['Projected Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
+        title(hAx,['Projected Image so far, based on image # 1 - ', num2str(handles.Current.SetBeingAnalyzed)]);
     end
 end
 

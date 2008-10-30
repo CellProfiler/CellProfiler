@@ -70,24 +70,6 @@ struct file *add_file(struct file *files, const char *name, int is_dir,
      *pCount = *pCount + 1;
      return files;
 }
-
-/* Stat the file.  Return 1 if it is a directory or a link to a
- * directory.  Return 0 otherwise.  Return -1 on error */
-int stat_isdir(const char *dir_name, const char *lnk_name)
-{
-  struct stat st;
-  char *name;
-  int result;
-
-  if (asprintf(&name, "%s/%s", dir_name, lnk_name) == -1)
-       mexErrMsgTxt("Failed to allocate memory for file name.");
-  if (stat(name, &st) == -1)
-       result = -1;
-  else
-       result = S_ISDIR(st.st_mode);
-  free(name);
-  return result;
-}
   
 #if (defined(WIN32) || defined(_WIN32))
 struct file *dir(const char *dir_name, int *nfiles)
@@ -147,6 +129,24 @@ struct file *dir(const char *dir_name, int *nfiles)
      return files;
 }
 #else
+/* Stat the file.  Return 1 if it is a directory or a link to a
+ * directory.  Return 0 otherwise.  Return -1 on error */
+int stat_isdir(const char *dir_name, const char *lnk_name)
+{
+  struct stat st;
+  char *name;
+  int result;
+
+  if (asprintf(&name, "%s/%s", dir_name, lnk_name) == -1)
+       mexErrMsgTxt("Failed to allocate memory for file name.");
+  if (stat(name, &st) == -1)
+       result = -1;
+  else
+       result = S_ISDIR(st.st_mode);
+  free(name);
+  return result;
+}
+
 struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;

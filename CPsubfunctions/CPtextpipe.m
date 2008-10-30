@@ -160,5 +160,5 @@ end
 % Save to a .txt file.
 fclose(fid);
 if ~ischar(RawPathname) || ~ischar(RawFilename)
-    CPhelpdlg('The pipeline .txt file has been written.');
+    CPhelpdlg(['The pipeline ' fullfile(SavePathname,filename) ' file has been written.']);
 end

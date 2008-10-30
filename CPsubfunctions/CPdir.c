@@ -71,19 +71,22 @@ struct file *add_file(struct file *files, const char *name, int is_dir,
      return files;
 }
 
-int link_to_dir(const char *dir_name, const char *lnk_name)
+/* Stat the file.  Return 1 if it is a directory or a link to a
+ * directory.  Return 0 otherwise.  Return -1 on error */
+int stat_isdir(const char *dir_name, const char *lnk_name)
 {
   struct stat st;
   char *name;
+  int result;
 
-  asprintf(&name, "%s/%s", dir_name, lnk_name);
-  if (stat(name, & st) == -1) {
-       free(name);
-       return 0;
-  }
-  
+  if (asprintf(&name, "%s/%s", dir_name, lnk_name) == -1)
+       mexErrMsgTxt("Failed to allocate memory for file name.");
+  if (stat(name, &st) == -1)
+       result = -1;
+  else
+       result = S_ISDIR(st.st_mode);
   free(name);
-  return S_ISDIR(st.st_mode);
+  return result;
 }
   
 #if (defined(WIN32) || defined(_WIN32))
@@ -147,7 +150,7 @@ struct file *dir(const char *dir_name, int *nfiles)
 struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;
-     int size;
+     int size, is_dir;
      DIR *dir;
      struct dirent *dirent;
      char *name;
@@ -163,12 +166,10 @@ struct file *dir(const char *dir_name, int *nfiles)
      }
 
      while (dirent = readdir(dir)) {
-          int is_dir = (dirent->d_type == DT_DIR) || ((dirent->d_type == DT_LNK) && link_to_dir(dir_name, dirent->d_name));
-          files = add_file(
-               files, 
-               dirent->d_name,
-               is_dir,
-               nfiles, &size);
+          is_dir = dirent->d_type == DT_DIR || 
+               dirent->d_type == DT_UNKNOWN && stat_isdir(dir_name,
+                                                          dirent->d_name);
+          files = add_file(files, dirent->d_name, is_dir, nfiles, &size);
      }
      closedir(dir);
      qsort(files, *nfiles, sizeof(struct file), cmp_file);

@@ -493,7 +493,15 @@ if strcmp(ReadyFlag, 'Ready')
         %[ignore,FinalIlluminationFunction] = CPrescale('',FinalIlluminationFunction,'G',[]); %#ok
         if strcmp(RescaleOption,'Yes')
             if HasMask
-                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
+                %% Add robust factor -- Rescale not to minimum pixel, but to the X-th percentage minimum pixel
+                %% This guards against a few very dark pixels throwing off the rescaling
+                %% NB!  This will *not* ensure that the applied values will
+                %% be > 1!  We need to check this...
+                robust_factor = 0.01;
+                s = sort(FinalIlluminationFunction(MaskImage ~= 0));
+                rescale = s(floor(length(s).*robust_factor)+1);
+                FinalIlluminationFunction(FinalIlluminationFunction<rescale)=rescale;
+%                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
             else
                 rescale = max([min(abs(FinalIlluminationFunction(:)));.0001]);
             end

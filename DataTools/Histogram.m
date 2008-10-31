@@ -1013,7 +1013,7 @@ LeftPos = (ScreenWidth-Width)/2;
 BottomPos = (ScreenHeight-Height)/2;
 set(FigHandle,'position',[LeftPos BottomPos Width Height]);
 
-NumMat=(1:handles.Current.SetBeingAnalyzed)';
+NumMat=(1:handles.Current.NumberOfImageSets)';
 ReverseNumMat=flipud(NumMat);
 
 uiheight=25;

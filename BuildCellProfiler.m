@@ -58,8 +58,8 @@ end
 
 % Get svn version number
 current_search_path = pathdef;
-addpath ./Modules ./CPsubfunctions DataTools ImageTools Help
-svn_ver = CPsvnloopfunctions;
+addpath Modules CPsubfunctions DataTools ImageTools Help
+svn_ver = CPsvnversionnumber;
 % Restore pre-existing paths
 path(current_search_path);
 

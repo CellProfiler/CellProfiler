@@ -6,7 +6,9 @@ function svn_ver_char = CPsvnversionnumber(CP_root_dir)
 % $Revision$
 
 current_dir = pwd;
-cd(CP_root_dir);
+if nargin > 0
+    cd(CP_root_dir);
+end
 
 str_to_find = 'Revision: ';
 

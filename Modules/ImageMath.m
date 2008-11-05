@@ -282,7 +282,7 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ImageAfterMath,handles,hAx);
     if strcmp(Operation, 'Combine')
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' ' ThirdText ' = ' ImageAfterMathName]);
-    elseif strcmp(Operation,{'Add','Subtract','Multiply','Divide','Average','Combine'})
+    elseif any(strcmp(Operation,{'Add','Subtract','Multiply','Divide','Average','Combine'}))
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' = ' ImageAfterMathName]);
     else
         title(hAx,[FirstText ' ' Operation ' = ' ImageAfterMathName]);

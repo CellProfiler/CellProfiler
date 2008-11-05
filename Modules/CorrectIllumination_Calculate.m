@@ -502,6 +502,8 @@ if strcmp(ReadyFlag, 'Ready')
                 if numel(s) > 0
                     rescale = s(floor(length(s).*robust_factor)+1);
                     FinalIlluminationFunction(FinalIlluminationFunction<rescale)=rescale;
+                else
+                    rescale = 1;
                 end
 %                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
             else

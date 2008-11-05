@@ -227,7 +227,7 @@ switch lower(usage),
         movefile('Old_CPCluster.m','CPCluster.m');
 
         % Move necessary files to output directory
-        movefile('readme.txt',['../' output_dir])
+%         movefile('readme.txt',['../' output_dir])
         copyfile('version.txt',['../' output_dir])
         movefile('mccExcludedFiles.log',['../' output_dir])
         if ~ ispc

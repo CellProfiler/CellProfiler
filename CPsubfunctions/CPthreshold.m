@@ -632,7 +632,10 @@ elseif isempty(im)
     %%% real objects?
     level = 1;
 else
-    level = 2*mode(im(:));
+    %% Handle the case in which there are enough saturated pixels that the
+    %% mode is 1 (or some other, pinned high value).  We will remove the
+    %% highest values from the mode calculation.  Arbitrarily set to top 5%
+    level = 2*mode(im(im<0.95));
 end
 
 

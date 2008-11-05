@@ -499,8 +499,10 @@ if strcmp(ReadyFlag, 'Ready')
                 %% be > 1!  We need to check this...
                 robust_factor = 0.01;
                 s = sort(FinalIlluminationFunction(MaskImage ~= 0));
-                rescale = s(floor(length(s).*robust_factor)+1);
-                FinalIlluminationFunction(FinalIlluminationFunction<rescale)=rescale;
+                if numel(s) > 0
+                    rescale = s(floor(length(s).*robust_factor)+1);
+                    FinalIlluminationFunction(FinalIlluminationFunction<rescale)=rescale;
+                end
 %                rescale = max([min(abs(FinalIlluminationFunction(MaskImage ~= 0)));.0001]);
             else
                 rescale = max([min(abs(FinalIlluminationFunction(:)));.0001]);

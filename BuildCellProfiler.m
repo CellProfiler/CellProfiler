@@ -228,14 +228,14 @@ switch lower(usage),
 
         % Move necessary files to output directory
 %         movefile('readme.txt',['../' output_dir])
-        copyfile('version.txt',['../' output_dir])
-        movefile('mccExcludedFiles.log',['../' output_dir])
-        if ~ ispc
-            movefile('run_CPCluster.sh',['../' output_dir])
-        end
-        movefile('CPCluster.ctf',['../' output_dir])
-        movefile('CPCluster',['../' output_dir])
-        movefile('CPCluster_mcr',['../' output_dir '/'])
+%         copyfile('version.txt',['../' output_dir])
+%         movefile('mccExcludedFiles.log',['../' output_dir])
+%         if ~ ispc
+%             movefile('run_CPCluster.sh',['../' output_dir])
+%         end
+%         movefile('CPCluster.ctf',['../' output_dir])
+%         movefile('CPCluster',['../' output_dir])
+%         movefile('CPCluster_mcr',['../' output_dir '/'])
 
         % Change the permissions
         disp('Setting permissions...');

@@ -23,6 +23,9 @@ function handles = MeasureObjectIntensity(handles,varargin)
 % MinIntensityEdge        |       9
 % MaxIntensityEdge        |      10
 % MassDisplacement        |      11
+% LowerQuartileIntensity  |      12
+% MedianIntensity         |      13
+% UpperQuartileIntensity  |      14
 %
 % How it works:
 % Retrieves objects in label matrix format and a corresponding original
@@ -51,6 +54,11 @@ function handles = MeasureObjectIntensity(handles,varargin)
 % * MassDisplacement - The distance between the centers of gravity in the
 % gray-level representation of the object and the binary representation of
 % the object.
+% * LowerQuartileIntensity - the intensity value of the pixel for which 25%
+% of the pixels in the object have lower values.
+% * MedianIntensity - the median intensity value within the object
+% * UpperQuartileIntensity - the intensity value of the pixel for which 75%
+% of the pixels in the object have lower values.
 %
 % For publication purposes, it is important to note that the units of
 % intensity from microscopy images are usually described as "Intensity
@@ -132,7 +140,10 @@ BasicFeatures    = {'IntegratedIntensity',...
     'StdIntensityEdge',...
     'MinIntensityEdge',...
     'MaxIntensityEdge',...
-    'MassDisplacement'};
+    'MassDisplacement',...
+    'LowerQuartileIntensity',...
+    'MedianIntensity',...
+    'UpperQuartileIntensity'};
 
 %%%%%%%%%%%%%%%%
 %%% FEATURES %%%
@@ -237,14 +248,14 @@ for i = 1:length(ObjectNameList)
 
     %%% Get pixel indexes (fastest way), and count objects
     [sr sc] = size(LabelMatrixImage);        
-    props = regionprops(LabelMatrixImage,'PixelIdxList');
+    props = regionprops(LabelMatrixImage,'PixelIdxList','Area');
     ObjectCount = length(props);    
 
     %%% Label-aware boundary finding (even when two objects are adjacent)
     LabelBoundaryImage = CPlabelperim(LabelMatrixImage);
     
     if ObjectCount > 0
-        Basic = cell(ObjectCount,11);
+        Basic = cell(ObjectCount,length(BasicFeatures));
         
         for Object = 1:ObjectCount
             %%% It's possible for objects not to have any pixels,
@@ -300,9 +311,31 @@ for i = 1:length(ObjectNameList)
             Greyy = sum((1:size(Greyim,1))'.*sum(Greyim,2))/sum(1:size(Greyim,1));
             Basic{Object,11} = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
+        %
+        % A trick for median, lower & upper quartile:
+        %   Add the object # to an intensity scaled between .1 and .9
+        %   Sort the resulting array.
+        %   Restore the pixels to scaled intensities w/o object #
+        %   Do the cumulative sum of the areas of each object
+        %   Subtract 1/4, 1/2 and 3/4 of the area and use that to
+        %   index into the sorted array to get the values.
+        %
+        SortedObjectPixels=OrigImage(LabelMatrixImage>0);
+        Min = min(SortedObjectPixels);
+        Max = max(SortedObjectPixels);
+        Scale = (Max-Min) / .8;
+        SortedObjectPixels = ((SortedObjectPixels - Min) / Scale)+.1;
+        SortedObjectPixels = SortedObjectPixels + LabelMatrixImage(LabelMatrixImage>0);
+        SortedObjectPixels = sort(SortedObjectPixels);
+        SortedObjectPixels = SortedObjectPixels - floor(SortedObjectPixels);
+        SortedObjectPixels = (SortedObjectPixels - .1) * Scale + Min;
+        Address = cumsum([props.Area]);
+        Basic(:,12) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]*3/4)));
+        Basic(:,13) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]/2)));
+        Basic(:,14) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]/4)));
     else
         % Fill in with empty sets
-        Basic = cell(1,11);
+        Basic = cell(1,length(BasicFeatures));
     end
     %%% Save measurements
     for j = 1:size(Basic,2)
@@ -335,7 +368,7 @@ for i = 1:length(ObjectNameList)
         uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
             'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
             'fontsize',FontSize,'fontweight','bold','string','Intensity feature:');
-        for k = 1:11
+        for k = 1:length(BasicFeatures)
             uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                 'fontsize',FontSize,'string',BasicFeatures{k});
@@ -353,7 +386,7 @@ for i = 1:length(ObjectNameList)
 
         if ObjectCount > 0
             %%% Basic features
-            for k = 1:11
+            for k = 1:length(BasicFeatures)
                 uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.1*(columns-1) 0.8-0.04*k 0.1 0.03],...
                     'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica',...
                     'fontsize',FontSize,'string',sprintf('%0.2f',mean(cat(1,Basic{:,k}))));

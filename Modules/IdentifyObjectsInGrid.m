@@ -255,7 +255,9 @@ if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First
 else
     %%% If we aren't allowed to use previous/first grid, and if the
     %%% calculated grid doesn't make sense, we need to error out.
-    if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
+    Rightmost = Leftmost + (Cols-1)*XDiv;
+    Bottommost = Topmost + (Rows-1)*YDiv;
+    if any([2*radius > YDiv, 2*radius > XDiv, Topmost < 0, Leftmost < 0, Rightmost > TotalWidth, Bottommost > TotalHeight]),
         error(['Image processing was canceled in the ', ModuleName, ' module because your grid failed. Please check the Define Grid module to see if your objects were properly identified and the grid looks correct. You MUST have an identified object on each side (right, left, top, bottom) of the grid to work properly. Also, there must be no "extra" objects identified near the edges of the image or it will fail.']);
     end
 end

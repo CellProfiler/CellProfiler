@@ -538,8 +538,8 @@ BinEdges = linspace(0,1,Levels+1);
 % Find the max and min values within the mask and normalize so that the
 % intenisties within the mask are between 0 and 1.
 intensities = im(mask);
-Imax = max(intensities);
-Imin = min(intensities);
+Imax = max(intensities(:));
+Imin = min(intensities(:));
 if Imax ~= Imin                     % Avoid divide by zero
     im = (im - Imin)/(Imax-Imin);
 end

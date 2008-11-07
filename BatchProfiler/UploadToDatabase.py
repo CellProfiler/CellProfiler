@@ -16,7 +16,7 @@ batch_id = int(form["batch_id"].value)
 sql_script = form["sql_script"].value
 my_batch = RunBatch.LoadBatch(batch_id)
 
-re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(image|object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z_]+)\s")
+re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(image|object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z0-9_]+)\s")
 re_ignore_line = re.compile("SHOW WARNINGS;")
 table_lines = []
 sql_script_file = open(my_batch["data_dir"]+os.sep+sql_script,"r")

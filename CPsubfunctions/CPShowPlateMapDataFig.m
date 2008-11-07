@@ -445,6 +445,12 @@ else
     outer = 18;
 end;
 [image, hImage] = CPplatemap(handles.PlateAxes,data,inner,outer,3,Minimum,Maximum);
+cbar=colorbar('peer',handles.PlateAxes);
+if Maximum ~= Minimum
+    ytick = (0:8)*16;
+    set(cbar,'YTick',ytick);
+    set(cbar,'YTickLabel',ytick*(Maximum-Minimum)/128+Minimum);
+end
 set(hImage,'ButtonDownFcn',@(hObject,event_data) ButtonDownFcn(hObject,event_data,handles,map));
 
 % --- Get a canonical well name (e.g. A_01) for the indexed image

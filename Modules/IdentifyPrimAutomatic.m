@@ -157,7 +157,8 @@ function handles = IdentifyPrimAutomatic(handles)
 % threshold was unusually high or low compared to the other images.
 %    There are five methods for finding thresholds automatically, Otsu's
 % method, the Mixture of Gaussian (MoG) method, the Background method, the
-% Robust Background method and the Ridler-Calvard method. The Otsu method
+% Robust Background method and the Ridler-Calvard method. 
+% ** The Otsu method
 % uses our version of the Matlab function graythresh (the code is in the
 % CellProfiler subfunction CPthreshold). Our modifications include taking
 % into account the max and min values in the image and log-transforming the
@@ -167,19 +168,24 @@ function handles = IdentifyPrimAutomatic(handles)
 % know the object coverage percentage and it does not vary much from image
 % to image, the MoG can be better, especially if the coverage percentage is
 % not near 50%. Note, however, that the MoG function is experimental and
-% has not been thoroughly validated. The Background method is very simple
-% and is appropriate for images in which most of the image is background.
-% It finds the mode of the histogram of the image, which is assumed to be
-% the background of the image, and chooses a threshold at twice that value
-% (which you can adjust with a Threshold Correction Factor, see below).
-% This can be very helpful, for example, if your images vary in overall
-% brightness but the objects of interest are always twice (or actually, any
-% constant) as bright as the background of the image. The Robust background
+% has not been thoroughly validated. 
+% ** The Background method 
+% is simple and appropriate for images in which most of the image is 
+% background. It finds the mode of the histogram of the image, which is 
+% assumed to be the background of the image, and chooses a threshold at 
+% twice that value (which you can adjust with a Threshold Correction Factor,
+% see below).  Note that the mode is protected from a high number of 
+% saturated pixels by only counting pixels < 0.95. This can be very helpful,
+% for example, if your images vary in overall brightness but the objects of 
+% interest are always twice (or actually, any constant) as bright as the 
+% background of the image. 
+% ** The Robust background
 % method trims the brightest and dimmest 5% of pixel intensities off first
 % in the hopes that the remaining pixels represent a gaussian of intensity
 % values that are mostly background pixels. It then calculates the mean and
 % standard deviation of the remaining pixels and calculates the threshold
-% as the mean + 2 times the standard deviation. The Ridler-Calvard method
+% as the mean + 2 times the standard deviation. 
+% ** The Ridler-Calvard method
 % is simple and its results are often very similar to Otsu's - according to
 % Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
 % overall quality on testing 40 nondestructive testing images is slightly 
@@ -188,6 +194,11 @@ function handles = IdentifyPrimAutomatic(handles)
 % one by taking the mean of the average intensities of the background and 
 % foreground pixels determined by the first threshold, repeating this until 
 % the threshold converges.
+% ** The Kapur method
+% computes the threshold of an image by
+% log-transforming its values, then searching for the threshold that
+% maximizes the sum of entropies of the foreground and background
+% pixel values, when treated as separate distributions.
 %    You can also choose between Global, Adaptive, and Per object
 % thresholding:
 % Global: one threshold is used for the entire image (fast).

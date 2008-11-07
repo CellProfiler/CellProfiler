@@ -6,7 +6,7 @@ function handles = RelabelObjects(handles)
 % SHORT DESCRIPTION:
 %
 % Relabels objects so that objects within a specified distance of each
-% other, or objects with a stright line connecting
+% other, or objects with a straight line connecting
 % their centroids that has a relatively uniform intensity, 
 % get the same label and thereby become the same object.
 % Optionally, if an object consists of two or more unconnected components, this

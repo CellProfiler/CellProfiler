@@ -93,7 +93,7 @@ if (FirstSet == 1)
 
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
 
-        fprintf(fmain, 'CREATE DATABASE %s;\n', DBname);
+        fprintf(fmain, 'CREATE DATABASE IF NOT EXISTS %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);
 
         fprintf(fmain, 'CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY',TablePrefix);

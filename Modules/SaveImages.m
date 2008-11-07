@@ -270,6 +270,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         try
             FileName = handles.Measurements.Image.(['FileName_', ImageFileName]);
             if iscell(FileName), FileName = FileName{SetBeingAnalyzed}; end
+            [ignore,FileName] = fileparts(FileName);    % Drop old extension
         catch
             % If the user has selected an image name that is not
             % straight from a load %% images module, the filenames will

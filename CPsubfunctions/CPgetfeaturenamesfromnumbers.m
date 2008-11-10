@@ -47,8 +47,9 @@ elseif strcmp(Category,'Intensity') || ...
 elseif strcmp(Category,'Texture') ...
         || strcmp(Category,'RadialDistribution')
 %% Nothing to do.  These should have all arguments specified
-elseif strcmp(Category,'Neighbors') ||  ...
-        strcmp(Category,'Correlation')
+elseif strcmp(Category,'Neighbors')
+    Image = '';
+elseif strcmp(Category,'Correlation')
 %% Children is special because 'Count' is added in CPrelateobjects
 elseif strcmp(Category,'Children') 
     Image = 'Count';

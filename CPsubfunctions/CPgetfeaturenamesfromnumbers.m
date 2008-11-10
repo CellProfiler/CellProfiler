@@ -22,7 +22,7 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 % added in the order matching that of each Module's Help text!
 
 error(nargchk(4, 6, nargin, 'string'))
-%% If string is really a number, then makes its class numeric
+% If string is really a number, then makes its class numeric
 if ~ isnan(str2double(FeatureNumberOrName))
     FeatureNumberOrName = str2double(FeatureNumberOrName);
         if strcmp(Category,'Count')
@@ -46,16 +46,16 @@ elseif strcmp(Category,'Intensity') || ...
     SizeScale = '';
 elseif strcmp(Category,'Texture') ...
         || strcmp(Category,'RadialDistribution')
-%% Nothing to do.  These should have all arguments specified
 elseif strcmp(Category,'Neighbors')
     Image = '';
+% Nothing to do.  These should have all arguments specified
 elseif strcmp(Category,'Correlation')
-%% Children is special because 'Count' is added in CPrelateobjects
+% Children is special because 'Count' is added in CPrelateobjects
 elseif strcmp(Category,'Children') 
     Image = 'Count';
     SizeScale = '';
 else 
-    %% TODO: SaturationBlur
+    % TODO: SaturationBlur
     error('Measurement category could not be found.')
 end
 

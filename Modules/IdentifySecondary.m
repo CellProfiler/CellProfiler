@@ -710,36 +710,43 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
             %%% Activates the appropriate figure window.
-            CPfigure(handles,'Image',ThisModuleFigureNumber);
+            fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
             end
+
+            %% Text display of Threshold
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
-            %%% A subplot of the figure window is set to display the original image.
-            hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
-            CPimagesc(OrigImage,handles,hAx);
-            title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)],'Parent',hAx);
-            %%% A subplot of the figure window is set to display the colored label
-            %%% matrix image.
-            hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+
+            
             %%% Calculates the ColoredLabelMatrixImage for display
             ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
-            CPimagesc(ColoredLabelMatrixImage,handles,hAx);
-            title(['Outlined ',SecondaryObjectName],'Parent',hAx);
-            %%% A subplot of the figure window is set to display the original image
-            %%% with secondary object outlines drawn on top.
-            hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
-            CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
-            title([SecondaryObjectName, ' Outlines on Input Image'],'Parent',hAx);
-            %%% A subplot of the figure window is set to display the original
-            %%% image with outlines drawn for both the primary and secondary
-            %%% objects.
-            hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
-            CPimagesc(BothOutlinesOnOrigImage,handles,hAx);
-            title(['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image'],'Parent',hAx);
-            drawnow
+            
+            %%%% Display secondary outlines as default
+            fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
+            [hImage,hAx] = CPimagesc(ObjectOutlinesOnOrigImage, handles,ThisModuleFigureNumber);
+            title(['Outlined ',SecondaryObjectName])
+
+            %% Construct struct which holds images and figure titles 
+            ud(1).img = ObjectOutlinesOnOrigImage;
+            ud(2).img = BothOutlinesOnOrigImage;
+            ud(3).img = ColoredLabelMatrixImage;
+            ud(4).img = OrigImage;
+            ud(1).title = [SecondaryObjectName, ' Outlines on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+            ud(2).title = ['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+            ud(3).title = ['Outlined ',SecondaryObjectName ' with random colors, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+            ud(4).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+            
+            %% uicontrol for displaying other images
+            uicontrol(fig_h, 'Style', 'popup',...
+                'String', 'Outlines: Secondary|Outlines: Primary and Secondary|Colored Label|Input Image',...
+                'UserData',ud,...
+                'units','normalized',...
+                'position',[.1 .95 .25 .04],...
+                'backgroundcolor',[.7 .7 .9],...
+                'Callback', @CP_ImagePopupmenu_Callback);
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -781,7 +788,8 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             if ~strcmpi(SaveOutlines,'Do not use')
                 handles.Pipeline.(SaveOutlines) = LogicalOutlines;
             end
-        catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+        catch
+            error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
         end
     end
 end

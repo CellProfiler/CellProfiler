@@ -14,7 +14,15 @@ function handles = ExportToExcel(handles)
 % stored in the default output folder.
 %
 % This module performs the same function as the data tool, Export Data.
-% Please refer to the help for ExportData.
+% Please refer to the help for ExportData for more details.
+%
+% Settings:
+%
+% Do you want to create the input image subdirectory structure in the  
+% output directory?
+% If the input images are located in subdirectories (such that you used 
+% "Analyze all subfolders within the selected folder" in LoadImages), you 
+% can re-create the subdirectory structure in the default output directory.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -98,7 +106,13 @@ Object{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 Object{8} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%%%VariableRevisionNumber = 1
+%textVAR09 = Do you want to create subdirectories in the default output directory to match the input image directory structure?
+%choiceVAR09 = No
+%choiceVAR09 = Yes
+CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -120,7 +134,63 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     ExportInfo.IgnoreNaN = 1;
     ExportInfo.SwapRowsColumnInfo = 'No';
     ExportInfo.DataParameter = 'mean';
-    CPwritemeasurements(handles,ExportInfo,RawPathname);
+    
+    % If the user wants to add subdirectories, alter the output path accordingly
+    if strncmpi(CreateSubdirectories,'y',1)
+        fn = fieldnames(handles.Measurements.Image);
+        % We will be pulling the pathname list from handles.Pipeline but we 
+        % need an object to reference first. We obtain this from
+        % handles.Measurement.Image
+        % ASSUMPTION: The needed object was created by LoadImages/LoadSingleImage
+        % which (a) produces a field with 'FileName_' at the beginning and 
+        % (b) the first such field is sufficient (i.e, all other image 
+        % objects come from this directory tree as well)
+        prefix = 'FileName_';
+        idx = find(~cellfun(@isempty,regexp(fn,['^',prefix])),1);
+        ImageFileName = fn{idx}((length(prefix)+1):end);
+        
+        % Pull the input filelist from handles.Pipeline and parse for
+        % subdirs
+        fn = handles.Pipeline.(['FileList', ImageFileName]);
+        PathStr = cellfun(@fileparts,fn,'UniformOutput',false);
+        uniquePathStr = unique(PathStr);
+        
+        % Process each subdir
+        for i = 1:length(uniquePathStr),
+            SubDir = uniquePathStr{i};
+            SubRawPathName = fullfile(RawPathname, SubDir,'');
+            if ~isdir(SubRawPathName),    % If the directory doesn't already exist, create it
+                success = mkdir(SubRawPathName);
+                if ~success, error(['Image processing was canceled in the ', ModuleName, ' module because the specified subdirectory "', SubRawPathName, '" could not be created.']); end
+            end
+
+            % Extract only those Measurements for the current subdirectory
+            idx = strcmp(PathStr,uniquePathStr{i});
+            handles_MeasurementsOnly.Measurements = handles.Measurements;
+            ObjectName = fieldnames(handles_MeasurementsOnly.Measurements);
+            for j = 1:length(ObjectName),
+                if ~strcmp(ObjectName{j}, 'Experiment')
+                    FeatureName = fieldnames(handles_MeasurementsOnly.Measurements.(ObjectName{j}));
+                    for k = 1:length(FeatureName),
+                        if isempty(regexp(FeatureName{k},[ModuleName,'$'],'once'))
+                            handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
+                        else
+                            % The ModuleError field for ExportToExcel hasn't
+                            % filled in the last element yet, so we have to
+                            % fill it in ourselves
+                            handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k}) = repmat({0},[1 length(find(idx))]);
+                        end
+                    end
+                end
+            end
+            % Write the Measurement subset out
+            CPwritemeasurements(handles_MeasurementsOnly,ExportInfo,SubRawPathName);
+        end
+    else
+        % Export the whole thing
+        CPwritemeasurements(handles,ExportInfo,RawPathname);
+    end
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

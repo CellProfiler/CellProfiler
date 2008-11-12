@@ -324,3 +324,16 @@ if strcmp(CurrentModuleName,'SplitIntoContiguousObjects')
     IsModuleModified = true;
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to ExportToExcel
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'ExportToExcel')
+    if SavedVarRevNum == 1      % ExportToExcel.m got one new argument
+        % Re-create subdirectories? Default to No.
+        Settings.VariableValues{ModuleNum-Skipped,9} = 'No';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 2;
+        IsModuleModified = true;
+    end
+end

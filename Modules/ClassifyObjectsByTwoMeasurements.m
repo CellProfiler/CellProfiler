@@ -113,12 +113,6 @@ Labels = handles.Settings.VariableValues{CurrentModuleNum,12};
 %infotypeVAR13 = imagegroup indep
 SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
-%textVAR14 = Do you want the absolute number of objects or percentage of object?
-%choiceVAR14 = Absolute
-%choiceVAR14 = Percentage
-%inputtypeVAR14 = popupmenu
-AbsoluteOrPercentage = char(handles.Settings.VariableValues{CurrentModuleNum,14});
-
 %%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -212,10 +206,15 @@ end
 % Separate objects into bins
 QuantizedMeasurements = zeros(NbrOfObjects,1);
 bins = zeros(1,4);
-bin_index{1} = find(Measurements{1} <= Separator{1} & Measurements{2} <= Separator{2});  %LowLow
-bin_index{2} = find(Measurements{1} <= Separator{1} & Measurements{2} > Separator{2});   %LowHigh
-bin_index{3} = find(Measurements{1} > Separator{1} & Measurements{2} <= Separator{2});   %HighLow
-bin_index{4} = find(Measurements{1} > Separator{1} & Measurements{2} > Separator{2});    %HighHigh
+BinFlag{1} = Measurements{1} <= Separator{1} & Measurements{2} <= Separator{2};
+bin_index{1} = find(BinFlag{1});  %LowLow
+BinFlag{2} = Measurements{1} <= Separator{1} & Measurements{2} > Separator{2};
+bin_index{2} = find(BinFlag{2});   %LowHigh
+BinFlag{3} = Measurements{1} > Separator{1} & Measurements{2} <= Separator{2};
+bin_index{3} = find(BinFlag{3});   %HighLow
+BinFlag{4} = Measurements{1} > Separator{1} & Measurements{2} > Separator{2};
+bin_index{4} = find(BinFlag{4});    %HighHigh
+
 for BinNum=4:-1:1
     QuantizedMeasurements(bin_index{BinNum}) = BinNum;
     bins(BinNum) = length(bin_index{BinNum});
@@ -267,7 +266,9 @@ if any(findobj == ThisModuleFigureNumber)
     hAx = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
     x = 1:4;
     h = bar(hAx,x,bins,1);
+    warning('off','MATLAB:hg:patch:RGBColorDataNotSupported');
     set(get(h,'children'),'facevertexcdata',cmap(2:end,:)); % Color code acording to adjacent plot
+    warning('on','MATLAB:hg:patch:RGBColorDataNotSupported');
     xlabel(hAx,['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
     ylabel(hAx,['# of ',ObjectName],'fontsize',FontSize);
     title(hAx,['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);
@@ -286,21 +287,17 @@ if ~strcmpi(SaveColoredObjects,'Do not use')
     handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
 end
 
-% Calculate Objects per Bin (Absolute or Percentage)
-for FeatNum = 2:-1:1
-    if strcmp(AbsoluteOrPercentage,'Percentage')
-        ObjsPerBin{FeatNum} = bins/length(Measurements{FeatNum}); %#ok<AGROW>
-    else
-        ObjsPerBin{FeatNum} = bins; %#ok<AGROW>
-    end
-end
+% Calculate Objects per Bin (Absolute and Percentage)
+ObjectsPerBin = bins;
+PercentageOfObjectsPerBin = bins/sum(bins);
 
 % Save FeatureNames and the indices of the objects that fall into each
 % bin, as well as ObjsPerBin
 for BinNum = 1:4
     ClassifyFeatureNames = ['ClassifyObjsByTwoMeas_Module',CurrentModule,'Bin',num2str(BinNum)];
-    handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames '_indices'], bin_index{BinNum});
-    handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames '_ObjsPerBin'], ObjsPerBin{FeatNum}(:,BinNum));
+    handles = CPaddmeasurements(handles, ObjectName, [ClassifyFeatureNames 'Flag'], BinFlag{BinNum});
+    handles = CPaddmeasurements(handles, 'Image', [ClassifyFeatureNames 'ObjectsPerBin'], ObjectsPerBin(BinNum));
+    handles = CPaddmeasurements(handles, 'Image', [ClassifyFeatureNames 'PercentageOfObjectsPerBin'], PercentageOfObjectsPerBin(BinNum));
 end
 
 % Note: no need to save 'edges' here, as in ClassifyObjects, since the bins here

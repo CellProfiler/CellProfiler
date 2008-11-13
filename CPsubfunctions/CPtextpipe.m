@@ -91,6 +91,7 @@ else
     fprintf(fid,'Number of processed image sets: %d\n',NbrOfProcessedSets);
 end
 
+fprintf(fid,['\nSVN version number: ' handles.Settings.CurrentSVNVersion]);
 fprintf(fid,['\nPixel Size: ' handles.Settings.PixelSize '\n']);
 fprintf(fid,'\nPipeline:\n');
 for module = 1:length(handles.Settings.ModuleNames)

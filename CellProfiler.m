@@ -510,9 +510,15 @@ handles.Current.GS = GSToolHelp;
 handles.Current.HelpFilenames = ListOfTools;
 handles.Current.Help = ToolHelp;
 
+%% Save svn version number in handles, for use in SavePipelineAsText
+CurrentSVNVersion = get_svn_info(handles);
+handles.Settings.CurrentSVNVersion = CurrentSVNVersion;
+
 clear GSListOfTools GSToolHelp
 
 % Update handles structure
+%% Make any saves to handles above this line to have it available in
+%% modules automatically.
 %%% Do not remove the END line below.  It is used by CompileWizard.m.
 %%% Compiler: END HELP
 guidata(hObject, handles);

@@ -51,7 +51,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the identified objects?
+%textVAR01 = What did you call the objects that you want to classify into bins? 
 %infotypeVAR01 = objectgroup
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu custom
@@ -70,7 +70,7 @@ FeatureNbr{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR04 = popupmenu
 ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = For TEXTURE features, what previously measured texture scale do you want to use?
+%textVAR05 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR05 = 1
 %inputtypeVAR05 = popupmenu scale
 SizeScale{1} = str2double(handles.Settings.VariableValues{CurrentModuleNum,5});
@@ -81,6 +81,7 @@ Category{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = Enter the second feature number to use (see help):
 %defaultVAR07 = 1
+%inputtypeVAR07 = popupmenu measurement
 FeatureNbr{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements would you like to use for the second feature?
@@ -90,6 +91,7 @@ ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %textVAR09 = For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?
 %defaultVAR09 = 1
+%inputtypeVAR09 = popupmenu scale
 SizeScale{2} = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = Enter threshold for the first set of measurements. Enter a number, "Mean", or "Median"
@@ -196,9 +198,9 @@ for FeatNum=2:-1:1
     end
     LowerBinMin(FeatNum) = min(Measurements{FeatNum}) - sqrt(eps); % Just a fix so that objects with a measurement that equals the lower bin edge of the lowest bin are counted
     UpperBinMax(FeatNum) = max(Measurements{FeatNum});
-    if Separator{FeatNum}<LowerBinMin(FeatNum) || Separator{FeatNum}>UpperBinMax(FeatNum)
-        error(['Image processing was canceled in the ' ModuleName ' module because the threshold ' num2str(Separator{FeatNum}) ' you selected for the ' SetNumber{FeatNum} ' set of data is invalid. The threshold should be a number in between the minimum and maximum measurements of the data, which are ' num2str(LowerBinMin(FeatNum)) ' and ' num2str(UpperBinMax(FeatNum)) ', respectively.']);
-    end
+%     if Separator{FeatNum}<LowerBinMin(FeatNum) || Separator{FeatNum}>UpperBinMax(FeatNum)
+%         error(['Image processing was canceled in the ' ModuleName ' module because the threshold ' num2str(Separator{FeatNum}) ' you selected for the ' SetNumber{FeatNum} ' set of data is invalid. The threshold should be a number in between the minimum and maximum measurements of the data, which are ' num2str(LowerBinMin(FeatNum)) ' and ' num2str(UpperBinMax(FeatNum)) ', respectively.']);
+%     end
 end
 
 if length(Measurements{1}) ~= length(Measurements{2})
@@ -222,8 +224,8 @@ end
 % Produce color image
 QuantizedMeasurements = [0;QuantizedMeasurements];                 % Add a background class
 QuantizedImage = QuantizedMeasurements(LabelMatrixImage+1);
-handlescmap = handles.Preferences.LabelColorMap;
-cmap = [0 0 0;feval(handlescmap,length(bins))];
+handlescmap = str2func(handles.Preferences.LabelColorMap);
+cmap = [0 0 0; handlescmap(length(bins))];
 QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
 
 %%%%%%%%%%%%%%%%%%%
@@ -262,9 +264,10 @@ if any(findobj == ThisModuleFigureNumber)
     title(hAx,['Classified ', ObjectName]);
 
     % Produce and plot histogram
-    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    hAx = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
     x = 1:4;
-    bar(hAx,x,bins,1);
+    h = bar(hAx,x,bins,1);
+    set(get(h,'children'),'facevertexcdata',cmap(2:end,:)); % Color code acording to adjacent plot
     xlabel(hAx,['Labels: ' BinLabels{1} ', ' BinLabels{2} ', ' BinLabels{3} ', ' BinLabels{4}],'fontsize',FontSize);
     ylabel(hAx,['# of ',ObjectName],'fontsize',FontSize);
     title(hAx,['Classified by ' FeatureName{1} ', ' FeatureName{2}],'fontsize',FontSize);

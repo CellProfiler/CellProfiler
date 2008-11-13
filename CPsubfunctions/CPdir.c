@@ -147,13 +147,45 @@ int stat_isdir(const char *dir_name, const char *lnk_name)
   return result;
 }
 
+const char *file_extensions[] = { "bmp", "cur", "fts", "fits", "gif", "hdf", 
+                                  "ico", "jpg", "jpeg", "pbm", "pcx", "pgm", 
+                                  "png", "pnm", "ppm", "ras", "tif", "tiff", 
+                                  "xwd", "dib", "mat", "fig", "zvi", "raw", 
+                                  "flex", NULL };
+
+/* Decide whether a file is a directory, stat-ing when necessary.  In
+ * order not to stat unnecessarily, assume that nobody is stupid
+ * enough to name their directory something that ends in ".tif" or
+ * some other common extension. */
+int is_dir(const char *dir_name, struct dirent *dirent)
+{
+     char *last_part;
+     const char **extension;
+
+     switch (dirent->d_type) {
+     case DT_DIR: 
+          return 1;
+     case DT_LNK:
+     case DT_UNKNOWN:
+          last_part = strrchr(dirent->d_name, '.');
+          if (!last_part)
+               return stat_isdir(dir_name, dirent->d_name);
+          last_part++;
+          for (extension = file_extensions; *extension; extension++)
+               if (strcasecmp(last_part, *extension) == 0)
+                    return 0;
+          return stat_isdir(dir_name, dirent->d_name);
+     default: 
+          return 0;
+     }
+}
+
 struct file *dir(const char *dir_name, int *nfiles)
 {
      struct file *files;
-     int size, is_dir;
+     int size;
      DIR *dir;
      struct dirent *dirent;
-     char *name;
      
      files = NULL;
      *nfiles = 0;
@@ -165,12 +197,9 @@ struct file *dir(const char *dir_name, int *nfiles)
                mexErrMsgTxt(strerror(errno));
      }
 
-     while (dirent = readdir(dir)) {
-          is_dir = dirent->d_type == DT_DIR || 
-               dirent->d_type == DT_UNKNOWN && stat_isdir(dir_name,
-                                                          dirent->d_name);
-          files = add_file(files, dirent->d_name, is_dir, nfiles, &size);
-     }
+     while (dirent = readdir(dir))
+          files = add_file(files, dirent->d_name, is_dir(dir_name, dirent),
+                           nfiles, &size);
      closedir(dir);
      qsort(files, *nfiles, sizeof(struct file), cmp_file);
      return files;

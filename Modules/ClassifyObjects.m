@@ -40,7 +40,7 @@ function handles = ClassifyObjects(handles)
 % Category = 'ClassifyObjects'
 % Features measured:                         Feature Number:
 % (As named in module's last setting)     |       1
-%% TODO: What does that mean "As named in module's last setting"?
+% TODO: What does that mean "As named in module's last setting"?
 %
 % See also ClassifyObjectsByTwoMeasurements, FilterByObjectMeasurement.
 
@@ -166,17 +166,20 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+    
 try NumericalBinSpecifications = str2num(BinSpecifications);
-catch error(['Image processing was canceled in the ', ModuleName, ...
+catch
+    error(['Image processing was canceled in the ', ModuleName, ...
         ' module because the bin specifications must be numerical values',...
-        ' separated by commas. Please check your bin specifications.'])
+        ' separated by commas. Please check your bin specifications.']);
 end
 
 NumberOfObjects = length(Measurements);
 
 if strcmpi(BinType,'Evenly spaced bins')
-    %%% Check that the proper number of arguments has been
-    %%% provided:
+    % Check that the proper number of arguments has been
+    % provided:
     if length(NumericalBinSpecifications) ~= 3;
         error(['Image processing was canceled in the ', ModuleName, ...
             ' module because if you are specifying evenly spaced bins,', ...
@@ -201,13 +204,8 @@ else % In this case, BinType must be 'Custom-defined bins'
         % In this case, the user entered a single value so they want two
         % bins: one above and one below a specified threshold.
         NumberOfBins = 2;
-        if NumberOfObjects == 0
-            LowerBinMin = -Inf;
-            UpperBinMax = Inf;
-        else
-            LowerBinMin = min(Measurements(~isinf(Measurements)));
-            UpperBinMax = max(Measurements(~isinf(Measurements)));
-        end
+        LowerBinMin = -Inf;
+        UpperBinMax = Inf;
         MidPointToUse = NumericalBinSpecifications;
         Edges = [LowerBinMin,MidPointToUse,UpperBinMax];
     else
@@ -246,19 +244,21 @@ BinFlag = cell(NumberOfBins);
 ObjectsPerBin = zeros(1,NumberOfBins);
 PercentageOfObjectsPerBin = zeros(1,NumberOfBins);
 
-if NumberOfObjects>0
-    QuantizedMeasurements = zeros(size(Measurements));
-    for BinNum = 1:NumberOfBins
-        bin_index{BinNum} = find(Measurements > Edges(BinNum) & Measurements <= Edges(BinNum+1));
+QuantizedMeasurements = zeros(size(Measurements));
+for BinNum = 1:NumberOfBins
+    if BinNum == 1, % Catch objects that match the first edges (if any)
+        BinFlag{BinNum} = Measurements >= Edges(BinNum) & Measurements <= Edges(BinNum+1);
+    else
         BinFlag{BinNum} = Measurements > Edges(BinNum) & Measurements <= Edges(BinNum+1);
-        QuantizedMeasurements(bin_index{BinNum}) = BinNum;
-        %TODO: Here we should add the number of objects EQUAL TO the bin edge
-        %to the count:
-        ObjectsPerBin(BinNum) = length(bin_index{BinNum});
     end
+    bin_index{BinNum} = find(BinFlag{BinNum});
+    QuantizedMeasurements(bin_index{BinNum}) = BinNum;
+    ObjectsPerBin(BinNum) = length(bin_index{BinNum});
+end
 
-    %%% TODO: Producing this image should be conditional on a figure window open or
-    %%% on the image being saved to the handles structure for downstream.
+% Producing this image is conditional on a figure window open or
+% on the image being saved to the handles structure for downstream.
+if any(findobj == ThisModuleFigureNumber) || ~strcmpi(SaveColoredObjects,'Do not use')
     if ~strcmpi(Category,'Ratio')
         % Produce image where the the objects are colored according to the original
         % measurements and the quantized measurements (though this does not apply to 'Ratio')
@@ -268,108 +268,140 @@ if NumberOfObjects>0
             for BinNum = 1:NumberOfObjects
                 NonQuantizedImage(props(BinNum).PixelIdxList) = Measurements(BinNum);
             end
-            QuantizedMeasurementsWithBackground = [0;QuantizedMeasurements];                 % Add a background class
+            QuantizedMeasurementsWithBackground = [0;QuantizedMeasurements];    % Add a background class
             QuantizedImage = QuantizedMeasurementsWithBackground(LabelMatrixImage+1);
-            handlescmap = handles.Preferences.LabelColorMap;
-            cmap = [0 0 0;feval(handlescmap,length(ObjectsPerBin))];
+            handlescmap = str2func(handles.Preferences.LabelColorMap);
+            cmap = [0 0 0; handlescmap(NumberOfBins)];
             QuantizedRGBimage = ind2rgb(QuantizedImage+1,cmap);
         else
             QuantizedRGBimage = NonQuantizedImage;
         end
     end
+end
 
-    % Calculate the percentage of objects per bin
-    PercentageOfObjectsPerBin = ObjectsPerBin/length(Measurements);
+% Calculate the percentage of objects per bin
+if ~isempty(PercentageOfObjectsPerBin), PercentageOfObjectsPerBin = ObjectsPerBin/length(Measurements); else PercentageOfObjectsPerBin = 0; end
 
-    %%%%%%%%%%%%%%%%%%%%%%%
-    %%% DISPLAY RESULTS %%%
-    %%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
 
-    ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-    if any(findobj == ThisModuleFigureNumber)
-        % Activates the appropriate figure window.
-        CPfigure(handles,'Image',ThisModuleFigureNumber);
-        % If we are using a user defined field, there is no corresponding
-        % image.
-        if ~strcmpi(Category,'Ratio')
-            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                CPresizefigure(NonQuantizedImage,'TwoByTwo',ThisModuleFigureNumber);
-            end
+if any(findobj == ThisModuleFigureNumber)
+    % Activates the appropriate figure window.
+    CPfigure(handles,'Image',ThisModuleFigureNumber);
+    % If we are using a user defined field, there is no corresponding
+    % image.
+    if ~strcmpi(Category,'Ratio')
+        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            CPresizefigure(NonQuantizedImage,'TwoByTwo',ThisModuleFigureNumber);
         end
+    end
 
-        % If we are using a user defined field, there is no corresponding
-        % image.
-        if ~strcmpi(Category,'Ratio')
-            % A subplot of the figure window is set to display the original image.
-            hAx = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
-            CPimagesc(NonQuantizedImage,handles,hAx);
-            IntensityColormap = handles.Preferences.IntensityColorMap;
-            if max(Measurements) > length(colormap)
-                colormap(hAx,feval(IntensityColormap,max(Measurements)))
-            end
-            title([ObjectName,' shaded according to ',FeatureName],'Parent',hAx)
+    % If we are using a user defined field, there is no corresponding
+    % image.
+    if ~strcmpi(Category,'Ratio')
+        % A subplot of the figure window is set to display the original image.
+        hAx = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+
+        % Whatever the colormap is, (a) force measurements to be
+        % assigned as non-black color by adding 1 to the call to
+        % handlescmap, (b) make the background black by prefixing
+        % 0s to cmap and offsetting the color axis, and forcing the
+        % background pixels to -inf
+        handlescmap = str2func(handles.Preferences.IntensityColorMap);
+        cmap = handlescmap(length(Measurements)+1); cmap(1,:) = []; cmap = [0 0 0; cmap];
+        colormap(hAx,cmap);
+        NonQuantizedImage(LabelMatrixImage == 0) = -inf;
+        CPimagesc(NonQuantizedImage,handles,hAx);
+        clim = caxis(hAx); 
+        if ~isempty(Measurements), 
+            offset = (clim(2)-clim(1))/length(Measurements); 
+        else
+            offset = 0; 
         end
+        caxis(hAx,[clim(1)-offset clim(2)]);
+        title([ObjectName,' shaded according to ',FeatureName],'Parent',hAx)
+    end
 
-        % Produce and plot histogram of original data
-        hAx = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
-        Nbins = min(round(NumberOfObjects),40);
-        hist(hAx,Measurements,Nbins);
-        % Took this out: don't want to use misleading colors.
-        %    set(get(gca,'Children'),'FaceVertexCData',hot(Nbins));
-        xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
-        ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
-        title(hAx,['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
-        % Using "axis tight" here is ok, I think, because we are displaying
-        % data, not images.
-        ylimits = ylim;
-        axis(hAx,'tight')
-        xlimits = xlim;
-        axis(hAx,[xlimits ylimits]);
+    % Produce and plot histogram of original data
+    hAx = subplot(2,2,2,'Parent',ThisModuleFigureNumber);
+    if ~isempty(Measurements), Nbins = min(round(NumberOfObjects),40); else Nbins = 1; end
+    hist(hAx,Measurements,Nbins);
+    xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(hAx,['Histogram of ',Category],'fontsize',handles.Preferences.FontSize);
+    axis(hAx,'tight');
+    axis(hAx,[xlim(hAx) ylim(hAx) + [0 diff(ylim(hAx))/10]]);    % Give a little bit of space at the top
 
-        % If we are using a user defined field, there is no corresponding
-        % image.
-        if ~strcmpi(Category,'Ratio')
-            % A subplot of the figure window is set to display the quantized image.
-            hAx = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
-            CPimagesc(QuantizedRGBimage,handles,hAx);
-            title(hAx,['Classified ', ObjectName]);
-            % TODO add legend
-        end
+    % If we are using a user defined field, there is no corresponding
+    % image.
+    if ~strcmpi(Category,'Ratio')
+        % A subplot of the figure window is set to display the quantized image.
+        hAx = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+        CPimagesc(QuantizedRGBimage,handles,hAx);
+        title(hAx,['Classified ', ObjectName]);
         
+        % Add legend to image
+        for BinNum = 1:NumberOfBins
+            if strcmpi(Labels,'Do not use'),
+                LegLabels{BinNum} = ['Bin',num2str(BinNum)];
+            else
+                [ignore,LegLabels{BinNum}] = strrok(ClassifyFeatureNames{BinNum},'_');
+                LegLabels{BinNum} = LegLabels{BinNum}(2:end);
+            end
+        end
+        % Legend requires patch/line objects to work and can't do images. 
+        % So we trick it by plotting invisible patches with RGB values
+        % from the quantized image and key off those
+        hold(hAx,'on');
+        c = unique(QuantizedMeasurements(:))';
+        for i = 1:length(c),
+            [row,col] = find(QuantizedImage == c(i),1);
+            rgbval = squeeze(QuantizedRGBimage(row,col,:))';
+            h(i) = patch([0 0 1],[0 1 1],rgbval,'visible','off','parent',hAx); 
+        end
+        hold(hAx,'off');
+        [lg,obj_lg] = legend(hAx,LegLabels{:});
+        % Make text white (since bg is black) and remove border
+        set(findobj(obj_lg,'type','text'),'color','w');
+        % Shorten the legend bars a bit
+        % NB: Haven't figured out how to shorten the legend axes itself
+        h = findobj(obj_lg,'type','patch');
+        if ~isempty(h),
+            p = get(h(1),'xdata');
+            set(h,'xdata',[mean(p([1 4]))*ones(2,1); p(3:4)]);
+        end
+        set(lg,'color','k','edgecolor','w');
+    end
+
+    if NumberOfObjects > 1,
+        % If Edges([1 end]) is +/-inf, user specified a thredhold, so
+        % set bounds to min/max Measurements
         if isinf(Edges(1))
             Edges(1) = min(Measurements(~isinf(Measurements)));
-            % TODO: what happens here, and in the next "if", when there is
-            % just one object, so min = max?
-            % just for plotting purposes
         end
         if isinf(Edges(end))
             Edges(end) = max(Measurements(~isinf(Measurements)));
-            % just for plotting purposes
         end
-        
-        % Plot histogram
-        hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
-        bar_ctr = Edges(1:end-1) + (Edges(2)-Edges(1))/2;
-        h = bar(hAx,bar_ctr,ObjectsPerBin,1);
-        xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
-        ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
-        title(hAx,['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
-        % Using "axis tight" here is ok, I think, because we are displaying
-        % data, not images.
-        axis(hAx,'tight');
-        xlimits(1) = min(xlimits(1),LowerBinMin);   % Extend limits if necessary and save them
-        xlimits(2) = max(UpperBinMax,Edges(end));   % so they can be used for the second histogram
-        axis(hAx,[xlimits ylim]);
-        % Took this out: don't want to use misleading colors.
-        %     handlescmap = handles.Preferences.LabelColorMap;
-        %     set(get(h,'Children'),'FaceVertexCData',feval(handlescmap,max(2,NumberOfBins)));
+    else    % If we're here, then there was 1 or no objects and we need to adjust the bins for plotting
+        if any(isinf(Edges([1 end])))   % User specified a threshold, so expand bars around the threshold
+            Edges = MidPointToUse + [-1 0 1];
+        end
     end
 
-else
-    %%TODO: Alternative display for no objects
-    %% We might display some parts of the above, though. not sure yet.
-
+    % Plot histogram
+    hAx = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    bar_ctr = Edges(1:end-1) + (Edges(2)-Edges(1))/2;
+    bar(hAx,bar_ctr,ObjectsPerBin,1);
+    xlabel(hAx,FeatureName,'fontsize',handles.Preferences.FontSize);
+    ylabel(hAx,['# of ',ObjectName],'fontsize',handles.Preferences.FontSize);
+    title(hAx,['Classified by ',Category],'fontsize',handles.Preferences.FontSize);
+    axis(hAx,'tight');
+    xlimits = xlim(hAx);
+    xlimits(1) = min(xlimits(1),LowerBinMin);   % Extend limits if necessary and save them
+    xlimits(2) = max(UpperBinMax,Edges(end));   % so they can be used for the second histogram
+    axis(hAx,[xlimits ylim(hAx)  + [0 diff(ylim(hAx))/10]]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

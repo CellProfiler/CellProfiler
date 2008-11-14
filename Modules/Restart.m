@@ -43,8 +43,9 @@ drawnow
 %%%%%%%%%%%%%%%%%%
 drawnow
 
+%% Check
 if (handles.Current.SetBeingAnalyzed ~= 1)
-    return
+    error('Restart Module must be the only module in the pipeline')
 end
 
 callback = handles.FunctionHandles.LoadPipelineCallback;
@@ -66,12 +67,9 @@ catch
 end
 % save figure properties
 [ScreenWidth,ScreenHeight] = CPscreensize;
-fig = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if ~isempty(fig)
-    try
-        close(fig); % Close the Restart figure
-    end
-end
+
+% Close the Restart figure
+CPclosefigure(handles,CurrentModule)
 
 handles.Settings = updatedhandles.Settings;
 handles.Pipeline = importhandles.handles.Pipeline;
@@ -87,7 +85,7 @@ handles.Preferences.DisplayWindows = importhandles.handles.Preferences.DisplayWi
 for i=1:handles.Current.NumberOfModules;
     if iscellstr(handles.Settings.ModuleNames(i))
         if handles.Preferences.DisplayWindows(i)
-            handles.Current.(['FigureNumberForModule' TwoDigitString(i)]) = ...
+            handles.Current.(['FigureNumberForModule' CPtwodigitstring(i)]) = ...
                 CPfigure(handles,'','name',[char(handles.Settings.ModuleNames(i)), ' Display, cycle # '],...
                 'Position',[(ScreenWidth*((i-1)/12)) (ScreenHeight-522) 560 442]);
         end
@@ -95,19 +93,4 @@ for i=1:handles.Current.NumberOfModules;
 end
 guidata(gcbo,handles);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% SAVE DATA TO HANDLES STRUCTURE %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-end
-
-%%% SUBFUNCTION %%%
-function twodigit = TwoDigitString(val)
-%TwoDigitString is a function like num2str(int) but it returns a two digit
-%representation of a string for our purposes.
-if ((val > 99) || (val < 0)),
-    error(['TwoDigitString: Can''t convert ' num2str(val) ' to a 2 digit number']);
-end
-twodigit = sprintf('%02d', val);
-return;
-end

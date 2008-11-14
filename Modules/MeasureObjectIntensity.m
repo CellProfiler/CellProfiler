@@ -330,9 +330,12 @@ for i = 1:length(ObjectNameList)
         SortedObjectPixels = SortedObjectPixels - floor(SortedObjectPixels);
         SortedObjectPixels = (SortedObjectPixels - .1) * Scale + Min;
         Address = cumsum([props.Area]);
-        Basic(:,12) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]*3/4)));
-        Basic(:,13) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]/2)));
-        Basic(:,14) = arrayfun(@(x) {x}, SortedObjectPixels(floor(Address-[props.Area]/4)));
+        idx = max(1,floor(Address-[props.Area]*3/4));
+        Basic(:,12) = arrayfun(@(x) {x}, SortedObjectPixels(idx));
+        idx = max(1,floor(Address-[props.Area]/2));
+        Basic(:,13) = arrayfun(@(x) {x}, SortedObjectPixels(idx));
+        idx = max(1,floor(Address-[props.Area]/4));
+        Basic(:,14) = arrayfun(@(x) {x}, SortedObjectPixels(idx));
     else
         % Fill in with empty sets
         Basic = cell(1,length(BasicFeatures));

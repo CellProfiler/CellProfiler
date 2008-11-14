@@ -362,16 +362,16 @@ if any(findobj == ThisModuleFigureNumber)
             h(i) = patch([0 0 1],[0 1 1],rgbval,'visible','off','parent',hAx); 
         end
         hold(hAx,'off');
+        warning('off','MATLAB:legend:IgnoringExtraEntries');
         [lg,obj_lg] = legend(hAx,LegLabels{:});
+        warning('on','MATLAB:legend:IgnoringExtraEntries');
         % Make text white (since bg is black) and remove border
         set(findobj(obj_lg,'type','text'),'color','w');
         % Shorten the legend bars a bit
         % NB: Haven't figured out how to shorten the legend axes itself
         h = findobj(obj_lg,'type','patch');
-        if ~isempty(h),
-            p = get(h(1),'xdata');
-            set(h,'xdata',[mean(p([1 4]))*ones(2,1); p(3:4)]);
-        end
+        p = get(h(1),'xdata');
+        set(h,'xdata',[mean(p([1 4]))*ones(2,1); p(3:4)]);
         set(lg,'color','k','edgecolor','w');
     end
 

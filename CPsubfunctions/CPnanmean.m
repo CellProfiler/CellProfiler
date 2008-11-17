@@ -29,6 +29,8 @@ if isempty(x(:)),
     m = NaN;
 elseif ~any(isnan(x(:))),
     m = mean(x);
+elseif all(isnan(x(:)))
+    m = NaN;
 else
     % If it's a row vector, just return the mean of that vector
     if size(x, 1) == 1,

@@ -16,6 +16,7 @@ features_not_to_be_exported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
 
 per_image_names = {};
 per_object_names = {};
+per_object_names_to_drop = [];
 
 if ~isfield(handles,'Measurements')
     error('There are no measurements to be converted to SQL.')
@@ -57,6 +58,9 @@ for ObjectCell = ObjectNames,
             per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
         else
             per_object_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)));
+            % Measurements that are empty for all cycles don't get a column
+            % header, so keep track of them so they get dropped later
+            per_object_names_to_drop(end+1) = logical(all(cellfun(@isempty,handles.Measurements.(ObjectName).(FeatureName))));
         end
     end %end of loop over feature names
 end %end of loop over object names
@@ -109,19 +113,21 @@ if (FirstSet == 1)
         end
 
         %add columns for mean and stddev for per_object_names
-        for j=per_object_names,
+        for j = per_object_names,
             fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
         end
 
-        for k=per_object_names,
+        for k = per_object_names,
             fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', k{1}]));
         end
 
         fprintf(fmain, ');\n\n');
 
         fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
-        for i = per_object_names
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
+        for i = 1:length(per_object_names)
+            if ~per_object_names_to_drop(i)
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', per_object_names{i});
+            end
         end
 
         fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
@@ -157,7 +163,7 @@ if (FirstSet == 1)
 
         p=1;
         for i = per_image_names,
-            p=p+1;
+            p = p+1;
             if strfind(i{1}, 'Filename')
                 fprintf(fsetup, ',\n%s VARCHAR2(%d)', ['col',num2str(p)], FileNameWidth);
             elseif  strfind(i{1}, 'Path'),
@@ -168,23 +174,29 @@ if (FirstSet == 1)
         end
 
         %add columns for mean and stddev for per_object_names
-        for j=per_object_names,
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for j = 1:length(per_object_names)
+            if ~per_object_names_to_drop(j)
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
-        for h=per_object_names,
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for h = 1:length(per_object_names)
+            if ~per_object_names_to_drop(h)
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
         fprintf(fsetup, ');\n');
         p = p+1;
         PrimKeyPosition = p;
         fprintf(fsetup, 'CREATE TABLE %sPer_Object (col1 NUMBER, %s NUMBER',TablePrefix,['col',num2str(p)]);
-        for i = per_object_names
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for i = 1:length(per_object_names)
+            if ~per_object_names_to_drop(i)
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
         fprintf(fsetup, ');\n');
@@ -207,24 +219,28 @@ if (FirstSet == 1)
         fprintf(fcol,'%s','col1');
         fprintf(fcol,',%s\n','ImageNumber');
 
-        p=1;
-        for k=per_image_names
-            p=p+1;
+        p = 1;
+        for k = per_image_names
+            p = p+1;
             fprintf(fcol, '%s', ['col', num2str(p)] );
             fprintf(fcol, ',%s\n', k{1} );
         end
-        for l=per_object_names
-            p=p+1;
-            fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
+        for l = 1:length(per_object_names)
+            if ~per_object_names_to_drop(l)
+                p = p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', ['Mean_', per_object_names{l}]);
+            end
         end
-        for m=per_object_names
-            p=p+1;
-            fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Stdev_', m{1}]);
+        for m = 1:length(per_object_names)
+            if ~per_object_names_to_drop(m)
+                p = p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', ['Stdev_', per_object_names{m}]);
+            end
         end
 
-        p=p+1;
+        p = p+1;
         if PrimKeyPosition ~= p
             error('STOP!');
         end
@@ -375,7 +391,7 @@ for img_idx = FirstSet:LastSet
                 end
             else
                 %%% Sanity check
-                if ~ strcmp(per_object_names{feature_idx}, cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))),
+                if ~strcmp(per_object_names{feature_idx}, cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))),
                     error(['Mismatched feature names #', int2str(feature_idx), ' ', per_object_names{feature_idx}, '!=', cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))])
                 end
                 feature_idx = feature_idx + 1;

@@ -25,7 +25,10 @@ function handles = SaveImages(handles)
 % Settings:
 %
 % Update file names within CellProfiler:
-% This allows downstream modules (e.g. CreateWebPage) to look up the newly
+% This setting stores file and path name data in handles.Pipeline 
+% as well as a Per_image measurement.  This is useful when exporting to a
+% database, allowing access to the saved image.  This also allows 
+% downstream modules (e.g. CreateWebPage) to look up the newly
 % saved files on the hard drive. Normally, whatever files are present on
 % the hard drive when CellProfiler processing begins (and when the
 % LoadImages module processes its first cycle) are the only files that are

@@ -14,9 +14,9 @@ function handles = Relate(handles)
 % associated with each parent. For every measurement that has been made of
 % the children objects upstream in the pipeline, this module calculates the
 % mean value of that measurement over all children and stores it as a
-% measurement for the parent. For this reason, this module should be placed
-% *after* all Measure modules that make measurements of the children
-% objects.
+% measurement for the parent, as "Means_<child>_per_<parent>". 
+% For this reason, this module should be placed *after* all Measure modules
+% that make measurements of the children objects.
 %
 % An object will be considered a child even if the edge is the only part
 % touching a parent object. If an object is touching two parent objects,
@@ -26,11 +26,11 @@ function handles = Relate(handles)
 % These values are associated with the child objects. If an "Other" object
 % is defined (e.g. Nuclei), then distances are calculated to this object
 % too, as well as normalized distances.  Normalized distances for each
-% child have a range [0 1] and are calculated as: 
+% child have a range [0 1] and are calculated as:
 % (distance to the Parent) / sum(distances to parent and Other object)
 %
 % Measurement Categories (each with only one Feature):
-% Parent, Children, SubObjectFlag, Distance, NormDistance 
+% Parent, Children, SubObjectFlag, Distance, NormDistance
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -87,7 +87,7 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{1}],M
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
 if ~strcmp(ParentName{2},'None')
-    
+
     %% Sanity checks
     if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
         CPwarndlg('The Children and at least one of the Parent objects are the same.  Your results may be erroneous.','Relate module')
@@ -97,7 +97,7 @@ if ~strcmp(ParentName{2},'None')
     end
 
     StepParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{2}],ModuleName,'MustBeGray','DontCheckScale');
-   
+
     %% Sanity check
     if max(ParentObjectLabelMatrix(:)) ~= max(StepParentObjectLabelMatrix(:))
         CPwarndlg(['The number of Parent Objects (' num2str(max(ParentObjectLabelMatrix(:))) ...
@@ -114,74 +114,75 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-    [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
-        SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
-    handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
-    
-    %% Save Distance 'Features'
+[handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
+    SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
+handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
 
-    %% Calcuate the smallest distance from each Child to their Parent
-    %% If no parent exists, then Distance = NaN
-        
-    if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
-        iObj = 0;
-        for thisParent = ParentName %% Will need to change if we add more StepParents
-            %% Calculate perimeters for all parents simultaneously
-            DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' thisParent{1}]));
-            Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
-            if max(ParentsOfChildren) > 0,
-                for iParentsOfChildren = 1:max(ParentsOfChildren)
-                    %% Calculate distance transform to perimeter of Parent objects
-                    DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
+%% Save Distance 'Features'
 
-                    %% Get location of each child object
-                    ChList = find(ParentsOfChildren == iParentsOfChildren);
-                    ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
-                    ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
-                    roundedChLocX = round(ChildrenLocationsX);
-                    roundedChLocY= round(ChildrenLocationsY);
-                    idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
-                    Dist = DistTrans(idx);
-                    Dists(ChList) = Dist;
-                end
-                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], Dists);
-            else
-                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], nan(max(SubObjectName(:)), 1));
+%% Calcuate the smallest distance from each Child to their Parent
+%% If no parent exists, then Distance = NaN
+
+if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
+
+    for thisParent = ParentName %% Will need to change if we add more StepParents
+        %% Calculate perimeters for all parents simultaneously
+        DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' thisParent{1}]));
+        Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
+        if max(ParentsOfChildren) > 0,
+            for iParentsOfChildren = 1:max(ParentsOfChildren)
+                %% Calculate distance transform to perimeter of Parent objects
+                DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
+
+                %% Get location of each child object
+                ChList = find(ParentsOfChildren == iParentsOfChildren);
+                ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
+                ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
+                roundedChLocX = round(ChildrenLocationsX);
+                roundedChLocY= round(ChildrenLocationsY);
+                idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
+                Dist = DistTrans(idx);
+                Dists(ChList) = Dist;
             end
+            handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], Dists);
+        else
+            handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
         end
-    else
-        warning('There is no ''Location'' field with which to find subObj to Parent distances')
     end
-    
-    %% Calculate normalized distances
-    %% All distances are relative to the *first* parent.
-    if length(ParentName) > 1
-        Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};   
-        %% Initialize NormDistance
-        NormDist = Dist(:,1) ./ sum(Dist,2);
-        NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
-        
-        %% Save Normalized Distances
-        handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
-    end
+else
+    warning('There is no ''Location'' field with which to find subObj to Parent distances')
+end
 
-    %% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
-    %% which finds the mean measurements of all the subObjects that relate to each parent object
-    MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
-    NewObjectName=['Means_',SubObjectName, '_per_', ParentName{1}];
-    if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
-        
-        % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
-        if length(handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1}))) >= handles.Current.SetBeingAnalyzed
-            Parents=handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1})){handles.Current.SetBeingAnalyzed};
-            MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
-            for i=1:length(MeasurementFeatures)
-                Fieldname = MeasurementFieldnames{i};
-                if strcmp(Fieldname, 'SubObjectFlag'),
-                    continue;
-                end
-                Measurements=handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};
-                MeanVals = zeros(max(Parents), 1);
+%% Calculate normalized distances
+%% All distances are relative to the *first* parent.
+if length(ParentName) > 1
+    Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
+    %% Initialize NormDistance
+    NormDist = Dist(:,1) ./ sum(Dist,2);
+    NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
+
+    %% Save Normalized Distances
+    handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
+end
+
+%% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
+%% which finds the mean measurements of all the subObjects that relate to each parent object
+MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
+NewObjectName=['Means_',SubObjectName, '_per_', ParentName{1}];
+if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
+
+    % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
+    if length(handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1}))) >= handles.Current.SetBeingAnalyzed
+        Parents=handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1})){handles.Current.SetBeingAnalyzed};
+        MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
+        for i=1:length(MeasurementFeatures)
+            Fieldname = MeasurementFieldnames{i};
+            if strcmp(Fieldname, 'SubObjectFlag'),
+                continue;
+            end
+            Measurements=handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};
+            MeanVals = zeros(max(Parents), 1);
+            if max(Parents) > 0
                 for j = 1:max(Parents),
                     indices = find(Parents == j);
                     if ~ isempty(indices),
@@ -189,11 +190,14 @@ drawnow
                     end
                 end
                 handles = CPaddmeasurements(handles, NewObjectName, Fieldname, MeanVals);
+            else
+                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, nan(max(length(NumberOfChildren),1), 1));
             end
-        else
-            CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
         end
+    else
+        CPwarndlg('The Relate module is attempting to take the mean of a measurement downstream.  Be advised that unless the Relate module is placed *after* all Measurement modules, some ''Mean'' measurements will not be calculated.','Relate Module warning','replace')
     end
+end
 
 %%% Since the label matrix starts at zero, we must include this value in
 %%% the list to produce a label matrix image with children re-labeled to

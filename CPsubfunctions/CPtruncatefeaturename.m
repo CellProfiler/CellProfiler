@@ -6,7 +6,7 @@ function TruncatedName = CPtruncatefeaturename(FeatureName,dlmtr)
 % $Revision$
 
 %% Starting value for Minimum (Sub)string Length
-MinStrLenInit = 20;
+MinStrLenInit = 63;
 
 if nargin < 2
     dlmtr = '_';

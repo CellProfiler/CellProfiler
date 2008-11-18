@@ -32,6 +32,8 @@ end
 % Parse inputs
 if ~exist('Image','var'), Image = ''; end
 if ~exist('SizeScale','var'), SizeScale = ''; end
+
+%% These should have no SizeScale or Image specified
 if strcmp(Category,'AreaShape') || ...
         strcmp(Category,'Ratio') || ...
         strcmp(Category,'Math') || ...
@@ -39,13 +41,16 @@ if strcmp(Category,'AreaShape') || ...
         strcmp(Category,'Count') 
     SizeScale = '';
     Image = '';
+%% These should have no SizeScale specified, only Image
 elseif strcmp(Category,'Intensity') || ...
         strcmp(Category,'ImageQuality') || ...
         strcmp(Category,'Granularity') || ...
         strcmp(Category,'AreaOccupied')
     SizeScale = '';
+%% These should have neither SizeScale nor Image specified
 elseif strcmp(Category,'Texture') ...
         || strcmp(Category,'RadialDistribution')
+%% These should have no Image specified, only SizeScale
 elseif strcmp(Category,'Neighbors')
     Image = '';
 % Nothing to do.  These should have all arguments specified
@@ -53,6 +58,14 @@ elseif strcmp(Category,'Correlation')
 % Children is special because 'Count' is added in CPrelateobjects
 elseif strcmp(Category,'Children') 
     Image = 'Count';
+    SizeScale = '';
+% Location is special because 'Center' is added in CPsaveObjectLocations
+%   as if were a FeatureNumberOrName
+elseif strcmp(Category,'Location')
+    %% Need to specially rename 'Image' because Loaction measurement is
+    %% recorded as 'Location_Center_X/Y'
+    Image = FeatureNumberOrName; %% 'X' or 'Y'
+    FeatureNumberOrName = 'Center';
     SizeScale = '';
 else 
     % TODO: SaturationBlur

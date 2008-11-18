@@ -13,10 +13,13 @@ function handles = FilterByObjectMeasurement(handles)
 % MeasureTexture). All objects outside of the specified parameters will be
 % discarded.
 %
-% Feature Number:
+% Feature Number or Name:
 % The feature number specifies which feature from the Measure module will
 % be used for filtering. See each Measure module's help for the numbered
-% list of the features measured by that module.
+% list of the features measured by that module. Additionally, you can
+% specify the Feature Name explicitly, which is useful in special cases
+% such as filtering by Location, which is created by a few modules, and 
+% has a Feature Name of either 'X' or 'Y'.
 %
 % Special note on saving images: Using the settings in this module, object
 % outlines can be passed along to the module OverlayOutlines and then saved
@@ -134,14 +137,21 @@ MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.Se
 
 if strcmpi(MinValue1, 'No minimum')
     MinValue1 = -Inf;
+    defaultMin = 1;
 else
     MinValue1 = str2double(MinValue1);
 end
 
 if strcmpi(MaxValue1, 'No maximum')
     MaxValue1 = Inf;
+    defaultMax = 1;
 else
     MaxValue1 = str2double(MaxValue1);
+end
+
+if defaultMax && defaultMin
+    CPwarndlg(['No objects are being filtered with the default settings in ' ...
+        ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%

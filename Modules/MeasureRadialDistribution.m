@@ -191,8 +191,12 @@ for Bin = 1:BinCount,
     Bin_Mask = Mask & (BinIndexes == Bin);
     RadialValues = (sparse(LabelMatrixImage(Bin_Mask), RadialSlice(Bin_Mask), Image(Bin_Mask), NumObjects, 8));
     NumberOfPixelsInSlice = (sparse(LabelMatrixImage(Bin_Mask), RadialSlice(Bin_Mask), 1, NumObjects, 8));
-    RadialSliceMeans = RadialValues ./ NumberOfPixelsInSlice;
-    RadialCV(:, Bin) = CPnanstd(RadialSliceMeans')' ./ CPnanmean(RadialSliceMeans')';
+    if NumberOfPixelsInSlice ~= 0,
+        RadialSliceMeans = RadialValues ./ NumberOfPixelsInSlice;
+        RadialCV(:, Bin) = CPnanstd(RadialSliceMeans')' ./ CPnanmean(RadialSliceMeans')';
+    else
+        RadialCV(:, Bin) = NaN;
+    end
 end
 RadialCV(isnan(RadialCV)) = 0;
 

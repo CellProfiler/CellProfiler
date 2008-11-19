@@ -127,7 +127,7 @@ else
     %%% Find the centroids of the objects
     props = regionprops(LabelMatrixImage, 'Centroid');
     Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
-    CenterLabels = full(sparse(Centroids(1,:), Centroids(2,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
+    CenterLabels = full(sparse(Centroids(2,:), Centroids(1,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
 end
 
 

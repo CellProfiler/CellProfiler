@@ -168,7 +168,7 @@ Y_axis = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR11 = popupmenu
 PlateFix = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Do you want to remove rows and columns that lack objects? (see Help, only used when cropping based on previously identified objects)
+%textVAR12 = Do you want to remove rows and columns that lack objects? (see Help)
 %choiceVAR12 = No
 %choiceVAR12 = Yes
 %inputtypeVAR12 = popupmenu
@@ -194,7 +194,7 @@ RecalculateFlag = 1;
 
 CropFromObjectFlag = 0;
 if handles.Current.SetBeingAnalyzed == 1 || strcmp(IndividualOrOnce, 'Individually') || strcmp(PlateFix,'Yes')
-   %%% These are all cases where we want to go calculate the croppping
+   %%% These are all cases where we want to go calculate the cropping
    %%% freshly, rather than retrieving a previously calculated crop image
    %%% from the handles structure.
 else

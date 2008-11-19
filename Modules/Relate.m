@@ -88,7 +88,7 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{1}],M
 %%% segmented objects.
 if ~strcmp(ParentName{2},'None')
 
-    %% Sanity checks
+    % Sanity checks
     if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
         CPwarndlg('The Children and at least one of the Parent objects are the same.  Your results may be erroneous.','Relate module')
     end
@@ -98,7 +98,7 @@ if ~strcmp(ParentName{2},'None')
 
     StepParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{2}],ModuleName,'MustBeGray','DontCheckScale');
 
-    %% Sanity check
+    % Sanity check
     if max(ParentObjectLabelMatrix(:)) ~= max(StepParentObjectLabelMatrix(:))
         CPwarndlg(['The number of Parent Objects (' num2str(max(ParentObjectLabelMatrix(:))) ...
             ') does not equal the number of Other objects (' num2str(max(StepParentObjectLabelMatrix(:))) ...
@@ -118,23 +118,23 @@ drawnow
     SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
 handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
 
-%% Save Distance 'Features'
+% Save Distance 'Features'
 
-%% Calcuate the smallest distance from each Child to their Parent
-%% If no parent exists, then Distance = NaN
+% Calcuate the smallest distance from each Child to their Parent
+% If no parent exists, then Distance = NaN
 
 if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
 
     for thisParent = ParentName %% Will need to change if we add more StepParents
-        %% Calculate perimeters for all parents simultaneously
+        % Calculate perimeters for all parents simultaneously
         DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' thisParent{1}]));
         Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
         if max(ParentsOfChildren) > 0,
             for iParentsOfChildren = 1:max(ParentsOfChildren)
-                %% Calculate distance transform to perimeter of Parent objects
+                % Calculate distance transform to perimeter of Parent objects
                 DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
 
-                %% Get location of each child object
+                % Get location of each child object
                 ChList = find(ParentsOfChildren == iParentsOfChildren);
                 ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
                 ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
@@ -153,20 +153,20 @@ else
     warning('There is no ''Location'' field with which to find subObj to Parent distances')
 end
 
-%% Calculate normalized distances
-%% All distances are relative to the *first* parent.
+% Calculate normalized distances
+% All distances are relative to the *first* parent.
 if length(ParentName) > 1
-    Dist = handles.Measurements.(SubObjectName).Distance{handles.Current.SetBeingAnalyzed};
-    %% Initialize NormDistance
-    NormDist = Dist(:,1) ./ sum(Dist,2);
-    NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent
+    FirstParentDist =   handles.Measurements.(SubObjectName).(['Distance_',ParentName{1}]){handles.Current.SetBeingAnalyzed};
+    OtherObjDist =      handles.Measurements.(SubObjectName).(['Distance_',ParentName{2}]){handles.Current.SetBeingAnalyzed};
+    NormDist = FirstParentDist ./ sum([FirstParentDist OtherObjDist],2);
+    NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent)
 
-    %% Save Normalized Distances
+    % Save normalized distances
     handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
 end
 
-%% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
-%% which finds the mean measurements of all the subObjects that relate to each parent object
+% Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
+% which finds the mean measurements of all the subObjects that relate to each parent object
 MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
 NewObjectName=['Means_',SubObjectName, '_per_', ParentName{1}];
 if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
@@ -199,9 +199,9 @@ if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
     end
 end
 
-%%% Since the label matrix starts at zero, we must include this value in
-%%% the list to produce a label matrix image with children re-labeled to
-%%% their parents values. This does not get saved and is only for display.
+% Since the label matrix starts at zero, we must include this value in
+% the list to produce a label matrix image with children re-labeled to
+% their parents values. This does not get saved and is only for display.
 if ~isempty(ParentsOfChildren)
     ParentsOfChildrenLM = [0;ParentsOfChildren];
     NewObjectParentLabelMatrix = ParentsOfChildrenLM(SubObjectLabelMatrix+1);

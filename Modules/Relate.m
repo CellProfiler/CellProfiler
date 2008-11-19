@@ -217,20 +217,42 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(ParentObjectLabelMatrix,'TwoByTwo',ThisModuleFigureNumber);
-    end
-    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+    fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
+
     ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    CPimagesc(ColoredParentLabelMatrixImage,handles,hAx);
-    title(hAx,['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
     ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    CPimagesc(ColoredSubObjectLabelMatrixImage,handles,hAx);
-    title(hAx,'Original Sub Objects');
-    hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
     ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
-    CPimagesc(ColoredNewObjectParentLabelMatrix,handles,hAx);
-    title(hAx,'New Sub Objects');
+    
+    %% Default image
+    CPimagesc(ColoredNewObjectParentLabelMatrix,handles,ThisModuleFigureNumber);
+    title('New Sub Objects')
+    
+    % Construct struct which holds images and figure titles
+    ud(1).img = ColoredNewObjectParentLabelMatrix;
+    ud(2).img = ColoredSubObjectLabelMatrixImage;
+    ud(3).img = ColoredParentLabelMatrixImage;
+
+    ud(1).title = ['New Sub Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+    ud(2).title = ['Original Sub Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+    ud(3).title = ['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+
+    %% Construct uicontrol text, accounting for possible StepParents
+    if ~exist('StepParentObjectLabelMatrix','var')
+        str = 'New Sub Objects|Original Sub Objects|Parent Objects';
+    else
+        str = 'New Sub Objects|Original Sub Objects|Parent Objects|StepParent Objects';
+        ColoredStepParentObjectLabelMatrix = CPlabel2rgb(handles,StepParentObjectLabelMatrix);
+        ud(4).img = ColoredStepParentObjectLabelMatrix;
+        ud(4).title = ['StepParent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+    end
+    
+    %% uicontrol for displaying multiple images
+    uicontrol(fig_h, 'Style', 'popup',...
+        'String', str,...
+        'UserData',ud,...
+        'units','normalized',...
+        'position',[.1 .95 .25 .04],...
+        'backgroundcolor',[.7 .7 .9],...
+        'Callback', @CP_ImagePopupmenu_Callback);
+
 end

@@ -711,22 +711,17 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         if any(findobj == ThisModuleFigureNumber)
             %%% Activates the appropriate figure window.
             fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
-            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
-            end
 
             %% Text display of Threshold
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
-            uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.25 0.01 .6 0.04],...
+            uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.05 0.01 .8 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
 
-            
             %%% Calculates the ColoredLabelMatrixImage for display
             ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
             
             %%%% Display secondary outlines as default
-            fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
-            [hImage,hAx] = CPimagesc(ObjectOutlinesOnOrigImage, handles,ThisModuleFigureNumber);
+            CPimagesc(ObjectOutlinesOnOrigImage, handles,ThisModuleFigureNumber);
             title(['Outlined ',SecondaryObjectName])
 
             %% Construct struct which holds images and figure titles 

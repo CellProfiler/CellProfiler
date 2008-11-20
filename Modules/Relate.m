@@ -29,6 +29,13 @@ function handles = Relate(handles)
 % child have a range [0 1] and are calculated as:
 % (distance to the Parent) / sum(distances to parent and Other object)
 %
+% To access the Child/Parent label matrix image in downstream modules, use
+% the "Other..." method to choose your image and type Parent_Child,
+% where 'Parent' and 'Child' are the names of the objects as selected in 
+% Relate's first two settings.  For example, if the parent objects are 
+% "Cytoplasm" and the child objects are "Speckles", then downstream choose
+% "Cytoplasm_Speckles".
+%
 % Measurement Categories (each with only one Feature):
 % Parent, Children, SubObjectFlag, Distance, NormDistance
 
@@ -256,3 +263,13 @@ if any(findobj == ThisModuleFigureNumber)
         'Callback', @CP_ImagePopupmenu_Callback);
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+%%% The label matrix image is saved to the handles structure so it can be
+%%% used by subsequent modules.
+ColoredNewObjectParentLabelMatrixName = [ParentName{1} '_' SubObjectName];
+handles.Pipeline.(ColoredNewObjectParentLabelMatrixName) = ColoredNewObjectParentLabelMatrix;

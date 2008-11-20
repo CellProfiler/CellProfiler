@@ -298,7 +298,7 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%pathnametextVAR13 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
+%pathnametextVAR13 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.
 %defaultVAR13 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 
@@ -371,8 +371,16 @@ if SetBeingAnalyzed == 1
             Pathname = handles.Current.DefaultImageDirectory;
         else
 	    % If the pathname start with '.', interpret it relative to
-            % the default image dir.
+        % the default image dir.
             Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+        end
+    elseif strncmp(Pathname, '&', 1)
+        if length(Pathname) == 1
+            Pathname = handles.Current.DefaultOutputDirectory;
+        else
+	    % If the pathname start with '&', interpret it relative to
+        % the default output dir.
+            Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
         end
     end
     if ~exist(Pathname,'dir')

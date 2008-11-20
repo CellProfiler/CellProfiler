@@ -137,19 +137,17 @@ MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.Se
 
 if strcmpi(MinValue1, 'No minimum')
     MinValue1 = -Inf;
-    defaultMin = 1;
 else
     MinValue1 = str2double(MinValue1);
 end
 
 if strcmpi(MaxValue1, 'No maximum')
     MaxValue1 = Inf;
-    defaultMax = 1;
 else
     MaxValue1 = str2double(MaxValue1);
 end
 
-if defaultMax && defaultMin
+if strcmpi(MinValue1, 'No minimum') && strcmpi(MaxValue1, 'No maximum')
     CPwarndlg(['No objects are being filtered with the default settings in ' ...
         ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
 end

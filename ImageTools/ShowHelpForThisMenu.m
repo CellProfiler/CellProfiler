@@ -25,22 +25,26 @@ function ShowHelpForThisMenu(varargin)
 global toolsChoice;
 global ImageToolHelp;
 
-try
-    addpath(genpath(fileparts(which('CellProfiler.m'))))
-    savepath
-catch
-    CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
+if ~isdeployed
+    try
+        subdirs = strread(genpath(fileparts(which('CellProfiler'))), '%s','delimiter',pathsep);
+        subdirs = subdirs(cellfun('isempty', strfind(subdirs, '.svn')));
+        addpath(subdirs{:});
+        savepath;
+    catch
+        CPerrordlg('You changed the name of CellProfiler.m file. Consequences of this are unknown.');
+    end
 end
+    
 if ~isdeployed
     CellProfilerPathname = fileparts(which('CellProfiler'));
     Pathname = fullfile(CellProfilerPathname,'ImageTools');
 else
-    CPuigetdir(cd,'Choose the folder where the image tools are located');
-    pause(.1);
-    figure(gcf);
+    Pathname = fullfile(ctfroot,'ImageTools');
 end
 ListOfTools{1} = 'Image tools: none loaded';
-try addpath(Pathname)
+try 
+    if ~isdeployed, addpath(Pathname); end
     %%% Lists all the contents of that path into a structure which includes the
     %%% name of each object as well as whether the object is a file or
     %%% directory.

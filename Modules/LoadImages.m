@@ -119,6 +119,14 @@ function handles = LoadImages(handles)
 %     * ^[0-9]*$ matches any string that is a natural number or ''
 %     * ^-[0-9]+$|^\+?[0-9]+$ matches any integer
 %
+% If you want to exclude files, type in the text that the excluded files
+% have in common.
+% The image/movie files specified with the TEXT option may also include
+% files that you want to exclude from analysis (such as thumbnails created
+% by an imaging system). Here you can specify text that mark files for
+% exclusion. This text is treated as a exact match and not as a regular
+% expression. Note: This choice is ignored with the ORDER option.
+%
 % Analyze all subfolders within the selected folder?
 % You may have subfolders within the folder that is being searched, but if
 % you are in TEXT mode, the names of the folders themselves must not
@@ -284,34 +292,38 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %defaultVAR10 = 3
 ImagesPerSet = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,10}));
 
-%textVAR11 = What type of files are you loading?
-%choiceVAR11 = individual images
-%choiceVAR11 = stk movies
-%choiceVAR11 = avi movies
-%choiceVAR11 = tif,tiff,flex movies
-FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,11});
-%inputtypeVAR11 = popupmenu
+%textVAR11 = If you want to exclude files, type the text that the excluded images have in common (for TEXT options). Type "Do not use" to ignore.
+%defaultVAR11 = Do not use
+TextToExclude = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Analyze all subfolders within the selected folder?
-%choiceVAR12 = No
-%choiceVAR12 = Yes
-AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%textVAR12 = What type of files are you loading?
+%choiceVAR12 = individual images
+%choiceVAR12 = stk movies
+%choiceVAR12 = avi movies
+%choiceVAR12 = tif,tiff,flex movies
+FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%pathnametextVAR13 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.
-%defaultVAR13 = .
-Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR13 = Analyze all subfolders within the selected folder?
+%choiceVAR13 = No
+%choiceVAR13 = Yes
+AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
 
-%textVAR14 = If the images you are loading are binary (black/white only), in what format do you want to store them?
-%defaultVAR14 = grayscale
-%choiceVAR14 = grayscale
-%choiceVAR14 = binary
-%inputtypeVAR14 = popupmenu
-SaveAsBinary = strcmp(char(handles.Settings.VariableValues(CurrentModuleNum,14)),'binary');
+%pathnametextVAR14 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.
+%defaultVAR14 = .
+Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 
-%textVAR15 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+%textVAR15 = If the images you are loading are binary (black/white only), in what format do you want to store them?
+%defaultVAR15 = grayscale
+%choiceVAR15 = grayscale
+%choiceVAR15 = binary
+%inputtypeVAR15 = popupmenu
+SaveAsBinary = strcmp(char(handles.Settings.VariableValues(CurrentModuleNum,15)),'binary');
 
-%%%VariableRevisionNumber = 3
+%textVAR16 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -542,6 +554,13 @@ if SetBeingAnalyzed == 1
             %%% Extract the file names
             for n = 1:length(ImageName)
                 FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
+                
+                % Remove excluded images
+                if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),
+                    excluded_idx = regexp(FileList,TextToExclude);
+                    if ~isempty(excluded_idx), FileList = FileList(cellfun(@isempty,excluded_idx)); end
+                end
+    
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
@@ -560,6 +579,13 @@ if SetBeingAnalyzed == 1
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)
                 FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
+                
+                % Remove excluded images
+                if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),
+                    excluded_idx = regexp(FileList,TextToExclude);
+                    if ~isempty(excluded_idx), FileList = FileList(cellfun(@isempty,excluded_idx)); end
+                end
+                
                 %%% Checks whether any files are left.
                 if isempty(FileList)
                     error(['Image processing was canceled in the ', ModuleName, ' module because there are no movie files with the text "', TextToFind{n}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])

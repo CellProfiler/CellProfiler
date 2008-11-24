@@ -40,7 +40,7 @@ if strcmp('LoadImages',CurrentModuleName)
     end
         
     if (SavedVarRevNum == 3)    % File text exclusion added
-        for i = 12:Settings.NumbersOfVariables(ModuleNum-Skipped),
+        for i = Settings.NumbersOfVariables(ModuleNum-Skipped):-1:12,
             Settings.VariableValues{ModuleNum-Skipped,i} = Settings.VariableValues{ModuleNum-Skipped,i-1};
             Settings.VariableInfoTypes{ModuleNum-Skipped,i} = Settings.VariableInfoTypes{ModuleNum-Skipped,i-1};
         end

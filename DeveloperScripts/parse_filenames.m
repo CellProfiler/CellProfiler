@@ -1,18 +1,20 @@
 function parse_filenames(varargin)
-%PARSE_FILENAMES Parse image numbers and filenames from a concatenated image.CSV file
+%PARSE_FILENAMES Parse image numbers and filenames from *_image.CSV files
 %   into a file with well, site, and wavelength info.  
+% NOTE: There is no need to create concatented image.CSV files for this to
+% work.
 %
 %   parse_filenames
-%   parse_filenames('/PATH/image.CSV')
+%   parse_filenames('<PATH to *_image.CSV files>')
 %
-%   OUTPUT: '<same directory as input files>/image_well_info.csv'
+%   OUTPUT: '<PATH to *_image.CSV files>/image_well_info.csv'
 %
-% User can subsequntly add columns indicating treatment conditions manually, 
+% User can subseqeuntly add columns indicating treatment conditions manually, 
 % and subsequently upload to a database meta-data table.
 
 error(nargchk(0, 1, nargin, 'string'))
 if nargin < 1
-	image_dir = CPuigetdir('HOME', 'Choose the directory where your *image.CSV files are located');
+	image_dir = CPuigetdir('HOME', 'Choose the directory where your *_image.CSV files are located');
     if image_dir == 0
         return
     end
@@ -104,7 +106,7 @@ if ~exist(well_file,'file')
            M_sorted{i,1},M_sorted{i,2},M_sorted{i,3},M_sorted{i,4});
     end
     fclose(fid);
-    disp(['DONE!  An image_well_info.csv file was written to the same directory a your image.csv file'])
+    disp(['DONE!  An image_well_info.csv file was written to the same directory a your *_image.CSV files'])
 else 
     disp(['Cannot write ' well_file ' since it already exists'])
 end

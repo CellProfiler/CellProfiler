@@ -299,16 +299,16 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     FileName = [FileName '.' FileFormat];
     
     if strncmp(FileDirectory,'.',1)
-        PathName = fullfile(handles.Current.DefaultOutputDirectory, FileDirectory(2:end));
+        PathName = fullfile(handles.Current.DefaultOutputDirectory, strrep(strrep(FileDirectory(2:end),'/',filesep),'\',filesep),'');
     elseif strncmp(FileDirectory, '&', 1)
         PathName = handles.Measurements.Image.(['PathName_', ImageFileName]);
         if iscell(PathName), PathName = PathName{SetBeingAnalyzed}; end
     else
         PathName = FileDirectory;
-        % Strip ending slash if inserted
-        if strcmp(PathName(end),'/') || strcmp(PathName(end),'\'), PathName = PathName(1:end-1); end
     end
-
+    % Strip ending slash if inserted
+    if strcmp(PathName(end),'/') || strcmp(PathName(end),'\'), PathName = PathName(1:end-1); end
+    
     % If the user wants to add subdirectories, alter the path accordingly
     if strncmpi(CreateSubdirectories,'y',1)
         if strcmpi(ImageFileName,'N') || strncmpi(ImageFileName,'=',1)
@@ -323,7 +323,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         end
         SubDir = p(length(handles.Current.DefaultImageDirectory)+1:end);
         if ~isempty(SubDir) && (strcmp(SubDir(1),'/') || strcmp(SubDir(1),'\')), SubDir = SubDir(2:end); end
-        PathName = [PathName filesep SubDir];
+        PathName = fullfile(PathName,SubDir,'');
     end
                 
     %%% Makes sure that the output file directory specified by the user exists,

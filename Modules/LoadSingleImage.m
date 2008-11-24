@@ -123,13 +123,13 @@ if handles.Current.SetBeingAnalyzed == 1
         if length(Pathname) == 1
             Pathname = handles.Current.DefaultImageDirectory;
         else
-            Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+            Pathname = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(Pathname(2:end),'/',filesep),'\',filesep),'');
         end
     elseif strncmp(Pathname, '&', 1)
         if length(Pathname) == 1
             Pathname = handles.Current.DefaultOutputDirectory;
         else
-            Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
+            Pathname = fullfile(handles.Current.DefaultOutputDirectory,strrep(strrep(Pathname(2:end),'/',filesep),'\',filesep),'');
         end
     end
 

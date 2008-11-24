@@ -92,9 +92,17 @@ PathName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 drawnow
 
 if strncmp(PathName,'.',1)
-    PathName = fullfile(handles.Current.DefaultImageDirectory, PathName(2:end));
+    if length(PathName) == 1
+        PathName = handles.Current.DefaultImageDirectory;
+    else
+        PathName = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(PathName(2:end),'/',filesep),'\',filesep),'');
+    end
 elseif strncmp(PathName, '&', 1)
-    PathName = fullfile(handles.Current.DefaultOutputDirectory, PathName(2:end));
+    if length(PathName) == 1
+        PathName = handles.Current.DefaultOutputDirectory;
+    else
+        PathName = fullfile(handles.Current.DefaultOutputDirectory,strrep(strrep(PathName(2:end),'/',filesep),'\',filesep),'');
+    end
 else
     % Strip ending slash if inserted
     if strcmp(PathName(end),'/') || strcmp(PathName(end),'\'), PathName = PathName(1:end-1); end

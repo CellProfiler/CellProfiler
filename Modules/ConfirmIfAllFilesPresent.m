@@ -131,7 +131,7 @@ if strncmp(InputPathname,'.',1)
     else
     % If the pathname starts with '.', interpret it relative to
     % the default image dir.
-        InputPathname = fullfile(handles.Current.DefaultImageDirectory,InputPathname(2:end));
+        InputPathname = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(InputPathname(2:end),'/',filesep),'\',filesep));
     end
 end
 if ~exist(InputPathname,'dir')

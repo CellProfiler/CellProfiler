@@ -384,7 +384,7 @@ if SetBeingAnalyzed == 1
         else
 	    % If the pathname start with '.', interpret it relative to
         % the default image dir.
-            Pathname = fullfile(handles.Current.DefaultImageDirectory,Pathname(2:end));
+            Pathname = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(Pathname(2:end),'/',filesep),'\',filesep),'');
         end
     elseif strncmp(Pathname, '&', 1)
         if length(Pathname) == 1
@@ -392,7 +392,7 @@ if SetBeingAnalyzed == 1
         else
 	    % If the pathname start with '&', interpret it relative to
         % the default output dir.
-            Pathname = fullfile(handles.Current.DefaultOutputDirectory,Pathname(2:end));
+            Pathname = fullfile(handles.Current.DefaultOutputDirectory,strrep(strrep(Pathname(2:end),'/',filesep),'\',filesep),'');
         end
     end
     if ~exist(Pathname,'dir')

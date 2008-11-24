@@ -1,7 +1,7 @@
-function handles = ConfirmAllFilesPresent(handles,varargin)
+function handles = ConfirmIfAllFilesPresent(handles,varargin)
 
-% Help for the ConfirmAllFilesPresent module:
-% Category: QualityControl
+% Help for the ConfirmIfAllFilesPresent module:
+% Category: File Processing
 %
 % SHORT DESCRIPTION:
 % Given a directory (or subdirectory structure) of input images, find which
@@ -9,8 +9,42 @@ function handles = ConfirmAllFilesPresent(handles,varargin)
 % with the other channels.
 % *************************************************************************
 %
+% This module is useful for performing quality control on a directory of
+% images in order to confirm that all files containing channel information 
+% are properly matched.
+%
+% Settings:
+%
+% Type the text that identifies the channel/wavelength for one type of
+% image
+% The text is used to load images (or movies) that have a particular piece
+% of text in the name. The entered text is assumed to be an exact match to
+% a string in the filename (i.e, no regular expressions).
+%
+% Analyze all subfolders within the selected folder?
+% You may have subfolders within the folder that is being searched, but if
+% you are in TEXT mode, the names of the folders themselves must not
+% contain the text you are searching for or an error will result.
+%
 % While this module can recurse subdirectories, it treats each directory as
-% a separate plate and will match on that basis
+% a separate experiment and will match on that basis
+%
+% Enter the path name to the folder where the images to be loaded are
+% located
+% Relative pathnames can be used. For example, on the Mac platform you
+% could leave the folder where images are to be loaded as '.' to choose the
+% default image folder. Or, you could type .../AnotherSubfolder (note the 
+% three periods: the first is interpreted as a stand-in for the default 
+% image folder) as the folder from which images are to be loaded. The above
+% also applies for '&' with regards to the default output folder.
+%
+% Do you want the output information saved to a text file?
+% Specify 'Yes' to ouput the module results to a text file, and then
+% specify the path and filename in the following box. If you specify only a
+% path, the output filename defaults to ConfirmIfAllFilesPresent_output.txt.
+% The same notes on pathnames as above apply here also.
+%
+% See also LoadImages.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -21,6 +55,8 @@ function handles = ConfirmAllFilesPresent(handles,varargin)
 % Please see the AUTHORS file for credits.
 %
 % Website: http://www.cellprofiler.org
+%
+% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -70,9 +106,15 @@ AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %defaultVAR09 = .
 InputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%pathnametextVAR10 = Enter the path name to the folder where the output file will be saved. Type period (&) for default output folder.
-%defaultVAR10 = &
-OutputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%textVAR10 = Do you want the output information saved to a text file?
+%choiceVAR10 = No
+%choiceVAR10 = Yes
+SaveOutputFile = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
+%pathnametextVAR11 = If you answered 'Yes' above, enter the path name to the folder where the output file will be saved. Type ampersand (&) for default output folder. If no filename is specified, the output file defaults to ConfirmIfAllFilesPresent_output.txt.
+%defaultVAR11 = &
+OutputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
 %%%VariableRevisionNumber = 1
 
@@ -239,28 +281,36 @@ if any(findobj == ThisModuleFigureNumber);
     end
 end
 
-% Output file
-if strncmp(OutputPathname,'&',1)
-    if length(OutputPathname) == 1
-        OutputPathname = handles.Current.DefaultOutputDirectory;
+% Output file if desired
+if strncmpi(SaveOutputFile,'y',1),
+    if strncmp(OutputPathname,'&',1)
+        % If the pathname is '&', set it to the default output dir.
+        if length(OutputPathname) == 1
+            OutputPathname = handles.Current.DefaultOutputDirectory;
+            OutputFilename = [ModuleName,'_output'];
+            OutputExtension = '.txt';
+        else
+        % If the pathname starts with '&', interpret it relative to
+        % the default output dir.
+            [OutputExtendedPathname,OutputFilename,OutputExtension] = fileparts(OutputPathname(2:end));
+            OutputPathname = fullfile(handles.Current.DefaultOutputDirectory,OutputExtendedPathname,'');
+        end
     else
-    % If the pathname starts with '&', interpret it relative to
-    % the default output dir.
-        OutputPathname = fullfile(handles.Current.DefaultOutputDirectory,OutputPathname(2:end));
+        [OutputPathname,OutputFilename,OutputExtension] = fileparts(OutputPathname);
     end
-end
-if ~exist(OutputPathname,'dir')
-    error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',OutputPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-end
+    if ~exist(OutputPathname,'dir')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',OutputPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    end
 
-fid = fopen(fullfile(OutputPathname,['qualitycontrolpipeline_output.txt']),'at+');
-if fid > 0,
-    fprintf(fid,'%s\n',['Output of ',ModuleName]);
-    fprintf(fid,'%s\n','%%%%%%%%%%%%%%%%%%%%%%%%');
-    for i = 1:length(TextString)
-        fprintf(fid,'%s\n',TextString{i});
+    fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'at+');
+    if fid > 0,
+        fprintf(fid,'%s\n',['Output of ',ModuleName]);
+        fprintf(fid,'%s\n','%%%%%%%%%%%%%%%%%%%%%%%%');
+        for i = 1:length(TextString)
+            fprintf(fid,'%s\n',TextString{i});
+        end
+        fclose(fid);
+    else
+        error([ModuleName,': Failed to open the output file for writing']);
     end
-    fclose(fid);
-else
-    error([ModuleName,': Failed to open the output file for writing']);
 end

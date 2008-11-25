@@ -1462,7 +1462,7 @@ function file = subdir(cdir)
 if nargin == 0 || isempty(cdir)
     cdir = cd; % Current directory is default
 end
-if cdir(end)=='\'
+if cdir(end)==filesep
     cdir(end) = ''; % Remove any trailing \ from directory
 end
 file = dir(cdir); % Read current directory
@@ -1470,7 +1470,7 @@ for n = 1:length(file)
     file(n).dir = cdir; % Assign dir field
     if file(n).isdir && file(n).name(1)~='.'
         % Element is a directory -> recursively search this one
-        tfile = subdir([cdir '\' file(n).name]); % Recursive call
+        tfile = subdir([cdir filesep file(n).name]); % Recursive call
         file = [file; tfile]; % Append to result to current directory structure
     end
 end

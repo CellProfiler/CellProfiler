@@ -6,11 +6,19 @@ function fout = CPwaitbar(varargin)
 
 % $Revision$
 
+v = ver('matlab');
+is2008b = strcmp(v.Version,'7.7');
+if is2008b && nargin > 2,  % Updating previously created waitbar
+    fin = varargin{2};
+    userData = get(fin,'userdata');
+    set(fin,'userdata',userData.FractionInput);
+end
 fout = waitbar(varargin{:});
 userData.Application = 'CellProfiler';
 userData.ImageFlag = 0;
+if is2008b, userData.FractionInput = get(fout,'userdata'); end
 set(fout, 'Color', [0.7 0.7 0.9], 'UserData',userData);
-
+    
 ax = get(fout, 'Children');
 ttl = get(ax, 'Title');
 % set(ttl,'Interpreter','none') 

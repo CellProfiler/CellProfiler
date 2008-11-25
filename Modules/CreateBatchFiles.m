@@ -84,8 +84,8 @@ NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% If this isn't the first cycle, we are running on the
-%%% cluster, and should just continue.
+% If this isn't the first cycle, we are running on the
+% cluster, and should just continue.
 if (handles.Current.SetBeingAnalyzed > 1) || isfield(handles.Current, 'BatchInfo')
     return;
 end
@@ -102,7 +102,7 @@ if strncmp(BatchSavePath, '.',1)
     end
 end
 
-%% Check that Batch_data.mat does not already exist
+% Check that Batch_data.mat does not already exist
 PathAndFileName = fullfile(BatchSavePath, 'Batch_data.mat');
 if exist(PathAndFileName,'file') == 2
     button = CPquestdlg('Batch_data.mat already exists in the output directory.  Are you sure you want to overwrite Batch_data.mat?',...
@@ -118,23 +118,23 @@ if exist(PathAndFileName,'file') == 2
 end
 
 
-%%% Checks that this is the last module in the analysis path.
+% Checks that this is the last module in the analysis path.
 if (CurrentModuleNum ~= handles.Current.NumberOfModules),
     error(['Image processing was canceled because ', ModuleName, ' must be the last module in the pipeline.']);
 end
 
-%%% Saves a copy of the handles structure to revert back to later. The
-%%% altered handles must be saved using the variable name 'handles'
-%%% because the save function will not allow us to save a variable
-%%% under a different name.
+% Saves a copy of the handles structure to revert back to later. The
+% altered handles must be saved using the variable name 'handles'
+% because the save function will not allow us to save a variable
+% under a different name.
 PreservedHandles = handles;
  
-%%% Changes parts of several pathnames if the user has
-%%% specified that parts of the pathname are named differently from
-%%% the perspective of the local computer vs. the cluster
-%%% machines
+% Changes parts of several pathnames if the user has
+% specified that parts of the pathname are named differently from
+% the perspective of the local computer vs. the cluster
+% machines
 
-%%% Parse OldPathname, checking for comma separating multiple paths
+% Parse OldPathname, checking for comma separating multiple paths
 if ~strcmp(OldPathname,strtok(OldPathname,',')),
     [firstpathstr,secondpathstr] = strtok(OldPathname,',');
     s = cell(1,2); s{1} = strtrim(firstpathstr); s{2} = strtrim(secondpathstr(2:end));
@@ -142,7 +142,6 @@ if ~strcmp(OldPathname,strtok(OldPathname,',')),
     if ~strcmp(NewPathname,strtok(NewPathname,',')),
         [firstpathstr,secondpathstr] = strtok(NewPathname,',');
         s = cell(1,2); s{1} = strtrim(firstpathstr); s{2} = strtrim(secondpathstr(2:end));
-        s = cell(1,2); s{1} = firstpathstr; s{2} = secondpathstr(2:end);
         NewPathname = s;
     else
         error(['Processing was canceled in the ', ModuleName, 'module because if there are two pathnames specified for the local machine, there need to be two pathnames for the cluster machine.']);
@@ -155,7 +154,7 @@ else    % If no comma, one path only. Duplicate to both strings
 end
 
 if ~any(strcmp(OldPathname, '.'))
-    %%% Changes the default output and image pathnames
+    % Changes the default output and image pathnames
     if ~strcmp(OldPathname{1}, '.'),
         NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname{1},NewPathname{1}),'\','/');
         handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
@@ -165,47 +164,52 @@ if ~any(strcmp(OldPathname, '.'))
         handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
     end
     
-    %%% Replaces \ with / in all image filenames (PC only)
-    Fields = fieldnames(handles.Pipeline);
-    for i = 1:length(Fields)
-        if strncmp(Fields{i}, 'FileList', 8)
-            FieldName = Fields{i};
-            handles.Pipeline.(FieldName) = strrep(handles.Pipeline.(FieldName),'\','/');
-        end
+    % Replaces \ with / in all image filenames (only relevant for PCs)
+    Fieldnames = fieldnames(handles.Pipeline);
+    FileListFieldNames = Fieldnames(strncmp(Fieldnames, 'FileList', 8));
+    for i = 1:length(FileListFieldNames)
+        handles.Pipeline.(FileListFieldNames{i}) = strrep(handles.Pipeline.(FileListFieldNames{i}),'\','/');
     end
 
-    %%% Deal with input Pathnames
+    % Deal with input paths that have already been saved to the handles
+    % (a) handles.Pipelines
     Fieldnames = fieldnames(handles.Pipeline);
-    PathFieldnames = Fieldnames(strncmp(Fieldnames,'Pathname',8));
+    PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
     for i = 1:length(PathFieldnames),
         handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
     end
+    % (b) handles.Measurements.Image
+    Fieldnames = fieldnames(handles.Measurements.Image);
+    PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
+    for i = 1:length(PathFieldnames),
+        handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
+    end
 end
 
-% %%% Make sure ModuleError has same number of elements as
-% %%% ModuleErrorFeatures
+% % Make sure ModuleError has same number of elements as
+% % ModuleErrorFeatures
 % handles.Measurements.Image.ModuleError{handles.Current.SetBeingAnalyzed}(1,CurrentModuleNum) = 0;
-%%% I'm not entirely sure why we need to record that there were no module
-%%% errors in the CreateBatchFiles module here rather than in
-%%% CellProfiler.m, but will go ahead and update the old code to the new
-%%% CPaddmeasurements format:
+% I'm not entirely sure why we need to record that there were no module
+% errors in the CreateBatchFiles module here rather than in
+% CellProfiler.m, but will go ahead and update the old code to the new
+% CPaddmeasurements format:
 handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodigitstring(CurrentModuleNum),ModuleName]),0);
 
-%%% Python can't load function pointers
+% Python can't load function pointers
 handles = rmfield(handles, 'FunctionHandles');
 
-%%% Saves the altered handles in a file which the user will feed to
-%%% the remote machines.
+% Saves the altered handles in a file which the user will feed to
+% the remote machines.
 save(PathAndFileName, 'handles');
 
-%%% Reverts to the preserved handles.  (Probably not necessary, but simpler.)
+% Reverts to the preserved handles.  (Probably not necessary, but simpler.)
 handles = PreservedHandles;
 
 CPhelpdlg('Batch files have been written.  This analysis pipeline will now stop.  You should submit the batch files for processing on your cluster. See Help > General Help > BatchProcessing for more information.', 'BatchFilesDialog');
 
-%%% This is the first cycle, so this is the first time seeing this
-%%% module.  It should cause a cancel so no further processing is done
-%%% on this machine.
+% This is the first cycle, so this is the first time seeing this
+% module.  It should cause a cancel so no further processing is done
+% on this machine.
 set(handles.timertexthandle,'string','Cancel')
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -213,6 +217,6 @@ set(handles.timertexthandle,'string','Cancel')
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The figure window display is unnecessary for this module, so it is
-%%% closed during the starting image cycle.
+% The figure window display is unnecessary for this module, so it is
+% closed during the starting image cycle.
 CPclosefigure(handles,CurrentModule)

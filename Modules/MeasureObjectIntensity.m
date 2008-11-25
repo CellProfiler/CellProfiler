@@ -301,16 +301,26 @@ for i = 1:length(ObjectNameList)
             %             Basic(Object,9)  = min(perim);
             %             Basic(Object,10) = max(perim);   
            
-            %%% Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
-            %%% the center of gravity in the gray level image and the binary
-            %%% image.
-            PixelSize = str2double(handles.Settings.PixelSize);
-            BWx = sum((1:size(BWim,2)).*sum(BWim,1))/sum(1:size(BWim,2));
-            BWy = sum((1:size(BWim,1))'.*sum(BWim,2))/sum(1:size(BWim,1));
-            Greyx = sum((1:size(Greyim,2)).*sum(Greyim,1))/sum(1:size(Greyim,2));
-            Greyy = sum((1:size(Greyim,1))'.*sum(Greyim,2))/sum(1:size(Greyim,1));
-            Basic{Object,11} = sqrt((BWx-Greyx)^2+(BWy-Greyy)^2)*PixelSize;
         end
+        %%% Calculate the Mass displacment (taking the pixelsize into account), which is the distance between
+        %%% the center of gravity in the gray level image and the binary
+        %%% image.
+        mask = (LabelMatrixImage > 0);
+        masked_labels = LabelMatrixImage(mask);
+        masked_intensity = OrigImage(mask);
+        [x,y] = meshgrid(1:size(LabelMatrixImage,1),1:size(LabelMatrixImage,2));
+        masked_x = x(mask);
+        masked_y = y(mask);
+        CM_x = full(sparse(masked_labels, 1, masked_x) ./ sparse(masked_labels, 1, 1));
+        CM_y = full(sparse(masked_labels, 1, masked_y) ./ sparse(masked_labels, 1, 1));
+        intensity_CM_x = full(sparse(masked_labels, 1, masked_x .*masked_intensity) ./...
+                              sparse(masked_labels, 1, masked_intensity));
+        intensity_CM_y = full(sparse(masked_labels, 1, masked_y .*masked_intensity) ./...
+                              sparse(masked_labels, 1, masked_intensity));
+        PixelSize = str2double(handles.Settings.PixelSize);
+        diff_x = CM_x - intensity_CM_x;
+        diff_y = CM_y - intensity_CM_y;
+        Basic(:,11) = arrayfun(@(x) {x}, sqrt(diff_x.^2+diff_y.^2).*PixelSize);
         %
         % A trick for median, lower & upper quartile:
         %   Add the object # to an intensity scaled between .1 and .9

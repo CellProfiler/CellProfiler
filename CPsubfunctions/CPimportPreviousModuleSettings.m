@@ -42,13 +42,18 @@ if strcmp('LoadImages',CurrentModuleName)
     if (SavedVarRevNum == 3)    % File text exclusion added
         for i = Settings.NumbersOfVariables(ModuleNum-Skipped):-1:12,
             Settings.VariableValues{ModuleNum-Skipped,i} = Settings.VariableValues{ModuleNum-Skipped,i-1};
+        end
+        for i = length(Settings.VariableInfoTypes(ModuleNum-Skipped,:)):-1:12,
             Settings.VariableInfoTypes{ModuleNum-Skipped,i} = Settings.VariableInfoTypes{ModuleNum-Skipped,i-1};
         end
 
         Settings.VariableValues{ModuleNum-Skipped,11} = 'Do not use';
         Settings.VariableInfoTypes{ModuleNum-Skipped,11} = [];
         
-        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        %%% The last variable is bogus...
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = 16;
+        Settings.VariableValues{ModuleNum-Skipped,16} = [];
+        
         SavedVarRevNum = 4;
         IsModuleModified = true;
     end

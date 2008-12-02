@@ -41,10 +41,13 @@ else:
     print "<h1>View batch # %d</h1>"%(batch_id)
     print "</div>"
     jobs_by_state = {}
+
     for run in my_batch["runs"]:
         stat  = "Unknown"
         if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
             stat = "Complete"
+        elif run["job_id"]==None:
+            pass
         else :
             job_status = RunBatch.GetJobStatus(run["job_id"])
             if job_status and job_status.has_key("STAT"):
@@ -54,6 +57,7 @@ else:
             jobs_by_state[stat].append(run)
         else:
             jobs_by_state[stat] = [run]
+
     print "<div style='padding:5px'>"
     #
     # The summary table
@@ -79,6 +83,17 @@ else:
     print """<input type='submit' 
                      value='Kill all incomplete jobs' 
                      onclick='return confirm("Do you really want to kill all jobs?")' />"""
+    print "</form>"
+    print "</div>"
+    #
+    # Fix permissions
+    #
+    print "<div style='position:relative; float:left; padding:10px'>"
+    print "<div style='position:relative; float:top'>"
+    print "<form action='FixPermissions.py'>"
+    print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
+    print """<input type='submit' 
+                     value='Fix file permissions' />"""
     print "</form>"
     print "</div>"
     #
@@ -174,6 +189,8 @@ else:
         print "<td>"
         if os.path.isfile(x["text_path"]):
             print "<a href='ViewTextFile.py?run_id=%(run_id)d' title='%(text_path)s'>%(text_file)s</a>"%(x)
+        elif run["status"]=='RUN':
+            print "<a href='BPeek.py?job_id=%(job_id)d'>Peek</a>"%(x)
         else :
             print "<span title='Text file not yet available'>%(text_file)s</span>"%(x)
         print "</td>"

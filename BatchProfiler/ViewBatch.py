@@ -16,20 +16,42 @@ print
 form = cgi.FieldStorage()
 batch_id = int(form["batch_id"].value)
 my_batch = RunBatch.LoadBatch(batch_id)
+jobs_by_state = {}
+
+for run in my_batch["runs"]:
+    stat  = "Unknown"
+    if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
+        stat = "Complete"
+    elif run["job_id"]==None:
+        pass
+    else :
+        job_status = RunBatch.GetJobStatus(run["job_id"])
+        if job_status and job_status.has_key("STAT"):
+            stat = job_status["STAT"]
+    run["status"]=stat;
+    if jobs_by_state.has_key(stat):
+        jobs_by_state[stat].append(run)
+    else:
+        jobs_by_state[stat] = [run]
+
 if form.has_key("submit_run"):
+    print "<html><head><title>Batch # %d resubmitted</title>"%(batch_id)
+    StyleSheet.PrintStyleSheet()
+    print "</head>"
+    print "<body>"
+    submit_run = form["submit_run"].value
+    run_id = submit_run.isdigit() and int(submit_run)
+    print "Your batch # %d has been resubmitted."%(batch_id)
+    print "<table class='run-table'>"
     for run in my_batch["runs"]:
-        if run["run_id"] == int(form["submit_run"].value):
+        if ((run["run_id"] == run_id) or
+            (submit_run == 'Incomplete' and run["status"] != "Complete") or
+            (submit_run == 'All')):
             result = RunBatch.RunOne(my_batch,run)
-            print "<html><head><title>Batch # %d resubmitted</title>"%(batch_id)
-            StyleSheet.PrintStyleSheet()
-            print "</head>"
-            print "<body>"
-            print "Your batch # %d has been resubmitted."%(batch_id)
-            print "<table class='run-table'>"
             for key in result:
                 print "<tr><td><b>%s:</b></td><td style='white-space:nowrap'>%s</td></tr>"%(key,result[key])
-            print "</table>"
-            print "</body></html>"
+    print "</table>"
+    print "</body></html>"
 else:
     print "<html>"
     print "<head>"
@@ -40,24 +62,6 @@ else:
     print "<div>"
     print "<h1>View batch # %d</h1>"%(batch_id)
     print "</div>"
-    jobs_by_state = {}
-
-    for run in my_batch["runs"]:
-        stat  = "Unknown"
-        if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
-            stat = "Complete"
-        elif run["job_id"]==None:
-            pass
-        else :
-            job_status = RunBatch.GetJobStatus(run["job_id"])
-            if job_status and job_status.has_key("STAT"):
-                stat = job_status["STAT"]
-        run["status"]=stat;
-        if jobs_by_state.has_key(stat):
-            jobs_by_state[stat].append(run)
-        else:
-            jobs_by_state[stat] = [run]
-
     print "<div style='padding:5px'>"
     #
     # The summary table
@@ -76,19 +80,38 @@ else:
     print "</div>"
     #
     # Kill button
-    print "<div style='position:relative; float:left; padding:10px'>"
+    print "<div style='position:relative; float:left; padding:2px'>"
     print "<div style='position:relative; float:top'>"
-    print "<form action='KillJobs.py'>"
+    print "<table><tr>"
+    print "<td><form action='KillJobs.py'>"
     print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
     print """<input type='submit' 
                      value='Kill all incomplete jobs' 
                      onclick='return confirm("Do you really want to kill all jobs?")' />"""
-    print "</form>"
+    print "</form></td>"
+    #
+    # Resubmit buttons
+    #
+    print """
+    <td><form action='ViewBatch.py' method='POST' target='ResubmitWindow'>
+    <input type='hidden' name='batch_id' value='%(batch_id)d' />
+    <input type='hidden' name='submit_run' value='All' />
+    <input type='submit' value='Resubmit all'
+           onclick='return confirm("Do you really want to resubmit all batches?")' />
+    </form></td>
+    <td><form action='ViewBatch.py' method='POST' target='ResubmitWindow' style='position:relative; float:left'>
+    <input type='hidden' name='batch_id' value='%(batch_id)d' />
+    <input type='hidden' name='submit_run' value='Incomplete' />
+    <input type='submit' value='Resubmit incomplete'
+           title='Resubmit jobs for batches that have not successfully completed'
+           onclick='return confirm("Do you really want to resubmit incomplete batches?")' />
+    </form></td></tr></table>
+"""%(my_batch)
     print "</div>"
+
     #
     # Fix permissions
     #
-    print "<div style='position:relative; float:left; padding:10px'>"
     print "<div style='position:relative; float:top'>"
     print "<form action='FixPermissions.py'>"
     print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
@@ -114,7 +137,6 @@ else:
                              onclick='confirm("Are you sure you want to upload to the database using %(filename)s?"' />"""%(globals())
             print "</form>"
             print "</div>"
-    print "</div>"
     print "</div>"
     #
     # The big table

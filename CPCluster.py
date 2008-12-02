@@ -17,6 +17,7 @@ cpcluster_home = sys.path[0]
 os.environ['CPCLUSTERHOME'] = cpcluster_home
 mcr_path = '/imaging/analysis/CPCluster/MCR/v78'
 os.environ['LD_LIBRARY_PATH'] = '%(mcr_path)s/runtime/glnxa64:%(mcr_path)s/sys/os/glnxa64:%(mcr_path)s/bin/glnxa64'%(locals())
+os.environ['HOME'] = '/imaging/analysis/CPCluster'
 
 def run_job_with_timeout(full_command, timeout):
     '''

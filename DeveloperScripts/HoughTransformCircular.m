@@ -126,11 +126,11 @@ drawnow
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'OneByOne',ThisModuleFigureNumber)
-    end
-    CPimagesc(OrigImage,handles);
+    fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
+%     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+%         CPresizefigure(OrigImage,'OneByOne',ThisModuleFigureNumber)
+%     end
+    CPimagesc(OrigImage,handles, fig_h);
     title(['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     
     hold on

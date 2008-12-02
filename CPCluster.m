@@ -15,6 +15,14 @@ catch
     reportBatchError(['Batch Error: Loading batch file (' batchfile ')']);
 end
 
+try
+    % r2008b saves the preferences as it exits and complains
+    % so we put the preferences somewhere random
+    prefdir = OutputFolder;
+catch
+    warning('Failed to set the preferences directory')
+end
+
 % arguments come in as strings, convert to integer
 StartingSet = str2num(StartingSet);
 EndingSet = str2num(EndingSet);

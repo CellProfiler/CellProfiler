@@ -24,11 +24,14 @@ elseif ishandle(varargin{1})
             CurrentFig = get(CurrentAxes,'Parent');
         case 'figure'
             CurrentFig = varargin{1};
-            CurrentAxes = axes('Parent',CurrentFig);
+            CurrentAxes = findobj(CurrentFig,'type','axes');
+            if isempty(CurrentAxes)
+                CurrentAxes = axes('Parent',CurrentFig);
+            end
         otherwise
             error(['Unhandled graphics handle type: ',get(varargin{1},'Type')]);
     end
-    h=imagesc(Image,'Parent',CurrentAxes,varargin{2:end});
+    h = imagesc(Image,'Parent',CurrentAxes,varargin{2:end});
 else
     error('CPimagesc argument # 3 must be an axis or figure handle');
 end
@@ -105,7 +108,7 @@ if isfield(FigUserData,'MyHandles')
         delete(findobj(CurrentFig,'Tag','ToggleColorB'))
     end
 end
-%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION - ToggleColor  %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

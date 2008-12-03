@@ -710,9 +710,9 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
         if any(findobj == ThisModuleFigureNumber)
             %%% Activates the appropriate figure window.
-            fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
+            CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-            %% Text display of Threshold
+            %%% Text display of Threshold
             ObjectCoverage = 100*sum(sum(FinalLabelMatrixImage > 0))/numel(FinalLabelMatrixImage);
             uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[0.05 0.01 .8 0.04],...
                 'BackgroundColor',[.7 .7 .9],'HorizontalAlignment','Left','String',sprintf('Threshold:  %0.3f               %0.1f%% of image consists of objects',Threshold,ObjectCoverage),'FontSize',handles.Preferences.FontSize);
@@ -724,24 +724,27 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
             CPimagesc(ObjectOutlinesOnOrigImage, handles,ThisModuleFigureNumber);
             title(['Outlined ',SecondaryObjectName])
 
-            %% Construct struct which holds images and figure titles 
-            ud(1).img = ObjectOutlinesOnOrigImage;
-            ud(2).img = BothOutlinesOnOrigImage;
-            ud(3).img = ColoredLabelMatrixImage;
-            ud(4).img = OrigImage;
-            ud(1).title = [SecondaryObjectName, ' Outlines on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-            ud(2).title = ['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-            ud(3).title = ['Outlined ',SecondaryObjectName ' with random colors, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-            ud(4).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
-            
-            %% uicontrol for displaying other images
-            uicontrol(fig_h, 'Style', 'popup',...
-                'String', 'Outlines: Secondary|Outlines: Primary and Secondary|Colored Label|Input Image',...
-                'UserData',ud,...
-                'units','normalized',...
-                'position',[.1 .95 .25 .04],...
-                'backgroundcolor',[.7 .7 .9],...
-                'Callback', @CP_ImagePopupmenu_Callback);
+            %%% Construct struct which holds images and figure titles 
+            if isempty(findobj(ThisModuleFigureNumber,'tag','PopupImage')),
+                ud(1).img = ObjectOutlinesOnOrigImage;
+                ud(2).img = BothOutlinesOnOrigImage;
+                ud(3).img = ColoredLabelMatrixImage;
+                ud(4).img = OrigImage;
+                ud(1).title = [SecondaryObjectName, ' Outlines on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+                ud(2).title = ['Outlines of ', PrimaryObjectName, ' and ', SecondaryObjectName, ' on Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+                ud(3).title = ['Outlined ',SecondaryObjectName ' with random colors, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+                ud(4).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+
+                %%% uicontrol for displaying other images
+                uicontrol(ThisModuleFigureNumber, 'Style', 'popup',...
+                    'String', 'Outlines: Secondary|Outlines: Primary and Secondary|Colored Label|Input Image',...
+                    'UserData',ud,...
+                    'units','normalized',...
+                    'position',[.1 .95 .25 .04],...
+                    'backgroundcolor',[.7 .7 .9],...
+                    'tag','PopupImage',...
+                    'Callback', @CP_ImagePopupmenu_Callback);
+            end
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -632,10 +632,22 @@ elseif isempty(im)
     %%% real objects?
     level = 1;
 else
-    %% Handle the case in which there are enough saturated pixels that the
-    %% mode is 1 (or some other, pinned high value).  We will remove the
-    %% highest values from the mode calculation.  Arbitrarily set to top 5%
-    level = 2*mode(im(im<0.98 && im>0.02));
+    %% We were using the 'mode' function here, but it does not always report
+    %% what is the obvious peak in the histogram.  This is because the
+    %% distribution is not continuous, and may be binned in not-so-obvious
+    %% ways.  So we are using imhist instead to bin intensities somewhat 
+    %% and then do an effective mode calculation.
+    
+    %% Also handle the case in which there are enough saturated, or zeroed,
+    %% pixels that the mode is 0 or 1 (or some other, pinned high value).  
+    %% We remove the high and low values from the mode calculation.  
+    %% Robust cutoff arbitrarily set to 2%.
+
+    [counts,x] = imhist(im);
+    robust_counts = counts(x<0.98 & x>0.02);
+    robust_x = x(x<0.98 & x>0.02);
+    [y,i] = max(robust_counts);
+    level = robust_x(i);
 end
 
 

@@ -2,6 +2,9 @@
     $Revision$
 """
 import numpy
+import tempfile
+import scipy.io.matlab.mio
+import os
 
 def NewStringCellArray(shape):
     """Return a numpy.ndarray that looks like {NxM cell} to Matlab
@@ -21,6 +24,31 @@ def NewStringCellArray(shape):
             result[i,j] = numpy.empty((0,0)) 
     return result
 
+def MakeCellStructDType(fields):
+    """Makes the dtype of a struct composed of cells
+    
+    fields - the names of the fields in the struct
+    """
+    return numpy.dtype([(x,'|O4') for x in fields])
+
+def LoadIntoMatlab(handles):
+    """Return a proxy object which is the data structure passed, loaded into Matlab
+    """
+    (matfd,matpath) = tempfile.mkstemp('.mat')
+    matfh = os.fdopen(matfd,'w')
+    closed = False
+    try:
+        scipy.io.matlab.mio.savemat(matfh,handles,format='5')
+        matfh.close()
+        closed = True
+        matlab = GetMatlabInstance()
+        return matlab.load(matpath)
+    finally:
+        if not closed:
+            matfh.close()
+        os.unlink(matpath)
+
+   
 def GetMatlabInstance():
     global __MATLAB
     if not globals().has_key('__MATLAB'):

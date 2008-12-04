@@ -6,6 +6,9 @@
     """
 import numpy
 import CellProfiler.Variable
+import CellProfiler.Image
+import CellProfiler.Objects
+import CellProfiler.Measurements
 import re
 import os
 import CellProfiler.Pipeline
@@ -171,9 +174,13 @@ class AbstractModule:
         """Write the module's state, informally, to a text file
         """
         
-    def Run(self,handles):
+    def Run(self,pipeline,image_set,object_set,measurements):
         """Run the module (abstract method)
         
+        pipeline     - instance of CellProfiler.Pipeline for this run
+        image_set    - the images in the image set being processed
+        object_set   - the objects (labeled masks) in this image set
+        measurements - the measurements for this run
         """
         raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
 
@@ -189,6 +196,16 @@ class AbstractModule:
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        """
+        return []
+    
+    def GetMeasurementImages(self,pipeline,object_name,category,measurement):
+        """Return a list of image names used as a basis for a particular measure
+        """
+        return []
+    
+    def GetMeasurementScales(self,pipeline,object_name,category,measurement,image_name):
+        """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
 
@@ -245,12 +262,71 @@ class MatlabModule(AbstractModule):
         finally:
             file.close()
         
-    def Run(self,handles):
+    def Run(self,pipeline,image_set,object_set,measurements):
         """Run the module in Matlab
         
         """
-        return CellProfiler.Matlab.Utils.GetMatlabInstance().feval(self.ModuleName(),handles)
+        handles = pipeline.LoadPipelineIntoMatlab(image_set,object_set,measurements)
+        handles = CellProfiler.Matlab.Utils.GetMatlabInstance().feval(self.ModuleName(),handles)
+        self.AddMatlabImages(handles, image_set)
+        self.AddMatlabObjects(handles, object_set)
+        self.AddMatlabMeasurements(handles, measurements)
+
+    def AddMatlabImages(self,handles,image_set):
+        """Add any images from the handles to the image set
+        Generally, the handles have images added as they get returned from a Matlab module.
+        You can use this to update the image set and capture them.
+        """
+        matlab = GetMatlabInstance()
+        pipeline_fields = matlab.fields(handles.Pipeline)
+        provider_set = set([x.Name() for x in image_set.Providers])
+        image_fields = set()
+        crop_fields = set()
+        for i in range(0,matlab.length(pipeline_fields)[0,0]):
+            field = matlab.cell2mat(pipeline_fields[i])
+            if field.startswith('CropMask'):
+                crop_fields.add(field)
+            elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
+                continue
+            elif not field in provider_set:
+                image_fields.add(field)
+        for field in image_fields:
+            image = CellProfiler.Image.Image()
+            image.Image = matlab.getfield(handles.Pipeline,field)
+            crop_field = 'CropMask'+fields 
+            if crop_field in crop_fields:
+                image.Mask = matlab.getfield(handles.Pipeline,crop_field)
+            image_set.Providers.append(CellProfiler.Image.VanillaImageProvider(field,image))
     
+    def AddMatlabObjects(self,handles,object_set):
+        """Add any objects from the handles to the object set
+        You can use this to update the object set after calling a matlab module
+        """
+        matlab = GetMatlabInstance()
+        pipeline_fields = matlab.fields(handles.Pipeline)
+        objects_names = set(object_set.GetObjectNames())
+        segmented_fields = set()
+        unedited_segmented_fields = set()
+        small_removed_segmented_fields = set()
+        for i in range(0,matlab.length(pipeline_fields)[0,0]):
+            field = matlab.cell2mat(pipeline_fields[i])
+            if field.startswith('Segmented'):
+                segmented_fields.add(field)
+            elif field.startswith('UneditedSegmented'):
+                unedited_segmented_fields.add(field)
+            elif field.startswith('SmallRemovedSegmented'):
+                small_removed_segmented_fields.add(field)
+        for field in segmented_fields:
+            objects = CellProfiler.Objects.Objects()
+            objects.Segmented = matlab.getfield(handles.Pipeline,field)
+            unedited_field ='Unedited'+field
+            small_removed_segmented_field = 'SmallRemoved'+field 
+            if unedited_field in unedited_segmented_fields:
+                objects.UneditedSegmented = matlab.getfield(handles.Pipeline,unedited_field)
+            if small_removed_segmented_field in small_removed_segmented_fields:
+                objects.SmallRemovedSegmented = matlab.getfield(handles.Pipeline,small_removed_segmented_field)
+            object_set.AddObjects(objects,field)
+        
     def __read_annotations(self,file):
         """Read and return the annotations and variable revision # from a file
         

@@ -7,8 +7,11 @@ import scipy.io.matlab.mio
 import os
 import CellProfiler.Module
 import CellProfiler.Preferences
-from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun
+from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun,MakeCellStructDType,LoadIntoMatlab
 import CellProfiler.VariableChoices
+import CellProfiler.Image
+import CellProfiler.Measurements
+import CellProfiler.Objects
 import tempfile
 import datetime
 
@@ -25,6 +28,7 @@ DEFAULT_IMAGE_DIRECTORY  = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 IMAGE_TOOLS_FILENAMES    = 'ImageToolsFilenames'
 IMAGE_TOOL_HELP          = 'ImageToolHelp'
+PREFERENCES              = 'Preferences'
 PIXEL_SIZE               = 'PixelSize'
 SKIP_ERRORS              = 'SkipErrors'
 INTENSITY_COLOR_MAP      = 'IntensityColorMap'
@@ -52,6 +56,15 @@ SETTINGS_DTYPE = numpy.dtype([(VARIABLE_VALUES, '|O4'),
                             (VARIABLE_REVISION_NUMBERS, '|O4'), 
                             (MODULE_REVISION_NUMBERS, '|O4'), 
                             (MODULE_NOTES, '|O4')])
+CURRENT_DTYPE = MakeCellStructDType([ NUMBER_OF_IMAGE_SETS,SET_BEING_ANALYZED,NUMBER_OF_MODULES, 
+                                     SAVE_OUTPUT_HOW_OFTEN,TIME_STARTED, STARTING_IMAGE_SET,
+                                     STARTUP_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_IMAGE_DIRECTORY, 
+                                     IMAGE_TOOLS_FILENAMES, IMAGE_TOOL_HELP])
+PREFERENCES_DTYPE = MakeCellStructDType([PIXEL_SIZE, DEFAULT_MODULE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, 
+                                         DEFAULT_IMAGE_DIRECTORY, INTENSITY_COLOR_MAP, LABEL_COLOR_MAP,
+                                         STRIP_PIPELINE, SKIP_ERRORS, DISPLAY_MODE_VALUE, FONT_SIZE,
+                                         DISPLAY_WINDOWS])
+ 
 class Pipeline:
     """A pipeline represents the modules that a user has put together
     to analyze their images.
@@ -72,12 +85,24 @@ class Pipeline:
         Settings = handles[SETTINGS][0,0]
         module_names = Settings[MODULE_NAMES]
         module_count = module_names.shape[1]
-        for ModuleNum in range(1,module_count+1):
-            module = CellProfiler.Module.MatlabModule()
+        for ModuleNum,module_name in zip(range(1,module_count+1),module_names):
+            module = self.InstantiateModule(module_name)
             module.CreateFromHandles(handles, ModuleNum)
             self.__modules.append(module)
             self.__HookModuleVariables(module)
         self.NotifyListeners(PipelineLoadedEvent())
+    
+    def InstantiateModule(self,module_name):
+        if module_name.find('.') != -1:
+            parts     = module_name.split('.')
+            pkg_name  = '.'.join(parts[:-1])
+            pkg       = __import__(pkg_name)
+            py_module = getattr(pkg,parts[-2])
+            py_class  = getattr(py_module,parts[-1])
+            module    = py_class()
+        else:
+            module = CellProfiler.Module.MatlabModule()
+        return module
         
     def SaveToHandles(self):
         """Create a numpy array representing this pipeline
@@ -103,65 +128,154 @@ class Pipeline:
             module.SaveToHandles(handles)
         return handles
     
-    def LoadPipelineIntoMatlab(self):
+    def LoadPipelineIntoMatlab(self, image_set=None, object_set=None, measurements=None):
         """Load the pipeline into the Matlab singleton and return the handles structure
         
         The handles structure has all of the goodies needed to run the pipeline including
         * Settings
         * Current (set up to run the first image with the first module
-        * Measurements (blank, but set up to take measurements)
-        * Pipeline (blank, but set up to save images)
+        * Measurements - filled in from measurements (TO_DO)
+        * Pipeline - filled in from the image set (TO_DO)
         Returns the handles proxy
         """
         handles = self.SaveToHandles()
-        (matfd,matpath) = tempfile.mkstemp('.mat')
-        matfh = os.fdopen(matfd,'w')
-        closed = False
-        try:
-            scipy.io.matlab.mio.savemat(matfh,handles,format='5')
-            matfh.close()
-            closed = True
-            matlab = GetMatlabInstance()
-            matlab.handles = matlab.load(matpath)
-        finally:
-            if not closed:
-                matfh.close()
-            os.unlink(matpath)
         image_tools_dir = os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools')
         image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
                        for filename in os.listdir(image_tools_dir)
                        if os.path.splitext(filename)[1] == '.m']
         image_tools.insert(0,'Image tools')
-        itstring = "{[{'"+"'},{'".join(image_tools)+"'}]}"
-        matlab.image_cells = matlab.eval(itstring)
-        matlab.handles.Current = matlab.struct(NUMBER_OF_IMAGE_SETS,1,
-                                               SET_BEING_ANALYZED,1,
-                                               NUMBER_OF_MODULES, len(self.__modules),
-                                               SAVE_OUTPUT_HOW_OFTEN,1,
-                                               TIME_STARTED, str(datetime.datetime.now()),
-                                               STARTING_IMAGE_SET,1,
-                                               STARTUP_DIRECTORY, CellProfiler.Preferences.CellProfilerRootDirectory(),
-                                               DEFAULT_OUTPUT_DIRECTORY, CellProfiler.Preferences.GetDefaultOutputDirectory(),
-                                               DEFAULT_IMAGE_DIRECTORY, CellProfiler.Preferences.GetDefaultImageDirectory(),
-                                               IMAGE_TOOLS_FILENAMES, matlab.image_cells,
-                                               IMAGE_TOOL_HELP,[]
-                                               )
+        npy_image_tools = numpy.ndarray((1,len(image_tools)),dtype=numpy.dtype('object'))
+        for tool,idx in zip(image_tools,range(0,len(image_tools))):
+            npy_image_tools[0,idx] = tool
+            
+        current = numpy.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
+        handles[CURRENT]=current
+        current[NUMBER_OF_IMAGE_SETS][0,0]     = 1
+        current[SET_BEING_ANALYZED][0,0]       = 1
+        current[NUMBER_OF_MODULES][0,0]        = len(self.__modules)
+        current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = 1
+        current[TIME_STARTED][0,0]             = str(datetime.datetime.now())
+        current[STARTING_IMAGE_SET][0,0]       = 1
+        current[STARTUP_DIRECTORY][0,0]        = CellProfiler.Preferences.CellProfilerRootDirectory()
+        current[DEFAULT_OUTPUT_DIRECTORY][0,0] = CellProfiler.Preferences.GetDefaultOutputDirectory()
+        current[DEFAULT_IMAGE_DIRECTORY][0,0]  = CellProfiler.Preferences.GetDefaultImageDirectory()
+        current[IMAGE_TOOLS_FILENAMES][0,0]    = npy_image_tools
+        current[IMAGE_TOOL_HELP][0,0]          = []
 
-        matlab.handles.Preferences = matlab.struct(PIXEL_SIZE, CellProfiler.Preferences.GetPixelSize(),
-                                                   DEFAULT_MODULE_DIRECTORY, CellProfiler.Preferences.ModuleDirectory(),
-                                                   DEFAULT_OUTPUT_DIRECTORY, CellProfiler.Preferences.GetDefaultOutputDirectory(),
-                                                   DEFAULT_IMAGE_DIRECTORY, CellProfiler.Preferences.GetDefaultImageDirectory(),
-                                                   INTENSITY_COLOR_MAP, 'gray',              # TODO - get from preferences
-                                                   LABEL_COLOR_MAP, 'jet',                   # TODO - get from preferences
-                                                   STRIP_PIPELINE, 'Yes',                    # TODO - get from preferences
-                                                   SKIP_ERRORS, 'No',                        # TODO - get from preferences
-                                                   DISPLAY_MODE_VALUE, 1,                    # TODO - get from preferences
-                                                   FONT_SIZE, 10,                            # TODO - get from preferences
-                                                   DISPLAY_WINDOWS,[1 for module in self.__modules] # TODO - UI allowing user to choose whether to display a window
-                                                   )
-        matlab.handles.Measurements = matlab.struct()
-        matlab.handles.Pipeline = matlab.struct()
-        return matlab.handles
+        preferences = numpy.ndarray(shape=(1,1),dtype=PREFERENCES_DTYPE)
+        handles[PREFERENCES] = preferences
+        preferences[PIXEL_SIZE][0,0]               = CellProfiler.Preferences.GetPixelSize()
+        preferences[DEFAULT_MODULE_DIRECTORY][0,0] = CellProfiler.Preferences.ModuleDirectory()
+        preferences[DEFAULT_OUTPUT_DIRECTORY][0,0] = CellProfiler.Preferences.GetDefaultOutputDirectory()
+        preferences[DEFAULT_IMAGE_DIRECTORY][0,0]  = CellProfiler.Preferences.GetDefaultImageDirectory()
+        preferences[INTENSITY_COLOR_MAP][0,0]      = 'gray'
+        preferences[LABEL_COLOR_MAP][0,0]          = 'jet'
+        preferences[STRIP_PIPELINE][0,0]           = 'Yes'                  # TODO - get from preferences
+        preferences[SKIP_ERRORS][0,0]              = 'No'                   # TODO - get from preferences
+        preferences[DISPLAY_MODE_VALUE][0,0]       = 1                      # TODO - get from preferences
+        preferences[FONT_SIZE][0,0]                = 10                     # TODO - get from preferences
+        preferences[DISPLAY_WINDOWS][0,0]          = [1 for module in self.__modules] # TODO - UI allowing user to choose whether to display a window
+        
+        images = {}
+        if image_set:
+            for provider in image_set.Providers:
+                image = image_set.GetImage(provider.Name())
+                if image.Image != None:
+                    images[provider.Name()]=image.Image
+                if image.Mask != None:
+                    images['CropMask'+provider.Name()]=image.Mask
+        if object_set:
+            for name,objects in object_set.AllObjects:
+                images['Segmented'+name]=objects.Segmented
+                if objects.HasUneditedSegmented():
+                    images['UneditedSegmented'+name] = objects.UneditedSegmented
+                if objects.HasSmallRemovedSegmented():
+                    images['SmallRemovedSegmented'+name] = objects.SmallRemovedSegmented
+        if len(images):
+            pipeline_dtype = MakeCellStructDType(images.keys())
+            pipeline = numpy.ndarray((1,1),dtype=pipeline_dtype)
+            handles[PIPELINE] = pipeline
+            for name,image in images.items():
+                pipeline[name][0,0] = images[name]
+
+        no_measurements = (measurements == None or len(measurements.GetObjectNames())==0)
+        if not no_measurements:
+            measurements_dtype = MakeCellStructDType(measurements.GetObjectNames())
+            npy_measurements = numpy.ndarray((1,1),dtype=measurements_dtype)
+            handles['Measurements']=npy_measurements
+            for object_name in measurements.GetObjectNames():
+                object_dtype = MakeCellStructDType(measurements.GetFeatureNames(object_name))
+                object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
+                npy_measurements[object_name][0,0] = object_measurements
+                for feature_name in measurements.GetFeatureNames(object_name):
+                    feature_measurements = numpy.ndarray((1,measurements.ImageSetNumber+1),dtype='object')
+                    object_measurements[feature_name][0,0] = feature_measurements
+                    feature_measurements.fill(numpy.ndarray((0,),dtype=numpy.float64))
+                    data = measurements.GetCurrentMeasurement(object_name,feature_name)
+                    if data != None:
+                        feature_measurements[0,measurements.ImageSetNumber] = data
+        
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        handles = LoadIntoMatlab(handles)
+        
+        if no_measurements:
+            handles.Measurements = matlab.struct()
+        if not len(images):
+            handles.Pipeline = matlab.struct()
+        return handles
+    
+    def Run(self):
+        """Run the pipeline
+        
+        Run the pipeline, returning the measurements made
+        """
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        self.SetMatlabPath()
+        DisplaySize = (1024,768)
+        image_set_list = CellProfiler.Image.ImageSetList()
+        measurements = CellProfiler.Measurements.Measurements()
+        first_set = True
+        while measurements.ImageSetNumber==0 or image_set_list.Count()>measurements.ImageSetNumber:
+            if not first_set:
+                measurements.NextImageSet()
+            NumberofWindows = 0;
+            SlotNumber = 0
+            for module in self.Modules():
+                handles.Current.CurrentModuleNumber = str(module.ModuleNum())
+                if handles.Current.SetBeingAnalyzed == 1:
+                    figure_field = 'FigureNumberForModule%d'%(module.ModuleNum())
+                    if handles.Preferences.DisplayWindows[SlotNumber] == 0:
+                        # Make up a fake figure for the module if we're not displaying its window
+                        unused_figure_handle = math.ceil(max(matlab.findobj()))+1 
+                        handles.Current = matlab.setfield(handles.Current,figure_field,unused_figure_handle)
+                        figure = unused_figure_handle
+                    else:
+                        NumberofWindows = NumberofWindows+1;
+                        LeftPos = DisplaySize.width * ((NumberofWindows-1)%12)/12;
+                        figure = matlab.CPfigure(handles,'',
+                                                 'Name','%s Display, cycle # '%(module.ModuleName()),
+                                                 'Position',[LeftPos,DisplaySize.height-522, 560, 442])
+                        handles.Current = matlab.setfield(handles.Current, figure_field, figure)
+                module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
+                failure = 1
+                try:
+                    handles = module.Run(handles)
+                    failure = 0
+                except Exception,instance:
+                    self.__frame.DisplayError('Failed during run of module %s (module # %d)'%(module.ModuleName(),module.ModuleNum()),instance)
+                if module.ModuleName() != 'Restart':
+                    handles = matlab.CPaddmeasurements(handles,'Image',module_error_measurement,failure);
+                SlotNumber+=1
+            first_set = False
+        return measurements
+
+    def SetMatlabPath(self):
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'DataTools'),matlab.path())
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools'),matlab.path())
+        matlab.path(os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'CPsubfunctions'),matlab.path())
+        matlab.path(CellProfiler.Preferences.ModuleDirectory(),matlab.path())
+        matlab.path(CellProfiler.Preferences.CellProfilerRootDirectory(),matlab.path())
 
     def Clear(self):
         old_modules = self.__modules

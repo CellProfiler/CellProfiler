@@ -168,7 +168,15 @@ if ~any(strcmp(OldPathname, '.'))
     Fieldnames = fieldnames(handles.Pipeline);
     FileListFieldNames = Fieldnames(strncmp(Fieldnames, 'FileList', 8));
     for i = 1:length(FileListFieldNames)
-        handles.Pipeline.(FileListFieldNames{i}) = strrep(handles.Pipeline.(FileListFieldNames{i}),'\','/');
+        if ndims(handles.Pipeline.(FileListFieldNames{i})) == 2
+            %% Assumed to be FLEX file, with filename in the 1st row of
+            %% cell array
+            for j = 1:size(handles.Pipeline.(FileListFieldNames{i}),2)
+                handles.Pipeline.(FileListFieldNames{i}){1,j} = strrep(handles.Pipeline.(FileListFieldNames{i}){1,j},'\','/');
+            end
+        else
+            handles.Pipeline.(FileListFieldNames{i}) = strrep(handles.Pipeline.(FileListFieldNames{i}),'\','/');
+        end
     end
 
     % Deal with input paths that have already been saved to the handles

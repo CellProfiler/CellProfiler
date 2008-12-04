@@ -358,7 +358,6 @@ for ImageNumber = 1:length(NameImageToCheck);
             FocusScore{ImageNumber} = sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
         end
 
-        GlobalFocusScore = FocusScore{ImageNumber};       
         %%% Local normalized variance 
         % WindowSize = 15; %%I'm commenting out this line because it looks
         % like an error.  Why would we want to ask the user to specify a
@@ -385,7 +384,12 @@ for ImageNumber = 1:length(NameImageToCheck);
         %modeLocalNormVar{ImageNumber} = mode(LocalNormVar(:));
         %varLocalNormVar{ImageNumber} = var(LocalNormVar(:));
         %normvarLocalNormVar{ImageNumber} = var(LocalNormVar(:))/mean(LocalNormVar(:));
-        normvarLocalNormVar2{ImageNumber} = var(LocalNormVar(:))/median(LocalNormVar(:));
+        
+        if median(LocalNormVar(:)) == 0
+            normvarLocalNormVar2{ImageNumber} = 0;
+        else
+            normvarLocalNormVar2{ImageNumber} = var(LocalNormVar(:))/median(LocalNormVar(:));
+        end
         LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
 
         handles = CPaddmeasurements(handles, 'Image', ...

@@ -8,7 +8,7 @@ function handles=SubmitBatch(handles)
 % via webserver.
 % ************************************************************************
 % This tool makes a webserver call to the URL,
-% "http://imageweb.broad.mit.edu/batchprofiler/cgi-bin/NewBatcy.py", to
+% "http://imageweb.broad.mit.edu/batchprofiler/cgi-bin/NewBatch.py", to
 % submit the batch files created by the CreateBatchFiles module to the
 % cluster using CPCluster.py and bsub. The webserver creates a record
 % in batchprofiler.batch for the batch, documenting the files and

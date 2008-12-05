@@ -497,7 +497,7 @@ if strcmp(ReadyFlag, 'Ready')
                 %% This guards against a few very dark pixels throwing off the rescaling
                 %% NB!  This will *not* ensure that the applied values will
                 %% be > 1!  We need to check this...
-                robust_factor = 0.01;
+                robust_factor = 0.02;
                 s = sort(FinalIlluminationFunction(MaskImage ~= 0));
                 if numel(s) > 0
                     rescale = s(floor(length(s).*robust_factor)+1);

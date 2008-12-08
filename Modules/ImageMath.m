@@ -141,7 +141,11 @@ else
     clear SecondImageConstant
 end
 if isempty(ThirdImageConstant) && any(strcmp(Operation,{'Combine'})),
-    ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'MustBeGray','CheckScale');
+    if ~strcmp(ThirdImageName,'Do not use')
+        ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'MustBeGray','CheckScale');
+    else
+        ThirdImage = 0;
+    end
 else
     ThirdImage = ThirdImageConstant;
     clear ThirdImageConstant

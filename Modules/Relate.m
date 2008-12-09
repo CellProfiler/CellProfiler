@@ -222,13 +222,15 @@ end
 drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+
+ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
+ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
+ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
+
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
-    ColoredParentLabelMatrixImage = CPlabel2rgb(handles,ParentObjectLabelMatrix);
-    ColoredSubObjectLabelMatrixImage = CPlabel2rgb(handles,SubObjectLabelMatrix);
-    ColoredNewObjectParentLabelMatrix = CPlabel2rgb(handles,NewObjectParentLabelMatrix);
     
     %% Default image
     CPimagesc(ColoredNewObjectParentLabelMatrix,handles,ThisModuleFigureNumber);

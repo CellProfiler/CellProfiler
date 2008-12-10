@@ -259,11 +259,11 @@ if any(findobj == ThisModuleFigureNumber) == 1;
     CPimagesc(ThresholdedOrigImage,handles,hAx); 
     title(hAx,'Thresholded Image');
     
-    %% Text
-    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 250 40],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
+    % Text
+    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl'))
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','TextUIControl','style','text', 'position', [0 0 250 40],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
     else
-        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
+        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl');
     end
     displaytext = {['Area occupied by ',StainName,': ',num2str(AreaOccupied,'%2.1E')];...
         ['Mean Threshold: ' num2str(mean(Threshold(:)))]};

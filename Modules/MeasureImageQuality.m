@@ -462,10 +462,10 @@ if any(findobj == ThisModuleFigureNumber)
         CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
     
-    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text','units','normalized','position', [0.1 0.1 0.8 0.8],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'horizontalalignment','left','FontSize',handles.Preferences.FontSize);
+    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl'))
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','TextUIControl','style','text','units','normalized','position', [0.1 0.1 0.8 0.8],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'horizontalalignment','left','FontSize',handles.Preferences.FontSize);
     else
-        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
+        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl');
     end
 
     DisplayText = strvcat(['    Cycle # ',num2str(handles.Current.SetBeingAnalyzed)],... %#ok We want to ignore MLint error checking for this line.

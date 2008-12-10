@@ -805,6 +805,9 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
+    % Remove uicontrols from last cycle
+    delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
+    
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure('','NarrowText',ThisModuleFigureNumber)
     end
@@ -816,7 +819,7 @@ if any(findobj == ThisModuleFigureNumber);
         else
             TextString = [ImageName,': ',FileNames];
         end
-        uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9])
+        uicontrol(currentfig,'style','text','units','normalized','fontsize',handles.Preferences.FontSize,'HorizontalAlignment','left','string',TextString,'position',[.05 .85-(n-1)*.15 .95 .1],'BackgroundColor',[.7 .7 .9],'tag','TextUIControl');
     end
 end
 

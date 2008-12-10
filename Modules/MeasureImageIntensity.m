@@ -165,10 +165,10 @@ if any(findobj == ThisModuleFigureNumber)
     hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber); 
     CPimagesc(ThresholdedOrigImage,handles,hAx); 
     title(hAx,'Thresholded Image');
-    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
-        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 60],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
+    if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl'))
+        displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','TextUIControl','style','text', 'position', [0 0 200 60],'fontname','helvetica','backgroundcolor',[.7 .7 .9],'FontSize',handles.Preferences.FontSize);
     else
-        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText');
+        displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl');
     end
     displaytext = {['Total intensity:      ', num2str(TotalIntensity, '%2.1E')],...
         ['Mean intensity:      ', num2str(MeanIntensity)],...

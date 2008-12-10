@@ -67,15 +67,15 @@ end
 %%% If the SizeOfSmoothingFilter is greather than
 %%% LARGESIZE_OF_SMOOTHINGFILTER, then we resize the original image
 %%% Tip: Smoothing with filter size LARGESIZE_OF_SMOOTHINGFILTER is the slowest.
-if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
+if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER) && HasMask == 0
     ResizingFactor = LARGESIZE_OF_SMOOTHINGFILTER/SizeOfSmoothingFilter;
     original_row = size(OrigImage,1);
     original_col = size(OrigImage,2);
     OrigImage = imresize(OrigImage, ResizingFactor);
-    if HasMask
-        MaskImage = imresize(MaskImage, ResizingFactor);
-    end
     SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER; % equal to SizeOfSmoothingFilter * ResizingFactor;
+    Resized = 1
+else
+    Resized = 0
 end
 
 switch lower(SmoothingMethod)
@@ -226,7 +226,7 @@ switch lower(SmoothingMethod)
 end
 
 %%% Resize back to original if resized earlier due to the large filter size
-if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER)
+if Resized
     SmoothedImage = imresize(SmoothedImage, [original_row original_col]);  
     RealFilterLength = RealFilterLength * ResizingFactor;
 end

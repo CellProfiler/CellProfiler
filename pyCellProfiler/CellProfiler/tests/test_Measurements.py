@@ -95,7 +95,20 @@ class TestMeasurements(unittest.TestCase):
         x.NextImageSet()
         x.AddMeasurement("Image", "Feature","Value" )
         self.assertRaises(AssertionError,x.AddMeasurement,"Image", "Feature","Value")
-        
+    
+    def test_05_01_TestHasCurrentMeasurements(self):
+        x = CellProfiler.Measurements.Measurements()
+        self.assertFalse(x.HasCurrentMeasurements('Image', 'Feature'))
+                         
+    def test_05_02_TestHasCurrentMeasurements(self):
+        x = CellProfiler.Measurements.Measurements()
+        x.AddMeasurement("Image", "OtherFeature","Value" )
+        self.assertFalse(x.HasCurrentMeasurements('Image', 'Feature'))
+
+    def test_05_03_TestHasCurrentMeasurements(self):
+        x = CellProfiler.Measurements.Measurements()
+        x.AddMeasurement("Image", "Feature","Value" )
+        self.assertTrue(x.HasCurrentMeasurements('Image', 'Feature'))
 
 if __name__ == "__main__":
     unittest.main()

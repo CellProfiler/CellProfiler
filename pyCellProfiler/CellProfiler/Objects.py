@@ -82,12 +82,12 @@ def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     assert segmented == None or small_removed_segmented == None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ"%(repr(segmented.shape),repr(small_removed_segmented.shape))
     assert segmented == None or \
            unedited_segmented == None or \
-           numpy.logical_or(segmented == 0,segmented==unedited_segmented).all(), \
-           "Segmented must be a subset of unedited segmented & numbered the same"
+           numpy.logical_or(segmented == 0,unedited_segmented!=0).all(), \
+           "Unedited segmented must be labeled if segmented is labeled"
     assert small_removed_segmented == None or \
            unedited_segmented == None or \
-           numpy.logical_or(small_removed_segmented == 0,small_removed_segmented==unedited_segmented).all(), \
-           "Small removed segmented must be a subset of unedited segmented & numbered the same"
+           numpy.logical_or(small_removed_segmented == 0,unedited_segmented!=0).all(), \
+           "Unedited segmented must be labeled if small_removed_segmented is labeled"
     
 
 class ObjectSet(object):

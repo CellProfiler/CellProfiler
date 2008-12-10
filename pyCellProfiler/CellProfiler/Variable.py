@@ -108,18 +108,130 @@ class DeleteVariableEvent():
     def __init__(self):
         pass
 
+# Valid Kind arguments to annotation
+ANN_TEXT   = 'text'
+ANN_CHOICE = 'choice'
+ANN_DEFAULT = 'default'
+ANN_INFOTYPE = 'infotype'
+ANN_INPUTTYPE = 'inputtype'
+ANN_PATHNAMETEXT = 'pathnametext'
+ANN_FILENAMETEXT = 'filenametext'
+DO_NOT_USE = 'Do not use'
+
 class Annotation:
     """Annotations are the bits of comments parsed out of a .m file that provide metadata on a variable
     
     """
-    def __init__(self,line):
-        m=re.match("^%([a-z]+)VAR([0-9]+) = (.+)$",line)
-        if not m:
-            raise(ValueError('Not a variable annotation comment: %s)'%(line)))
-        self.Kind = m.groups()[0]
-        self.VariableNumber = int(m.groups()[1])
-        self.Value = m.groups()[2]
+    def __init__(self,*args,**kwargs):
+        """Initialize either matlab-style with a line of text that is regexp-parsed or more explicitly
+        
+        args - should be a single line that is parsed
+        kind - the kind of annotation it is. Legal values are "text", "choice","default","infotype","inputtype",
+               "pathnametext" and "filenametext"
+        variable_number - the one-indexed index of the variable in the module's set of variables
+        value - the value of the annotation
+        """
+        if len(args) == 1:
+            line = args[0]
+            m=re.match("^%([a-z]+)VAR([0-9]+) = (.+)$",line)
+            if not m:
+                raise(ValueError('Not a variable annotation comment: %s)'%(line)))
+            self.Kind = m.groups()[0]
+            self.VariableNumber = int(m.groups()[1])
+            self.Value = m.groups()[2]
+        else:
+            self.Kind = kwargs['kind']
+            self.VariableNumber = kwargs['variable_number']
+            self.Value = kwargs['value']
+        if self.Kind not in [ANN_TEXT,ANN_CHOICE,ANN_DEFAULT,ANN_INFOTYPE,ANN_INPUTTYPE, ANN_PATHNAMETEXT, ANN_FILENAMETEXT]:
+            raise ValueError("Unrecognized annotation: %s"%(self.Kind))
 
+def TextAnnotation(variable_number, value):
+    """Create a text annotation
+    """
+    return Annotation(kind=ANN_TEXT,variable_number = variable_number, value = value)
+
+def ChoiceAnnotations(variable_number, values):
+    """Create choice annotations for a variable
+    
+    variable_number - the one-indexed variable number
+    values - a sequence of possible values for the variable
+    """
+    return [Annotation(kind=ANN_CHOICE,variable_number=variable_number,value=value) for value in values]
+
+def DefaultAnnotation(variable_number,value):
+    """Create a default value annotation
+    """
+    return Annotation(kind=ANN_DEFAULT,variable_number=variable_number,value=value)
+
+def InfotypeProviderAnnotation(variable_number,value):
+    """Create an infotype provider that provides a certain class of thing (e.g. imagegroup or objectgroup)
+    
+    variable_number - one-based variable number for the annotation
+    value - infotype such as object
+    """
+    return Annotation(kind=ANN_INFOTYPE, variable_number = variable_number, value="%s indep"%(value))
+
+def InfotypeClientAnnotation(variable_number,value):
+    """Create an infotype provider that needs a certain class of thing (e.g. imagegroup or objectgroup)
+    
+    variable_number - one-based variable number for the annotation
+    value - infotype such as object
+    """
+    return Annotation(kind=ANN_INFOTYPE, variable_number = variable_number, value=value)
+
+def InputTypeAnnotation(variable_number,value):
+    """Create an input type annotation, such as popupmenu
+    """
+    return Annotation(kind=ANN_INPUTTYPE, variable_number= variable_number, value=value)
+
+def ChoicePopupAnnotation(variable_number, text, values):
+    """Create all the pieces needed for a choice popup variable
+    
+    variable_number - the one-based index of the variable
+    text - what the user sees to the left of the popup
+    values - a sequence containing the allowed values
+    """
+    return [TextAnnotation(variable_number,text)] + \
+            ChoiceAnnotations(variable_number, values) +\
+            [InputTypeAnnotation(variable_number,'menupopup')]
+
+def IndepGroupAnnotation(variable_number, text, group, default=DO_NOT_USE):
+    """Create all the pieces needed for an edit box for a variable defining a member of a particular group
+    
+    variable_number - the one-based index of the variable
+    text - what the user sees to the left of the edit box
+    group - the group, for instance imagegroup or objectgroup
+    default - the default value that appears when the variable is created
+    """
+    return EditBoxAnnotation(variable_number, text, default)+ \
+           [InfotypeProviderAnnotation(variable_number,group)]
+
+def EditBoxAnnotation(variable_number, text, default=DO_NOT_USE):
+    """Create a text annotation and a default annotation to define a variable that uses an edit box
+    
+    variable_number - the one-based index of the variable
+    text - what the user sees to the left of the edit box
+    default - the default value for the box
+    """
+    return [TextAnnotation(variable_number,text),
+            DefaultAnnotation(variable_number, default)]
+
+def CheckboxAnnotation(variable_number, text, default=False):
+    """Create a checkbox annotation
+    
+    The checkbox annotation has choice values = 'Yes' and 'No' but
+    gets translated by the Gui code into a checkbox.
+    variable_number - the one-based index of the variable
+    text - the text to display to the user
+    default - whether the box should be checked initially (True) or unchecked (False)
+    """
+    if default:
+        choices = ['Yes','No']
+    else:
+        choices = ['No','Yes']
+        return ChoicePopupAnnotation(variable_number, text, choices)
+    
 def GetAnnotationsAsDictionary(annotations):
     """Return a multilevel dictionary based on the annotations
     

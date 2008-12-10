@@ -8,6 +8,7 @@ import CellProfiler.Preferences
 from CellProfiler.CellProfilerGUI.AddModuleFrame import AddModuleFrame
 import CellProfiler.CellProfilerGUI.ModuleView
 import math
+import numpy
 import wx
 import os
 import re
@@ -20,6 +21,7 @@ class PipelineController:
     """
     def __init__(self,pipeline,frame):
         self.__pipeline =pipeline
+        pipeline.AddListener(self.__OnPipelineEvent)
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.AddListener(self.__OnAddToPipeline) 
@@ -113,6 +115,12 @@ class PipelineController:
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.__pipeline.Clear()
+    
+    def __OnPipelineEvent(self,caller,event):
+        if isinstance(event,CellProfiler.Pipeline.RunExceptionEvent):
+            message = "Error while processing %s: %s\nDo you want to stop processing?"%(event.Module.ModuleName(),event.Error.message)
+            if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
+                event.CancelRun = False
             
     def __OnHelp(self,event):
         print "No help yet"
@@ -144,7 +152,7 @@ class PipelineController:
         ModuleNum = 1
         if len(selected_modules):
             ModuleNum=selected_modules[-1].ModuleNum()+1
-        self.__pipeline.AddModule(event.ModulePath,ModuleNum)
+        self.__pipeline.AddModule(event.ModuleLoader(ModuleNum))
         
     def __OnModuleViewEvent(self,caller,event):
         assert isinstance(event,CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent'%(str(event))
@@ -156,15 +164,21 @@ class PipelineController:
     def OnAnalyzeImages(self,event):
         output_path = self.GetOutputFilePath()
         if output_path:
-            handles = self.__pipeline.LoadPipelineIntoMatlab()
-            handles = self.RunPipeline(handles)
-            matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
-            matlab.output_struct = matlab.struct('handles',handles)
-            #
-            # Here, foo._name is the undocumented variable name in the
-            # matlab instance.
-            #
-            matlab.save(output_path,'-struct',str(matlab.output_struct._name))
+            measurements = self.RunPipeline()
+            if measurements != None:
+                handles = self.__pipeline.BuildMatlabHandles()
+                CellProfiler.Pipeline.AddAllMeasurements(handles, measurements)
+                handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.ImageSetNumber+1)
+                handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.SET_BEING_ANALYZED][0,0] = float(measurements.ImageSetNumber+1)
+                #
+                # For the output file, you have to bury it a little deeper - the root has to have
+                # a single field named "handles"
+                #
+                root = {'handles':numpy.ndarray((1,1),dtype=CellProfiler.Matlab.Utils.MakeCellStructDType(handles.keys()))}
+                for key,value in handles.iteritems():
+                    root['handles'][key][0,0]=value
+                scipy.io.matlab.mio.savemat(output_path,root,format='5',long_field_names=True)
+
 
     def GetOutputFilePath(self):
         path = os.path.join(CellProfiler.Preferences.GetDefaultOutputDirectory(),
@@ -192,41 +206,10 @@ class PipelineController:
                 return None
         return path
         
-    def RunPipeline(self,handles):
-        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
-        self.SetMatlabPath()
-        DisplaySize = wx.GetDisplaySize()
-        while handles.Current.SetBeingAnalyzed <= handles.Current.NumberOfImageSets:
-            NumberofWindows = 0;
-            SlotNumber = 0
-            for module in self.__pipeline.Modules():
-                handles.Current.CurrentModuleNumber = str(module.ModuleNum())
-                if handles.Current.SetBeingAnalyzed == 1:
-                    figure_field = 'FigureNumberForModule%d'%(module.ModuleNum())
-                    if handles.Preferences.DisplayWindows[SlotNumber] == 0:
-                        # Make up a fake figure for the module if we're not displaying its window
-                        unused_figure_handle = math.ceil(max(matlab.findobj()))+1 
-                        handles.Current = matlab.setfield(handles.Current,figure_field,unused_figure_handle)
-                        figure = unused_figure_handle
-                    else:
-                        NumberofWindows = NumberofWindows+1;
-                        LeftPos = DisplaySize.width * ((NumberofWindows-1)%12)/12;
-                        figure = matlab.CPfigure(handles,'',
-                                                 'Name','%s Display, cycle # '%(module.ModuleName()),
-                                                 'Position',[LeftPos,DisplaySize.height-522, 560, 442])
-                        handles.Current = matlab.setfield(handles.Current, figure_field, figure)
-                module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
-                failure = 1
-                try:
-                    handles = module.Run(handles)
-                    failure = 0
-                except Exception,instance:
-                    self.__frame.DisplayError('Failed during run of module %s (module # %d)'%(module.ModuleName(),module.ModuleNum()),instance)
-                if module.ModuleName() != 'Restart':
-                    handles = matlab.CPaddmeasurements(handles,'Image',module_error_measurement,failure);
-                SlotNumber+=1
-            handles.Current.SetBeingAnalyzed += 1
-        return handles
+    def RunPipeline(self):
+        """Run the current pipeline, returning the measurements
+        """
+        return self.__pipeline.Run()
     
     def SetMatlabPath(self):
         matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()

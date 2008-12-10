@@ -5,6 +5,7 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 """
 import numpy
 import math
+import sys
 
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
@@ -76,6 +77,10 @@ class Image(object):
             # These types will always have ranges between 0 and 1. Make it so.
             img[img<0]=0
             img[img>1]=1
+        if len(img.shape)==3:
+            if img.shape[2] == 4:
+                sys.stderr.write("Warning: discarding alpha channel in color image.\n")
+                img = img[:,:,:-1]
         check_consistency(img,self.__mask)
         self.__image = img
     
@@ -107,6 +112,7 @@ class Image(object):
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
     assert (image==None) or (len(image.shape) in (2,3)),"Image must have 2 or 3 dimensions"
+    assert (image==None) or (len(image.shape)==2) or (image.shape[2] in (1,3)),"3-dimensional images must have either one or three colors"
     assert (mask==None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
     assert (image==None) or (mask==None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
     assert (image==None) or (image.dtype.type is numpy.float64), "Image must be float64, was %s"%(repr(image.dtype.type))
@@ -129,7 +135,7 @@ class VanillaImageProvider(AbstractImageProvider):
     """This image provider returns the image given to it in the constructor
     
     """
-    def __init(self,name,image):
+    def __init__(self,name,image):
         """Constructor takes the name of the image and the CellProfiler.Image.Image instance to be returned
         """
         self.__name = name
@@ -168,7 +174,7 @@ class ImageSet(object):
     (which might represent things like the plate/well for the image set or the
     frame number in a movie, etc.) 
     """
-    def __init__(self, number, keys):
+    def __init__(self, number, keys,legacy_fields):
         """Constructor: 
         number = image set index 
         keys = dictionary of key/value pairs that uniquely identify the image set
@@ -176,8 +182,8 @@ class ImageSet(object):
         self.__image_providers = []
         self.__images = {}
         self.__keys = keys
-        self.__measurements = {}
         self.__number = number
+        self.__legacy_fields = legacy_fields
     
     def GetNumber(self):
         """The (zero-based) image set index
@@ -209,6 +215,14 @@ class ImageSet(object):
         return self.__image_providers
     
     Providers = property(GetProviders)
+    
+    def GetLegacyFields(self):
+        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
+        
+        """
+        return self.__legacy_fields
+    
+    LegacyFields = property(GetLegacyFields)
 
 class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
@@ -217,6 +231,7 @@ class ImageSetList(object):
     def __init__(self):
         self.__image_sets = []
         self.__image_sets_by_key = {}
+        self.__legacy_fields = {}
     
     def GetImageSet(self,keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
@@ -233,7 +248,7 @@ class ImageSetList(object):
             else:
                 number = len(self.__image_sets)
         if number == len(self.__image_sets):
-            image_set = ImageSet(number,keys)
+            image_set = ImageSet(number,keys,self.__legacy_fields)
             self.__image_sets.append(image_set)
             self.__image_sets_by_key[repr(keys)] = image_set
         else:
@@ -242,4 +257,12 @@ class ImageSetList(object):
     
     def Count(self):
         return len(self.__image_sets)
+
+    def GetLegacyFields(self):
+        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
+        
+        """
+        return self.__legacy_fields
+    
+    LegacyFields = property(GetLegacyFields)
     

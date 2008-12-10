@@ -9,6 +9,7 @@ import CellProfiler.Variable
 import CellProfiler.Image
 import CellProfiler.Objects
 import CellProfiler.Measurements
+import CellProfiler.Pipeline
 import re
 import os
 import CellProfiler.Pipeline
@@ -24,6 +25,12 @@ class AbstractModule:
     Annotations - to return the variable annotations (see CellProfiler.Variable.Annotation).
                   These are the annotations in the .M file (like choiceVAR05 = Yes)
     Run - to run the module, producing measurements, etc.
+    
+    Implement these if you produce measurements:
+    GetCategories - The category of measurement produced, for instance AreaShape
+    GetMeasurements - The measurements produced by a category
+    GetMeasurementImages - The images measured for a particular measurement
+    GetMeasurementScales - the scale at which a measurement was taken
     """
     
     def __init__(self):
@@ -43,7 +50,6 @@ class AbstractModule:
         Settings = handles['Settings'][0,0]
         self.__module_num = ModuleNum
         idx = ModuleNum-1
-        self.__module_name = str(Settings['ModuleNames'][0,idx][0])
         if Settings.dtype.fields.has_key('ModuleNotes'):
             n=Settings['ModuleNotes'][0,idx]
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
@@ -51,11 +57,36 @@ class AbstractModule:
             self.__notes = []
         variable_count=Settings['NumbersOfVariables'][0,idx]
         variable_revision_number = Settings['VariableRevisionNumbers'][0,idx]
-        variable_values = [str(Settings['VariableValues'][idx,i][0]) for i in range(0,variable_count)]
+        variable_values = []
+        for i in range(0,variable_count):
+            value_cell = Settings['VariableValues'][idx,i]
+            if numpy.product(value_cell.shape) == 0:
+                variable_values.append('')
+            else:
+                variable_values.append(str(value_cell[0]))
         self.__variables = [CellProfiler.Variable.Variable(self,VariableIdx+1,variable_values[VariableIdx])
                             for VariableIdx in range(0,variable_count)]
         return self.UpgradeModuleFromRevision(variable_revision_number)
     
+    def CreateFromAnnotations(self):
+        """Create the variables based on the defaults that you can suss from the annotations
+        """
+        variable_dict = {}
+        max_variable = 0
+        
+        for annotation in self.Annotations():
+            vn = annotation.VariableNumber
+            if annotation.Kind == 'default':
+                variable_dict[vn] = annotation.Value
+            elif annotation.Kind == 'choice' and not variable_dict.has_key(vn):
+                variable_dict[vn] = annotation.Value
+            if vn > max_variable:
+                max_variable = vn
+        variables=[CellProfiler.Variable.Variable(self,i,'n/a') for i in range(1,max_variable+1)]
+        for key in variable_dict.keys():
+            variables[key-1].SetValue(variable_dict[key])
+        self.SetVariables(variables)
+        
     def UpgradeModuleFromRevision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
@@ -71,7 +102,7 @@ class AbstractModule:
     def SaveToHandles(self,handles):
         module_idx = self.ModuleNum()-1
         setting = handles[CellProfiler.Pipeline.SETTINGS][0,0]
-        setting[CellProfiler.Pipeline.MODULE_NAMES][0,module_idx] = unicode(self.ModuleName())
+        setting[CellProfiler.Pipeline.MODULE_NAMES][0,module_idx] = unicode(self.ModuleClass())
         setting[CellProfiler.Pipeline.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.Notes()),1),dtype='object')
         for i in range(0,len(self.Notes())):
             setting[CellProfiler.Pipeline.MODULE_NOTES][0,module_idx][i,0]=self.Notes()[i]
@@ -84,7 +115,7 @@ class AbstractModule:
             annotations = self.VariableAnnotations(vn)
             if annotations.has_key('infotype'):
                 setting[CellProfiler.Pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].Value)
-        setting[CellProfiler.Pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.__variable_revision_number
+        setting[CellProfiler.Pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.VariableRevisionNumber()
         setting[CellProfiler.Pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
     
     def VariableAnnotations(self,VariableNum):
@@ -120,6 +151,12 @@ class AbstractModule:
         
         """
         return self.__module_name
+    
+    def ModuleClass(self):
+        """The class to instantiate, except for the special case of matlab modules.
+        
+        """
+        return self.__module__+'.'+self.ModuleName()
     
     def SetModuleName(self, module_name):
         self.__module_name = module_name
@@ -169,6 +206,93 @@ class AbstractModule:
         """Write out the module's state to the handles
         
         """
+        pass
+    
+    def WriteToText(self,file):
+        """Write the module's state, informally, to a text file
+        """
+        pass
+    
+    def PrepareRun(self, pipeline, image_set_list):
+        """Prepare the image set list for a run (& whatever else you want to do)
+        """
+        pass
+    
+    def Run(self,pipeline,image_set,object_set,measurements):
+        """Run the module (abstract method)
+        
+        pipeline     - instance of CellProfiler.Pipeline for this run
+        image_set    - the images in the image set being processed
+        object_set   - the objects (labeled masks) in this image set
+        measurements - the measurements for this run
+        """
+        raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
+
+    def GetCategories(self,pipeline, object_name):
+        """Return the categories of measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        """
+        return []
+      
+    def GetMeasurements(self, pipeline, object_name, category):
+        """Return the measurements that this module produces
+        
+        object_name - return measurements made on this object (or 'Image' for image measurements)
+        category - return measurements made in this category
+        """
+        return []
+    
+    def GetMeasurementImages(self,pipeline,object_name,category,measurement):
+        """Return a list of image names used as a basis for a particular measure
+        """
+        return []
+    
+    def GetMeasurementScales(self,pipeline,object_name,category,measurement,image_name):
+        """Return a list of scales (eg for texture) at which a measurement was taken
+        """
+        return []
+    
+    def Category(self):
+        raise(NotImplementedError("Please implement the Category method to return the category for the module in the AddModules page"));
+
+class TemplateModule(AbstractModule):
+    """Cut and paste this in order to get started writing a module
+    """
+    def __init__(self):
+        AbstractModule.__init__(self)
+        self.SetModuleName("Template")
+    
+    def UpgradeModuleFromRevision(self,variable_revision_number):
+        """Possibly rewrite the variables in the module to upgrade it to its current revision number
+        
+        """
+        raise NotImplementedError("Please implement UpgradeModuleFromRevision")
+    
+    def GetHelp(self):
+        """Return help text for the module
+        
+        """
+        raise NotImplementedError("Please implement GetHelp in your derived module class")
+            
+    def VariableRevisionNumber(self):
+        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
+        """
+        raise NotImplementedError("Please implement VariableRevisionNumber in the derived class")
+    
+    def Annotations(self):
+        """Return the variable annotations, as read out of the module file.
+        
+        Return the variable annotations, as read out of the module file.
+        Each annotation is an instance of the CellProfiler.Variable.Annotation
+        class.
+        """
+        raise("Please implement Annotations in your derived class")
+    
+    def WriteToHandles(self,handles):
+        """Write out the module's state to the handles
+        
+        """
     
     def WriteToText(self,file):
         """Write the module's state, informally, to a text file
@@ -208,7 +332,7 @@ class AbstractModule:
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
-
+        
 class MatlabModule(AbstractModule):
     """A matlab module, as from a .m file
     
@@ -226,6 +350,7 @@ class MatlabModule(AbstractModule):
         Settings = handles['Settings'][0,0]
         idx = ModuleNum-1
         module_name = str(Settings['ModuleNames'][0,idx][0])
+        self.SetModuleName(module_name)
         self.__filename = os.path.join(CellProfiler.Preferences.ModuleDirectory(),module_name+CellProfiler.Preferences.ModuleExtension())
         return AbstractModule.CreateFromHandles(self, handles, ModuleNum)
 
@@ -236,20 +361,7 @@ class MatlabModule(AbstractModule):
         self.SetModuleName(os.path.splitext(os.path.split(file_path)[1])[0])
         self.__filename = file_path
         self.LoadAnnotations()
-        variable_dict = {}
-        max_variable = 0
-        for annotation in self.Annotations():
-            vn = annotation.VariableNumber
-            if annotation.Kind == 'default':
-                variable_dict[vn] = annotation.Value
-            elif annotation.Kind == 'choice' and not variable_dict.has_key(vn):
-                variable_dict[vn] = annotation.Value
-            if vn > max_variable:
-                max_variable = vn
-        variables=[CellProfiler.Variable.Variable(self,i,'') for i in range(1,max_variable+1)]
-        for key in variable_dict.keys():
-            variables[key-1].SetValue(variable_dict[key])
-        self.SetVariables(variables)
+        self.CreateFromAnnotations()
         self.__variable_revision_number = self.TargetVariableRevisionNumber()
 
     def LoadAnnotations(self):
@@ -266,67 +378,23 @@ class MatlabModule(AbstractModule):
         """Run the module in Matlab
         
         """
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
         handles = pipeline.LoadPipelineIntoMatlab(image_set,object_set,measurements)
-        handles = CellProfiler.Matlab.Utils.GetMatlabInstance().feval(self.ModuleName(),handles)
-        self.AddMatlabImages(handles, image_set)
-        self.AddMatlabObjects(handles, object_set)
-        self.AddMatlabMeasurements(handles, measurements)
+        handles.Current.CurrentModuleNumber = str(self.ModuleNum())
+        figure_field = 'FigureNumberForModule%d'%(self.ModuleNum())
+        if measurements.ImageSetNumber == 0:
+            if handles.Preferences.DisplayWindows[self.ModuleNum()-1] == 0:
+                # Make up a fake figure for the module if we're not displaying its window
+                self.__figure = math.ceil(max(matlab.findobj()))+1 
+            else:
+                self.__figure = matlab.CPfigure(handles,'','Name','%s Display, cycle # '%(self.ModuleName()))
+        handles.Current = matlab.setfield(handles.Current, figure_field, self.__figure)
+            
+        handles = matlab.feval(self.ModuleName(),handles)
+        CellProfiler.Pipeline.AddMatlabImages(handles, image_set)
+        CellProfiler.Pipeline.AddMatlabObjects(handles, object_set)
+        CellProfiler.Pipeline.AddMatlabMeasurements(handles, measurements)
 
-    def AddMatlabImages(self,handles,image_set):
-        """Add any images from the handles to the image set
-        Generally, the handles have images added as they get returned from a Matlab module.
-        You can use this to update the image set and capture them.
-        """
-        matlab = GetMatlabInstance()
-        pipeline_fields = matlab.fields(handles.Pipeline)
-        provider_set = set([x.Name() for x in image_set.Providers])
-        image_fields = set()
-        crop_fields = set()
-        for i in range(0,matlab.length(pipeline_fields)[0,0]):
-            field = matlab.cell2mat(pipeline_fields[i])
-            if field.startswith('CropMask'):
-                crop_fields.add(field)
-            elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
-                continue
-            elif not field in provider_set:
-                image_fields.add(field)
-        for field in image_fields:
-            image = CellProfiler.Image.Image()
-            image.Image = matlab.getfield(handles.Pipeline,field)
-            crop_field = 'CropMask'+fields 
-            if crop_field in crop_fields:
-                image.Mask = matlab.getfield(handles.Pipeline,crop_field)
-            image_set.Providers.append(CellProfiler.Image.VanillaImageProvider(field,image))
-    
-    def AddMatlabObjects(self,handles,object_set):
-        """Add any objects from the handles to the object set
-        You can use this to update the object set after calling a matlab module
-        """
-        matlab = GetMatlabInstance()
-        pipeline_fields = matlab.fields(handles.Pipeline)
-        objects_names = set(object_set.GetObjectNames())
-        segmented_fields = set()
-        unedited_segmented_fields = set()
-        small_removed_segmented_fields = set()
-        for i in range(0,matlab.length(pipeline_fields)[0,0]):
-            field = matlab.cell2mat(pipeline_fields[i])
-            if field.startswith('Segmented'):
-                segmented_fields.add(field)
-            elif field.startswith('UneditedSegmented'):
-                unedited_segmented_fields.add(field)
-            elif field.startswith('SmallRemovedSegmented'):
-                small_removed_segmented_fields.add(field)
-        for field in segmented_fields:
-            objects = CellProfiler.Objects.Objects()
-            objects.Segmented = matlab.getfield(handles.Pipeline,field)
-            unedited_field ='Unedited'+field
-            small_removed_segmented_field = 'SmallRemoved'+field 
-            if unedited_field in unedited_segmented_fields:
-                objects.UneditedSegmented = matlab.getfield(handles.Pipeline,unedited_field)
-            if small_removed_segmented_field in small_removed_segmented_fields:
-                objects.SmallRemovedSegmented = matlab.getfield(handles.Pipeline,small_removed_segmented_field)
-            object_set.AddObjects(objects,field)
-        
     def __read_annotations(self,file):
         """Read and return the annotations and variable revision # from a file
         
@@ -359,12 +427,18 @@ class MatlabModule(AbstractModule):
                     features.append(match.groups()[0])
         return annotations,variable_revision_number,'\n'.join(help),features
 
+    def ModuleClass(self):
+        """The class to instantiate, except for the special case of matlab modules.
+        
+        """
+        return self.ModuleName()
+
     def UpgradeModuleFromRevision(self,variable_revision_number):
         """Rewrite the variables to upgrade the module from the given revision number.
         
         """
         if variable_revision_number != self.TargetVariableRevisionNumber():
-            raise RuntimeError("Module #%d (%s) was saved at revision #%d but current version is %d and no rewrite rules exist"%(self.ModuleNum(),self.ModuleName(),self.VariableRevisionNumber(),self.TargetVariableRevisionNumber()))
+            raise RuntimeError("Module #%d (%s) was saved at revision #%d but current version is %d and no rewrite rules exist"%(self.ModuleNum(),self.ModuleName(),variable_revision_number,self.TargetVariableRevisionNumber()))
         self.__variable_revision_number = variable_revision_number
         return self
     

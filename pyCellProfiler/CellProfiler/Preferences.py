@@ -14,6 +14,17 @@ __python_root = os.path.split(str(CellProfiler.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
 __default_module_directory = os.path.join(__cp_root,'Modules') 
 
+def GetConfig():
+    try:
+        config = wx.Config.Get(False)
+    except wx.PyNoAppError:
+        app = wx.App(0)
+        config = wx.Config.Get(False)
+    if not config:
+        wx.Config.Set(wx.Config('CellProfiler','BroadInstitute','CellProfilerLocal.cfg','CellProfilerGlobal.cfg',wx.CONFIG_USE_LOCAL_FILE))
+        config = wx.Config.Get()
+    return config
+
 def CellProfilerRootDirectory():
     return __cp_root
 
@@ -26,15 +37,18 @@ def ModuleDirectory():
 def ModuleExtension():
     return '.m'
 
-__default_image_directory = os.path.abspath(os.path.curdir)
+DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
+DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
+
 def GetDefaultImageDirectory():
-    return __default_image_directory
+    if not GetConfig().Exists(DEFAULT_IMAGE_DIRECTORY):
+        return os.path.abspath(os.path.curdir)
+    default_image_directory = GetConfig().Read(DEFAULT_IMAGE_DIRECTORY)
+    return default_image_directory
 
 def SetDefaultImageDirectory(path):
-    global __default_image_directory
-    path=str(path)
-    assert os.path.isdir(path),'Default image directory, "%s", is not a directory'%(path)
-    __default_image_directory = path
+    path = str(path)
+    GetConfig().Write(DEFAULT_IMAGE_DIRECTORY,path)
     for listener in __image_directory_listeners:
         if callable(listener):
             listener(ImageDirectoryChangedEvent(path))
@@ -59,16 +73,17 @@ class ImageDirectoryChangedEvent:
     def __init__(self, path):
         self.ImageDirectory = path
 
-__default_output_directory = os.path.abspath(os.path.curdir)
 
 def GetDefaultOutputDirectory():
-    return __default_output_directory
+    if not GetConfig().Exists(DEFAULT_OUTPUT_DIRECTORY):
+        return os.path.abspath(os.path.curdir)
+    default_output_directory = GetConfig().Read(DEFAULT_OUTPUT_DIRECTORY)
+    return default_output_directory
 
 def SetDefaultOutputDirectory(path):
-    global __default_output_directory
     path=str(path)
     assert os.path.isdir(path),'Default output directory, "%s", is not a directory'%(path)
-    __default_output_directory=path
+    GetConfig().Write(DEFAULT_OUTPUT_DIRECTORY,path)
 
 __pixel_size = 1
 

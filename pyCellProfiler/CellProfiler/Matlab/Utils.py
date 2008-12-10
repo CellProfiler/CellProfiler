@@ -31,14 +31,19 @@ def MakeCellStructDType(fields):
     """
     return numpy.dtype([(x,'|O4') for x in fields])
 
+def GetIntFromMatlab(proxy):
+    """Given a proxy to an integer in Matlab, return the integer
+    """
+    return int(GetMatlabInstance().num2str(proxy))
+
 def LoadIntoMatlab(handles):
     """Return a proxy object which is the data structure passed, loaded into Matlab
     """
     (matfd,matpath) = tempfile.mkstemp('.mat')
-    matfh = os.fdopen(matfd,'w')
+    matfh = os.fdopen(matfd,'wb')
     closed = False
     try:
-        scipy.io.matlab.mio.savemat(matfh,handles,format='5')
+        scipy.io.matlab.mio.savemat(matfh,handles,format='5',long_field_names=True)
         matfh.close()
         closed = True
         matlab = GetMatlabInstance()

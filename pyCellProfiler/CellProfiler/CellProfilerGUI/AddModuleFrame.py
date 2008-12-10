@@ -8,6 +8,9 @@ import os
 import re
 import wx
 import CellProfiler.Preferences
+import CellProfiler.Modules
+import CellProfiler.Module
+
 class AddModuleFrame(wx.Frame):
     """The window frame that lets you add modules to a pipeline
     
@@ -73,6 +76,7 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_LISTBOX,self.__onCategorySelected,self.__module_categories_list_box)
         self.Bind(wx.EVT_BUTTON,self.__onAddToPipeline,add_to_pipeline_button)
         self.Bind(wx.EVT_BUTTON,self.__onClose,done_button)
+        self.Bind(wx.EVT_BUTTON,self.__onHelp, module_help_button)
         self.__get_module_files()
         self.__set_categories()
         self.__listeners = []
@@ -115,9 +119,22 @@ class AddModuleFrame(wx.Frame):
                 if not self.__module_dict.has_key(category):
                     self.__module_files.insert(-1,category)
                     self.__module_dict[category] = {}
-                self.__module_dict[category][os.path.splitext(file)[0]] = module_path
+                def loader(ModuleNum, module_path = module_path):
+                    module = CellProfiler.Module.MatlabModule()
+                    module.CreateFromFile(module_path, ModuleNum)
+                    return module
+                self.__module_dict[category][os.path.splitext(file)[0]] = loader
             finally:
                 fid.close()
+        
+        for mc in CellProfiler.Modules.ModuleClasses:
+            def loader(ModuleNum, mc=mc):
+                module = mc()
+                module.SetModuleNum(ModuleNum)
+                module.CreateFromAnnotations()
+                return module
+            module = mc()
+            self.__module_dict[module.Category()][module.ModuleName()] = loader
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)
@@ -139,7 +156,17 @@ class AddModuleFrame(wx.Frame):
         if idx != wx.NOT_FOUND:
             file = self.__module_list_box.GetItems()[idx]
             self.Notify(AddToPipelineEvent(file,self.__module_dict[category][file]))
-            
+    
+    def __onHelp(self,event):
+        category = self.__GetSelectedCategory()
+        idx = self.__module_list_box.GetSelection()
+        if idx != wx.NOT_FOUND:
+            file = self.__module_list_box.GetItems()[idx]
+            loader = self.__module_dict[category][file]
+            module = loader(0)
+            help = module.GetHelp()
+            wx.MessageBox(help)
+        
     def AddListener(self,listener):
         self.__listeners.append(listener)
         
@@ -150,7 +177,16 @@ class AddModuleFrame(wx.Frame):
         for listener in self.__listeners:
             listener(self,event)
 
-class AddToPipelineEvent:
-    def __init__(self,ModuleName,ModulePath):
+class AddToPipelineEvent(object):
+    def __init__(self,ModuleName,ModuleLoader):
         self.ModuleName = ModuleName
-        self.ModulePath = ModulePath
+        self.__module_loader = ModuleLoader
+    
+    def GetModuleLoader(self):
+        """Return a function that, when called, will produce a module
+        
+        The function takes one argument: the module number
+        """
+        return self.__module_loader
+    
+    ModuleLoader = property(GetModuleLoader)

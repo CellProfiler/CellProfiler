@@ -7,13 +7,14 @@ import scipy.io.matlab.mio
 import os
 import CellProfiler.Module
 import CellProfiler.Preferences
-from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun,MakeCellStructDType,LoadIntoMatlab
+from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun,MakeCellStructDType,LoadIntoMatlab,GetIntFromMatlab
 import CellProfiler.VariableChoices
 import CellProfiler.Image
 import CellProfiler.Measurements
 import CellProfiler.Objects
 import tempfile
 import datetime
+import traceback
 
 CURRENT = 'Current'
 NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
@@ -65,6 +66,115 @@ PREFERENCES_DTYPE = MakeCellStructDType([PIXEL_SIZE, DEFAULT_MODULE_DIRECTORY, D
                                          STRIP_PIPELINE, SKIP_ERRORS, DISPLAY_MODE_VALUE, FONT_SIZE,
                                          DISPLAY_WINDOWS])
  
+def AddMatlabImages(handles,image_set):
+    """Add any images from the handles to the image set
+    Generally, the handles have images added as they get returned from a Matlab module.
+    You can use this to update the image set and capture them.
+    """
+    matlab = GetMatlabInstance()
+    pipeline_fields = matlab.fields(handles.Pipeline)
+    provider_set = set([x.Name() for x in image_set.Providers])
+    image_fields = set()
+    crop_fields = set()
+    for i in range(0,int(matlab.length(pipeline_fields)[0,0])):
+        field = matlab.cell2mat(pipeline_fields[i])
+        if field.startswith('CropMask'):
+            crop_fields.add(field)
+        elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
+            continue
+        elif field.startswith('Pathname') or field.startswith('FileList') or field.startswith('Filename'):
+            if not image_set.LegacyFields.has_key(field):
+                value = matlab.getfield(handles.Pipeline,field)
+                if not (isinstance(value,str) or isinstance(value,unicode)):
+                    # The two supported types: string/unicode or cell array of strings
+                    count = matlab.length(value)
+                    new_value = numpy.ndarray((1,count),dtype='object')
+                    for j in range(0,count):
+                        new_value[0,j] = matlab.cell2mat(value[j])
+                    value = new_value 
+                image_set.LegacyFields[field] = value
+        elif not field in provider_set:
+            image_fields.add(field)
+    for field in image_fields:
+        image = CellProfiler.Image.Image()
+        image.Image = matlab.getfield(handles.Pipeline,field)
+        crop_field = 'CropMask'+field
+        if crop_field in crop_fields:
+            image.Mask = matlab.getfield(handles.Pipeline,crop_field)
+        image_set.Providers.append(CellProfiler.Image.VanillaImageProvider(field,image))
+    number_of_image_sets = GetIntFromMatlab(handles.Current.NumberOfImageSets)
+    if (not image_set.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS)) or number_of_image_sets < image_set.LegacyFields[NUMBER_OF_IMAGE_SETS]:
+        image_set.LegacyFields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
+
+def AddMatlabObjects(handles,object_set):
+    """Add any objects from the handles to the object set
+    You can use this to update the object set after calling a matlab module
+    """
+    matlab = GetMatlabInstance()
+    pipeline_fields = matlab.fields(handles.Pipeline)
+    objects_names = set(object_set.GetObjectNames())
+    segmented_fields = set()
+    unedited_segmented_fields = set()
+    small_removed_segmented_fields = set()
+    for i in range(0,int(matlab.length(pipeline_fields)[0,0])):
+        field = matlab.cell2mat(pipeline_fields[i])
+        if field.startswith('Segmented'):
+            segmented_fields.add(field)
+        elif field.startswith('UneditedSegmented'):
+            unedited_segmented_fields.add(field)
+        elif field.startswith('SmallRemovedSegmented'):
+            small_removed_segmented_fields.add(field)
+    for field in segmented_fields:
+        object_name = field.replace('Segmented','')
+        if object_name in object_set.GetObjectNames():
+            continue
+        objects = CellProfiler.Objects.Objects()
+        objects.Segmented = matlab.getfield(handles.Pipeline,field)
+        unedited_field ='Unedited'+field
+        small_removed_segmented_field = 'SmallRemoved'+field 
+        if unedited_field in unedited_segmented_fields:
+            objects.UneditedSegmented = matlab.getfield(handles.Pipeline,unedited_field)
+        if small_removed_segmented_field in small_removed_segmented_fields:
+            objects.SmallRemovedSegmented = matlab.getfield(handles.Pipeline,small_removed_segmented_field)
+        object_set.AddObjects(objects,object_name)
+
+def AddMatlabMeasurements(handles, measurements):
+    """Get measurements made by Matlab and put them into our Python measurements object
+    """
+    matlab = GetMatlabInstance()
+    measurement_fields = matlab.fields(handles.Measurements)
+    for i in range(0,int(matlab.length(measurement_fields)[0,0])):
+        field = matlab.cell2mat(measurement_fields[i])
+        object_measurements = matlab.getfield(handles.Measurements,field)
+        object_fields = matlab.fields(object_measurements)
+        for j in range(0,int(matlab.length(object_fields)[0,0])):
+            feature = matlab.cell2mat(object_fields[j])
+            if not measurements.HasCurrentMeasurements(field,feature):
+                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.ImageSetNumber])
+                if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
+                    # It's either not a numpy array (it's a string) or it's not the empty numpy array
+                    # so add it to the measurements
+                    measurements.AddMeasurement(field,feature,value)
+
+def AddAllMeasurements(handles, measurements):
+    """Add all measurements from our measurements object into the numpy structure passed
+    
+    """
+    measurements_dtype = MakeCellStructDType(measurements.GetObjectNames())
+    npy_measurements = numpy.ndarray((1,1),dtype=measurements_dtype)
+    handles[MEASUREMENTS]=npy_measurements
+    for object_name in measurements.GetObjectNames():
+        object_dtype = MakeCellStructDType(measurements.GetFeatureNames(object_name))
+        object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
+        npy_measurements[object_name][0,0] = object_measurements
+        for feature_name in measurements.GetFeatureNames(object_name):
+            feature_measurements = numpy.ndarray((1,measurements.ImageSetNumber+1),dtype='object')
+            object_measurements[feature_name][0,0] = feature_measurements
+            for i in range(0,measurements.ImageSetNumber+1):
+                data = measurements.GetCurrentMeasurement(object_name,feature_name)
+                if data != None:
+                    feature_measurements[0,i] = data
+
 class Pipeline:
     """A pipeline represents the modules that a user has put together
     to analyze their images.
@@ -85,7 +195,9 @@ class Pipeline:
         Settings = handles[SETTINGS][0,0]
         module_names = Settings[MODULE_NAMES]
         module_count = module_names.shape[1]
-        for ModuleNum,module_name in zip(range(1,module_count+1),module_names):
+        for ModuleNum in range(1,module_count+1):
+            idx = ModuleNum-1
+            module_name = module_names[0,idx][0]
             module = self.InstantiateModule(module_name)
             module.CreateFromHandles(handles, ModuleNum)
             self.__modules.append(module)
@@ -97,9 +209,7 @@ class Pipeline:
             parts     = module_name.split('.')
             pkg_name  = '.'.join(parts[:-1])
             pkg       = __import__(pkg_name)
-            py_module = getattr(pkg,parts[-2])
-            py_class  = getattr(py_module,parts[-1])
-            module    = py_class()
+            module    = eval("%s()"%(module_name))
         else:
             module = CellProfiler.Module.MatlabModule()
         return module
@@ -138,6 +248,17 @@ class Pipeline:
         * Pipeline - filled in from the image set (TO_DO)
         Returns the handles proxy
         """
+        handles = self.BuildMatlabHandles(image_set, object_set, measurements)
+        mat_handles = LoadIntoMatlab(handles)
+        
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        if not handles.has_key(MEASUREMENTS):
+            mat_handles.Measurements = matlab.struct()
+        if not handles.has_key(PIPELINE):
+            mat_handles.Pipeline = matlab.struct()
+        return mat_handles
+    
+    def BuildMatlabHandles(self, image_set = None, object_set = None, measurements=None):
         handles = self.SaveToHandles()
         image_tools_dir = os.path.join(CellProfiler.Preferences.CellProfilerRootDirectory(),'ImageTools')
         image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
@@ -150,12 +271,12 @@ class Pipeline:
             
         current = numpy.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
         handles[CURRENT]=current
-        current[NUMBER_OF_IMAGE_SETS][0,0]     = 1
-        current[SET_BEING_ANALYZED][0,0]       = 1
-        current[NUMBER_OF_MODULES][0,0]        = len(self.__modules)
-        current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = 1
+        current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.LegacyFields[NUMBER_OF_IMAGE_SETS]) or 1]
+        current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.ImageSetNumber + 1) or 1]
+        current[NUMBER_OF_MODULES][0,0]        = [len(self.__modules)]
+        current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = [1]
         current[TIME_STARTED][0,0]             = str(datetime.datetime.now())
-        current[STARTING_IMAGE_SET][0,0]       = 1
+        current[STARTING_IMAGE_SET][0,0]       = [1]
         current[STARTUP_DIRECTORY][0,0]        = CellProfiler.Preferences.CellProfilerRootDirectory()
         current[DEFAULT_OUTPUT_DIRECTORY][0,0] = CellProfiler.Preferences.GetDefaultOutputDirectory()
         current[DEFAULT_IMAGE_DIRECTORY][0,0]  = CellProfiler.Preferences.GetDefaultImageDirectory()
@@ -172,8 +293,8 @@ class Pipeline:
         preferences[LABEL_COLOR_MAP][0,0]          = 'jet'
         preferences[STRIP_PIPELINE][0,0]           = 'Yes'                  # TODO - get from preferences
         preferences[SKIP_ERRORS][0,0]              = 'No'                   # TODO - get from preferences
-        preferences[DISPLAY_MODE_VALUE][0,0]       = 1                      # TODO - get from preferences
-        preferences[FONT_SIZE][0,0]                = 10                     # TODO - get from preferences
+        preferences[DISPLAY_MODE_VALUE][0,0]       = [1]                    # TODO - get from preferences
+        preferences[FONT_SIZE][0,0]                = [10]                   # TODO - get from preferences
         preferences[DISPLAY_WINDOWS][0,0]          = [1 for module in self.__modules] # TODO - UI allowing user to choose whether to display a window
         
         images = {}
@@ -184,6 +305,10 @@ class Pipeline:
                     images[provider.Name()]=image.Image
                 if image.Mask != None:
                     images['CropMask'+provider.Name()]=image.Mask
+            for key,value in image_set.LegacyFields.iteritems():
+                if key != NUMBER_OF_IMAGE_SETS:
+                    images[key]=value
+                
         if object_set:
             for name,objects in object_set.AllObjects:
                 images['Segmented'+name]=objects.Segmented
@@ -191,6 +316,7 @@ class Pipeline:
                     images['UneditedSegmented'+name] = objects.UneditedSegmented
                 if objects.HasSmallRemovedSegmented():
                     images['SmallRemovedSegmented'+name] = objects.SmallRemovedSegmented
+                    
         if len(images):
             pipeline_dtype = MakeCellStructDType(images.keys())
             pipeline = numpy.ndarray((1,1),dtype=pipeline_dtype)
@@ -210,18 +336,10 @@ class Pipeline:
                 for feature_name in measurements.GetFeatureNames(object_name):
                     feature_measurements = numpy.ndarray((1,measurements.ImageSetNumber+1),dtype='object')
                     object_measurements[feature_name][0,0] = feature_measurements
-                    feature_measurements.fill(numpy.ndarray((0,),dtype=numpy.float64))
                     data = measurements.GetCurrentMeasurement(object_name,feature_name)
+                    feature_measurements.fill(numpy.ndarray((0,),dtype=numpy.float64))
                     if data != None:
                         feature_measurements[0,measurements.ImageSetNumber] = data
-        
-        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
-        handles = LoadIntoMatlab(handles)
-        
-        if no_measurements:
-            handles.Measurements = matlab.struct()
-        if not len(images):
-            handles.Pipeline = matlab.struct()
         return handles
     
     def Run(self):
@@ -234,38 +352,41 @@ class Pipeline:
         DisplaySize = (1024,768)
         image_set_list = CellProfiler.Image.ImageSetList()
         measurements = CellProfiler.Measurements.Measurements()
+        
+        for module in self.Modules():
+            try:
+                module.PrepareRun(self, image_set_list)
+            except Exception,instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance,module)
+                self.NotifyListeners(event)
+                if event.CancelRun:
+                    return None
+            
         first_set = True
-        while measurements.ImageSetNumber==0 or image_set_list.Count()>measurements.ImageSetNumber:
+        while first_set or \
+            image_set_list.Count()>measurements.ImageSetNumber+1 or \
+            (image_set_list.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS) and image_set_list.LegacyFields[NUMBER_OF_IMAGE_SETS] > measurements.ImageSetNumber+1):
             if not first_set:
                 measurements.NextImageSet()
             NumberofWindows = 0;
             SlotNumber = 0
+            object_set = CellProfiler.Objects.ObjectSet()
+            image_set = image_set_list.GetImageSet(measurements.ImageSetNumber)
             for module in self.Modules():
-                handles.Current.CurrentModuleNumber = str(module.ModuleNum())
-                if handles.Current.SetBeingAnalyzed == 1:
-                    figure_field = 'FigureNumberForModule%d'%(module.ModuleNum())
-                    if handles.Preferences.DisplayWindows[SlotNumber] == 0:
-                        # Make up a fake figure for the module if we're not displaying its window
-                        unused_figure_handle = math.ceil(max(matlab.findobj()))+1 
-                        handles.Current = matlab.setfield(handles.Current,figure_field,unused_figure_handle)
-                        figure = unused_figure_handle
-                    else:
-                        NumberofWindows = NumberofWindows+1;
-                        LeftPos = DisplaySize.width * ((NumberofWindows-1)%12)/12;
-                        figure = matlab.CPfigure(handles,'',
-                                                 'Name','%s Display, cycle # '%(module.ModuleName()),
-                                                 'Position',[LeftPos,DisplaySize.height-522, 560, 442])
-                        handles.Current = matlab.setfield(handles.Current, figure_field, figure)
                 module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
                 failure = 1
                 try:
-                    handles = module.Run(handles)
+                    module.Run(self,image_set,object_set,measurements)
                     failure = 0
                 except Exception,instance:
-                    self.__frame.DisplayError('Failed during run of module %s (module # %d)'%(module.ModuleName(),module.ModuleNum()),instance)
+                    traceback.print_exc()
+                    event = RunExceptionEvent(instance,module)
+                    self.NotifyListeners(event)
+                    if event.CancelRun:
+                        return None
                 if module.ModuleName() != 'Restart':
-                    handles = matlab.CPaddmeasurements(handles,'Image',module_error_measurement,failure);
-                SlotNumber+=1
+                    measurements.AddMeasurement('Image',module_error_measurement,failure);
             first_set = False
         return measurements
 
@@ -324,19 +445,18 @@ class Pipeline:
         assert module.ModuleNum()==ModuleNum,'Misnumbered module. Expected %d, got %d'%(ModuleNum,module.ModuleNum())
         return module
     
-    def AddModule(self,file_name,ModuleNum):
+    def AddModule(self,new_module):
         """Insert a module into the pipeline with the given module #
         
         Insert a module into the pipeline with the given module #. 
         'file_name' - the path to the file containing the variables for the module.
         ModuleNum - the one-based index for the placement of the module in the pipeline
         """
-        new_module = CellProfiler.Module.MatlabModule()
-        new_module.CreateFromFile(file_name, ModuleNum)
+        ModuleNum = new_module.ModuleNum()
         idx = ModuleNum-1
         self.__modules = self.__modules[:idx]+[new_module]+self.__modules[idx:]
-        for module in self.__modules[idx+1:]:
-            module.SetModuleNum(module.ModuleNum())
+        for module,mn in zip(self.__modules[idx+1:],range(ModuleNum+1,len(self.__modules)+1)):
+            module.SetModuleNum(mn)
         self.__HookModuleVariables(new_module)
         self.NotifyListeners(ModuleAddedPipelineEvent(ModuleNum))
     
@@ -480,5 +600,17 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
         
     def EventType(self):
         return "Module deleted"
+
+class RunExceptionEvent(AbstractPipelineEvent):
+    """An exception was caught during a pipeline run
+    
+    """
+    def __init__(self,error,module):
+        self.Error     = error
+        self.CancelRun = True
+        self.Module    = module
+    
+    def EventType(self):
+        return "Pipeline run exception"
 
     

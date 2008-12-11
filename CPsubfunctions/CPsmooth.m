@@ -73,9 +73,9 @@ if (SizeOfSmoothingFilter >= LARGESIZE_OF_SMOOTHINGFILTER) && HasMask == 0
     original_col = size(OrigImage,2);
     OrigImage = imresize(OrigImage, ResizingFactor);
     SizeOfSmoothingFilter = LARGESIZE_OF_SMOOTHINGFILTER; % equal to SizeOfSmoothingFilter * ResizingFactor;
-    Resized = 1
+    Resized = 1;
 else
-    Resized = 0
+    Resized = 0;
 end
 
 switch lower(SmoothingMethod)

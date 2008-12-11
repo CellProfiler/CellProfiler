@@ -345,11 +345,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+CurrentColoredLabelImage = label2rgb(CurrentIndexedLabelImage, LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
+    
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
     % Create colored images
     % (1) Colored label image of current objects
-    CurrentColoredLabelImage = label2rgb(CurrentIndexedLabelImage, LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
     CurrentColoredPerimImage = label2rgb(CPlabelperim(CurrentIndexedLabelImage),LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
     % (2) Colored perimeter image of current and previous objects
     ColoredPerimeterImage = cast(repmat(255*double(CPlabelperim(PreviousIndexedLabelImage) > 0),[1 1 3]),class(CurrentColoredPerimImage));
@@ -405,7 +406,7 @@ TrackObjInfo.Current.Headers = CurrHeaders;
 
 % Save the image of the tracked objects (if desired)
 if ~strcmp(DataImage,'Do not use')
-    handles.Pipeline.(DataImage) = CurrentColoredLabelImage;
+    handles.Pipeline.(DataImage) = double(CurrentColoredLabelImage);
 end
 
 % Saves the measurements of each tracked object

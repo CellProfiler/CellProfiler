@@ -406,7 +406,7 @@ TrackObjInfo.Current.Headers = CurrHeaders;
 
 % Save the image of the tracked objects (if desired)
 if ~strcmp(DataImage,'Do not use')
-    handles.Pipeline.(DataImage) = double(CurrentColoredLabelImage);
+    handles.Pipeline.(DataImage) = double(CurrentColoredLabelImage/255);
 end
 
 % Saves the measurements of each tracked object

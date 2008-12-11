@@ -348,7 +348,7 @@ drawnow
 CurrentColoredLabelImage = label2rgb(CurrentIndexedLabelImage, LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
     
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber)
+if any(findobj == ThisModuleFigureNumber) || (~any(findobj == ThisModuleFigureNumber) && ~strcmp(DataImage,'Do not use') )
     % Create colored images
     % (1) Colored label image of current objects
     CurrentColoredPerimImage = label2rgb(CPlabelperim(CurrentIndexedLabelImage),LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
@@ -357,10 +357,20 @@ if any(findobj == ThisModuleFigureNumber)
     idx = find(CurrentColoredPerimImage(:));
     ColoredPerimeterImage(idx) = CurrentColoredPerimImage(idx);
 
-    % Activates the appropriate figure window.
-    CPfigure(handles,'Image',ThisModuleFigureNumber);
-    [hImage,hAx] = CPimagesc(CurrentColoredLabelImage,handles,ThisModuleFigureNumber);
-    title(hAx,['Tracked ',ObjectName]);
+    if any(findobj == ThisModuleFigureNumber)
+        % Activates the appropriate figure window
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
+        [ignore,hAx] = CPimagesc(CurrentColoredLabelImage,handles,ThisModuleFigureNumber);
+        title(hAx,['Tracked ',ObjectName]);
+    elseif ~any(findobj == ThisModuleFigureNumber) && ~strcmp(DataImage,'Do not use')
+        % If no figure windows exists, then the user doesn't want any windows 
+        % to be open. We need a window for the capture to work, so create one
+        % but make it invisible
+        ThisModuleFigureNumber = CPfigurehandle(handles);
+        CPfigure(handles,'Image',ThisModuleFigureNumber);
+        set(ThisModuleFigureNumber,'visible','off');
+        [ignore,hAx] = CPimagesc(CurrentColoredLabelImage,handles,ThisModuleFigureNumber);
+    end
 
     % Construct uicontrol which holds images and figure titles 
     if isempty(findobj(ThisModuleFigureNumber,'tag','PopupImage')),
@@ -405,8 +415,26 @@ TrackObjInfo.Current.Labels = CurrentLabels;
 TrackObjInfo.Current.Headers = CurrHeaders;
 
 % Save the image of the tracked objects (if desired)
-if ~strcmp(DataImage,'Do not use')
-    handles.Pipeline.(DataImage) = double(CurrentColoredLabelImage/255);
+if ~strcmp(DataImage,'Do not use')   
+    % Do the screen capture at high-res and resize to original image size.
+    % This will get the image plus any text
+    CapturedImage = CPimcapture(ThisModuleFigureNumber,'img',150);
+    OrigImSize = size(CurrentColoredLabelImage(:,:,1));
+    ResizedCapturedImage = cat(3,   imresize(double(CapturedImage(:,:,1)),OrigImSize),...
+                                    imresize(double(CapturedImage(:,:,2)),OrigImSize),...
+                                    imresize(double(CapturedImage(:,:,3)),OrigImSize))/255; 
+    
+    % Correct for over/under-shoot from interpolation
+    ResizedCapturedImage(ResizedCapturedImage > 1) = 1; 
+    ResizedCapturedImage(ResizedCapturedImage < 0) = 0;
+    
+    % Save to handles
+    handles.Pipeline.(DataImage) = ResizedCapturedImage;
+    
+    if ~any(findobj == ThisModuleFigureNumber)
+        % Destroy the invisible figure created earlier
+        close(ThisModuleFigureNumber);
+    end
 end
 
 % Saves the measurements of each tracked object

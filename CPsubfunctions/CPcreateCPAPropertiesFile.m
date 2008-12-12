@@ -1,10 +1,13 @@
-function CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType)
+function CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType,version)
 
 % $Revision$
 
 % This function produces a CellProfiler Analyst properties file based on
 % the input handles structure.
 
+if version ~= 1 && version ~= 2
+    error('Property file version '+ num2str(version)+' not supported')
+end
 ExportInfo.DataPath = DataPath;
 
 if strcmp(TablePrefix,'Do not use')
@@ -32,12 +35,13 @@ objs = fieldnames(handles.Measurements);
 objs(strcmp(objs,'Image') | strcmp(objs,'Experiment') | strcmp(objs,'Neighbors')) = [];
 supposed_primary_obj = objs{1};
 
+switch lower(DatabaseType),                                                                 % Database Port
+    case 'mysql', db_port = '3306';
+    case 'oracle', db_port = '1521';
+end
 ExportInfo.Entries.db_type = lower(DatabaseType);                                                  % Database Type
 ExportInfo.Entries.db_host = 'imgdb01';                                                            % Database Host Name/IP Address
-switch lower(DatabaseType),                                                                 % Database Port
-    case 'mysql', ExportInfo.Entries.db_port = '3306';
-    case 'oracle', ExportInfo.Entries.db_port = '1521';
-end
+ExportInfo.Entries.db_port = db_port;
 ExportInfo.Entries.db_pwd = '';                                                             % Database Username/Password
 ExportInfo.Entries.db_name = DatabaseName;                                                  % Database Name
 ExportInfo.Entries.db_user = 'cpuser';
@@ -77,7 +81,8 @@ if ~strcmp(ModuleName,'ExportToDatabase')
     % If we aren't being called from the ExportToDatabase module (e.g. a 
     %   datatool), open a window that lets the user choose what to export
     try ExportInfo = PropertiesFileWindow(ExportInfo);
-    catch CPerrordlg(lasterr)
+    catch
+        CPerrordlg(lasterr)
         return
     end
 end
@@ -95,9 +100,98 @@ if fid == -1,
 else
     % Write the file, then close
     fprintf(fid,'#%s\n',[datestr(now,'ddd'),' ',datestr(now,'mmmm dd HH:MM:SS yyyy')]);
-    entries = fieldnames(ExportInfo.Entries);
-    for i = 1:length(entries)
-        fprintf(fid, '%s = %s\n', char(entries{i}),ExportInfo.Entries.(char(entries{i})));
+    if version == 1
+        entries = fieldnames(ExportInfo.Entries);
+        for i = 1:length(entries)
+            fprintf(fid, '%s = %s\n', char(entries{i}),ExportInfo.Entries.(char(entries{i})));
+        end
+    elseif version == 2
+        properties_file = {
+             '# ==============================================',...
+             '#',...
+             '# Classifier 2.0 properties file',...
+             '#',...
+             '# ==============================================',...
+             [],...
+             '# ==== Database Info ====',...
+             sprintf('db_type      = %s',ExportInfo.Entries.db_type),...
+             sprintf('db_port      = %s',ExportInfo.Entries.db_port),...
+             sprintf('db_host      = %s',ExportInfo.Entries.db_host),...
+             sprintf('db_name      = %s',ExportInfo.Entries.db_name),...
+             sprintf('db_user      = %s',ExportInfo.Entries.db_user),...
+             sprintf('db_passwd    = %s',ExportInfo.Entries.db_pwd),...
+             [],...
+             '# ==== Database Tables ====',...
+             sprintf('image_table   = %s',ExportInfo.Entries.spot_tables),...
+             sprintf('object_table  = %s',ExportInfo.Entries.cell_tables),...
+             [],...
+             '# ==== Database Columns ====' ,...
+             sprintf('table_id      = %s',ExportInfo.Entries.uniqueID),...
+             sprintf('image_id      = %s',ExportInfo.Entries.objectID),...
+             sprintf('cell_x_loc    = %s',ExportInfo.Entries.cell_x_loc),...
+             sprintf('cell_y_loc    = %s',ExportInfo.Entries.cell_y_loc),...
+             [],...
+             '# ==== Image Path and File Name Columns ====',...
+             '# Here you specify the DB columns from your "image_table" that specify the image paths and file names.',...
+             '# NOTE: These lists must have equal length!',...
+             sprintf('image_channel_paths = %s',CommaDelimitedList(cellfun(@(x)['Image_',x],names(idx_path),'UniformOutput',0))),...
+             sprintf('image_channel_files = %s',CommaDelimitedList(cellfun(@(x)['Image_',x],names(idx_file),'UniformOutput',0))),...
+             [],...
+             '# Give short names for each of the channels (respectively)...',...
+             sprintf('image_channel_names = %s',CommaDelimitedList(objs)),...
+             [],...
+             '# ==== Image Accesss Info ====',...
+             'image_url_prepend = http://imageweb/images/CPALinks',...
+             [],...
+             '# ==== Dynamic Groups ====',...
+             '# Here you can define groupings to choose from when classifier scores your experiment.  (eg: per-well)',...
+             '# This is OPTIONAL, you may leave "groups = ".',...
+             '# FORMAT:',...
+             '#   groups     =  comma separated list of group names (MUST END IN A COMMA IF THERE IS ONLY ONE GROUP)',...
+             '#   group_XXX  =  MySQL select statement that returns image-keys and group-keys.  This will be associated with the group name "XXX" from above.',...
+             '# EXAMPLE GROUPS:',...
+             '#   groups               =  Well, Gene, Well+Gene,',...
+             '#   group_SQL_Well       =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Per_Image_Table.well FROM Per_Image_Table',...
+             '#   group_SQL_Gene       =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well',...
+             '#   group_SQL_Well+Gene  =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.well, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well',...
+             [],...
+             'groups  =  ',...
+             [],...
+             '# ==== Image Filters ====',...
+             '# Here you can define image filters to let you select objects from a subset of your experiment when training the classifier.',...
+             '# This is OPTIONAL, you may leave "filters = ".',...
+             '# FORMAT:',...
+             '#   filters         =  comma separated list of filter names (MUST END IN A COMMA IF THERE IS ONLY ONE FILTER)',...
+             '#   filter_SQL_XXX  =  MySQL select statement that returns image keys you wish to filter out.  This will be associated with the filter name "XXX" from above.',...
+             '# EXAMPLE FILTERS:',...
+             '#   filters           =  EMPTY, CDKs,',...
+             '#   filter_SQL_EMPTY  =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene="EMPTY"',...
+             '#   filter_SQL_CDKs   =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene REGEXP ''CDK.*''',...
+             [],...
+             'filters  =  ',...
+             [],...
+             '# ==== Meta data ====',...
+             '# What are your objects called?',...
+             '# FORMAT:',...
+             '#   object_name  =  singular object name, plural object name,',...
+             'object_name  =  cell, cells,',...
+             [],...
+             [],...
+             '# ==== Excluded Columns ====',...
+             '# DB Columns the classifier should exclude:',...
+             'classifier_ignore_substrings  =  table_number_key_column, image_number_key_column, object_number_key_column',...
+             [],...
+             '# ==== Other ====',...
+             '# Specify the approximate diameter of your objects in pixels here.',...
+             'image_tile_size   =  50',...
+             [],...
+             '# ==== Internal Cache ====',...
+             '# It shouldn''t be necessary to cache your images in the application, but the cache sizes can be set here.',...
+             '# (Units = 1 image. ie: "image_buffer_size = 100", will cache 100 images before it starts replacing old ones.',...
+             'image_buffer_size = 1',...
+             'tile_buffer_size  = 1'
+         };
+        fprintf(fid,'%s\n',properties_file{:});
     end
     fclose(fid);
 end
@@ -126,141 +220,143 @@ uitag{i} = 'db_type';
 uistring{i} = {'mysql','oracle'};
 uichoice{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the database host name/IP address?';
 uitype{i} = 'edit';
 uitag{i} = 'db_host';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the database port?';
 uitype{i} = 'popupmenu';
 uitag{i} = 'db_port';
 uistring{i} = {'3306','1521'};
 uichoice{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the database name?';
 uitype{i} = 'edit';
 uitag{i} = 'db_name';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the user name for access RDMS (relation database management system)?';
 uitype{i} = 'edit';
 uitag{i} = 'db_user';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the user password for access to the RDMS?';
 uitype{i} = 'edit';
 uitag{i} = 'db_pwd';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the prefix for the per image tables?';
 uitype{i} = 'edit';
 uitag{i} = 'spot_tables';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the prefix for the per object tables?';
 uitype{i} = 'edit';
 uitag{i} = 'cell_tables';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is image identifer?';
 uitype{i} = 'edit';
 uitag{i} = 'uniqueID';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the primary object count column?';
 uitype{i} = 'edit';
 uitag{i} = 'objectCount';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the object identifer?';
 uitype{i} = 'edit';
 uitag{i} = 'objectID';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the name of the information table?';
 uitype{i} = 'edit';
 uitag{i} = 'info_table';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the Web information prepend?';
 uitype{i} = 'edit';
 uitag{i} = 'image_url_prepend';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the image transfer protocol (ITP)';
 uistring{i} = {'http','local','smb','ssh'};
 uitype{i} = 'popupmenu';
 uitag{i} = 'image_transfer_protocol';
 uichoice{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'Image format information. DIB images: Type the width of the images in pixels. 12-bit TIF images encoded as 16-bit: Type Y. All other formats: Type N.';
 uitype{i} = 'edit';
 uitag{i} = 'image_size_info';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the image table column for the path to the Red image? (Note: If you have a color image or a single channel, enter data here)';
-uitype{i} = 'popupmenu';
+uitype{i} = 'edit';
 uitag{i} = 'red_image_path';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is the image table column for the filenames to the Red images? (Note: If you have a color image or a single channel, enter data here)';
-uitype{i} = 'popupmenu';
+uitype{i} = 'edit';
 uitag{i} = 'red_image_col';
 uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
-uitext{i} = 'What is the image table column for the path to the Green image? (Note: If you have two channels, the second channel must do here)';
-uitype{i} = 'popupmenu';
-uitag{i} = 'green_image_path';
-uistring{i} = ExportInfo.Entries.(uitag{i});
+if isfield(ExportInfo.Entries,'green_image_path')
+    i = i+1;
+    uitext{i} = 'What is the image table column for the path to the Green image? (Note: If you have two channels, the second channel must do here)';
+    uitype{i} = 'edit';
+    uitag{i} = 'green_image_path';
+    uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
-uitext{i} = 'What is the image table column for the filenames to the Green images? (Note: If you have a color image or a single channel, enter data here)';
-uitype{i} = 'popupmenu';
-uitag{i} = 'green_image_col';
-uistring{i} = ExportInfo.Entries.(uitag{i});
+    i = i+1;
+    uitext{i} = 'What is the image table column for the filenames to the Green images? (Note: If you have a color image or a single channel, enter data here)';
+    uitype{i} = 'edit';
+    uitag{i} = 'green_image_col';
+    uistring{i} = ExportInfo.Entries.(uitag{i});
+end
+if isfield(ExportInfo.Entries,'blue_image_path')
+    i = i+1;
+    uitext{i} = 'What is the image table column for the path to the Blue image?';
+    uitype{i} = 'edit';
+    uitag{i} = 'blue_image_path';
+    uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
-uitext{i} = 'What is the image table column for the path to the Blue image?';
-uitype{i} = 'popupmenu';
-uitag{i} = 'blue_image_path';
-uistring{i} = ExportInfo.Entries.(uitag{i});
-
-i = 1+1;
-uitext{i} = 'What is the image table column for the filenames to the Blue image?';
-uitype{i} = 'popupmenu';
-uitag{i} = 'blue_image_col';
-uistring{i} = ExportInfo.Entries.(uitag{i});
-
-i = 1+1;
+    i = i+1;
+    uitext{i} = 'What is the image table column for the filenames to the Blue image?';
+    uitype{i} = 'edit';
+    uitag{i} = 'blue_image_col';
+    uistring{i} = ExportInfo.Entries.(uitag{i});
+end
+i = i+1;
 uitext{i} = 'What is is the X coordinate for the primary object center';
 uitype{i} = 'edit';
 uitag{i} = 'cell_x_loc';
-uichoice(11) = ExportInfo.Entries.(uitag{i});
+uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'What is is the Y coordinate for the primary object center';
 uitype{i} = 'edit';
 uitag{i} = 'cell_y_loc';
-uistring(12) = ExportInfo.Entries.(uitag{i});
+uistring{i} = ExportInfo.Entries.(uitag{i});
 
-i = 1+1;
+i = i+1;
 uitext{i} = 'Width of Object Cropping Square';
 uitype{i} = 'edit';
 uitag{i} = 'cell_size';
@@ -287,12 +383,6 @@ uitextwidth = Width*3/4-borderwidth;
 uicontrolwidth = Width*1/4-borderwidth;
 uicontrolheight = 20;
 
-% Determine if a slider is needed
-if Height > (NumberOfEntries+2)*uiheight,
-    SliderRequired = 1;
-else
-    SliderRequired = 0;
-end
 % Center it in the screen
 LeftPos = (ScreenWidth-Width)/2;
 BottomPos = (ScreenHeight-Height)/2;
@@ -304,11 +394,19 @@ PropertiesDisplayPanel = uipanel('parent',PropertiesDisplayFig,'units','pixels',
     'position',[0 borderwidth Width Height-2*borderwidth],...
     'bordertype','none','BackgroundColor',get(PropertiesDisplayFig,'color'));
 
+PanelPosition = get(PropertiesDisplayPanel,'position');
+PanelHeight = PanelPosition(4);
+NumberOfEntriesThatFit = floor(PanelHeight/uitextheight);
+
+% Determine if a slider is needed
+if NumberOfEntriesThatFit < NumberOfEntries,
+    SliderRequired = 1;
+else
+    SliderRequired = 0;
+end
+
 % ...that slides if needed
 if SliderRequired
-    PanelPosition = get(PropertiesDisplayPanel,'position');
-    PanelHeight = PanelPosition(4);
-    NumberOfEntriesThatFit = floor(PanelHeight/uitextheight);
     SliderData.Callback = @PropertiesFileWindow_SliderCallback;
     SliderData.Panel = PropertiesDisplayPanel;
     SliderData.Borderwidth = borderwidth;
@@ -361,7 +459,7 @@ uicontrol(PropertiesDisplayFig,...
     'units','pixels',...
     'KeyPressFcn', @doFigureKeyPress,...
     'position',[(Width/3-ButtonWidth)/3 borderwidth/4 ButtonWidth ButtonHeight],...
-    'Callback','uiresume(fig);',...
+    'Callback','uiresume(gcbf);',...
     'BackgroundColor',get(PropertiesDisplayFig,'color'));
 
 uicontrol(PropertiesDisplayFig,...
@@ -454,3 +552,18 @@ for i = 1:length(h),
 end
 
 set(hObject,'userdata',ExportInfo);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - CommaDelimitedList
+%%% x - cell array of strings
+%%% returns a string composed of the strings, separated by commas
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function result=CommaDelimitedList(x)
+
+if isempty(x)
+    result=[];
+    return
+end 
+y = cellfun(@(x)[x,','],x(:),'UniformOutput',0);
+result = [ y{:}];
+return

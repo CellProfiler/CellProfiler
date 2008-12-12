@@ -127,6 +127,13 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         SavedVarRevNum = 5;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 5      % Create CPA properties file - Yes - V1.0 format or V2.0 format
+        if strncmp(Settings.VariableValues{ModuleNum-Skipped,6},'Y',1)
+            Settings.VariableValues{ModuleNum-Skipped,6} = 'Yes - V1.0 format';
+        end
+        SavedVarRevNum = 6;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

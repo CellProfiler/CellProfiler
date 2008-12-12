@@ -168,12 +168,13 @@ FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
 %textVAR06 = Do you want to create a CellProfiler Analyst properties file?
-%choiceVAR06 = Yes
+%choiceVAR06 = Yes - V1.0 format
+%choiceVAR06 = Yes - V2.0 format
 %choiceVAR06 = No
 WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%%%VariableRevisionNumber = 5
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -229,7 +230,9 @@ if DoWriteSQL,
     CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
     
     if DoWriteCPAPropertiesFile,
-        CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType);
+        re = regexp(WriteProperties,'V(?<number>[0-9]+\.[0-9]+)','names');
+        version = str2double(re.number);
+        CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType, version);
     end
 end
 

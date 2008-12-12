@@ -5,7 +5,7 @@ function handles = StretchAlignCrop(handles)
 %
 % SHORT DESCRIPTION:
 % Stretches, aligns, and crops one image relative to another. Useful for
-% valdiation of hand outlined images.
+% validation of hand outlined images.
 % *************************************************************************
 %
 % This module was written for a specific purpose: to take a larger

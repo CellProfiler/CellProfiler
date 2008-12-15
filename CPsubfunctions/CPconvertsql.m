@@ -442,7 +442,7 @@ end
 % column headers + 2 (since the ImageNumber and ObjectNumber headers
 % aren't included). If this is not the case, such as when the last column(s)
 % of measurements are empty, pad with zeros
-if size(perobjectvals,2) < length(per_object_names) + 2,
+if ~isempty(perobjectvals) && size(perobjectvals,2) < length(per_object_names) + 2,
     perobjectvals(end,length(per_object_names)+2) = 0;
 end
 

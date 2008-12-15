@@ -41,6 +41,7 @@ function handles = CreateBatchFiles(handles)
 % different configurations for batch control, compiled versus
 % interpreted Matlab, access paths, etc. it will probably be necessary
 % to use those files as guides for a locally customized solution.
+% BatchRunner.py requires Python 2.5.2 and the module scipy 0.6 to be installed. 
 %
 % See also MergeOutputFiles, GSBatchProcessing.
 

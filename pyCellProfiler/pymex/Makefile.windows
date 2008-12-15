@@ -1,33 +1,21 @@
-ifeq ($(OS),Windows_NT)
 MEX=mex.bat
 PYTHONPATH=c:/Python25
 PYTHONDIR=
 LDFLAGS=-L$(PYTHONPATH)/libs
 LIBPYTHON=python25
 CC = cl
-PROGRAMS = py_exec.mexmaci py_funcall.mexmaci \
-	embed_mex.mexmaci minimal_mex.mexmaci
-else
-MEX=mex
-PYTHONPATH=/Library/Frameworks/Python.framework/Versions/2.5
-PYTHONDIR=/python2.5
-LDFLAGS=-L/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/config
-LIBPYTHON=python2.5
-CC = gcc
-PROGRAMS = py_exec.mexmaci py_funcall.mexmaci simple_embed \
-	minimal_main embed_mex.mexmaci minimal_mex.mexmaci test_charset \
-	test_record
-endif
- 
+PROGRAMS = py_exec.mexw32 py_funcall.mexw32 \
+	embed_mex.mexw32 minimal_mex.mexw32
+
 CFLAGS=-I$(PYTHONPATH)/include$(PYTHONDIR) -I$(PYTHONPATH)/lib$(PYTHONDIR)/site-packages/numpy/core/include -g
 #LDFLAGS=-L/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/config `python -c "import distutils.sysconfig; print distutils.sysconfig.get_config_var('LINKFORSHARED')"`
 
 all: $(PROGRAMS)
 
-py_exec.mexmaci: py_exec.c pymex.c
+py_exec.mexw32: py_exec.c pymex.c
 	$(MEX) $(CFLAGS) $+ $(LDFLAGS) -l$(LIBPYTHON)
 
-py_funcall.mexmaci: py_funcall.c pymex.c
+py_funcall.mexw32: py_funcall.c pymex.c
 	$(MEX) $(CFLAGS) $+ $(LDFLAGS) -l$(LIBPYTHON)
 
 simple_embed: simple_embed.c
@@ -36,10 +24,10 @@ simple_embed: simple_embed.c
 minimal_main: minimal_main.c
 	$(CC) -g -O0 $(CFLAGS) -o $@ $+ $(LDFLAGS) -l$(LIBPYTHON)
 
-embed_mex.mexmaci: embed_mex.c pymex.c
+embed_mex.mexw32: embed_mex.c pymex.c
 	$(MEX) $(CFLAGS) $+ $(LDFLAGS) -l$(LIBPYTHON)
 
-minimal_mex.mexmaci: minimal_mex.c pymex.c
+minimal_mex.mexw32: minimal_mex.c pymex.c
 	$(MEX) $(CFLAGS) $+ $(LDFLAGS) -l$(LIBPYTHON)
 
 test_pymex: test_pymex.o pymex_py.o

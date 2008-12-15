@@ -29,7 +29,51 @@ class TestUtils(unittest.TestCase):
         matlab.test = CellProfiler.Matlab.Utils.LoadIntoMatlab({'foo':s})
         self.assertEqual(matlab.test.foo.foo,'Hello')
         self.assertEqual(matlab.test.foo.bar,'World')
+    
+    def test_02_001_EncapsulateString(self):
+        a = CellProfiler.Matlab.Utils.EncapsulateString('Hello')
+        self.assertTrue(a.shape == (1,))
+        self.assertTrue(a.dtype.kind == 'S')
+        self.assertTrue(a[0] == 'Hello')
         
+    def test_02_001_EncapsulateUnicode(self):
+        a = CellProfiler.Matlab.Utils.EncapsulateString(u'Hello')
+        self.assertTrue(a.shape == (1,))
+        self.assertTrue(a.dtype.kind == 'U')
+        self.assertTrue(a[0] == u'Hello')
+        
+    def test_02_01_EncapsulateCell(self):
+        cell = numpy.ndarray((1,1),dtype=object)
+        cell[0,0] = u'Hello, world'
+        CellProfiler.Matlab.Utils.EncapsulateStringsInArrays(cell)
+        self.assertTrue(isinstance(cell[0,0],numpy.ndarray))
+        self.assertTrue(cell[0,0][0] == u'Hello, world')
+    
+    def test_02_02_EncapsulateStruct(self):
+        struct = numpy.ndarray((1,1),dtype=[('foo',object)])
+        struct['foo'][0,0] = u'Hello, world'
+        CellProfiler.Matlab.Utils.EncapsulateStringsInArrays(struct)
+        self.assertTrue(isinstance(struct['foo'][0,0],numpy.ndarray))
+        self.assertTrue(struct['foo'][0,0][0] == u'Hello, world')
+    
+    def test_02_03_EncapsulateCellInStruct(self):
+        struct = numpy.ndarray((1,1),dtype=[('foo',object)])
+        cell = numpy.ndarray((1,1),dtype=object)
+        cell[0,0] = u'Hello, world'
+        struct['foo'][0,0] = cell
+        CellProfiler.Matlab.Utils.EncapsulateStringsInArrays(struct)
+        self.assertTrue(isinstance(cell[0,0],numpy.ndarray))
+        self.assertTrue(cell[0,0][0] == u'Hello, world')
+
+    def test_02_04_EncapsulateStructInCell(self):
+        struct = numpy.ndarray((1,1),dtype=[('foo',object)])
+        cell = numpy.ndarray((1,1),dtype=object)
+        cell[0,0] = struct
+        struct['foo'][0,0] = u'Hello, world'
+        CellProfiler.Matlab.Utils.EncapsulateStringsInArrays(cell)
+        self.assertTrue(isinstance(struct['foo'][0,0],numpy.ndarray))
+        self.assertTrue(struct['foo'][0,0][0] == u'Hello, world')
+
 if __name__ == "__main__":
     unittest.main()
         

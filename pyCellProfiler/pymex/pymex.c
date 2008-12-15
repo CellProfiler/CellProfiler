@@ -60,12 +60,170 @@ mexImplementsMapping(PyObject *self, PyObject *args)
      Py_RETURN_FALSE;
 }
 
+static PyObject *
+mexAppendPath(PyObject *self, PyObject *args)
+{
+     PyObject *module=NULL;
+     PyObject *path=NULL;
+     PyObject *path_append=NULL;
+     PyObject *append_arg=NULL;
+     PyObject *value=NULL;
+     char *errmsg;
+     int success = 0;
+
+     VERBOSEPRINT("Entering mexAppendPath\n");
+     if (PySequence_Length(args) != 1) {
+          errmsg = "mexAppendPath takes a string argument\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Has one argument\n");
+     append_arg = PySequence_GetItem(args,0);
+     if (! append_arg) {
+          errmsg = "Failed to get the argument\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Got the argument\n");
+     if ((! PyString_Check(append_arg)) && (! PyUnicode_Check(append_arg))) {
+          errmsg = "Argument is not a string\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Argument was a string\n");
+
+     module = PyImport_ImportModule("sys");
+     if (!module) {
+          errmsg = "Cannot import sys.\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Imported sys\n");
+     path = PyObject_GetAttrString(module,"path");
+     if (!path) {
+          errmsg = "Could not find sys.path.\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Found sys.path\n");
+     path_append = PyObject_GetAttrString(path,"append");
+     if (! path_append) {
+          errmsg = "Could not find sys.path.append.\n";
+          goto exit;
+     }
+     VERBOSEPRINT("Found sys.path.append\n");
+     
+     if (!PyCallable_Check(path_append)) {
+          errmsg = "Cannot call something that is not callable.\n";
+          goto exit;
+     }
+     VERBOSEPRINT("sys.path.append is callable\n");
+     value = PyObject_CallObject(path_append, args);
+     if (! value) {
+          PrintStackTrace();
+          goto exit;
+     }
+     success = 1;
+  exit:
+     if (append_arg)
+          Py_DECREF(append_arg);
+     if (module)
+          Py_DECREF(module);
+     if (path)
+          Py_DECREF(path);
+     if (path_append)
+          Py_DECREF(path_append);
+     if (!success)
+          mexErrMsgTxt(errmsg);
+     return value;
+}
+
+static PyObject *
+mexReload(PyObject *self, PyObject *args)
+{
+     PyObject *builtin=NULL;
+     PyObject *module =NULL;
+     PyObject *reload=NULL;
+     PyObject *value=NULL;
+     PyObject *tuple=NULL;
+     PyObject *module_name=NULL;
+     char *errmsg = NULL;
+
+     VERBOSEPRINT("Entering mexAppendPath\n");
+     if (PySequence_Length(args) != 1) {
+          errmsg = "reload takes a string argument\n";
+          goto exit;
+     }
+     
+     module_name = PySequence_GetItem(args,0);
+     if (! module_name) {
+          errmsg = "Cannot get module name from arguments\n";
+          goto exit;
+     }
+     module = PyImport_Import(module_name);
+     if (! module) {
+          errmsg = "Cannot import module\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Has one argument\n");
+     builtin = PyImport_ImportModule("__builtin__");
+     if (!builtin) {
+          errmsg = "Cannot import __builtin__.\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Got __builtin__ module\n");
+     reload = PyObject_GetAttrString(builtin,"reload");
+     if (!reload) {
+          errmsg = "Could not find reload.\n";
+          goto exit;
+     }
+
+     VERBOSEPRINT("Found reload\n");
+
+     if (!PyCallable_Check(reload)) {
+          errmsg = "Cannot call something that is not callable.\n";
+          goto exit;
+     }
+     VERBOSEPRINT("reload is callable\n");
+
+     tuple = PyTuple_Pack(1,module);
+     if (! tuple) {
+          errmsg = "Could not allocate tuple\n";
+          goto exit;
+     }
+     VERBOSEPRINT("Allocated argument tuple\n");
+     
+     value = PyObject_CallObject(reload, tuple);
+     VERBOSEPRINT("Called reload\n");
+
+  exit:
+     if (module_name) {
+          Py_DECREF(module_name);
+     }
+     if (module) {
+          Py_DECREF(module);
+     }
+     if (builtin) {
+          Py_DECREF(builtin);
+     }
+     if (reload) {
+          Py_DECREF(reload);
+     }
+     if (errmsg) {
+          mexErrMsgTxt(errmsg);
+     }
+     return value;
+}
 static PyMethodDef _pymex_functions[] = {
      { "mexMsg", (PyCFunction) mexMsg, METH_VARARGS, "Displays a message in Matlab" },
      { "mexErrMsg", (PyCFunction) mexErrMsg, METH_VARARGS, "Displays an error message in Matlab" },
      { "mexSetDebugLevel", (PyCFunction) mexSetDebugLevel, METH_VARARGS, "Sets the debug level: 0 = none, higher = more verbose" },
      { "mexGetDebugLevel", (PyCFunction) mexGetDebugLevel, METH_VARARGS, "Returns the current debug level" },
      { "ImplementsMapping", (PyCFunction) mexImplementsMapping, METH_VARARGS, "Returns true if the argument supports the mapping interface" },
+     { "mexAppendPath", (PyCFunction) mexAppendPath, METH_VARARGS, "Appends a path to PYTHONPATH" },
+     { "reload",(PyCFunction) mexReload, METH_VARARGS, "Reloads a module by name rather than by reference" },
      { NULL, NULL, 0}
 };
 
@@ -89,6 +247,8 @@ void pymex_init(void)
                "class __pymex_stdout:\n"
                "    def write(self,message):\n"
                "        pymex.mexMsg(message)\n"
+               "    def flush(self):\n"
+               "        pass\n"
                "sys.stdout = __pymex_stdout()\n"
                "class __pymex_stderr:\n"
                "    def write(self,message):\n"
@@ -158,10 +318,7 @@ static PyObject *mxnumeric_to_python(const mxArray *mx)
      const void *real, *imag;
      int n, dims[2], i;
      PyObject *result;
-     mxClassID classID;
      int npytype = 0;
-     PyArrayObject *a;
-     void **vp;
 
      real = mxGetData(mx);
      imag = mxGetImagData(mx);
@@ -237,7 +394,6 @@ static PyObject *mxstruct_to_python(const mxArray *mx)
      PyArray_Descr *dtype;
      PyObject *result, **itemptr;
      int n, dims[2], nfields, i, k;
-     const mxArray *child;
      
      dtype = mxstruct_dtype(mx);
      n = mxGetNumberOfElements(mx);
@@ -255,7 +411,7 @@ static PyObject *mxstruct_to_python(const mxArray *mx)
 static PyObject *mxcell_to_python(const mxArray *mx)
 {
      PyObject *result, **itemptr, *value;
-     int dims[2], n, i;
+     int dims[2], n, d[2],index;
      const mxArray *cell;
      
      n = mxGetNumberOfElements(mx);
@@ -263,15 +419,18 @@ static PyObject *mxcell_to_python(const mxArray *mx)
      dims[1] = mxGetN(mx);
      result = PyArray_SimpleNew(2, dims, PyArray_OBJECT);
      itemptr = PyArray_DATA(result);
-     for (i = 0; i < n; i++) {
-          cell = mxGetCell(mx, i);
-          if (cell)
-               value = mxarray_to_python(cell);
-          else {
-               value = Py_None;
-               Py_INCREF(value);
+     for (d[0] = 0; d[0] < dims[0]; d[0]++) {
+          for (d[1] = 0; d[1] < dims[1]; d[1]++) {
+               index = mxCalcSingleSubscript(mx, 2, d);
+               cell = mxGetCell(mx, index);
+               if (cell)
+                    value = mxarray_to_python(cell);
+               else {
+                    value = Py_None;
+                    Py_INCREF(value);
+               }
+               *itemptr++ = value;
           }
-          *itemptr++ = value;
      }
      return result;
 }
@@ -684,6 +843,7 @@ static mxArray *mapping_to_mxarray(PyObject *object)
           ERRPRINT("Not enough memory for keys array\n");
           goto exit;
      }
+     VERBOSEPRINT("Allocated memory for keys\n");
      items = PyMapping_Items(object);
      if (! PyList_Check(items)) {
           ERRPRINT("Failed to get list of items from dictionary.\n");
@@ -694,6 +854,7 @@ static mxArray *mapping_to_mxarray(PyObject *object)
      **              a second time to fill in the values for the array
      */
      for (pass = 0; pass < 2; pass++) {
+          VERBOSEPRINT1("Pass %d\n",pass);
           if (pass == 1) {
                /*
                ** Create the array on the second pass (after we have the keys)

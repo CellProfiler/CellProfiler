@@ -12,10 +12,13 @@ import os
 from CellProfiler.Matlab.Utils import GetMatlabInstance
 
 def ModuleDirectory():
-    d = os.path.split(__file__)[0] # ./CellProfiler/pyCellProfiler/CellProfiler/tests
+    d = CellProfiler.Pipeline.__file__
+    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/CellProfiler/Pipeline.py
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/CellProfiler
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
     d = os.path.split(d)[0] # ./CellProfiler
+    if not d:
+        d = '..'
     return os.path.join(d,'Modules')
 
 def GetLoadImagesModule(ModuleNum=0):

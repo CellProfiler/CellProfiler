@@ -12,7 +12,6 @@ import wx
 
 __python_root = os.path.split(str(CellProfiler.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
-__default_module_directory = os.path.join(__cp_root,'Modules') 
 
 def GetConfig():
     try:
@@ -26,13 +25,15 @@ def GetConfig():
     return config
 
 def CellProfilerRootDirectory():
-    return __cp_root
+    if __cp_root:
+        return __cp_root
+    return '..'
 
 def PythonRootDirectory():
     return __python_root
 
 def ModuleDirectory():
-    return __default_module_directory
+    return os.path.join(CellProfilerRootDirectory(), 'Modules')
 
 def ModuleExtension():
     return '.m'

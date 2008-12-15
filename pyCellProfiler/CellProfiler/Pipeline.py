@@ -3,11 +3,12 @@
     $Revision$
 """
 import numpy
-import scipy.io.matlab.mio
+import scipy.io.matlab
 import os
+import sys
 import CellProfiler.Module
 import CellProfiler.Preferences
-from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun,MakeCellStructDType,LoadIntoMatlab,GetIntFromMatlab
+from CellProfiler.Matlab.Utils import NewStringCellArray,GetMatlabInstance,SCellFun,MakeCellStructDType,LoadIntoMatlab,GetIntFromMatlab,EncapsulateStringsInArrays
 import CellProfiler.VariableChoices
 import CellProfiler.Image
 import CellProfiler.Measurements
@@ -38,17 +39,19 @@ STRIP_PIPELINE           = 'StripPipeline'
 DISPLAY_MODE_VALUE       = 'DisplayModeValue'
 DISPLAY_WINDOWS          = 'DisplayWindows'
 FONT_SIZE                = 'FontSize'
+IMAGES                   = 'Images'
 MEASUREMENTS             = 'Measurements'
 PIPELINE                 = 'Pipeline'    
-SETTINGS = 'Settings'
-VARIABLE_VALUES = 'VariableValues'
-VARIABLE_INFO_TYPES = 'VariableInfoTypes'
-MODULE_NAMES = 'ModuleNames'
-PIXEL_SIZE = 'PixelSize'
-NUMBERS_OF_VARIABLES = 'NumbersOfVariables'
+SETTINGS                  = 'Settings'
+VARIABLE_VALUES           = 'VariableValues'
+VARIABLE_INFO_TYPES       = 'VariableInfoTypes'
+MODULE_NAMES              = 'ModuleNames'
+PIXEL_SIZE                = 'PixelSize'
+NUMBERS_OF_VARIABLES      = 'NumbersOfVariables'
 VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
-MODULE_REVISION_NUMBERS = 'ModuleRevisionNumbers'
-MODULE_NOTES = 'ModuleNotes'
+MODULE_REVISION_NUMBERS   = 'ModuleRevisionNumbers'
+MODULE_NOTES              = 'ModuleNotes'
+CURRENT_MODULE_NUMBER     = 'CurrentModuleNumber'
 SETTINGS_DTYPE = numpy.dtype([(VARIABLE_VALUES, '|O4'), 
                             (VARIABLE_INFO_TYPES, '|O4'), 
                             (MODULE_NAMES, '|O4'), 
@@ -155,6 +158,32 @@ def AddMatlabMeasurements(handles, measurements):
                     # It's either not a numpy array (it's a string) or it's not the empty numpy array
                     # so add it to the measurements
                     measurements.AddMeasurement(field,feature,value)
+
+def AddAllImages(handles,image_set, object_set):
+    """ Add all images to the handles structure passed
+    
+    Add images to the handles structure, for example in the Python sandwich.
+    """
+    images = {}
+    for provider in image_set.Providers:
+        name = provider.Name()
+        image = image_set.GetImage(name)
+        images[name] = image.Image
+        if image.HasMask:
+            images['CropMask'+name] = image.Mask
+    
+    for object_name in object_set.ObjectNames:
+        objects = object_set.GetObjects(object_name)
+        images['Segmented'+object_name] = objects.Segmented
+        if objects.HasUneditedSegmented():
+            images['UneditedSegmented'+object_name] = objects.UneditedSegmented
+        if objects.HasSmallRemovedSegmented():
+            images['SmallRemovedSegmented'+object_name] = objects.SmallRemovedSegmented
+    
+    npy_images = numpy.ndarray((1,1),dtype=MakeCellStructDType(images.keys()))
+    for key,image in images.iteritems():
+        npy_images[key][0,0] = image
+    handles[PIPELINE]=npy_images
 
 def AddAllMeasurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
@@ -613,4 +642,164 @@ class RunExceptionEvent(AbstractPipelineEvent):
     def EventType(self):
         return "Pipeline run exception"
 
+def AddHandlesImages(handles,image_set):
+    """Add any images from the handles to the image set
+    Generally, the handles have images added as they get returned from a Matlab module.
+    You can use this to update the image set and capture them.
+    """
+    hpipeline = handles['Pipeline'][0,0]
+    pipeline_fields = hpipeline.dtype.fields.keys()
+    provider_set = set([x.Name() for x in image_set.Providers])
+    image_fields = set()
+    crop_fields = set()
+    for field in pipeline_fields:
+        if field.startswith('CropMask'):
+            crop_fields.add(field)
+        elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
+            continue
+        elif field.startswith('Pathname') or field.startswith('FileList') or field.startswith('Filename'):
+            if not image_set.LegacyFields.has_key(field):
+                value = hpipeline[field]
+                if value.dtype.kind in ['U','S']:
+                    image_set.LegacyFields[field] = value[0]
+                else:
+                    image_set.LegacyFields[field] = value
+        elif not field in provider_set:
+            image_fields.add(field)
+    for field in image_fields:
+        image = CellProfiler.Image.Image()
+        image.Image = hpipeline[field]
+        crop_field = 'CropMask'+field
+        if crop_field in crop_fields:
+            image.Mask = hpipeline[crop_field]
+        image_set.Providers.append(CellProfiler.Image.VanillaImageProvider(field,image))
+    number_of_image_sets = int(handles[CURRENT][0,0][NUMBER_OF_IMAGE_SETS][0,0])
+    if (not image_set.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS)) or number_of_image_sets < image_set.LegacyFields[NUMBER_OF_IMAGE_SETS]:
+        image_set.LegacyFields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
+
+def AddHandlesObjects(handles,object_set):
+    """Add any objects from the handles to the object set
+    You can use this to update the object set after calling a matlab module
+    """
+    hpipeline = handles['Pipeline'][0,0]
+    pipeline_fields = hpipeline.dtype.fields.keys()
+    objects_names = set(object_set.GetObjectNames())
+    segmented_fields = set()
+    unedited_segmented_fields = set()
+    small_removed_segmented_fields = set()
+    for field in pipeline_fields:
+        if field.startswith('Segmented'):
+            segmented_fields.add(field)
+        elif field.startswith('UneditedSegmented'):
+            unedited_segmented_fields.add(field)
+        elif field.startswith('SmallRemovedSegmented'):
+            small_removed_segmented_fields.add(field)
+    for field in segmented_fields:
+        object_name = field.replace('Segmented','')
+        if object_name in object_set.GetObjectNames():
+            continue
+        objects = CellProfiler.Objects.Objects()
+        objects.Segmented = hpipeline[field]
+        unedited_field ='Unedited'+field
+        small_removed_segmented_field = 'SmallRemoved'+field 
+        if unedited_field in unedited_segmented_fields:
+            objects.UneditedSegmented = hpipeline[unedited_field]
+        if small_removed_segmented_field in small_removed_segmented_fields:
+            objects.SmallRemovedSegmented = hpipeline[small_removed_segmented_field]
+        object_set.AddObjects(objects,object_name)
+
+def AddHandlesMeasurements(handles, measurements):
+    """Get measurements made by Matlab and put them into our Python measurements object
+    """
+    measurement_fields = handles[MEASUREMENTS].dtype.fields.keys()
+    set_being_analyzed = handles[CURRENT][0,0][SET_BEING_ANALYZED][0,0]
+    for field in measurement_fields:
+        object_measurements = handles[MEASUREMENTS][0,0][field][0,0]
+        object_fields = object_measurements.dtype.fields.keys()
+        for feature in object_fields:
+            if not measurements.HasCurrentMeasurements(field,feature):
+                value = object_measurements[feature][0,set_being_analyzed-1]
+                if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
+                    # It's either not a numpy array (it's a string) or it's not the empty numpy array
+                    # so add it to the measurements
+                    measurements.AddMeasurement(field,feature,value)
+
+debug_matlab_run = None
+
+def DebugMatlabRun(value):
+    global debug_matlab_run
+    debug_matlab_run = value
+     
+def MatlabRun(handles):
+    """Run a Python module, given a Matlab handles structure
+    """
+    if debug_matlab_run:
+        import wx.py
+        import wx
+        class MyPyCrustApp(wx.App):
+            locals = {}
+            def OnInit(self):
+                wx.InitAllImageHandlers()
+                Frame = wx.Frame(None,-1,"MatlabRun explorer")
+                sizer = wx.BoxSizer()
+                Frame.SetSizer(sizer)
+                crust = wx.py.crust.Crust(Frame,-1,locals=self.locals);
+                sizer.Add(crust,1,wx.EXPAND)
+                Frame.Fit()
+                self.SetTopWindow(Frame)
+                Frame.Show()
+                return 1
+    sys.setrecursionlimit(100)
+    if debug_matlab_run == u"init":
+        app = MyPyCrustApp(0)
+        app.locals["handles"] = handles
+        app.MainLoop()
+        
+    EncapsulateStringsInArrays(handles)
+    if debug_matlab_run == u"enc":
+        app = MyPyCrustApp(0)
+        app.locals["handles"] = handles
+        app.MainLoop()
+    handles = handles[0,0]
+    #
+    # Get all the pieces you need to run a module:
+    # pipeline, image set and set list, measurements and object_set
+    #
+    pipeline = Pipeline()
+    pipeline.CreateFromHandles(handles)
+    image_set_list = CellProfiler.Image.ImageSetList()
+    image_set = image_set_list.GetImageSet(0)
+    measurements = CellProfiler.Measurements.Measurements()
+    object_set = CellProfiler.Objects.ObjectSet()
+    #
+    # Get the values for the current image_set, making believe this is the first image set
+    #
+    AddHandlesImages(handles, image_set)
+    AddHandlesObjects(handles,object_set)
+    AddHandlesMeasurements(handles, measurements)
+    current_module = int(handles[CURRENT][0,0][CURRENT_MODULE_NUMBER][0])
+    #
+    # Get and run the module
+    #
+    module = pipeline.Module(current_module)
+    if debug_matlab_run == u"ready":
+        app = MyPyCrustApp(0)
+        app.locals["handles"] = handles
+        app.MainLoop()
+    module.Run(pipeline, image_set, object_set, measurements)
+    #
+    # Add everything to the handles
+    #
+    AddAllImages(handles, image_set, object_set)
+    AddAllMeasurements(handles, measurements)
+    if debug_matlab_run == u"run":
+        app = MyPyCrustApp(0)
+        app.locals["handles"] = handles
+        app.MainLoop()
+
+    return handles
     
+if __name__ == "__main__":
+    handles = scipy.io.matlab.loadmat('c:\\temp\\mh.mat',struct_as_record=True)['handles']
+    handles[0,0][CURRENT][0,0][CURRENT_MODULE_NUMBER][0] = str(int(handles[0,0][CURRENT][0,0][CURRENT_MODULE_NUMBER][0])+1)
+    MatlabRun(handles)

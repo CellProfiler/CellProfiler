@@ -40,7 +40,7 @@ class AbstractModule:
         self.__variable_revision_number = 0
         self.__module_name = 'unknown'
         self.__annotation_dict = None
-        
+    
     def CreateFromHandles(self,handles,ModuleNum):
         """Fill a module with the information stored in the handles structure for module # ModuleNum 
         
@@ -60,10 +60,13 @@ class AbstractModule:
         variable_values = []
         for i in range(0,variable_count):
             value_cell = Settings['VariableValues'][idx,i]
-            if numpy.product(value_cell.shape) == 0:
-                variable_values.append('')
+            if isinstance(value_cell,numpy.ndarray):
+                if numpy.product(value_cell.shape) == 0:
+                    variable_values.append('')
+                else:
+                    variable_values.append(str(value_cell[0]))
             else:
-                variable_values.append(str(value_cell[0]))
+                variable_values.append(value_cell)
         self.__variables = [CellProfiler.Variable.Variable(self,VariableIdx+1,variable_values[VariableIdx])
                             for VariableIdx in range(0,variable_count)]
         return self.UpgradeModuleFromRevision(variable_revision_number)
@@ -109,7 +112,7 @@ class AbstractModule:
         setting[CellProfiler.Pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.Variables())
         for i in range(0,len(self.Variables())):
             variable = self.Variables()[i]
-            if len(variable.Value()) > 0:
+            if variable.Value() != None and len(variable.Value()) > 0:
                 setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value())
             vn = variable.VariableNumber()
             annotations = self.VariableAnnotations(vn)
@@ -518,5 +521,3 @@ class MatlabModule(AbstractModule):
             return result
         else:
             return []
-            
-    

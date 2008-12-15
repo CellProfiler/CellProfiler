@@ -13,6 +13,7 @@ class Image(object):
     def __init__(self,image=None,mask=None):
         self.__image = None
         self.__mask = None
+        self.__has_mask = False
         if image!=None:
             self.SetImage(image)
         if mask!=None:
@@ -105,9 +106,15 @@ class Image(object):
             m = (m != 0)
         check_consistency(self.__image,m)
         self.__mask = m
-    
+        self.__has_mask = True
+
     Mask=property(GetMask,SetMask)
-    """The mask of the primary image, indicating which pixels are relevant"""
+    
+    def GetHasMask(self):
+        return self.__has_mask
+    
+    HasMask = property(GetHasMask)
+    
     
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
@@ -215,6 +222,13 @@ class ImageSet(object):
         return self.__image_providers
     
     Providers = property(GetProviders)
+    
+    def GetNames(self):
+        """Get the image provider names
+        """
+        return [provider.Name() for provider in Providers]
+    
+    Names = property(GetNames)
     
     def GetLegacyFields(self):
         """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.

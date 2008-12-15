@@ -53,7 +53,37 @@ def LoadIntoMatlab(handles):
             matfh.close()
         os.unlink(matpath)
 
-   
+def EncapsulateStringsInArrays(handles):
+    """Recursively descend through the handles structure, replacing strings as arrays packed with strings
+    
+    This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
+    """
+    if handles.dtype.kind == 'O':
+        # cells - descend recursively
+        flat = handles.flat
+        for i in range(0,len(flat)):
+            if isinstance(flat[i],str) or isinstance(flat[i],unicode):
+                flat[i] = EncapsulateString(flat[i])
+            elif isinstance(flat[i],numpy.ndarray):
+                EncapsulateStringsInArrays(flat[i])
+    elif handles.dtype.fields:
+        # A structure: iterate over all structure elements.
+        for field in handles.dtype.fields.keys():
+            if isinstance(handles[field],str) or isinstance(handles[field],unicode):
+                handles[field] = EncapsulateString(handles[field])
+            elif isinstance(handles[field],numpy.ndarray):
+                EncapsulateStringsInArrays(handles[field])
+
+def EncapsulateString(s):
+    """Encapsulate a string in an array of shape 1 of the length of the string
+    """
+    if isinstance(s,str):
+        result = numpy.ndarray((1,),'<S%d'%(len(s)))
+    else:
+        result = numpy.ndarray((1,),'<U%d'%(len(s)))
+    result[0]=s
+    return result;
+
 def GetMatlabInstance():
     global __MATLAB
     if not globals().has_key('__MATLAB'):

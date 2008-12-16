@@ -1,4 +1,4 @@
 all: tests
 
 tests:
-	python -m CellProfiler.tests
+	python -m CellProfiler.tests --with-nosexunit

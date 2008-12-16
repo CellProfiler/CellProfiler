@@ -1,4 +1,4 @@
 all: tests
 
 tests:
-	python -m CellProfiler.tests --core-target=target/xml-report
+	python -m CellProfiler.tests --with-nosexunit --core-target=target/xml-report

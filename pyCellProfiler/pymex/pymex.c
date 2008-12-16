@@ -845,10 +845,16 @@ static mxArray *mapping_to_mxarray(PyObject *object)
      }
      VERBOSEPRINT("Allocated memory for keys\n");
      items = PyMapping_Items(object);
+     VERBOSEPRINT("Called PyMapping_Items\n");
+     if (! items) {
+          ERRPRINT("PyMapping_Items returned null\n");
+          goto exit;
+     }
      if (! PyList_Check(items)) {
           ERRPRINT("Failed to get list of items from dictionary.\n");
           goto exit;
      }
+     VERBOSEPRINT("Got a list of items\n");
      /*
      ** Loop twice - once to get the keys from the tuples and make the array
      **              a second time to fill in the values for the array

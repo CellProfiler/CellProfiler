@@ -4,7 +4,7 @@ import CellProfiler.Pipeline
 import CellProfiler.Objects
 import CellProfiler.Image
 import CellProfiler.Measurements
-import CellProfiler.Modules.InjectImage
+from CellProfiler.Modules.InjectImage import InjectImage
 import unittest
 import numpy
 import numpy.lib.index_tricks
@@ -197,14 +197,14 @@ class TestPipeline(unittest.TestCase):
     
     def test_06_01_RunPipeline(self):
         x = ExplodingPipeline(self)
-        module = CellProfiler.Modules.InjectImage.InjectImage('OneCell',ImageWithOneCell())
+        module = InjectImage('OneCell',ImageWithOneCell())
         module.SetModuleNum(1)
         x.AddModule(module)
         x.Run()
     
     def test_06_01_RunPipelineWithMatlab(self): 
         x = ExplodingPipeline(self)
-        module = CellProfiler.Modules.InjectImage.InjectImage('OneCell',ImageWithOneCell())
+        module = InjectImage('OneCell',ImageWithOneCell())
         module.SetModuleNum(1)
         x.AddModule(module)
         module = CellProfiler.Module.MatlabModule()

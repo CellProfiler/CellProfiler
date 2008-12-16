@@ -10,7 +10,7 @@ class InjectImage(CellProfiler.Module.AbstractModule):
     """
     def __init__(self, image_name, image):
         CellProfiler.Module.AbstractModule.__init__(self)
-        self.SetModuleName("Template")
+        self.SetModuleName("InjectImage")
         self.__image_name = image_name
         self.__image = image
     

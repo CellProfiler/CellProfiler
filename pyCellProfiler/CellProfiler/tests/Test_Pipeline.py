@@ -13,7 +13,6 @@ from CellProfiler.Matlab.Utils import GetMatlabInstance
 
 def ModuleDirectory():
     d = CellProfiler.Pipeline.__file__
-    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/CellProfiler/Pipeline.py
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/CellProfiler
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
     d = os.path.split(d)[0] # ./CellProfiler

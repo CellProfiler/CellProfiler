@@ -174,6 +174,11 @@ class AbstractModule:
         
         """
         return self.__variables
+
+    def Variable(self,VariableNum):
+        """Reference a variable by its one-based variable number
+        """
+        return self.Variables()[VariableNum-1]
     
     def SetVariables(self,variables):
         self.__variables = variables

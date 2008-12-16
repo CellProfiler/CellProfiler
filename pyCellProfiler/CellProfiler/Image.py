@@ -226,7 +226,7 @@ class ImageSet(object):
     def GetNames(self):
         """Get the image provider names
         """
-        return [provider.Name() for provider in Providers]
+        return [provider.Name() for provider in self.Providers]
     
     Names = property(GetNames)
     

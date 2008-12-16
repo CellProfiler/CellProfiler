@@ -4,7 +4,7 @@
 import CellProfiler.Module
 import CellProfiler.Image
 import CellProfiler.Preferences
-import PIL
+import PIL.Image
 import os
 import re
 import numpy

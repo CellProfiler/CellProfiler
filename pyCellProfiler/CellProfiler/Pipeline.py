@@ -749,7 +749,7 @@ def MatlabRun(handles):
                 self.SetTopWindow(Frame)
                 Frame.Show()
                 return 1
-    sys.setrecursionlimit(100)
+
     if debug_matlab_run == u"init":
         app = MyPyCrustApp(0)
         app.locals["handles"] = handles
@@ -760,6 +760,7 @@ def MatlabRun(handles):
         app = MyPyCrustApp(0)
         app.locals["handles"] = handles
         app.MainLoop()
+    orig_handles = handles
     handles = handles[0,0]
     #
     # Get all the pieces you need to run a module:
@@ -797,7 +798,7 @@ def MatlabRun(handles):
         app.locals["handles"] = handles
         app.MainLoop()
 
-    return handles
+    return orig_handles
     
 if __name__ == "__main__":
     handles = scipy.io.matlab.loadmat('c:\\temp\\mh.mat',struct_as_record=True)['handles']

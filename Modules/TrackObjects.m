@@ -5,9 +5,9 @@ function handles = TrackObjects(handles)
 %
 % SHORT DESCRIPTION:
 % Allows tracking objects throughout sequential frames of a movie, so that
-% each object has a stable number in the output measurements.
+% each object maintains a unique identity in the output measurements.
 % *************************************************************************
-% This module must be run after the object to be tracked have been 
+% This module must be run after the object to be tracked has been 
 % identified using an Identification module (e.g., IdentifyPrimAutomatic).
 %
 % Settings:
@@ -20,12 +20,15 @@ function handles = TrackObjects(handles)
 %
 %   Overlap - Compare the amount of overlaps between identified objects in 
 %   the previous frame with those in the current frame. The object with the
-%   greatest amount of overlap will be assigned the same label.
+%   greatest amount of overlap will be assigned the same label. Recommended
+%   for movies with high frame rates as compared to object motion.
 %       
 %   Distance - Compare the distance between the centroid of each identified
 %   object in the previous frame with that of the current frame. The 
 %   closest objects to each other will be assigned the same label.
-%   Distances are measured from the perimeter of each object. 
+%   Distances are measured from the perimeter of each object. Recommended
+%   for movies with lower frame rates as compared to object motion, but
+%   the objects are clearly separable.
 %
 %   Measurement - Compare the specified measurement of each object in the 
 %   current frame with that of objects in the previous frame. The object 
@@ -83,9 +86,14 @@ function handles = TrackObjects(handles)
 % Specify a name to give the image showing the tracked objects. This image
 % can be saved with a SaveImages module placed after this module.
 %
+% Additional notes:
+%
 % In the figure window, a popupmenu allows you to display the objects as a
 % solid color or as an outline with the current objects in color and the
 % previous objects in white.
+%
+% Since the movie is processed sequentially by frame, it cannot be broken
+% up into batches for execution on a distributed cluster.
 %
 % See also: Any of the Measure* modules, IdentifyPrimAutomatic
 

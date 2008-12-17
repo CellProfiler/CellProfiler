@@ -2,7 +2,8 @@ function CompileWizard
 % CompileWizard
 % This function, when run in the default CellProfiler path, will produce a
 % file with help information stored in variables to be used in the compiled
-% version of CellProfiler.
+% version of CellProfiler.  It should be called from BuildCellProfiler.m,
+% which manages file handling and the Matlab path.
 % $Revision$
 
 

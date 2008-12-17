@@ -24,7 +24,8 @@ class PipelineController:
         pipeline.AddListener(self.__OnPipelineEvent)
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
-        self.__add_module_frame.AddListener(self.__OnAddToPipeline) 
+        self.__add_module_frame.AddListener(self.__OnAddToPipeline)
+        self.__variable_errors = {} 
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_SAVE_PIPELINE,self.__OnSavePipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_CLEAR_PIPELINE,self.__OnClearPipeline)
@@ -100,9 +101,15 @@ class PipelineController:
                 self.__pipeline.CreateFromHandles(handles['handles'][0,0])
             else:
                 self.__pipeline.CreateFromHandles(handles)
+            self.__ClearErrors()
         except Exception,instance:
             self.__frame.DisplayError('Failed during loading of %s'%(pathname),instance)
 
+    def __ClearErrors(self):
+        for key,error in self.__variable_errors.iteritems():
+            self.__frame.PreferencesView.PopErrorText(error)
+        self.__variable_errors = {}
+        
     def __OnSavePipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         if dlg.ShowModal() == wx.ID_OK:
@@ -115,6 +122,7 @@ class PipelineController:
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.__pipeline.Clear()
+            self.__ClearErrors()
     
     def __OnPipelineEvent(self,caller,event):
         if isinstance(event,CellProfiler.Pipeline.RunExceptionEvent):
@@ -134,6 +142,9 @@ class PipelineController:
     def __OnRemoveModule(self,event):
         selected_modules = self.__GetSelectedModules()
         for module in selected_modules:
+            for variable in module.Variables():
+                if self.__variable_errors.has_key(variable.Key()):
+                    self.__frame.PreferencesView.PopErrorText(self.__variable_errors.pop(variable.Key()))                    
             self.__pipeline.RemoveModule(module.ModuleNum())
             
     def __OnModuleUp(self,event):
@@ -158,10 +169,24 @@ class PipelineController:
         assert isinstance(event,CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent'%(str(event))
         variable = event.GetVariable()
         proposed_value = event.GetProposedValue()
-        if not variable.SetValue(proposed_value):
+        
+        try:
+            variable.SetValue(proposed_value)
+            if self.__variable_errors.has_key(variable.Key()):
+                self.__frame.PreferencesView.PopErrorText(self.__variable_errors.pop(variable.Key()))
+            
+        except ValueError, instance:
+            if self.__variable_errors.has_key(variable.Key()):
+                self.__frame.PreferencesView.PopErrorText(self.__variable_errors.pop(variable.Key()))
+            message = "%s(%d): %s"%(variable.Module().ModuleName(),variable.VariableNumber(),instance.message)
+            self.__frame.PreferencesView.SetErrorText(message)
+            self.__variable_errors[variable.Key()] = message
             event.Cancel()
             
     def OnAnalyzeImages(self,event):
+        if len(self.__variable_errors):
+            wx.MessageBox("Please correct the errors in your pipeline before running.","Can't run pipeline",self.__frame)
+            return
         output_path = self.GetOutputFilePath()
         if output_path:
             measurements = self.RunPipeline()

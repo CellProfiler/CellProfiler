@@ -164,8 +164,8 @@ class InfoGroupVariableChoices(AbstractMutableVariableChoices):
         choices = set()
         for indep in self.__indep_variables:
             if (indep.Module().ModuleNum() < variable.Module().ModuleNum() and
-                indep.Value() != CellProfiler.Variable.DO_NOT_USE):
-                choices.add(indep.Value())
+                indep.Value != CellProfiler.Variable.DO_NOT_USE):
+                choices.add(indep.Value)
         choices = list(choices)
         choices.sort()
         return choices
@@ -196,7 +196,7 @@ class CategoryVariableChoices(AbstractMutableVariableChoices):
         
         """
         choices = [] 
-        object_name = self.__object_variable.Value()
+        object_name = self.__object_variable.Value
         for ModuleNum in range(1,variable.Module().ModuleNum()):
             module = self.__pipeline.Module(ModuleNum)
             for choice in module.GetCategories(self.__pipeline,object_name):
@@ -235,8 +235,8 @@ class MeasurementVariableChoices(AbstractMutableVariableChoices):
         
         """
         choices = []
-        object_name = self.__object_variable.Value()
-        category = self.__category_variable.Value()
+        object_name = self.__object_variable.Value
+        category = self.__category_variable.Value
         for ModuleNum in range(1,variable.Module().ModuleNum()):
             module = self.__pipeline.Module(ModuleNum)
             for choice in module.GetMeasurements(self.__pipeline,object_name,category):

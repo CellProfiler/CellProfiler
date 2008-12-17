@@ -164,6 +164,11 @@ class CPFrame(wx.Frame):
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
         text = error.message + '\n'+text
         wx.MessageBox(text,"Caught exception during operation")
+    
+    def GetPreferencesView(self):
+        return self.__PreferencesView
+    
+    PreferencesView = property(GetPreferencesView)
 
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column

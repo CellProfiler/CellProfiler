@@ -98,13 +98,13 @@ class ModuleView:
                 if (not variable_choices.CanChange() and not variable_choices.CanAcceptOther()
                     and all([x in ['Yes','No'] for x in choices])):
                     control = wx.CheckBox(self.__module_panel,-1)
-                    control.SetValue(variable.Value()=='Yes')
+                    control.SetValue(variable.IsYes)
                     self.__module_panel.Bind(wx.EVT_CHECKBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
                 else:
                     style = (variable_choices.CanAcceptOther() and wx.CB_DROPDOWN) or wx.CB_READONLY
                     if (len(choices)==0 and variable_choices.CanAcceptOther()):
                         choices=['None']
-                    control = wx.ComboBox(self.__module_panel,-1,variable.Value(),
+                    control = wx.ComboBox(self.__module_panel,-1,variable.Value,
                                           choices=choices,
                                           style=style)
                     self.__module_panel.Bind(wx.EVT_COMBOBOX,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable,control),control)
@@ -117,7 +117,7 @@ class ModuleView:
                     if variable_choices.CanAcceptOther():
                         self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable, control),control)
             else:
-                 control = wx.TextCtrl(self.__module_panel,-1,variable.Value())
+                 control = wx.TextCtrl(self.__module_panel,-1,variable.Value)
                  self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__OnCellChange(event, variable,control),control)
             sizer.Add(control,0,wx.EXPAND|wx.ALL,2)
             self.__controls.append(control)
@@ -138,7 +138,7 @@ class ModuleView:
         self.__module_panel.GetTopLevelParent().Layout()
     
     def __OnCellChange(self,event,variable,control):
-        old_value = variable.Value()
+        old_value = variable.Value
         if isinstance(control,wx.CheckBox):
             proposed_value = (control.GetValue() and 'Yes') or 'No'
         else:
@@ -146,7 +146,8 @@ class ModuleView:
         variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
         self.Notify(variable_edited_event)
         if not variable_edited_event.AcceptChange():
-            control.SetValue(old_value)
+            # Currently handled inside the pipeline controller in a less obnoxious fashion
+            pass
     
     def __OnPipelineEvent(self,pipeline,event):
         if (isinstance(event,CellProfiler.Pipeline.PipelineLoadedEvent) or
@@ -159,7 +160,7 @@ class ModuleView:
         control = self.__controls[idx]
         assert isinstance(control,wx.ComboBox)
         control.SetItems(sender.GetChoices(variable))
-        control.SetValue(variable.Value())
+        control.SetValue(variable.Value)
     
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the variable edit controls

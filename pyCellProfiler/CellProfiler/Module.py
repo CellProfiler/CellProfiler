@@ -69,7 +69,8 @@ class AbstractModule:
                 variable_values.append(value_cell)
         self.__variables = [CellProfiler.Variable.Variable(self,VariableIdx+1,variable_values[VariableIdx])
                             for VariableIdx in range(0,variable_count)]
-        return self.UpgradeModuleFromRevision(variable_revision_number)
+        self.UpgradeModuleFromRevision(variable_revision_number)
+        self.OnPostLoad()
     
     def CreateFromAnnotations(self):
         """Create the variables based on the defaults that you can suss from the annotations
@@ -89,7 +90,12 @@ class AbstractModule:
         for key in variable_dict.keys():
             variables[key-1].SetValue(variable_dict[key])
         self.SetVariables(variables)
-        
+        self.OnPostLoad()
+    
+    def OnPostLoad(self):
+        """This is a convenient place to do things to your module after the variables have been loaded or initialized"""
+        pass
+
     def UpgradeModuleFromRevision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
@@ -112,8 +118,8 @@ class AbstractModule:
         setting[CellProfiler.Pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.Variables())
         for i in range(0,len(self.Variables())):
             variable = self.Variables()[i]
-            if variable.Value() != None and len(variable.Value()) > 0:
-                setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value())
+            if variable.Value != None and len(variable.Value) > 0:
+                setting[CellProfiler.Pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.Value)
             vn = variable.VariableNumber()
             annotations = self.VariableAnnotations(vn)
             if annotations.has_key('infotype'):

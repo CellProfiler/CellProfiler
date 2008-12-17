@@ -172,22 +172,22 @@ class LoadImages(CellProfiler.Module.AbstractModule):
     def LoadImages(self):
         """Return true if we're loading images
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value()==FF_INDIVIDUAL_IMAGES
+        return self.Variables()[FILE_FORMAT_VAR-1].Value==FF_INDIVIDUAL_IMAGES
     
     def LoadMovies(self):
         """Return true if we're loading movies
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value() !=FF_INDIVIDUAL_IMAGES
+        return self.Variables()[FILE_FORMAT_VAR-1].Value !=FF_INDIVIDUAL_IMAGES
     
     def LoadChoice(self):
         """Return the way to match against files: MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS or MS_ORDER
         """
-        return self.Variables()[MATCH_STYLE_VAR-1].Value()
+        return self.Variables()[MATCH_STYLE_VAR-1].Value
     
     def AnalyzeSubDirs(self):
         """Return True if we should analyze subdirectories in addition to the root image directory
         """
-        return self.Variables()[ANALYZE_SUB_DIR_VAR-1].Value() == 'Yes'
+        return self.Variables()[ANALYZE_SUB_DIR_VAR-1].IsYes
     
     def CollectFiles(self, dirs=[]):
         """Collect the files that match the filter criteria
@@ -218,7 +218,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
     def ImageDirectory(self):
         """Return the image directory
         """
-        Pathname = self.Variables()[PATHNAME_VAR-1].Value()
+        Pathname = self.Variables()[PATHNAME_VAR-1].Value
         if Pathname[0] == '.':
             if len(Pathname) == 1:
                 return CellProfiler.Preferences.GetDefaultImageDirectory()
@@ -238,9 +238,9 @@ class LoadImages(CellProfiler.Module.AbstractModule):
     def ImageNameVars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR].Value() ]
+        result = [self.Variables()[FIRST_IMAGE_VAR].Value ]
         for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2].Value()
+            value = self.Variables()[FIRST_IMAGE_VAR+i*2].Value
             if value == CellProfiler.Variable.DO_NOT_USE:
                 break
             result += [value]
@@ -249,9 +249,9 @@ class LoadImages(CellProfiler.Module.AbstractModule):
     def TextToFindVars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR-1].Value() ]
+        result = [self.Variables()[FIRST_IMAGE_VAR-1].Value ]
         for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2-1].Value()
+            value = self.Variables()[FIRST_IMAGE_VAR+i*2-1].Value
             if value == CellProfiler.Variable.DO_NOT_USE:
                 break
             result += [value]
@@ -260,7 +260,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
     def TextToExclude(self):
         """Return the text to match against the file name to exclude it from the set
         """
-        return self.Variables()[TEXT_TO_EXCLUDE_VAR-1].Value()
+        return self.Variables()[TEXT_TO_EXCLUDE_VAR-1].Value
     
     def FilterFilename(self, filename):
         """Returns either None or the index of the match variable

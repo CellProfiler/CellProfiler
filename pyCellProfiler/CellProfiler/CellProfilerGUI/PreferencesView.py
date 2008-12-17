@@ -94,6 +94,8 @@ class PreferencesView:
             if len(self.__errors) == 0:
                 self.SetMessageColor(wx.Color(0,0,0))
                 self.SetMessageText(WELCOME_MESSAGE)
+            else:
+                self.SetMessageText(self.__errors.__iter__().next())
         
     def SetMessageColor(self,color):
         self.__status_text.SetForegroundColour(color)

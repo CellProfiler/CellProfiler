@@ -2,5 +2,6 @@
 
 """
 import LoadImages
+import IdentifyPrimAutomatic
 
-ModuleClasses = [LoadImages.LoadImages]
+ModuleClasses = [LoadImages.LoadImages,IdentifyPrimAutomatic.IdentifyPrimAutomatic]

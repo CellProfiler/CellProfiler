@@ -55,7 +55,7 @@ class InjectImage(CellProfiler.Module.AbstractModule):
         image = CellProfiler.Image.Image(self.__image)
         image_set_list.GetImageSet(0).Providers.append(CellProfiler.Image.VanillaImageProvider(self.__image_name,image)) 
 
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run

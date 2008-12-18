@@ -1,6 +1,11 @@
 import CellProfiler.Modules.IdentifyPrimAutomatic as ID
 import CellProfiler.Variable
+import CellProfiler.Image
+import CellProfiler.Objects
+import CellProfiler.Measurements
+import CellProfiler.Pipeline
 import unittest
+import numpy
 
 class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_00_00_Init(self):
@@ -173,5 +178,142 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertFalse(x.TestMode)
         x.Variable(ID.TEST_MODE_VAR).Value = CellProfiler.Variable.YES
         self.assertTrue(x.TestMode)
+
+    def test_02_01_TestOneObject(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.CreateFromAnnotations()
+        x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
+        x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
+        img = OneCellImage()
+        image = CellProfiler.Image.Image(img)
+        image_set_list = CellProfiler.Image.ImageSetList()
+        image_set = image_set_list.GetImageSet(0)
+        image_set.Providers.append(CellProfiler.Image.VanillaImageProvider("my_image",image))
+        object_set = CellProfiler.Objects.ObjectSet()
+        measurements = CellProfiler.Measurements.Measurements()
+        pipeline = CellProfiler.Pipeline.Pipeline()
+        x.Run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.ObjectNames),1)
+        self.assertTrue("my_object" in object_set.ObjectNames)
+        objects = object_set.GetObjects("my_object")
+        segmented = objects.Segmented
+        self.assertTrue(numpy.all(segmented[img>0] == 1))
+        self.assertTrue(numpy.all(img[segmented==1] > 0))
+        self.assertTrue("Image" in measurements.GetObjectNames())
+        self.assertTrue("my_object" in measurements.GetObjectNames())
+        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.GetFeatureNames("Image"))
+        threshold = measurements.GetCurrentMeasurement("Image","Threshold_FinalThreshold_my_object")
+        self.assertTrue(threshold < .5)
+        self.assertTrue("Count_my_object" in measurements.GetFeatureNames("Image"))
+        count = measurements.GetCurrentMeasurement("Image","Count_my_object")
+        self.assertEqual(count,1)
+        self.assertTrue("Location_Center_X" in measurements.GetFeatureNames("my_object"))
+        location_center_x = measurements.GetCurrentMeasurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(location_center_x[0]>8)
+        self.assertTrue(location_center_x[0]<12)
+        self.assertTrue("Location_Center_Y" in measurements.GetFeatureNames("my_object"))
+        location_center_y = measurements.GetCurrentMeasurement("my_object","Location_Center_Y")
+        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_y.shape),1)
+        self.assertTrue(location_center_y[0]>13)
+        self.assertTrue(location_center_y[0]<16)
+
+    def test_02_02_TestTwoObjects(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.CreateFromAnnotations()
+        x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
+        x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
+        img = TwoCellImage()
+        image = CellProfiler.Image.Image(img)
+        image_set_list = CellProfiler.Image.ImageSetList()
+        image_set = image_set_list.GetImageSet(0)
+        image_set.Providers.append(CellProfiler.Image.VanillaImageProvider("my_image",image))
+        object_set = CellProfiler.Objects.ObjectSet()
+        measurements = CellProfiler.Measurements.Measurements()
+        pipeline = CellProfiler.Pipeline.Pipeline()
+        x.Run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.ObjectNames),1)
+        self.assertTrue("my_object" in object_set.ObjectNames)
+        objects = object_set.GetObjects("my_object")
+        self.assertTrue("Image" in measurements.GetObjectNames())
+        self.assertTrue("my_object" in measurements.GetObjectNames())
+        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.GetFeatureNames("Image"))
+        threshold = measurements.GetCurrentMeasurement("Image","Threshold_FinalThreshold_my_object")
+        self.assertTrue(threshold < .6)
+        self.assertTrue("Count_my_object" in measurements.GetFeatureNames("Image"))
+        count = measurements.GetCurrentMeasurement("Image","Count_my_object")
+        self.assertEqual(count,2)
+        self.assertTrue("Location_Center_X" in measurements.GetFeatureNames("my_object"))
+        location_center_x = measurements.GetCurrentMeasurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),2)
+        self.assertTrue(location_center_x[0]>8)
+        self.assertTrue(location_center_x[0]<12)
+        self.assertTrue(location_center_x[1]>28)
+        self.assertTrue(location_center_x[1]<32)
+        self.assertTrue("Location_Center_Y" in measurements.GetFeatureNames("my_object"))
+        location_center_y = measurements.GetCurrentMeasurement("my_object","Location_Center_Y")
+        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_y.shape),2)
+        self.assertTrue(location_center_y[0]>33)
+        self.assertTrue(location_center_y[0]<37)
+        self.assertTrue(location_center_y[1]>13)
+        self.assertTrue(location_center_y[1]<16)
+
+    def test_02_03_TestThresholdRange(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.CreateFromAnnotations()
+        x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
+        x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
+        x.Variable(ID.THRESHOLD_RANGE_VAR).Value = ".7,1"
+        img = TwoCellImage()
+        image = CellProfiler.Image.Image(img)
+        image_set_list = CellProfiler.Image.ImageSetList()
+        image_set = image_set_list.GetImageSet(0)
+        image_set.Providers.append(CellProfiler.Image.VanillaImageProvider("my_image",image))
+        object_set = CellProfiler.Objects.ObjectSet()
+        measurements = CellProfiler.Measurements.Measurements()
+        pipeline = CellProfiler.Pipeline.Pipeline()
+        x.Run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.ObjectNames),1)
+        self.assertTrue("my_object" in object_set.ObjectNames)
+        objects = object_set.GetObjects("my_object")
+        self.assertTrue("Image" in measurements.GetObjectNames())
+        self.assertTrue("my_object" in measurements.GetObjectNames())
+        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.GetFeatureNames("Image"))
+        threshold = measurements.GetCurrentMeasurement("Image","Threshold_FinalThreshold_my_object")
+        self.assertTrue(threshold < .8)
+        self.assertTrue(threshold > .6)
+        self.assertTrue("Count_my_object" in measurements.GetFeatureNames("Image"))
+        count = measurements.GetCurrentMeasurement("Image","Count_my_object")
+        self.assertEqual(count,1)
+        self.assertTrue("Location_Center_X" in measurements.GetFeatureNames("my_object"))
+        location_center_x = measurements.GetCurrentMeasurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(location_center_x[0]>8)
+        self.assertTrue(location_center_x[0]<12)
+        self.assertTrue("Location_Center_Y" in measurements.GetFeatureNames("my_object"))
+        location_center_y = measurements.GetCurrentMeasurement("my_object","Location_Center_Y")
+        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_y.shape),1)
+        self.assertTrue(location_center_y[0]>33)
+        self.assertTrue(location_center_y[0]<36)
+
+def OneCellImage():
+    img = numpy.zeros((25,25))
+    DrawCircle(img,(10,15),5, .5)
+    return img
+
+def TwoCellImage():
+    img = numpy.zeros((50,50))
+    DrawCircle(img,(10,35),5, .8)
+    DrawCircle(img,(30,15),5, .6)
+    return img
     
-        
+def DrawCircle(img,center,radius,value):
+    x,y=numpy.mgrid[0:img.shape[0],0:img.shape[1]]
+    distance = numpy.sqrt((x-center[0])*(x-center[0])+(y-center[1])*(y-center[1]))
+    img[distance<=radius]=value

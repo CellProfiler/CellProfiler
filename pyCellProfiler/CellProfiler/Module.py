@@ -232,13 +232,14 @@ class AbstractModule:
         """
         pass
     
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements,frame=None):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
         image_set    - the images in the image set being processed
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
+        frame        - the parent frame to whatever frame is created. None means don't draw.
         """
         raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
 
@@ -312,7 +313,7 @@ class TemplateModule(AbstractModule):
         """Write the module's state, informally, to a text file
         """
         
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements,frame=None):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -388,7 +389,7 @@ class MatlabModule(AbstractModule):
         finally:
             file.close()
         
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements,frame=None):
         """Run the module in Matlab
         
         """

@@ -48,6 +48,12 @@ class TestImage(unittest.TestCase):
         x.Image = numpy.ones((10,10))
         self.assertRaises(AssertionError,x.SetMask,numpy.ones((5,5)))
     
+    def test_05_01_MaskOf3D(self):
+        """The mask of a 3-d image should be 2-d"""
+        x=CellProfiler.Image.Image()
+        x.Image = numpy.ones((10,10,3))
+        self.assertTrue(x.Mask.ndim==2)
+    
 class TestImageSetList(unittest.TestCase):
     def test_00_00_Init(self):
         x = CellProfiler.Image.ImageSetList()

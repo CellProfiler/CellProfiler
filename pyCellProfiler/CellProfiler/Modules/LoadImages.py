@@ -122,7 +122,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
             providers = [LoadImagesImageProvider(name,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
             image_set.Providers.extend(providers)
         
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module - add the measurements
         
         pipeline     - instance of CellProfiler.Pipeline for this run

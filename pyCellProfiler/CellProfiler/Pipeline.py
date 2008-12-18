@@ -371,7 +371,7 @@ class Pipeline:
                         feature_measurements[0,measurements.ImageSetNumber] = data
         return handles
     
-    def Run(self):
+    def Run(self,frame = None):
         """Run the pipeline
         
         Run the pipeline, returning the measurements made
@@ -406,7 +406,7 @@ class Pipeline:
                 module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
                 failure = 1
                 try:
-                    module.Run(self,image_set,object_set,measurements)
+                    module.Run(self,image_set,object_set,measurements, frame)
                     failure = 0
                 except Exception,instance:
                     traceback.print_exc()
@@ -418,6 +418,54 @@ class Pipeline:
                     measurements.AddMeasurement('Image',module_error_measurement,failure);
             first_set = False
         return measurements
+
+    def ExperimentalRun(self,frame = None):
+        """Run the pipeline - experimental, uses yield
+        
+        Run the pipeline, returning the measurements made
+        """
+        matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()
+        self.SetMatlabPath()
+        DisplaySize = (1024,768)
+        image_set_list = CellProfiler.Image.ImageSetList()
+        measurements = CellProfiler.Measurements.Measurements()
+        
+        for module in self.Modules():
+            try:
+                module.PrepareRun(self, image_set_list)
+            except Exception,instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance,module)
+                self.NotifyListeners(event)
+                if event.CancelRun:
+                    return
+            
+        first_set = True
+        while first_set or \
+            image_set_list.Count()>measurements.ImageSetNumber+1 or \
+            (image_set_list.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS) and image_set_list.LegacyFields[NUMBER_OF_IMAGE_SETS] > measurements.ImageSetNumber+1):
+            if not first_set:
+                measurements.NextImageSet()
+            NumberofWindows = 0;
+            SlotNumber = 0
+            object_set = CellProfiler.Objects.ObjectSet()
+            image_set = image_set_list.GetImageSet(measurements.ImageSetNumber)
+            for module in self.Modules():
+                module_error_measurement = 'ModuleError_%02d%s'%(module.ModuleNum(),module.ModuleName())
+                failure = 1
+                try:
+                    module.Run(self,image_set,object_set,measurements, frame)
+                    failure = 0
+                except Exception,instance:
+                    traceback.print_exc()
+                    event = RunExceptionEvent(instance,module)
+                    self.NotifyListeners(event)
+                    if event.CancelRun:
+                        return
+                if module.ModuleName() != 'Restart':
+                    measurements.AddMeasurement('Image',module_error_measurement,failure);
+                yield measurements
+            first_set = False
 
     def SetMatlabPath(self):
         matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()

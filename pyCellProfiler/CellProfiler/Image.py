@@ -92,7 +92,7 @@ class Image(object):
         """Return the mask (pixels to be considered) for the primary image
         """
         if self.__mask == None and self.__image != None:
-            self.__mask = numpy.ones(self.__image.shape,dtype=numpy.bool)
+            self.__mask = numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
         return self.__mask
     
     def SetMask(self, mask):

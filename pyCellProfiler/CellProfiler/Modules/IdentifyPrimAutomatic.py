@@ -4,7 +4,15 @@
 
 import CellProfiler.Module
 import CellProfiler.Variable
+import CellProfiler.Math.Otsu
+import CellProfiler.Objects
 from CellProfiler.Variable import AUTOMATIC
+import scipy.ndimage
+import matplotlib.backends.backend_wxagg
+import matplotlib.figure
+import matplotlib.cm
+import numpy
+import wx
 
 IMAGE_NAME_VAR                  = 1
 OBJECT_NAME_VAR                 = 2
@@ -501,7 +509,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """Write the module's state, informally, to a text file
         """
         
-    def Run(self,pipeline,image_set,object_set,measurements):
+    def Run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -509,8 +517,88 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
+        #
+        # Ignoring almost everything...
+        #
+        image = image_set.GetImage(self.ImageName)
+        img = image.Image
+        mask = image.Mask
+        if len(img.shape)==3:
+            # cheat - mini grayscale here
+            img = numpy.sum(img,2)/img.shape[2]
+        threshold = CellProfiler.Math.Otsu.Otsu(img,self.MinThreshold,self.MaxThreshold)
+        binary_image = numpy.logical_and((img >= threshold),mask)
+        labeled_image,object_count = scipy.ndimage.label(binary_image)
+        outline_image = labeled_image!=0
+        temp = scipy.ndimage.binary_dilation(outline_image)
+        outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
+        if frame:
+            self.Display(frame,image, labeled_image,outline_image)
+        measurements.AddMeasurement('Image','Count_%s'%(self.ObjectName),object_count)
+        measurements.AddMeasurement('Image','Threshold_FinalThreshold_%s'%(self.ObjectName),threshold)
+        objects = CellProfiler.Objects.Objects()
+        objects.Segmented = labeled_image
+        object_set.AddObjects(objects,self.ObjectName)
+        #
+        # Get the centers of each object - center_of_mass returns a list of two-tuples.
+        #
+        centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
+        centers = numpy.array(centers)
+        centers = centers.reshape((object_count,2))
+        location_center_x = centers[:,0]
+        location_center_y = centers[:,1]
+        measurements.AddMeasurement(self.ObjectName,'Location_Center_X', location_center_x)
+        measurements.AddMeasurement(self.ObjectName,'Location_Center_Y', location_center_y)
 
+    def Display(self, frame, image, labeled_image, outline_image):
+        """Display the image and labeling"""
+        window_name = "CellProfiler(%s:%d)"%(self.ModuleName(),self.ModuleNum())
+        my_frame=frame.FindWindowByName(window_name)
+        if not my_frame:
+            class my_frame_class(wx.Frame):
+                def __init__(self):
+                    wx.Frame.__init__(self,frame,-1,"Identify Primary Automatic",name=window_name)
+                    sizer = wx.BoxSizer()
+                    self.Figure = figure= matplotlib.figure.Figure()
+                    self.Panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.Figure) 
+                    self.SetSizer(sizer)
+                    sizer.Add(self.Panel,1,wx.EXPAND)
+                    self.Bind(wx.EVT_PAINT,self.OnPaint)
+                    self.OrigAxes = self.Figure.add_subplot(2,2,1)
+                    self.OutlinedAxes = self.Figure.add_subplot(2,2,3)
+                    self.LabelAxes = self.Figure.add_subplot(2,2,2)
+                    self.Fit()
+                    self.Show()
+                def OnPaint(self, event):
+                    dc = wx.PaintDC(self)
+                    self.Panel.draw(dc)
+
+            my_frame = my_frame_class()
+            
+        my_frame.OrigAxes.clear()
+        my_frame.OrigAxes.imshow(image.Image)
+        my_frame.OrigAxes.set_title("Original image")
+        
+        my_frame.LabelAxes.clear()
+        my_frame.LabelAxes.imshow(labeled_image,matplotlib.cm.jet)
+        my_frame.LabelAxes.set_title("Image labels")
+        
+        if image.Image.ndim == 2:
+            outline_img = numpy.ndarray(shape=(image.Image.shape[0],image.Image.shape[1],3))
+            outline_img[:,:,0] = image.Image 
+            outline_img[:,:,1] = image.Image 
+            outline_img[:,:,2] = image.Image
+        else:
+            outline_img = image.Image.copy()
+        outline_img[outline_image != 0,0]=1
+        outline_img[outline_image != 0,1]=1 
+        outline_img[outline_image != 0,2]=0 
+        
+        my_frame.OutlinedAxes.clear()
+        my_frame.OutlinedAxes.imshow(outline_img)
+        my_frame.OutlinedAxes.set_title("Outlined image")
+        my_frame.Refresh()
+         
     def GetCategories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         

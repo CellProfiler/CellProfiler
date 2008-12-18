@@ -25,11 +25,14 @@ class PipelineController:
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.AddListener(self.__OnAddToPipeline)
-        self.__variable_errors = {} 
+        self.__variable_errors = {}
+        self.__running_pipeline = None 
+        self.__pipeline_measurements = None
         wx.EVT_MENU(frame,CPFrame.ID_FILE_LOAD_PIPELINE,self.__OnLoadPipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_SAVE_PIPELINE,self.__OnSavePipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_CLEAR_PIPELINE,self.__OnClearPipeline)
         wx.EVT_MENU(frame,CPFrame.ID_FILE_ANALYZE_IMAGES,self.OnAnalyzeImages)
+        wx.EVT_IDLE(frame,self.OnIdle)
     
     def AttachToPipelineListView(self,pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
@@ -189,20 +192,33 @@ class PipelineController:
             return
         output_path = self.GetOutputFilePath()
         if output_path:
-            measurements = self.RunPipeline()
-            if measurements != None:
-                handles = self.__pipeline.BuildMatlabHandles()
-                CellProfiler.Pipeline.AddAllMeasurements(handles, measurements)
-                handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.ImageSetNumber+1)
-                handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.SET_BEING_ANALYZED][0,0] = float(measurements.ImageSetNumber+1)
-                #
-                # For the output file, you have to bury it a little deeper - the root has to have
-                # a single field named "handles"
-                #
-                root = {'handles':numpy.ndarray((1,1),dtype=CellProfiler.Matlab.Utils.MakeCellStructDType(handles.keys()))}
-                for key,value in handles.iteritems():
-                    root['handles'][key][0,0]=value
-                scipy.io.matlab.mio.savemat(output_path,root,format='5',long_field_names=True)
+            if self.__running_pipeline:
+                self.__running_pipeline.close()
+            self.__output_path = output_path
+            self.__running_pipeline = self.__pipeline.ExperimentalRun(self.__frame)
+            
+    def OnIdle(self,event):
+        if self.__running_pipeline:
+            try:
+                self.__pipeline_measurements = self.__running_pipeline.next()
+                event.RequestMore()
+            except StopIteration:
+                self.__running_pipeline = None
+                if self.__pipeline_measurements != None:
+                    measurements = self.__pipeline_measurements
+                    handles = self.__pipeline.BuildMatlabHandles()
+                    CellProfiler.Pipeline.AddAllMeasurements(handles, measurements)
+                    handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.ImageSetNumber+1)
+                    handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.SET_BEING_ANALYZED][0,0] = float(measurements.ImageSetNumber+1)
+                    #
+                    # For the output file, you have to bury it a little deeper - the root has to have
+                    # a single field named "handles"
+                    #
+                    root = {'handles':numpy.ndarray((1,1),dtype=CellProfiler.Matlab.Utils.MakeCellStructDType(handles.keys()))}
+                    for key,value in handles.iteritems():
+                        root['handles'][key][0,0]=value
+                    scipy.io.matlab.mio.savemat(self.__output_path,root,format='5',long_field_names=True)
+                    self.__pipeline_measurements = None
 
 
     def GetOutputFilePath(self):
@@ -234,7 +250,7 @@ class PipelineController:
     def RunPipeline(self):
         """Run the current pipeline, returning the measurements
         """
-        return self.__pipeline.Run()
+        return self.__pipeline.Run(self.__frame)
     
     def SetMatlabPath(self):
         matlab = CellProfiler.Matlab.Utils.GetMatlabInstance()

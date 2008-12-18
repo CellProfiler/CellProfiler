@@ -124,9 +124,17 @@ if ~ strcmp(CenterObjects, 'None'),
     props = regionprops(CenterLabels, 'Centroid');
     Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
 else
-    %%% Find the centroids of the objects
-    props = regionprops(LabelMatrixImage, 'Centroid');
-    Centroids = reshape(round([props(:).Centroid]), [2, max(LabelMatrixImage(:))]);
+    %%% Find the point per object farthest from the edge of the object
+    Perimeters = CPlabelperim(LabelMatrixImage);
+    LabelsWOPerimeters=LabelMatrixImage;
+    LabelsWOPerimeters(Perimeters > 0)=0;
+    Distances = bwdist(LabelsWOPerimeters==0)+random('unif',0,.1,size(LabelMatrixImage));
+    Points = regionprops(LabelsWOPerimeters,Distances,'PixelValues','PixelList');
+    Centroids = zeros(2,max(LabelMatrixImage(:)));
+    for k = 1:length(Points)
+        [ignore,index]=max(Points(k).PixelValues);
+        Centroids(:,k)=Points(k).PixelList(index,:);
+    end
     CenterLabels = full(sparse(Centroids(2,:), Centroids(1,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
 end
 
@@ -136,6 +144,9 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 
+[Horiz, Vert] = meshgrid(1:size(LabelMatrixImage, 2), 1:size(LabelMatrixImage, 1));
+Horiz(LabelMatrixImage == 0) = 0;
+Vert(LabelMatrixImage == 0) = 0;
 %%% Find distance from Centers within Objects
 %%% We include the center objects within the propagate mask, because
 %%% otherwise distances don't propagate out of them.
@@ -168,9 +179,6 @@ MeanPixelFraction = FractionAtDistance ./ (NumberOfPixelsAtDistance ./ repmat(su
 %%% in each ring.
 %%%
 %%% Compute each pixel's delta from the center object's centroid
-[Horiz, Vert] = meshgrid(1:size(LabelMatrixImage, 2), 1:size(LabelMatrixImage, 1));
-Horiz(LabelMatrixImage == 0) = 0;
-Vert(LabelMatrixImage == 0) = 0;
 CentroidHoriz = zeros(size(LabelMatrixImage));
 CentroidHoriz(Mask) = Centroids(1, LabelMatrixImage(LabelMatrixImage > 0));
 CentroidVert = zeros(size(LabelMatrixImage));

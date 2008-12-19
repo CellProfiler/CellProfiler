@@ -72,17 +72,17 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_help,'&Help')
         self.SetMenuBar(self.__menu_bar)
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
-        wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__OnWidgetInspector)
-        wx.EVT_MENU(self,ID_HELP_MODULE,self.__OnHelpModule)
+        wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
+        wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
                                                  (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT)])
         self.SetAcceleratorTable(accelerator_table)
     
-    def __OnWidgetInspector(self, evt):
+    def __on_widget_inspector(self, evt):
         wx.lib.inspection.InspectionTool().Show()
 
-    def __OnHelpModule(self,event):
+    def __on_help_module(self,event):
         modules = self.__PipelineListView.GetSelectedModules()
         filename = self.__get_icon_filename()
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
@@ -132,8 +132,8 @@ class CPFrame(wx.Frame):
                          (self.__ModulePanel,1,wx.EXPAND),
                          (self.__FileListPanel,0,wx.EXPAND),
                          (self.__PreferencesPanel,0,wx.EXPAND)])
-        self.__sizer.SetIgnoreHeight(0,1) # Ignore the best height for the file list panel
-        self.__sizer.SetIgnoreHeight(0,0) # Ignore the best height for the module list panel
+        self.__sizer.set_ignore_height(0,1) # Ignore the best height for the file list panel
+        self.__sizer.set_ignore_height(0,0) # Ignore the best height for the module list panel
         self.SetSizer(self.__sizer)
         self.Layout()
         self.__DirectoryView.SetHeight(self.__PreferencesPanel.GetBestSize()[1])
@@ -155,7 +155,7 @@ class CPFrame(wx.Frame):
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
  
-    def DisplayError(self,message,error):
+    def display_error(self,message,error):
         """Displays an exception in a standardized way
         
         """
@@ -165,10 +165,10 @@ class CPFrame(wx.Frame):
         text = error.message + '\n'+text
         wx.MessageBox(text,"Caught exception during operation")
     
-    def GetPreferencesView(self):
+    def get_preferences_view(self):
         return self.__PreferencesView
     
-    PreferencesView = property(GetPreferencesView)
+    preferences_view = property(get_preferences_view)
 
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column
@@ -186,25 +186,25 @@ class CPSizer(wx.PySizer):
         self.__ignore_width = [[False for j in range(0,rows)] for i in range(0,cols)]
         self.__ignore_height = [[False for j in range(0,rows)] for i in range(0,cols)]
     
-    def SetIgnoreWidth(self,col,row,ignore=True):
+    def set_ignore_width(self,col,row,ignore=True):
         """Don't pay any attention to the minimum width of the item in grid cell col,row
         
         """
         self.__ignore_width[col][row]=ignore
     
-    def GetIgnoreWidth(self,col,row):
+    def get_ignore_width(self,col,row):
         """Return true if we should ignore the minimum width of the item at col,row
         
         """
         return self.__ignore_width[col][row]
     
-    def SetIgnoreHeight(self,col,row,ignore=True):
+    def set_ignore_height(self,col,row,ignore=True):
         """Don't pay any attention to the minimum height of the item in grid cell col,row
         
         """
         self.__ignore_height[col][row]=ignore
     
-    def GetIgnoreHeight(self,col,row):
+    def get_ignore_height(self,col,row):
         """Return true if we should ignore the minimum height of the item at col,row
         
         """
@@ -223,9 +223,9 @@ class CPSizer(wx.PySizer):
         for item in self.GetChildren():
             row,col = divmod(idx,self.__rows)
             size = item.CalcMin()
-            if not self.GetIgnoreWidth(col,row):
+            if not self.get_ignore_width(col,row):
                 col_widths[col]=max(col_widths[col],size[0])
-            if not self.GetIgnoreHeight(col,row):
+            if not self.get_ignore_height(col,row):
                 row_heights[row]=max(row_heights[row],size[1])
             idx+=1
         return (row_heights,col_widths)

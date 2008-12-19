@@ -1,5 +1,5 @@
 import CellProfiler.Modules.IdentifyPrimAutomatic as ID
-import CellProfiler.Modules.InjectImage
+from CellProfiler.Modules.InjectImage import InjectImage
 import CellProfiler.Variable
 import CellProfiler.Image
 import CellProfiler.Objects
@@ -308,7 +308,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     
     def test_03_01_RunInsidePipeline(self):
         pipeline = CellProfiler.Pipeline.Pipeline()
-        inject_image = CellProfiler.Modules.InjectImage.InjectImage("my_image", TwoCellImage())
+        inject_image = InjectImage("my_image", TwoCellImage())
         inject_image.SetModuleNum(1)
         pipeline.AddModule(inject_image)
         ipm = CellProfiler.Modules.IdentifyPrimAutomatic.IdentifyPrimAutomatic()

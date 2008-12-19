@@ -37,7 +37,7 @@ function handles = RescaleIntensity(handles)
 % removing bright pixels above a specified value)
 %
 % To convert 12-bit images saved in 16-bit format to the correct 
-% range, use the settings 0, 0.0625, 0, 0, 1, 1.  The value 0.0625 is equivalent 
+% range, use the settings 0, 0.0625, 0, 1, 0, 1.  The value 0.0625 is equivalent 
 % to 2^12 divided by 2^16, so it will convert a 16 bit image containing 
 % only 12 bits of data to the proper range.
 %

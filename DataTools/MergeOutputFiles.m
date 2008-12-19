@@ -111,6 +111,7 @@ waitbarhandle = CPwaitbar(0,'Merging files...');
 for i = 1:length(FileList)
     % Turn off function handle warning. Presumably due to cluster vs. local named function
     LoadWarning = warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle');
+    fullfile(BatchPath,FileList(i).name)
     SubsetData = load(fullfile(BatchPath,FileList(i).name));
     warning(LoadWarning)
     

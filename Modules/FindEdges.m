@@ -257,8 +257,8 @@ if ~strcmpi(Method,'ratio')
         [EdgedImage, AutoThresh] = edge(OrigImage, Method, [], FourthVariable); %#ok
     end
 
-    if strcmpi(Method,'canny')
-        AutoThresh = [CannyLowThreshold AutoThresh];
+    if strcmpi(Method,'canny') && ~isempty(CannyLowThreshold)
+        AutoThresh = [CannyLowThreshold AutoThresh(2)];
     end
 
     ThresholdUsed = ThresholdCorrectionFactor * AutoThresh;
@@ -340,7 +340,7 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(OutputName) = EdgedImage;
+handles.Pipeline.(OutputName) = double(EdgedImage);
 if ~strcmpi(Method,'ratio') || ~strcmpi(BinaryOrGray,'Grayscale')
     if strcmpi(Method,'canny')        
         handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Edges','OrigThreshold',OutputName),ThresholdUsed(1));

@@ -92,9 +92,6 @@ if (FirstSet == 1)
     if strcmp(SQLchoice,'MySQL')
 
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
-	if fmain == -1,
-	  error(['Cannot open file for writing:' fullfile(OutDir, [DBname '_SETUP.SQL'])]);
-        end
 
         fprintf(fmain, 'CREATE DATABASE IF NOT EXISTS %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);

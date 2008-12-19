@@ -22,7 +22,7 @@ FF_OTHER_MOVIES = 'tif,tiff,flex movies'
 
 DIR_DEFAULT_IMAGE = 'Default Image Directory'
 DIR_DEFAULT_OUTPUT = 'Default Output Directory'
-DIR_OTHER = 'Elsewhere¦'
+DIR_OTHER = 'Elsewhere...'
 
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
@@ -34,12 +34,12 @@ def default_cpimage_name(index):
         return names[index]
     return 'Channel%d'%(index+1)
 
-class LoadImages(CellProfiler.Module.AbstractModule):
+class LoadImages(cpmodule.AbstractModule):
     """Load images from files.  This is the help text that will be displayed
        to the user.
     """
     def __init__(self):
-        super(LoadImages, self).__init__(self)
+        super(LoadImages, self).__init__()
         self.module_name = "LoadImages"
         
         # Settings
@@ -315,7 +315,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
             raise NotImplementedError("Load by order not implemented")
         return None
 
-class LoadImagesImageProvider(CellProfiler.Image.AbstractImageProvider):
+class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename, loading the file as it is requested
     """
     def __init__(self,name,pathname,filename):
@@ -341,4 +341,3 @@ class LoadImagesImageProvider(CellProfiler.Image.AbstractImageProvider):
     
     def GetFullName(self):
         return os.path.join(self.GetPathname(),self.GetFilename())
-

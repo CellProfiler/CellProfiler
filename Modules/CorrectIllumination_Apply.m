@@ -155,6 +155,9 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
+    % Remove uicontrols from last cycle
+    delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
+    
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
@@ -181,9 +184,9 @@ if any(findobj == ThisModuleFigureNumber)
     posy = get(ax2,'Position');
     bgcolor = get(ThisModuleFigureNumber,'Color');
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Min value: ',num2str(min(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Min value: ',num2str(min(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize,'tag','TextUIControl');
     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.08 posx(3)+0.1 0.04],...
-        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Max value: ',num2str(max(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize);
+        'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',['Max value: ',num2str(max(IllumCorrectFunctionImage(:)))],'FontSize',handles.Preferences.FontSize,'tag','TextUIControl');
 
 end
 

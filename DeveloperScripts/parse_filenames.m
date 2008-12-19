@@ -30,7 +30,7 @@ if ~ispc
     files = dir(fullfile(image_dir,'*_image.CSV'));
 %     !cat `ls *_image.CSV | grep image` >image.CSV
 else
-    error('Does not work on PCs yet')
+    warndlg('Parse_filenames may not work on PCs yet(?)')
 end
 
 %% READ IMAGE.CSV FILE
@@ -55,10 +55,20 @@ end
 
 %% PARSE filename
 choice = menu({'Choose the filename construction which matches your files',['Example: ' filename{1}]},...
+    '..._A01_s1...',...
     '..._A01_s1_w2...',...
     'PANDORA_123456789_A01f01d0.TIF');
 switch choice
     case 1
+        %% for filenames of this construction -> "..._A01_s1..."
+        [PreFilename, remain] = strtok(filename,'_');
+        [well, remain] = strtok(remain,'_');
+%         [site, remain] = strtok(remain,'_');
+        for i = length(remain):-1:1
+            s = remain{i};
+            site{i,1} = s(2:3); %#ok<AGROW>
+        end
+    case 2
         %% for filenames of this construction -> "..._A01_s1_w2..."
         [PreFilename, remain] = strtok(filename,'_');
         [well, remain] = strtok(remain,'_');
@@ -67,7 +77,7 @@ switch choice
             w = remain{i};
             wavelength{i,1} = w(2:3); %#ok<AGROW>
         end
-    case 2
+    case 3
         %% for filenames of this construction -> 'PANDORA_123456789_A01f01d0.TIF'
         [PreFilename, remain] = strtok(filename,'_');
         [date, remain] = strtok(remain,'_');
@@ -95,18 +105,27 @@ if ~exist(well_file,'file')
     %% Note: cannot use xlswrite, because Mac's can't run Excel COM server
     %%  nor dlmwrite because it outputs one character at a time
     
-    M = [rowCellArray, colCellArray, site, wavelength];
-    
+    if choice == 1
+        M = [rowCellArray, colCellArray, site];
+    else
+        M = [rowCellArray, colCellArray, site, wavelength];
+    end
+
     %% Sort by image_num
     [image_num_sorted,IDX] = sort(image_num);
     M_sorted = M(IDX,:);
     fid = fopen(well_file,'w');
     for i = 1:size(M_sorted,1)
-       fprintf(fid, '%d,%s,%s,%s,%s\n',image_num_sorted(i),...
-           M_sorted{i,1},M_sorted{i,2},M_sorted{i,3},M_sorted{i,4});
+        if choice == 1
+            fprintf(fid, '%d,%s,%s,%s\n',image_num_sorted(i),...
+                M_sorted{i,1},M_sorted{i,2},M_sorted{i,3});
+        else
+            fprintf(fid, '%d,%s,%s,%s,%s\n',image_num_sorted(i),...
+                M_sorted{i,1},M_sorted{i,2},M_sorted{i,3},M_sorted{i,4});
+        end
     end
     fclose(fid);
-    disp(['DONE!  An image_well_info.csv file was written to the same directory a your *_image.CSV files'])
+    disp('DONE!  An image_well_info.csv file was written to the same directory a your *_image.CSV files')
 else 
     disp(['Cannot write ' well_file ' since it already exists'])
 end

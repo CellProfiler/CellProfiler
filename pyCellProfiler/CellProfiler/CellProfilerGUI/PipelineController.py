@@ -205,20 +205,9 @@ class PipelineController:
             except StopIteration:
                 self.__running_pipeline = None
                 if self.__pipeline_measurements != None:
-                    measurements = self.__pipeline_measurements
-                    handles = self.__pipeline.BuildMatlabHandles()
-                    CellProfiler.Pipeline.AddAllMeasurements(handles, measurements)
-                    handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.ImageSetNumber+1)
-                    handles[CellProfiler.Pipeline.CURRENT][CellProfiler.Pipeline.SET_BEING_ANALYZED][0,0] = float(measurements.ImageSetNumber+1)
-                    #
-                    # For the output file, you have to bury it a little deeper - the root has to have
-                    # a single field named "handles"
-                    #
-                    root = {'handles':numpy.ndarray((1,1),dtype=CellProfiler.Matlab.Utils.MakeCellStructDType(handles.keys()))}
-                    for key,value in handles.iteritems():
-                        root['handles'][key][0,0]=value
-                    scipy.io.matlab.mio.savemat(self.__output_path,root,format='5',long_field_names=True)
+                    self.__pipeline.SaveMeasurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
+                    self.__output_path = None
 
 
     def GetOutputFilePath(self):

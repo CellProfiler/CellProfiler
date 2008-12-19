@@ -267,6 +267,26 @@ class Pipeline:
             module.SaveToHandles(handles)
         return handles
     
+    def SaveMeasurements(self,filename, measurements):
+        """Save the measurements and the pipeline settings in a Matlab file
+        
+        filename     - name of file to create
+        measurements - measurements structure that is the result of running the pipeline
+        """
+        handles = self.BuildMatlabHandles()
+        AddAllMeasurements(handles, measurements)
+        handles[CURRENT][NUMBER_OF_IMAGE_SETS][0,0] = float(measurements.ImageSetNumber+1)
+        handles[CURRENT][SET_BEING_ANALYZED][0,0] = float(measurements.ImageSetNumber+1)
+        #
+        # For the output file, you have to bury it a little deeper - the root has to have
+        # a single field named "handles"
+        #
+        root = {'handles':numpy.ndarray((1,1),dtype=CellProfiler.Matlab.Utils.MakeCellStructDType(handles.keys()))}
+        for key,value in handles.iteritems():
+            root['handles'][key][0,0]=value
+        scipy.io.matlab.mio.savemat(filename,root,format='5',long_field_names=True)
+        
+    
     def LoadPipelineIntoMatlab(self, image_set=None, object_set=None, measurements=None):
         """Load the pipeline into the Matlab singleton and return the handles structure
         

@@ -534,8 +534,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
         if frame:
             self.Display(frame,image, labeled_image,outline_image)
-        measurements.AddMeasurement('Image','Count_%s'%(self.ObjectName),object_count)
-        measurements.AddMeasurement('Image','Threshold_FinalThreshold_%s'%(self.ObjectName),threshold)
+        measurements.AddMeasurement('Image','Count_%s'%(self.ObjectName),numpy.array([object_count],dtype=float))
+        measurements.AddMeasurement('Image','Threshold_FinalThreshold_%s'%(self.ObjectName),numpy.array([threshold],dtype=float))
         objects = CellProfiler.Objects.Objects()
         objects.Segmented = labeled_image
         object_set.AddObjects(objects,self.ObjectName)

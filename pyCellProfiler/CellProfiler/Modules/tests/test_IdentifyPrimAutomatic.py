@@ -1,4 +1,5 @@
 import CellProfiler.Modules.IdentifyPrimAutomatic as ID
+import CellProfiler.Modules.InjectImage
 import CellProfiler.Variable
 import CellProfiler.Image
 import CellProfiler.Objects
@@ -6,6 +7,9 @@ import CellProfiler.Measurements
 import CellProfiler.Pipeline
 import unittest
 import numpy
+import tempfile
+import os
+from CellProfiler.Matlab.Utils import GetMatlabInstance
 
 class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_00_00_Init(self):
@@ -301,6 +305,53 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(numpy.product(location_center_y.shape),1)
         self.assertTrue(location_center_y[0]>33)
         self.assertTrue(location_center_y[0]<36)
+    
+    def test_03_01_RunInsidePipeline(self):
+        pipeline = CellProfiler.Pipeline.Pipeline()
+        inject_image = CellProfiler.Modules.InjectImage.InjectImage("my_image", TwoCellImage())
+        inject_image.SetModuleNum(1)
+        pipeline.AddModule(inject_image)
+        ipm = CellProfiler.Modules.IdentifyPrimAutomatic.IdentifyPrimAutomatic()
+        ipm.SetModuleNum(2)
+        ipm.CreateFromAnnotations() 
+        ipm.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
+        ipm.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
+        pipeline.AddModule(ipm)
+        measurements = pipeline.Run()
+        (matfd,matpath) = tempfile.mkstemp('.mat')
+        matfh = os.fdopen(matfd,'wb')
+        matfh.close()
+        pipeline.SaveMeasurements(matpath, measurements)
+        matlab = GetMatlabInstance()
+        handles = matlab.load(matpath)
+        handles = handles.handles
+        self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,"Image")),'1')
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,"Threshold_FinalThreshold_my_object")),'1')
+        thresholds = handles.Measurements.Image.Threshold_FinalThreshold_my_object
+        threshold = thresholds._[0][0,0]
+        #self.assertTrue(threshold < .6)
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,"Count_my_object")),'1')
+        counts = handles.Measurements.Image.Count_my_object
+        count = counts._[0][0,0]
+        self.assertEqual(count,2)
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,"my_object")),'1')
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_X")),'1')
+        location_center_x = matlab.cell2mat(handles.Measurements.my_object.Location_Center_X[0])
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),2)
+        self.assertTrue(location_center_x[0,0]>8)
+        self.assertTrue(location_center_x[0,0]<12)
+        self.assertTrue(location_center_x[1,0]>28)
+        self.assertTrue(location_center_x[1,0]<32)
+        self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_Y")),'1')
+        location_center_y = matlab.cell2mat(handles.Measurements.my_object.Location_Center_Y[0])
+        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_y.shape),2)
+        self.assertTrue(location_center_y[0,0]>33)
+        self.assertTrue(location_center_y[0,0]<37)
+        self.assertTrue(location_center_y[1,0]>13)
+        self.assertTrue(location_center_y[1,0]<16)
 
 def OneCellImage():
     img = numpy.zeros((25,25))

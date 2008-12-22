@@ -30,7 +30,7 @@ function handles = LoadSingleImage(handles)
 % output folder.
 %
 % If more than four single images must be loaded, more than one Load Single
-% Image module can be run sequentially. Running more than one o f these
+% Image module can be run sequentially. Running more than one of these
 % modules also allows images to be retrieved from different folders.
 %
 % LoadImages can now open and read .ZVI files.  .ZVI files are Zeiss files

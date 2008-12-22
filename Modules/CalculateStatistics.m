@@ -147,31 +147,6 @@ FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 %%%VariableRevisionNumber = 3
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-drawnow
-
-[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
-
-%textVAR01 = What did you call the grouping values you loaded for each image cycle? See help for details.
-%infotypeVAR01 = datagroup
-DataName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
-%inputtypeVAR01 = popupmenu
-
-%textVAR02 = Would you like to log-transform the grouping values before attempting to fit a sigmoid curve?
-%choiceVAR02 = Yes
-%choiceVAR02 = No
-Logarithmic = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
-
-%textVAR03 = If you want to save the plotted dose response data for each feature as an interactive figure in the default output folder, enter the filename here (.fig extension will be automatically added); otherwise, leave at "Do not use." Note: the figures do not stay open during processing because it tends to cause memory issues when so many windows are open. Note: This option is not compatible with running the pipeline on a cluster of computers.
-%defaultVAR03 = Do not use
-%infotypeVAR03 = imagegroup indep
-FigureName = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-
-%%%VariableRevisionNumber = 3
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function FilterImageByQCMeasureDataTool(handles)
+function FlagImageByMeasurement(handles)
 
 % Help for the FilterImageByQCMeasure data tool:
 % Category: Data Tools

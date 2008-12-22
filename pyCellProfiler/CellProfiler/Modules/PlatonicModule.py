@@ -94,7 +94,7 @@ class LoadImages(cpmodule.AbstractModule):
             for pos, imname, rm in zip(self.images_order_position, self.image_names, self.remove_images):
                 varlist += [pos, imname, rm]
                 
-        varlist += self.add_image
+        varlist += [self.add_image]
         varlist += [self.location]
         if self.location == DIR_OTHER:
             varlist += [self.location_other]

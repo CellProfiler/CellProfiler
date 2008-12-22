@@ -1,19 +1,19 @@
 function FlagImageByMeasurement(handles)
 
-% Help for the FilterImageByQCMeasure data tool:
+% Help for the FlagImageByMeasurement data tool:
 % Category: Data Tools
 %
 % SHORT DESCRIPTION:
 %
 % *************************************************************************
 %
-% This data tool can take any measurements in a CellProfiler output file
-% and 
+% This data tool can take any per-image measurements in a CellProfiler output file
+% and flag the measurements based on user-inputted values.
 % 
 %
-% The new measurements will be stored under the first object's data, under
-% the name Ratio.
-%
+% The new measurements will be stored under Experiment, with the name "QC"
+% flag.
+
 % See also
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -113,3 +113,39 @@ try
 catch
     CPwarndlg(['Could not save updated ',FileName,' file.']);
 end
+
+Values = QCFlag;
+
+%Prompt what to save file as, and where to save it.
+filename = '*.txt';
+SavePathname = handles.Current.DefaultOutputDirectory;
+[filename,SavePathname] = CPuiputfile(filename, 'Save QCFlag As...',SavePathname);
+if filename == 0
+    CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
+    return
+end
+fid = fopen(fullfile(SavePathname,filename),'w');
+if fid == -1
+    error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);
+end
+
+for row = 1:size(Values, 1),
+        for col = 1:size(Values, 2),
+            if col ~= 1,
+                fprintf(fid, '\t');
+            end
+            val = Values(row, col);
+            if isempty(val) || (isnumeric(val) && isnan(val)),
+                fprintf(fid, '');
+            elseif ischar(val),
+                fprintf(fid, '%s', val);
+            else
+                fprintf(fid, '%d', val);        
+            end
+        end
+        fprintf(fid, '\n');
+end
+
+
+
+

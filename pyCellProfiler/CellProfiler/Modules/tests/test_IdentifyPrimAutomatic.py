@@ -12,23 +12,23 @@ import os
 from CellProfiler.Matlab.Utils import GetMatlabInstance
 
 class test_IdentifyPrimAutomatic(unittest.TestCase):
-    def test_00_00_Init(self):
+    def test_00_00_init(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
     
-    def test_01_01_ImageName(self):
+    def test_01_01_image_name(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         x.Variable(ID.IMAGE_NAME_VAR).SetValue("MyImage")
         self.assertEqual(x.ImageName, "MyImage")
     
-    def test_01_02_ObjectName(self):
+    def test_01_02_object_name(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         x.Variable(ID.OBJECT_NAME_VAR).SetValue("MyObject")
         self.assertEqual(x.ObjectName, "MyObject")
     
-    def test_01_03_SizeRange(self):
+    def test_01_03_size_range(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.MinSize,10)
@@ -37,7 +37,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(x.MinSize,5)
         self.assertEqual(x.MaxSize,100)
     
-    def test_01_04_ExcludeSize(self):
+    def test_01_04_exclude_size(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.ExcludeSize,"Default should be yes")
@@ -46,7 +46,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.EXCLUDE_SIZE_VAR).SetValue("No")
         self.assertFalse(x.ExcludeSize)
         
-    def test_01_05_MergeObjects(self):
+    def test_01_05_merge_objects(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertFalse(x.MergeObjects, "Default should be no")
@@ -55,7 +55,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.MERGE_CHOICE_VAR).SetValue("No")
         self.assertFalse(x.MergeObjects)
     
-    def test_01_06_ExcludeBorderObjects(self):
+    def test_01_06_exclude_border_objects(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.ExcludeBorderObjects,"Default should be yes")
@@ -64,28 +64,28 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.EXCLUDE_BORDER_OBJECTS_VAR).SetValue("No")
         self.assertFalse(x.ExcludeBorderObjects)
     
-    def test_01_07_ThresholdMethod(self):
+    def test_01_07_threshold_method(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.ThresholdMethod, ID.TM_OTSU_GLOBAL, "Default should be Otsu global")
         x.Variable(ID.THRESHOLD_METHOD_VAR).SetValue(ID.TM_BACKGROUND_GLOBAL)
         self.assertEqual(x.ThresholdMethod, ID.TM_BACKGROUND_GLOBAL)
     
-    def test_01_07_01_ThresholdModifier(self):
+    def test_01_07_01_threshold_modifier(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.ThresholdModifier, ID.TM_GLOBAL)
         x.Variable(ID.THRESHOLD_METHOD_VAR).SetValue(ID.TM_BACKGROUND_ADAPTIVE)
         self.assertEqual(x.ThresholdModifier, ID.TM_ADAPTIVE)
 
-    def test_01_07_02_ThresholdAlgorithm(self):
+    def test_01_07_02_threshold_algorithm(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.ThresholdAlgorithm, ID.TM_OTSU, "Default should be Otsu")
         x.Variable(ID.THRESHOLD_METHOD_VAR).SetValue(ID.TM_BACKGROUND_GLOBAL)
         self.assertEqual(x.ThresholdAlgorithm, ID.TM_BACKGROUND)
 
-    def test_01_08_ThresholdRange(self):
+    def test_01_08_threshold_range(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.MinThreshold,0)
@@ -94,35 +94,35 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(x.MinThreshold,.2)
         self.assertEqual(x.MaxThreshold,.8)
     
-    def test_01_09_ThresholdCorrectionFactor(self):
+    def test_01_09_threshold_correction_factor(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.ThresholdCorrectionFactor,1)
         x.Variable(ID.THRESHOLD_CORRECTION_VAR).SetValue("1.5")
         self.assertEqual(x.ThresholdCorrectionFactor,1.5)
     
-    def test_01_10_ObjectFraction(self):
+    def test_01_10_object_fraction(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.ObjectFraction,0.01)
         x.Variable(ID.OBJECT_FRACTION_VAR).SetValue("0.2")
         self.assertEqual(x.ObjectFraction,0.2)
         
-    def test_01_11_UnclumpMethod(self):
+    def test_01_11_unclump_method(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.UnclumpMethod, ID.UN_INTENSITY, "Default should be intensity, was %s"%(x.UnclumpMethod))
         x.Variable(ID.UNCLUMP_METHOD_VAR).SetValue(ID.UN_MANUAL)
         self.assertEqual(x.UnclumpMethod, ID.UN_MANUAL)
 
-    def test_01_12_WatershedMethod(self):
+    def test_01_12_watershed_method(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertEqual(x.WatershedMethod, ID.WA_INTENSITY, "Default should be intensity")
         x.Variable(ID.WATERSHED_VAR).SetValue(ID.WA_DISTANCE)
         self.assertEqual(x.WatershedMethod, ID.WA_DISTANCE)
         
-    def test_01_13_SmoothingFilterSize(self):
+    def test_01_13_smoothing_filter_size(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.AutomaticSmoothingFilterSize, "Default should be automatic")
@@ -134,7 +134,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(x.AutomaticSmoothingFilterSize)
         self.assertEqual(x.SmoothingFilterSize, None)
     
-    def test_01_14_MaximaSuppressionSize(self):
+    def test_01_14_maxima_suppression_size(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.AutomaticMaximaSuppressionSize, "Default should be automatic")
@@ -146,7 +146,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(x.AutomaticMaximaSuppressionSize)
         self.assertEqual(x.MaximaSuppressionSize, None)
         
-    def test_01_15_UseLowRes(self):
+    def test_01_15_use_low_res(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.UseLowRes)
@@ -155,7 +155,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.LOW_RES_MAXIMA_VAR).SetValue("Yes")
         self.assertTrue(x.UseLowRes)
         
-    def test_01_16_OutlineName(self):
+    def test_01_16_outline_name(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertFalse(x.SaveOutlines)
@@ -165,7 +165,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.SAVE_OUTLINES_VAR).Value = CellProfiler.Variable.DO_NOT_USE
         self.assertFalse(x.SaveOutlines)
     
-    def test_01_17_FillHoles(self):
+    def test_01_17_fill_holes(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.FillHoles)
@@ -174,7 +174,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.FILL_HOLES_OPTION_VAR).Value = CellProfiler.Variable.YES
         self.assertTrue(x.FillHoles)
         
-    def test_01_18_TestMode(self):
+    def test_01_18_test_mode(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         self.assertTrue(x.TestMode)
@@ -183,12 +183,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.Variable(ID.TEST_MODE_VAR).Value = CellProfiler.Variable.YES
         self.assertTrue(x.TestMode)
 
-    def test_02_01_TestOneObject(self):
+    def test_02_01_test_one_object(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
         x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
-        img = OneCellImage()
+        img = one_cell_image()
         image = CellProfiler.Image.Image(img)
         image_set_list = CellProfiler.Image.ImageSetList()
         image_set = image_set_list.GetImageSet(0)
@@ -224,12 +224,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(location_center_y[0]>13)
         self.assertTrue(location_center_y[0]<16)
 
-    def test_02_02_TestTwoObjects(self):
+    def test_02_02_test_two_objects(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
         x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
-        img = TwoCellImage()
+        img = two_cell_image()
         image = CellProfiler.Image.Image(img)
         image_set_list = CellProfiler.Image.ImageSetList()
         image_set = image_set_list.GetImageSet(0)
@@ -266,13 +266,13 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(location_center_y[1]>13)
         self.assertTrue(location_center_y[1]<16)
 
-    def test_02_03_TestThresholdRange(self):
+    def test_02_03_test_threshold_range(self):
         x = ID.IdentifyPrimAutomatic()
         x.CreateFromAnnotations()
         x.Variable(ID.OBJECT_NAME_VAR).Value = "my_object"
         x.Variable(ID.IMAGE_NAME_VAR).Value = "my_image"
         x.Variable(ID.THRESHOLD_RANGE_VAR).Value = ".7,1"
-        img = TwoCellImage()
+        img = two_cell_image()
         image = CellProfiler.Image.Image(img)
         image_set_list = CellProfiler.Image.ImageSetList()
         image_set = image_set_list.GetImageSet(0)
@@ -306,9 +306,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(location_center_y[0]>33)
         self.assertTrue(location_center_y[0]<36)
     
-    def test_03_01_RunInsidePipeline(self):
+    def test_03_01_run_inside_pipeline(self):
         pipeline = CellProfiler.Pipeline.Pipeline()
-        inject_image = InjectImage("my_image", TwoCellImage())
+        inject_image = InjectImage("my_image", two_cell_image())
         inject_image.SetModuleNum(1)
         pipeline.AddModule(inject_image)
         ipm = CellProfiler.Modules.IdentifyPrimAutomatic.IdentifyPrimAutomatic()
@@ -353,18 +353,18 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(location_center_y[1,0]>13)
         self.assertTrue(location_center_y[1,0]<16)
 
-def OneCellImage():
+def one_cell_image():
     img = numpy.zeros((25,25))
-    DrawCircle(img,(10,15),5, .5)
+    draw_circle(img,(10,15),5, .5)
     return img
 
-def TwoCellImage():
+def two_cell_image():
     img = numpy.zeros((50,50))
-    DrawCircle(img,(10,35),5, .8)
-    DrawCircle(img,(30,15),5, .6)
+    draw_circle(img,(10,35),5, .8)
+    draw_circle(img,(30,15),5, .6)
     return img
     
-def DrawCircle(img,center,radius,value):
+def draw_circle(img,center,radius,value):
     x,y=numpy.mgrid[0:img.shape[0],0:img.shape[1]]
     distance = numpy.sqrt((x-center[0])*(x-center[0])+(y-center[1])*(y-center[1]))
     img[distance<=radius]=value

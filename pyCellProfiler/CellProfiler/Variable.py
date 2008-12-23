@@ -14,13 +14,17 @@ class Variable(object):
     """A module variable which holds a single string value
     
     """
-    def __init__(self,module,VariableNumber,value):
+    def __init__(self,module,text,value):
         """Initialize a variable with the enclosing module and its string value
+        
+        module - the module containing this variable
+        text   - the explanatory text for the variable
+        value  - the default or initial value for the variable
         """
         self.__listeners = []
         self.__annotations = []
         self.__module = module;
-        self.__variable_number = VariableNumber;
+        self.__text = text
         self.__value = value
         self.__key = uuid.uuid1() 
     
@@ -38,11 +42,22 @@ class Variable(object):
         
         """
         return self.__key
+    
+    def get_text(self):
+        """The explanatory text for the variable
+        """
+        return self.__text
+    
+    text = property(get_text)
+    
     def GetValue(self):
         """The string contents of the variable"""
         return self.__value
     
     Value = property(GetValue,SetValue)
+    
+    def __eq__(self, x):
+        return self.Value == x
     
     def GetIsYes(self):
         """Return true if the variable's value is "Yes" """
@@ -59,9 +74,6 @@ class Variable(object):
         return self.Value == DO_NOT_USE
     
     IsDoNotUse = property(GetIsDoNotUse)
-    
-    def VariableNumber(self):
-        return self.__variable_number
     
     def NotifyListeners(self,event):
         """Notify listeners of an event happening to a variable
@@ -87,6 +99,34 @@ class Variable(object):
         
         """
         return self.__module
+
+class EditVariable(Variable):
+    """A variable that displays as an edit box, accepting a string
+    
+    """
+    def __init__(self,module,text,value):
+        super(EditVariable,self).__init__(self, module,text,value)
+
+class ChoiceVariable(Variable):
+    """A variable that displays a drop-down set of choices
+    
+    """
+    def __init__(self,module,text,choices,value=None):
+        """Initializer
+        module - the module containing the variable
+        text - the explanatory text for the variable
+        choices - a sequence of string choices to be displayed in the drop-down
+        value - the default choice or None to choose the first of the choices.
+        """
+        super(ChoiceVariable,self).__init__(self, module, text, value or choices[0])
+        self.__choices = choices
+    
+    def get_choices(self):
+        """The sequence of strings that define the choices to be displayed"""
+        return self.__choices
+    
+    choices = property(get_choices)
+
 
 def ValidateIntegerVariable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
     """A listener that validates integer variables"""

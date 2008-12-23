@@ -97,7 +97,7 @@ class PipelineController:
         try:
             handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
         except Exception,instance:
-            self.__frame.DisplayError('Failed to open %s'%(pathname),instance)
+            self.__frame.display_error('Failed to open %s'%(pathname),instance)
             return
         try:
             if handles.has_key('handles'):

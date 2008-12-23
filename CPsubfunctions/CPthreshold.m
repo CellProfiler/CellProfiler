@@ -647,7 +647,7 @@ else
     robust_counts = counts(x<0.98 & x>0.02);
     robust_x = x(x<0.98 & x>0.02);
     [y,i] = max(robust_counts);
-    level = robust_x(i);
+    level = 2.*robust_x(i);
 end
 
 

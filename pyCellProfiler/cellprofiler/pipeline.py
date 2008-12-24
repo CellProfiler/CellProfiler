@@ -586,11 +586,14 @@ class Pipeline:
         
         """
         all_variable_notes = []
-        for variable_number,variable in zip(range(1,len(module.variables())+1), module.variables()):
+        for variable_number,variable in \
+                zip(range(1,len(module.variables())+1), module.variables()):
             annotations = module.variable_annotations(variable_number)
             # variable_notes stores things we find out about variables as we
             # go along so we can refer back to them for subsequent variables
-            variable_notes = {'dependency':None, 'popuptype':None, 'variable':variable }
+            variable_notes = {'dependency':None,
+                              'popuptype':None,
+                              'variable':variable }
             if annotations.has_key('inputtype'):
                 split = annotations['inputtype'][0].value.split(' ')
                 if split[0] == 'popupmenu' and len(split) > 1:

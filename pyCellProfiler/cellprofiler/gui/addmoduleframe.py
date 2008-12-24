@@ -1,15 +1,14 @@
 """AddModuleFrame.py - this is the window frame and the subwindows
 that give you the GUI to add a module to a pipeline
 
-    $Revision$
 """
-
+__version = "$Revision$"
 import os
 import re
 import wx
-import CellProfiler.Preferences
-import CellProfiler.Modules
-import CellProfiler.Module
+import cellprofiler.preferences
+import cellprofiler.modules
+import cellprofiler.cpmodule
 
 class AddModuleFrame(wx.Frame):
     """The window frame that lets you add modules to a pipeline
@@ -72,23 +71,23 @@ class AddModuleFrame(wx.Frame):
         selected_module_panel.SetSizer(selected_module_panel_sizer)
         
         self.__set_icon()
-        self.Bind(wx.EVT_CLOSE,self.__onClose, self)
-        self.Bind(wx.EVT_LISTBOX,self.__onCategorySelected,self.__module_categories_list_box)
-        self.Bind(wx.EVT_BUTTON,self.__onAddToPipeline,add_to_pipeline_button)
-        self.Bind(wx.EVT_BUTTON,self.__onClose,done_button)
-        self.Bind(wx.EVT_BUTTON,self.__onHelp, module_help_button)
+        self.Bind(wx.EVT_CLOSE,self.__on_close, self)
+        self.Bind(wx.EVT_LISTBOX,self.__on_category_selected,self.__module_categories_list_box)
+        self.Bind(wx.EVT_BUTTON,self.__on_add_to_pipeline,add_to_pipeline_button)
+        self.Bind(wx.EVT_BUTTON,self.__on_close,done_button)
+        self.Bind(wx.EVT_BUTTON,self.__on_help, module_help_button)
         self.__get_module_files()
         self.__set_categories()
         self.__listeners = []
         self.__module_categories_list_box.Select(0)
-        self.__onCategorySelected(None)
+        self.__on_category_selected(None)
         self.Layout()
         
-    def __onClose(self,event):
+    def __on_close(self,event):
         self.Hide()
         
     def __set_icon(self):
-        filename=os.path.join(CellProfiler.Preferences.PythonRootDirectory(),'CellProfilerIcon.png')
+        filename=os.path.join(cellprofiler.preferences.python_root_directory(),'CellProfilerIcon.png')
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
         
@@ -103,11 +102,11 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
             
-        files = [x for x in os.listdir(CellProfiler.Preferences.ModuleDirectory())
-                 if os.path.splitext(x)[1] == CellProfiler.Preferences.ModuleExtension()]
+        files = [x for x in os.listdir(cellprofiler.preferences.module_directory())
+                 if os.path.splitext(x)[1] == cellprofiler.preferences.module_extension()]
         files.sort()
         for file in files:
-            module_path = os.path.join(CellProfiler.Preferences.ModuleDirectory(),file)
+            module_path = os.path.join(cellprofiler.preferences.module_directory(),file)
             fid = open(module_path,'r')
             try:
                 category = 'Other'
@@ -119,74 +118,74 @@ class AddModuleFrame(wx.Frame):
                 if not self.__module_dict.has_key(category):
                     self.__module_files.insert(-1,category)
                     self.__module_dict[category] = {}
-                def loader(ModuleNum, module_path = module_path):
-                    module = CellProfiler.Module.MatlabModule()
-                    module.CreateFromFile(module_path, ModuleNum)
+                def loader(module_num, module_path = module_path):
+                    module = cellprofiler.cpmodule.MatlabModule()
+                    module.create_from_file(module_path, module_num)
                     return module
                 self.__module_dict[category][os.path.splitext(file)[0]] = loader
             finally:
                 fid.close()
         
-        for mc in CellProfiler.Modules.ModuleClasses:
-            def loader(ModuleNum, mc=mc):
+        for mc in cellprofiler.modules.module_classes:
+            def loader(module_num, mc=mc):
                 module = mc()
-                module.SetModuleNum(ModuleNum)
-                module.CreateFromAnnotations()
+                module.set_module_num(module_num)
+                module.create_from_annotations()
                 return module
             module = mc()
-            self.__module_dict[module.Category()][module.ModuleName()] = loader
+            self.__module_dict[module.category()][module.module_name] = loader
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)
         
-    def __onCategorySelected(self,event):
-        category=self.__GetSelectedCategory()
+    def __on_category_selected(self,event):
+        category=self.__get_selected_category()
         self.__module_list_box.Clear()
         keys = self.__module_dict[category].keys()
         keys.sort()
         self.__module_list_box.AppendItems(keys)
         self.__module_list_box.Select(0)
 
-    def __GetSelectedCategory(self):
+    def __get_selected_category(self):
         return self.__module_files[self.__module_categories_list_box.GetSelection()]
 
-    def __onAddToPipeline(self,event):
-        category = self.__GetSelectedCategory()
+    def __on_add_to_pipeline(self,event):
+        category = self.__get_selected_category()
         idx = self.__module_list_box.GetSelection()
         if idx != wx.NOT_FOUND:
             file = self.__module_list_box.GetItems()[idx]
-            self.Notify(AddToPipelineEvent(file,self.__module_dict[category][file]))
+            self.notify(AddToPipelineEvent(file,self.__module_dict[category][file]))
     
-    def __onHelp(self,event):
-        category = self.__GetSelectedCategory()
+    def __on_help(self,event):
+        category = self.__get_selected_category()
         idx = self.__module_list_box.GetSelection()
         if idx != wx.NOT_FOUND:
             file = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][file]
             module = loader(0)
-            help = module.GetHelp()
+            help = module.get_help()
             wx.MessageBox(help)
         
-    def AddListener(self,listener):
+    def add_listener(self,listener):
         self.__listeners.append(listener)
         
-    def RemoveListener(self,listener):
+    def remove_listener(self,listener):
         self.__listeners.remove(listener)
     
-    def Notify(self,event):
+    def notify(self,event):
         for listener in self.__listeners:
             listener(self,event)
 
 class AddToPipelineEvent(object):
-    def __init__(self,ModuleName,ModuleLoader):
-        self.ModuleName = ModuleName
-        self.__module_loader = ModuleLoader
+    def __init__(self,module_name,module_loader):
+        self.module_name = module_name
+        self.__module_loader = module_loader
     
-    def GetModuleLoader(self):
+    def get_module_loader(self):
         """Return a function that, when called, will produce a module
         
         The function takes one argument: the module number
         """
         return self.__module_loader
     
-    ModuleLoader = property(GetModuleLoader)
+    module_loader = property(get_module_loader)

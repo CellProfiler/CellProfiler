@@ -5,17 +5,18 @@
 """
 import os
 import wx
-import CellProfiler.Preferences
+
 import scipy.io.mio
 import PIL.Image
 import matplotlib
-matplotlib.use('WX')
 import matplotlib.image
 import matplotlib.figure
 import matplotlib.backends.backend_wx
 
+import cellprofiler.preferences
 
-class DirectoryView:
+
+class DirectoryView(object):
     """A directory viewer that displays file names and has smartish clicks
     
     """
@@ -30,12 +31,12 @@ class DirectoryView:
         sizer.Add(self.__list_box,1,wx.EXPAND)
         panel.SetSizer(sizer)
         self.__best_height = 0
-        self.Refresh()
-        CellProfiler.Preferences.AddImageDirectoryListener(self.__OnImageDirectoryChanged)
-        panel.Bind(wx.EVT_LISTBOX_DCLICK,self.__OnListBoxDClick,self.__list_box)
+        self.refresh()
+        cellprofiler.preferences.add_image_directory_listener(self.__on_image_directory_changed)
+        panel.Bind(wx.EVT_LISTBOX_DCLICK,self.__on_list_box_d_click,self.__list_box)
         self.__pipeline_listeners = []
     
-    def AddPipelineListener(self,listener):
+    def add_pipeline_listener(self,listener):
         """Add a listener that will be informed when the user wants to open a pipeline
         
         The listener should be a function to be called back with the parameters:
@@ -44,10 +45,10 @@ class DirectoryView:
         """
         self.__pipeline_listeners.append(listener)
         
-    def RemovePipelineListener(self,listener):
+    def remove_pipeline_listener(self,listener):
         self.__pipeline_listeners.remove(listener)
         
-    def NotifyPipelineListeners(self,event):
+    def notify_pipeline_listeners(self,event):
         """Notify all pipeline listeners of an event that indicates that the user
         wants to open a pipeline
         
@@ -55,39 +56,39 @@ class DirectoryView:
         for listener in self.__pipeline_listeners:
             listener(self,event)
             
-    def SetHeight(self,height):
+    def set_height(self,height):
         self.__best_height = height
     
-    def Refresh(self):
+    def refresh(self):
         self.__list_box.Clear()
         files = [x 
-                 for x in os.listdir(CellProfiler.Preferences.GetDefaultImageDirectory()) 
+                 for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
                      if os.path.splitext(x)[1][1:].lower() in self.__image_extensions]
         files.sort()
         self.__list_box.AppendItems(files)
     
-    def __OnImageDirectoryChanged(self,event):
-        self.Refresh()
+    def __on_image_directory_changed(self,event):
+        self.refresh()
     
-    def __OnListBoxDClick(self,event):
+    def __on_list_box_d_click(self,event):
         selections = self.__list_box.GetSelections()
         if len(selections) > 0:
             selection = self.__list_box.GetItems()[selections[0]]
-        filename = os.path.join(CellProfiler.Preferences.GetDefaultImageDirectory(),selection)
+        filename = os.path.join(cellprofiler.preferences.get_default_image_directory(),selection)
         if os.path.splitext(selection)[1].lower() =='.mat':
             # A matlab file might be an image or a pipeline
             handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
             if handles.has_key('Image'):
-                self.__DisplayMatlabImage(handles)
+                self.__display_matlab_image(handles)
             else:
-                self.NotifyPipelineListeners(LoadPipelineRequestEvent(filename))
+                self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
         else:
-            self.__DisplayImage(filename)
+            self.__display_image(filename)
     
-    def __DisplayMatlabImage(self,handles):
+    def __display_matlab_image(self,handles):
         wx.MessageBox('Matlab image display has not been implemented','Not yet implemented',parent=self.__list_box,style=wx.ICON_INFORMATION)
     
-    def __DisplayImage(self,filename):
+    def __display_image(self,filename):
         frame = ImageFrame(self.__list_box.GetTopLevelParent(),filename)
         frame.Show()
 
@@ -103,9 +104,9 @@ class ImageFrame(wx.Frame):
         self.__panel = matplotlib.backends.backend_wx.FigureCanvasWx(self,-1,self.__figure)
         sizer.Add(self.__panel,1,wx.EXPAND)
         self.SetSizerAndFit(sizer)
-        self.Bind(wx.EVT_PAINT,self.OnPaint)
+        self.Bind(wx.EVT_PAINT,self.on_paint)
         
-    def OnPaint(self,event):
+    def on_paint(self,event):
         dc = wx.PaintDC(self)
         self.__panel.draw(dc)
         

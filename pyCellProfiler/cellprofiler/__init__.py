@@ -1,5 +1,5 @@
 """CellProfiler - base directory for CellProfiler code
 
-   $Revision$
 """
+__version__="$Revision$"
 

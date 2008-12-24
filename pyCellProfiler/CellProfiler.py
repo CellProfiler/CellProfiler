@@ -1,4 +1,4 @@
-import CellProfiler.CellProfilerApp
+from cellprofiler.cellprofilerapp import CellProfilerApp
 
-App = CellProfiler.CellProfilerApp.CellProfilerApp(0)
+App = CellProfilerApp(0)
 App.MainLoop()

@@ -1,7 +1,9 @@
 """Modules - pipeline processing modules for CellProfiler
 
 """
-import IdentifyPrimAutomatic
-import LoadImages
+__version="$Revision: 1 $"
 
-ModuleClasses = [LoadImages.LoadImages,IdentifyPrimAutomatic.IdentifyPrimAutomatic]
+import identifyprimautomatic
+import loadimages
+
+module_classes = [loadimages.LoadImages,identifyprimautomatic.IdentifyPrimAutomatic]

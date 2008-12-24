@@ -3,6 +3,8 @@
 Image        - Represents an image with secondary attributes such as a mask and labels
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
+__version__ = "$Revision: 1$"
+
 import numpy
 import math
 import sys
@@ -15,15 +17,15 @@ class Image(object):
         self.__mask = None
         self.__has_mask = False
         if image!=None:
-            self.SetImage(image)
+            self.set_image(image)
         if mask!=None:
-            self.SetMask(mask)
+            self.set_mask(mask)
         
-    def GetImage(self):
+    def get_image(self):
         """Return the primary image"""
         return self.__image
     
-    def SetImage(self,image):
+    def set_image(self,image):
         """Set the primary image
         
         Convert the image to a numpy array of dtype = numpy.float64.
@@ -85,17 +87,17 @@ class Image(object):
         check_consistency(img,self.__mask)
         self.__image = img
     
-    Image=property(GetImage,SetImage)
+    image=property(get_image,set_image)
     """The primary image - a Numpy array representing an image"""
 
-    def GetMask(self):
+    def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
         if self.__mask == None and self.__image != None:
             self.__mask = numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
         return self.__mask
     
-    def SetMask(self, mask):
+    def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
         
         Convert the input into a numpy array. If the input is numeric,
@@ -108,12 +110,12 @@ class Image(object):
         self.__mask = m
         self.__has_mask = True
 
-    Mask=property(GetMask,SetMask)
+    mask=property(get_mask,set_mask)
     
-    def GetHasMask(self):
+    def get_has_mask(self):
         return self.__has_mask
     
-    HasMask = property(GetHasMask)
+    has_mask = property(get_has_mask)
     
     
 def check_consistency(image, mask):
@@ -128,15 +130,22 @@ def check_consistency(image, mask):
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
-    def ProvideImage(self, image_set):
+    def provide_image(self, image_set):
         """Return the image that is associated with the image set
         """
         raise NotImplementedError("Please implement ProvideImage for your class")
+
+    def __get_name(self):
+        """Call the abstract function, "get_name"
+        """
+        return self.get_name()
     
-    def Name(self):
+    def get_name(self):
         """The user-visible name for the image
         """
-        raise NotImplementedError("Please implement Name for your class")
+        raise NotImplementedError("Please implement get_name for your class")
+
+    name = property(__get_name)
 
 class VanillaImageProvider(AbstractImageProvider):
     """This image provider returns the image given to it in the constructor
@@ -147,10 +156,10 @@ class VanillaImageProvider(AbstractImageProvider):
         """
         self.__name = name
         self.__image = image
-    def ProvideImage(self, image_set):
+    def provide_image(self, image_set):
         return self.__image
     
-    def Name(self):
+    def get_name(self):
         return self.__name
     
     
@@ -167,10 +176,10 @@ class CallbackImageProvider(AbstractImageProvider):
         self.__name = name
         self.__image_provider_fn = image_provider_fn
         
-    def ProvideImage(self, image_set):
+    def provide_image(self, image_set):
         return self.__image_provider_fn(image_set,self)
     
-    def Name(self):
+    def get_name(self):
         return self.__name
 
 class ImageSet(object):
@@ -192,51 +201,51 @@ class ImageSet(object):
         self.__number = number
         self.__legacy_fields = legacy_fields
     
-    def GetNumber(self):
+    def get_number(self):
         """The (zero-based) image set index
         """ 
         return self.__number
     
-    Number = property(GetNumber)
+    number = property(get_number)
     
-    def GetKeys(self):
+    def get_keys(self):
         """The keys that uniquely identify the image set
         """
         return self.__keys
     
-    Keys = property(GetKeys)
+    keys = property(get_keys)
     
-    def GetImage(self, name):
+    def get_image(self, name):
         """Return the image associated with the given name
         """
         if not self.__images.has_key(name):
-            providers = filter(lambda x: x.Name() == name, self.__image_providers)
+            providers = filter(lambda x: x.name == name, self.__image_providers)
             assert len(providers)>0, "No provider of the %s image"%(name)
             assert len(providers)==1, "More than one provider of the %s image"%(name)
-            image = providers[0].ProvideImage(self)
+            image = providers[0].provide_image(self)
             self.__images[name] = image
         return self.__images[name]
     
-    def GetProviders(self):
+    def get_providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
     
-    Providers = property(GetProviders)
+    providers = property(get_providers)
     
-    def GetNames(self):
+    def get_names(self):
         """Get the image provider names
         """
-        return [provider.Name() for provider in self.Providers]
+        return [provider.name for provider in self.providers]
     
-    Names = property(GetNames)
+    names = property(get_names)
     
-    def GetLegacyFields(self):
+    def get_legacy_fields(self):
         """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
         
         """
         return self.__legacy_fields
     
-    LegacyFields = property(GetLegacyFields)
+    legacy_fields = property(get_legacy_fields)
 
 class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
@@ -247,7 +256,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
         self.__legacy_fields = {}
     
-    def GetImageSet(self,keys_or_number):
+    def get_image_set(self,keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
         
         """
@@ -258,7 +267,7 @@ class ImageSetList(object):
         else:
             keys = keys_or_number
             if self.__image_sets_by_key.has_key(repr(keys)):
-                number = self.__image_sets_by_key[repr(keys)].GetNumber()
+                number = self.__image_sets_by_key[repr(keys)].get_number()
             else:
                 number = len(self.__image_sets)
         if number == len(self.__image_sets):
@@ -269,14 +278,14 @@ class ImageSetList(object):
             image_set = self.__image_sets[number]
         return image_set
     
-    def Count(self):
+    def count(self):
         return len(self.__image_sets)
 
-    def GetLegacyFields(self):
+    def get_legacy_fields(self):
         """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
         
         """
         return self.__legacy_fields
     
-    LegacyFields = property(GetLegacyFields)
+    legacy_fields = property(get_legacy_fields)
     

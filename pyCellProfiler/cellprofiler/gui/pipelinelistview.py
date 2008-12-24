@@ -2,7 +2,7 @@
     $Revision$
     """
 import wx
-import CellProfiler.Pipeline
+import cellprofiler.pipeline
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
 PADDING = 1
@@ -28,78 +28,78 @@ class PipelineListView:
         width = self.__list_box.GetBestSize()[0]+2*PADDING
         self.__panel.SetMinSize(wx.Size(width,self.__panel.GetMinSize()[1]))
 
-    def AttachToPipeline(self,pipeline,controller):
+    def attach_to_pipeline(self,pipeline,controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
         
         """
         self.__pipeline =pipeline
-        pipeline.AddListener(self.Notify)
-        controller.AttachToPipelineListView(self)
+        pipeline.add_listener(self.notify)
+        controller.attach_to_pipeline_list_view(self)
         
-    def AttachToModuleView(self, module_view):
+    def attach_to_module_view(self, module_view):
         self.__module_view = module_view
-        self.__panel.Bind(wx.EVT_LISTBOX,self.__OnItemSelected,self.__list_box)
+        self.__panel.Bind(wx.EVT_LISTBOX,self.__on_item_selected,self.__list_box)
         
-    def Notify(self,pipeline,event):
+    def notify(self,pipeline,event):
         """Pipeline event notifications come through here
         
         """
-        if isinstance(event,CellProfiler.Pipeline.PipelineLoadedEvent):
-            self.__OnPipelineLoaded(pipeline,event)
-        elif isinstance(event,CellProfiler.Pipeline.ModuleAddedPipelineEvent):
-            self.__OnModuleAdded(pipeline,event)
-        elif isinstance(event,CellProfiler.Pipeline.ModuleMovedPipelineEvent):
-            self.__OnModuleMoved(pipeline,event)
-        elif isinstance(event,CellProfiler.Pipeline.ModuleRemovedPipelineEvent):
-            self.__OnModuleRemoved(pipeline,event)
-        elif isinstance(event,CellProfiler.Pipeline.PipelineClearedEvent):
-            self.__OnPipelineCleared(pipeline, event)
+        if isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent):
+            self.__on_pipeline_loaded(pipeline,event)
+        elif isinstance(event,cellprofiler.pipeline.ModuleAddedPipelineEvent):
+            self.__on_module_added(pipeline,event)
+        elif isinstance(event,cellprofiler.pipeline.ModuleMovedPipelineEvent):
+            self.__on_module_moved(pipeline,event)
+        elif isinstance(event,cellprofiler.pipeline.ModuleRemovedPipelineEvent):
+            self.__on_module_removed(pipeline,event)
+        elif isinstance(event,cellprofiler.pipeline.PipelineClearedEvent):
+            self.__on_pipeline_cleared(pipeline, event)
     
-    def GetSelectedModules(self):
+    def get_selected_modules(self):
         return [self.__list_box.GetClientData(i) for i in self.__list_box.GetSelections()]
     
-    def __OnPipelineLoaded(self,pipeline,event):
+    def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads
         
         """
         self.__list_box.Clear()
-        for module in pipeline.Modules():
-            self.__list_box.Append(module.ModuleName(),module)
+        for module in pipeline.modules():
+            self.__list_box.Append(module.module_name,module)
         self.__set_min_width()
     
-    def __OnPipelineCleared(self,pipeline,event):
+    def __on_pipeline_cleared(self,pipeline,event):
         self.__list_box.SetItems([NO_PIPELINE_LOADED])
             
-    def __OnModuleAdded(self,pipeline,event):
-        module=pipeline.Modules()[event.ModuleNum-1]
+    def __on_module_added(self,pipeline,event):
+        module=pipeline.modules()[event.module_num-1]
         if len(self.__list_box.GetItems()) == 1 and self.__list_box.GetItems()[0]==NO_PIPELINE_LOADED:
             self.__list_box.Clear()
-        self.__list_box.Insert(module.ModuleName(),event.ModuleNum-1,module)
+        self.__list_box.Insert(module.module_name,event.module_num-1,module)
         self.__set_min_width()
     
-    def __OnModuleRemoved(self,pipeline,event):
-        self.__list_box.Delete(event.ModuleNum-1)
+    def __on_module_removed(self,pipeline,event):
+        self.__list_box.Delete(event.module_num-1)
         self.__set_min_width()
-        self.__module_view.ClearSelection()
+        self.__module_view.clear_selection()
         
-    def __OnModuleMoved(self,pipeline,event):
-        module=pipeline.Modules()[event.ModuleNum-1]
+    def __on_module_moved(self,pipeline,event):
+        module=pipeline.modules()[event.module_num-1]
         selected = False;
         for i in self.__list_box.GetSelections():
             if module == self.__list_box.GetClientData(i):
                 selected = True
                 break
-        if event.Direction == CellProfiler.Pipeline.DIRECTION_UP:
-            self.__list_box.Delete(event.ModuleNum)
+        if event.direction == cellprofiler.pipeline.DIRECTION_UP:
+            self.__list_box.Delete(event.modulenum)
         else:
-            self.__list_box.Delete(event.ModuleNum-2)
-        self.__list_box.Insert(module.ModuleName(),event.ModuleNum-1,module)
+            self.__list_box.Delete(event.modulenum-2)
+        self.__list_box.Insert(module.module_name,event.module_num-1,module)
         if selected:
-            self.__list_box.Select(event.ModuleNum-1)
+            self.__list_box.Select(event.module_num-1)
             
-    def __OnItemSelected(self,event):
+    def __on_item_selected(self,event):
         if self.__module_view:
             selections = self.__list_box.GetSelections()
             if len(selections) and not (len(selections)==1 and self.__list_box.GetItems()[0] == NO_PIPELINE_LOADED):
-                self.__module_view.SetSelection(self.__list_box.GetClientData(selections[0]).ModuleNum())
+                self.__module_view.SetSelection(self.__list_box.GetClientData(selections[0]).module_num)
 

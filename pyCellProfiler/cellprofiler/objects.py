@@ -11,23 +11,23 @@ class Objects(object):
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
     
-    def GetSegmented(self):
+    def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix of object #s
         """
         return self.__segmented
     
-    def SetSegmented(self,labels):
+    def set_segmented(self,labels):
         check_consistency(labels, self.__unedited_segmented, self.__small_removed_segmented)
         self.__segmented = labels
     
-    Segmented = property(GetSegmented,SetSegmented)
+    segmented = property(get_segmented,set_segmented)
     
-    def HasUneditedSegmented(self):
+    def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix
         """
         return self.__unedited_segmented != None
     
-    def GetUneditedSegmented(self):
+    def get_unedited_segmented(self):
         """Get the segmentation of the image into objects including junk that should be ignored: a matrix of object #s
         
         The default, if no unedited matrix is available, is the segmented labeling
@@ -38,18 +38,18 @@ class Objects(object):
             return self.__segmented
         return self.__unedited_segmented
     
-    def SetUneditedSegmented(self,labels):
+    def set_unedited_segmented(self,labels):
         check_consistency(self.__segmented, labels, self.__small_removed_segmented)
         self.__unedited_segmented = labels
     
-    UneditedSegmented = property(GetUneditedSegmented,SetUneditedSegmented)
+    unedited_segmented = property(get_unedited_segmented,set_unedited_segmented)
     
-    def HasSmallRemovedSegmented(self):
+    def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix
         """
         return self.__small_removed_segmented != None
     
-    def GetSmallRemovedSegmented(self):
+    def get_small_removed_segmented(self):
         """Get the junk objects only: a matrix of object #s
         
         The default, if no unedited matrix is available, is a matrix
@@ -66,11 +66,11 @@ class Objects(object):
             return numpy.zeros(shape=self.__segmented.shape,dtype=self.__segmented.dtype)
         return self.__small_removed_segmented
     
-    def SetSmallRemovedSegmented(self,labels):
+    def set_small_removed_segmented(self,labels):
         check_consistency(self.__segmented, self.__unedited_segmented, labels)
         self.__small_removed_segmented = labels
     
-    SmallRemovedSegmented = property(GetSmallRemovedSegmented, SetSmallRemovedSegmented)
+    small_removed_segmented = property(get_small_removed_segmented, set_small_removed_segmented)
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent
@@ -99,26 +99,26 @@ class ObjectSet(object):
     def __init__(self):
         self.__objects_by_name = {}
     
-    def AddObjects(self, objects, name):
+    def add_objects(self, objects, name):
         assert isinstance(objects,Objects), "objects must be an instance of CellProfiler.Objects"
         assert not self.__objects_by_name.has_key(name), "The object, %s, is already in the object set"%(name)
         self.__objects_by_name[name] = objects
     
-    def GetObjectNames(self):
+    def get_object_names(self):
         """Return the names of all of the objects
         """
         return self.__objects_by_name.keys()
     
-    ObjectNames = property(GetObjectNames)
+    object_names = property(get_object_names)
     
-    def GetObjects(self,name):
+    def get_objects(self,name):
         """Return the objects instance with the given name
         """
         return self.__objects_by_name[name]
     
-    def GetAllObjects(self):
+    def get_all_objects(self):
         """Return a list of name / objects tuples
         """
         return self.__objects_by_name.items()
     
-    AllObjects = property(GetAllObjects)
+    all_objects = property(get_all_objects)

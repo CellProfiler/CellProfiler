@@ -4,7 +4,7 @@
 import numpy
 import scipy.ndimage
 import unittest
-import CellProfiler.Objects
+import cellprofiler.objects
 
 class TestObjects(unittest.TestCase):
     def setUp(self):
@@ -19,59 +19,59 @@ class TestObjects(unittest.TestCase):
         self.__small_removed_segmented10[self.__segmented10==1] = 0
         
     
-    def test_01_01_SetSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.SetSegmented(self.__segmented10)
-        self.assertTrue((self.__segmented10==x.Segmented).all())
+    def test_01_01_set_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.set_segmented(self.__segmented10)
+        self.assertTrue((self.__segmented10==x.segmented).all())
     
-    def test_01_02_Segmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.Segmented = self.__segmented10
-        self.assertTrue((self.__segmented10==x.Segmented).all())
+    def test_01_02_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.segmented = self.__segmented10
+        self.assertTrue((self.__segmented10==x.segmented).all())
     
-    def test_01_03_SetUneditedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.SetUneditedSegmented(self.__unedited_segmented10)
-        self.assertTrue((self.__unedited_segmented10 == x.UneditedSegmented).all())
+    def test_01_03_set_unedited_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.set_unedited_segmented(self.__unedited_segmented10)
+        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
     
-    def test_01_04_UneditedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.UneditedSegmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10== x.UneditedSegmented).all())
+    def test_01_04_unedited_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.unedited_segmented = self.__unedited_segmented10
+        self.assertTrue((self.__unedited_segmented10== x.unedited_segmented).all())
     
-    def test_01_05_SetSmallRemovedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.SetSmallRemovedSegmented(self.__small_removed_segmented10)
-        self.assertTrue((self.__small_removed_segmented10==x.SmallRemovedSegmented).all())
+    def test_01_05_set_small_removed_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.set_small_removed_segmented(self.__small_removed_segmented10)
+        self.assertTrue((self.__small_removed_segmented10==x.small_removed_segmented).all())
     
-    def test_01_06_UneditedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.SmallRemovedSegmented = self.__small_removed_segmented10
-        self.assertTrue((self.__small_removed_segmented10== x.SmallRemovedSegmented).all())
+    def test_01_06_unedited_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.small_removed_segmented = self.__small_removed_segmented10
+        self.assertTrue((self.__small_removed_segmented10== x.small_removed_segmented).all())
         
-    def test_02_01_SetAll(self):
-        x = CellProfiler.Objects.Objects()
-        x.Segmented = self.__segmented10
-        x.UneditedSegmented = self.__unedited_segmented10
-        x.SmallRemovedSegmented = self.__small_removed_segmented10
+    def test_02_01_set_all(self):
+        x = cellprofiler.objects.Objects()
+        x.segmented = self.__segmented10
+        x.unedited_segmented = self.__unedited_segmented10
+        x.small_removed_segmented = self.__small_removed_segmented10
 
-    def test_03_01_DefaultUneditedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.Segmented = self.__segmented10
-        self.assertTrue((x.UneditedSegmented==x.Segmented).all())
+    def test_03_01_default_unedited_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.segmented = self.__segmented10
+        self.assertTrue((x.unedited_segmented==x.segmented).all())
     
-    def test_03_02_DefaultSmallRemovedSegmented(self):
-        x = CellProfiler.Objects.Objects()
-        x.Segmented = self.__segmented10
-        self.assertTrue((x.SmallRemovedSegmented == 0).all())
-        x.UneditedSegmented = self.__unedited_segmented10
-        self.assertTrue((x.SmallRemovedSegmented == self.__small_removed_segmented10).all())
+    def test_03_02_default_small_removed_segmented(self):
+        x = cellprofiler.objects.Objects()
+        x.segmented = self.__segmented10
+        self.assertTrue((x.small_removed_segmented == 0).all())
+        x.unedited_segmented = self.__unedited_segmented10
+        self.assertTrue((x.small_removed_segmented == self.__small_removed_segmented10).all())
     
-    def test_04_01_MisSize(self):
-        x = CellProfiler.Objects.Objects()
-        x.Segmented = self.__segmented10
-        self.assertRaises(AssertionError,x.SetUneditedSegmented,numpy.ones((5,5)))
-        self.assertRaises(AssertionError,x.SetSmallRemovedSegmented,numpy.ones((5,5)))
+    def test_04_01_mis_size(self):
+        x = cellprofiler.objects.Objects()
+        x.segmented = self.__segmented10
+        self.assertRaises(AssertionError,x.set_unedited_segmented,numpy.ones((5,5)))
+        self.assertRaises(AssertionError,x.set_small_removed_segmented,numpy.ones((5,5)))
         
         
 if __name__ == "__main__":

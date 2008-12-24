@@ -1,12 +1,13 @@
 """IdentifyPrimAutomatic - identify objects by thresholding and contouring
 
 """
+__version__="$Revision: 1$"
 
-import CellProfiler.Module
-import CellProfiler.Variable
-import CellProfiler.Math.Otsu
-import CellProfiler.Objects
-from CellProfiler.Variable import AUTOMATIC
+import cellprofiler.cpmodule
+import cellprofiler.variable
+import cellprofiler.math.otsu
+import cellprofiler.objects
+from cellprofiler.variable import AUTOMATIC
 import scipy.ndimage
 import matplotlib.backends.backend_wxagg
 import matplotlib.figure
@@ -71,38 +72,38 @@ FILL_HOLES_OPTION_VAR           = 17
 TEST_MODE_VAR                   = 18
 
 
-class IdentifyPrimAutomatic(CellProfiler.Module.AbstractModule):
+class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
     """Cut and paste this in order to get started writing a module
     """
     def __init__(self):
-        CellProfiler.Module.AbstractModule.__init__(self)
-        self.SetModuleName("IdentifyPrimAutomatic")
+        cellprofiler.cpmodule.AbstractModule.__init__(self)
+        self.set_module_name("IdentifyPrimAutomatic")
     
-    def UpgradeModuleFromRevision(self,variable_revision_number):
+    def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
         """
         if variable_revision_number == 12:
             # Laplace values removed - propagate variable values to fill the gap
             for i in range(17,20):
-                self.Variable(i-1).Value = self.Variable(i).Value
+                self.variable(i-1).value = self.variable(i).value
             variable_revision_number = 13
-        if variable_revision_number != self.VariableRevisionNumber():
+        if variable_revision_number != self.variable_revision_number():
             raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))
     
-    def OnPostLoad(self):
+    def on_post_load(self):
         """Install validators for fields"""
-        self.Variable(SIZE_RANGE_VAR).AddListener(CellProfiler.Variable.ValidateRealRangeListener(lower_bound=1))
-        self.Variable(THRESHOLD_CORRECTION_VAR).AddListener(CellProfiler.Variable.ValidateRealVariableListener(lower_bound=0))
-        self.Variable(THRESHOLD_RANGE_VAR).AddListener(CellProfiler.Variable.ValidateRealRangeListener(0, 1))
-        self.Variable(OBJECT_FRACTION_VAR).AddListener(CellProfiler.Variable.ValidateRealVariableListener(0, 1,"The fraction of object area must be between 0 and 1"))
-        self.Variable(SMOOTHING_SIZE_VAR).AddListener(CellProfiler.Variable.ValidateRealVariableListener(lower_bound=0, cancel_reason='Please enter a number for the smoothing size or "Automatic"',allow_automatic=True))
-        self.Variable(MAXIMA_SUPRESSION_SIZE_VAR).AddListener(CellProfiler.Variable.ValidateIntegerVariableListener(lower_bound=0, cancel_reason='Please enter a number for the maxima suppression size or "Automatic"',allow_automatic=True))
+        self.variable(SIZE_RANGE_VAR).add_listener(cellprofiler.variable.validate_real_range_listener(lower_bound=1))
+        self.variable(THRESHOLD_CORRECTION_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(lower_bound=0))
+        self.variable(THRESHOLD_RANGE_VAR).add_listener(cellprofiler.variable.validate_real_range_listener(0, 1))
+        self.variable(OBJECT_FRACTION_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(0, 1,"The fraction of object area must be between 0 and 1"))
+        self.variable(SMOOTHING_SIZE_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(lower_bound=0, cancel_reason='Please enter a number for the smoothing size or "Automatic"',allow_automatic=True))
+        self.variable(MAXIMA_SUPRESSION_SIZE_VAR).add_listener(cellprofiler.variable.validate_integer_variable_listener(lower_bound=0, cancel_reason='Please enter a number for the maxima suppression size or "Automatic"',allow_automatic=True))
         
-    def Category(self):
+    def category(self):
         return "Object Processing"
     
-    def GetHelp(self):
+    def get_help(self):
         """Return help text for the module
         
         """
@@ -457,12 +458,12 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-    def VariableRevisionNumber(self):
+    def variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
         return 13
     
-    def Annotations(self):
+    def annotations(self):
         """Return the variable annotations, as read out of the module file.
         
         Return the variable annotations, as read out of the module file.
@@ -470,13 +471,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         class.
         """
         annotations = []
-        annotations += CellProfiler.Variable.GroupAnnotation(IMAGE_NAME_VAR, 'What did you call the images you want to process?', 'imagegroup')
-        annotations += CellProfiler.Variable.IndepGroupAnnotation(OBJECT_NAME_VAR, 'What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
-        annotations += CellProfiler.Variable.EditBoxAnnotation(SIZE_RANGE_VAR, 'Typical diameter of objects, in pixel units (Min,Max):', '10,40')
-        annotations += CellProfiler.Variable.CheckboxAnnotation(EXCLUDE_SIZE_VAR, 'Discard objects outside the diameter range?', True)
-        annotations += CellProfiler.Variable.CheckboxAnnotation(MERGE_CHOICE_VAR, 'Try to merge too small objects with nearby larger objects?', False)
-        annotations += CellProfiler.Variable.CheckboxAnnotation(EXCLUDE_BORDER_OBJECTS_VAR, 'Discard objects touching the border of the image?', True)
-        annotations += CellProfiler.Variable.ChoicePopupAnnotation(THRESHOLD_METHOD_VAR, '''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
+        annotations += cellprofiler.variable.group_annotation(IMAGE_NAME_VAR, 'What did you call the images you want to process?', 'imagegroup')
+        annotations += cellprofiler.variable.indep_group_annotation(OBJECT_NAME_VAR, 'What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
+        annotations += cellprofiler.variable.edit_box_annotation(SIZE_RANGE_VAR, 'Typical diameter of objects, in pixel units (Min,Max):', '10,40')
+        annotations += cellprofiler.variable.checkbox_annotation(EXCLUDE_SIZE_VAR, 'Discard objects outside the diameter range?', True)
+        annotations += cellprofiler.variable.checkbox_annotation(MERGE_CHOICE_VAR, 'Try to merge too small objects with nearby larger objects?', False)
+        annotations += cellprofiler.variable.checkbox_annotation(EXCLUDE_BORDER_OBJECTS_VAR, 'Discard objects touching the border of the image?', True)
+        annotations += cellprofiler.variable.choice_popup_annotation(THRESHOLD_METHOD_VAR, '''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
                                                                    [TM_OTSU_GLOBAL,TM_OTSU_ADAPTIVE,TM_OTSU_PER_OBJECT,
                                                                     TM_MOG_GLOBAL,TM_MOG_ADAPTIVE,TM_MOG_PER_OBJECT,
                                                                     TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
@@ -484,32 +485,32 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                                                     TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
                                                                     TM_KAPUR_GLOBAL,TM_KAPUR_ADAPTIVE,TM_KAPUR_PER_OBJECT,
                                                                     TM_ALL,TM_SET_INTERACTIVELY])
-        annotations += CellProfiler.Variable.EditBoxAnnotation(THRESHOLD_CORRECTION_VAR, 'Threshold correction factor', "1")
-        annotations += CellProfiler.Variable.EditBoxAnnotation(THRESHOLD_RANGE_VAR, 'Lower and upper bounds on threshold, in the range [0,1]', '0,1')
-        annotations += CellProfiler.Variable.ChoicePopupAnnotation(OBJECT_FRACTION_VAR, 'For MoG thresholding, what is the approximate fraction of image covered by objects?',
+        annotations += cellprofiler.variable.edit_box_annotation(THRESHOLD_CORRECTION_VAR, 'Threshold correction factor', "1")
+        annotations += cellprofiler.variable.edit_box_annotation(THRESHOLD_RANGE_VAR, 'Lower and upper bounds on threshold, in the range [0,1]', '0,1')
+        annotations += cellprofiler.variable.choice_popup_annotation(OBJECT_FRACTION_VAR, 'For MoG thresholding, what is the approximate fraction of image covered by objects?',
                                                                    ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'], True)
-        annotations += CellProfiler.Variable.ChoicePopupAnnotation(UNCLUMP_METHOD_VAR, 'Method to distinguish clumped objects (see help for details):', 
+        annotations += cellprofiler.variable.choice_popup_annotation(UNCLUMP_METHOD_VAR, 'Method to distinguish clumped objects (see help for details):', 
                                                                    [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
-        annotations += CellProfiler.Variable.ChoicePopupAnnotation(WATERSHED_VAR, 'Method to draw dividing lines between clumped objects (see help for details):', 
+        annotations += cellprofiler.variable.choice_popup_annotation(WATERSHED_VAR, 'Method to draw dividing lines between clumped objects (see help for details):', 
                                                                    [WA_INTENSITY,WA_DISTANCE,WA_NONE])
-        annotations += CellProfiler.Variable.EditBoxAnnotation(SMOOTHING_SIZE_VAR, 'Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', AUTOMATIC)
-        annotations += CellProfiler.Variable.EditBoxAnnotation(MAXIMA_SUPRESSION_SIZE_VAR, 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', AUTOMATIC)
-        annotations += CellProfiler.Variable.CheckboxAnnotation(LOW_RES_MAXIMA_VAR, 'Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        annotations += CellProfiler.Variable.IndepGroupAnnotation(SAVE_OUTLINES_VAR, 'What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', CellProfiler.Variable.DO_NOT_USE)
-        annotations += CellProfiler.Variable.CheckboxAnnotation(FILL_HOLES_OPTION_VAR, 'Do you want to fill holes in identified objects?', True)
-        annotations += CellProfiler.Variable.CheckboxAnnotation(TEST_MODE_VAR, 'Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
+        annotations += cellprofiler.variable.edit_box_annotation(SMOOTHING_SIZE_VAR, 'Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', AUTOMATIC)
+        annotations += cellprofiler.variable.edit_box_annotation(MAXIMA_SUPRESSION_SIZE_VAR, 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', AUTOMATIC)
+        annotations += cellprofiler.variable.checkbox_annotation(LOW_RES_MAXIMA_VAR, 'Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
+        annotations += cellprofiler.variable.indep_group_annotation(SAVE_OUTLINES_VAR, 'What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', CellProfiler.Variable.DO_NOT_USE)
+        annotations += cellprofiler.variable.checkbox_annotation(FILL_HOLES_OPTION_VAR, 'Do you want to fill holes in identified objects?', True)
+        annotations += cellprofiler.variable.checkbox_annotation(TEST_MODE_VAR, 'Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
         return annotations
     
-    def WriteToHandles(self,handles):
+    def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
         """
     
-    def WriteToText(self,file):
+    def write_to_text(self,file):
         """Write the module's state, informally, to a text file
         """
         
-    def Run(self,pipeline,image_set,object_set,measurements, frame):
+    def run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -520,25 +521,25 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Ignoring almost everything...
         #
-        image = image_set.GetImage(self.ImageName)
-        img = image.Image
-        mask = image.Mask
+        image = image_set.get_image(self.image_name)
+        img = image.image
+        mask = image.mask
         if len(img.shape)==3:
             # cheat - mini grayscale here
             img = numpy.sum(img,2)/img.shape[2]
-        threshold = CellProfiler.Math.Otsu.Otsu(img,self.MinThreshold,self.MaxThreshold)
+        threshold = cellprofiler.math.otsu.otsu(img,self.min_threshold,self.max_threshold)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
         outline_image = labeled_image!=0
         temp = scipy.ndimage.binary_dilation(outline_image)
         outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
         if frame:
-            self.Display(frame,image, labeled_image,outline_image)
-        measurements.AddMeasurement('Image','Count_%s'%(self.ObjectName),numpy.array([object_count],dtype=float))
-        measurements.AddMeasurement('Image','Threshold_FinalThreshold_%s'%(self.ObjectName),numpy.array([threshold],dtype=float))
-        objects = CellProfiler.Objects.Objects()
+            self.display(frame,image, labeled_image,outline_image)
+        measurements.add_measurement('Image','Count_%s'%(self.object_name),numpy.array([object_count],dtype=float))
+        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name),numpy.array([threshold],dtype=float))
+        objects = cellprofiler.objects.Objects()
         objects.Segmented = labeled_image
-        object_set.AddObjects(objects,self.ObjectName)
+        object_set.add_objects(objects,self.object_name)
         #
         # Get the centers of each object - center_of_mass returns a list of two-tuples.
         #
@@ -547,66 +548,66 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         centers = centers.reshape((object_count,2))
         location_center_x = centers[:,0]
         location_center_y = centers[:,1]
-        measurements.AddMeasurement(self.ObjectName,'Location_Center_X', location_center_x)
-        measurements.AddMeasurement(self.ObjectName,'Location_Center_Y', location_center_y)
+        measurements.add_measurement(self.object_name,'Location_Center_X', location_center_x)
+        measurements.add_measurement(self.object_name,'Location_Center_Y', location_center_y)
 
-    def Display(self, frame, image, labeled_image, outline_image):
+    def display(self, frame, image, labeled_image, outline_image):
         """Display the image and labeling"""
-        window_name = "CellProfiler(%s:%d)"%(self.ModuleName(),self.ModuleNum())
+        window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
         my_frame=frame.FindWindowByName(window_name)
         if not my_frame:
             class my_frame_class(wx.Frame):
                 def __init__(self):
                     wx.Frame.__init__(self,frame,-1,"Identify Primary Automatic",name=window_name)
                     sizer = wx.BoxSizer()
-                    self.Figure = figure= matplotlib.figure.Figure()
-                    self.Panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.Figure) 
+                    self.figure = figure= matplotlib.figure.Figure()
+                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.Figure) 
                     self.SetSizer(sizer)
                     sizer.Add(self.Panel,1,wx.EXPAND)
-                    self.Bind(wx.EVT_PAINT,self.OnPaint)
-                    self.OrigAxes = self.Figure.add_subplot(2,2,1)
-                    self.OutlinedAxes = self.Figure.add_subplot(2,2,3)
-                    self.LabelAxes = self.Figure.add_subplot(2,2,2)
+                    self.Bind(wx.EVT_PAINT,self.on_paint)
+                    self.orig_axes = self.Figure.add_subplot(2,2,1)
+                    self.outlined_axes = self.Figure.add_subplot(2,2,3)
+                    self.label_axes = self.Figure.add_subplot(2,2,2)
                     self.Fit()
                     self.Show()
-                def OnPaint(self, event):
+                def on_paint(self, event):
                     dc = wx.PaintDC(self)
-                    self.Panel.draw(dc)
+                    self.panel.draw(dc)
 
             my_frame = my_frame_class()
             
-        my_frame.OrigAxes.clear()
-        my_frame.OrigAxes.imshow(image.Image)
-        my_frame.OrigAxes.set_title("Original image")
+        my_frame.orig_axes.clear()
+        my_frame.orig_axes.imshow(image.Image)
+        my_frame.orig_axes.set_title("Original image")
         
-        my_frame.LabelAxes.clear()
-        my_frame.LabelAxes.imshow(labeled_image,matplotlib.cm.jet)
-        my_frame.LabelAxes.set_title("Image labels")
+        my_frame.label_axes.clear()
+        my_frame.label_axes.imshow(labeled_image,matplotlib.cm.jet)
+        my_frame.label_axes.set_title("Image labels")
         
-        if image.Image.ndim == 2:
-            outline_img = numpy.ndarray(shape=(image.Image.shape[0],image.Image.shape[1],3))
-            outline_img[:,:,0] = image.Image 
-            outline_img[:,:,1] = image.Image 
-            outline_img[:,:,2] = image.Image
+        if image.image.ndim == 2:
+            outline_img = numpy.ndarray(shape=(image.image.shape[0],image.image.shape[1],3))
+            outline_img[:,:,0] = image.image 
+            outline_img[:,:,1] = image.image 
+            outline_img[:,:,2] = image.image
         else:
-            outline_img = image.Image.copy()
+            outline_img = image.image.copy()
         outline_img[outline_image != 0,0]=1
         outline_img[outline_image != 0,1]=1 
         outline_img[outline_image != 0,2]=0 
         
-        my_frame.OutlinedAxes.clear()
-        my_frame.OutlinedAxes.imshow(outline_img)
-        my_frame.OutlinedAxes.set_title("Outlined image")
+        my_frame.outlined_axes.clear()
+        my_frame.outlined_axes.imshow(outline_img)
+        my_frame.outlined_axes.set_title("Outlined image")
         my_frame.Refresh()
          
-    def GetCategories(self,pipeline, object_name):
+    def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         return ['Threshold','Location','NumberOfMergedObjects']
       
-    def GetMeasurements(self, pipeline, object_name, category):
+    def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
@@ -614,39 +615,39 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """
         return []
     
-    def GetMeasurementImages(self,pipeline,object_name,category,measurement):
+    def get_measurement_images(self,pipeline,object_name,category,measurement):
         """Return a list of image names used as a basis for a particular measure
         """
         return []
     
-    def GetMeasurementScales(self,pipeline,object_name,category,measurement,image_name):
+    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
     
-    def GetImageName(self):
+    def get_image_name(self):
         """The name of the image to be segmented"""
-        return self.Variable(IMAGE_NAME_VAR).Value
+        return self.variable(IMAGE_NAME_VAR).value
     
-    ImageName = property(GetImageName)
+    image_name = property(get_image_name)
     
-    def GetObjectName(self):
+    def get_object_name(self):
         """The name of the objects produced"""
-        return self.Variable(OBJECT_NAME_VAR).Value
+        return self.variable(OBJECT_NAME_VAR).value
     
-    ObjectName = property(GetObjectName)
+    object_name = property(get_object_name)
     
-    def GetMinSize(self):
+    def get_min_size(self):
         """The expected minimum size of objects"""
-        return int(self.Variable(SIZE_RANGE_VAR).Value.split(',')[0])
+        return int(self.variable(SIZE_RANGE_VAR).value.split(',')[0])
     
-    MinSize = property(GetMinSize)
+    min_size = property(get_min_size)
     
-    def GetMaxSize(self):
+    def get_max_size(self):
         """The expected maximum size of objects"""
-        return int(self.Variable(SIZE_RANGE_VAR).Value.split(',')[1])
+        return int(self.variable(SIZE_RANGE_VAR).value.split(',')[1])
     
-    MaxSize = property(GetMaxSize)
+    max_size = property(get_max_size)
     
     def GetExcludeSize(self):
         """Exclude objects on the basis of size if true"""

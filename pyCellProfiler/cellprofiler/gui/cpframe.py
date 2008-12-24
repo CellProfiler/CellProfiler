@@ -7,13 +7,13 @@ import os
 import wx
 import wx.lib.inspection
 import wx.lib.scrolledpanel
-import CellProfiler.Preferences
-from CellProfiler.CellProfilerGUI.PipelineListView import PipelineListView
-from CellProfiler.Pipeline import Pipeline
-from CellProfiler.CellProfilerGUI.PipelineController import PipelineController
-from CellProfiler.CellProfilerGUI.ModuleView import ModuleView
-from CellProfiler.CellProfilerGUI.PreferencesView import PreferencesView
-from CellProfiler.CellProfilerGUI.DirectoryView import DirectoryView
+import cellprofiler.preferences
+from cellprofiler.gui.pipelinelistview import PipelineListView
+from cellprofiler.pipeline import Pipeline
+from cellprofiler.gui.pipelinecontroller import PipelineController
+from cellprofiler.gui.moduleview import ModuleView
+from cellprofiler.gui.preferencesview import PreferencesView
+from cellprofiler.gui.directoryview import DirectoryView
 import traceback
 import sys
 
@@ -33,14 +33,14 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.__TopLeftPanel = wx.Panel(self,-1)
-        self.__LogoPanel = wx.Panel(self,-1,style=wx.RAISED_BORDER)
-        self.__ModuleListPanel = wx.Panel(self.__TopLeftPanel,-1)
-        self.__ModuleControlsPanel = wx.Panel(self.__TopLeftPanel,-1)
-        self.__ModulePanel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
-        self.__FileListPanel = wx.Panel(self,-1)
-        self.__PreferencesPanel = wx.Panel(self,-1)
-        self.__Pipeline = Pipeline()
+        self.__top_left_panel = wx.Panel(self,-1)
+        self.__logo_panel = wx.Panel(self,-1,style=wx.RAISED_BORDER)
+        self.__module_list_panel = wx.Panel(self.__top_left_panel,-1)
+        self.__module_controls_panel = wx.Panel(self.__top_left_panel,-1)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
+        self.__file_list_panel = wx.Panel(self,-1)
+        self.__preferences_panel = wx.Panel(self,-1)
+        self.__pipeline = Pipeline()
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -83,13 +83,13 @@ class CPFrame(wx.Frame):
         wx.lib.inspection.InspectionTool().Show()
 
     def __on_help_module(self,event):
-        modules = self.__PipelineListView.GetSelectedModules()
+        modules = self.__pipeline_list_view.get_selected_modules()
         filename = self.__get_icon_filename()
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
         bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
         for module in modules:
-            helpframe = wx.Frame(self,-1,'Help for module, "%s"'%(module.ModuleName()),size=(640,480))
+            helpframe = wx.Frame(self,-1,'Help for module, "%s"'%(module.module_name),size=(640,480))
             sizer = wx.BoxSizer()
             panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
             panel.SetBackgroundColour(bgcolor)
@@ -107,48 +107,47 @@ class CPFrame(wx.Frame):
             helpframe.Show()
         
     def __attach_views(self):
-        self.__PipelineListView = PipelineListView(self.__ModuleListPanel)
-        self.__PipelineController = PipelineController(self.__Pipeline,self)
-        self.__PipelineListView.AttachToPipeline(self.__Pipeline,self.__PipelineController)
-        self.__PipelineController.AttachToModuleControlsPanel(self.__ModuleControlsPanel)
-        self.__ModuleView = ModuleView(self.__ModulePanel,self.__Pipeline)
-        self.__PipelineController.AttachToModuleView(self.__ModuleView)
-        self.__PipelineListView.AttachToModuleView((self.__ModuleView))
-        self.__PreferencesView = PreferencesView(self.__PreferencesPanel)
-        self.__PreferencesView.AttachToPipelineController(self.__PipelineController)
-        self.__DirectoryView = DirectoryView(self.__FileListPanel)
-        self.__PipelineController.AttachToDirectoryView(self.__DirectoryView)
+        self.__pipeline_list_view = PipelineListView(self.__module_list_panel)
+        self.__pipeline_controller = PipelineController(self.__pipeline,self)
+        self.__pipeline_list_view.attach_to_pipeline(self.__pipeline,self.__pipeline_controller)
+        self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
+        self.__module_view = ModuleView(self.__module_panel,self.__pipeline)
+        self.__pipeline_controller.attach_to_module_view(self.__module_view)
+        self.__pipeline_list_view.attach_to_module_view((self.__module_view))
+        self.__preferences_view = PreferencesView(self.__preferences_panel)
+        self.__preferences_view.attach_to_pipeline_controller(self.__pipeline_controller)
+        self.__directory_view = DirectoryView(self.__file_list_panel)
+        self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
         
     def __do_layout(self):
-        #self.__sizer = wx.FlexGridSizer(2,2,1,1)
         self.__sizer = CPSizer(2,2,0,1)
-        self.__TopLeftSizer = wx.FlexGridSizer(3,1,1,1)
-        self.__TopLeftSizer.Add(self.__LogoPanel,0,wx.EXPAND|wx.ALL,1)
-        self.__TopLeftSizer.Add(self.__ModuleListPanel,1,wx.EXPAND|wx.ALL,1)
-        self.__TopLeftSizer.Add(self.__ModuleControlsPanel,0,wx.EXPAND|wx.ALL,2)
-        self.__TopLeftSizer.AddGrowableRow(1)
-        self.__TopLeftPanel.SetSizer(self.__TopLeftSizer)
-        self.__sizer.AddMany([(self.__TopLeftPanel,0,wx.EXPAND),
-                         (self.__ModulePanel,1,wx.EXPAND),
-                         (self.__FileListPanel,0,wx.EXPAND),
-                         (self.__PreferencesPanel,0,wx.EXPAND)])
+        self.__top_left_sizer = wx.FlexGridSizer(3,1,1,1)
+        self.__top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
+        self.__top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
+        self.__top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
+        self.__top_left_sizer.AddGrowableRow(1)
+        self.__top_left_panel.SetSizer(self.__top_left_sizer)
+        self.__sizer.AddMany([(self.__top_left_panel,0,wx.EXPAND),
+                         (self.__module_panel,1,wx.EXPAND),
+                         (self.__file_list_panel,0,wx.EXPAND),
+                         (self.__preferences_panel,0,wx.EXPAND)])
         self.__sizer.set_ignore_height(0,1) # Ignore the best height for the file list panel
         self.__sizer.set_ignore_height(0,0) # Ignore the best height for the module list panel
         self.SetSizer(self.__sizer)
         self.Layout()
-        self.__DirectoryView.SetHeight(self.__PreferencesPanel.GetBestSize()[1])
+        self.__directory_view.set_height(self.__preferences_panel.GetBestSize()[1])
 
     def __layout_logo(self):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         image = wx.Image(self.__get_icon_filename(),wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        logopic = wx.StaticBitmap(self.__LogoPanel,-1,image)
-        logotext = wx.StaticText(self.__LogoPanel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
+        logopic = wx.StaticBitmap(self.__logo_panel,-1,image)
+        logotext = wx.StaticText(self.__logo_panel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
         sizer.AddMany([(logopic,0,wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL,5),
                        (logotext,1,wx.EXPAND)])
-        self.__LogoPanel.SetSizer(sizer)
+        self.__logo_panel.SetSizer(sizer)
     
     def __get_icon_filename(self):
-        return os.path.join(CellProfiler.Preferences.PythonRootDirectory(),'CellProfilerIcon.png')
+        return os.path.join(cellprofiler.preferences.python_root_directory(),'CellProfilerIcon.png')
     
     def __set_icon(self):
         filename = self.__get_icon_filename()
@@ -166,7 +165,7 @@ class CPFrame(wx.Frame):
         wx.MessageBox(text,"Caught exception during operation")
     
     def get_preferences_view(self):
-        return self.__PreferencesView
+        return self.__preferences_view
     
     preferences_view = property(get_preferences_view)
 

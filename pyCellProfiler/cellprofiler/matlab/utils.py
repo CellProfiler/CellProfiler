@@ -6,7 +6,7 @@ import tempfile
 import scipy.io.matlab.mio
 import os
 
-def NewStringCellArray(shape):
+def new_string_cell_array(shape):
     """Return a numpy.ndarray that looks like {NxM cell} to Matlab
     
     Return a numpy.ndarray that looks like {NxM cell} to Matlab.
@@ -24,19 +24,19 @@ def NewStringCellArray(shape):
             result[i,j] = numpy.empty((0,0)) 
     return result
 
-def MakeCellStructDType(fields):
+def make_cell_struct_dtype(fields):
     """Makes the dtype of a struct composed of cells
     
     fields - the names of the fields in the struct
     """
     return numpy.dtype([(x,'|O4') for x in fields])
 
-def GetIntFromMatlab(proxy):
+def get_int_from_matlab(proxy):
     """Given a proxy to an integer in Matlab, return the integer
     """
     return int(GetMatlabInstance().num2str(proxy))
 
-def LoadIntoMatlab(handles):
+def load_into_matlab(handles):
     """Return a proxy object which is the data structure passed, loaded into Matlab
     """
     (matfd,matpath) = tempfile.mkstemp('.mat')
@@ -46,14 +46,14 @@ def LoadIntoMatlab(handles):
         scipy.io.matlab.mio.savemat(matfh,handles,format='5',long_field_names=True)
         matfh.close()
         closed = True
-        matlab = GetMatlabInstance()
+        matlab = get_matlab_instance()
         return matlab.load(matpath)
     finally:
         if not closed:
             matfh.close()
         os.unlink(matpath)
 
-def EncapsulateStringsInArrays(handles):
+def encapsulate_strings_in_arrays(handles):
     """Recursively descend through the handles structure, replacing strings as arrays packed with strings
     
     This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
@@ -63,18 +63,18 @@ def EncapsulateStringsInArrays(handles):
         flat = handles.flat
         for i in range(0,len(flat)):
             if isinstance(flat[i],str) or isinstance(flat[i],unicode):
-                flat[i] = EncapsulateString(flat[i])
+                flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i],numpy.ndarray):
-                EncapsulateStringsInArrays(flat[i])
+                encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
         for field in handles.dtype.fields.keys():
             if isinstance(handles[field],str) or isinstance(handles[field],unicode):
-                handles[field] = EncapsulateString(handles[field])
+                handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field],numpy.ndarray):
-                EncapsulateStringsInArrays(handles[field])
+                encapsulate_strings_in_arrays(handles[field])
 
-def EncapsulateString(s):
+def encapsulate_string(s):
     """Encapsulate a string in an array of shape 1 of the length of the string
     """
     if isinstance(s,str):
@@ -84,7 +84,7 @@ def EncapsulateString(s):
     result[0]=s
     return result;
 
-def GetMatlabInstance():
+def get_matlab_instance():
     global __MATLAB
     if not globals().has_key('__MATLAB'):
         import mlabwrap
@@ -95,8 +95,8 @@ def GetMatlabInstance():
             pass
     return __MATLAB
 
-def GCellFun():
-    return GetMatlabInstance().eval('@(cell,x) cell{x+1}')
+def g_cell_fun():
+    return get_matlab_instance().eval('@(cell,x) cell{x+1}')
 
-def SCellFun():
-    return GetMatlabInstance().eval('@(cell,x,value) {cell{1:x},value,cell{x+2:end}}')
+def s_cell_fun():
+    return get_matlab_instance().eval('@(cell,x,value) {cell{1:x},value,cell{x+2:end}}')

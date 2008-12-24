@@ -1,32 +1,37 @@
 """test_Pipeline.py - test the CellProfiler.Pipeline module
 """
-import CellProfiler.Pipeline
-import CellProfiler.Objects
-import CellProfiler.Image
-import CellProfiler.Measurements
-from CellProfiler.Modules.InjectImage import InjectImage
+__version__ = "$Revision: 1$"
+
+import os
+
 import unittest
 import numpy
 import numpy.lib.index_tricks
-import os
-from CellProfiler.Matlab.Utils import GetMatlabInstance
+
+import cellprofiler.pipeline
+import cellprofiler.objects
+import cellprofiler.cpmodule
+import cellprofiler.cpimage
+import cellprofiler.measurements
+from cellprofiler.modules.injectimage import InjectImage
+from cellprofiler.matlab.utils import get_matlab_instance
 
 def ModuleDirectory():
-    d = CellProfiler.Pipeline.__file__
-    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/CellProfiler
+    d = cellprofiler.pipeline.__file__
+    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/cellProfiler
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
     d = os.path.split(d)[0] # ./CellProfiler
     if not d:
         d = '..'
     return os.path.join(d,'Modules')
 
-def GetLoadImagesModule(ModuleNum=0):
-    module = CellProfiler.Module.MatlabModule()
-    module.SetModuleNum(ModuleNum)
-    module.CreateFromFile(os.path.join(ModuleDirectory(),'LoadImages.m'),ModuleNum)
+def get_load_images_module(module_num=0):
+    module = cellprofiler.cpmodule.MatlabModule()
+    module.set_module_num(module_num)
+    module.create_from_file(os.path.join(module_directory(),'LoadImages.m'),module_num)
     return module
 
-def ImageWithOneCell():
+def image_with_one_cell():
     img = numpy.zeros((100,100))
     mgrid = numpy.lib.index_tricks.nd_grid()
     g=mgrid[0:100,0:100]-50                              # the manhattan distance from 50,50
@@ -34,14 +39,14 @@ def ImageWithOneCell():
     img[ dist < 25] = (25.0-dist.astype(float)[dist<25])/25 # A circle in the middle of it
     return img
 
-def ExplodingPipeline(test):
+def exploding_pipeline(test):
     """Return a pipeline that fails if the run exception callback is called during a run
     """
-    x = CellProfiler.Pipeline.Pipeline()
+    x = cellprofiler.pipeline.Pipeline()
     def fn(pipeline,event):
-        if isinstance(event,CellProfiler.Pipeline.RunExceptionEvent):
-            test.assertFalse(event.Error.message)
-    x.AddListener(fn)
+        if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
+            test.assertFalse(event.error.message)
+    x.add_listener(fn)
     return x
          
 class TestPipeline(unittest.TestCase):
@@ -52,18 +57,18 @@ class TestPipeline(unittest.TestCase):
     #    handles = {'foo':cells}
     #    scipy.io.matlab.mio.savemat('c:\\temp\\pyfoo.mat', handles, format='5')
     
-    def test_00_00_Init(self):
-        x = CellProfiler.Pipeline.Pipeline()
+    def test_00_00_init(self):
+        x = cellprofiler.pipeline.Pipeline()
     
     def test_01_01_AddMatlabModule(self):
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
     
-    def test_03_01_LoadPipelineIntoMatlab(self):
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab()
-        matlab = GetMatlabInstance()
+    def test_03_01_load_pipeline_into_matlab(self):
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab()
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles,'Foo')),'0','Test of isfield failed - should return false for field of Foo in handles')
         for field,subfields in {'Settings':['PixelSize','ModuleNames','VariableValues','VariableInfoTypes',
                                            'VariableRevisionNumbers','ModuleRevisionNumbers','NumbersOfVariables',
@@ -87,86 +92,86 @@ class TestPipeline(unittest.TestCase):
         self.assertEquals(matlab.num2str(handles.Current.StartingImageSet),'1','Starting image set was not 1')
         
         
-    def test_04_01_LoadPipelineWithImages(self):
-        def ProvideImage(image_set,image_provider):
-            return CellProfiler.Image.Image(numpy.zeros((10,10),dtype=numpy.float64), numpy.ones((10,10),dtype=numpy.bool))
-        image_set = CellProfiler.Image.ImageSet(1,{'number':1},{})
-        image_set.Providers.append(CellProfiler.Image.CallbackImageProvider('MyImage',ProvideImage))
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(image_set=image_set)
-        matlab = GetMatlabInstance()
+    def test_04_01_load_pipeline_with_images(self):
+        def provide_image(image_set,image_provider):
+            return cellprofiler.image.Image(numpy.zeros((10,10),dtype=numpy.float64), numpy.ones((10,10),dtype=numpy.bool))
+        image_set = cellprofiler.image.ImageSet(1,{'number':1},{})
+        image_set.providers.append(cellprofiler.image.CallbackImageProvider('MyImage',provide_image))
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(image_set=image_set)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Pipeline,'MyImage')),'1','handles.Pipeline.MyImage is missing')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Pipeline,'CropMaskMyImage')),'1','handles.Pipeline.CropMaskMyImage is missing')
 
-    def test_04_02_LoadPipelineWithObjects(self):
-        o = CellProfiler.Objects.Objects()
-        o.Segmented = numpy.zeros((10,10),dtype=numpy.int32)
-        o.UneditedSegmented = numpy.zeros((10,10),dtype=numpy.int32)
-        o.SmallRemovedSegmented = numpy.zeros((10,10),dtype=numpy.int32)
-        oset = CellProfiler.Objects.ObjectSet()
-        oset.AddObjects(o, 'Nuclei')
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(object_set = oset)
-        matlab = GetMatlabInstance()
+    def test_04_02_load_pipeline_with_objects(self):
+        o = cellprofiler.objects.Objects()
+        o.segmented = numpy.zeros((10,10),dtype=numpy.int32)
+        o.unedited_segmented = numpy.zeros((10,10),dtype=numpy.int32)
+        o.small_removed_segmented = numpy.zeros((10,10),dtype=numpy.int32)
+        oset = cellprofiler.objects.ObjectSet()
+        oset.add_objects(o, 'Nuclei')
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(object_set = oset)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Pipeline,'SegmentedNuclei')),'1','handles.Pipeline.SegmentedNuclei is missing')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Pipeline,'UneditedSegmentedNuclei')),'1','handles.Pipeline.UneditedSegmentedNuclei is missing')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Pipeline,'SmallRemovedSegmentedNuclei')),'1','handles.Pipeline.SmallRemovedSegmentedNuclei is missing')
     
-    def test_04_03_01_LoadPipelineWithMeasurementsFirst(self):
-        m = CellProfiler.Measurements.Measurements()
-        m.AddMeasurement("Image", "FileName_OrigBlue", "/imaging/analysis/wubba-wubba-wubba")
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(measurements=m)
-        matlab = GetMatlabInstance()
+    def test_04_03_01_load_pipeline_with_measurements_first(self):
+        m = cellprofiler.measurements.Measurements()
+        m.add_measurement("Image", "FileName_OrigBlue", "/imaging/analysis/wubba-wubba-wubba")
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(measurements=m)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,'Image')),'1','handles.Measurements is missing Image')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,'FileName_OrigBlue')),'1','handles.Measurements.Image is missing FileName_OrigBlue')
         self.assertEquals(matlab.cell2mat(handles.Measurements.Image.FileName_OrigBlue[0]),'/imaging/analysis/wubba-wubba-wubba')
     
     def test_04_03_02_LoadPipelineWithMeasurementsSecond(self):
-        m = CellProfiler.Measurements.Measurements()
-        m.AddMeasurement("Image", "FileName_OrigBlue", "/imaging/analysis/wubba-wubba-wubba")
-        m.NextImageSet()
-        m.AddMeasurement("Image", "FileName_OrigBlue", "/imaging/analysis/w00-w00")
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(measurements=m)
-        matlab = GetMatlabInstance()
+        m = cellprofiler.measurements.Measurements()
+        m.add_measurement("Image", "FileName_OrigBlue", "/imaging/analysis/wubba-wubba-wubba")
+        m.next_image_set()
+        m.add_measurement("Image", "FileName_OrigBlue", "/imaging/analysis/w00-w00")
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(measurements=m)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,'Image')),'1','handles.Measurements is missing Image')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Image,'FileName_OrigBlue')),'1','handles.Measurements.Image is missing FileName_OrigBlue')
         self.assertEquals(matlab.cell2mat(handles.Measurements.Image.FileName_OrigBlue[1]),'/imaging/analysis/w00-w00')
     
     def test_04_03_03_LoadPipelineWithObjectMeasurementsFirst(self):
-        m = CellProfiler.Measurements.Measurements()
+        m = cellprofiler.measurements.Measurements()
         numpy.random.seed(0)
         meas = numpy.random.rand(10)
-        m.AddMeasurement("Nuclei", "Mean", meas)
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(measurements=m)
-        matlab = GetMatlabInstance()
+        m.add_measurement("Nuclei", "Mean", meas)
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(measurements=m)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,'Nuclei')),'1','handles.Measurements is missing Nuclei')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Nuclei,'Mean')),'1','handles.Measurements.Image is missing Mean')
         meas2=matlab.cell2mat(handles.Measurements.Nuclei.Mean[0])
         self.assertTrue((meas.flatten()==meas2.flatten()).all())
     
-    def test_04_03_04_LoadPipelineWithObjectMeasurementsSecond(self):
-        m = CellProfiler.Measurements.Measurements()
+    def test_04_03_04_load_pipeline_with_object_measurements_second(self):
+        m = cellprofiler.measurements.Measurements()
         numpy.random.seed(0)
         meas = numpy.random.rand(10)
-        m.AddMeasurement("Nuclei", "Mean", meas)
-        m.NextImageSet()
+        m.add_measurement("Nuclei", "Mean", meas)
+        m.next_image_set()
         meas = numpy.random.rand(10)
-        m.AddMeasurement("Nuclei", "Mean", meas)
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(measurements=m)
-        matlab = GetMatlabInstance()
+        m.add_measurement("Nuclei", "Mean", meas)
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(measurements=m)
+        matlab = get_matlab_instance()
         self.assertEquals(matlab.num2str(matlab.isfield(handles,"Measurements")),'1','handles is missing Measurements')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,'Nuclei')),'1','handles.Measurements is missing Nuclei')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.Nuclei,'Mean')),'1','handles.Measurements.Image is missing Mean')
@@ -175,48 +180,48 @@ class TestPipeline(unittest.TestCase):
         meas2=matlab.cell2mat(handles.Measurements.Nuclei.Mean[1])
         self.assertTrue((meas.flatten()==meas2.flatten()).all())
     
-    def test_05_01_Regression(self):
+    def test_05_01_regression(self):
         #
         # An observed bug when loading into Matlab
         #
         data = {'Image':['Count_Nuclei','Threshold_FinalThreshold_Nuclei','ModuleError_02IdentifyPrimAutomatic','PathName_CytoplasmImage','Threshold_WeightedVariance_Nuclei','FileName_CytoplasmImage',
                          'Threshold_SumOfEntropies_Nuclei','PathName_NucleusImage','Threshold_OrigThreshold_Nuclei','FileName_NucleusImage','ModuleError_01LoadImages'],
                 'Nuclei':['Location_Center_Y','Location_Center_X'] }
-        m=CellProfiler.Measurements.Measurements()
+        m=cellprofiler.measurements.Measurements()
         for key,values in data.iteritems():
             for value in values:
-                m.AddMeasurement(key, value, 'Bogus')
-        m.NextImageSet()
-        x = CellProfiler.Pipeline.Pipeline()
-        x.AddModule(GetLoadImagesModule())
-        handles = x.LoadPipelineIntoMatlab(measurements=m)
-        matlab = GetMatlabInstance()
+                m.add_measurement(key, value, 'Bogus')
+        m.next_image_set()
+        x = cellprofiler.pipeline.Pipeline()
+        x.add_module(get_load_images_module())
+        handles = x.load_pipeline_into_matlab(measurements=m)
+        matlab = get_matlab_instance()
         for key,values in data.iteritems():
             for value in values:
                 self.assertEquals(matlab.num2str(matlab.isfield(matlab.getfield(handles.Measurements,key),value)),'1','Did not find field handles.Measurements.%s.%s'%(key,value))
     
-    def test_06_01_RunPipeline(self):
-        x = ExplodingPipeline(self)
-        module = InjectImage('OneCell',ImageWithOneCell())
-        module.SetModuleNum(1)
-        x.AddModule(module)
-        x.Run()
+    def test_06_01_run_pipeline(self):
+        x = exploding_pipeline(self)
+        module = InjectImage('OneCell',image_with_one_cell())
+        module.set_module_num(1)
+        x.add_module(module)
+        x.run()
     
     def test_06_01_RunPipelineWithMatlab(self): 
-        x = ExplodingPipeline(self)
-        module = InjectImage('OneCell',ImageWithOneCell())
-        module.SetModuleNum(1)
-        x.AddModule(module)
-        module = CellProfiler.Module.MatlabModule()
-        module.SetModuleNum(2)
-        module.CreateFromFile(os.path.join(ModuleDirectory(),'IdentifyPrimAutomatic.m'),2)
-        x.AddModule(module)
-        module.Variables()[0].SetValue('OneCell')
-        module.Variables()[1].SetValue('Nuclei')
-        measurements = x.Run()
-        self.assertTrue('Nuclei' in measurements.GetObjectNames(),"IdentifyPrimAutomatic did not create a Nuclei category")
-        self.assertTrue('Location_Center_X' in measurements.GetFeatureNames('Nuclei'),"IdentifyPrimAutomatic did not create a Location_Center_X measurement")
-        center_x = measurements.GetAllMeasurements('Nuclei','Location_Center_X')
+        x = exploding_pipeline(self)
+        module = InjectImage('OneCell',image_with_one_cell())
+        module.set_module_num(1)
+        x.add_module(module)
+        module = cellprofiler.module.MatlabModule()
+        module.set_module_num(2)
+        module.create_from_file(os.path.join(module_directory(),'IdentifyPrimAutomatic.m'),2)
+        x.add_module(module)
+        module.variables()[0].set_value('OneCell')
+        module.variables()[1].set_value('Nuclei')
+        measurements = x.run()
+        self.assertTrue('Nuclei' in measurements.get_object_names(),"IdentifyPrimAutomatic did not create a Nuclei category")
+        self.assertTrue('Location_Center_X' in measurements.get_feature_names('Nuclei'),"IdentifyPrimAutomatic did not create a Location_Center_X measurement")
+        center_x = measurements.get_all_measurements('Nuclei','Location_Center_X')
         self.assertTrue(len(center_x),'There are measurements for %d image sets, should be 1'%(len(center_x)))
         self.assertEqual(numpy.product(center_x[0].shape),1,"More than one object was found")
         center = center_x[0][0,0]

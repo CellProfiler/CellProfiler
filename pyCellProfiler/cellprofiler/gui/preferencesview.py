@@ -1,12 +1,12 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
 
-    $Revision$
 """
+__version__="$Revision$"
 
 import os
 import string
 import wx
-import CellProfiler.Preferences
+import cellprofiler.preferences
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
@@ -19,16 +19,16 @@ class PreferencesView:
         self.__sizer = wx.BoxSizer(wx.VERTICAL)
         self.__image_folder_panel = wx.Panel(panel,-1)
         self.__image_edit_box = self.__make_folder_panel(self.__image_folder_panel,
-                                                         CellProfiler.Preferences.GetDefaultImageDirectory(),
+                                                         cellprofiler.preferences.get_default_image_directory(),
                                                          'default image folder',
                                                          'HelpDefaultImageFolder.m',
-                                                         CellProfiler.Preferences.SetDefaultImageDirectory)
+                                                         cellprofiler.preferences.set_default_image_directory)
         self.__output_folder_panel = wx.Panel(panel,-1)
         self.__output_edit_box = self.__make_folder_panel(self.__output_folder_panel,
-                                                          CellProfiler.Preferences.GetDefaultOutputDirectory(),
+                                                          cellprofiler.preferences.get_default_output_directory(),
                                                           'default output folder',
                                                           'HelpDefaultOutputFolder.m',
-                                                          CellProfiler.Preferences.SetDefaultOutputDirectory)
+                                                          cellprofiler.preferences.set_default_output_directory)
         self.__odds_and_ends_panel = wx.Panel(panel,-1)
         self.__make_odds_and_ends_panel()
         self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
@@ -51,9 +51,9 @@ class PreferencesView:
                        (edit_box,3,wx.EXPAND|wx.ALL,1),
                        (browse_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event, helpfile))
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnBrowse(event,edit_box,text,action),browse_button)
-        panel.Bind(wx.EVT_TEXT,lambda event: self.__OnEditBoxChange(event, edit_box, text,action),edit_box)
+        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event, helpfile))
+        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_browse(event,edit_box,text,action),browse_button)
+        panel.Bind(wx.EVT_TEXT,lambda event: self.__on_edit_box_change(event, edit_box, text,action),edit_box)
         return edit_box
     
     def __make_odds_and_ends_panel(self):
@@ -74,67 +74,67 @@ class PreferencesView:
                        (output_filename_help_button,0,wx.ALL,1),
                        (self.__analyze_images_button,0,wx.ALL,1)])
         panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpPixelSize.m"),pixel_help_button)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__OnHelp(event,"HelpOutputFileName.m"),output_filename_help_button)
-        panel.Bind(wx.EVT_TEXT, self.__OnPixelSizeChanged, self.__pixel_size_edit_box)
-        panel.Bind(wx.EVT_TEXT, self.__OnOutputFilenameChanged, self.__output_filename_edit_box)
-        CellProfiler.Preferences.AddOutputFileNameListener(self.__OnPreferencesOutputFilenameEvent)
+        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpPixelSize.m"),pixel_help_button)
+        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpOutputFileName.m"),output_filename_help_button)
+        panel.Bind(wx.EVT_TEXT, self.__on_pixel_size_changed, self.__pixel_size_edit_box)
+        panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
+        cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
 
-    def AttachToPipelineController(self,pipeline_controller):
-        self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.OnAnalyzeImages, self.__analyze_images_button)
+    def attach_to_pipeline_controller(self,pipeline_controller):
+        self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.on_analyze_images, self.__analyze_images_button)
         
-    def SetMessageText(self,text):
+    def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()
-        self.__status_text.SetLabel(text)
-        self.__status_text.SetSize(saved_size)
+        self.__status_text.set_label(text)
+        self.__status_text.set_size(saved_size)
     
-    def PopErrorText(self,error_text):
+    def pop_error_text(self,error_text):
         if error_text in self.__errors:
             self.__errors.remove(error_text)
             if len(self.__errors) == 0:
-                self.SetMessageColor(wx.Color(0,0,0))
-                self.SetMessageText(WELCOME_MESSAGE)
+                self.set_message_color(wx.Color(0,0,0))
+                self.set_message_text(WELCOME_MESSAGE)
             else:
-                self.SetMessageText(self.__errors.__iter__().next())
+                self.set_message_text(self.__errors.__iter__().next())
         
-    def SetMessageColor(self,color):
+    def set_message_color(self,color):
         self.__status_text.SetForegroundColour(color)
     
-    def SetErrorText(self,error_text):
-        self.SetMessageText(error_text)
-        self.SetMessageColor(wx.Color(255,0,0))
+    def set_error_text(self,error_text):
+        self.set_message_text(error_text)
+        self.set_message_color(wx.Color(255,0,0))
         self.__errors.add(error_text)
         
-    def __OnBrowse(self,event,edit_box,text,action):
+    def __on_browse(self,event,edit_box,text,action):
         dir_dialog = wx.DirDialog(self.__panel,string.capitalize(text),edit_box.GetValue())
         if dir_dialog.ShowModal() == wx.ID_OK:
             edit_box.SetValue(dir_dialog.GetPath())
 
-    def __OnEditBoxChange(self,event,edit_box,text,action):
+    def __on_edit_box_change(self,event,edit_box,text,action):
         path = edit_box.GetValue()
         error_text = 'The %s is not a directory'%(text)
         if os.path.isdir(path):
             action(path)
-            self.PopErrorText(error_text)
+            self.pop_error_text(error_text)
         else:
-            self.SetErrorText(error_text)
+            self.set_error_text(error_text)
     
-    def __OnHelp(self,event,helpfile):
+    def __on_help(self,event,helpfile):
         pass
     
-    def __OnPixelSizeChanged(self,event):
+    def __on_pixel_size_changed(self,event):
         error_text = 'Pixel size must be a number'
         text = self.__pixel_size_edit_box.Value
         if text.isdigit():
-            CellProfiler.Preferences.SetPixelSize(int(text))
-            self.PopErrorText(error_text)
+            cellprofiler.preferences.set_pixel_size(int(text))
+            self.pop_error_text(error_text)
         else:
-            self.SetErrorText(error_text)
+            self.set_error_text(error_text)
     
-    def __OnOutputFilenameChanged(self,event):
-        CellProfiler.Preferences.SetOutputFileName(self.__output_filename_edit_box.Value)
+    def __on_output_filename_changed(self,event):
+        cellprofiler.preferences.set_output_file_name(self.__output_filename_edit_box.Value)
     
-    def __OnPreferencesOutputFilenameEvent(self,event):
-        if self.__output_filename_edit_box.Value != CellProfiler.Preferences.GetOutputFileName():
-            self.__output_filename_edit_box.Value = CellProfiler.Preferences.GetOutputFileName()
+    def __on_preferences_output_filename_event(self,event):
+        if self.__output_filename_edit_box.Value != cellprofiler.preferences.get_output_file_name():
+            self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
         

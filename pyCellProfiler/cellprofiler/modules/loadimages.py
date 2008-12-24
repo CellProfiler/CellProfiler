@@ -1,15 +1,17 @@
 """ LoadImages.py - module to load images from files
 """
-
-import CellProfiler.Module
-import CellProfiler.Image
-import CellProfiler.Preferences
-import PIL.Image
+__version__="$Revision: 1$"
 import os
 import re
 import numpy
+
+import PIL.Image
 import matplotlib.image
-import CellProfiler.Variable
+
+import cellprofiler.cpmodule
+import cellprofiler.cpimage
+import cellprofiler.preferences
+import cellprofiler.variable
 
 MATCH_STYLE_VAR = 1
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -31,33 +33,33 @@ SAVE_AS_BINARY_VAR = 15
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
 
-class LoadImages(CellProfiler.Module.AbstractModule):
+class LoadImages(cellprofiler.cpmodule.AbstractModule):
     """Load images from files
     """
     def __init__(self):
-        CellProfiler.Module.AbstractModule.__init__(self)
-        self.SetModuleName("LoadImages")
+        cellprofiler.cpmodule.AbstractModule.__init__(self)
+        self.set_module_name("LoadImages")
         self.__annotations = None
     
-    def UpgradeModuleFromRevision(self,variable_revision_number):
+    def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
         """
-        if variable_revision_number != self.VariableRevisionNumber():
+        if variable_revision_number != self.variable_revision_number():
             raise NotImplementedError("Cannot read version %d of LoadImages"%(variable_revision_number))
     
-    def GetHelp(self):
+    def get_help(self):
         """Return help text for the module
         
         """
         raise NotImplementedError("Please implement GetHelp in your derived module class")
             
-    def VariableRevisionNumber(self):
+    def variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
         return 4
     
-    def Annotations(self):
+    def annotations(self):
         """Return the variable annotations.
         
         Return the variable annotations, as read out of the module file.
@@ -65,48 +67,48 @@ class LoadImages(CellProfiler.Module.AbstractModule):
         class.
         """ 
         if not self.__annotations:
-            annotations = CellProfiler.Variable.ChoicePopupAnnotation(MATCH_STYLE_VAR, 
+            annotations = cellprofiler.variable.choice_popup_annotation(MATCH_STYLE_VAR, 
                                                                       'How do you want to load these files?', 
                                                                       [MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS,MS_ORDER])
-            annotations += CellProfiler.Variable.EditBoxAnnotation(FIRST_IMAGE_VAR, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)','DAPI')
-            annotations += CellProfiler.Variable.IndepGroupAnnotation(FIRST_IMAGE_VAR+1, 'What do you want to call these images within CellProfiler?', 'imagegroup','OrigBlue')
+            annotations += cellprofiler.variable.edit_box_annotation(FIRST_IMAGE_VAR, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)','DAPI')
+            annotations += cellprofiler.variable.indep_group_annotation(FIRST_IMAGE_VAR+1, 'What do you want to call these images within CellProfiler?', 'imagegroup','OrigBlue')
             for i in range(1,MAX_IMAGE_COUNT):
                 text_to_find_var = i*2+FIRST_IMAGE_VAR
                 image_name_var   = text_to_find_var + 1
-                annotations += CellProfiler.Variable.EditBoxAnnotation(text_to_find_var, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option). Type "Do not use" to ignore:')
-                annotations += CellProfiler.Variable.IndepGroupAnnotation(image_name_var, 'What do you want to call these images within CellProfiler? (Type "Do not use" to ignore)', 'imagegroup')
+                annotations += cellprofiler.variable.edit_box_annotation(text_to_find_var, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option). Type "Do not use" to ignore:')
+                annotations += cellprofiler.variable.indep_group_annotation(image_name_var, 'What do you want to call these images within CellProfiler? (Type "Do not use" to ignore)', 'imagegroup')
             
-            annotations += CellProfiler.Variable.EditBoxAnnotation(IMAGES_PER_SET_VAR, 'If using ORDER, how many images are there in each group (i.e. each field of view)?','3')
-            annotations += CellProfiler.Variable.EditBoxAnnotation(TEXT_TO_EXCLUDE_VAR, 'If you want to exclude files, type the text that the excluded images have in common (for TEXT options). Type "Do not use" to ignore.')
-            annotations += CellProfiler.Variable.ChoicePopupAnnotation(FILE_FORMAT_VAR, 'What type of files are you loading?',
+            annotations += cellprofiler.variable.edit_box_annotation(IMAGES_PER_SET_VAR, 'If using ORDER, how many images are there in each group (i.e. each field of view)?','3')
+            annotations += cellprofiler.variable.edit_box_annotation(TEXT_TO_EXCLUDE_VAR, 'If you want to exclude files, type the text that the excluded images have in common (for TEXT options). Type "Do not use" to ignore.')
+            annotations += cellprofiler.variable.choice_popup_annotation(FILE_FORMAT_VAR, 'What type of files are you loading?',
                                                                        [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES,FF_AVI_MOVIES,FF_OTHER_MOVIES])
-            annotations += CellProfiler.Variable.CheckboxAnnotation(ANALYZE_SUB_DIR_VAR, 'Analyze all subfolders within the selected folder?')
-            annotations += CellProfiler.Variable.EditBoxAnnotation(PATHNAME_VAR, 'Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.', '.')
-            annotations += CellProfiler.Variable.ChoicePopupAnnotation(SAVE_AS_BINARY_VAR,'If the images you are loading are binary (black/white only), in what format do you want to store them?', [SB_GRAYSCALE,SB_BINARY])
+            annotations += cellprofiler.variable.checkbox_annotation(ANALYZE_SUB_DIR_VAR, 'Analyze all subfolders within the selected folder?')
+            annotations += cellprofiler.variable.edit_box_annotation(PATHNAME_VAR, 'Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.', '.')
+            annotations += cellprofiler.variable.choice_popup_annotation(SAVE_AS_BINARY_VAR,'If the images you are loading are binary (black/white only), in what format do you want to store them?', [SB_GRAYSCALE,SB_BINARY])
             self.__annotations = annotations
         return self.__annotations
     
-    def WriteToHandles(self,handles):
+    def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
         """
     
-    def WriteToText(self,file):
+    def write_to_text(self,file):
         """Write the module's state, informally, to a text file
         """
 
-    def PrepareRun(self, pipeline, image_set_list):
+    def prepare_run(self, pipeline, image_set_list):
         """Set up all of the image providers inside the image_set_list
         """
-        if self.LoadMovies():
+        if self.load_movies():
             raise NotImplementedError("Movies aren't implemented yet.")
         
-        files = self.CollectFiles()
+        files = self.collect_files()
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
         
         #Deal out the image filenames to a list of lists.
-        image_names = self.ImageNameVars()
+        image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for x in files:
             list_of_lists[x[1]].append(x[0])
@@ -116,13 +118,13 @@ class LoadImages(CellProfiler.Module.AbstractModule):
             if len(x) != image_set_count:
                 raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name,len(x)))
         list_of_lists = numpy.array(list_of_lists)
-        root = self.ImageDirectory()
+        root = self.image_directory()
         for i in range(0,image_set_count):
-            image_set = image_set_list.GetImageSet(i)
+            image_set = image_set_list.get_image_set(i)
             providers = [LoadImagesImageProvider(name,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
-            image_set.Providers.extend(providers)
+            image_set.providers.extend(providers)
         
-    def Run(self,pipeline,image_set,object_set,measurements, frame):
+    def run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module - add the measurements
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -130,22 +132,22 @@ class LoadImages(CellProfiler.Module.AbstractModule):
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        for provider in image_set.Providers:
+        for provider in image_set.providers:
             if isinstance(provider,LoadImagesImageProvider):
-                filename = provider.GetFilename()
-                path = provider.GetPathname()
-                name = provider.Name()
-                measurements.AddMeasurement('Image','FileName_'+name, filename)
-                measurements.AddMeasurement('Image','PathName_'+name, path)
+                filename = provider.get_filename()
+                path = provider.get_pathname()
+                name = provider.name
+                measurements.add_measurement('Image','FileName_'+name, filename)
+                measurements.add_measurement('Image','PathName_'+name, path)
 
-    def GetCategories(self,pipeline, object_name):
+    def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         return ['Image']
       
-    def GetMeasurements(self, pipeline, object_name, category):
+    def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
@@ -155,41 +157,41 @@ class LoadImages(CellProfiler.Module.AbstractModule):
             return ['FileName','PathName']
         return []
     
-    def GetMeasurementImages(self,pipeline,object_name,category,measurement):
+    def get_measurement_images(self,pipeline,object_name,category,measurement):
         """Return a list of image names used as a basis for a particular measure
         """
         return []
     
-    def GetMeasurementScales(self,pipeline,object_name,category,measurement,image_name):
+    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
     
-    def Category(self):
+    def category(self):
         return "File Processing"
 
     
-    def LoadImages(self):
+    def load_images(self):
         """Return true if we're loading images
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value==FF_INDIVIDUAL_IMAGES
+        return self.variables()[FILE_FORMAT_VAR-1].value==FF_INDIVIDUAL_IMAGES
     
-    def LoadMovies(self):
+    def load_movies(self):
         """Return true if we're loading movies
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value !=FF_INDIVIDUAL_IMAGES
+        return self.variables()[FILE_FORMAT_VAR-1].value !=FF_INDIVIDUAL_IMAGES
     
-    def LoadChoice(self):
+    def load_choice(self):
         """Return the way to match against files: MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS or MS_ORDER
         """
-        return self.Variables()[MATCH_STYLE_VAR-1].Value
+        return self.variables()[MATCH_STYLE_VAR-1].value
     
-    def AnalyzeSubDirs(self):
+    def analyze_sub_dirs(self):
         """Return True if we should analyze subdirectories in addition to the root image directory
         """
-        return self.Variables()[ANALYZE_SUB_DIR_VAR-1].IsYes
+        return self.variables()[ANALYZE_SUB_DIR_VAR-1].is_yes
     
-    def CollectFiles(self, dirs=[]):
+    def collect_files(self, dirs=[]):
         """Collect the files that match the filter criteria
         
         Collect the files that match the filter criteria, starting at the image directory
@@ -200,7 +202,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
         from the root directory, including the file name, the second element is the
         index within the image variables (e.g. ImageNameVars).
         """
-        path = reduce(os.path.join, dirs, self.ImageDirectory() )
+        path = reduce(os.path.join, dirs, self.image_directory() )
         files = os.listdir(path)
         files.sort()
         isdir = lambda x: os.path.isdir(os.path.join(path,x))
@@ -208,73 +210,73 @@ class LoadImages(CellProfiler.Module.AbstractModule):
         subdirs = filter(isdir, files)
         files = filter(isfile,files)
         path_to = (len(dirs) and reduce(os.path.join, dirs)) or ''
-        files = [(os.path.join(path_to,file), self.FilterFilename(file)) for file in files]
+        files = [(os.path.join(path_to,file), self.filter_filename(file)) for file in files]
         files = filter(lambda x: x[1] != None,files)
-        if self.AnalyzeSubDirs():
+        if self.analyze_sub_dirs():
             for dir in subdirs:
-                files += self.CollectFiles(dirs + [dir])
+                files += self.collect_files(dirs + [dir])
         return files
         
-    def ImageDirectory(self):
+    def image_directory(self):
         """Return the image directory
         """
-        Pathname = self.Variables()[PATHNAME_VAR-1].Value
-        if Pathname[0] == '.':
-            if len(Pathname) == 1:
-                return CellProfiler.Preferences.GetDefaultImageDirectory()
+        pathname = self.variables()[PATHNAME_VAR-1].value
+        if pathname[0] == '.':
+            if len(pathname) == 1:
+                return cellprofiler.preferences.get_default_image_directory()
             else:
                 #% If the pathname start with '.', interpret it relative to
                 #% the default image dir.
-                return os.path.join(CellProfiler.Preferences.GetDefaultImageDirectory(),Pathname[2:])
-        elif Pathname == '&':
-            if length(Pathname) == 1:
-                return CellProfiler.Preferences.GetDefaultOutputDirectory()
+                return os.path.join(cellprofiler.preferences.get_default_image_directory(),pathname[2:])
+        elif pathname == '&':
+            if length(pathname) == 1:
+                return cellprofiler.preferences.get_default_output_directory()
             else:
                 #% If the pathname start with '&', interpret it relative to
                 #% the default output directory
-                return os.path.join(CellProfiler.Preferences.GetDefaultOutputDirectory(),Pathname[2:])
+                return os.path.join(cellprofiler.preferences.get_default_output_directory(),pathname[2:])
         return Pathname
     
-    def ImageNameVars(self):
+    def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR].Value ]
+        result = [self.variables()[FIRST_IMAGE_VAR].value ]
         for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2].Value
-            if value == CellProfiler.Variable.DO_NOT_USE:
+            value = self.variables()[FIRST_IMAGE_VAR+i*2].value
+            if value == cellprofiler.variable.DO_NOT_USE:
                 break
             result += [value]
         return result
         
-    def TextToFindVars(self):
+    def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR-1].Value ]
+        result = [self.variables()[FIRST_IMAGE_VAR-1].value ]
         for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2-1].Value
-            if value == CellProfiler.Variable.DO_NOT_USE:
+            value = self.variables()[FIRST_IMAGE_VAR+i*2-1].value
+            if value == cellprofiler.variable.DO_NOT_USE:
                 break
             result += [value]
         return result
     
-    def TextToExclude(self):
+    def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
         """
-        return self.Variables()[TEXT_TO_EXCLUDE_VAR-1].Value
+        return self.variables()[TEXT_TO_EXCLUDE_VAR-1].value
     
-    def FilterFilename(self, filename):
+    def filter_filename(self, filename):
         """Returns either None or the index of the match variable
         """
-        if self.TextToExclude() != CellProfiler.Variable.DO_NOT_USE and \
-            filename.find(self.TextToExclude()) >=0:
+        if self.text_to_exclude() != cellprofiler.variable.DO_NOT_USE and \
+            filename.find(self.text_to_exclude()) >=0:
             return None
-        if self.LoadChoice() == MS_EXACT_MATCH:
-            ttfs = self.TextToFindVars()
+        if self.load_choice() == MS_EXACT_MATCH:
+            ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
                 if filename.find(ttf) >=0:
                     return i
-        elif self.LoadChoice() == MS_REGULAR_EXPRESSIONS:
-            ttfs = self.TextToFindVars()
+        elif self.load_choice() == MS_REGULAR_EXPRESSIONS:
+            ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
                 if re.search(ttf, filename):
                     return i
@@ -282,7 +284,7 @@ class LoadImages(CellProfiler.Module.AbstractModule):
             raise NotImplementedError("Load by order not implemented")
         return None
 
-class LoadImagesImageProvider(CellProfiler.Image.AbstractImageProvider):
+class LoadImagesImageProvider(cellprofiler.cpimage.AbstractImageProvider):
     """Provide an image by filename, loading the file as it is requested
     """
     def __init__(self,name,pathname,filename):
@@ -290,21 +292,21 @@ class LoadImagesImageProvider(CellProfiler.Image.AbstractImageProvider):
         self.__pathname = pathname
         self.__filename = filename
     
-    def ProvideImage(self, image_set):
+    def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        img = PIL.Image.open(self.GetFullName())
+        img = PIL.Image.open(self.get_full_name())
         img = matplotlib.image.pil_to_array(img)
-        return CellProfiler.Image.Image(img)
+        return cellprofiler.cpimage.Image(img)
     
-    def Name(self):
+    def name(self):
         return self.__name
     
-    def GetPathname(self):
+    def get_pathname(self):
         return self.__pathname
     
-    def GetFilename(self):
+    def get_filename(self):
         return self.__filename
     
-    def GetFullName(self):
-        return os.path.join(self.GetPathname(),self.GetFilename())
+    def get_full_name(self):
+        return os.path.join(self.get_pathname(),self.get_filename())

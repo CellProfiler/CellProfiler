@@ -11,8 +11,8 @@
     model the choices available to a variable.
 """
 
-import CellProfiler.Variable
-import CellProfiler.Pipeline
+import cellprofiler.variable
+import cellprofiler.pipeline
 
 class AbstractVariableChoices:
     """Represents a list of variable choices that might be tailored to a particular variable
@@ -29,19 +29,19 @@ class AbstractVariableChoices:
     def __init__(self):
         pass
     
-    def GetChoices(self,variable):
+    def get_choices(self,variable):
         """Return the choices available to a particular variable instance
         
         """
         raise NotImplementedError('GetChoices needs to be implemented by all derived classes')
     
-    def CanAcceptOther(self):
+    def can_accept_other(self):
         """Return True if the user can enter a choice that isn't in the list, False if the user is constrained to the list.
         
         """
         raise NotImplementedError('CanAcceptOther needs to be implemented by all derived classes')
     
-    def CanChange(self):
+    def can_change(self):
         """Return true if the choices are not static
         
         """
@@ -55,16 +55,16 @@ class StaticVariableChoices(AbstractVariableChoices):
         AbstractVariableChoices.__init__(self)
         self.__choice_list = choice_list
     
-    def GetChoices(self,variable):
+    def get_choices(self,variable):
         return self.__choice_list
     
-    def CanAcceptOther(self):
+    def can_accept_other(self):
         """Don't allow the user to pick a value that's not on the list - that value will never be valid
         
         """
         return False
     
-    def CanChange(self):
+    def can_change(self):
         """The list will never change - a listener is not needed
         
         """
@@ -77,7 +77,7 @@ class StaticVariableChoicesAllowingOther(StaticVariableChoices):
     def __init__(self,choice_list):
         StaticVariableChoices.__init__(self,choice_list)
         
-    def CanAcceptOther(self):
+    def can_accept_other(self):
         return True
 
 class AbstractMutableVariableChoices(AbstractVariableChoices):
@@ -88,44 +88,44 @@ class AbstractMutableVariableChoices(AbstractVariableChoices):
         AbstractVariableChoices.__init__(self)
         self.__listeners = []
         self.__pipeline = pipeline
-        pipeline.AddListener(self.__OnPipelineEvent)
+        pipeline.add_listener(self.__on_pipeline_event)
         
-    def AddListener(self,listener):
+    def add_listener(self,listener):
         """Add a listener that will be notified if an event occurs that might change the list of choices
         
         """
         self.__listeners.append(listener)
         
-    def RemoveListener(self,listener):
+    def remove_listener(self,listener):
         """Remove a previously added listener
         
         """
         self.__listeners.remove(listener)
     
-    def Notify(self,event):
+    def notify(self,event):
         """Notify all listeners of some event
         
         """
         for listener in self.__listeners:
             listener(self,event)
             
-    def CanChange(self):
+    def can_change(self):
         """Return true - the list is mutable and can change
         
         """
         return True
     
-    def CanAcceptOther(self):
+    def can_accept_other(self):
         """Return true - if the list can change, then a value that will be valid later should be allowed
         
         """
         return True
     
-    def __OnPipelineEvent(self,pipeline,event):
+    def __on_pipeline_event(self,pipeline,event):
         """Assume that a pipeline event (such as adding a module) will require an update to the choice list
         
         """
-        self.Notify(event)
+        self.notify(event)
         
 class InfoGroupVariableChoices(AbstractMutableVariableChoices):
     """Variable choices based on parsing %infotype groups out of the .m files
@@ -135,37 +135,37 @@ class InfoGroupVariableChoices(AbstractMutableVariableChoices):
         AbstractMutableVariableChoices.__init__(self,pipeline)
         self.__indep_variables = []
         
-    def AddIndepVariable(self,variable):
+    def add_indep_variable(self,variable):
         """Add a variable marked "indep" to the group
         
         Add a variable marked "indep" to the group. Listen for
         changes in that variable - these may indicate changes in available choices.
         """
         self.__indep_variables.append(variable)
-        variable.AddListener(self.__OnVariableEvent)
+        variable.add_listener(self.__on_variable_event)
     
-    def __OnVariableEvent(self,sender,event):
+    def __on_variable_event(self,sender,event):
         """Respond to an event on an independent variable
         
         Respond to an event on an independent variable.
         Remove a deleted variable from the variable list and notify listeners.
         Notify listeners after a value change.
         """
-        if isinstance(event,CellProfiler.Variable.DeleteVariableEvent):
+        if isinstance(event,cellprofiler.variable.DeleteVariableEvent):
             self.__indep_variables.remove(sender)
             self.Notify(event)
-        elif isinstance(event,CellProfiler.Variable.AfterChangeVariableEvent):
-            self.Notify(event)
+        elif isinstance(event,cellprofiler.variable.AfterChangeVariableEvent):
+            self.notify(event)
     
-    def GetChoices(self,variable):
+    def get_choices(self,variable):
         """Report the values of the independent variables that appear before this one in the pipeline.
         
         """
         choices = set()
         for indep in self.__indep_variables:
-            if (indep.Module().ModuleNum() < variable.Module().ModuleNum() and
-                indep.Value != CellProfiler.Variable.DO_NOT_USE):
-                choices.add(indep.Value)
+            if (indep.module().module_num < variable.module().module_num and
+                indep.value != CellProfiler.Variable.DO_NOT_USE):
+                choices.add(indep.value)
         choices = list(choices)
         choices.sort()
         return choices
@@ -180,7 +180,7 @@ class CategoryVariableChoices(AbstractMutableVariableChoices):
         """
         self.__pipeline = pipeline
         self.__object_variable = object_variable
-        object_variable.AddListener(self.__OnVariableEvent)
+        object_variable.add_listener(self.__on_variable_event)
         AbstractMutableVariableChoices.__init__(self,pipeline)
 
     def __OnVariableEvent(self,sender,event):
@@ -189,7 +189,7 @@ class CategoryVariableChoices(AbstractMutableVariableChoices):
         Notify listeners after a value change.
         """
         if isinstance(event,CellProfiler.Variable.AfterChangeVariableEvent):
-            self.Notify(event)
+            self.notify(event)
     
     def GetChoices(self,variable):
         """Report the values of the independent variables that appear before this one in the pipeline.
@@ -197,9 +197,9 @@ class CategoryVariableChoices(AbstractMutableVariableChoices):
         """
         choices = [] 
         object_name = self.__object_variable.Value
-        for ModuleNum in range(1,variable.Module().ModuleNum()):
-            module = self.__pipeline.Module(ModuleNum)
-            for choice in module.GetCategories(self.__pipeline,object_name):
+        for ModuleNum in range(1,variable.module().module_num):
+            module = self.__pipeline.module(module_num)
+            for choice in module.get_categories(self.__pipeline,object_name):
                 if not choice in choices:
                     choices.append(choice)
         return choices
@@ -217,29 +217,29 @@ class MeasurementVariableChoices(AbstractMutableVariableChoices):
         """
         self.__pipeline = pipeline
         self.__object_variable = object_variable
-        object_variable.AddListener(self.__OnVariableEvent)
+        object_variable.add_listener(self.__on_variable_event)
         self.__category_variable = category_variable
-        self.__category_variable.AddListener(self.__OnVariableEvent)
+        self.__category_variable.add_listener(self.__on_variable_event)
         AbstractMutableVariableChoices.__init__(self,pipeline)
 
-    def __OnVariableEvent(self,sender,event):
+    def __on_variable_event(self,sender,event):
         """Respond to an event on the object variable
         
         Notify listeners after a value change.
         """
-        if isinstance(event,CellProfiler.Variable.AfterChangeVariableEvent):
-            self.Notify(event)
+        if isinstance(event,cellprofiler.variable.AfterChangeVariableEvent):
+            self.notify(event)
     
-    def GetChoices(self,variable):
+    def get_choices(self,variable):
         """Report the possible measurements for this variable
         
         """
         choices = []
         object_name = self.__object_variable.Value
         category = self.__category_variable.Value
-        for ModuleNum in range(1,variable.Module().ModuleNum()):
-            module = self.__pipeline.Module(ModuleNum)
-            for choice in module.GetMeasurements(self.__pipeline,object_name,category):
+        for module_num in range(1,variable.module().module_num):
+            module = self.__pipeline.module(module_num)
+            for choice in module.get_measurements(self.__pipeline,object_name,category):
                 if not choice in choices:
                     choices.append(choice)
         return choices

@@ -10,20 +10,20 @@ class Measurements(object):
         self.__dictionary = {}
         self.__image_set_number = 0
     
-    def NextImageSet(self):
+    def next_image_set(self):
         self.__image_set_number+=1
         for object_features in self.__dictionary.values():
             for measurements in object_features.values():
                 measurements.append(None)
     
-    def GetImageSetNumber(self):
+    def get_image_set_number(self):
         """The image set number ties a bunch of measurements to a particular image set
         """
         return self.__image_set_number
     
-    ImageSetNumber = property(GetImageSetNumber)
+    image_set_number = property(get_image_set_number)
     
-    def AddMeasurement(self, ObjectName, FeatureName, Data):
+    def add_measurement(self, object_name, feature_name, data):
         """Add a measurement or, for objects, an array of measurements to the set
         
         This is the classic interface - like CPaddmeasurements:
@@ -31,50 +31,50 @@ class Measurements(object):
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
         """
-        if self.ImageSetNumber == 0:
-            if not self.__dictionary.has_key(ObjectName):
-                self.__dictionary[ObjectName] = {}
-            object_dict = self.__dictionary[ObjectName]
-            if not object_dict.has_key(FeatureName):
-                object_dict[FeatureName] = [Data]
+        if self.image_set_number == 0:
+            if not self.__dictionary.has_key(object_name):
+                self.__dictionary[object_name] = {}
+            object_dict = self.__dictionary[object_name]
+            if not object_dict.has_key(feature_name):
+                object_dict[feature_name] = [data]
             else:
-                assert False,"Adding a feature for a second time: %s.%s"%(ObjectName,FeatureName)
+                assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)
         else:
-            assert self.__dictionary.has_key(ObjectName),"Object %s requested for the first time on pass # %d"%(ObjectName,self.ImageSetNumber)
-            assert self.__dictionary[ObjectName].has_key(FeatureName),"Feature %s.%s added for the first time on pass # %d"%(ObjectName,FeatureName,self.ImageSetNumber)
-            assert not self.HasCurrentMeasurements(ObjectName, FeatureName), "Feature %s.%s has already been set for this image set"%(ObjectName,FeatureName)
+            assert self.__dictionary.has_key(object_name),"Object %s requested for the first time on pass # %d"%(object_name,self.image_set_number)
+            assert self.__dictionary[object_name].has_key(feature_name),"Feature %s.%s added for the first time on pass # %d"%(object_name,feature_name,self.image_set_number)
+            assert not self.has_current_measurements(object_name, feature_name), "Feature %s.%s has already been set for this image set"%(object_name,feature_name)
             #
             # These are for convenience - wrap measurement in an numpy array to make it a cell
             #
-            if isinstance(Data,unicode):
-                Data = str(Data)
-            if isinstance(Data,str):
-                a = numpy.ndarray((1,1),dtype='S%d'%(len(Data)))
-                a[0,0]=Data
-            self.__dictionary[ObjectName][FeatureName][self.ImageSetNumber] = Data
+            if isinstance(data,unicode):
+                data = str(data)
+            if isinstance(data,str):
+                a = numpy.ndarray((1,1),dtype='S%d'%(len(data)))
+                a[0,0]=data
+            self.__dictionary[object_name][feature_name][self.image_set_number] = data
     
-    def GetObjectNames(self):
+    def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """
         return self.__dictionary.keys()
     
-    ObjectNames = property(GetObjectNames)
+    object_names = property(get_object_names)
     
-    def GetFeatureNames(self,object_name):
+    def get_feature_names(self,object_name):
         """The list of feature names (measurements) for an object
         """
         if self.__dictionary.has_key(object_name):
             return self.__dictionary[object_name].keys()
         return []
     
-    def GetCurrentMeasurement(self,object_name,feature_name):
+    def get_current_measurement(self,object_name,feature_name):
         """Return the value for the named measurement for the current image set
         object_name  - the name of the objects being measured or "Image"
         feature_name - the name of the measurement feature to be returned 
         """
-        return self.GetAllMeasurements(object_name,feature_name)[self.ImageSetNumber]
+        return self.get_all_measurements(object_name,feature_name)[self.image_set_number]
     
-    def HasCurrentMeasurements(self,object_name,feature_name):
+    def has_current_measurements(self,object_name,feature_name):
         """Return true if the value for the named measurement for the current image set has been set
         object_name  - the name of the objects being measured or "Image"
         feature_name - the name of the measurement feature to be returned 
@@ -83,9 +83,9 @@ class Measurements(object):
             return False
         if not self.__dictionary[object_name].has_key(feature_name):
             return False
-        return self.__dictionary[object_name][feature_name][self.ImageSetNumber] != None
+        return self.__dictionary[object_name][feature_name][self.image_set_number] != None
     
-    def GetAllMeasurements(self,object_name,feature_name):
+    def get_all_measurements(self,object_name,feature_name):
         assert self.__dictionary.has_key(object_name),"No measurements for %s"%(object_name)
         assert self.__dictionary[object_name].has_key(feature_name),"No measurements for %s.%s"%(object_name,feature_name)
         return self.__dictionary[object_name][feature_name]

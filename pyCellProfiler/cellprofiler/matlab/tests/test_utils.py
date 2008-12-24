@@ -5,6 +5,7 @@
 import os
 import unittest
 import numpy
+import cellprofiler.matlab
 import cellprofiler.matlab.cputils as u
 
 class TestUtils(unittest.TestCase):

@@ -5,7 +5,7 @@ __version__="$Revision: 1$"
 
 import cellprofiler.cpmodule
 import cellprofiler.variable
-import cellprofiler.cpmath.otsu
+from cellprofiler.cpmath.otsu import otsu
 import cellprofiler.objects
 from cellprofiler.variable import AUTOMATIC
 import scipy.ndimage
@@ -527,7 +527,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         if len(img.shape)==3:
             # cheat - mini grayscale here
             img = numpy.sum(img,2)/img.shape[2]
-        threshold = cellprofiler.cpmath.otsu.otsu(img,self.min_threshold,self.max_threshold)
+        threshold = otsu(img,self.min_threshold,self.max_threshold)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
         outline_image = labeled_image!=0

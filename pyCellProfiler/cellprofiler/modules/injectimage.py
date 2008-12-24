@@ -54,7 +54,7 @@ class InjectImage(cellprofiler.cpmodule.AbstractModule):
         """Set up all of the image providers inside the image_set_list
         """
         image = cellprofiler.cpimage.Image(self.__image)
-        image_set_list.get_image_set(0).providers.append(cellprofiler.image.VanillaImageProvider(self.__image_name,image)) 
+        image_set_list.get_image_set(0).providers.append(cellprofiler.cpimage.VanillaImageProvider(self.__image_name,image)) 
 
     def run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module (abstract method)

@@ -16,7 +16,7 @@ import cellprofiler.measurements
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.matlab.utils import get_matlab_instance
 
-def ModuleDirectory():
+def module_directory():
     d = cellprofiler.pipeline.__file__
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/cellProfiler
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
@@ -94,9 +94,9 @@ class TestPipeline(unittest.TestCase):
         
     def test_04_01_load_pipeline_with_images(self):
         def provide_image(image_set,image_provider):
-            return cellprofiler.image.Image(numpy.zeros((10,10),dtype=numpy.float64), numpy.ones((10,10),dtype=numpy.bool))
-        image_set = cellprofiler.image.ImageSet(1,{'number':1},{})
-        image_set.providers.append(cellprofiler.image.CallbackImageProvider('MyImage',provide_image))
+            return cellprofiler.cpimage.Image(numpy.zeros((10,10),dtype=numpy.float64), numpy.ones((10,10),dtype=numpy.bool))
+        image_set = cellprofiler.cpimage.ImageSet(1,{'number':1},{})
+        image_set.providers.append(cellprofiler.cpimage.CallbackImageProvider('MyImage',provide_image))
         x = cellprofiler.pipeline.Pipeline()
         x.add_module(get_load_images_module())
         handles = x.load_pipeline_into_matlab(image_set=image_set)
@@ -212,7 +212,7 @@ class TestPipeline(unittest.TestCase):
         module = InjectImage('OneCell',image_with_one_cell())
         module.set_module_num(1)
         x.add_module(module)
-        module = cellprofiler.module.MatlabModule()
+        module = cellprofiler.cpmodule.MatlabModule()
         module.set_module_num(2)
         module.create_from_file(os.path.join(module_directory(),'IdentifyPrimAutomatic.m'),2)
         x.add_module(module)

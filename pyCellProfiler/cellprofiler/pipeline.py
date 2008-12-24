@@ -80,7 +80,7 @@ def add_matlab_images(handles,image_set):
     """
     matlab = get_matlab_instance()
     pipeline_fields = matlab.fields(handles.Pipeline)
-    provider_set = set([x.Name() for x in image_set.Providers])
+    provider_set = set([x.name for x in image_set.providers])
     image_fields = set()
     crop_fields = set()
     for i in range(0,int(matlab.length(pipeline_fields)[0,0])):
@@ -111,7 +111,7 @@ def add_matlab_images(handles,image_set):
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider(field,image))
     number_of_image_sets = get_int_from_matlab(handles.Current.NumberOfImageSets)
     if (not image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS)) or number_of_image_sets < image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]:
-        image_set.LegacyFields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
+        image_set.legacy_fields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
 
 def add_matlab_objects(handles,object_set):
     """Add any objects from the handles to the object set
@@ -145,7 +145,7 @@ def add_matlab_objects(handles,object_set):
             objects.SmallRemovedSegmented = matlab.getfield(handles.Pipeline,small_removed_segmented_field)
         object_set.add_objects(objects,object_name)
 
-def AddMatlabMeasurements(handles, measurements):
+def add_matlab_measurements(handles, measurements):
     """Get measurements made by Matlab and put them into our Python measurements object
     """
     matlab = get_matlab_instance()
@@ -157,21 +157,21 @@ def AddMatlabMeasurements(handles, measurements):
         for j in range(0,int(matlab.length(object_fields)[0,0])):
             feature = matlab.cell2mat(object_fields[j])
             if not measurements.has_current_measurements(field,feature):
-                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.ImageSetNumber])
+                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.image_set_number])
                 if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
                     # It's either not a numpy array (it's a string) or it's not the empty numpy array
                     # so add it to the measurements
                     measurements.add_measurement(field,feature,value)
 
-def AddAllImages(handles,image_set, object_set):
+def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     
     Add images to the handles structure, for example in the Python sandwich.
     """
     images = {}
-    for provider in image_set.Providers:
+    for provider in image_set.providers:
         name = provider.name()
-        image = image_set.GetImage(name)
+        image = image_set.get_image(name)
         images[name] = image.image
         if image.has_mask:
             images['CropMask'+name] = image.mask
@@ -189,7 +189,7 @@ def AddAllImages(handles,image_set, object_set):
         npy_images[key][0,0] = image
     handles[PIPELINE]=npy_images
 
-def AddAllMeasurements(handles, measurements):
+def add_all_measurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
     
     """
@@ -219,14 +219,14 @@ class Pipeline:
         self.__infogroups = {};
         self.__variable_choices = {}
     
-    def CreateFromHandles(self,handles):
+    def create_from_handles(self,handles):
         """Read a pipeline's modules out of the handles structure
         
         """
         self.__modules = [];
         self.__variable_choices = {}
-        Settings = handles[SETTINGS][0,0]
-        module_names = Settings[MODULE_NAMES]
+        settings = handles[SETTINGS][0,0]
+        module_names = settings[MODULE_NAMES]
         module_count = module_names.shape[1]
         for module_num in range(1,module_count+1):
             idx = module_num-1
@@ -237,17 +237,17 @@ class Pipeline:
             self.__hook_module_variables(module)
         self.notify_listeners(PipelineLoadedEvent())
     
-    def InstantiateModule(self,module_name):
+    def instantiate_module(self,module_name):
         if module_name.find('.') != -1:
             parts     = module_name.split('.')
             pkg_name  = '.'.join(parts[:-1])
             pkg       = __import__(pkg_name)
             module    = eval("%s()"%(module_name))
         else:
-            module = cellprofiler.module.MatlabModule()
+            module = cellprofiler.cpmodule.MatlabModule()
         return module
         
-    def SaveToHandles(self):
+    def save_to_handles(self):
         """Create a numpy array representing this pipeline
         
         """
@@ -256,12 +256,12 @@ class Pipeline:
         setting = settings[0,0]
         # The variables are a (modules,max # of variables) array of cells (objects)
         # where an empty cell is a (1,0) array of float64
-        variable_count = max([len(module.variables()) for module in self.Modules()])
+        variable_count = max([len(module.variables()) for module in self.modules()])
         module_count = len(self.modules())
         setting[VARIABLE_VALUES] =          new_string_cell_array((module_count,variable_count))
         # The variable info types are similarly shaped
         setting[VARIABLE_INFO_TYPES] =      new_string_cell_array((module_count,variable_count))
-        setting[MODULE_NAMES] =             NewStringCellArray((1,module_count))
+        setting[MODULE_NAMES] =             new_string_cell_array((1,module_count))
         setting[NUMBERS_OF_VARIABLES] =     numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
         setting[PIXEL_SIZE] =               cellprofiler.preferences.get_pixel_size() 
         setting[VARIABLE_REVISION_NUMBERS] =numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
@@ -324,8 +324,8 @@ class Pipeline:
             
         current = numpy.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
         handles[CURRENT]=current
-        current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.LegacyFields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
-        current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.ImageSetNumber + 1) or 1]
+        current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
+        current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.image_set_number + 1) or 1]
         current[NUMBER_OF_MODULES][0,0]        = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = [1]
         current[TIME_STARTED][0,0]             = str(datetime.datetime.now())
@@ -354,10 +354,10 @@ class Pipeline:
         if image_set:
             for provider in image_set.providers:
                 image = image_set.get_image(provider.name)
-                if image.Image != None:
-                    images[provider.Name()]=image.image
+                if image.image != None:
+                    images[provider.name]=image.image
                 if image.mask != None:
-                    images['CropMask'+provider.Name()]=image.mask
+                    images['CropMask'+provider.name]=image.mask
             for key,value in image_set.legacy_fields.iteritems():
                 if key != NUMBER_OF_IMAGE_SETS:
                     images[key]=value
@@ -386,7 +386,7 @@ class Pipeline:
                 object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
                 object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
                 npy_measurements[object_name][0,0] = object_measurements
-                for feature_name in measurements.GetFeatureNames(object_name):
+                for feature_name in measurements.get_feature_names(object_name):
                     feature_measurements = numpy.ndarray((1,measurements.image_set_number+1),dtype='object')
                     object_measurements[feature_name][0,0] = feature_measurements
                     data = measurements.get_current_measurement(object_name,feature_name)
@@ -403,7 +403,7 @@ class Pipeline:
         matlab = cellprofiler.matlab.utils.get_matlab_instance()
         self.set_matlab_path()
         display_size = (1024,768)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler.cpimage.ImageSetList()
         measurements = cellprofiler.measurements.Measurements()
         
         for module in self.modules():
@@ -427,7 +427,7 @@ class Pipeline:
             slot_number = 0
             object_set = cellprofiler.objects.ObjectSet()
             image_set = image_set_list.get_image_set(measurements.image_set_number)
-            for module in self.Modules():
+            for module in self.modules():
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 failure = 1
                 try:
@@ -586,8 +586,8 @@ class Pipeline:
         
         """
         all_variable_notes = []
-        for variable in module.variables():
-            annotations = module.variable_annotations(variable.variable_number())
+        for variable_number,variable in zip(range(1,len(module.variables())+1), module.variables()):
+            annotations = module.variable_annotations(variable_number)
             # variable_notes stores things we find out about variables as we
             # go along so we can refer back to them for subsequent variables
             variable_notes = {'dependency':None, 'popuptype':None, 'variable':variable }

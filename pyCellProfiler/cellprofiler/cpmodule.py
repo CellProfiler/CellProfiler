@@ -112,29 +112,28 @@ class AbstractModule(object):
         module_idx = self.module_num-1
         setting = handles[cellprofiler.pipeline.SETTINGS][0,0]
         setting[cellprofiler.pipeline.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
-        setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.Notes()),1),dtype='object')
-        for i in range(0,len(self.Notes())):
-            setting[CellProfiler.Pipeline.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
-        setting[CellProfiler.Pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.variables())
+        setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.notes()),1),dtype='object')
+        for i in range(0,len(self.notes())):
+            setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
+        setting[cellprofiler.pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.variables())
         for i in range(0,len(self.variables())):
             variable = self.variables()[i]
             if variable.value != None and len(variable.value) > 0:
                 setting[cellprofiler.pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.value)
-            vn = variable.variable_number()
-            annotations = self.variable_annotations(vn)
+            annotations = self.variable_annotations(i+1)
             if annotations.has_key('infotype'):
-                setting[CellProfiler.Pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].Value)
-        setting[CellProfiler.Pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number()
-        setting[CellProfiler.Pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
+                setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
+        setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number()
+        setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
     
-    def variable_annotations(self,VariableNum):
+    def variable_annotations(self,key):
         """Return annotations for the variable with the given number
         
         """
         if not self.__annotation_dict:
             self.__annotation_dict = cellprofiler.variable.get_annotations_as_dictionary(self.annotations())
-        if self.__annotation_dict.has_key(VariableNum):
-            return self.__annotation_dict[VariableNum]
+        if self.__annotation_dict.has_key(key):
+            return self.__annotation_dict[key]
         return {}
     
     def get_module_num(self):
@@ -167,7 +166,7 @@ class AbstractModule(object):
         """The class to instantiate, except for the special case of matlab modules.
         
         """
-        return self.__module__+'.'+self.ModuleName()
+        return self.__module__+'.'+self.module_name
     
     def set_module_name(self, module_name):
         self.__module_name = module_name
@@ -401,11 +400,11 @@ class MatlabModule(AbstractModule):
         handles.Current.CurrentModuleNumber = str(self.module_num)
         figure_field = 'FigureNumberForModule%d'%(self.module_num)
         if measurements.image_set_number == 0:
-            if handles.preferences.display_windows[self.module_num-1] == 0:
+            if handles.Preferences.DisplayWindows[self.module_num-1] == 0:
                 # Make up a fake figure for the module if we're not displaying its window
                 self.__figure = math.ceil(max(matlab.findobj()))+1 
             else:
-                self.__figure = matlab.CPfigure(handles,'','Name','%s Display, cycle # '%(self.ModuleName()))
+                self.__figure = matlab.CPfigure(handles,'','Name','%s Display, cycle # '%(self.module_name))
         handles.Current = matlab.setfield(handles.Current, figure_field, self.__figure)
             
         handles = matlab.feval(self.module_name,handles)
@@ -433,7 +432,7 @@ class MatlabModule(AbstractModule):
                 else:
                     after_help=True
             try:
-                annotations.append(cellprofiler.variable.annotation(line))
+                annotations.append(cellprofiler.variable.Annotation(line))
             except:
                 # Might be something else...
                 match = re.match('^%%%VariableRevisionNumber = ([0-9]+)',line)
@@ -470,7 +469,7 @@ class MatlabModule(AbstractModule):
         
         """
         if not self.__target_revision_number:
-            self.LoadAnnotations()
+            self.load_annotations()
         return self.__target_variable_revision_number
     
     def annotations(self):

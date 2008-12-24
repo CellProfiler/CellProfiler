@@ -34,7 +34,7 @@ def make_cell_struct_dtype(fields):
 def get_int_from_matlab(proxy):
     """Given a proxy to an integer in Matlab, return the integer
     """
-    return int(GetMatlabInstance().num2str(proxy))
+    return int(get_matlab_instance().num2str(proxy))
 
 def load_into_matlab(handles):
     """Return a proxy object which is the data structure passed, loaded into Matlab

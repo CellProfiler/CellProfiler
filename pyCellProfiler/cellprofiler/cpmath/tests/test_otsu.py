@@ -4,11 +4,11 @@
 import unittest
 import numpy
 import numpy.random
-from CellProfiler.Math.Otsu import Otsu
+from cellprofiler.cpmath.otsu import otsu
 
 class testOtsu(unittest.TestCase):
     def test_01_TwoValues(self):
-        x = Otsu([.2,.8])
+        x = otsu([.2,.8])
         self.assertTrue(x >= .2)
         self.assertTrue(x <= .8)
     
@@ -18,6 +18,6 @@ class testOtsu(unittest.TestCase):
         x1 = numpy.random.uniform(.6,1.0,size=1000)
         x = numpy.append(x0,x1)
         numpy.random.shuffle(x)
-        threshold = Otsu(x)
+        threshold = otsu(x)
         self.assertTrue(threshold >= .4)
         self.assertTrue(threshold <= .6)

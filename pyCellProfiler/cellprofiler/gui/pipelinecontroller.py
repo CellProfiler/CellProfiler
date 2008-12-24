@@ -13,7 +13,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
-import cellprofiler.matlab.utils
+import cellprofiler.matlab.cputils
 
 class PipelineController:
     """Controls the pipeline through the UI
@@ -242,7 +242,7 @@ class PipelineController:
         return self.__pipeline.Run(self.__frame)
     
     def set_matlab_path(self):
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = cellprofiler.matlab.cputils.get_matlab_instance()
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'DataTools'),matlab.path())
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools'),matlab.path())
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'CPsubfunctions'),matlab.path())

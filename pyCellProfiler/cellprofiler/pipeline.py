@@ -12,10 +12,10 @@ import datetime
 import traceback
 import cellprofiler.cpmodule
 import cellprofiler.preferences
-from cellprofiler.matlab.utils import new_string_cell_array,get_matlab_instance
-from cellprofiler.matlab.utils import s_cell_fun,make_cell_struct_dtype
-from cellprofiler.matlab.utils import load_into_matlab,get_int_from_matlab
-from cellprofiler.matlab.utils import encapsulate_strings_in_arrays
+from cellprofiler.matlab.cputils import new_string_cell_array,get_matlab_instance
+from cellprofiler.matlab.cputils import s_cell_fun,make_cell_struct_dtype
+from cellprofiler.matlab.cputils import load_into_matlab,get_int_from_matlab
+from cellprofiler.matlab.cputils import encapsulate_strings_in_arrays
 import cellprofiler.variablechoices
 import cellprofiler.cpimage
 import cellprofiler.measurements
@@ -285,7 +285,7 @@ class Pipeline:
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
-        root = {'handles':numpy.ndarray((1,1),dtype=cellprofiler.matlab.utils.make_cell_struct_dtype(handles.keys()))}
+        root = {'handles':numpy.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
         for key,value in handles.iteritems():
             root['handles'][key][0,0]=value
         scipy.io.matlab.mio.savemat(filename,root,format='5',long_field_names=True)
@@ -304,7 +304,7 @@ class Pipeline:
         handles = self.build_matlab_handles(image_set, object_set, measurements)
         mat_handles = load_into_matlab(handles)
         
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = get_matlab_instance()
         if not handles.has_key(MEASUREMENTS):
             mat_handles.Measurements = matlab.struct()
         if not handles.has_key(PIPELINE):
@@ -400,7 +400,7 @@ class Pipeline:
         
         Run the pipeline, returning the measurements made
         """
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = get_matlab_instance()
         self.set_matlab_path()
         display_size = (1024,768)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -449,7 +449,7 @@ class Pipeline:
         
         Run the pipeline, returning the measurements made
         """
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = get_matlab_instance()
         self.set_matlab_path()
         display_size = (1024,768)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -494,7 +494,7 @@ class Pipeline:
             first_set = False
 
     def set_matlab_path(self):
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = get_matlab_instance()
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'DataTools'),matlab.path())
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools'),matlab.path())
         matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'CPsubfunctions'),matlab.path())

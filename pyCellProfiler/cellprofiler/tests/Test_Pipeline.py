@@ -14,7 +14,7 @@ import cellprofiler.cpmodule
 import cellprofiler.cpimage
 import cellprofiler.measurements
 from cellprofiler.modules.injectimage import InjectImage
-from cellprofiler.matlab.utils import get_matlab_instance
+from cellprofiler.matlab.cputils import get_matlab_instance
 
 def module_directory():
     d = cellprofiler.pipeline.__file__

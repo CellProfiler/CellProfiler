@@ -235,7 +235,7 @@ class LoadImages(cellprofiler.cpmodule.AbstractModule):
                 #% If the pathname start with '&', interpret it relative to
                 #% the default output directory
                 return os.path.join(cellprofiler.preferences.get_default_output_directory(),pathname[2:])
-        return Pathname
+        return pathname
     
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
@@ -299,7 +299,7 @@ class LoadImagesImageProvider(cellprofiler.cpimage.AbstractImageProvider):
         img = matplotlib.image.pil_to_array(img)
         return cellprofiler.cpimage.Image(img)
     
-    def name(self):
+    def get_name(self):
         return self.__name
     
     def get_pathname(self):

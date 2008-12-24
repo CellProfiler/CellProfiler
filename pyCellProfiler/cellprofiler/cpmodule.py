@@ -4,16 +4,17 @@
     
     TO-DO: capture and save module revision #s in the handles
     """
+import re
+import os
+
 import numpy
+
 import cellprofiler.variable
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
 import cellprofiler.pipeline
-import re
-import os
-import cellprofiler.pipeline
-import cellprofiler.matlab.utils
+import cellprofiler.matlab.cputils
 
 class AbstractModule(object):
     """ Derive from the abstract module class to create your own module in Python
@@ -182,10 +183,10 @@ class AbstractModule(object):
         """
         return self.__variables
 
-    def variable(self,VariableNum):
+    def variable(self,variable_num):
         """Reference a variable by its one-based variable number
         """
-        return self.Variables()[VariableNum-1]
+        return self.variables()[variable_num-1]
     
     def set_variables(self,variables):
         self.__variables = variables
@@ -395,7 +396,7 @@ class MatlabModule(AbstractModule):
         """Run the module in Matlab
         
         """
-        matlab = cellprofiler.matlab.utils.get_matlab_instance()
+        matlab = cellprofiler.matlab.cputils.get_matlab_instance()
         handles = pipeline.load_pipeline_into_matlab(image_set,object_set,measurements)
         handles.Current.CurrentModuleNumber = str(self.module_num)
         figure_field = 'FigureNumberForModule%d'%(self.module_num)

@@ -21,7 +21,7 @@ Consider the sets of pixels in C classified as being above and below a threshold
 import numpy
 import scipy.ndimage.measurements
 
-def Otsu(data, min_threshold=None, max_threshold=None,bins=256):
+def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     """Compute a threshold using Otsu's method
     
     data           - an array of intensity values between zero and one

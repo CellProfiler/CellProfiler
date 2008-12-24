@@ -129,24 +129,24 @@ class ChoiceVariable(Variable):
     choices = property(get_choices)
 
 
-def ValidateIntegerVariable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
+def validate_integer_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
     """A listener that validates integer variables"""
     if isinstance(event,BeforeChangeVariableEvent):
-        if not event.NewValue.isdigit():
+        if not event.new_value.isdigit():
             event.cancel_change(cancel_reason)
-        value = int(event.NewValue)
+        value = int(event.new_value)
         if lower_bound != None and value < lower_bound:
             event.cancel_change(cancel_reason)
         if upper_bound != None and value > upper_bound:
             event.cancel_change(cancel_reason)
 
-def ValidateIntegerVariableListener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
+def validate_integer_variable_listener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
     """Return a lambda representation of ValidateIntegerVariable, with arguments bound"""
     if allow_automatic:
-        return lambda variable,event: ValidateIntegerOrAutomatic(variable, event, lower_bound, upper_bound, cancel_reason)
-    return lambda variable, event: ValidateIntegerVariable(variable, event, lower_bound, upper_bound, cancel_reason)
+        return lambda variable,event: validate_integer_or_automatic(variable, event, lower_bound, upper_bound, cancel_reason)
+    return lambda variable, event: validate_integer_variable(variable, event, lower_bound, upper_bound, cancel_reason)
 
-def ValidateIntegerRange(variable, event, lower_bound = None, upper_bound = None):
+def validate_integer_range(variable, event, lower_bound = None, upper_bound = None):
     if isinstance(event,BeforeChangeVariableEvent):
         values = event.new_value.split(',')
         if len(values) != 2:
@@ -160,11 +160,11 @@ def ValidateIntegerRange(variable, event, lower_bound = None, upper_bound = None
         elif int(values[0]) > int(values[1]):
             event.cancel_change("The lower value must be less than the upper value")
     
-def ValidateIntegerRangeListener(lower_bound = None, upper_bound = None):
+def validate_integer_range_listener(lower_bound = None, upper_bound = None):
     """Return a lambda representation of ValidateIntegerRange, with arguments bound"""
-    return lambda variable, event: ValidateIntegerRange(variable, event, lower_bound, upper_bound)
+    return lambda variable, event: validate_integer_range(variable, event, lower_bound, upper_bound)
 
-def ValidateRealVariable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be a real number"):
+def validate_real_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be a real number"):
     """A listener that validates floats and such"""
     if isinstance(event,BeforeChangeVariableEvent):
         try:
@@ -177,13 +177,13 @@ def ValidateRealVariable(variable, event, lower_bound = None, upper_bound = None
         if upper_bound != None and value > upper_bound:
             event.cancel_change(cancel_reason)
 
-def ValidateRealVariableListener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
+def validate_real_variable_listener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
     """Return a lambda representation of ValidateRealVariable, with arguments bound"""
     if allow_automatic:
-        return lambda variable, event: ValidateRealOrAutomatic(variable, event, lower_bound, upper_bound, cancel_reason)
-    return lambda variable, event: ValidateRealVariable(variable, event, lower_bound, upper_bound, cancel_reason)
+        return lambda variable, event: validate_real_or_automatic(variable, event, lower_bound, upper_bound, cancel_reason)
+    return lambda variable, event: validate_real_variable(variable, event, lower_bound, upper_bound, cancel_reason)
 
-def ValidateRealRange(variable, event, lower_bound = None, upper_bound = None):
+def validate_real_range(variable, event, lower_bound = None, upper_bound = None):
     if isinstance(event,BeforeChangeVariableEvent):
         values = event.new_value.split(',')
         if len(values) != 2:
@@ -198,21 +198,21 @@ def ValidateRealRange(variable, event, lower_bound = None, upper_bound = None):
         elif lower > upper:
             event.cancel_change("The lower value must be less than the upper value")
     
-def ValidateRealRangeListener(lower_bound = None, upper_bound = None):
+def validate_real_range_listener(lower_bound = None, upper_bound = None):
     """Return a lambda representation of ValidateRealRange, with arguments bound"""
-    return lambda variable, event: ValidateRealRange(variable, event, lower_bound, upper_bound)
+    return lambda variable, event: validate_real_range(variable, event, lower_bound, upper_bound)
 
-def ValidateIntegerOrAutomatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be an integer or "Automatic"."""):
+def validate_integer_or_automatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be an integer or "Automatic"."""):
     if isinstance(event,BeforeChangeVariableEvent):
-        if event.NewValue == AUTOMATIC:
+        if event.new_value == AUTOMATIC:
             return
-        ValidateIntegerVariable(variable, event, lower_bound, upper_bound, cancel_reason)
+        validate_integer_variable(variable, event, lower_bound, upper_bound, cancel_reason)
  
-def ValidateRealOrAutomatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be a real or "Automatic"."""):
+def validate_real_or_automatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be a real or "Automatic"."""):
     if isinstance(event,BeforeChangeVariableEvent):
-        if event.NewValue == AUTOMATIC:
+        if event.new_value == AUTOMATIC:
             return
-        ValidateRealVariable(variable, event, lower_bound, upper_bound, cancel_reason)
+        validate_real_variable(variable, event, lower_bound, upper_bound, cancel_reason)
         
 class ChangeVariableEvent(object):
     """Abstract class representing either the event that a variable will be
@@ -349,9 +349,9 @@ def choice_popup_annotation(variable_number, text, values, customizable=False):
     text - what the user sees to the left of the popup
     values - a sequence containing the allowed values
     """
-    return [TextAnnotation(variable_number,text)] + \
-            ChoiceAnnotations(variable_number, values) +\
-            [InputTypeAnnotation(variable_number,(customizable and 'menupopup custom)') or 'menupopup')]
+    return [text_annotation(variable_number,text)] + \
+            choice_annotations(variable_number, values) +\
+            [input_type_annotation(variable_number,(customizable and 'menupopup custom)') or 'menupopup')]
 
 def indep_group_annotation(variable_number, text, group, default=DO_NOT_USE):
     """Create all the pieces needed for an edit box for a variable defining a member of a particular group

@@ -496,7 +496,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         annotations += cellprofiler.variable.edit_box_annotation(SMOOTHING_SIZE_VAR, 'Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', AUTOMATIC)
         annotations += cellprofiler.variable.edit_box_annotation(MAXIMA_SUPRESSION_SIZE_VAR, 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', AUTOMATIC)
         annotations += cellprofiler.variable.checkbox_annotation(LOW_RES_MAXIMA_VAR, 'Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        annotations += cellprofiler.variable.indep_group_annotation(SAVE_OUTLINES_VAR, 'What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', CellProfiler.Variable.DO_NOT_USE)
+        annotations += cellprofiler.variable.indep_group_annotation(SAVE_OUTLINES_VAR, 'What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.variable.DO_NOT_USE)
         annotations += cellprofiler.variable.checkbox_annotation(FILL_HOLES_OPTION_VAR, 'Do you want to fill holes in identified objects?', True)
         annotations += cellprofiler.variable.checkbox_annotation(TEST_MODE_VAR, 'Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
         return annotations
@@ -538,7 +538,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         measurements.add_measurement('Image','Count_%s'%(self.object_name),numpy.array([object_count],dtype=float))
         measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name),numpy.array([threshold],dtype=float))
         objects = cellprofiler.objects.Objects()
-        objects.Segmented = labeled_image
+        objects.segmented = labeled_image
         object_set.add_objects(objects,self.object_name)
         #
         # Get the centers of each object - center_of_mass returns a list of two-tuples.
@@ -649,135 +649,135 @@ objects (e.g. SmallRemovedSegmented Nuclei).
     
     max_size = property(get_max_size)
     
-    def GetExcludeSize(self):
+    def get_exclude_size(self):
         """Exclude objects on the basis of size if true"""
-        return self.Variable(EXCLUDE_SIZE_VAR).IsYes
+        return self.variable(EXCLUDE_SIZE_VAR).is_yes
     
-    ExcludeSize = property(GetExcludeSize)
+    exclude_size = property(get_exclude_size)
     
-    def GetMergeObjects(self):
+    def get_merge_objects(self):
         """Merge objects on the basis of size if true"""
-        return self.Variable(MERGE_CHOICE_VAR).IsYes
+        return self.variable(MERGE_CHOICE_VAR).is_yes
     
-    MergeObjects = property(GetMergeObjects)
+    merge_objects = property(get_merge_objects)
     
-    def GetExcludeBorderObjects(self):
+    def get_exclude_border_objects(self):
         """Exclude objects touching the border if true"""
-        return self.Variable(EXCLUDE_BORDER_OBJECTS_VAR).IsYes
+        return self.variable(EXCLUDE_BORDER_OBJECTS_VAR).is_yes
     
-    ExcludeBorderObjects = property(GetExcludeBorderObjects)
+    exclude_border_objects = property(get_exclude_border_objects)
     
-    def GetThresholdMethod(self):
+    def get_threshold_method(self):
         """How to threshold (see TH_* for values)"""
-        return self.Variable(THRESHOLD_METHOD_VAR).Value
+        return self.variable(THRESHOLD_METHOD_VAR).value
     
-    ThresholdMethod= property(GetThresholdMethod)
+    threshold_method= property(get_threshold_method)
 
-    def GetThresholdAlgorithm(self):
+    def get_threshold_algorithm(self):
         """The thresholding algorithm, for instance Otsu"""
-        return self.ThresholdMethod.split(' ')[0]
+        return self.threshold_method.split(' ')[0]
     
-    ThresholdAlgorithm = property(GetThresholdAlgorithm)
+    threshold_algorithm = property(get_threshold_algorithm)
     
-    def GetThresholdModifier(self):
+    def get_threshold_modifier(self):
         """Global, Adaptive or PerObject"""
-        parts = self.GetThresholdMethod().split(' ')
+        parts = self.get_threshold_method().split(' ')
         if len(parts) > 1:
             return parts[1]
         return None
     
-    ThresholdModifier = property(GetThresholdModifier)
+    threshold_modifier = property(get_threshold_modifier)
     
-    def GetThresholdCorrectionFactor(self):
+    def get_threshold_correction_factor(self):
         """Multiply the calculated threshold by this"""
-        return float(self.Variable(THRESHOLD_CORRECTION_VAR).Value)
+        return float(self.variable(THRESHOLD_CORRECTION_VAR).value)
     
-    ThresholdCorrectionFactor = property(GetThresholdCorrectionFactor)
+    threshold_correction_factor = property(get_threshold_correction_factor)
     
-    def GetMinThreshold(self):
+    def get_min_threshold(self):
         """Get the minimum allowable threshold value"""
-        return float(self.Variable(THRESHOLD_RANGE_VAR).Value.split(',')[0])
+        return float(self.variable(THRESHOLD_RANGE_VAR).value.split(',')[0])
     
-    MinThreshold = property(GetMinThreshold)
+    min_threshold = property(get_min_threshold)
     
-    def GetMaxThreshold(self):
+    def get_max_threshold(self):
         """Get the maximum allowable threshold value"""
-        return float(self.Variable(THRESHOLD_RANGE_VAR).Value.split(',')[1])
+        return float(self.variable(THRESHOLD_RANGE_VAR).value.split(',')[1])
     
-    MaxThreshold = property(GetMaxThreshold)
+    max_threshold = property(get_max_threshold)
         
-    def GetObjectFraction(self):
+    def get_object_fraction(self):
         """Return the expected fraction of the image that is object"""
-        return float(self.Variable(OBJECT_FRACTION_VAR).Value)
+        return float(self.variable(OBJECT_FRACTION_VAR).value)
     
-    ObjectFraction = property(GetObjectFraction)
+    object_fraction = property(get_object_fraction)
     
-    def GetUnclumpMethod(self):
+    def get_unclump_method(self):
         """How to distinguish whether objects are clumped"""
-        return self.Variable(UNCLUMP_METHOD_VAR).Value
+        return self.variable(UNCLUMP_METHOD_VAR).value
     
-    UnclumpMethod = property(GetUnclumpMethod)
+    unclump_method = property(get_unclump_method)
     
-    def GetWatershedMethod(self):
+    def get_watershed_method(self):
         """How to find the troughs in the objects to unclump them"""
-        return self.Variable(WATERSHED_VAR).Value
+        return self.variable(WATERSHED_VAR).value
     
-    WatershedMethod = property(GetWatershedMethod)
+    watershed_method = property(get_watershed_method)
     
-    def GetAutomaticSmoothingFilterSize(self):
+    def get_automatic_smoothing_filter_size(self):
         """True if the smoothing filter size is automatically determined"""
-        return self.Variable(SMOOTHING_SIZE_VAR).Value == AUTOMATIC
+        return self.variable(SMOOTHING_SIZE_VAR).value == AUTOMATIC
     
-    AutomaticSmoothingFilterSize = property(GetAutomaticSmoothingFilterSize)
+    automatic_smoothing_filter_size = property(get_automatic_smoothing_filter_size)
     
-    def GetSmoothingFilterSize(self):
+    def get_smoothing_filter_size(self):
         """The size of the smoothing filter in pixels"""
-        if self.AutomaticSmoothingFilterSize:
+        if self.automatic_smoothing_filter_size:
             return None
-        return float(self.Variable(SMOOTHING_SIZE_VAR).Value)
+        return float(self.variable(SMOOTHING_SIZE_VAR).value)
     
-    SmoothingFilterSize = property(GetSmoothingFilterSize)
+    smoothing_filter_size = property(get_smoothing_filter_size)
     
-    def GetAutomaticMaximaSuppressionSize(self):
+    def get_automatic_maxima_suppression_size(self):
         """True if the maxima suppression size is automatically determined"""
-        return self.Variable(MAXIMA_SUPRESSION_SIZE_VAR).Value == AUTOMATIC
+        return self.variable(MAXIMA_SUPRESSION_SIZE_VAR).value == AUTOMATIC
     
-    AutomaticMaximaSuppressionSize = property(GetAutomaticMaximaSuppressionSize)
+    automatic_maxima_suppression_size = property(get_automatic_maxima_suppression_size)
     
-    def GetMaximaSuppressionSize(self):
+    def get_maxima_suppression_size(self):
         """Suppress local maxima within this distance"""
-        if self.AutomaticMaximaSuppressionSize:
+        if self.automatic_maxima_suppression_size:
             return None
-        return float(self.Variable(MAXIMA_SUPRESSION_SIZE_VAR).Value)
+        return float(self.variable(MAXIMA_SUPRESSION_SIZE_VAR).value)
     
-    MaximaSuppressionSize = property(GetMaximaSuppressionSize)
+    maxima_suppression_size = property(get_maxima_suppression_size)
     
-    def GetUseLowRes(self):
+    def get_use_low_res(self):
         """Return true if we use a low-resolution image to find local maxima"""
-        return self.Variable(LOW_RES_MAXIMA_VAR).IsYes
+        return self.variable(LOW_RES_MAXIMA_VAR).is_yes
     
-    UseLowRes = property(GetUseLowRes)
+    use_low_res = property(get_use_low_res)
     
-    def GetSaveOutlines(self):
+    def get_save_outlines(self):
         """Return true if we should save outlines"""
-        return not self.Variable(SAVE_OUTLINES_VAR).IsDoNotUse
+        return not self.variable(SAVE_OUTLINES_VAR).is_do_not_use
     
-    SaveOutlines = property(GetSaveOutlines)
+    save_outlines = property(get_save_outlines)
     
-    def GetOutlinesName(self):
+    def get_outlines_name(self):
         """The name of the outlines image"""
-        return self.Variable(SAVE_OUTLINES_VAR).Value
+        return self.variable(SAVE_OUTLINES_VAR).value
     
-    OutlinesName = property(GetOutlinesName)
+    outlines_name = property(get_outlines_name)
     
-    def GetFillHoles(self):
+    def get_fill_holes(self):
         """Return true if we are to fill holes in the objects"""
-        return self.Variable(FILL_HOLES_OPTION_VAR).IsYes
+        return self.variable(FILL_HOLES_OPTION_VAR).is_yes
     
-    FillHoles = property(GetFillHoles)
+    fill_holes = property(get_fill_holes)
     
-    def GetTestMode(self):
+    def get_test_mode(self):
         """Return true if we are to test each method for distinguishing clumped objects"""
-        return self.Variable(TEST_MODE_VAR).IsYes
+        return self.variable(TEST_MODE_VAR).is_yes
     
-    TestMode = property(GetTestMode)
+    test_mode = property(get_test_mode)

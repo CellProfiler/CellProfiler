@@ -1,4 +1,4 @@
-__version__ = "$Revision: 1 $"
+__version__ = "$Revision$"
 import os
 
 import unittest

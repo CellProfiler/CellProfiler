@@ -17,7 +17,7 @@ Consider the sets of pixels in C classified as being above and below a threshold
       respect to K by maximizing sb.
     * Algorithm: compute w0*w1(u1-u0)^2 for all k and pick the maximum. 
 """
-__version__="$Revision: 1 $"
+__version__="$Revision$"
 import numpy
 import scipy.ndimage.measurements
 

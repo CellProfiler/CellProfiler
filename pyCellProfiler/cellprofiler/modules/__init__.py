@@ -1,7 +1,7 @@
 """Modules - pipeline processing modules for CellProfiler
 
 """
-__version="$Revision: 1 $"
+__version="$Revision$"
 
 import identifyprimautomatic
 import loadimages

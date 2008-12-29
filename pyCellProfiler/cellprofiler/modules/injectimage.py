@@ -2,7 +2,7 @@
 InjectImage.py - for testing, this module injects a single image into the image set
 
 """
-__version__="$Revision: 1 $"
+__version__="$Revision$"
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
 

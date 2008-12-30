@@ -43,33 +43,33 @@ class LoadImages(cpmodule.AbstractModule):
         self.module_name = "LoadImages"
         
         # Settings
-        self.file_types = variable.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
-        self.match_method = variable.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
-        self.match_exclude = variable.Text('If you want to exclude certain files, type the text that the excluded images have in common', '')
-        self.order_group_size = variable.Integer('How many images are there in each group?', 3)
-        self.descend_subdirectories = variable.Binary('Analyze all subfolders within the selected folder?', False)
+        self.file_types = variable.Choice(self,'What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
+        self.match_method = variable.Choice(self,'How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
+        self.match_exclude = variable.Text(self,'If you want to exclude certain files, type the text that the excluded images have in common', '')
+        self.order_group_size = variable.Integer(self,'How many images are there in each group?', 3)
+        self.descend_subdirectories = variable.Binary(self,'Analyze all subfolders within the selected folder?', False)
      
         # Settings for each CPimage
-        self.images_common_text = [variable.Text('Type the text that these images have in common', 'DAPI')]
-        self.images_order_position = [variable.Integer('What is the position of this image in each group', 1)]
-        self.image_names = [variable.ImageName('What do you want to call this image in CellProfiler?', default_cpimage_names(0))]
-        self.remove_images = [variable.DoSomething('Remove this image...', self.remove_imagecb, 0)]
+        self.images_common_text = [variable.Text(self,'Type the text that these images have in common', 'DAPI')]
+        self.images_order_position = [variable.Integer(self,'What is the position of this image in each group', 1)]
+        self.image_names = [variable.ImageName(self,'What do you want to call this image in CellProfiler?', default_cpimage_names(0))]
+        self.remove_images = [variable.DoSomething(self,'Remove this image...','Remove', self.remove_imagecb, 0)]
         
         # Add another image
-        self.add_image = variable.DoSometings('Add another image...', self.add_imagecb)
+        self.add_image = variable.DoSomething(self,'Add another image...','Add', self.add_imagecb)
         
         # Location settings
-        self.location = variables.Text('Where are the images located?',
+        self.location = variable.Text(self,'Where are the images located?',
                                         [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER])
-        self.location_other = variables.DirectoryPath("Where are the images located?", '')
+        self.location_other = variable.DirectoryPath(self,"Where are the images located?", '')
 
     def add_imagecb(self):
             'Adds another image to the variables'
             img_index = len(self.images_order_position)
-            self.images_common_text += [variable.Text('Type the text that these images have in common', '')]
-            self.images_order_position += [variable.Integer('What is the position of this image in each group', img_index+1)]
-            self.image_names += [variable.ImageName('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
-            self.remove_images += [variable.DoSomething('Remove this image...', self.remove_imagecb, img_index)]
+            self.images_common_text += [variable.Text(self,'Type the text that these images have in common', '')]
+            self.images_order_position += [variable.Integer(self,'What is the position of this image in each group', img_index+1)]
+            self.image_names += [variable.ImageName(self,'What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
+            self.remove_images += [variable.DoSomething(self,'Remove this image...', self.remove_imagecb, img_index)]
 
     def remove_imagecb(self, index):
             'Remove an image from the variables'

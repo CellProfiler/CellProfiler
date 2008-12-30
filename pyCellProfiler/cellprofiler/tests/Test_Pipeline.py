@@ -12,6 +12,7 @@ import cellprofiler.pipeline
 import cellprofiler.objects
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
+import cellprofiler.variable
 import cellprofiler.measurements
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.matlab.cputils import get_matlab_instance
@@ -227,6 +228,54 @@ class TestPipeline(unittest.TestCase):
         center = center_x[0][0,0]
         self.assertTrue(center >=45)
         self.assertTrue(center <=55)
-        
+    
+    def test_07_01_InfogroupNotAfter(self):
+        x = cellprofiler.pipeline.Pipeline()
+        class MyClass(cellprofiler.cpmodule.AbstractModule):
+            def __init__(self):
+                super(MyClass,self).__init__()
+                self.set_module_name("whatever")
+                self.create_from_annotations()
+
+            def annotations(self):
+                a  = cellprofiler.variable.indep_group_annotation(1, 'independent', 'whatevergroup')
+                a += cellprofiler.variable.group_annotation(2,'dependent','whatevergroup')
+                return a
+        module = MyClass()
+        module.set_module_num(1)
+        x.add_module(module)
+        module.variables()[0].value = "Hello"
+        choices = module.variables()[1].get_choices(x)
+        self.assertEqual(len(choices),0)
+         
+    def test_07_02_InfogroupAfter(self):
+        x = cellprofiler.pipeline.Pipeline()
+        class MyClass1(cellprofiler.cpmodule.AbstractModule):
+            def __init__(self):
+                super(MyClass1,self).__init__()
+                self.set_module_name("provider")
+                self.create_from_annotations()
+
+            def annotations(self):
+                return cellprofiler.variable.indep_group_annotation(1, 'independent', 'whatevergroup')
+        class MyClass2(cellprofiler.cpmodule.AbstractModule):
+            def __init__(self):
+                super(MyClass2,self).__init__()
+                self.set_module_name("subscriber")
+                self.create_from_annotations()
+
+            def annotations(self):
+                return cellprofiler.variable.group_annotation(1,'dependent','whatevergroup')
+        module1 = MyClass1()
+        module1.set_module_num(1)
+        x.add_module(module1)
+        module2 = MyClass2()
+        module2.set_module_num(2)
+        x.add_module(module2)
+        module1.variables()[0].value = "Hello"
+        choices = module2.variables()[0].get_choices(x)
+        self.assertEqual(len(choices),1)
+        self.assertEqual(choices[0],"Hello")
+         
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,4 @@
 """VariableChoices.py - representation framework for the set of values available to a variable
-    $Revision$
     
     Many variables have constraints that limit their values to one of
     a set of choices. For some of these variables, the user can choose
@@ -10,7 +9,7 @@
     In any case, the AbstractVariableChoices class and derived classes
     model the choices available to a variable.
 """
-
+__version__="$Revision$"
 import cellprofiler.variable
 import cellprofiler.pipeline
 
@@ -164,7 +163,7 @@ class InfoGroupVariableChoices(AbstractMutableVariableChoices):
         choices = set()
         for indep in self.__indep_variables:
             if (indep.module().module_num < variable.module().module_num and
-                indep.value != CellProfiler.Variable.DO_NOT_USE):
+                indep.value != cellprofiler.variable.DO_NOT_USE):
                 choices.add(indep.value)
         choices = list(choices)
         choices.sort()

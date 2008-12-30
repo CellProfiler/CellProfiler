@@ -1,6 +1,6 @@
 """ModuleView.py - implements a view on a module
-    $Revision$
 """
+__version__="$Revision$"
 import wx
 import wx.grid
 import cellprofiler.pipeline
@@ -39,6 +39,28 @@ class VariableEditedEvent:
         """
         return self.__event
 
+def text_control_name(v):
+    """Return the name of a variable's text control
+    v - the variable
+    The text control name is built using the variable's key
+    """
+    return "%s_text"%(str(v.key()))
+
+def edit_control_name(v):
+    """Return the name of a variable's edit control
+    v - the variable
+    The edit control name is built using the variable's key
+    """
+    return str(v.key())
+
+def encode_label(text):
+    """Encode text escapes for the static control and button labels
+    
+    The ampersand (&) needs to be encoded as && for wx.StaticText
+    and wx.Button in order to keep it from signifying an accelerator.
+    """
+    return text.replace('&','&&')
+  
 class ModuleView:
     """The module view implements a view on CellProfiler.Module
     
@@ -61,7 +83,16 @@ class ModuleView:
         self.__grid.SetColLabelValue(0,'Variable description')
         self.__grid.SetColLabelValue(1,'Value')
         self.__grid.SetColSize(1,70)
+    
+    def get_module_panel(self):
+        """The panel that hosts the module controls
         
+        This is exposed for testing purposes.
+        """
+        return self.__module_panel
+    
+    module_panel = property(get_module_panel)
+    
     def clear_selection(self):
         if self.__module:
             for listener in self.__value_listeners:
@@ -71,56 +102,62 @@ class ModuleView:
             self.__module = None
         
     def set_selection(self,module_num):
+        """Initialize the controls in the view to the variables of the module"""
         self.clear_selection()
         self.__module = self.__pipeline.module(module_num)
         self.__controls = []
         data = []
-        annotations = cellprofiler.variable.get_annotations_as_dictionary(self.__module.annotations())
-        variables = self.__module.variables()
+        variables = self.__module.visible_variables()
         sizer = ModuleSizer(len(variables),2)
-        for i in range(0,len(self.__module.variables())):
-            variable = self.__module.variables()[i]
-            vn = variable.variable_number()
-            assert annotations.has_key(vn), 'There are no annotations for variable # %d'%(vn)
-            if annotations[vn].has_key('text'):
-                text = annotations[vn]['text'][0].Value
-            elif annotations[vn].has_key('pathnametext'):
-                text = annotations[vn]['pathnametext'][0].Value
-            elif annotations[vn].has_key('filenametext'):
-                text = annotations[vn]['filenametext'][0].Value
-            else:
-                text = ''
-            static_text = wx.StaticText(self.__module_panel,-1,text,style=wx.ALIGN_RIGHT)
+        for v,i in zip(variables, range(0,len(variables))):
+            control_name = edit_control_name(v)
+            text_name    = text_control_name(v)
+            static_text  = wx.StaticText(self.__module_panel,
+                                         -1,
+                                         encode_label(v.text),
+                                         style=wx.ALIGN_RIGHT,
+                                         name=text_name)
             sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
-            variable_choices = self.__pipeline.get_variable_choices(variable)
-            if variable_choices:
-                choices = variable_choices.get_choices(variable)
-                if (not variable_choices.can_change() and not variable_choices.can_accept_other()
-                    and all([x in ['Yes','No'] for x in choices])):
-                    control = wx.CheckBox(self.__module_panel,-1)
-                    control.value = variable.is_yes
-                    self.__module_panel.Bind(wx.EVT_CHECKBOX,
-                                             lambda event,variable=variable,control=control:self.__on_cell_change(event, variable, control),
-                                             control)
+            if isinstance(v,cellprofiler.variable.Binary):
+                control = wx.CheckBox(self.__module_panel,-1,name=control_name)
+                control.value = v.is_yes
+                def callback(event, variable=v, control=control):
+                    self.__on_cell_change(event, variable, control)
+                    
+                self.__module_panel.Bind(wx.EVT_CHECKBOX,
+                                         callback,
+                                         control)
+            elif isinstance(v,cellprofiler.variable.Choice) or \
+                 isinstance(v,cellprofiler.variable.NameSubscriber):
+                if isinstance(v,cellprofiler.variable.CustomChoice) or \
+                   isinstance(v,cellprofiler.variable.NameSubscriber):
+                    style = wx.CB_DROPDOWN
                 else:
-                    style = (variable_choices.can_accept_other() and wx.CB_DROPDOWN) or wx.CB_READONLY
-                    if (len(choices)==0 and variable_choices.can_accept_other()):
-                        choices=['None']
-                    control = wx.ComboBox(self.__module_panel,-1,variable.value,
-                                          choices=choices,
-                                          style=style)
-                    self.__module_panel.Bind(wx.EVT_COMBOBOX,lambda event,variable=variable,control=control: self.__on_cell_change(event, variable,control),control)
-                    if variable_choices.can_change():
-                        listener = lambda sender,event,vn=vn: self.__on_variable_choices_changed(sender,event,vn)
-                        listener_dict = {'notifier':variable_choices,
-                                         'listener':listener }
-                        variable_choices.add_listener(listener)
-                        self.__value_listeners.append(listener_dict)
-                    if variable_choices.can_accept_other():
-                        self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__on_cell_change(event, variable, control),control)
+                    style = wx.CB_READONLY
+                
+                if isinstance(v,cellprofiler.variable.NameSubscriber):
+                    choices = v.get_choices(self.__pipeline)
+                else:
+                    choices = v.get_choices()
+                control = wx.ComboBox(self.__module_panel,-1,v.value,
+                                      choices=choices,
+                                      style=style,
+                                      name=control_name)
+                def callback(event, variable=v, control = control):
+                    self.__on_cell_change(event, variable,control)
+                self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
+                if isinstance(v, cellprofiler.variable.CustomChoice):
+                    def on_cell_change(event, variable=v, control=control):
+                         self.__on_cell_change(event, variable, control)
+                    self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
             else:
-                 control = wx.TextCtrl(self.__module_panel,-1,variable.Value)
-                 self.__module_panel.Bind(wx.EVT_TEXT,lambda event,variable=variable,control=control: self.__on_cell_change(event, variable,control),control)
+                control = wx.TextCtrl(self.__module_panel,
+                                      -1,
+                                      v.value,
+                                      name=control_name)
+                def on_cell_change(event, variable = v, control=control):
+                    self.__on_cell_change(event, variable,control)
+                self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
             sizer.Add(control,0,wx.EXPAND|wx.ALL,2)
             self.__controls.append(control)
         self.__module_panel.SetSizer(sizer)
@@ -185,7 +222,7 @@ class ModuleSizer(wx.PySizer):
         for j in range(0,self.__rows):
             row_height = 0
             for i in range(0,self.__cols):
-                item = self.GetItem(self.Idx(i,j))
+                item = self.GetItem(self.idx(i,j))
                 row_height = max([row_height,item.CalcMin()[1]])
             height += row_height;
         return wx.Size(size[0]+self.__min_text_width,height)
@@ -194,7 +231,7 @@ class ModuleSizer(wx.PySizer):
         height = 0
         width  = 0
         for i in range(0,self.__rows):
-            item = self.GetItem(self.Idx(1,i))
+            item = self.GetItem(self.idx(1,i))
             size = item.CalcMin()
             height += size[1]
             width = max(width,size[0])
@@ -216,8 +253,8 @@ class ModuleSizer(wx.PySizer):
         widths = [text_width, edit_width]
         panel = self.GetContainingWindow()
         for i in range(0,self.__rows):
-            text_item = self.GetItem(self.Idx(0,i))
-            edit_item = self.GetItem(self.Idx(1,i))
+            text_item = self.GetItem(self.idx(0,i))
+            edit_item = self.GetItem(self.idx(1,i))
             inner_text_width = text_width - 2*text_item.GetBorder() 
             items = [text_item, edit_item]
             control = text_item.GetWindow()

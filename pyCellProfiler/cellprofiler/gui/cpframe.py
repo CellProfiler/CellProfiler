@@ -47,6 +47,7 @@ class CPFrame(wx.Frame):
         self.__set_icon()
         self.__layout_logo()
         self.__do_layout()
+        self.__error_listeners = []
  
     def __set_properties(self):
         self.SetTitle("CellProfiler")
@@ -158,16 +159,44 @@ class CPFrame(wx.Frame):
         """Displays an exception in a standardized way
         
         """
+        for listener in self.__error_listeners:
+            listener(message, error)
         tb = sys.exc_info()[2]
         traceback.print_tb(tb)
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
         text = error.message + '\n'+text
         wx.MessageBox(text,"Caught exception during operation")
     
+    def add_error_listener(self,listener):
+        """Add a listener for display errors"""
+        self.__error_listeners.append(listener)
+    
+    def remove_error_listener(self,listener):
+        """Remove a listener for display errors"""
+        self.__error_listeners.remove(listener)
+    
     def get_preferences_view(self):
         return self.__preferences_view
     
     preferences_view = property(get_preferences_view)
+    
+    def get_pipeline_controller(self):
+        """Get the pipeline controller to drive testing"""
+        return self.__pipeline_controller
+    
+    pipeline_controller = property(get_pipeline_controller)
+    
+    def get_pipeline(self):
+        """Get the pipeline - mostly to drive testing"""
+        return self.__pipeline
+    
+    pipeline = property(get_pipeline)
+    
+    def get_module_view(self):
+        """Return the module view window"""
+        return self.__module_view
+    
+    module_view = property(get_module_view)
 
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column

@@ -10,6 +10,7 @@ import os
 import numpy
 
 import cellprofiler.variable
+from cellprofiler.variable import YES,NO,DO_NOT_USE
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
@@ -48,9 +49,11 @@ class AbstractModule(object):
         Returns a module with the variables decanted from the handles.
         If the revision is old, a different and compatible module can be returned.
         """
-        settings = handles['Settings'][0,0]
+        self.create_from_annotations()
         self.__module_num = module_num
         idx = module_num-1
+        settings = handles['Settings'][0,0]
+        variable_values = []
         if settings.dtype.fields.has_key('ModuleNotes'):
             n=settings['ModuleNotes'][0,idx]
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
@@ -58,7 +61,6 @@ class AbstractModule(object):
             self.__notes = []
         variable_count=settings['NumbersOfVariables'][0,idx]
         variable_revision_number = settings['VariableRevisionNumbers'][0,idx]
-        variable_values = []
         for i in range(0,variable_count):
             value_cell = settings['VariableValues'][idx,i]
             if isinstance(value_cell,numpy.ndarray):
@@ -68,28 +70,74 @@ class AbstractModule(object):
                     variable_values.append(str(value_cell[0]))
             else:
                 variable_values.append(value_cell)
-        self.__variables = [cellprofiler.variable.Variable(self,variable_idx+1,variable_values[variable_idx])
-                            for variable_idx in range(0,variable_count)]
+        for v,value in zip(self.variables(),variable_values):
+            v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
         self.on_post_load()
     
     def create_from_annotations(self):
-        """Create the variables based on the defaults that you can suss from the annotations
+        """Create the variables based on what you can discern from the annotations
         """
-        variable_dict = {}
+        annotation_dict = {}
+        value_dict = {}
         max_variable = 0
         
         for annotation in self.annotations():
             vn = annotation.variable_number
+            if not annotation_dict.has_key(vn):
+                annotation_dict[vn] = {}
+            if not annotation_dict[vn].has_key(annotation.kind):
+                annotation_dict[vn][annotation.kind] = []
+            annotation_dict[vn][annotation.kind].append(annotation.value)
             if annotation.kind == 'default':
-                variable_dict[vn] = annotation.value
-            elif annotation.kind == 'choice' and not variable_dict.has_key(vn):
-                variable_dict[vn] = annotation.value
+                value_dict[vn] = annotation.value
+            elif annotation.kind == 'choice' and not value_dict.has_key(vn):
+                value_dict[vn] = annotation.value
             if vn > max_variable:
                 max_variable = vn
-        variables=[cellprofiler.variable.Variable(self,i,'n/a') for i in range(1,max_variable+1)]
-        for key in variable_dict.keys():
-            variables[key-1].value = variable_dict[key]
+        
+        variables = []
+        for i in range(1,max_variable+1):
+            assert annotation_dict.has_key(i), 'There are no annotations for variable # %d'%(i)
+            variable_dict = annotation_dict[i]
+            if variable_dict.has_key('text'):
+                text = variable_dict['text'][0]
+            elif variable_dict.has_key('pathnametext'):
+                text = variable_dict['pathnametext'][0]
+            elif variable_dict.has_key('filenametext'):
+                text = variable_dict['filenametext'][0]
+            else:
+                text = ''
+            if variable_dict.has_key('infotype'):
+                default_value = value_dict.get(i,DO_NOT_USE)
+                parts = variable_dict['infotype'][0].split(' ')
+                if parts[-1] == 'indep':
+                    v = cellprofiler.variable.NameProvider(text,parts[0], default_value)
+                else:
+                    v = cellprofiler.variable.NameSubscriber(text,parts[0],default_value)
+            elif variable_dict.has_key('inputtype') and \
+                 variable_dict['inputtype'][0] == 'popupmenu':
+                choices = variable_dict['choice']
+                if len(choices) == 2 and all([choice in [YES,NO] for choice in choices]):
+                    v = cellprofiler.variable.Binary(text,choices[0]==YES)
+                else:
+                    default_value = value_dict.get(i,choices[0])
+                    v = cellprofiler.variable.Choice(text,choices,default_value)
+            elif variable_dict.has_key('inputtype') and \
+                 variable_dict['inputtype'][0] == 'popupmenu custom':
+                choices = variable_dict['choice']
+                default_value = value_dict.get(i,choices[0])
+                v = cellprofiler.variable.CustomChoice(text,choices,default_value)
+            elif variable_dict.has_key('inputtype') and \
+                 variable_dict['inputtype'][0] == 'pathnametext':
+                v = cellprofiler.variable.PathnameText(text,value_dict.get(i,cellprofiler.variable.DO_NOT_USE))
+            elif variable_dict.has_key('inputtype') and \
+                 variable_dict['inputtype'][0] == 'filenametext':
+                v = cellprofiler.variable.FilenameText(text,value_dict.get(i,cellprofiler.variable.DO_NOT_USE))
+            else:
+                v = cellprofiler.variable.Text(text,value_dict.get(i,"n/a"))
+            variables.append(v)
+                     
         self.set_variables(variables)
         self.on_post_load()
     
@@ -121,7 +169,7 @@ class AbstractModule(object):
             variable = self.variables()[i]
             if variable.value != None and len(variable.value) > 0:
                 setting[cellprofiler.pipeline.VARIABLE_VALUES][module_idx,i] = unicode(variable.value)
-            annotations = self.variable_annotations(i+1)
+            annotations = self.variable_annotations(variable.key())
             if annotations.has_key('infotype'):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
         setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number()
@@ -135,6 +183,11 @@ class AbstractModule(object):
             self.__annotation_dict = cellprofiler.variable.get_annotations_as_dictionary(self.annotations())
         if self.__annotation_dict.has_key(key):
             return self.__annotation_dict[key]
+        indexes = [index+1 for variable,index in zip(self.variables(),range(len(self.variables()))) if variable.key()==key]
+        if len(indexes):
+            alt_key = indexes[0]
+            if self.__annotation_dict.has_key(alt_key):
+                return self.__annotation_dict[alt_key]
         return {}
     
     def get_module_num(self):
@@ -190,6 +243,11 @@ class AbstractModule(object):
     
     def set_variables(self,variables):
         self.__variables = variables
+        
+    def visible_variables(self):
+        """The variables that are visible in the UI
+        """
+        return self.variables()
 
     def annotations(self):
         """Return the variable annotations, as read out of the module file.

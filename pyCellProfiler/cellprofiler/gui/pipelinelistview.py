@@ -101,5 +101,5 @@ class PipelineListView:
         if self.__module_view:
             selections = self.__list_box.GetSelections()
             if len(selections) and not (len(selections)==1 and self.__list_box.GetItems()[0] == NO_PIPELINE_LOADED):
-                self.__module_view.SetSelection(self.__list_box.GetClientData(selections[0]).module_num)
+                self.__module_view.set_selection(self.__list_box.GetClientData(selections[0]).module_num)
 

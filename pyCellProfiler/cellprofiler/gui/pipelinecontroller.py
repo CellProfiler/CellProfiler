@@ -86,14 +86,14 @@ class PipelineController:
         dlg = wx.FileDialog(self.__frame,"Choose a pipeline file to open",wildcard="*.mat")
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
-            self.__do_load_pipeline(pathname)
+            self.do_load_pipeline(pathname)
     
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
                          'Load path', wx.YES_NO|wx.ICON_QUESTION ,self.__frame) & wx.YES:
             self.__do_load_pipeline(event.Path)
     
-    def __do_load_pipeline(self,pathname):
+    def do_load_pipeline(self,pathname):
         try:
             handles=scipy.io.matlab.mio.loadmat(pathname, struct_as_record=True)
         except Exception,instance:

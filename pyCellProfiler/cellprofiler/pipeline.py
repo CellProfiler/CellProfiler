@@ -216,15 +216,12 @@ class Pipeline:
     def __init__(self):
         self.__modules = [];
         self.__listeners = [];
-        self.__infogroups = {};
-        self.__variable_choices = {}
     
     def create_from_handles(self,handles):
         """Read a pipeline's modules out of the handles structure
         
         """
         self.__modules = [];
-        self.__variable_choices = {}
         settings = handles[SETTINGS][0,0]
         module_names = settings[MODULE_NAMES]
         module_count = module_names.shape[1]
@@ -234,7 +231,6 @@ class Pipeline:
             module = self.instantiate_module(module_name)
             module.create_from_handles(handles, module_num)
             self.__modules.append(module)
-            self.__hook_module_variables(module)
         self.notify_listeners(PipelineLoadedEvent())
     
     def instantiate_module(self,module_name):
@@ -560,7 +556,6 @@ class Pipeline:
         self.__modules = self.__modules[:idx]+[new_module]+self.__modules[idx:]
         for module,mn in zip(self.__modules[idx+1:],range(module_num+1,len(self.__modules)+1)):
             module.module_num = mn
-        self.__hook_module_variables(new_module)
         self.notify_listeners(ModuleAddedPipelineEvent(module_num))
     
     def remove_module(self,module_num):
@@ -580,67 +575,6 @@ class Pipeline:
             module.module_num = module.module_num-1
         self.notify_listeners(ModuleRemovedPipelineEvent(module_num))
     
-    def __hook_module_variables(self,module):
-        """Create whatever VariableChoices are needed
-        to represent variable dependencies, groups, etc.
-        
-        """
-        all_variable_notes = []
-        for variable_number,variable in \
-                zip(range(1,len(module.variables())+1), module.variables()):
-            annotations = module.variable_annotations(variable_number)
-            # variable_notes stores things we find out about variables as we
-            # go along so we can refer back to them for subsequent variables
-            variable_notes = {'dependency':None,
-                              'popuptype':None,
-                              'variable':variable }
-            if annotations.has_key('inputtype'):
-                split = annotations['inputtype'][0].value.split(' ')
-                if split[0] == 'popupmenu' and len(split) > 1:
-                    variable_notes['popuptype'] = split[1]
-            # Handle both info type producers and consumers
-            if annotations.has_key('infotype'):
-                info = annotations['infotype'][0].value.split(' ')
-                if not self.__infogroups.has_key(info[0]):
-                    self.__infogroups[info[0]] = cellprofiler.variablechoices.InfoGroupVariableChoices(self)
-                if len(info) > 1 and info[-1] == 'indep':
-                    self.__infogroups[info[0]].add_indep_variable(variable)
-                else:
-                    variable_notes['dependency'] = info[0]
-            elif (variable_notes['popuptype'] == 'category' and
-                  len(all_variable_notes) > 0 and
-                  all_variable_notes[-1]['dependency'] == 'objectgroup'):
-                # A category popup with an objectgroup ahead of it.
-                # We guess here that we're looking for categories
-                # of measurements on the selected object
-                vc = cellprofiler.variablechoices.CategoryVariableChoices(self, all_variable_notes[-1]['variable'])
-                self.__variable_choices[variable.Key()] = vc
-            elif (variable_notes['popuptype'] == 'measurement' and
-                  len(all_variable_notes) > 1 and
-                  all_variable_notes[-1]['popuptype'] == 'category' and
-                  all_variable_notes[-2]['dependency'] == 'objectgroup'):
-                # A measurement popup that follows an objectgroup variable and a category variable
-                vc = cellprofiler.variablechoices.MeasurementVariableChoices(self,
-                                                                             all_variable_notes[-2]['variable'],
-                                                                             all_variable_notes[-1]['variable'])
-                self.__variable_choices[variable.Key()] = vc
-            all_variable_notes.append(variable_notes)
-    
-    def get_variable_choices(self,variable):
-        """Get the variable choices instance that provides choices for this variable. Return None if not a choices variable
-        """
-        module = variable.module()
-        annotations = module.variable_annotations(variable.variable_number())
-        if annotations.has_key('infotype'):
-            info = annotations['infotype'][0].value.split(' ')
-            if info[-1] != 'indep':
-                return self.__infogroups[info[0]]
-        elif annotations.has_key('choice'):
-            choices = [annotation.Value for annotation in annotations['choice']]
-            return cellprofiler.variablechoices.StaticVariableChoices(choices)
-        elif self.__variable_choices.has_key(variable.Key()):
-            return self.__variable_choices[variable.Key()]
-        
     def notify_listeners(self,event):
         """Notify listeners of an event that happened to this pipeline
         

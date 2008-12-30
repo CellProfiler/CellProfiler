@@ -5,6 +5,7 @@ __version__="$Revision$"
 
 import re
 import uuid
+import variablechoices
 
 DO_NOT_USE = 'Do not use'
 AUTOMATIC = "Automatic"
@@ -15,28 +16,20 @@ class Variable(object):
     """A module variable which holds a single string value
     
     """
-    def __init__(self,module,text,value):
+    def __init__(self,text,value):
         """Initialize a variable with the enclosing module and its string value
         
         module - the module containing this variable
         text   - the explanatory text for the variable
         value  - the default or initial value for the variable
         """
-        self.__listeners = []
         self.__annotations = []
-        self.__module = module;
         self.__text = text
         self.__value = value
         self.__key = uuid.uuid1() 
     
     def set_value(self,value):
-        old_value = self.__value
-        before_change_event = BeforeChangeVariableEvent(old_value,value)
-        self.notify_listeners(before_change_event)
-        if not before_change_event.allow_change():
-            raise ValueError(before_change_event.cancel_reason)
         self.__value=value
-        self.notify_listeners(AfterChangeVariableEvent(old_value,value))
 
     def key(self):
         """Return a key that can be used in a dictionary to refer to this variable
@@ -55,10 +48,20 @@ class Variable(object):
         """The string contents of the variable"""
         return self.__value
     
-    value = property(get_value,set_value)
+    def __internal_get_value(self):
+        """The value stored within the variable"""
+        return self.get_value()
+    
+    def __internal_set_value(self,value):
+        self.set_value(value)
+    
+    value = property(__internal_get_value,__internal_set_value)
     
     def __eq__(self, x):
-        return self.Value == x
+        return self.value == str(x)
+    
+    def __ne__(self, x):
+        return not self.__eq__(x)
     
     def get_is_yes(self):
         """Return true if the variable's value is "Yes" """
@@ -76,58 +79,190 @@ class Variable(object):
     
     is_do_not_use = property(get_is_do_not_use)
     
-    def notify_listeners(self,event):
-        """Notify listeners of an event happening to a variable
-        
-        """
-        for listener in self.__listeners:
-            listener(self,event)
-        
-    def add_listener(self,listener):
-        """Add a variable listener
-        
-        """
-        self.__listeners.append(listener)
-        
-    def remove_listener(self,listener):
-        """Remove a variable listener
-        
-        """
-        self.__listeners.remove(listener)
-        
-    def module(self):
-        """Return the enclosing module for this variable
-        
-        """
-        return self.__module
-
-class EditVariable(Variable):
+class Text(Variable):
     """A variable that displays as an edit box, accepting a string
     
     """
-    def __init__(self,module,text,value):
-        super(EditVariable,self).__init__(self, module,text,value)
+    def __init__(self,text,value):
+        super(Text,self).__init__(text,value)
 
-class ChoiceVariable(Variable):
+class PathnameText(Text):
+    """A variable that displays a filesystem path name
+    """
+    def __init__(self,text,value):
+        super(PathnameText,self).__init__(text,value)
+
+class FilenameText(Text):
+    """A variable that displays a file name
+    """
+    def __init__(self,text,value):
+        super(FilenameText,self).__init__(text,value)
+
+class Integer(Text):
+    """A variable that allows only integer input
+    """
+    def __init__(self,text,value):
+        super(Integer,self).__init__(text,str(value))
+    
+    def set_value(self,value):
+        """Only allow integer input.
+        """
+        str_value = str(value)
+        if not str_value.isdigit():
+            raise ValueError('Must be an integer value, was "%s"'%(str_value))
+        super(Integer,self).set_value(str_value)
+        
+    def get_value(self):
+        """Return the value of the variable as an integer
+        """
+        return int(super(Integer,self).get_value())
+
+class NameProvider(Text):
+    """A variable that provides a named object
+    """
+    def __init__(self,text,group,value):
+        super(NameProvider,self).__init__(text,value)
+        self.__group = group
+    
+    def get_group(self):
+        """This variable provides a name to this group
+        
+        Returns a group name, e.g. imagegroup or objectgroup
+        """
+        return self.__group
+    
+    group = property(get_group)
+
+class NameSubscriber(Variable):
+    """A variable that takes its value from one made available by name providers
+    """
+    def __init__(self,text,group,value):
+        super(NameSubscriber,self).__init__(text,value)
+    
+        self.__group = group
+    
+    def get_group(self):
+        """This variable provides a name to this group
+        
+        Returns a group name, e.g. imagegroup or objectgroup
+        """
+        return self.__group
+    
+    group = property(get_group)
+    
+    def get_choices(self,pipeline):
+        choices = []
+        for module in pipeline.modules():
+            module_choices = []
+            for variable in module.visible_variables():
+                if variable.key() == self.key():
+                    return choices
+                if isinstance(variable, NameProvider) and variable != DO_NOT_USE:
+                    module_choices.append(variable.value)
+            choices += module_choices
+        assert False, "Variable not among visible variables in pipeline"
+
+class Binary(Variable):
+    """A variable that is represented as either true or false
+    The underlying value stored in the variables slot is "Yes" or "No"
+    for historical reasons.
+    """
+    def __init__(self,text,value):
+        """Initialize the binary variable with the module, explanatory text and value
+        
+        The value for a binary variable is True or False
+        """
+        str_value = (value and YES) or NO
+        super(Binary,self).__init__(text, str_value)
+    
+    def set_value(self,value):
+        """When setting, translate true and false into yes and no"""
+        if value == YES or value == NO:
+            super(Binary,self).set_value(value)
+        else:
+            str_value = (value and YES) or NO
+            super(Binary,self).set_value(str_value)
+    
+    def get_value(self):
+        """Get the value of a binary variable as a truth value
+        """
+        return super(Binary,self).get_value() == YES 
+    
+    def __eq__(self,x):
+        if x == NO:
+            x = False
+        return (self.value and x) or ((not self.value) and (not x)) 
+
+class Choice(Variable):
     """A variable that displays a drop-down set of choices
     
     """
-    def __init__(self,module,text,choices,value=None):
+    def __init__(self,text,choices,value=None):
         """Initializer
         module - the module containing the variable
         text - the explanatory text for the variable
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
         """
-        super(ChoiceVariable,self).__init__(self, module, text, value or choices[0])
+        super(Choice,self).__init__(text, value or choices[0])
         self.__choices = choices
+    
+    def __internal_get_choices(self):
+        """The sequence of strings that define the choices to be displayed"""
+        return self.get_choices()
     
     def get_choices(self):
         """The sequence of strings that define the choices to be displayed"""
         return self.__choices
     
-    choices = property(get_choices)
+    choices = property(__internal_get_choices)
+    
+    def set_value(self,value):
+        """Check to make sure that the value is among the choices"""
+        if value not in self.choices:
+            raise ValueError("%s is not one of %s"%(value, str(self.choices)))
+        super(Choice,self).set_value(value)
+        
 
+class CustomChoice(Choice):
+    def __init__(self,text,choices,value=None):
+        """Initializer
+        module - the module containing the variable
+        text - the explanatory text for the variable
+        choices - a sequence of string choices to be displayed in the drop-down
+        value - the default choice or None to choose the first of the choices.
+        """
+        super(CustomChoice,self).__init__(text, choices, value)
+    
+    def get_choices(self):
+        """Put the custom choice at the top"""
+        choices = list(super(CustomChoice,self).get_choices())
+        if self.value not in choices:
+            choices.insert(0,self.value)
+        return choices
+    
+    def set_value(self,value):
+        """Bypass the check in "Choice"."""
+        Variable.set_value(self, value)
+    
+class DoSomething(Variable):
+    """Do something in response to a button press
+    """
+    def __init__(self,text,label,callback,*args):
+        super(DoSomething,self).__init__(text,'n/a')
+        self.__label = label
+        self.__callback = callback
+        self.__args = args
+    
+    def get_label(self):
+        """Return the text label for the button"""
+        return self.__label
+    
+    label = property(get_label)
+    
+    def on_event_fired(self):
+        """Call the callback in response to the user's request to do something"""
+        self.__callback(*args)
 
 def validate_integer_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
     """A listener that validates integer variables"""

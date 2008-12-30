@@ -4,7 +4,7 @@
 __version__="$Revision: 1$"
 
 import cellprofiler.cpmodule
-import cellprofiler.variable
+import cellprofiler.variable as cpv
 from cellprofiler.cpmath.otsu import otsu
 import cellprofiler.objects
 from cellprofiler.variable import AUTOMATIC
@@ -65,11 +65,13 @@ WA_INTENSITY                    = "Intensity"
 WA_DISTANCE                     = "Distance"
 WA_NONE                         = "None"
 SMOOTHING_SIZE_VAR              = 13
-MAXIMA_SUPRESSION_SIZE_VAR      = 14
+MAXIMA_SUPPRESSION_SIZE_VAR     = 14
 LOW_RES_MAXIMA_VAR              = 15
 SAVE_OUTLINES_VAR               = 16
 FILL_HOLES_OPTION_VAR           = 17
 TEST_MODE_VAR                   = 18
+AUTOMATIC_SMOOTHING_VAR         = 19
+AUTOMATIC_MAXIMA_SUPPRESSION    = 20
 
 
 class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
@@ -78,7 +80,65 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
     def __init__(self):
         cellprofiler.cpmodule.AbstractModule.__init__(self)
         self.set_module_name("IdentifyPrimAutomatic")
+        self.image_name = cpv.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
+        self.object_name = cpv.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
+        self.size_range = cpv.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
+                                           (10,40),minval=1)
+        self.exclude_size = cpv.Binary('Discard objects outside the diameter range?', True)
+        self.merge_objects = cpv.Binary('Try to merge too small objects with nearby larger objects?', False)
+        self.exclude_border_objects = cpv.Binary('Discard objects touching the border of the image?', True)
+        self.threshold_method = cpv.Choice('''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
+                                           [TM_OTSU_GLOBAL,TM_OTSU_ADAPTIVE,TM_OTSU_PER_OBJECT,
+                                            TM_MOG_GLOBAL,TM_MOG_ADAPTIVE,TM_MOG_PER_OBJECT,
+                                            TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
+                                            TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
+                                            TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
+                                            TM_KAPUR_GLOBAL,TM_KAPUR_ADAPTIVE,TM_KAPUR_PER_OBJECT,
+                                            TM_ALL,TM_SET_INTERACTIVELY])
+        self.threshold_correction_factor = cpv.Float('Threshold correction factor', 1)
+        self.threshold_range = cpv.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
+        self.object_fraction = cpv.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
+                                                ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
+        self.unclump_method = cpv.Choice('Method to distinguish clumped objects (see help for details):', 
+                                          [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
+        self.watershed_method = cpv.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
+                                           [WA_INTENSITY,WA_DISTANCE,WA_NONE])
+        self.automatic_smoothing = cpv.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
+        self.smoothing_filter_size = cpv.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
+        self.automatic_suppression = cpv.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
+        self.maxima_suppression_size = cpv.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
+        self.low_res_maxima = cpv.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
+        self.save_outlines = cpv.NameProvider('What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.variable.DO_NOT_USE)
+        self.fill_holes = cpv.Binary('Do you want to fill holes in identified objects?', True)
+        self.test_mode = cpv.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
+
+    def variables(self):
+        return [self.image_name,self.object_name,self.size_range, \
+                self.exclude_size, self.merge_objects, \
+                self.exclude_border_objects, self.threshold_method, \
+                self.threshold_correction_factor, self.threshold_range, \
+                self.object_fraction, self.unclump_method, \
+                self.watershed_method, self.smoothing_filter_size, \
+                self.maxima_suppression_size, self.low_res_maxima, \
+                self.save_outlines, self.fill_holes, self.test_mode, \
+                self.automatic_smoothing, self.automatic_suppression ]
     
+    def visible_variables(self):
+        vv = [self.image_name,self.object_name,self.size_range, \
+                self.exclude_size, self.merge_objects, \
+                self.exclude_border_objects, self.threshold_method, \
+                self.threshold_correction_factor, self.threshold_range, \
+                self.object_fraction, self.unclump_method ]
+        if self.unclump_method != UN_NONE:
+            vv += [self.watershed_method, self.automatic_smoothing]
+            if not self.automatic_smoothing:
+                vv += [self.smoothing_filter_size]
+            vv += [self.automatic_suppression]
+            if not self.automatic_suppression:
+                vv += [self.maxima_suppression_size]
+            vv += [self.low_res_maxima, self.save_outlines, self.fill_holes]
+            vv += [self.test_mode]
+
     def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
@@ -86,20 +146,16 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
         if variable_revision_number == 12:
             # Laplace values removed - propagate variable values to fill the gap
             for i in range(17,20):
-                self.variable(i-1).value = self.variable(i).value
+                self.variable(i-1).value = str(self.variable(i))
+            if self.variable(SMOOTHING_SIZE_VAR).value == cpv.AUTOMATIC:
+                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.YES
+                self.variable(SMOOTHING_SIZE_VAR).value = "10"
+            else:
+                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.NO
             variable_revision_number = 13
         if variable_revision_number != self.variable_revision_number():
             raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))
     
-    def on_post_load(self):
-        """Install validators for fields"""
-        self.variable(SIZE_RANGE_VAR).add_listener(cellprofiler.variable.validate_real_range_listener(lower_bound=1))
-        self.variable(THRESHOLD_CORRECTION_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(lower_bound=0))
-        self.variable(THRESHOLD_RANGE_VAR).add_listener(cellprofiler.variable.validate_real_range_listener(0, 1))
-        self.variable(OBJECT_FRACTION_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(0, 1,"The fraction of object area must be between 0 and 1"))
-        self.variable(SMOOTHING_SIZE_VAR).add_listener(cellprofiler.variable.validate_real_variable_listener(lower_bound=0, cancel_reason='Please enter a number for the smoothing size or "Automatic"',allow_automatic=True))
-        self.variable(MAXIMA_SUPRESSION_SIZE_VAR).add_listener(cellprofiler.variable.validate_integer_variable_listener(lower_bound=0, cancel_reason='Please enter a number for the maxima suppression size or "Automatic"',allow_automatic=True))
-        
     def category(self):
         return "Object Processing"
     
@@ -463,44 +519,6 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """
         return 13
     
-    def annotations(self):
-        """Return the variable annotations, as read out of the module file.
-        
-        Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the CellProfiler.Variable.Annotation
-        class.
-        """
-        annotations = []
-        annotations += cellprofiler.variable.group_annotation(IMAGE_NAME_VAR, 'What did you call the images you want to process?', 'imagegroup')
-        annotations += cellprofiler.variable.indep_group_annotation(OBJECT_NAME_VAR, 'What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
-        annotations += cellprofiler.variable.edit_box_annotation(SIZE_RANGE_VAR, 'Typical diameter of objects, in pixel units (Min,Max):', '10,40')
-        annotations += cellprofiler.variable.checkbox_annotation(EXCLUDE_SIZE_VAR, 'Discard objects outside the diameter range?', True)
-        annotations += cellprofiler.variable.checkbox_annotation(MERGE_CHOICE_VAR, 'Try to merge too small objects with nearby larger objects?', False)
-        annotations += cellprofiler.variable.checkbox_annotation(EXCLUDE_BORDER_OBJECTS_VAR, 'Discard objects touching the border of the image?', True)
-        annotations += cellprofiler.variable.choice_popup_annotation(THRESHOLD_METHOD_VAR, '''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
-                                                                   [TM_OTSU_GLOBAL,TM_OTSU_ADAPTIVE,TM_OTSU_PER_OBJECT,
-                                                                    TM_MOG_GLOBAL,TM_MOG_ADAPTIVE,TM_MOG_PER_OBJECT,
-                                                                    TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
-                                                                    TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
-                                                                    TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
-                                                                    TM_KAPUR_GLOBAL,TM_KAPUR_ADAPTIVE,TM_KAPUR_PER_OBJECT,
-                                                                    TM_ALL,TM_SET_INTERACTIVELY])
-        annotations += cellprofiler.variable.edit_box_annotation(THRESHOLD_CORRECTION_VAR, 'Threshold correction factor', "1")
-        annotations += cellprofiler.variable.edit_box_annotation(THRESHOLD_RANGE_VAR, 'Lower and upper bounds on threshold, in the range [0,1]', '0,1')
-        annotations += cellprofiler.variable.choice_popup_annotation(OBJECT_FRACTION_VAR, 'For MoG thresholding, what is the approximate fraction of image covered by objects?',
-                                                                   ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'], True)
-        annotations += cellprofiler.variable.choice_popup_annotation(UNCLUMP_METHOD_VAR, 'Method to distinguish clumped objects (see help for details):', 
-                                                                   [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
-        annotations += cellprofiler.variable.choice_popup_annotation(WATERSHED_VAR, 'Method to draw dividing lines between clumped objects (see help for details):', 
-                                                                   [WA_INTENSITY,WA_DISTANCE,WA_NONE])
-        annotations += cellprofiler.variable.edit_box_annotation(SMOOTHING_SIZE_VAR, 'Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', AUTOMATIC)
-        annotations += cellprofiler.variable.edit_box_annotation(MAXIMA_SUPRESSION_SIZE_VAR, 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', AUTOMATIC)
-        annotations += cellprofiler.variable.checkbox_annotation(LOW_RES_MAXIMA_VAR, 'Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        annotations += cellprofiler.variable.indep_group_annotation(SAVE_OUTLINES_VAR, 'What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.variable.DO_NOT_USE)
-        annotations += cellprofiler.variable.checkbox_annotation(FILL_HOLES_OPTION_VAR, 'Do you want to fill holes in identified objects?', True)
-        annotations += cellprofiler.variable.checkbox_annotation(TEST_MODE_VAR, 'Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
-        return annotations
-    
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
@@ -521,13 +539,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Ignoring almost everything...
         #
-        image = image_set.get_image(self.image_name)
+        image = image_set.get_image(self.image_name.value)
         img = image.image
         mask = image.mask
         if len(img.shape)==3:
             # cheat - mini grayscale here
             img = numpy.sum(img,2)/img.shape[2]
-        threshold = otsu(img,self.min_threshold,self.max_threshold)
+        threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
         outline_image = labeled_image!=0
@@ -535,11 +553,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
         if frame:
             self.display(frame,image, labeled_image,outline_image)
-        measurements.add_measurement('Image','Count_%s'%(self.object_name),numpy.array([object_count],dtype=float))
-        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name),numpy.array([threshold],dtype=float))
+        measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
+        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
-        object_set.add_objects(objects,self.object_name)
+        object_set.add_objects(objects,self.object_name.value)
         #
         # Get the centers of each object - center_of_mass returns a list of two-tuples.
         #
@@ -548,8 +566,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         centers = centers.reshape((object_count,2))
         location_center_x = centers[:,0]
         location_center_y = centers[:,1]
-        measurements.add_measurement(self.object_name,'Location_Center_X', location_center_x)
-        measurements.add_measurement(self.object_name,'Location_Center_Y', location_center_y)
+        measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
+        measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
 
     def display(self, frame, image, labeled_image, outline_image):
         """Display the image and labeling"""
@@ -625,159 +643,21 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """
         return []
     
-    def get_image_name(self):
-        """The name of the image to be segmented"""
-        return self.variable(IMAGE_NAME_VAR).value
-    
-    image_name = property(get_image_name)
-    
-    def get_object_name(self):
-        """The name of the objects produced"""
-        return self.variable(OBJECT_NAME_VAR).value
-    
-    object_name = property(get_object_name)
-    
-    def get_min_size(self):
-        """The expected minimum size of objects"""
-        return int(self.variable(SIZE_RANGE_VAR).value.split(',')[0])
-    
-    min_size = property(get_min_size)
-    
-    def get_max_size(self):
-        """The expected maximum size of objects"""
-        return int(self.variable(SIZE_RANGE_VAR).value.split(',')[1])
-    
-    max_size = property(get_max_size)
-    
-    def get_exclude_size(self):
-        """Exclude objects on the basis of size if true"""
-        return self.variable(EXCLUDE_SIZE_VAR).is_yes
-    
-    exclude_size = property(get_exclude_size)
-    
-    def get_merge_objects(self):
-        """Merge objects on the basis of size if true"""
-        return self.variable(MERGE_CHOICE_VAR).is_yes
-    
-    merge_objects = property(get_merge_objects)
-    
-    def get_exclude_border_objects(self):
-        """Exclude objects touching the border if true"""
-        return self.variable(EXCLUDE_BORDER_OBJECTS_VAR).is_yes
-    
-    exclude_border_objects = property(get_exclude_border_objects)
-    
-    def get_threshold_method(self):
-        """How to threshold (see TH_* for values)"""
-        return self.variable(THRESHOLD_METHOD_VAR).value
-    
-    threshold_method= property(get_threshold_method)
-
-    def get_threshold_algorithm(self):
-        """The thresholding algorithm, for instance Otsu"""
-        return self.threshold_method.split(' ')[0]
-    
-    threshold_algorithm = property(get_threshold_algorithm)
-    
     def get_threshold_modifier(self):
-        """Global, Adaptive or PerObject"""
-        parts = self.get_threshold_method().split(' ')
-        if len(parts) > 1:
-            return parts[1]
-        return None
+        """The threshold algorithm modifier
+        
+        TM_GLOBAL                       = "Global"
+        TM_ADAPTIVE                     = "Adaptive"
+        TM_PER_OBJECT                   = "PerObject"
+        """
+        parts = self.threshold_method.value.split(' ')
+        return parts[1]
     
     threshold_modifier = property(get_threshold_modifier)
     
-    def get_threshold_correction_factor(self):
-        """Multiply the calculated threshold by this"""
-        return float(self.variable(THRESHOLD_CORRECTION_VAR).value)
+    def get_threshold_algorithm(self):
+        """The thresholding algorithm, for instance TM_OTSU"""
+        parts = self.threshold_method.value.split(' ')
+        return parts[0]
     
-    threshold_correction_factor = property(get_threshold_correction_factor)
-    
-    def get_min_threshold(self):
-        """Get the minimum allowable threshold value"""
-        return float(self.variable(THRESHOLD_RANGE_VAR).value.split(',')[0])
-    
-    min_threshold = property(get_min_threshold)
-    
-    def get_max_threshold(self):
-        """Get the maximum allowable threshold value"""
-        return float(self.variable(THRESHOLD_RANGE_VAR).value.split(',')[1])
-    
-    max_threshold = property(get_max_threshold)
-        
-    def get_object_fraction(self):
-        """Return the expected fraction of the image that is object"""
-        return float(self.variable(OBJECT_FRACTION_VAR).value)
-    
-    object_fraction = property(get_object_fraction)
-    
-    def get_unclump_method(self):
-        """How to distinguish whether objects are clumped"""
-        return self.variable(UNCLUMP_METHOD_VAR).value
-    
-    unclump_method = property(get_unclump_method)
-    
-    def get_watershed_method(self):
-        """How to find the troughs in the objects to unclump them"""
-        return self.variable(WATERSHED_VAR).value
-    
-    watershed_method = property(get_watershed_method)
-    
-    def get_automatic_smoothing_filter_size(self):
-        """True if the smoothing filter size is automatically determined"""
-        return self.variable(SMOOTHING_SIZE_VAR).value == AUTOMATIC
-    
-    automatic_smoothing_filter_size = property(get_automatic_smoothing_filter_size)
-    
-    def get_smoothing_filter_size(self):
-        """The size of the smoothing filter in pixels"""
-        if self.automatic_smoothing_filter_size:
-            return None
-        return float(self.variable(SMOOTHING_SIZE_VAR).value)
-    
-    smoothing_filter_size = property(get_smoothing_filter_size)
-    
-    def get_automatic_maxima_suppression_size(self):
-        """True if the maxima suppression size is automatically determined"""
-        return self.variable(MAXIMA_SUPRESSION_SIZE_VAR).value == AUTOMATIC
-    
-    automatic_maxima_suppression_size = property(get_automatic_maxima_suppression_size)
-    
-    def get_maxima_suppression_size(self):
-        """Suppress local maxima within this distance"""
-        if self.automatic_maxima_suppression_size:
-            return None
-        return float(self.variable(MAXIMA_SUPRESSION_SIZE_VAR).value)
-    
-    maxima_suppression_size = property(get_maxima_suppression_size)
-    
-    def get_use_low_res(self):
-        """Return true if we use a low-resolution image to find local maxima"""
-        return self.variable(LOW_RES_MAXIMA_VAR).is_yes
-    
-    use_low_res = property(get_use_low_res)
-    
-    def get_save_outlines(self):
-        """Return true if we should save outlines"""
-        return not self.variable(SAVE_OUTLINES_VAR).is_do_not_use
-    
-    save_outlines = property(get_save_outlines)
-    
-    def get_outlines_name(self):
-        """The name of the outlines image"""
-        return self.variable(SAVE_OUTLINES_VAR).value
-    
-    outlines_name = property(get_outlines_name)
-    
-    def get_fill_holes(self):
-        """Return true if we are to fill holes in the objects"""
-        return self.variable(FILL_HOLES_OPTION_VAR).is_yes
-    
-    fill_holes = property(get_fill_holes)
-    
-    def get_test_mode(self):
-        """Return true if we are to test each method for distinguishing clumped objects"""
-        return self.variable(TEST_MODE_VAR).is_yes
-    
-    test_mode = property(get_test_mode)
+    threshold_algorithm = property(get_threshold_algorithm)

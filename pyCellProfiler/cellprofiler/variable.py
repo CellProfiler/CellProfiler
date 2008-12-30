@@ -79,6 +79,13 @@ class Variable(object):
     
     is_do_not_use = property(get_is_do_not_use)
     
+    def test_valid(self, pipeline):
+        """Throw a ValueError if the value of this variable is inappropriate for the context"""
+        pass
+    
+    def __str__(self):
+        return self.__value
+    
 class Text(Variable):
     """A variable that displays as an edit box, accepting a string
     
@@ -101,21 +108,185 @@ class FilenameText(Text):
 class Integer(Text):
     """A variable that allows only integer input
     """
-    def __init__(self,text,value):
+    def __init__(self,text,value=0,minval=None, maxval=None):
         super(Integer,self).__init__(text,str(value))
+        self.__minval = minval
+        self.__maxval = maxval
     
     def set_value(self,value):
-        """Only allow integer input.
+        """Convert integer to string
         """
         str_value = str(value)
-        if not str_value.isdigit():
-            raise ValueError('Must be an integer value, was "%s"'%(str_value))
         super(Integer,self).set_value(str_value)
         
     def get_value(self):
         """Return the value of the variable as an integer
         """
         return int(super(Integer,self).get_value())
+    
+    def test_valid(self,pipeline):
+        """Return true only if the text value is an integer
+        """
+        if not str(self).isdigit():
+            raise ValueError('Must be an integer value, was "%s"'%(str(self)))
+        if self.__minval != None and self.__minval > self.value:
+            raise ValueError('Must be at least %d, was %d'%(self.__minval, self.value))
+        if self.__maxval != None and self.__maxval < self.value:
+            raise ValueError('Must be at most %d, was %d'%(self.__maxval, self.value))
+        
+    def __eq__(self,x):
+        if super(Integer,self).__eq__(x):
+            return True
+        return self.value == x
+
+class IntegerRange(Variable):
+    """A variable that allows only integer input between two constrained values
+    """
+    def __init__(self,text,value=(0,1),minval=None, maxval=None):
+        """Initialize an integer range
+        text  - helpful text to be displayed to the user
+        value - initial default value, a two-tuple as minimum and maximum
+        minval - the minimum acceptable value of either
+        maxval - the maximum acceptable value of either
+        """
+        super(IntegerRange,self).__init__(text,"%d,%d"%value)
+        self.__minval = minval
+        self.__maxval = maxval
+        
+    
+    def set_value(self,value):
+        """Convert integer tuples to string
+        """
+        try: 
+            if len(value) == 2:
+                super(IntegerRange,self).set_value("%d,%d"%(value[0],value[1]))
+                return
+        except: 
+            pass
+        super(IntegerRange,self).set_value(value)
+    
+    def get_value(self):
+        """Convert the underlying string to a two-tuple"""
+        values = str(self).split(',')
+        return (int(values[0]),int(values[1]))
+    
+    def get_min(self):
+        """The minimum value of the range"""
+        return self.value[0]
+    
+    min = property(get_min)
+    
+    def get_max(self):
+        """The maximum value of the range"""
+        return self.value[1]
+    
+    max = property(get_max) 
+    
+    def test_valid(self, pipeline):
+        values = str(self).split(',')
+        if len(values) < 2:
+            raise ValueError("Minimum and maximum values must be separated by a comma")
+        if len(values) > 2:
+            raise ValueError("Only two values allowed")
+        for value in values:
+            if not value.isdigit():
+                raise ValueError("%s is not an integer"%(value))
+        if self.__minval > self.min:
+            raise ValueError("%d can't be less than %d"%(self.min,self.__minval))
+        if self.__maxval < self.max:
+            raise ValueError("%d can't be greater than %d"%(self.max,self.__maxval))
+        if self.min > self.max:
+            raise ValueError("%d is greater than %d"%(self.min, self.max))
+
+class Float(Text):
+    """A variable that allows only floating point input
+    """
+    def __init__(self,text,value=0,minval=None, maxval=None):
+        super(Float,self).__init__(text,str(value))
+        self.__minval = minval
+        self.__maxval = maxval
+    
+    def set_value(self,value):
+        """Convert integer to string
+        """
+        str_value = str(value)
+        super(Float,self).set_value(str_value)
+        
+    def get_value(self):
+        """Return the value of the variable as an integer
+        """
+        return float(super(Float,self).get_value())
+    
+    def test_valid(self,pipeline):
+        """Return true only if the text value is float
+        """
+        # Raises value error inside self.value if not a float
+        if self.__minval != None and self.__minval > self.value:
+            raise ValueError('Must be at least %d, was %d'%(self.__minval, self.value))
+        if self.__maxval != None and self.__maxval < self.value:
+            raise ValueError('Must be at most %d, was %d'%(self.__maxval, self.value))
+        
+    def __eq__(self,x):
+        if super(Float,self).__eq__(x):
+            return True
+        return self.value == x
+
+class FloatRange(Variable):
+    """A variable that allows only floating point input between two constrained values
+    """
+    def __init__(self,text,value=(0,1),minval=None, maxval=None):
+        """Initialize an integer range
+        text  - helpful text to be displayed to the user
+        value - initial default value, a two-tuple as minimum and maximum
+        minval - the minimum acceptable value of either
+        maxval - the maximum acceptable value of either
+        """
+        super(FloatRange,self).__init__(text,"%f,%f"%value)
+        self.__minval = minval
+        self.__maxval = maxval
+    
+    def set_value(self,value):
+        """Convert integer tuples to string
+        """
+        try: 
+            if len(value) == 2:
+                super(FloatRange,self).set_value("%f,%f"%(value[0],value[1]))
+                return
+        except: 
+            pass
+        super(FloatRange,self).set_value(value)
+    
+    def get_value(self):
+        """Convert the underlying string to a two-tuple"""
+        values = str(self).split(',')
+        return (float(values[0]),float(values[1]))
+    
+    def get_min(self):
+        """The minimum value of the range"""
+        return self.value[0]
+    
+    min = property(get_min)
+    
+    def get_max(self):
+        """The maximum value of the range"""
+        return self.value[1]
+    
+    max = property(get_max) 
+    
+    def test_valid(self, pipeline):
+        values = str(self).split(',')
+        if len(values) < 2:
+            raise ValueError("Minimum and maximum values must be separated by a comma")
+        if len(values) > 2:
+            raise ValueError("Only two values allowed")
+        for value in values:
+            float(value)
+        if self.__minval > self.min:
+            raise ValueError("%f can't be less than %f"%(self.min,self.__minval))
+        if self.__maxval < self.max:
+            raise ValueError("%f can't be greater than %f"%(self.max,self.__maxval))
+        if self.min > self.max:
+            raise ValueError("%f is greater than %f"%(self.min, self.max))
 
 class NameProvider(Text):
     """A variable that provides a named object
@@ -136,7 +307,7 @@ class NameProvider(Text):
 class NameSubscriber(Variable):
     """A variable that takes its value from one made available by name providers
     """
-    def __init__(self,text,group,value):
+    def __init__(self,text,group,value='None'):
         super(NameSubscriber,self).__init__(text,value)
     
         self.__group = group
@@ -161,6 +332,12 @@ class NameSubscriber(Variable):
                     module_choices.append(variable.value)
             choices += module_choices
         assert False, "Variable not among visible variables in pipeline"
+    
+    def test_valid(self,pipeline):
+        if len(self.get_choices(pipeline)) == 0:
+            raise ValueError("No prior instances of %s were defined"%(self.group))
+        if self.value not in self.get_choices(pipeline):
+            raise ValueError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))))
 
 class Binary(Variable):
     """A variable that is represented as either true or false
@@ -177,9 +354,10 @@ class Binary(Variable):
     
     def set_value(self,value):
         """When setting, translate true and false into yes and no"""
-        if value == YES or value == NO:
+        if value == YES or value == NO or\
+           isinstance(value,str) or isinstance(value,unicode):
             super(Binary,self).set_value(value)
-        else:
+        else: 
             str_value = (value and YES) or NO
             super(Binary,self).set_value(str_value)
     
@@ -192,7 +370,7 @@ class Binary(Variable):
         if x == NO:
             x = False
         return (self.value and x) or ((not self.value) and (not x)) 
-
+    
 class Choice(Variable):
     """A variable that displays a drop-down set of choices
     
@@ -217,12 +395,10 @@ class Choice(Variable):
     
     choices = property(__internal_get_choices)
     
-    def set_value(self,value):
+    def test_valid(self,pipeline):
         """Check to make sure that the value is among the choices"""
-        if value not in self.choices:
-            raise ValueError("%s is not one of %s"%(value, str(self.choices)))
-        super(Choice,self).set_value(value)
-        
+        if self.value not in self.choices:
+            raise ValueError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)))
 
 class CustomChoice(Choice):
     def __init__(self,text,choices,value=None):

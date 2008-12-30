@@ -109,10 +109,22 @@ end;
 ProjectionType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%textVAR07 = What do you want to call the projected image?
-%defaultVAR07 = ProjectedBlue
+%textVAR07 = Would you like to check images for a QCFlag (loaded earlier in a load text module) and bypass images possessing a flag in calculation of the illumination correction function?
+%choiceVAR07 = No
+%choiceVAR07 = Yes
 %infotypeVAR07 = imagegroup indep
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+CheckForQC = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
+%textVAR08 = What did you call the loaded text that contains the QCFlag? 
+%defaultVAR08 = QCFlag
+QCFileName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+
+
+%textVAR09 = What do you want to call the projected image?
+%defaultVAR09 = ProjectedBlue
+%infotypeVAR09 = imagegroup indep
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %%%VariableRevisionNumber = 1
 
@@ -179,20 +191,58 @@ FileList = CPretrievemediafilenames(DirPath,FileTextToFind,AnalyzeSubDir(1), Exa
 if isempty(FileList)
     error(['Image processing was canceled in the ', ModuleName, ' module because no files were found in the ', DirPath, ' directory.']);
 end
-for i=1:length(FileList)
-    Image = CPimread(fullfile(DirPath,FileList{i}));
-    if i == 1
-        ProjectionImage = zeros(size(Image));
-    end
-    if strcmp(ProjectionType,'Average')
-        ProjectionImage = ProjectionImage + Image;
-    else
-        ProjectionImage = max(ProjectionImage, Image);
-    end
+switch CheckForQC
+    case 'No'
+        for i=1:length(FileList)
+            Image = CPimread(fullfile(DirPath,FileList{i}));
+            if i == 1
+                ProjectionImage = zeros(size(Image));
+            end
+            if strcmp(ProjectionType,'Average')
+                ProjectionImage = ProjectionImage + Image;
+            else
+                ProjectionImage = max(ProjectionImage, Image);
+            end
+        end
+        if strcmp(ProjectionType,'Average')
+            ProjectionImage = ProjectionImage / length(FileList);
+        end
+    case 'Yes' 
+        QCFlagDataName = CPjoinstrings('LoadedText',QCFileName);
+        if ~isfield(handles.Measurements.Image,QCFlagDataName)
+            error('You asked to check the incoming images for a QCFlag, but the named of the loaded text file is incorrect.')
+        end
+        QCFlagData = str2double(handles.Measurements.Image.(QCFlagDataName));
+        for i = 1:length(FileList)
+            if QCFlagData(i) == 0
+                Image = CPimread(fullfile(DirPath,char(FileList(i))));
+                FileCount = 1;
+            else
+                ImageSize = CPimread(fullfile(DirPath,char(FileList(i))));
+                Image = zeros(size(ImageSize));
+                FileCount = 0;
+            end
+            if i == 1 
+                ProjectionImage = zeros(size(Image));
+            end
+            ImageOrEmpty = find(Image, 1);
+            logical = isempty(ImageOrEmpty);
+            if logical == 1
+                continue
+            end
+            if strcmp(ProjectionType,'Average')
+                ProjectionImage = ProjectionImage + Image;
+            else 
+                ProjectionImage = max(ProjectionImage,Image);
+            end
+            FileCount = FileCount+1;
+        end
+        if strcmp(ProjectionType,'Average')
+            ProjectionImage = ProjectionImage/FileCount;
+        end
 end
-if strcmp(ProjectionType,'Average')
-    ProjectionImage = ProjectionImage / length(FileList);
-end
+
+        
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

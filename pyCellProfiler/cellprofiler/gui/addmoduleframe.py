@@ -127,7 +127,7 @@ class AddModuleFrame(wx.Frame):
             finally:
                 fid.close()
         
-        for mc in cellprofiler.modules.module_classes:
+        for mc in cellprofiler.modules.get_module_classes():
             def loader(module_num, mc=mc):
                 module = mc()
                 module.set_module_num(module_num)

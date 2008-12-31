@@ -1,4 +1,7 @@
+
+TEST_MODULES = cellprofiler cellprofiler.modules cellprofiler.gui cellprofiler.matlab cellprofiler.cpmath
+
 all: tests
 
 tests:
-	python -m cellprofiler.tests --with-nosexunit --core-target=target/xml-report cellprofiler cellprofiler.modules cellprofiler.matlab cellprofiler.cpmath
+	python -m nose.core --with-nosexunit --core-target=target/xml-report $(TEST_MODULES)

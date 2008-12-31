@@ -8,7 +8,10 @@ import PIL.Image
 import numpy
 import matplotlib.image
 
-from cellprofiler import cpmodule, cpimage, preferences, variable
+import cellprofiler.cpmodule as cpmodule
+import cellprofiler.cpimage as cpimage
+import cellprofiler.preferences as preferences
+import cellprofiler.variable as variable
 
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -99,25 +102,129 @@ class LoadImages(cpmodule.AbstractModule):
         if self.location == DIR_OTHER:
             varlist += [self.location_other]
         return varlist
-        
-    # Move this down somehere
-    def directory_path(self):
-        if self.location == 'Default image folder':
-            return xxx_the_default_image_folder
-        elif self.location == 'Default output filter':
-            return xxx_the_default_output_folder
-        else:
-            return self.location_other
-
-    def upgrade(self,variable_revision_number):
-        """Rewrite the variables in the module to upgrade it to its
-           current revision number
+    
+    #
+    # Slots for storing variables in the array
+    #
+    SLOT_FILE_TYPE = 0
+    SLOT_MATCH_METHOD = 1
+    SLOT_ORDER_GROUP_SIZE = 2
+    SLOT_MATCH_EXCLUDE = 3
+    SLOT_DESCEND_SUBDIRECTORIES = 4
+    SLOT_LOCATION = 5
+    SLOT_LOCATION_OTHER = 6
+    SLOT_FIRST_IMAGE = 7
+    SLOT_OFFSET_COMMON_TEXT = 0
+    SLOT_OFFSET_IMAGE_NAME = 1
+    SLOT_OFFSET_ORDER_POSITION = 2
+    SLOT_IMAGE_FIELD_COUNT = 3
+    def variables(self):
+        """Return the variables array in a consistent order"""
+        varlist = range(self.SLOT_FIRST_IMAGE + \
+                        self.SLOT_IMAGE_FIELD_COUNT * len(self.image_names))
+        varlist[self.SLOT_FILE_TYPE]              = self.file_types
+        varlist[self.SLOT_MATCH_METHOD]           = self.match_method
+        varlist[self.SLOT_ORDER_GROUP_SIZE]       = self.order_group_size
+        varlist[self.SLOT_MATCH_EXCLUDE]          = self.match_exclude
+        varlist[self.SLOT_DESCEND_SUBDIRECTORIES] = self.descend_subdirectories
+        varlist[self.SLOT_LOCATION]               = self.location
+        varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
+        for i in range(len(self.image_names)):
+            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
+            varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
+                self.images_common_text[i]
+            varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
+                self.image_names[i]
+            varlist[ioff+self.SLOT_OFFSET_ORDER_POSITION] = \
+                self.images_order_position[i]
+        return varlist
+    
+    def set_variable_values(self,variable_values,variable_revision_number,module_name):
+        """Interpret the variable values as saved by the given revision number
         """
-        if variable_revision_number != self.variable_revision_number:
+        if variable_revision_number == 1 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_1_to_2(variable_values)
+        if variable_revision_number == 2 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_2_to_3(variable_values)
+        if variable_revision_number == 3 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_3_to_4(variable_values)
+        if variable_revision_number == 4 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_4_to_new_1(variable_values)
+            module_name = self.module_class()
+
+        if variable_revision_number != self.variable_revision_number or \
+           module_name != self.module_class():
             raise NotImplementedError("Cannot read version %d of %s"%(
                 variable_revision_number, self.module_name))
+        #
+        # Figure out how many images are in the saved variables - make sure
+        # the array size matches the incoming #
+        #
+        assert (len(variable_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(variable_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
+        while len(self.image_names) > image_count:
+            self.remove_imagecb(0)
+        while len(self.image_names) < image_count:
+            self.add_imagecb()
+        super(LoadImages,self).set_variable_values(variable_values, variable_revision_number, module_name)
     
-    variable_revision_number = 4
+    def upgrade_1_to_2(self, variable_values):
+        """Upgrade rev 1 LoadImages to rev 2
+        
+        Handle movie formats new to rev 2
+        """
+        new_values = list(variable_values[:10])
+        image_or_movie =  variable_values[10]
+        if image_or_movie == 'Image':
+            new_values.append('individual images')
+        elif variable_values[11] == 'avi':
+            new_values.append('avi movies')
+        elif variable_values[11] == 'stk':
+            new_values.append('stk movies')
+        else:
+            raise ValueError('Unhandled movie type: %s'%(variable_values[11]))
+        new_values.extend(variable_values[11:])
+        return (new_values,2)
+    
+    def upgrade_2_to_3(self, variable_values):
+        """Added binary/grayscale question"""
+        new_values = list(variable_values)
+        new_values.append('grayscale')
+        new_values.append('')
+        return (new_values,3)
+    
+    def upgrade_3_to_4(self, variable_values):
+        """Added text exclusion at slot # 10"""
+        new_values = list(variable_values)
+        new_values.insert(10,variable.DO_NOT_USE)
+        return (new_values,4)
+    
+    def upgrade_4_to_new_1(self,variable_values):
+        """Take the old LoadImages values and put them in the correct slots"""
+        new_values = range(self.SLOT_FIRST_IMAGE)
+        new_values[self.SLOT_FILE_TYPE]              = variable_values[11]
+        new_values[self.SLOT_MATCH_METHOD]           = variable_values[0]
+        new_values[self.SLOT_ORDER_GROUP_SIZE]       = variable_values[9]
+        new_values[self.SLOT_MATCH_EXCLUDE]          = variable_values[10]
+        new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = variable_values[12]
+        loc = variable_values[13]
+        if loc == '.':
+            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
+        elif loc == '&':
+            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_OUTPUT
+        else:
+            new_values[self.SLOT_LOCATION]           = DIR_OTHER 
+        new_values[self.SLOT_LOCATION_OTHER]         = loc 
+        for i in range(0,4):
+            text_to_find = variable_values[i*2+1]
+            image_name = variable_values[i*2+2]
+            if text_to_find == variable.DO_NOT_USE or \
+               image_name == variable.DO_NOT_USE:
+                break
+            new_values.extend([text_to_find,image_name,text_to_find])
+        return (new_values,1)
+    
+    variable_revision_number = 1
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles

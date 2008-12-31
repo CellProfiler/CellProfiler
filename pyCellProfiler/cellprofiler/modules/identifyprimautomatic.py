@@ -148,13 +148,13 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
             # Laplace values removed - propagate variable values to fill the gap
             for i in range(17,20):
                 self.variable(i-1).value = str(self.variable(i))
-            if self.variable(SMOOTHING_SIZE_VAR).value == cpv.AUTOMATIC:
+            if str(self.variable(SMOOTHING_SIZE_VAR)) == cpv.AUTOMATIC:
                 self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.YES
-                self.variable(SMOOTHING_SIZE_VAR).value = "10"
+                self.variable(SMOOTHING_SIZE_VAR).value = 10
             else:
                 self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.NO
             variable_revision_number = 13
-        if variable_revision_number != self.variable_revision_number():
+        if variable_revision_number != self.variable_revision_number:
             raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))
     
     variable_revision_number = 13

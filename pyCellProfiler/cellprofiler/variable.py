@@ -5,7 +5,6 @@ __version__="$Revision$"
 
 import re
 import uuid
-import variablechoices
 
 DO_NOT_USE = 'Do not use'
 AUTOMATIC = "Automatic"

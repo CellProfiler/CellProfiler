@@ -69,8 +69,8 @@ class Test_CellProfilerApp(unittest.TestCase):
         #
         vv = module.visible_variables()
         self.assertTrue(isinstance(vv[0],vvv.Choice))
-        self.assertTrue(isinstance(vv[1],vvv.Text))
-        self.assertTrue(isinstance(vv[12],vvv.Binary))
+        self.assertTrue(isinstance(vv[2],vvv.Text))
+        self.assertTrue(isinstance(vv[3],vvv.Binary))
         for v,i in zip(vv,range(len(vv))):
             text_name = mv.text_control_name(v)
             text_control = module_panel.FindWindowByName(text_name)
@@ -79,7 +79,8 @@ class Test_CellProfilerApp(unittest.TestCase):
             control_name = mv.edit_control_name(v)
             edit_control = module_panel.FindWindowByName(control_name)
             self.assertTrue(edit_control)
-            self.assertTrue(v == edit_control.Value,"variable number %d: %s != %s"%(i,v.value,edit_control.Value))
+            if not isinstance(v,cellprofiler.variable.DoSomething):
+                self.assertTrue(v == edit_control.Value,"variable number %d: %s != %s"%(i,v.value,edit_control.Value))
     
     def test_01_02_Subscriber(self):
         """Test provide/subscribe for images

@@ -9,7 +9,7 @@ import os
 
 import numpy
 
-import variable as cpv
+import cellprofiler.variable as cpv
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
@@ -48,7 +48,6 @@ class AbstractModule(object):
         Returns a module with the variables decanted from the handles.
         If the revision is old, a different and compatible module can be returned.
         """
-        self.create_from_annotations()
         self.__module_num = module_num
         idx = module_num-1
         settings = handles['Settings'][0,0]
@@ -60,6 +59,7 @@ class AbstractModule(object):
             self.__notes = []
         variable_count=settings['NumbersOfVariables'][0,idx]
         variable_revision_number = settings['VariableRevisionNumbers'][0,idx]
+        module_name = settings['ModuleNames'][0,idx]
         for i in range(0,variable_count):
             value_cell = settings['VariableValues'][idx,i]
             if isinstance(value_cell,numpy.ndarray):
@@ -69,11 +69,22 @@ class AbstractModule(object):
                     variable_values.append(str(value_cell[0]))
             else:
                 variable_values.append(value_cell)
+        self.set_variable_values(variable_values, variable_revision_number, module_name)
+        self.on_post_load()
+    
+    def set_variable_values(self, variable_values, variable_revision_number, module_name):
+        """Set the variables in a module, given a list of values
+        
+        The default implementation gets all the variables and then
+        sets their values using the string passed. A more modern
+        module may want to tailor the particular variables set to
+        whatever values are in the list or however many values
+        are in the list.
+        """
         for v,value in zip(self.variables(),variable_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
-        self.on_post_load()
-    
+        
     def create_from_annotations(self):
         """Create the variables based on what you can discern from the annotations
         """
@@ -148,7 +159,8 @@ class AbstractModule(object):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
         
         """
-        raise NotImplementedError("Please implement UpgradeModuleFromRevision")
+        if variable_revision_number != self.variable_revision_number:
+            raise NotImplementedError("Please implement UpgradeModuleFromRevision")
     
     def get_help(self):
         """Return help text for the module
@@ -437,6 +449,7 @@ class MatlabModule(AbstractModule):
         self.set_module_name(module_name)
         self.__filename = os.path.join(cellprofiler.preferences.module_directory(),
                                        module_name+cellprofiler.preferences.module_extension())
+        self.create_from_annotations()
         return AbstractModule.create_from_handles(self, handles, module_num)
 
     def create_from_file(self,file_path,module_num):

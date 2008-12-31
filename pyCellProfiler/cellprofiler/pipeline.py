@@ -234,7 +234,12 @@ class Pipeline:
         self.notify_listeners(PipelineLoadedEvent())
     
     def instantiate_module(self,module_name):
-        if module_name.find('.') != -1:
+        import cellprofiler.modules
+        
+        substitutions = cellprofiler.modules.get_module_substitutions()
+        if substitutions.has_key(module_name):
+            module = substitutions[module_name]()
+        elif module_name.find('.') != -1:
             parts     = module_name.split('.')
             pkg_name  = '.'.join(parts[:-1])
             pkg       = __import__(pkg_name)

@@ -27,10 +27,7 @@ class InjectImage(cellprofiler.cpmodule.AbstractModule):
         """
         raise NotImplementedError("Please implement GetHelp in your derived module class")
             
-    def variable_revision_number(self):
-        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
-        """
-        return 1
+    variable_revision_number = 1
     
     def annotations(self):
         """Return the variable annotations, as read out of the module file.

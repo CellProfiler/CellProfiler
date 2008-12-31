@@ -231,10 +231,15 @@ class AbstractModule(object):
         """
         return self.__module__+'.'+self.module_name
     
-    def variable_revision_number(self):
+    def get_variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
         raise NotImplementedError("Please implement VariableRevisionNumber in the derived class")
+    
+    def __internal_get_variable_revision_number(self):
+        """The revision number for the variable format for this module"""
+        return self.get_variable_revision_number()
+    variable_revision_number = property(__internal_get_variable_revision_number)
     
     def variables(self):
         """A module's variables
@@ -354,7 +359,7 @@ class TemplateModule(AbstractModule):
         """
         raise NotImplementedError("Please implement GetHelp in your derived module class")
             
-    def variable_revision_number(self):
+    def get_variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
         raise NotImplementedError("Please implement VariableRevisionNumber in the derived class")
@@ -522,10 +527,11 @@ class MatlabModule(AbstractModule):
         self.__variable_revision_number = variable_revision_number
         return self
     
-    def variable_revision_number(self):
+    def get_variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
         return self.__variable_revision_number
+    variable_revision_number = property(get_variable_revision_number)
     
     def target_variable_revision_number(self):
         """The variable revision number we need in order to run the module

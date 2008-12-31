@@ -132,6 +132,9 @@ if ischar(fn), fn = {fn}; end
 for i = 1:length(fn),
     handles.Pipeline.(fn{i})(idxToRemove) = [];
 end
+if isfield(handles.Current,'NumberOfImageSets')
+    handles.Current.NumberOfImageSets = handles.Current.NumberOfImageSets - sum(idxToRemove);
+end
 
 %%%%%%%%%%%% Subfunctions %%%%%%%%%%%%%
 %%

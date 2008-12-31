@@ -45,8 +45,8 @@ UniqueDirectories = unique(pathnames);
 
 % Separate out the unique directory names for listing
 DirectoryNames = cell(0,0);     % The separated directories from the path
+DirectoryPaths = cell(0,0);     % The full pathname, not just the directory
 DirectoryLevel = ones(0,0);     % The level (1..n) from the root
-LastDirectoryInPath = false(0,0);
 ListingTag = cell(0,0);
 UniquePathNumber = zeros(0,0);
 if ispc, fileseparator = ['\',filesep]; else fileseparator = filesep; end
@@ -54,7 +54,11 @@ for i = 1:length(UniqueDirectories),
     p = textscan(UniqueDirectories{i},'%s','delimiter',fileseparator);
     DirectoryNames = [DirectoryNames; p{:}];
     DirectoryLevel = [DirectoryLevel; (1:length(p{:}))'];
-    LastDirectoryInPath = [LastDirectoryInPath; false(size(p{:}))]; LastDirectoryInPath(end) = true;
+    DirectoryPath = [];
+    for j = 1:length(p{:})
+        DirectoryPath = [DirectoryPath,p{1}{j}];
+        DirectoryPaths = [DirectoryPaths; DirectoryPath];
+    end
     str = cell(length(p{1}),1); for j = 1:length(p{1}), str{j} = fullfile('',p{1}{1:j}); end
     ListingTag = [ListingTag; str];
     UniquePathNumber = [UniquePathNumber; i*ones(length(p{:}),1)];
@@ -64,14 +68,12 @@ end
 % each other in the list don't get repeated when displayed
 % Find the directory names that (1) share a level (2) under the same
 % root...
-[ignore,i,j] = unique(DirectoryNames,'first');
+[ignore,i,j] = unique(DirectoryPaths,'first');
 UniqueDirectoryLabel = (1:length(i))';  % Each directory gets a numeric label since 'unique' doesn't work row-wise on cell arrays
 UniqueDirectoryLabel = UniqueDirectoryLabel(j);
 [ignore,idx] = unique(UniqueDirectoryLabel,'first');
-EntriesToRemove = true(size(DirectoryNames));
+EntriesToRemove = true(size(DirectoryPaths));
 EntriesToRemove(idx) = false;
-% ... but are not the last directory in that path...
-EntriesToRemove(LastDirectoryInPath) = false;
 % ... and remove them from the listing
 DirectoryNames(EntriesToRemove) = [];
 DirectoryLevel(EntriesToRemove) = [];

@@ -4,6 +4,6 @@
 __version="$Revision$"
 
 import identifyprimautomatic
-import loadimages
+import platonicmodule
 
-module_classes = [loadimages.LoadImages,identifyprimautomatic.IdentifyPrimAutomatic]
+module_classes = [platonicmodule.LoadImages,identifyprimautomatic.IdentifyPrimAutomatic]

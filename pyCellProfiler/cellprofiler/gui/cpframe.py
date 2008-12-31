@@ -197,6 +197,11 @@ class CPFrame(wx.Frame):
         return self.__module_view
     
     module_view = property(get_module_view)
+    
+    def get_pipeline_list_view(self):
+        return self.__pipeline_list_view
+    
+    pipeline_list_view = property(get_pipeline_list_view)
 
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column

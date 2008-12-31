@@ -448,7 +448,7 @@ class Pipeline:
         matlab = get_matlab_instance()
         self.set_matlab_path()
         display_size = (1024,768)
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler.cpimage.ImageSetList()
         measurements = cellprofiler.measurements.Measurements()
         
         for module in self.modules():

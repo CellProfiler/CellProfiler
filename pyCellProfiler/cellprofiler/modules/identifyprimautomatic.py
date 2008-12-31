@@ -138,6 +138,7 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
                 vv += [self.maxima_suppression_size]
             vv += [self.low_res_maxima, self.save_outlines, self.fill_holes]
             vv += [self.test_mode]
+        return vv
 
     def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
@@ -156,6 +157,8 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
         if variable_revision_number != self.variable_revision_number():
             raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))
     
+    variable_revision_number = 13
+
     def category(self):
         return "Object Processing"
     
@@ -514,11 +517,7 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-    def variable_revision_number(self):
-        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
-        """
-        return 13
-    
+  
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
@@ -579,13 +578,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                     wx.Frame.__init__(self,frame,-1,"Identify Primary Automatic",name=window_name)
                     sizer = wx.BoxSizer()
                     self.figure = figure= matplotlib.figure.Figure()
-                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.Figure) 
+                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure) 
                     self.SetSizer(sizer)
-                    sizer.Add(self.Panel,1,wx.EXPAND)
+                    sizer.Add(self.panel,1,wx.EXPAND)
                     self.Bind(wx.EVT_PAINT,self.on_paint)
-                    self.orig_axes = self.Figure.add_subplot(2,2,1)
-                    self.outlined_axes = self.Figure.add_subplot(2,2,3)
-                    self.label_axes = self.Figure.add_subplot(2,2,2)
+                    self.orig_axes = self.figure.add_subplot(2,2,1)
+                    self.outlined_axes = self.figure.add_subplot(2,2,3)
+                    self.label_axes = self.figure.add_subplot(2,2,2)
                     self.Fit()
                     self.Show()
                 def on_paint(self, event):
@@ -595,7 +594,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             my_frame = my_frame_class()
             
         my_frame.orig_axes.clear()
-        my_frame.orig_axes.imshow(image.Image)
+        my_frame.orig_axes.imshow(image.image)
         my_frame.orig_axes.set_title("Original image")
         
         my_frame.label_axes.clear()

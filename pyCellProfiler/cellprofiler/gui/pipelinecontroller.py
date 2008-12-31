@@ -24,7 +24,7 @@ class PipelineController:
         pipeline.add_listener(self.__on_pipeline_event)
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
-        self.__add_module_frame.add_listener(self.__on_add_to_pipeline)
+        self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         self.__variable_errors = {}
         self.__running_pipeline = None 
         self.__pipeline_measurements = None
@@ -78,9 +78,9 @@ class PipelineController:
         self.__module_controls_panel.SetSizer(self.__mcp_sizer)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_help, self.__help_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_add_module,self.__mcp_add_module_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_remove_module,self.__mcp_remove_module_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_module_up,self.__mcp_module_up_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_module_down,self.__mcp_module_down_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module,self.__mcp_remove_module_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up,self.__mcp_module_up_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down,self.__mcp_module_down_button)
         
     def __on_load_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Choose a pipeline file to open",wildcard="*.mat")
@@ -124,7 +124,7 @@ class PipelineController:
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
-            self.__pipeline.Clear()
+            self.__pipeline.clear()
             self.__clear_errors()
     
     def __on_pipeline_event(self,caller,event):
@@ -142,7 +142,7 @@ class PipelineController:
     def __get_selected_modules(self):
         return self.__pipeline_list_view.get_selected_modules()
     
-    def __on_remove_module(self,event):
+    def on_remove_module(self,event):
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
             for variable in module.variables():
@@ -150,22 +150,27 @@ class PipelineController:
                     self.__frame.preferencesview.pop_error_text(self.__variable_errors.pop(variable.key()))                    
             self.__pipeline.remove_module(module.module_num)
             
-    def __on_module_up(self,event):
+    def on_module_up(self,event):
+        """Move the currently selected modules up"""
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
             self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_UP);
         
-    def __on_module_down(self,event):
+    def on_module_down(self,event):
+        """Move the currently selected modules down"""
         selected_modules = self.__get_selected_modules()
         selected_modules.reverse()
         for module in selected_modules:
             self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_DOWN);
     
-    def __on_add_to_pipeline(self,caller,event):
+    def on_add_to_pipeline(self,caller,event):
+        """Add a module to the pipeline using the event's module loader"""
         selected_modules = self.__get_selected_modules()
-        module_num = 1
         if len(selected_modules):
             module_num=selected_modules[-1].module_num+1
+        else:
+            # insert module last if nothing selected
+            module_num = len(self.__pipeline.modules())+1 
         self.__pipeline.add_module(event.module_loader(module_num))
         
     def __on_module_view_event(self,caller,event):
@@ -173,8 +178,9 @@ class PipelineController:
         variable = event.get_variable()
         proposed_value = event.get_proposed_value()
         
+        variable.value = proposed_value
         try:
-            variable.value = proposed_value
+            variable.test_valid(self.__pipeline)
             if self.__variable_errors.has_key(variable.key()):
                 self.__frame.preferences_view.pop_error_text(self.__variable_errors.pop(variable.key()))
             

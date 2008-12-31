@@ -55,8 +55,16 @@ class PipelineListView:
         elif isinstance(event,cellprofiler.pipeline.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
     
+    def select_module(self,module_num,selected=True):
+        """Select the given one-based module number in the list
+        This is mostly for testing
+        """
+        self.__list_box.SetSelection(module_num-1,selected)
+        
     def get_selected_modules(self):
-        return [self.__list_box.GetClientData(i) for i in self.__list_box.GetSelections()]
+        return [self.__list_box.GetClientData(i)\
+                for i in self.__list_box.GetSelections() \
+                if self.__list_box.Items[i] != NO_PIPELINE_LOADED]
     
     def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads
@@ -90,9 +98,9 @@ class PipelineListView:
                 selected = True
                 break
         if event.direction == cellprofiler.pipeline.DIRECTION_UP:
-            self.__list_box.Delete(event.modulenum)
+            self.__list_box.Delete(event.module_num)
         else:
-            self.__list_box.Delete(event.modulenum-2)
+            self.__list_box.Delete(event.module_num-2)
         self.__list_box.Insert(module.module_name,event.module_num-1,module)
         if selected:
             self.__list_box.Select(event.module_num-1)

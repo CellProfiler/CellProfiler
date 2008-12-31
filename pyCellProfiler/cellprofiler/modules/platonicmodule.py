@@ -8,7 +8,7 @@ import PIL.Image
 import numpy
 import matplotlib.image
 
-from CellProfiler import cpmodule, cpimage, preferences, variable
+from cellprofiler import cpmodule, cpimage, preferences, variable
 
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -43,33 +43,33 @@ class LoadImages(cpmodule.AbstractModule):
         self.module_name = "LoadImages"
         
         # Settings
-        self.file_types = variable.Choice(self,'What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
-        self.match_method = variable.Choice(self,'How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
-        self.match_exclude = variable.Text(self,'If you want to exclude certain files, type the text that the excluded images have in common', '')
-        self.order_group_size = variable.Integer(self,'How many images are there in each group?', 3)
-        self.descend_subdirectories = variable.Binary(self,'Analyze all subfolders within the selected folder?', False)
+        self.file_types = variable.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
+        self.match_method = variable.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
+        self.match_exclude = variable.Text('If you want to exclude certain files, type the text that the excluded images have in common', variable.DO_NOT_USE)
+        self.order_group_size = variable.Integer('How many images are there in each group?', 3)
+        self.descend_subdirectories = variable.Binary('Analyze all subfolders within the selected folder?', False)
      
         # Settings for each CPimage
-        self.images_common_text = [variable.Text(self,'Type the text that these images have in common', 'DAPI')]
-        self.images_order_position = [variable.Integer(self,'What is the position of this image in each group', 1)]
-        self.image_names = [variable.ImageName(self,'What do you want to call this image in CellProfiler?', default_cpimage_names(0))]
-        self.remove_images = [variable.DoSomething(self,'Remove this image...','Remove', self.remove_imagecb, 0)]
+        self.images_common_text = [variable.Text('Type the text that these images have in common', 'DAPI')]
+        self.images_order_position = [variable.Integer('What is the position of this image in each group', 1)]
+        self.image_names = [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
+        self.remove_images = [variable.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
         
         # Add another image
-        self.add_image = variable.DoSomething(self,'Add another image...','Add', self.add_imagecb)
+        self.add_image = variable.DoSomething('Add another image...','Add', self.add_imagecb)
         
         # Location settings
-        self.location = variable.Text(self,'Where are the images located?',
+        self.location = variable.CustomChoice('Where are the images located?',
                                         [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER])
-        self.location_other = variable.DirectoryPath(self,"Where are the images located?", '')
+        self.location_other = variable.DirectoryPath("Where are the images located?", '')
 
     def add_imagecb(self):
             'Adds another image to the variables'
             img_index = len(self.images_order_position)
-            self.images_common_text += [variable.Text(self,'Type the text that these images have in common', '')]
-            self.images_order_position += [variable.Integer(self,'What is the position of this image in each group', img_index+1)]
-            self.image_names += [variable.ImageName(self,'What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
-            self.remove_images += [variable.DoSomething(self,'Remove this image...', self.remove_imagecb, img_index)]
+            self.images_common_text += [variable.Text('Type the text that these images have in common', '')]
+            self.images_order_position += [variable.Integer('What is the position of this image in each group', img_index+1)]
+            self.image_names += [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
+            self.remove_images += [variable.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
 
     def remove_imagecb(self, index):
             'Remove an image from the variables'
@@ -81,13 +81,13 @@ class LoadImages(cpmodule.AbstractModule):
     def visible_variables(self):
         varlist = [self.file_types, self.match_method]
         if self.match_method == MS_EXACT_MATCH:
-            varlist += [self.match_exclude, self.images_common_text]
-        elif self.match_method == MS_REGEXP:
+            varlist += [self.match_exclude]
+        elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
         
         # per image settings
-        if self.match_method == MS_EXACT_MATCH:
+        if self.match_method != MS_ORDER:
             for ctext, imname, rm in zip(self.images_common_text, self.image_names, self.remove_images):
                 varlist += [ctext, imname, rm]
         else:
@@ -119,27 +119,27 @@ class LoadImages(cpmodule.AbstractModule):
     
     variable_revision_number = 4
     
-    def WriteToHandles(self,handles):
+    def write_to_handles(self,handles):
         """Write out the module's state to the handles
         
         """
     
-    def WriteToText(self,file):
+    def write_to_text(self,file):
         """Write the module's state, informally, to a text file
         """
 
-    def PrepareRun(self, pipeline, image_set_list):
+    def prepare_run(self, pipeline, image_set_list):
         """Set up all of the image providers inside the image_set_list
         """
-        if self.LoadMovies():
+        if self.load_movies():
             raise NotImplementedError("Movies aren't implemented yet.")
         
-        files = self.CollectFiles()
+        files = self.collect_files()
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
         
         #Deal out the image filenames to a list of lists.
-        image_names = self.ImageNameVars()
+        image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for x in files:
             list_of_lists[x[1]].append(x[0])
@@ -147,15 +147,15 @@ class LoadImages(cpmodule.AbstractModule):
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:],image_names):
             if len(x) != image_set_count:
-                raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name,len(x)))
+                raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name.value,len(x)))
         list_of_lists = numpy.array(list_of_lists)
-        root = self.ImageDirectory()
+        root = self.image_directory()
         for i in range(0,image_set_count):
-            image_set = image_set_list.GetImageSet(i)
-            providers = [LoadImagesImageProvider(name,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
-            image_set.Providers.extend(providers)
+            image_set = image_set_list.get_image_set(i)
+            providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
+            image_set.providers.extend(providers)
         
-    def Run(self,pipeline,image_set,object_set,measurements, frame):
+    def run(self,pipeline,image_set,object_set,measurements, frame):
         """Run the module - add the measurements
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -163,22 +163,22 @@ class LoadImages(cpmodule.AbstractModule):
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        for provider in image_set.Providers:
+        for provider in image_set.providers:
             if isinstance(provider,LoadImagesImageProvider):
-                filename = provider.GetFilename()
-                path = provider.GetPathname()
-                name = provider.Name()
-                measurements.AddMeasurement('Image','FileName_'+name, filename)
-                measurements.AddMeasurement('Image','PathName_'+name, path)
+                filename = provider.get_filename()
+                path = provider.get_pathname()
+                name = provider.name
+                measurements.add_measurement('Image','FileName_'+name, filename)
+                measurements.add_measurement('Image','PathName_'+name, path)
 
-    def GetCategories(self,pipeline, object_name):
+    def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         return ['Image']
       
-    def GetMeasurements(self, pipeline, object_name, category):
+    def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
@@ -188,41 +188,41 @@ class LoadImages(cpmodule.AbstractModule):
             return ['FileName','PathName']
         return []
     
-    def GetMeasurementImages(self,pipeline,object_name,category,measurement):
+    def get_measurement_images(self,pipeline,object_name,category,measurement):
         """Return a list of image names used as a basis for a particular measure
         """
         return []
     
-    def GetMeasurementScales(self,pipeline,object_name,category,measurement,image_name):
+    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
     
-    def Category(self):
+    def category(self):
         return "File Processing"
 
     
-    def LoadImages(self):
+    def load_images(self):
         """Return true if we're loading images
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value==FF_INDIVIDUAL_IMAGES
+        return self.file_types == FF_INDIVIDUAL_IMAGES
     
-    def LoadMovies(self):
+    def load_movies(self):
         """Return true if we're loading movies
         """
-        return self.Variables()[FILE_FORMAT_VAR-1].Value !=FF_INDIVIDUAL_IMAGES
+        return self.file_types != FF_INDIVIDUAL_IMAGES
     
-    def LoadChoice(self):
+    def load_choice(self):
         """Return the way to match against files: MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS or MS_ORDER
         """
-        return self.Variables()[MATCH_STYLE_VAR-1].Value
+        return self.match_method.value
     
-    def AnalyzeSubDirs(self):
+    def analyze_sub_dirs(self):
         """Return True if we should analyze subdirectories in addition to the root image directory
         """
-        return self.Variables()[ANALYZE_SUB_DIR_VAR-1].IsYes
+        return self.descend_subdirectories.value
     
-    def CollectFiles(self, dirs=[]):
+    def collect_files(self, dirs=[]):
         """Collect the files that match the filter criteria
         
         Collect the files that match the filter criteria, starting at the image directory
@@ -233,7 +233,7 @@ class LoadImages(cpmodule.AbstractModule):
         from the root directory, including the file name, the second element is the
         index within the image variables (e.g. ImageNameVars).
         """
-        path = reduce(os.path.join, dirs, self.ImageDirectory() )
+        path = reduce(os.path.join, dirs, self.image_directory() )
         files = os.listdir(path)
         files.sort()
         isdir = lambda x: os.path.isdir(os.path.join(path,x))
@@ -241,75 +241,54 @@ class LoadImages(cpmodule.AbstractModule):
         subdirs = filter(isdir, files)
         files = filter(isfile,files)
         path_to = (len(dirs) and reduce(os.path.join, dirs)) or ''
-        files = [(os.path.join(path_to,file), self.FilterFilename(file)) for file in files]
+        files = [(os.path.join(path_to,file), self.filter_filename(file)) for file in files]
         files = filter(lambda x: x[1] != None,files)
-        if self.AnalyzeSubDirs():
+        if self.analyze_sub_dirs():
             for dir in subdirs:
-                files += self.CollectFiles(dirs + [dir])
+                files += self.collect_files(dirs + [dir])
         return files
         
-    def ImageDirectory(self):
+    def image_directory(self):
         """Return the image directory
         """
-        Pathname = self.Variables()[PATHNAME_VAR-1].Value
-        if Pathname[0] == '.':
-            if len(Pathname) == 1:
-                return CellProfiler.Preferences.GetDefaultImageDirectory()
-            else:
-                #% If the pathname start with '.', interpret it relative to
-                #% the default image dir.
-                return os.path.join(CellProfiler.Preferences.GetDefaultImageDirectory(),Pathname[2:])
-        elif Pathname == '&':
-            if length(Pathname) == 1:
-                return CellProfiler.Preferences.GetDefaultOutputDirectory()
-            else:
-                #% If the pathname start with '&', interpret it relative to
-                #% the default output directory
-                return os.path.join(CellProfiler.Preferences.GetDefaultOutputDirectory(),Pathname[2:])
-        return Pathname
+        if self.location == DIR_DEFAULT_IMAGE:
+            return preferences.get_default_image_directory()
+        elif self.location == DIR_DEFAULT_OUTPUT:
+            return preferences.get_default_output_directory()
+        elif self.location_other.value[0] == '.':
+            return os.path.join(preferences.get_default_image_directory(),self.location_other.value[1:])
+        return self.location_other.value
     
-    def ImageNameVars(self):
+    def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR].Value ]
-        for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2].Value
-            if value == CellProfiler.Variable.DO_NOT_USE:
-                break
-            result += [value]
-        return result
+        return self.image_names
         
-    def TextToFindVars(self):
+    def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.Variables()[FIRST_IMAGE_VAR-1].Value ]
-        for i in range(1,MAX_IMAGE_COUNT):
-            value = self.Variables()[FIRST_IMAGE_VAR+i*2-1].Value
-            if value == CellProfiler.Variable.DO_NOT_USE:
-                break
-            result += [value]
-        return result
+        return self.images_common_text
     
-    def TextToExclude(self):
+    def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
         """
-        return self.Variables()[TEXT_TO_EXCLUDE_VAR-1].Value
+        return self.match_exclude
     
-    def FilterFilename(self, filename):
+    def filter_filename(self, filename):
         """Returns either None or the index of the match variable
         """
-        if self.TextToExclude() != CellProfiler.Variable.DO_NOT_USE and \
-            filename.find(self.TextToExclude()) >=0:
+        if self.text_to_exclude() != variable.DO_NOT_USE and \
+            filename.find(self.text_to_exclude()) >=0:
             return None
-        if self.LoadChoice() == MS_EXACT_MATCH:
-            ttfs = self.TextToFindVars()
+        if self.load_choice() == MS_EXACT_MATCH:
+            ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
-                if filename.find(ttf) >=0:
+                if filename.find(ttf.value) >=0:
                     return i
-        elif self.LoadChoice() == MS_REGULAR_EXPRESSIONS:
-            ttfs = self.TextToFindVars()
+        elif self.load_choice() == MS_REGULAR_EXPRESSIONS:
+            ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
-                if re.search(ttf, filename):
+                if re.search(ttf.value, filename):
                     return i
         else:
             raise NotImplementedError("Load by order not implemented")
@@ -323,21 +302,21 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         self.__pathname = pathname
         self.__filename = filename
     
-    def ProvideImage(self, image_set):
+    def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        img = PIL.Image.open(self.GetFullName())
+        img = PIL.Image.open(self.get_full_name())
         img = matplotlib.image.pil_to_array(img)
-        return CellProfiler.Image.Image(img)
+        return cpimage.Image(img)
     
-    def Name(self):
+    def get_name(self):
         return self.__name
     
-    def GetPathname(self):
+    def get_pathname(self):
         return self.__pathname
     
-    def GetFilename(self):
+    def get_filename(self):
         return self.__filename
     
-    def GetFullName(self):
-        return os.path.join(self.GetPathname(),self.GetFilename())
+    def get_full_name(self):
+        return os.path.join(self.get_pathname(),self.get_filename())

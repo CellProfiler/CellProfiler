@@ -73,6 +73,7 @@ class AddModuleFrame(wx.Frame):
         self.__set_icon()
         self.Bind(wx.EVT_CLOSE,self.__on_close, self)
         self.Bind(wx.EVT_LISTBOX,self.__on_category_selected,self.__module_categories_list_box)
+        self.Bind(wx.EVT_LISTBOX_DCLICK, self.__on_add_to_pipeline,self.__module_list_box)
         self.Bind(wx.EVT_BUTTON,self.__on_add_to_pipeline,add_to_pipeline_button)
         self.Bind(wx.EVT_BUTTON,self.__on_close,done_button)
         self.Bind(wx.EVT_BUTTON,self.__on_help, module_help_button)
@@ -130,7 +131,6 @@ class AddModuleFrame(wx.Frame):
             def loader(module_num, mc=mc):
                 module = mc()
                 module.set_module_num(module_num)
-                module.create_from_annotations()
                 return module
             module = mc()
             self.__module_dict[module.category()][module.module_name] = loader

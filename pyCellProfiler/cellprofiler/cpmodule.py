@@ -178,7 +178,7 @@ class AbstractModule(object):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
             elif isinstance(variable,cpv.NameSubscriber):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
-        setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number()
+        setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
     
     def variable_annotations(self,key):
@@ -220,7 +220,10 @@ class AbstractModule(object):
         """The name shown to the user in the Add Modules box"""
         return self.__module_name
     
-    module_name = property(get_module_name)
+    def set_module_name(self, module_name):
+        self.__module_name = module_name
+        
+    module_name = property(get_module_name,set_module_name)
     
     def module_class(self):
         """The class to instantiate, except for the special case of matlab modules.
@@ -228,9 +231,6 @@ class AbstractModule(object):
         """
         return self.__module__+'.'+self.module_name
     
-    def set_module_name(self, module_name):
-        self.__module_name = module_name
-        
     def variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
@@ -268,8 +268,6 @@ class AbstractModule(object):
         """Delete the module, notifying listeners that it's going away
         
         """
-        for variable in self.__variables:
-            variable.NotifyListeners(cpv.DeleteVariableEvent())
     
     def notes(self):
         """The user-entered notes for a module

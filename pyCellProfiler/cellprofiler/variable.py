@@ -65,11 +65,11 @@ class Variable(object):
     
     def get_is_yes(self):
         """Return true if the variable's value is "Yes" """
-        return self.value == YES
+        return self.__value == YES
     
     def set_is_yes(self,is_yes):
         """Set the variable value to Yes if true, No if false"""
-        self.value = (is_yes and YES) or NO
+        self.__value = (is_yes and YES) or NO
     
     is_yes = property(get_is_yes,set_is_yes)
     
@@ -84,6 +84,8 @@ class Variable(object):
         pass
     
     def __str__(self):
+        if not isinstance(self.__value,str):
+            raise ValueError("%s was not a string"%(self.__value))
         return self.__value
     
 class Text(Variable):
@@ -93,11 +95,11 @@ class Text(Variable):
     def __init__(self,text,value):
         super(Text,self).__init__(text,value)
 
-class PathnameText(Text):
+class DirectoryPath(Text):
     """A variable that displays a filesystem path name
     """
     def __init__(self,text,value):
-        super(PathnameText,self).__init__(text,value)
+        super(DirectoryPath,self).__init__(text,value)
 
 class FilenameText(Text):
     """A variable that displays a file name
@@ -291,7 +293,7 @@ class FloatRange(Variable):
 class NameProvider(Text):
     """A variable that provides a named object
     """
-    def __init__(self,text,group,value):
+    def __init__(self,text,group,value=DO_NOT_USE):
         super(NameProvider,self).__init__(text,value)
         self.__group = group
     
@@ -303,6 +305,18 @@ class NameProvider(Text):
         return self.__group
     
     group = property(get_group)
+
+class ImageNameProvider(NameProvider):
+    """A variable that provides an image name
+    """
+    def __init__(self,text,value=DO_NOT_USE):
+        super(ImageNameProvider,self).__init__(text,'imagegroup',value)
+
+class ObjectNameProvider(NameProvider):
+    """A variable that provides an image name
+    """
+    def __init__(self,text,value=DO_NOT_USE):
+        super(ImageNameProvider,self).__init__(text,'objectgroup',value)
 
 class NameSubscriber(Variable):
     """A variable that takes its value from one made available by name providers
@@ -338,6 +352,18 @@ class NameSubscriber(Variable):
             raise ValueError("No prior instances of %s were defined"%(self.group))
         if self.value not in self.get_choices(pipeline):
             raise ValueError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))))
+
+class ImageNameSubscriber(NameSubscriber):
+    """A variable that provides an image name
+    """
+    def __init__(self,text,value=DO_NOT_USE):
+        super(ImageNameSubscriber,self).__init__(text,'imagegroup',value)
+
+class ObjectNameSubscriber(NameSubscriber):
+    """A variable that provides an image name
+    """
+    def __init__(self,text,value=DO_NOT_USE):
+        super(ObjetNameSubscriber,self).__init__(text,'objectgroup',value)
 
 class Binary(Variable):
     """A variable that is represented as either true or false
@@ -438,7 +464,7 @@ class DoSomething(Variable):
     
     def on_event_fired(self):
         """Call the callback in response to the user's request to do something"""
-        self.__callback(*args)
+        self.__callback(*self.__args)
 
 def validate_integer_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
     """A listener that validates integer variables"""

@@ -1,92 +1,234 @@
-""" LoadImages.py - module to load images from files
+""" PlatonicModules.py - module to load images from files
 """
-__version__="$Revision: 1$"
+
 import os
 import re
-import numpy
 
 import PIL.Image
+import numpy
 import matplotlib.image
 
-import cellprofiler.cpmodule
-import cellprofiler.cpimage
-import cellprofiler.preferences
-import cellprofiler.variable
+import cellprofiler.cpmodule as cpmodule
+import cellprofiler.cpimage as cpimage
+import cellprofiler.preferences as preferences
+import cellprofiler.variable as variable
 
-MATCH_STYLE_VAR = 1
+# strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
-MS_REGULAR_EXPRESSIONS = 'Text-Regular expressions'
+MS_REGEXP = 'Text-Regular expressions'
 MS_ORDER = 'Order'
 
-FIRST_IMAGE_VAR = 2
-MAX_IMAGE_COUNT = 4
-IMAGES_PER_SET_VAR = 10
-TEXT_TO_EXCLUDE_VAR = 11
-FILE_FORMAT_VAR = 12
 FF_INDIVIDUAL_IMAGES = 'individual images'
 FF_STK_MOVIES = 'stk movies'
 FF_AVI_MOVIES = 'avi movies'
 FF_OTHER_MOVIES = 'tif,tiff,flex movies'
-ANALYZE_SUB_DIR_VAR = 13
-PATHNAME_VAR = 14
-SAVE_AS_BINARY_VAR = 15
+
+DIR_DEFAULT_IMAGE = 'Default Image Directory'
+DIR_DEFAULT_OUTPUT = 'Default Output Directory'
+DIR_OTHER = 'Elsewhere...'
+
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
 
-class LoadImages(cellprofiler.cpmodule.AbstractModule):
-    """Load images from files
+def default_cpimage_name(index):
+    # the usual suspects
+    names = ['DNA', 'Actin', 'Protein']
+    if index < len(names):
+        return names[index]
+    return 'Channel%d'%(index+1)
+
+class LoadImages(cpmodule.AbstractModule):
+    """Load images from files.  This is the help text that will be displayed
+       to the user.
     """
     def __init__(self):
-        cellprofiler.cpmodule.AbstractModule.__init__(self)
-        self.set_module_name("LoadImages")
-        self.__annotations = None
-    
-    def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the variables in the module to upgrade it to its current revision number
+        super(LoadImages, self).__init__()
+        self.module_name = "LoadImages"
         
-        """
-        if variable_revision_number != self.variable_revision_number():
-            raise NotImplementedError("Cannot read version %d of LoadImages"%(variable_revision_number))
-    
-    def get_help(self):
-        """Return help text for the module
+        # Settings
+        self.file_types = variable.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
+        self.match_method = variable.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
+        self.match_exclude = variable.Text('If you want to exclude certain files, type the text that the excluded images have in common', variable.DO_NOT_USE)
+        self.order_group_size = variable.Integer('How many images are there in each group?', 3)
+        self.descend_subdirectories = variable.Binary('Analyze all subfolders within the selected folder?', False)
+     
+        # Settings for each CPimage
+        self.images_common_text = [variable.Text('Type the text that these images have in common', 'DAPI')]
+        self.images_order_position = [variable.Integer('What is the position of this image in each group', 1)]
+        self.image_names = [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
+        self.remove_images = [variable.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
         
-        """
-        raise NotImplementedError("Please implement GetHelp in your derived module class")
-            
-    def variable_revision_number(self):
-        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
-        """
-        return 4
-    
-    def annotations(self):
-        """Return the variable annotations.
+        # Add another image
+        self.add_image = variable.DoSomething('Add another image...','Add', self.add_imagecb)
         
-        Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the CellProfiler.Variable.Annotation
-        class.
-        """ 
-        if not self.__annotations:
-            annotations = cellprofiler.variable.choice_popup_annotation(MATCH_STYLE_VAR, 
-                                                                      'How do you want to load these files?', 
-                                                                      [MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS,MS_ORDER])
-            annotations += cellprofiler.variable.edit_box_annotation(FIRST_IMAGE_VAR, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option)','DAPI')
-            annotations += cellprofiler.variable.indep_group_annotation(FIRST_IMAGE_VAR+1, 'What do you want to call these images within CellProfiler?', 'imagegroup','OrigBlue')
-            for i in range(1,MAX_IMAGE_COUNT):
-                text_to_find_var = i*2+FIRST_IMAGE_VAR
-                image_name_var   = text_to_find_var + 1
-                annotations += cellprofiler.variable.edit_box_annotation(text_to_find_var, 'Type the text that one type of image has in common (for TEXT options), or their position in each group (for ORDER option). Type "Do not use" to ignore:')
-                annotations += cellprofiler.variable.indep_group_annotation(image_name_var, 'What do you want to call these images within CellProfiler? (Type "Do not use" to ignore)', 'imagegroup')
-            
-            annotations += cellprofiler.variable.edit_box_annotation(IMAGES_PER_SET_VAR, 'If using ORDER, how many images are there in each group (i.e. each field of view)?','3')
-            annotations += cellprofiler.variable.edit_box_annotation(TEXT_TO_EXCLUDE_VAR, 'If you want to exclude files, type the text that the excluded images have in common (for TEXT options). Type "Do not use" to ignore.')
-            annotations += cellprofiler.variable.choice_popup_annotation(FILE_FORMAT_VAR, 'What type of files are you loading?',
-                                                                       [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES,FF_AVI_MOVIES,FF_OTHER_MOVIES])
-            annotations += cellprofiler.variable.checkbox_annotation(ANALYZE_SUB_DIR_VAR, 'Analyze all subfolders within the selected folder?')
-            annotations += cellprofiler.variable.edit_box_annotation(PATHNAME_VAR, 'Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder or ampersand (&) for default output folder.', '.')
-            annotations += cellprofiler.variable.choice_popup_annotation(SAVE_AS_BINARY_VAR,'If the images you are loading are binary (black/white only), in what format do you want to store them?', [SB_GRAYSCALE,SB_BINARY])
-            self.__annotations = annotations
-        return self.__annotations
+        # Location settings
+        self.location = variable.CustomChoice('Where are the images located?',
+                                        [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER])
+        self.location_other = variable.DirectoryPath("Where are the images located?", '')
+
+    def add_imagecb(self):
+            'Adds another image to the variables'
+            img_index = len(self.images_order_position)
+            self.images_common_text += [variable.Text('Type the text that these images have in common', '')]
+            self.images_order_position += [variable.Integer('What is the position of this image in each group', img_index+1)]
+            self.image_names += [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
+            self.remove_images += [variable.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
+
+    def remove_imagecb(self, index):
+            'Remove an image from the variables'
+            del self.images_common_text[index]
+            del self.images_order_position[index]
+            del self.image_names[index]
+            del self.remove_images[index]
+
+    def visible_variables(self):
+        varlist = [self.file_types, self.match_method]
+        if self.match_method == MS_EXACT_MATCH:
+            varlist += [self.match_exclude]
+        elif self.match_method == MS_ORDER:
+            varlist += [self.order_group_size]
+        varlist += [self.descend_subdirectories]
+        
+        # per image settings
+        if self.match_method != MS_ORDER:
+            for ctext, imname, rm in zip(self.images_common_text, self.image_names, self.remove_images):
+                varlist += [ctext, imname, rm]
+        else:
+            for pos, imname, rm in zip(self.images_order_position, self.image_names, self.remove_images):
+                varlist += [pos, imname, rm]
+                
+        varlist += [self.add_image]
+        varlist += [self.location]
+        if self.location == DIR_OTHER:
+            varlist += [self.location_other]
+        return varlist
+    
+    #
+    # Slots for storing variables in the array
+    #
+    SLOT_FILE_TYPE = 0
+    SLOT_MATCH_METHOD = 1
+    SLOT_ORDER_GROUP_SIZE = 2
+    SLOT_MATCH_EXCLUDE = 3
+    SLOT_DESCEND_SUBDIRECTORIES = 4
+    SLOT_LOCATION = 5
+    SLOT_LOCATION_OTHER = 6
+    SLOT_FIRST_IMAGE = 7
+    SLOT_OFFSET_COMMON_TEXT = 0
+    SLOT_OFFSET_IMAGE_NAME = 1
+    SLOT_OFFSET_ORDER_POSITION = 2
+    SLOT_IMAGE_FIELD_COUNT = 3
+    def variables(self):
+        """Return the variables array in a consistent order"""
+        varlist = range(self.SLOT_FIRST_IMAGE + \
+                        self.SLOT_IMAGE_FIELD_COUNT * len(self.image_names))
+        varlist[self.SLOT_FILE_TYPE]              = self.file_types
+        varlist[self.SLOT_MATCH_METHOD]           = self.match_method
+        varlist[self.SLOT_ORDER_GROUP_SIZE]       = self.order_group_size
+        varlist[self.SLOT_MATCH_EXCLUDE]          = self.match_exclude
+        varlist[self.SLOT_DESCEND_SUBDIRECTORIES] = self.descend_subdirectories
+        varlist[self.SLOT_LOCATION]               = self.location
+        varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
+        for i in range(len(self.image_names)):
+            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
+            varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
+                self.images_common_text[i]
+            varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
+                self.image_names[i]
+            varlist[ioff+self.SLOT_OFFSET_ORDER_POSITION] = \
+                self.images_order_position[i]
+        return varlist
+    
+    def set_variable_values(self,variable_values,variable_revision_number,module_name):
+        """Interpret the variable values as saved by the given revision number
+        """
+        if variable_revision_number == 1 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_1_to_2(variable_values)
+        if variable_revision_number == 2 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_2_to_3(variable_values)
+        if variable_revision_number == 3 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_3_to_4(variable_values)
+        if variable_revision_number == 4 and module_name == 'LoadImages':
+            variable_values,variable_revision_number = self.upgrade_4_to_new_1(variable_values)
+            module_name = self.module_class()
+
+        if variable_revision_number != self.variable_revision_number or \
+           module_name != self.module_class():
+            raise NotImplementedError("Cannot read version %d of %s"%(
+                variable_revision_number, self.module_name))
+        #
+        # Figure out how many images are in the saved variables - make sure
+        # the array size matches the incoming #
+        #
+        assert (len(variable_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(variable_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
+        while len(self.image_names) > image_count:
+            self.remove_imagecb(0)
+        while len(self.image_names) < image_count:
+            self.add_imagecb()
+        super(LoadImages,self).set_variable_values(variable_values, variable_revision_number, module_name)
+    
+    def upgrade_1_to_2(self, variable_values):
+        """Upgrade rev 1 LoadImages to rev 2
+        
+        Handle movie formats new to rev 2
+        """
+        new_values = list(variable_values[:10])
+        image_or_movie =  variable_values[10]
+        if image_or_movie == 'Image':
+            new_values.append('individual images')
+        elif variable_values[11] == 'avi':
+            new_values.append('avi movies')
+        elif variable_values[11] == 'stk':
+            new_values.append('stk movies')
+        else:
+            raise ValueError('Unhandled movie type: %s'%(variable_values[11]))
+        new_values.extend(variable_values[11:])
+        return (new_values,2)
+    
+    def upgrade_2_to_3(self, variable_values):
+        """Added binary/grayscale question"""
+        new_values = list(variable_values)
+        new_values.append('grayscale')
+        new_values.append('')
+        return (new_values,3)
+    
+    def upgrade_3_to_4(self, variable_values):
+        """Added text exclusion at slot # 10"""
+        new_values = list(variable_values)
+        new_values.insert(10,variable.DO_NOT_USE)
+        return (new_values,4)
+    
+    def upgrade_4_to_new_1(self,variable_values):
+        """Take the old LoadImages values and put them in the correct slots"""
+        new_values = range(self.SLOT_FIRST_IMAGE)
+        new_values[self.SLOT_FILE_TYPE]              = variable_values[11]
+        new_values[self.SLOT_MATCH_METHOD]           = variable_values[0]
+        new_values[self.SLOT_ORDER_GROUP_SIZE]       = variable_values[9]
+        new_values[self.SLOT_MATCH_EXCLUDE]          = variable_values[10]
+        new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = variable_values[12]
+        loc = variable_values[13]
+        if loc == '.':
+            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
+        elif loc == '&':
+            new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_OUTPUT
+        else:
+            new_values[self.SLOT_LOCATION]           = DIR_OTHER 
+        new_values[self.SLOT_LOCATION_OTHER]         = loc 
+        for i in range(0,4):
+            text_to_find = variable_values[i*2+1]
+            image_name = variable_values[i*2+2]
+            if text_to_find == variable.DO_NOT_USE or \
+               image_name == variable.DO_NOT_USE or\
+               text_to_find == '/' or\
+               image_name == '/' or\
+               text_to_find == '\\' or\
+               image_name == '\\':
+                break
+            new_values.extend([text_to_find,image_name,text_to_find])
+        return (new_values,1)
+    
+    variable_revision_number = 1
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
@@ -116,12 +258,12 @@ class LoadImages(cellprofiler.cpmodule.AbstractModule):
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:],image_names):
             if len(x) != image_set_count:
-                raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name,len(x)))
+                raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name.value,len(x)))
         list_of_lists = numpy.array(list_of_lists)
         root = self.image_directory()
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
-            providers = [LoadImagesImageProvider(name,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
+            providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
             image_set.providers.extend(providers)
         
     def run(self,pipeline,image_set,object_set,measurements, frame):
@@ -174,22 +316,22 @@ class LoadImages(cellprofiler.cpmodule.AbstractModule):
     def load_images(self):
         """Return true if we're loading images
         """
-        return self.variables()[FILE_FORMAT_VAR-1].value==FF_INDIVIDUAL_IMAGES
+        return self.file_types == FF_INDIVIDUAL_IMAGES
     
     def load_movies(self):
         """Return true if we're loading movies
         """
-        return self.variables()[FILE_FORMAT_VAR-1].value !=FF_INDIVIDUAL_IMAGES
+        return self.file_types != FF_INDIVIDUAL_IMAGES
     
     def load_choice(self):
         """Return the way to match against files: MS_EXACT_MATCH, MS_REGULAR_EXPRESSIONS or MS_ORDER
         """
-        return self.variables()[MATCH_STYLE_VAR-1].value
+        return self.match_method.value
     
     def analyze_sub_dirs(self):
         """Return True if we should analyze subdirectories in addition to the root image directory
         """
-        return self.variables()[ANALYZE_SUB_DIR_VAR-1].is_yes
+        return self.descend_subdirectories.value
     
     def collect_files(self, dirs=[]):
         """Collect the files that match the filter criteria
@@ -220,71 +362,50 @@ class LoadImages(cellprofiler.cpmodule.AbstractModule):
     def image_directory(self):
         """Return the image directory
         """
-        pathname = self.variables()[PATHNAME_VAR-1].value
-        if pathname[0] == '.':
-            if len(pathname) == 1:
-                return cellprofiler.preferences.get_default_image_directory()
-            else:
-                #% If the pathname start with '.', interpret it relative to
-                #% the default image dir.
-                return os.path.join(cellprofiler.preferences.get_default_image_directory(),pathname[2:])
-        elif pathname == '&':
-            if length(pathname) == 1:
-                return cellprofiler.preferences.get_default_output_directory()
-            else:
-                #% If the pathname start with '&', interpret it relative to
-                #% the default output directory
-                return os.path.join(cellprofiler.preferences.get_default_output_directory(),pathname[2:])
-        return pathname
+        if self.location == DIR_DEFAULT_IMAGE:
+            return preferences.get_default_image_directory()
+        elif self.location == DIR_DEFAULT_OUTPUT:
+            return preferences.get_default_output_directory()
+        elif self.location_other.value[0] == '.':
+            return os.path.join(preferences.get_default_image_directory(),self.location_other.value[1:])
+        return self.location_other.value
     
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.variables()[FIRST_IMAGE_VAR].value ]
-        for i in range(1,MAX_IMAGE_COUNT):
-            value = self.variables()[FIRST_IMAGE_VAR+i*2].value
-            if value == cellprofiler.variable.DO_NOT_USE:
-                break
-            result += [value]
-        return result
+        return self.image_names
         
     def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        result = [self.variables()[FIRST_IMAGE_VAR-1].value ]
-        for i in range(1,MAX_IMAGE_COUNT):
-            value = self.variables()[FIRST_IMAGE_VAR+i*2-1].value
-            if value == cellprofiler.variable.DO_NOT_USE:
-                break
-            result += [value]
-        return result
+        return self.images_common_text
     
     def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
         """
-        return self.variables()[TEXT_TO_EXCLUDE_VAR-1].value
+        return self.match_exclude
     
     def filter_filename(self, filename):
         """Returns either None or the index of the match variable
         """
-        if self.text_to_exclude() != cellprofiler.variable.DO_NOT_USE and \
+        if self.text_to_exclude() != variable.DO_NOT_USE and \
             filename.find(self.text_to_exclude()) >=0:
             return None
         if self.load_choice() == MS_EXACT_MATCH:
             ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
-                if filename.find(ttf) >=0:
+                if filename.find(ttf.value) >=0:
                     return i
-        elif self.load_choice() == MS_REGULAR_EXPRESSIONS:
+        elif self.load_choice() == MS_REGEXP:
             ttfs = self.text_to_find_vars()
             for i,ttf in zip(range(0,len(ttfs)),ttfs):
-                if re.search(ttf, filename):
+                if re.search(ttf.value, filename):
                     return i
         else:
             raise NotImplementedError("Load by order not implemented")
         return None
 
-class LoadImagesImageProvider(cellprofiler.cpimage.AbstractImageProvider):
+class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename, loading the file as it is requested
     """
     def __init__(self,name,pathname,filename):
@@ -297,7 +418,7 @@ class LoadImagesImageProvider(cellprofiler.cpimage.AbstractImageProvider):
         """
         img = PIL.Image.open(self.get_full_name())
         img = matplotlib.image.pil_to_array(img)
-        return cellprofiler.cpimage.Image(img)
+        return cpimage.Image(img)
     
     def get_name(self):
         return self.__name

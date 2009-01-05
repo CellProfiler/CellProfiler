@@ -272,6 +272,22 @@ class Pipeline:
             module.save_to_handles(handles)
         return handles
     
+    def load(self, fd_or_filename):
+        """Load the pipeline from a file
+        
+        fd_or_filename - either the name of a file or a file-like object
+        """
+        handles=scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
+        self.create_from_handles(handles)
+        
+    def save(self, fd_or_filename):
+        """Save the pipeline to a file
+        
+        fd_or_filename - either a file descriptor or the name of the file
+        """
+        handles = self.save_to_handles()
+        scipy.io.matlab.mio.savemat(fd_or_filename,handles,format='5')
+    
     def save_measurements(self,filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file
         

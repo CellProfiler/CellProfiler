@@ -33,7 +33,7 @@ def load_pipeline(test_case, encoded_data):
     encoded_data - a pipeline encoded using base-64
     The magic incantation to do the above is the following:
     import base64
-    fd = open('my_PIPE.mat')
+    fd = open('my_PIPE.mat','rb')
     bindata = fd.read()
     fd.close()
     b64data = base64.b64encode(bindata)

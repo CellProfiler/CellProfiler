@@ -117,8 +117,7 @@ class PipelineController:
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         if dlg.ShowModal() == wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
-            handles = self.__pipeline.save_to_handles()
-            scipy.io.matlab.mio.savemat(pathname,handles,format='5')
+            self.__pipeline.save(pathname)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

@@ -120,13 +120,20 @@ CheckForQC = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = QCFlag
 QCFileName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
+%textVAR09 = How many images are in each directory you are loading?
+%defaultVAR09 = 288
+NumEachDirTotal = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR09 = What do you want to call the projected image?
-%defaultVAR09 = ProjectedBlue
-%infotypeVAR09 = imagegroup indep
-ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR10 = How many channels are there each directory you are loading?
+%defaultVAR10 = 3
+NumChannels = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%%%VariableRevisionNumber = 1
+%textVAR11 = What do you want to call the projected image?
+%defaultVAR11 = ProjectedBlue
+%infotypeVAR11 = imagegroup indep
+ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -180,6 +187,22 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         end
     end
     handles.Current.NumberOfImageSets = NumberOfImageSets;
+%     if strcmpi(CheckForQC,'Yes')
+%         for i = 1:NumberOfImageSets
+%             QCFlagDataName = CPjoinstrings('LoadedText',QCFileName);
+%             if ~isfield(handles.Measurements.Image,QCFlagDataName)
+%                 error('You asked to check the incoming images for a QCFlag, but the named of the loaded text file is incorrect.')
+%             end
+%             QCFlagData = str2double(handles.Measurements.Image.(QCFlagDataName));
+%             NumEachDir = NumEachDirTotal/NumChannels;
+%             TotalPerChannel= NumEachDir*NumberOfImageSets;
+%             TotalPerChannel_supplied = length(QCFlagData);
+%             if TotalPerChannel ~= TotalPerChannel_supplied
+%                 error('You have specified a number of images per directory and number of channels that does not match the QCFlagData you supplied.')
+%             end
+%             QCFlagData_perdir{i} = QCFlagData((NumEachDir*i-(NumEachDir-1)):NumEachDir*i);
+%         end
+%     end
 end
 %%%
 %%% Handle the list of files
@@ -191,6 +214,8 @@ FileList = CPretrievemediafilenames(DirPath,FileTextToFind,AnalyzeSubDir(1), Exa
 if isempty(FileList)
     error(['Image processing was canceled in the ', ModuleName, ' module because no files were found in the ', DirPath, ' directory.']);
 end
+
+
 switch CheckForQC
     case 'No'
         for i=1:length(FileList)
@@ -208,12 +233,22 @@ switch CheckForQC
             ProjectionImage = ProjectionImage / length(FileList);
         end
     case 'Yes' 
-        QCFlagDataName = CPjoinstrings('LoadedText',QCFileName);
-        if ~isfield(handles.Measurements.Image,QCFlagDataName)
-            error('You asked to check the incoming images for a QCFlag, but the named of the loaded text file is incorrect.')
+        for i = 1:handles.Current.NumberOfImageSets
+            QCFlagDataName = CPjoinstrings('LoadedText',QCFileName);
+            if ~isfield(handles.Measurements.Image,QCFlagDataName)
+                error('You asked to check the incoming images for a QCFlag, but the named of the loaded text file is incorrect.')
+            end
+            QCFlagData = str2double(handles.Measurements.Image.(QCFlagDataName));
+            NumEachDir = NumEachDirTotal/NumChannels;
+            TotalPerChannel= NumEachDir*(handles.Current.NumberOfImageSets);
+            TotalPerChannel_supplied = length(QCFlagData);
+            if TotalPerChannel ~= TotalPerChannel_supplied
+                error('You have specified a number of images per directory and number of channels that does not match the QCFlagData you supplied.')
+            end
+            QCFlagData_perdir{i} = QCFlagData((NumEachDir*i-(NumEachDir-1)):NumEachDir*i);
         end
-        QCFlagData = str2double(handles.Measurements.Image.(QCFlagDataName));
         for i = 1:length(FileList)
+            QCFlagData = QCFlagData_perdir{handles.Current.SetBeingAnalyzed};
             if QCFlagData(i) == 0
                 Image = CPimread(fullfile(DirPath,char(FileList(i))));
                 FileCount = 1;

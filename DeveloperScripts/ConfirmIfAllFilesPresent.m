@@ -76,7 +76,7 @@ FileListName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 DirectoryGroupName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%pathnametextVAR03 = If not using a directrory group, enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
+%pathnametextVAR03 = If not using a directory group, enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
 %defaultVAR03 = .
 InputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

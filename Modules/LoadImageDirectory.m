@@ -187,22 +187,6 @@ if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         end
     end
     handles.Current.NumberOfImageSets = NumberOfImageSets;
-%     if strcmpi(CheckForQC,'Yes')
-%         for i = 1:NumberOfImageSets
-%             QCFlagDataName = CPjoinstrings('LoadedText',QCFileName);
-%             if ~isfield(handles.Measurements.Image,QCFlagDataName)
-%                 error('You asked to check the incoming images for a QCFlag, but the named of the loaded text file is incorrect.')
-%             end
-%             QCFlagData = str2double(handles.Measurements.Image.(QCFlagDataName));
-%             NumEachDir = NumEachDirTotal/NumChannels;
-%             TotalPerChannel= NumEachDir*NumberOfImageSets;
-%             TotalPerChannel_supplied = length(QCFlagData);
-%             if TotalPerChannel ~= TotalPerChannel_supplied
-%                 error('You have specified a number of images per directory and number of channels that does not match the QCFlagData you supplied.')
-%             end
-%             QCFlagData_perdir{i} = QCFlagData((NumEachDir*i-(NumEachDir-1)):NumEachDir*i);
-%         end
-%     end
 end
 %%%
 %%% Handle the list of files
@@ -251,29 +235,29 @@ switch CheckForQC
             QCFlagData = QCFlagData_perdir{handles.Current.SetBeingAnalyzed};
             if QCFlagData(i) == 0
                 Image = CPimread(fullfile(DirPath,char(FileList(i))));
-                FileCount = 1;
             else
                 ImageSize = CPimread(fullfile(DirPath,char(FileList(i))));
                 Image = zeros(size(ImageSize));
-                FileCount = 0;
             end
             if i == 1 
                 ProjectionImage = zeros(size(Image));
+                ImageNumSkipped = 0;
             end
             ImageOrEmpty = find(Image, 1);
             logical = isempty(ImageOrEmpty);
             if logical == 1
-                continue
+                disp(fullfile(DirPath,char(FileList(i))))
+                ImageNumSkipped = ImageNumSkipped +1;
+                %continue
             end
             if strcmp(ProjectionType,'Average')
                 ProjectionImage = ProjectionImage + Image;
             else 
                 ProjectionImage = max(ProjectionImage,Image);
             end
-            FileCount = FileCount+1;
         end
         if strcmp(ProjectionType,'Average')
-            ProjectionImage = ProjectionImage/FileCount;
+            ProjectionImage = ProjectionImage/(length(FileList)-ImageNumSkipped);
         end
 end
 

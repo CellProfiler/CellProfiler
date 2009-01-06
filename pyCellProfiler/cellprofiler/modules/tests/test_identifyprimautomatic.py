@@ -150,11 +150,46 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertFalse(x.test_mode.value)
         x.variable(ID.TEST_MODE_VAR).value = cellprofiler.variable.YES
         self.assertTrue(x.test_mode.value)
+        
+    def test_02_00_test_zero_objects(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        img = numpy.zeros((25,25))
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue("Image" in measurements.get_object_names())
+        self.assertTrue("my_object" in measurements.get_object_names())
+        self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
+        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        count = measurements.get_current_measurement("Image","Count_my_object")
+        self.assertEqual(count,0)
+        self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
+        location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),0)
+        self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
+        location_center_y = measurements.get_current_measurement("my_object","Location_Center_Y")
+        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_y.shape),0)
 
     def test_02_01_test_one_object(self):
         x = ID.IdentifyPrimAutomatic()
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         img = one_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -195,6 +230,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -237,6 +273,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -280,6 +317,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         ipm.set_module_num(2)
         ipm.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         ipm.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        ipm.variable(ID.EXCLUDE_SIZE_VAR).value = False
         pipeline.add_module(ipm)
         measurements = pipeline.run()
         (matfd,matpath) = tempfile.mkstemp('.mat')
@@ -340,6 +378,147 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(module.threshold_algorithm,cellprofiler.modules.identifyprimautomatic.TM_OTSU)
         self.assertTrue(module.threshold_modifier,cellprofiler.modules.identifyprimautomatic.TM_GLOBAL)
         self.assertTrue(module.image_name == 'None')
+    
+    def test_05_01_discard_large(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = True
+        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        img = numpy.zeros((200,200))
+        draw_circle(img,(100,100),50,.5)
+        draw_circle(img,(25,25),20,.5)
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(objects.segmented[25,25],1,"The small object was not there")
+        self.assertEqual(objects.segmented[100,100],0,"The large object was not filtered out")
+        self.assertTrue(objects.small_removed_segmented[25,25]>0,"The small object was not in the small_removed label set")
+        self.assertTrue(objects.small_removed_segmented[100,100]>0,"The large object was not in the small-removed label set")
+        self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
+        self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
+        location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),1)
+
+    def test_05_02_keep_large(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        img = numpy.zeros((200,200))
+        draw_circle(img,(100,100),50,.5)
+        draw_circle(img,(25,25),20,.5)
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertTrue(objects.segmented[25,25],"The small object was not there")
+        self.assertTrue(objects.segmented[100,100],"The large object was filtered out")
+        self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
+        self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
+        location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),2)
+
+    def test_05_03_discard_small(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = True
+        x.variable(ID.SIZE_RANGE_VAR).value = '40,60'
+        img = numpy.zeros((200,200))
+        draw_circle(img,(100,100),50,.5)
+        draw_circle(img,(25,25),20,.5)
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(objects.segmented[25,25],0,"The small object was not filtered out")
+        self.assertEqual(objects.segmented[100,100],1,"The large object was not present")
+        self.assertTrue(objects.small_removed_segmented[25,25]==0,"The small object was in the small_removed label set")
+        self.assertTrue(objects.small_removed_segmented[100,100]>0,"The large object was not in the small-removed label set")
+        self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
+        self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
+        location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
+        self.assertEqual(numpy.product(location_center_x.shape),1)
+
+    def test_05_02_discard_edge(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        img = numpy.zeros((100,100))
+        centers = [(50,50),(10,50),(50,10),(90,50),(50,90)]
+        present = [ True,  False,  False,  False,  False]
+        for center in centers:
+            draw_circle(img,center,15,.5)
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        for center, p in zip(centers,present):
+            if p:
+                self.assertTrue(objects.segmented[center[0],center[1]] > 0)
+            else:
+                self.assertTrue(objects.segmented[center[0],center[1]] == 0)
+            self.assertTrue(objects.unedited_segmented[center[0],center[1]] > 0)
+            self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
+
+    def test_05_03_discard_with_mask(self):
+        """Check discard of objects that are on the border of a mask"""
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        img = numpy.zeros((200,200))
+        centers = [(100,100),(30,100),(100,30),(170,100),(100,170)]
+        present = [ True,  False,  False,  False,  False]
+        for center in centers:
+            draw_circle(img,center,15,.5)
+        mask = numpy.zeros((200,200))
+        mask[25:175,25:175]=1
+        image = cellprofiler.cpimage.Image(img,mask)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        for center, p in zip(centers,present):
+            if p:
+                self.assertTrue(objects.segmented[center[0],center[1]] > 0)
+            else:
+                self.assertTrue(objects.segmented[center[0],center[1]] == 0)
+            self.assertTrue(objects.unedited_segmented[center[0],center[1]] > 0)
+            self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
 
 def one_cell_image():
     img = numpy.zeros((25,25))

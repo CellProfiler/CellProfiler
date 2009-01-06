@@ -193,6 +193,14 @@ class AbstractModule(object):
         setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
     
+    def test_valid(self,pipeline):
+        """Test to see if the module is in a valid state to run
+        
+        Throw a ValidationError exception with an explanation if a module is not valid.
+        """
+        for variable in self.visible_variables():
+            variable.test_valid(pipeline)
+    
     def variable_annotations(self,key):
         """Return annotations for the variable with the given number
         

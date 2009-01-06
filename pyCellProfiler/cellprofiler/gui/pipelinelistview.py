@@ -20,6 +20,7 @@ class PipelineListView:
         self.__sizer.Add(self.__list_box,1,wx.EXPAND|wx.LEFT|wx.RIGHT,PADDING)
         self.__panel.SetSizer(self.__sizer)
         self.__set_min_width()
+        wx.EVT_IDLE(panel,self.on_idle)
         
     def __set_min_width(self):
         """Make the minimum width of the panel be the best width
@@ -110,4 +111,15 @@ class PipelineListView:
             selections = self.__list_box.GetSelections()
             if len(selections) and not (len(selections)==1 and self.__list_box.GetItems()[0] == NO_PIPELINE_LOADED):
                 self.__module_view.set_selection(self.__list_box.GetClientData(selections[0]).module_num)
+
+    def on_idle(self,event):
+        modules = self.__pipeline.modules()
+        for idx,module in zip(range(len(modules)),modules):
+            try:
+                module.test_valid(self.__pipeline)
+                target_name = module.module_name
+            except:
+                target_name = '*%s*'%(module.module_name)
+            if self.__list_box.GetString(idx) != target_name:
+                self.__list_box.SetString(idx,target_name)
 

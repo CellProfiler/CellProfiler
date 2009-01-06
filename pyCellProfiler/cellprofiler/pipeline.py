@@ -596,6 +596,13 @@ class Pipeline:
             module.module_num = module.module_num-1
         self.notify_listeners(ModuleRemovedPipelineEvent(module_num))
     
+    def test_valid(self):
+        """Throw a ValidationError if the pipeline isn't valid
+        
+        """
+        for module in self.__modules:
+            module.test_valid(self)
+    
     def notify_listeners(self,event):
         """Notify listeners of an event that happened to this pipeline
         

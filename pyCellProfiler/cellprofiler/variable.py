@@ -79,12 +79,12 @@ class Variable(object):
     is_do_not_use = property(get_is_do_not_use)
     
     def test_valid(self, pipeline):
-        """Throw a ValueError if the value of this variable is inappropriate for the context"""
+        """Throw a ValidationError if the value of this variable is inappropriate for the context"""
         pass
     
     def __str__(self):
         if not isinstance(self.__value,str):
-            raise ValueError("%s was not a string"%(self.__value))
+            raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value
     
 class Text(Variable):
@@ -129,11 +129,11 @@ class Integer(Text):
         """Return true only if the text value is an integer
         """
         if not str(self).isdigit():
-            raise ValueError('Must be an integer value, was "%s"'%(str(self)))
+            raise ValidationError('Must be an integer value, was "%s"'%(str(self)),self)
         if self.__minval != None and self.__minval > self.value:
-            raise ValueError('Must be at least %d, was %d'%(self.__minval, self.value))
+            raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         if self.__maxval != None and self.__maxval < self.value:
-            raise ValueError('Must be at most %d, was %d'%(self.__maxval, self.value))
+            raise ValidationError('Must be at most %d, was %d'%(self.__maxval, self.value),self)
         
     def __eq__(self,x):
         if super(Integer,self).__eq__(x):
@@ -186,18 +186,18 @@ class IntegerRange(Variable):
     def test_valid(self, pipeline):
         values = str(self).split(',')
         if len(values) < 2:
-            raise ValueError("Minimum and maximum values must be separated by a comma")
+            raise ValidationError("Minimum and maximum values must be separated by a comma",self)
         if len(values) > 2:
-            raise ValueError("Only two values allowed")
+            raise ValidationError("Only two values allowed",self)
         for value in values:
             if not value.isdigit():
-                raise ValueError("%s is not an integer"%(value))
-        if self.__minval > self.min:
-            raise ValueError("%d can't be less than %d"%(self.min,self.__minval))
-        if self.__maxval < self.max:
-            raise ValueError("%d can't be greater than %d"%(self.max,self.__maxval))
+                raise ValidationError("%s is not an integer"%(value),self)
+        if self.__minval and self.__minval > self.min:
+            raise ValidationError("%d can't be less than %d"%(self.min,self.__minval),self)
+        if self.__maxval and self.__maxval < self.max:
+            raise ValidationError("%d can't be greater than %d"%(self.max,self.__maxval),self)
         if self.min > self.max:
-            raise ValueError("%d is greater than %d"%(self.min, self.max))
+            raise ValidationError("%d is greater than %d"%(self.min, self.max),self)
 
 class Float(Text):
     """A variable that allows only floating point input
@@ -223,9 +223,9 @@ class Float(Text):
         """
         # Raises value error inside self.value if not a float
         if self.__minval != None and self.__minval > self.value:
-            raise ValueError('Must be at least %d, was %d'%(self.__minval, self.value))
+            raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
         if self.__maxval != None and self.__maxval < self.value:
-            raise ValueError('Must be at most %d, was %d'%(self.__maxval, self.value))
+            raise ValidationError('Must be at most %d, was %d'%(self.__maxval, self.value),self)
         
     def __eq__(self,x):
         if super(Float,self).__eq__(x):
@@ -277,17 +277,17 @@ class FloatRange(Variable):
     def test_valid(self, pipeline):
         values = str(self).split(',')
         if len(values) < 2:
-            raise ValueError("Minimum and maximum values must be separated by a comma")
+            raise ValidationError("Minimum and maximum values must be separated by a comma",self)
         if len(values) > 2:
-            raise ValueError("Only two values allowed")
+            raise ValidationError("Only two values allowed",self)
         for value in values:
             float(value)
-        if self.__minval > self.min:
-            raise ValueError("%f can't be less than %f"%(self.min,self.__minval))
-        if self.__maxval < self.max:
-            raise ValueError("%f can't be greater than %f"%(self.max,self.__maxval))
+        if self.__minval and self.__minval > self.min:
+            raise ValidationError("%f can't be less than %f"%(self.min,self.__minval),self)
+        if self.__maxval and self.__maxval < self.max:
+            raise ValidationError("%f can't be greater than %f"%(self.max,self.__maxval),self)
         if self.min > self.max:
-            raise ValueError("%f is greater than %f"%(self.min, self.max))
+            raise ValidationError("%f is greater than %f"%(self.min, self.max),self)
 
 class NameProvider(Text):
     """A variable that provides a named object
@@ -348,9 +348,9 @@ class NameSubscriber(Variable):
     
     def test_valid(self,pipeline):
         if len(self.get_choices(pipeline)) == 0:
-            raise ValueError("No prior instances of %s were defined"%(self.group))
+            raise ValidationError("No prior instances of %s were defined"%(self.group),self)
         if self.value not in self.get_choices(pipeline):
-            raise ValueError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))))
+            raise ValidationError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))),self)
 
 class ImageNameSubscriber(NameSubscriber):
     """A variable that provides an image name
@@ -423,7 +423,7 @@ class Choice(Variable):
     def test_valid(self,pipeline):
         """Check to make sure that the value is among the choices"""
         if self.value not in self.choices:
-            raise ValueError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)))
+            raise ValidationError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)),self)
 
 class CustomChoice(Choice):
     def __init__(self,text,choices,value=None):
@@ -601,6 +601,24 @@ class DeleteVariableEvent():
     def __init__(self):
         pass
 
+class ValidationError(ValueError):
+    """An exception indicating that a variable's value prevents the pipeline from running
+    """
+    def __init__(self,message,variable):
+        """Initialize with an explanatory message and the variable that caused the problem
+        """
+        super(ValidationError,self).__init__(message)
+        self.__variable = variable
+    
+    def get_variable(self):
+        """The variable responsible for the problem
+        
+        This might be one of several variables partially responsible
+        for the problem.
+        """
+        return self.__variable
+    
+    variable = property(get_variable)
 # Valid Kind arguments to annotation
 ANN_TEXT   = 'text'
 ANN_CHOICE = 'choice'

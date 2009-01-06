@@ -34,15 +34,15 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     assert numpy.max(data) <= 1, "The input data must be less than or equal to one"
     assert min_threshold==None or min_threshold >=0
     assert min_threshold==None or min_threshold <=1
-    assert max_threshold==None or min_threshold >=0
-    assert max_threshold==None or min_threshold <=1
+    assert max_threshold==None or max_threshold >=0
+    assert max_threshold==None or max_threshold <=1
     assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
     
     int_data = scipy.ndimage.measurements.histogram(data,0,1,bins)
     min_bin = (min_threshold and (int(bins * min_threshold)+1)) or 1
     max_bin = (max_threshold and (int(bins * max_threshold)-1)) or (bins-1)
     max_score = 0
-    max_k     = 0
+    max_k     = min_bin
     for k in range(min_bin,max_bin):
         cT = float(numpy.sum(int_data))        # the count: # of pixels in array
         c0 = float(numpy.sum(int_data[:k]))    # the # of pixels in the lower group

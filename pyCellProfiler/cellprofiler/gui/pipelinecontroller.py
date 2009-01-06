@@ -178,18 +178,6 @@ class PipelineController:
         proposed_value = event.get_proposed_value()
         
         variable.value = proposed_value
-        try:
-            variable.test_valid(self.__pipeline)
-            if self.__variable_errors.has_key(variable.key()):
-                self.__frame.preferences_view.pop_error_text(self.__variable_errors.pop(variable.key()))
-            
-        except ValueError, instance:
-            if self.__variable_errors.has_key(variable.key()):
-                self.__frame.preferences_view.pop_error_text(self.__variable_errors.pop(variable.key()))
-            message = "%s(%d): %s"%(variable.module().module_name,variable.variable_number(),instance.message)
-            self.__frame.preferences_view.set_error_text(message)
-            self.__variable_errors[variable.key()] = message
-            event.cancel()
             
     def on_analyze_images(self,event):
         if len(self.__variable_errors):

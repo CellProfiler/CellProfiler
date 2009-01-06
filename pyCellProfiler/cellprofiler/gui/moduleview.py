@@ -6,6 +6,8 @@ import wx.grid
 import cellprofiler.pipeline
 import cellprofiler.variable
 
+ERROR_COLOR = wx.RED
+
 class VariableEditedEvent:
     """Represents an attempt by the user to edit a variable
     
@@ -78,7 +80,7 @@ class ModuleView:
         self.__value_listeners = []
         self.__module = None
         self.__module_panel.SetupScrolling()
-        self.__module_panel.SetDoubleBuffered(True)  
+        wx.EVT_IDLE(module_panel,self.on_idle)
 
     def __set_columns(self):
         self.__grid.SetColLabelValue(0,'Variable description')
@@ -107,11 +109,13 @@ class ModuleView:
         self.module_panel.Freeze()
         try:
             self.clear_selection()
-            self.__module = self.__pipeline.module(module_num)
-            self.__controls = []
-            data = []
-            variables = self.__module.visible_variables()
-            sizer = ModuleSizer(len(variables),2)
+            self.__module       = self.__pipeline.module(module_num)
+            self.__controls     = []
+            self.__static_texts = []
+            data                = []
+            variables           = self.__module.visible_variables()
+            sizer               = ModuleSizer(len(variables),2)
+            
             for v,i in zip(variables, range(0,len(variables))):
                 control_name = edit_control_name(v)
                 text_name    = text_control_name(v)
@@ -121,6 +125,7 @@ class ModuleView:
                                              style=wx.ALIGN_RIGHT,
                                              name=text_name)
                 sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
+                self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.variable.Binary):
                     control = wx.CheckBox(self.__module_panel,-1,name=control_name)
                     control.SetValue(v.is_yes)
@@ -149,7 +154,7 @@ class ModuleView:
                     def callback(event, variable=v, control = control):
                         self.__on_combobox_change(event, variable,control)
                     self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
-                    if isinstance(v, cellprofiler.variable.CustomChoice):
+                    if style == wx.CB_DROPDOWN:
                         def on_cell_change(event, variable=v, control=control):
                              self.__on_cell_change(event, variable, control)
                         self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
@@ -213,6 +218,22 @@ class ModuleView:
     def __on_do_something(self, event, variable):
         variable.on_event_fired()
         self.reset_view()
+    
+    def on_idle(self,event):
+        """Check to see if the selected module is valid"""
+        if self.__module:
+            for idx, variable in zip(range(len(self.__module.visible_variables())),self.__module.visible_variables()):
+                try:
+                    variable.test_valid(self.__pipeline)
+                    if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
+                        self.__controls[idx].SetToolTipString('')
+                        self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+                        self.__static_texts[idx].Refresh()
+                except cellprofiler.variable.ValidationError, instance:
+                    if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
+                        self.__controls[idx].SetToolTipString(instance.message)
+                        self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
+                        self.__static_texts[idx].Refresh()
     
     def reset_view(self):
         """Redo all of the controls after something has changed

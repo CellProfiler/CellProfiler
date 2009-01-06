@@ -3,17 +3,19 @@
 """
 __version__="$Revision: 1$"
 
-import cellprofiler.cpmodule
-import cellprofiler.variable as cpv
-from cellprofiler.cpmath.otsu import otsu
-import cellprofiler.objects
-from cellprofiler.variable import AUTOMATIC
 import scipy.ndimage
+import scipy.sparse
 import matplotlib.backends.backend_wxagg
 import matplotlib.figure
 import matplotlib.cm
 import numpy
 import wx
+
+import cellprofiler.cpmodule
+import cellprofiler.variable as cpv
+from cellprofiler.cpmath.otsu import otsu
+import cellprofiler.objects
+from cellprofiler.variable import AUTOMATIC
 
 IMAGE_NAME_VAR                  = 1
 OBJECT_NAME_VAR                 = 2
@@ -547,6 +549,62 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
+        unedited_labels = labeled_image.copy()
+        if self.exclude_size.value and object_count > 0:
+            areas = scipy.ndimage.measurements.sum(numpy.ones(labeled_image.shape),
+                                                   labeled_image,
+                                                   range(0,object_count+1))
+            areas = numpy.array(areas,dtype=int)
+            min_allowed_area = numpy.pi * self.size_range.min * self.size_range.min
+            max_allowed_area = numpy.pi * self.size_range.max * self.size_range.max
+            # area_image has the area of the object at every pixel within the object
+            area_image = areas[labeled_image]
+            labeled_image[area_image < min_allowed_area] = 0
+            small_removed_labels = labeled_image.copy()
+            labeled_image[area_image > max_allowed_area] = 0
+        else:
+            small_removed_labels = labeled_image.copy()
+        
+        if self.exclude_border_objects.value and object_count > 0:
+            border_labels = list(labeled_image[0,:])
+            border_labels.extend(labeled_image[:,0])
+            border_labels.extend(labeled_image[labeled_image.shape[0]-1,:])
+            border_labels.extend(labeled_image[:,labeled_image.shape[1]-1])
+            border_labels = numpy.array(border_labels)
+            #
+            # the following histogram has a value > 0 for any object
+            # with a border pixel
+            #
+            histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
+                                                 (border_labels,
+                                                  numpy.zeros(border_labels.shape)))).todense()
+            if any(histogram[1:,0] > 0):
+                histogram_image = histogram[labeled_image,0]
+                labeled_image[histogram_image > 0] = 0
+            elif image.has_mask:
+                # The assumption here is that, if nothing touches the border,
+                # the mask is a large, elliptical mask that tells you where the
+                # well is. That's the way the old Matlab code works and it's duplicated here
+                #
+                # The operation below gets the mask pixels that are on the border of the mask
+                # The erosion turns all pixels touching an edge to zero. The not of this
+                # is the border + formerly masked-out pixels.
+                mask_border = numpy.logical_and(numpy.logical_not(scipy.ndimage.binary_erosion(mask)),mask)
+                border_labels = labeled_image[mask_border]
+                border_labels = border_labels.flatten()
+                histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
+                                                     (border_labels,
+                                                      numpy.zeros(border_labels.shape)))).todense()
+                if any(histogram[1:] > 0):
+                    histogram_image = histogram[labeled_image,0]
+                    labeled_image[histogram_image > 0] = 0
+        
+        # Relabel the image
+        
+        labeled_image,object_count = scipy.ndimage.label(labeled_image>0)
+        
+        # Make an outline image
+        
         outline_image = labeled_image!=0
         temp = scipy.ndimage.binary_dilation(outline_image)
         outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
@@ -556,15 +614,22 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
+        objects.unedited_segmented = unedited_labels
+        objects.small_removed_segmented = small_removed_labels
+        
         object_set.add_objects(objects,self.object_name.value)
         #
         # Get the centers of each object - center_of_mass returns a list of two-tuples.
         #
-        centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
-        centers = numpy.array(centers)
-        centers = centers.reshape((object_count,2))
-        location_center_x = centers[:,0]
-        location_center_y = centers[:,1]
+        if object_count:
+            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
+            centers = numpy.array(centers)
+            centers = centers.reshape((object_count,2))
+            location_center_x = centers[:,0]
+            location_center_y = centers[:,1]
+        else:
+            location_center_x = numpy.zeros((0,),dtype=float)
+            location_center_y = numpy.zeros((0,),dtype=float)
         measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
         measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
 

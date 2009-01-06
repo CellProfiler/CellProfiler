@@ -170,6 +170,11 @@ class TestIntegerRange(unittest.TestCase):
         x = cpv.IntegerRange("text",(1,2),1,5)
         x.value = (2,1)
         self.assertRaises(ValueError,x.test_valid,None)
+        
+    def test_03_01_no_range(self):
+        """Regression test a bug where the variable throws an exception if there is no range"""
+        x=cpv.IntegerRange("text",(1,2))
+        x.test_valid(None)
 
 class TestFloatRange(unittest.TestCase):
     def test_00_00_init(self):
@@ -209,3 +214,8 @@ class TestFloatRange(unittest.TestCase):
         x = cpv.FloatRange("text",(1,2),1,5)
         x.value = (2,1)
         self.assertRaises(ValueError,x.test_valid,None)
+
+    def test_03_01_no_range(self):
+        """Regression test a bug where the variable throws an exception if there is no range"""
+        x=cpv.FloatRange("text",(1,2))
+        x.test_valid(None)

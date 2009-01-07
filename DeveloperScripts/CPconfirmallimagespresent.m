@@ -54,7 +54,7 @@ UnmatchedDirectories = cellfun(@setdiff,repmat({uniquePaths},[1 length(AllPathna
 % channel
 FileNamesForEachChannel = cell(length(idxIndivPaths),length(uniquePaths));
 NewFileList = cell(length(uniquePaths),1);
-UnmatchedFilenames = cell(1,length(uniquePaths));
+[UnmatchedFilenames,DuplicateFilenames] = deal(cell(1,length(uniquePaths)));
 for m = 1:length(uniquePaths)
     FileNamesForChannelN = cell(1,length(idxIndivPaths));
     for n = 1:length(ImageName)
@@ -63,7 +63,7 @@ for m = 1:length(uniquePaths)
 
         % Find the position of the channel text in the filenames for
         % each subdirectory
-        TextToFindIdx = unique(cell2mat(regexp(FileNamesForEachChannel{n}{m},TextToFind{n})));
+        TextToFindIdx = unique(cell2mat(regexpi(FileNamesForEachChannel{n}{m},TextToFind{n},'once')));
         % If the position is the same for all...
         if isscalar(TextToFindIdx)
             %... drop the filename text after the channel text and use the 
@@ -97,11 +97,21 @@ for m = 1:length(uniquePaths)
     % should look like
     AllFileNamesForChannelN = [];
     for n = 1:length(ImageName),
-        AllFileNamesForChannelN = union(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
+        cellFileNamesForChannelN = cellstr(FileNamesForChannelN{n});
+        AllFileNamesForChannelN = union(cellFileNamesForChannelN,AllFileNamesForChannelN);
+        
+        % Look for images with duplicate prefixes
+        [ignore,idx] = unique(cellFileNamesForChannelN);
+        idxDuplicate = setdiff(1:length(cellFileNamesForChannelN),idx);
+        if ~isempty(idxDuplicate)
+            DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,cellFileNamesForChannelN(idxDuplicate),{n}));
+        end
     end
     
     % Copy the filenames into the new list, leaving [] in place of missing
     % files
+    % TODO: How to process the duplicate files similarly? Especially when
+    % we don't know which file is the "right" one.
     NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
     for n = 1:length(ImageName),
         [idxFileList,locFileList] = ismember(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
@@ -130,7 +140,7 @@ if strncmpi(SaveOutputFile,'y',1),
     TextString{1} = ['Image directory: ',handles.Current.DefaultImageDirectory];
     TextString{end+1} = '';
     
-    % List mismatched directories
+    % List upmatched directories
     TextString{end+1} = 'Unmatched directories found:';
     if all(cellfun(@isempty,UnmatchedDirectories))
         TextString{end+1} = '  None';
@@ -144,8 +154,27 @@ if strncmpi(SaveOutputFile,'y',1),
 
     TextString{end+1} = '';
 
-    % List mismatched filenames
-    TextString{end+1} = 'Unmatched filenames found:';
+    % List duplicate filenames
+    TextString{end+1} = 'Duplicate filenames found: (Prefix: Channel)';
+    if cellfun(@isempty,DuplicateFilenames)
+        TextString{end+1} = '  None';
+    else
+        for n = 1:length(DuplicateFilenames)
+            if ~isempty(DuplicateFilenames{n}),
+                if ~isempty(uniquePaths{n})
+                    TextString{end+1} = [' Subdirectory: ',uniquePaths{n}];
+                end
+                for m = 1:size(DuplicateFilenames{n},1),
+                    TextString{end+1} = ['  ',DuplicateFilenames{n}{m,1},'   ',num2str(DuplicateFilenames{n}{m,2})];
+                end
+            end
+        end
+    end
+        
+    TextString{end+1} = '';
+    
+    % List unmatched filenames
+    TextString{end+1} = 'Unmatched filenames found: (Prefix: Channel)';
     if cellfun(@isempty,UnmatchedFilenames)
         TextString{end+1} = '  None';
     else

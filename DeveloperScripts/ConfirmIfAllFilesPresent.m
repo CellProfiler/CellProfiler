@@ -70,62 +70,56 @@ drawnow
 %infotypeVAR01 = filegroup indep
 FileListName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = (Optional) What directory grouping do you want to use? Select "Do not use" to ignore. (This answer overrides any path-related selections below; see SelectDirectoriesToProcess for details)
-%choiceVAR02 = Do not use
-%infotypeVAR02 = directorygroup
-DirectoryGroupName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
-%inputtypeVAR02 = popupmenu
+%pathnametextVAR02 = Enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
+%defaultVAR02 = .
+InputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%pathnametextVAR03 = If not using a directory group, enter the path name to the folder where the images to be loaded are located. Type period (.) for default image folder.
-%defaultVAR03 = .
-InputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%textVAR03 = Type the text that identifies the channel/wavelength for one type of image. Type "Do not use" to ignore:
+%defaultVAR03 = w1
+TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Type the text that identifies the channel/wavelength for one type of image. Type "Do not use" to ignore:
-%defaultVAR04 = w1
-TextToFind{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%textVAR04 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
+%infotypeVAR04 = imagegroup
+ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+%inputtypeVAR04 = popupmenu
 
-%textVAR05 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
-%infotypeVAR05 = imagegroup
-ImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
-%inputtypeVAR05 = popupmenu
+%textVAR05 = Type the text that identifies the channel/wavelength for the second type of image. Type "Do not use" to ignore:
+%defaultVAR05 = w2
+TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Type the text that identifies the channel/wavelength for the second type of image. Type "Do not use" to ignore:
-%defaultVAR06 = w2
-TextToFind{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
+%infotypeVAR06 = imagegroup
+ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%inputtypeVAR06 = popupmenu
 
-%textVAR07 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
-%infotypeVAR07 = imagegroup
-ImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
-%inputtypeVAR07 = popupmenu
+%textVAR07 = Type the text that identifies the channel/wavelength for the third type of image. Type "Do not use" to ignore:
+%defaultVAR07 = Do not use
+TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
-%textVAR08 = Type the text that identifies the channel/wavelength for the third type of image. Type "Do not use" to ignore:
-%defaultVAR08 = Do not use
-TextToFind{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%textVAR08 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
+%infotypeVAR08 = imagegroup
+ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
 
-%textVAR09 = What will these images be called within CellProfiler? (You must have a LoadImages module present for this box to be active)
-%infotypeVAR09 = imagegroup
-ImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Analyze all subfolders within the selected folder?
+%choiceVAR09 = No
+%choiceVAR09 = Yes
+AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%textVAR10 = Analyze all subfolders within the selected folder?
-%choiceVAR10 = No
-%choiceVAR10 = Yes
-AnalyzeSubDir = char(handles.Settings.VariableValues{CurrentModuleNum,10});
-%inputtypeVAR10 = popupmenu
+%textVAR10 = If there are thumbnails, type the text that distinguishes them from the image files. Type "Do not use" to ignore:
+%defaultVAR10 = thumb
+ThumbText = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 
-%textVAR11 = If there are thumbnails, type the text that distinguishes them from the image files. Type "Do not use" to ignore:
-%defaultVAR11 = thumb
-ThumbText = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%textVAR11 = Do you want the output information saved to a text file?
+%choiceVAR11 = No
+%choiceVAR11 = Yes
+SaveOutputFile = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
 
-%textVAR12 = Do you want the output information saved to a text file?
-%choiceVAR12 = No
-%choiceVAR12 = Yes
-SaveOutputFile = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-%inputtypeVAR12 = popupmenu
-
-%pathnametextVAR13 = If you answered 'Yes' above, enter the path name to the folder where the output file will be saved (use "&" for default output folder). If no filename is specified, the output file defaults to ConfirmIfAllFilesPresent_output.txt.
-%defaultVAR13 = &
-OutputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%pathnametextVAR12 = If you answered 'Yes' above, enter the path name to the folder where the output file will be saved (use "&" for default output folder). If no filename is specified, the output file defaults to ConfirmIfAllFilesPresent_output.txt.
+%defaultVAR12 = &
+OutputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
 %%%VariableRevisionNumber = 1
 
@@ -136,35 +130,28 @@ OutputPathname = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 drawnow;
 
 if handles.Current.SetBeingAnalyzed == 1
-    UseUserdefinedDirStructure = ~strcmp(DirectoryGroupName,'Do not use');
-    if ~UseUserdefinedDirStructure
-        % Get the pathname and check that it exists
-        if strncmp(InputPathname,'.',1)
-            if length(InputPathname) == 1
-                InputPathname = handles.Current.DefaultImageDirectory;
-            else
-            % If the pathname starts with '.', interpret it relative to
-            % the default image dir.
-                InputPathname = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(InputPathname(2:end),'/',filesep),'\',filesep));
-            end
+    % Get the pathname and check that it exists
+    if strncmp(InputPathname,'.',1)
+        if length(InputPathname) == 1
+            InputPathname = handles.Current.DefaultImageDirectory;
+        else
+        % If the pathname starts with '.', interpret it relative to
+        % the default image dir.
+            InputPathname = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(InputPathname(2:end),'/',filesep),'\',filesep));
         end
-        if ~exist(InputPathname,'dir')
-            error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',InputPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
-        end
-        DirectoryTextToExclude = '';
-    else
-        % Fill in InputPathname with the directory list
-        fieldname = ['SelectedDirectoryList_', DirectoryGroupName];
-        InputPathname = handles.Pipeline.(fieldname).ImageDirectory;
-        AnalyzeSubDir = handles.Pipeline.(fieldname).AnalyzeSubdirectories;
-        DirectoryTextToExclude = handles.Pipeline.(fieldname).TextToExclude;
     end
+    if ~exist(InputPathname,'dir')
+        error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',InputPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with /.'])
+    end
+    DirectoryTextToExclude = '';
 
     % Exclude options if user specifies
     ImageName = ImageName(~strcmp('Do not use',TextToFind));
     TextToFind = TextToFind(~strcmp('Do not use',TextToFind));
 
     % Extract the file names
+    
+    [AllPathnames,IndivPathnames,IndivFileNames,IndivFileExtensions,idxIndivPaths] = deal(cell(1,length(ImageName)));
     for i = 1:length(ImageName)
         FileList = CPretrievemediafilenames(InputPathname,char(TextToFind(i)),AnalyzeSubDir(1), 'Regular','Image');
         
@@ -189,29 +176,32 @@ if handles.Current.SetBeingAnalyzed == 1
             error(['Image processing was canceled in the ', ModuleName, ' module because there are no image files with the text "', TextToFind{i}, '" in the chosen directory (or subdirectories, if you requested them to be analyzed as well).'])
         end
 
-        [IndivPathnames,IndivFileNames{i}] = cellfun(@fileparts,FileList,'UniformOutput',false);
-        [AllPathnames{i},ignore,idx{i}] = unique(IndivPathnames);
+         % ASSUMPTION: Channels are located in the same directory (i.e.
+        % IndivPathnames is the same for all channels)
+        [IndivPathnames{i},IndivFileNames{i},IndivFileExtensions{i}] = cellfun(@fileparts,FileList,'UniformOutput',false);
+        [AllPathnames{i},ignore,idxIndivPaths{i}] = unique(IndivPathnames{i});
     end
 
     % First, check if directories in which channel images were located are identical. If
     % not, keep track of the different ones for each channel (e.g., if a
     % channel image is found in only some directories and not in others)
     uniquePaths = unique(cat(2,AllPathnames{:}));
-    MismatchedDirectories = cellfun(@setdiff,repmat({uniquePaths},[1 length(AllPathnames)]),AllPathnames,'UniformOutput',false);
+    UnmatchedDirectories = cellfun(@setdiff,repmat({uniquePaths},[1 length(AllPathnames)]),AllPathnames,'UniformOutput',false);
 
     % Second, check if the images in each directory/subdirectory match up by
     % channel
-    MismatchedFilenames = cell(1,length(ImageName));
-    FileNamesForEachChannel = cell(length(idx),length(uniquePaths));
+    FileNamesForEachChannel = cell(length(idxIndivPaths),length(uniquePaths));
+    NewFileList = cell(length(uniquePaths),1);
+    [UnmatchedFilenames,DuplicateFilenames] = deal(cell(1,length(uniquePaths)));
     for m = 1:length(uniquePaths)
-        FileNamesForChannelN = cell(1,length(idx));
-        for n = 1:length(idx)
+        FileNamesForChannelN = cell(1,length(idxIndivPaths));
+        for n = 1:length(ImageName)
             % FileNamesForEachChannel{channel}{subdirectory}: Cell array of strings
-            FileNamesForEachChannel{n}{m} = IndivFileNames{n}(idx{n} == m);
+            FileNamesForEachChannel{n}{m} = IndivFileNames{n}(idxIndivPaths{n} == m);
 
             % Find the position of the channel text in the filenames for
             % each subdirectory
-            TextToFindIdx = unique(cell2mat(regexp(FileNamesForEachChannel{n}{m},TextToFind{n})));
+            TextToFindIdx = unique(cell2mat(regexpi(FileNamesForEachChannel{n}{m},TextToFind{n},'once')));
             % If the position is the same for all...
             if isscalar(TextToFindIdx)
                 %... drop the filename text after the channel text and use the 
@@ -222,87 +212,121 @@ if handles.Current.SetBeingAnalyzed == 1
                 FileNamesForChannelN{n} = FileNamesForChannelN{n}(:,1:TextToFindIdx-1);
             else
                 %... otherwise, error
-                error(['The specified text for ',FileListName{n},' is not located at a consistent position within the filenames in directory ',uniquePaths{m}]);
+                error(['The specified text for ',ImageName{n},' is not located at a consistent position within the filenames in directory ',uniquePaths{m}]);
             end
         end
-        % Compare the filename strings pair-wise through the channel
-        % combinations and pull out differences
-        combChannels = nchoosek(1:length(idx),2);
-        for n = 1:size(combChannels,1)
-            chan1 = combChannels(n,1); chan2 = combChannels(n,2);
-            [ignore,ia,ib] = setxor(FileNamesForChannelN{[chan1 chan2]},'rows');
-            if ~isempty(ia)
-                i = find(idx{chan1} == m);
-                if all(cellfun(@isempty,IndivPathnames(i(ia)))),
-                    separator = repmat(' ',[length(ia) 1]);
-                else
-                    separator = repmat(filesep,[length(ia) 1]);
-                end
-                MismatchedFilenames{chan1} = [MismatchedFilenames{chan1}; cellstr(strcat(char(IndivPathnames(i(ia))'),separator,char(IndivFileNames{chan1}(i(ia))')))];
+
+        % TODO: How should this information be used downstream?
+        % Three ways to handle this:
+        % (1) Trim the images from the FileList structure. However, the user might
+        %   want to know that that images have gone "missing"
+        % (2) Keep the images in the FileList structure and set the siblings in the
+        %   corresponding FileLists to []. This will insure the FileList lengths
+        %   match. However, the downstream modules will need to check for this, 
+        %   probably by modifying CPretrieveimages to return a 0 or NaN image for
+        %   the missing one.
+        % (3) Set a QC flag for the images w/o siblings to be used for filtering 
+        %   later. Still have the problem of the FileList being different lengths
+        %
+        % Right now, I've decided on (2), with the option of outputing a text file.
+        % (3) can probably be folded into (2).
+
+        % Combine all the filename prefixes to find what the "master list"
+        % should look like
+        AllFileNamesForChannelN = [];
+        for n = 1:length(ImageName),
+            cellFileNamesForChannelN = cellstr(FileNamesForChannelN{n});
+            AllFileNamesForChannelN = union(cellFileNamesForChannelN,AllFileNamesForChannelN);
+
+            % Look for images with duplicate prefixes
+            [ignore,idx] = unique(cellFileNamesForChannelN);
+            idxDuplicate = setdiff(1:length(cellFileNamesForChannelN),idx);
+            if ~isempty(idxDuplicate)
+                DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,cellFileNamesForChannelN(idxDuplicate),{n}));
             end
-            if ~isempty(ib)
-                i = find(idx{chan2} == m);
-                if all(cellfun(@isempty,IndivPathnames(i(ib)))),
-                    separator = repmat(' ',[length(ib) 1]);
-                else
-                    separator = repmat(filesep,[length(ib) 1]);
-                end
-                MismatchedFilenames{chan2} = [MismatchedFilenames{chan2}; cellstr(strcat(char(IndivPathnames(i(ib))'),separator,char(IndivFileNames{chan2}(i(ib))')))];
-            end
+        end
+
+        % Copy the filenames into the new list, leaving [] in place of missing
+        % files
+        % TODO: How to process the duplicate files similarly? Especially when
+        % we don't know which file is the "right" one.
+        NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
+        for n = 1:length(ImageName),
+            [idxFileList,locFileList] = ismember(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
+            FullFilenames = cellfun(@fullfile,IndivPathnames{n}(idxIndivPaths{n} == m),...
+                                    cellfun(@strcat,IndivFileNames{n}(idxIndivPaths{n} == m),IndivFileExtensions{n}(idxIndivPaths{n} == m),'UniformOutput',false),'UniformOutput',false); 
+            NewFileList{m}(n,idxFileList) = FullFilenames(locFileList(idxFileList));
+        end
+
+        IsFileMissing = cellfun(@isempty,NewFileList{m});
+        idxMissingFiles = any(IsFileMissing,1);
+        for n = find(idxMissingFiles)
+            UnmatchedFilenames{m} = cat(1,UnmatchedFilenames{m},cat(2,cellstr(AllFileNamesForChannelN(n,:)),{find(IsFileMissing(:,n))'}));
         end
     end
 
-    % Saves the filelist without the mismatched files to the handles structure      
-    for i = 1:length(ImageName),
+    % Saves the new filelist to the handles structure
+    for m = 1:length(ImageName),
         fieldname = ['SelectedFileList_',FileListName,'_',ImageName{i}];
-        for j = 1:length(MismatchedFilenames{i}),
-            FileList(strmatch(MismatchedFilenames{i}{j},FileList)) = [];
+        handles.Pipeline.(fieldname).FileList = [];
+        for n = 1:length(uniquePaths),
+            handles.Pipeline.(fieldname).FileList = cat(2,handles.Pipeline.(fieldname).FileList, NewFileList{n}(m,:));
+            handles.Pipeline.(fieldname).Pathname = InputPathname;
         end
-        handles.Pipeline.(fieldname).FileList = FileList;
-        handles.Pipeline.(fieldname).Pathname = InputPathname;
     end
-          
+
     %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
     %%%%%%%%%%%%%%%%%%%%%%%
 
-    % List mismatched directories
-    TextString{1} = 'Mismatched directories found:';
-    if all(cellfun(@isempty,MismatchedDirectories))
-        TextString{2} = '  None';
+    % List unmatched directories
+    TextString{1} = ['Image directory: ',handles.Current.DefaultImageDirectory];
+    TextString{end+1} = '';
+    
+    TextString{end+1} = 'Unmatched directories found:';
+    if all(cellfun(@isempty,UnmatchedDirectories))
+        TextString{end+1} = '  None';
     else
-        for n = 1:length(MismatchedDirectories)
-            for m = 1:size(MismatchedDirectories{n},1),
-                TextString{end+1} = ['  ',MismatchedDirectories{n}{m,:}];
+        for n = 1:length(UnmatchedDirectories)
+            for m = 1:size(UnmatchedDirectories{n},1),
+                TextString{end+1} = ['  ',UnmatchedDirectories{n}{m,:}];
             end
         end
     end
 
     TextString{end+1} = '';
 
-    % List mismatched filenames
-    TextString{end+1} = 'Mismatched filenames found:';
-    if cellfun(@isempty,MismatchedFilenames)
+    % List duplicate filenames
+    TextString{end+1} = 'Duplicate filenames found: (Prefix: Channel)';
+    if cellfun(@isempty,DuplicateFilenames)
         TextString{end+1} = '  None';
     else
-        for n = 1:length(MismatchedFilenames)
-            if ~isempty(MismatchedFilenames{n}),
-                [pathstr,fn] = cellfun(@fileparts,MismatchedFilenames{n},'UniformOutput',false);
-                uniquepathstr = unique(pathstr);
-                if all(cellfun(@isempty,uniquepathstr)),  % Empty unique path: All files in root directory
-                    for m = 1:length(fn),
-                        TextString{end+1} = ['   ',fn{m}];
-                    end
-                else                        % Non-empty unique path: Some files in sub-directories
-                    for m = 1:length(uniquepathstr),
-                        if ~isempty(uniquepathstr{m}), % At least one file in sub-directory
-                            TextString{end+1} = [' Subdirectory:',uniquepathstr{m}];
-                        end
-                        i = find(~cellfun(@isempty,regexp(pathstr,uniquepathstr{m})));
-                        for p = 1:length(i),
-                            TextString{end+1} = ['   ',fn{i(p)}];
-                        end
-                    end
+        for n = 1:length(DuplicateFilenames)
+            if ~isempty(DuplicateFilenames{n}),
+                if ~isempty(uniquePaths{n})
+                    TextString{end+1} = [' Subdirectory: ',uniquePaths{n}];
+                end
+                for m = 1:size(DuplicateFilenames{n},1),
+                    TextString{end+1} = ['  ',DuplicateFilenames{n}{m,1},': ',num2str(DuplicateFilenames{n}{m,2})];
+                end
+            end
+        end
+    end
+    
+    TextString{end+1} = '';
+    
+    % List unmatched filenames
+    TextString{end+1} = 'Unmatched filenames found: (Prefix: Channel)';
+    if cellfun(@isempty,UnmatchedFilenames)
+        TextString{end+1} = '  None';
+    else
+        for n = 1:length(UnmatchedFilenames)
+            if ~isempty(UnmatchedFilenames{n}),
+                if ~isempty(uniquePaths{n})
+                    TextString{end+1} = [' Subdirectory: ',uniquePaths{n}];
+                end
+                for m = 1:size(UnmatchedFilenames{n},1),
+                    TextString{end+1} = ['  ',UnmatchedFilenames{n}{m,1},': ',num2str(UnmatchedFilenames{n}{m,2})];
                 end
             end
         end

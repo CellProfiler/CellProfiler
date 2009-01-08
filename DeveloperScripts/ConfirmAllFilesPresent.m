@@ -12,6 +12,8 @@ function handles = ConfirmAllFilesPresent(handles,varargin)
 % This module is useful for performing quality control on a directory of
 % images in order to confirm that all files containing channel information 
 % are properly matched. 
+% 
+% This module should be placed BEFORE the first LoadImages module.
 %
 % TODO: Currently, it only reports results; it doesn't make changes to the 
 % handles structure for later use.

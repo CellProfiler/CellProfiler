@@ -549,12 +549,12 @@ function [LabelMatrixColormap, ObjToColorMapping] = UpdateTrackObjectsDisplayIma
 
 if isempty(LabelMatrixColormap),
     % If just starting, create a colormap based on the number of objects or
-    %  255, whichever is bigger
+    %  256, whichever is bigger
     colormap_fxnhdl = str2func(DefaultLabelColorMap);
     NumOfRegions = double(max(LabelMatrix(:)));
-    cmap = colormap_fxnhdl(max(NumOfRegions,255));
+    cmap = colormap_fxnhdl(max(NumOfRegions,256));
     rand('twister', rand('twister'));
-    index = round(rand(1,NumOfRegions)*255);
+    index = ceil(rand(1,NumOfRegions)*256);
     
     % Save the colormap and indices into the handles
     LabelMatrixColormap = cmap;

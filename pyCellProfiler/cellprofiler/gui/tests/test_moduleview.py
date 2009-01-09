@@ -3,6 +3,7 @@
 """
 __version__="$Revision$"
 
+import time
 import unittest
 
 import wx
@@ -145,6 +146,7 @@ class TestModuleView(unittest.TestCase):
         self.assertAlmostEqual(v.value,2.5)
     
     def test_01_07_display_float_range(self):
+        time.sleep(.5) #grrr grrr! don't understand nose test threading
         v = cpv.FloatRange("text",value=(1.5,2.5))
         app,text_control,panel = self.set_variable(v)
         min_control = self.get_min_control(app,v)

@@ -72,6 +72,9 @@ class TestModuleView(unittest.TestCase):
         edit_control.Command(event)
         app.ProcessPendingEvents()
         self.assertEqual(v.value,"abc")
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
     
     def test_01_02_display_binary_variable(self):
         v=cpv.Binary("text",True)
@@ -83,6 +86,9 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         checkbox = self.get_edit_control(app,v)
         self.assertFalse(checkbox.Value)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
     
     def test_01_03_display_choice_variable(self):
         v = cpv.Choice("text",['foo','bar'])
@@ -99,6 +105,9 @@ class TestModuleView(unittest.TestCase):
         combobox = self.get_edit_control(app,v)
         self.assertEqual(combobox.Value,'bar')
         self.assertTrue(v=='bar')
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
 
     def test_01_04_display_integer_variable(self):
         v = cpv.Integer("text",1)
@@ -112,6 +121,9 @@ class TestModuleView(unittest.TestCase):
         edit_control = self.get_edit_control(app,v)
         self.assertEqual(edit_control.Value,'2')
         self.assertTrue(v==2)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
     
     def test_01_05_display_integer_range(self):
         v = cpv.IntegerRange("text",value=(1,2))
@@ -131,6 +143,9 @@ class TestModuleView(unittest.TestCase):
         max_control.Command(event)
         app.ProcessPendingEvents()
         self.assertEqual(v.max,3)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
 
     def test_01_06_display_float_variable(self):
         v = cpv.Float("text",1.5)
@@ -144,9 +159,11 @@ class TestModuleView(unittest.TestCase):
         edit_control = self.get_edit_control(app,v)
         self.assertAlmostEqual(float(edit_control.Value),2.5)
         self.assertAlmostEqual(v.value,2.5)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
     
     def test_01_07_display_float_range(self):
-        time.sleep(.5) #grrr grrr! don't understand nose test threading
         v = cpv.FloatRange("text",value=(1.5,2.5))
         app,text_control,panel = self.set_variable(v)
         min_control = self.get_min_control(app,v)
@@ -164,6 +181,9 @@ class TestModuleView(unittest.TestCase):
         max_control.Command(event)
         app.ProcessPendingEvents()
         self.assertAlmostEqual(v.max,3.5)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
     
     def test_01_08_display_name_provider(self):
         v = cpv.NameProvider("text",group="mygroup",value="value")
@@ -177,6 +197,9 @@ class TestModuleView(unittest.TestCase):
         edit_control.Command(event)
         app.ProcessPendingEvents()
         self.assertEqual(v.value,"abc")
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()
 
     def test_02_01_bad_integer_value(self):
         v = cpv.Integer("text",1)
@@ -188,3 +211,6 @@ class TestModuleView(unittest.TestCase):
         app.frame.module_view.on_idle(None)
         text_control = self.get_text_control(app,v)
         self.assertEqual(text_control.ForegroundColour,wx.RED)
+        app.frame.Close(True)
+        app.ProcessPendingEvents()
+        app.ProcessIdle()

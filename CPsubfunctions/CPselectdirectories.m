@@ -211,7 +211,7 @@ end
 function SelectDirectoryFig = CreateSelectDirectoryWindow(DirectoryNames,DirectoryLevel,ListingTag,NumberOfDirectoryEntries,RootDirectoryName)
 
 % Create Select Directory window
-SelectDirectoryFig = CPfigure('Units','Inches','Resize','Off','Menubar','None','Toolbar','None','NumberTitle','Off','Name','Select Display Window','Color',[.7 .7 .9],'UserData',0);
+SelectDirectoryFig = CPfigure('Units','Inches','Resize','Off','Menubar','None','Toolbar','None','NumberTitle','Off','Name','Select Directories','Color',[.7 .7 .9],'UserData',0);
 
 % Set window location and size
 % Get current position

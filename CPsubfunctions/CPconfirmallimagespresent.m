@@ -135,61 +135,68 @@ for m = 1:length(ImageName),
     end
 end
 
+% Create dialog box with results
+TextString{1} = ['Image directory: ',handles.Current.DefaultImageDirectory];
+TextString{end+1} = '';
+
+% List upmatched directories
+TextString{end+1} = 'Unmatched directories found:';
+if all(cellfun(@isempty,UnmatchedDirectories))
+    TextString{end+1} = '  None';
+else
+    for n = 1:length(UnmatchedDirectories)
+        for m = 1:size(UnmatchedDirectories{n},1),
+            TextString{end+1} = ['    ',UnmatchedDirectories{n}{m,:}];
+        end
+    end
+end
+
+TextString{end+1} = '';
+
+% List duplicate filenames
+TextString{end+1} = 'Duplicate filenames found: (Prefix: Channel)';
+if cellfun(@isempty,DuplicateFilenames)
+    TextString{end+1} = '  None';
+else
+    for n = 1:length(DuplicateFilenames)
+        if ~isempty(DuplicateFilenames{n}),
+            if ~isempty(uniquePaths{n})
+                TextString{end+1} = ['  Subdirectory: ',uniquePaths{n}];
+            end
+            for m = 1:size(DuplicateFilenames{n},1),
+                TextString{end+1} = ['    ',DuplicateFilenames{n}{m,1},':  ',num2str(DuplicateFilenames{n}{m,2})];
+            end
+        end
+    end
+end
+
+TextString{end+1} = '';
+
+% List unmatched filenames
+TextString{end+1} = 'Unmatched filenames found: (Prefix: Channel)';
+if cellfun(@isempty,UnmatchedFilenames)
+    TextString{end+1} = '  None';
+else
+    for n = 1:length(UnmatchedFilenames)
+        if ~isempty(UnmatchedFilenames{n}),
+            if ~isempty(uniquePaths{n})
+                TextString{end+1} = ['  Subdirectory: ',uniquePaths{n}];
+            end
+            for m = 1:size(UnmatchedFilenames{n},1),
+                TextString{end+1} = ['    ',UnmatchedFilenames{n}{m,1},':  ',num2str(UnmatchedFilenames{n}{m,2})];
+            end
+        end
+    end
+end
+
+TextString{end+1} = '';
+TextString{end+1} = 'If there are duplicate images, you should halt the pipeline, examine the files and remove the duplicates.';
+TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the cycle containing the missing files.';
+
+CPwarndlg(TextString,'Image check for missing or duplicate files','replace');
+    
 % Output file if desired
 if strncmpi(SaveOutputFile,'y',1),
-    TextString{1} = ['Image directory: ',handles.Current.DefaultImageDirectory];
-    TextString{end+1} = '';
-    
-    % List upmatched directories
-    TextString{end+1} = 'Unmatched directories found:';
-    if all(cellfun(@isempty,UnmatchedDirectories))
-        TextString{end+1} = '  None';
-    else
-        for n = 1:length(UnmatchedDirectories)
-            for m = 1:size(UnmatchedDirectories{n},1),
-                TextString{end+1} = ['  ',UnmatchedDirectories{n}{m,:}];
-            end
-        end
-    end
-
-    TextString{end+1} = '';
-
-    % List duplicate filenames
-    TextString{end+1} = 'Duplicate filenames found: (Prefix: Channel)';
-    if cellfun(@isempty,DuplicateFilenames)
-        TextString{end+1} = '  None';
-    else
-        for n = 1:length(DuplicateFilenames)
-            if ~isempty(DuplicateFilenames{n}),
-                if ~isempty(uniquePaths{n})
-                    TextString{end+1} = [' Subdirectory: ',uniquePaths{n}];
-                end
-                for m = 1:size(DuplicateFilenames{n},1),
-                    TextString{end+1} = ['  ',DuplicateFilenames{n}{m,1},'   ',num2str(DuplicateFilenames{n}{m,2})];
-                end
-            end
-        end
-    end
-        
-    TextString{end+1} = '';
-    
-    % List unmatched filenames
-    TextString{end+1} = 'Unmatched filenames found: (Prefix: Channel)';
-    if cellfun(@isempty,UnmatchedFilenames)
-        TextString{end+1} = '  None';
-    else
-        for n = 1:length(UnmatchedFilenames)
-            if ~isempty(UnmatchedFilenames{n}),
-                if ~isempty(uniquePaths{n})
-                    TextString{end+1} = [' Subdirectory: ',uniquePaths{n}];
-                end
-                for m = 1:size(UnmatchedFilenames{n},1),
-                    TextString{end+1} = ['  ',UnmatchedFilenames{n}{m,1},'   ',num2str(UnmatchedFilenames{n}{m,2})];
-                end
-            end
-        end
-    end
-    
     OutputPathname = handles.Current.DefaultOutputDirectory;
     OutputFilename = [mfilename,'_output'];
     OutputExtension = '.txt';

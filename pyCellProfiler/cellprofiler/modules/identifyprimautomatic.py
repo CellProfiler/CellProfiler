@@ -549,6 +549,52 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
+        # Filter out small and large objects
+        labeled_image, unedited_labels, small_removed_labels = \
+            self.filter_on_size(labeled_image,object_count)
+        # Filter out objects touching the border or mask
+        labeled_image = self.filter_on_border(image, labeled_image)
+        # Relabel the image
+        labeled_image,object_count = scipy.ndimage.label(labeled_image>0)
+        # Make an outline image
+        outline_image = labeled_image!=0
+        temp = scipy.ndimage.binary_dilation(outline_image)
+        outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
+        if frame:
+            self.display(frame,image, labeled_image,outline_image)
+        # Add image measurements
+        measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
+        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
+        # Add label matrices to the object set
+        objects = cellprofiler.objects.Objects()
+        objects.segmented = labeled_image
+        objects.unedited_segmented = unedited_labels
+        objects.small_removed_segmented = small_removed_labels
+        
+        object_set.add_objects(objects,self.object_name.value)
+        #
+        # Get the centers of each object - center_of_mass returns a list of two-tuples.
+        #
+        if object_count:
+            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
+            centers = numpy.array(centers)
+            centers = centers.reshape((object_count,2))
+            location_center_x = centers[:,0]
+            location_center_y = centers[:,1]
+        else:
+            location_center_x = numpy.zeros((0,),dtype=float)
+            location_center_y = numpy.zeros((0,),dtype=float)
+        measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
+        measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
+
+    def filter_on_size(self,labeled_image,object_count):
+        """ Filter the labeled image based on the size range
+        
+        labeled_image - pixel image labels
+        object_count - # of objects in the labeled image
+        returns the labeled image, the labeled image before filtering and
+        the labeled image with the small objects removed
+        """
         unedited_labels = labeled_image.copy()
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(numpy.ones(labeled_image.shape),
@@ -564,8 +610,15 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             labeled_image[area_image > max_allowed_area] = 0
         else:
             small_removed_labels = labeled_image.copy()
+        return (labeled_image, unedited_labels, small_removed_labels)
+
+    def filter_on_border(self,image,labeled_image):
+        """Filter out objects touching the border
         
-        if self.exclude_border_objects.value and object_count > 0:
+        In addition, if the image has a mask, filter out objects
+        touching the border of the mask.
+        """
+        if self.exclude_border_objects.value:
             border_labels = list(labeled_image[0,:])
             border_labels.extend(labeled_image[:,0])
             border_labels.extend(labeled_image[labeled_image.shape[0]-1,:])
@@ -589,7 +642,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 # The operation below gets the mask pixels that are on the border of the mask
                 # The erosion turns all pixels touching an edge to zero. The not of this
                 # is the border + formerly masked-out pixels.
-                mask_border = numpy.logical_and(numpy.logical_not(scipy.ndimage.binary_erosion(mask)),mask)
+                mask_border = numpy.logical_not(scipy.ndimage.binary_erosion(image.mask))
+                mask_border = numpy.logical_and(mask_border,image.mask)
                 border_labels = labeled_image[mask_border]
                 border_labels = border_labels.flatten()
                 histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
@@ -598,41 +652,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 if any(histogram[1:] > 0):
                     histogram_image = histogram[labeled_image,0]
                     labeled_image[histogram_image > 0] = 0
-        
-        # Relabel the image
-        
-        labeled_image,object_count = scipy.ndimage.label(labeled_image>0)
-        
-        # Make an outline image
-        
-        outline_image = labeled_image!=0
-        temp = scipy.ndimage.binary_dilation(outline_image)
-        outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
-        if frame:
-            self.display(frame,image, labeled_image,outline_image)
-        measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
-        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
-        objects = cellprofiler.objects.Objects()
-        objects.segmented = labeled_image
-        objects.unedited_segmented = unedited_labels
-        objects.small_removed_segmented = small_removed_labels
-        
-        object_set.add_objects(objects,self.object_name.value)
-        #
-        # Get the centers of each object - center_of_mass returns a list of two-tuples.
-        #
-        if object_count:
-            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
-            centers = numpy.array(centers)
-            centers = centers.reshape((object_count,2))
-            location_center_x = centers[:,0]
-            location_center_y = centers[:,1]
-        else:
-            location_center_x = numpy.zeros((0,),dtype=float)
-            location_center_y = numpy.zeros((0,),dtype=float)
-        measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
-        measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
-
+        return labeled_image
+    
     def display(self, frame, image, labeled_image, outline_image):
         """Display the image and labeling"""
         window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)

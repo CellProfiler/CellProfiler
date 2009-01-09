@@ -16,7 +16,7 @@ my_pipeline = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uO
 class Test_CellProfilerApp(unittest.TestCase):
     def get_app(self):
         """Get an instance of CellProfilerApp prepared to assert if there's an error"""
-        app = cellprofiler.cellprofilerapp.CellProfilerApp()
+        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
         def blowup(message,error):
             self.assertTrue(False,message)
         app.frame.add_error_listener(blowup)

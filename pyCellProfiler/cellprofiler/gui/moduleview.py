@@ -7,6 +7,7 @@ import cellprofiler.pipeline
 import cellprofiler.variable
 
 ERROR_COLOR = wx.RED
+RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
 
 class VariableEditedEvent:
     """Represents an attempt by the user to edit a variable
@@ -54,6 +55,18 @@ def edit_control_name(v):
     The edit control name is built using the variable's key
     """
     return str(v.key())
+
+def min_control_name(v):
+    """For a range, return the control that sets the minimum value
+    v - the variable
+    """
+    return "%s_min"%(str(v.key()))
+
+def max_control_name(v):
+    """For a range, return the control that sets the maximum value
+    v - the variable
+    """
+    return "%s_max"%(str(v.key()))
 
 def encode_label(text):
     """Encode text escapes for the static control and button labels
@@ -127,52 +140,24 @@ class ModuleView:
                 sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
                 self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.variable.Binary):
-                    control = wx.CheckBox(self.__module_panel,-1,name=control_name)
-                    control.SetValue(v.is_yes)
-                    def callback(event, variable=v, control=control):
-                        self.__on_checkbox_change(event, variable, control)
-                        
-                    self.__module_panel.Bind(wx.EVT_CHECKBOX,
-                                             callback,
-                                             control)
-                elif isinstance(v,cellprofiler.variable.Choice) or \
-                     isinstance(v,cellprofiler.variable.NameSubscriber):
-                    if isinstance(v,cellprofiler.variable.CustomChoice) or \
-                       isinstance(v,cellprofiler.variable.NameSubscriber):
-                        style = wx.CB_DROPDOWN
-                    else:
-                        style = wx.CB_READONLY
-                    
-                    if isinstance(v,cellprofiler.variable.NameSubscriber):
-                        choices = v.get_choices(self.__pipeline)
-                    else:
-                        choices = v.get_choices()
-                    control = wx.ComboBox(self.__module_panel,-1,v.value,
-                                          choices=choices,
-                                          style=style,
-                                          name=control_name)
-                    def callback(event, variable=v, control = control):
-                        self.__on_combobox_change(event, variable,control)
-                    self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
-                    if style == wx.CB_DROPDOWN:
-                        def on_cell_change(event, variable=v, control=control):
-                             self.__on_cell_change(event, variable, control)
-                        self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
+                    control = self.make_binary_control(v,control_name)
+                elif isinstance(v,cellprofiler.variable.Choice):
+                    control = self.make_choice_control(v, v.get_choices(),
+                                                       control_name, wx.CB_READONLY)
+                elif isinstance(v,cellprofiler.variable.CustomChoice):
+                    control = self.make_choice_control(v, v.get_choices(),
+                                                       control_name, wx.CB_DROPDOWN)
+                elif isinstance(v,cellprofiler.variable.NameSubscriber):
+                    choices = v.get_choices(self.__pipeline)
+                    control = self.make_choice_control(v, choices,
+                                                       control_name, wx.CB_DROPDOWN)
                 elif isinstance(v, cellprofiler.variable.DoSomething):
-                    control = wx.Button(self.module_panel,-1,
-                                        v.label,name=control_name)
-                    def callback(event, variable=v):
-                        self.__on_do_something(event, variable)
-                        
-                    self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
+                    control = self.make_callback_control(v, control_name)
+                elif isinstance(v, cellprofiler.variable.IntegerRange) or\
+                     isinstance(v, cellprofiler.variable.FloatRange):
+                    control = self.make_range_control(v)
                 else:
-                    control = wx.TextCtrl(self.__module_panel,
-                                          -1,
-                                          str(v),
-                                          name=control_name)
-                    def on_cell_change(event, variable = v, control=control):
-                        self.__on_cell_change(event, variable,control)
-                    self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
+                    control = self.make_text_control(v, control_name)
                 sizer.Add(control,0,wx.EXPAND|wx.ALL,2)
                 self.__controls.append(control)
             self.__module_panel.SetSizer(sizer)
@@ -180,6 +165,82 @@ class ModuleView:
         finally:
             self.module_panel.Thaw()
     
+    def make_binary_control(self,v,control_name):
+        """Make a checkbox control for a Binary variable"""
+        control = wx.CheckBox(self.__module_panel,-1,name=control_name)
+        control.SetValue(v.is_yes)
+        def callback(event, variable=v, control=control):
+            self.__on_checkbox_change(event, variable, control)
+            
+        self.__module_panel.Bind(wx.EVT_CHECKBOX,
+                                 callback,
+                                 control)
+        return control
+    
+    def make_choice_control(self,v,choices,control_name,style):
+        """Make a combo-box that shows choices
+        
+        v            - the variable
+        choices      - the possible values for the variable
+        control_name - assign this name to the control
+        style        - one of the CB_ styles 
+        """
+        control = wx.ComboBox(self.__module_panel,-1,v.value,
+                              choices=choices,
+                              style=style,
+                              name=control_name)
+        def callback(event, variable=v, control = control):
+            self.__on_combobox_change(event, variable,control)
+        self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
+        if style == wx.CB_DROPDOWN:
+            def on_cell_change(event, variable=v, control=control):
+                 self.__on_cell_change(event, variable, control)
+            self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
+        return control
+    
+    def make_callback_control(self,v,control_name):
+        """Make a control that calls back using the callback buried in the variable"""
+        control = wx.Button(self.module_panel,-1,
+                            v.label,name=control_name)
+        def callback(event, variable=v):
+            self.__on_do_something(event, variable)
+            
+        self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
+        return control
+    
+    def make_text_control(self, v, control_name):
+        """Make a textbox control"""
+        control = wx.TextCtrl(self.__module_panel,
+                              -1,
+                              str(v),
+                              name=control_name)
+        def on_cell_change(event, variable = v, control=control):
+            self.__on_cell_change(event, variable,control)
+        self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
+        return control
+    
+    def make_range_control(self, v):
+        """Make a "control" composed of a panel and two edit boxes representing a range"""
+        panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        panel.SetSizer(sizer)
+        min_ctrl = wx.TextCtrl(panel,-1,str(v.min),
+                               name=min_control_name(v))
+        best_width = min_ctrl.GetCharWidth()*5
+        min_ctrl.SetInitialSize(wx.Size(best_width,-1))
+        sizer.Add(min_ctrl,0,wx.EXPAND|wx.RIGHT,1)
+        max_ctrl = wx.TextCtrl(panel,-1,str(v.max),
+                               name=max_control_name(v))
+        max_ctrl.SetInitialSize(wx.Size(best_width,-1))
+        sizer.Add(max_ctrl,0,wx.EXPAND)
+        def on_min_change(event, variable = v, control=min_ctrl):
+            self.__on_min_change(event, variable,control)
+        self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
+        def on_max_change(event, variable = v, control=max_ctrl):
+            self.__on_max_change(event, variable,control)
+        self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
+        return panel
+        
     def add_listener(self,listener):
         self.__listeners.append(listener)
     
@@ -210,6 +271,18 @@ class ModuleView:
         variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
         self.notify(variable_edited_event)
     
+    def __on_min_change(self,event,variable,control):
+        old_value = str(variable)
+        proposed_value="%s,%s"%(str(control.Value),str(variable.max))
+        variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
+        self.notify(variable_edited_event)
+        
+    def __on_max_change(self,event,variable,control):
+        old_value = str(variable)
+        proposed_value="%s,%s"%(str(variable.min),str(control.Value))
+        variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
+        self.notify(variable_edited_event)
+        
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent) or
             isinstance(event,cellprofiler.pipeline.PipelineClearedEvent)):

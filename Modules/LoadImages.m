@@ -321,9 +321,21 @@ Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR15 = popupmenu
 SaveAsBinary = strcmp(char(handles.Settings.VariableValues(CurrentModuleNum,15)),'binary');
 
-%textVAR16 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+%textVAR16 = Do you want to select the subfolders to process?
+%choiceVAR16 = Yes
+%choiceVAR16 = No
+SelectSubfolders = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu
 
-%%%VariableRevisionNumber = 4
+%textVAR17 = Do you want to check image sets for missing or duplicate files?
+%choiceVAR17 = No
+%choiceVAR17 = Yes
+CheckImageSets = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu
+
+%textVAR18 = Note - If the movies contain more than just one image type (e.g., brightfield, fluorescent, field-of-view), add the GroupMovieFrames module.
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -571,10 +583,21 @@ if SetBeingAnalyzed == 1
                 fieldname = ['Pathname', ImageName{n}];
                 handles.Pipeline.(fieldname) = Pathname;
 
-                NumberOfFiles{n} = num2str(length(FileList)); %#ok We want to ignore MLint error checking for this line.
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
             end
-
+            %%% Let the user filter the list if we're analyzing sub-directories
+            %%% and if we are not in batch mode
+            %%%
+            if strcmpi(AnalyzeSubDir,'Yes') && (~ isfield(handles.Current, 'BatchInfo')) && strcmpi(SelectSubfolders,'Yes')
+                handles=CPselectdirectories(handles);
+            end
+            if strcmpi(CheckImageSets,'Yes')
+                handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, 'Yes');
+            end
+            for n= 1:length(ImageName)
+                fieldname = ['FileList', ImageName{n}];
+                NumberOfFiles{n} = num2str(length(handles.Pipeline.(fieldname))); %#ok We want to ignore MLint error checking for this line.
+            end
         else
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)

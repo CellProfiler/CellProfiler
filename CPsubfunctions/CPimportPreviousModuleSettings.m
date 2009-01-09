@@ -57,6 +57,14 @@ if strcmp('LoadImages',CurrentModuleName)
         SavedVarRevNum = 4;
         IsModuleModified = true;
     end
+    if (SavedVarRevNum == 4) % Added subfolder selection and file QA
+        Settings.VariableValues{ModuleNum-Skipped,16} = 'No';
+        Settings.VariableValues{ModuleNum-Skipped,17} = 'No';
+        Settings.VariableValues{ModuleNum-Skipped,18} = []; %%% Dummy value for last variable
+        SavedVarRevNum = 5;
+        Settings.NumbersOfVariables(ModuleNum-Skipped)= 18;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

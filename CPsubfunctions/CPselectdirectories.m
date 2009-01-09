@@ -50,6 +50,10 @@ DirectoryLevel = ones(0,0);     % The level (1..n) from the root
 ListingTag = cell(0,0);
 UniquePathNumber = zeros(0,0);
 if ispc, fileseparator = ['\',filesep]; else fileseparator = filesep; end
+if length(UniqueDirectories) == 1 && isempty(UniqueDirectories{1})
+    return
+end
+
 for i = 1:length(UniqueDirectories),
     p = textscan(UniqueDirectories{i},'%s','delimiter',fileseparator);
     DirectoryNames = [DirectoryNames; p{:}];
@@ -133,7 +137,7 @@ for i = 1:length(fn),
     handles.Pipeline.(fn{i})(idxToRemove) = [];
 end
 if isfield(handles.Current,'NumberOfImageSets')
-    handles.Current.NumberOfImageSets = handles.Current.NumberOfImageSets - sum(idxToRemove);
+    handles.Current.NumberOfImageSets = length(idxToRemove(:)) - sum(idxToRemove);
 end
 
 %%%%%%%%%%%% Subfunctions %%%%%%%%%%%%%

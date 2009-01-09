@@ -1,5 +1,5 @@
 
-TEST_MODULES = cellprofiler cellprofiler.modules cellprofiler.gui cellprofiler.matlab cellprofiler.cpmath cellprofiler.gui
+TEST_MODULES = cellprofiler cellprofiler.modules cellprofiler.gui cellprofiler.matlab cellprofiler.cpmath
 
 all: tests
 

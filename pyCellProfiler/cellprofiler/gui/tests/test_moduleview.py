@@ -15,13 +15,15 @@ import cellprofiler.gui.moduleview as cpmv
 class TestModuleView(unittest.TestCase):
     
     def set_pipeline(self, module):
-        pipeline = self.app.frame.pipeline 
+        app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        pipeline = app.frame.pipeline 
         while(len(pipeline.modules())):
             pipeline.remove_module(1)
         module.module_num = 1
         pipeline.add_module(module)
-        self.app.frame.module_view.set_selection(1)
-        self.app.ProcessPendingEvents()
+        app.frame.module_view.set_selection(1)
+        app.ProcessPendingEvents()
+        return app
 
     def set_variable(self, v):
         class TestModule(cpm.AbstractModule):
@@ -33,34 +35,34 @@ class TestModuleView(unittest.TestCase):
                 return self.vv
         
         test_module = TestModule()
-        self.set_pipeline(test_module)
-        module_panel = self.app.frame.module_view.module_panel
-        return (self.get_text_control(v), 
-                self.get_edit_control(v))
+        app = self.set_pipeline(test_module)
+        module_panel = app.frame.module_view.module_panel
+        return (app,
+                self.get_text_control(app,v), 
+                self.get_edit_control(app,v))
     
-    def get_edit_control(self,v):
-        module_panel = self.app.frame.module_view.module_panel
+    def get_edit_control(self,app,v):
+        module_panel = app.frame.module_view.module_panel
         edit_control = module_panel.FindWindowByName(cpmv.edit_control_name(v))
         return edit_control
     
-    def get_text_control(self,v):
-        module_panel = self.app.frame.module_view.module_panel
+    def get_text_control(self,app,v):
+        module_panel = app.frame.module_view.module_panel
         text_control = module_panel.FindWindowByName(cpmv.text_control_name(v))
         return text_control
     
-    def get_min_control(self,v):
-        module_panel = self.app.frame.module_view.module_panel
+    def get_min_control(self,app,v):
+        module_panel = app.frame.module_view.module_panel
         return module_panel.FindWindowByName(cpmv.min_control_name(v))
     
-    def get_max_control(self,v):
-        module_panel = self.app.frame.module_view.module_panel
+    def get_max_control(self,app,v):
+        module_panel = app.frame.module_view.module_panel
         return module_panel.FindWindowByName(cpmv.max_control_name(v))
     
     def test_01_01_display_text_variable(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v=cpv.Text("text","value")
+        app,text_control,edit_control = self.set_variable(v)
         try:
-            v=cpv.Text("text","value")
-            text_control,edit_control = self.set_variable(v)
             self.assertEqual(text_control.Label,"text")
             self.assertTrue(isinstance(text_control, wx.StaticText))
             self.assertEqual(edit_control.Value,"value")
@@ -68,33 +70,29 @@ class TestModuleView(unittest.TestCase):
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
             event.SetString("abc")
             edit_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertEqual(v.value,"abc")
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
     
     def test_01_02_display_binary_variable(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v=cpv.Binary("text",True)
+        app,text_control,checkbox = self.set_variable(v)
         try:
-            v=cpv.Binary("text",True)
-            text_control,checkbox = self.set_variable(v)
             self.assertTrue(checkbox.Value)
             self.assertTrue(isinstance(checkbox,wx.CheckBox))
             event = wx.CommandEvent(wx.wxEVT_COMMAND_CHECKBOX_CLICKED,checkbox.Id)
             checkbox.Command(event)
-            self.app.ProcessPendingEvents()
-            checkbox = self.get_edit_control(v)
+            app.ProcessPendingEvents()
+            checkbox = self.get_edit_control(app,v)
             self.assertFalse(checkbox.Value)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
     
     def test_01_03_display_choice_variable(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.Choice("text",['foo','bar'])
+        app,text_control,combobox = self.set_variable(v)
         try:
-            v = cpv.Choice("text",['foo','bar'])
-            text_control,combobox = self.set_variable(v)
             self.assertTrue(combobox.Value,'foo')
             self.assertTrue(isinstance(combobox, wx.ComboBox))
             self.assertEqual(len(combobox.GetItems()),2)
@@ -103,103 +101,93 @@ class TestModuleView(unittest.TestCase):
             event = wx.CommandEvent(wx.wxEVT_COMMAND_COMBOBOX_SELECTED,combobox.Id)
             event.SetInt(1)
             combobox.Command(event)
-            self.app.ProcessPendingEvents()
-            combobox = self.get_edit_control(v)
+            app.ProcessPendingEvents()
+            combobox = self.get_edit_control(app,v)
             self.assertEqual(combobox.Value,'bar')
             self.assertTrue(v=='bar')
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
 
     def test_01_04_display_integer_variable(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.Integer("text",1)
+        app,text_control,edit_control = self.set_variable(v)
         try:
-            v = cpv.Integer("text",1)
-            text_control,edit_control = self.set_variable(v)
             self.assertTrue(edit_control.Value,'1')
             self.assertTrue(isinstance(edit_control, wx.TextCtrl))
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
             event.SetString('2')
             edit_control.Command(event)
-            self.app.ProcessPendingEvents()
-            edit_control = self.get_edit_control(v)
+            app.ProcessPendingEvents()
+            edit_control = self.get_edit_control(app,v)
             self.assertEqual(edit_control.Value,'2')
             self.assertTrue(v==2)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
     
     def test_01_05_display_integer_range(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.IntegerRange("text",value=(1,2))
+        app,text_control,panel = self.set_variable(v)
         try:
-            v = cpv.IntegerRange("text",value=(1,2))
-            text_control,panel = self.set_variable(v)
-            min_control = self.get_min_control(v)
+            min_control = self.get_min_control(app,v)
             self.assertEqual(min_control.Value,"1")
-            max_control = self.get_max_control(v)
+            max_control = self.get_max_control(app,v)
             self.assertEqual(max_control.Value,"2")
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,min_control.Id)
             event.SetString('0')
             min_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertEqual(v.min,0)
-            max_control = self.get_max_control(v)
+            max_control = self.get_max_control(app,v)
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,max_control.Id)
             event.SetString('3')
             max_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertEqual(v.max,3)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
 
     def test_01_06_display_float_variable(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.Float("text",1.5)
+        app,text_control,edit_control = self.set_variable(v)
         try:
-            v = cpv.Float("text",1.5)
-            text_control,edit_control = self.set_variable(v)
             self.assertAlmostEqual(float(edit_control.Value),1.5)
             self.assertTrue(isinstance(edit_control, wx.TextCtrl))
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
             event.SetString('2.5')
             edit_control.Command(event)
-            self.app.ProcessPendingEvents()
-            edit_control = self.get_edit_control(v)
+            app.ProcessPendingEvents()
+            edit_control = self.get_edit_control(app,v)
             self.assertAlmostEqual(float(edit_control.Value),2.5)
             self.assertAlmostEqual(v.value,2.5)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
     
     def test_01_07_display_float_range(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.FloatRange("text",value=(1.5,2.5))
+        app,text_control,panel = self.set_variable(v)
         try:
-            v = cpv.FloatRange("text",value=(1.5,2.5))
-            text_control,panel = self.set_variable(v)
-            min_control = self.get_min_control(v)
+            min_control = self.get_min_control(app,v)
             self.assertAlmostEqual(float(min_control.Value),1.5)
-            max_control = self.get_max_control(v)
+            max_control = self.get_max_control(app,v)
             self.assertAlmostEqual(float(max_control.Value),2.5)
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,min_control.Id)
             event.SetString('0.5')
             min_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertAlmostEqual(v.min,0.5)
-            max_control = self.get_max_control(v)
+            max_control = self.get_max_control(app,v)
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,max_control.Id)
             event.SetString('3.5')
             max_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertAlmostEqual(v.max,3.5)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
     
     def test_01_08_display_name_provider(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.NameProvider("text",group="mygroup",value="value")
+        app,text_control,edit_control = self.set_variable(v)
         try:
-            v = cpv.NameProvider("text",group="mygroup",value="value")
-            text_control,edit_control = self.set_variable(v)
             self.assertEqual(text_control.Label,"text")
             self.assertTrue(isinstance(text_control, wx.StaticText))
             self.assertEqual(edit_control.Value,"value")
@@ -207,24 +195,21 @@ class TestModuleView(unittest.TestCase):
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
             event.SetString("abc")
             edit_control.Command(event)
-            self.app.ProcessPendingEvents()
+            app.ProcessPendingEvents()
             self.assertEqual(v.value,"abc")
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()
 
     def test_02_01_bad_integer_value(self):
-        self.app = cellprofiler.cellprofilerapp.CellProfilerApp(redirect=False)
+        v = cpv.Integer("text",1)
+        app,text_control,edit_control = self.set_variable(v)
         try:
-            v = cpv.Integer("text",1)
-            text_control,edit_control = self.set_variable(v)
             event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
             event.SetString('bad')
             edit_control.Command(event)
-            self.app.ProcessPendingEvents()
-            self.app.frame.module_view.on_idle(None)
-            text_control = self.get_text_control(v)
+            app.ProcessPendingEvents()
+            app.frame.module_view.on_idle(None)
+            text_control = self.get_text_control(app,v)
             self.assertEqual(text_control.ForegroundColour,wx.RED)
         finally:
-            self.app.Exit()
-            self.app=None
+            app.Exit()

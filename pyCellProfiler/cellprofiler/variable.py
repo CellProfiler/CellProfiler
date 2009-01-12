@@ -221,9 +221,12 @@ class Float(Text):
     def test_valid(self,pipeline):
         """Return true only if the text value is float
         """
-        # Raises value error inside self.value if not a float
-        if self.__minval != None and self.__minval > self.value:
-            raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
+        try:
+            # Raises value error inside self.value if not a float
+            if self.__minval != None and self.__minval > self.value:
+                raise ValidationError('Must be at least %d, was %d'%(self.__minval, self.value),self)
+        except ValueError:
+            raise ValidationError('Value not in decimal format', self)
         if self.__maxval != None and self.__maxval < self.value:
             raise ValidationError('Must be at most %d, was %d'%(self.__maxval, self.value),self)
         
@@ -281,7 +284,10 @@ class FloatRange(Variable):
         if len(values) > 2:
             raise ValidationError("Only two values allowed",self)
         for value in values:
-            float(value)
+            try:
+                float(value)
+            except ValueError:
+                raise ValidationError("%s is not in decimal format"%(value))
         if self.__minval and self.__minval > self.min:
             raise ValidationError("%f can't be less than %f"%(self.min,self.__minval),self)
         if self.__maxval and self.__maxval < self.max:

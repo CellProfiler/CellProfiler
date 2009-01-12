@@ -8,6 +8,7 @@ import wx
 import wx.lib.inspection
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
+from cellprofiler.gui import get_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
@@ -86,7 +87,6 @@ class CPFrame(wx.Frame):
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
         filename = self.__get_icon_filename()
-        icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
         bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
         for module in modules:
@@ -103,7 +103,7 @@ class CPFrame(wx.Frame):
             sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
             panel.SetSizer(sizer)
             panel.SetupScrolling()
-            helpframe.SetIcon(icon)
+            helpframe.SetIcon(get_icon())
             helpframe.Layout()
             helpframe.Show()
         
@@ -140,20 +140,15 @@ class CPFrame(wx.Frame):
 
     def __layout_logo(self):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        image = wx.Image(self.__get_icon_filename(),wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        image = get_cp_bitmap()
         logopic = wx.StaticBitmap(self.__logo_panel,-1,image)
         logotext = wx.StaticText(self.__logo_panel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
         sizer.AddMany([(logopic,0,wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL,5),
                        (logotext,1,wx.EXPAND)])
         self.__logo_panel.SetSizer(sizer)
     
-    def __get_icon_filename(self):
-        return os.path.join(cellprofiler.preferences.python_root_directory(),'CellProfilerIcon.png')
-    
     def __set_icon(self):
-        filename = self.__get_icon_filename()
-        icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
-        self.SetIcon(icon)
+        self.SetIcon(get_icon())
  
     def display_error(self,message,error):
         """Displays an exception in a standardized way

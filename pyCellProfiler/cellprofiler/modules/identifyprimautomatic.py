@@ -13,6 +13,7 @@ import wx
 
 import cellprofiler.cpmodule
 import cellprofiler.variable as cpv
+import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpmath.otsu import otsu
 import cellprofiler.objects
 from cellprofiler.variable import AUTOMATIC
@@ -654,35 +655,20 @@ objects (e.g. SmallRemovedSegmented Nuclei).
     def display(self, frame, image, labeled_image, outline_image):
         """Display the image and labeling"""
         window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
-        my_frame=frame.FindWindowByName(window_name)
-        if not my_frame:
-            class my_frame_class(wx.Frame):
-                def __init__(self):
-                    wx.Frame.__init__(self,frame,-1,"Identify Primary Automatic",name=window_name)
-                    sizer = wx.BoxSizer()
-                    self.figure = figure= matplotlib.figure.Figure()
-                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure) 
-                    self.SetSizer(sizer)
-                    sizer.Add(self.panel,1,wx.EXPAND)
-                    self.Bind(wx.EVT_PAINT,self.on_paint)
-                    self.orig_axes = self.figure.add_subplot(2,2,1)
-                    self.outlined_axes = self.figure.add_subplot(2,2,3)
-                    self.label_axes = self.figure.add_subplot(2,2,2)
-                    self.Fit()
-                    self.Show()
-                def on_paint(self, event):
-                    dc = wx.PaintDC(self)
-                    self.panel.draw(dc)
-
-            my_frame = my_frame_class()
-            
-        my_frame.orig_axes.clear()
-        my_frame.orig_axes.imshow(image.image,matplotlib.cm.Greys_r)
-        my_frame.orig_axes.set_title("Original image")
+        my_frame=cpf.create_or_find(frame, title="Identify primary automatic", 
+                                    name=window_name, subplots=(2,2))
         
-        my_frame.label_axes.clear()
-        my_frame.label_axes.imshow(labeled_image,matplotlib.cm.jet)
-        my_frame.label_axes.set_title("Image labels")
+        orig_axes     = my_frame.subplot(0,0)
+        label_axes    = my_frame.subplot(1,0)
+        outlined_axes = my_frame.subplot(0,1)
+
+        orig_axes.clear()
+        orig_axes.imshow(image.image,matplotlib.cm.Greys_r)
+        orig_axes.set_title("Original image")
+        
+        label_axes.clear()
+        label_axes.imshow(labeled_image,matplotlib.cm.jet)
+        label_axes.set_title("Image labels")
         
         if image.image.ndim == 2:
             outline_img = numpy.ndarray(shape=(image.image.shape[0],image.image.shape[1],3))
@@ -695,9 +681,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outline_img[outline_image != 0,1]=1 
         outline_img[outline_image != 0,2]=0 
         
-        my_frame.outlined_axes.clear()
-        my_frame.outlined_axes.imshow(outline_img)
-        my_frame.outlined_axes.set_title("Outlined image")
+        outlined_axes.clear()
+        outlined_axes.imshow(outline_img)
+        outlined_axes.set_title("Outlined image")
         my_frame.Refresh()
          
     def get_categories(self,pipeline, object_name):

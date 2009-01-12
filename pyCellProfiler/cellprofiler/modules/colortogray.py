@@ -14,6 +14,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.variable as cpv
 import cellprofiler.cpimage  as cpi
 
+import cellprofiler.gui.cpfigure as cpf
+
 COMBINE = "Combine"
 SPLIT = "Split"
 
@@ -158,34 +160,17 @@ class ColorToGray(cpm.AbstractModule):
     
     def display_combine(self, frame, input_image, output_image):
         window_name = "CellProfiler(%s:%d)Combine"%(self.module_name,self.module_num)
-        my_frame=frame.FindWindowByName(window_name)
-        if not my_frame:
-            class my_frame_class(wx.Frame):
-                def __init__(self):
-                    wx.Frame.__init__(self,frame,-1,"Color to Gray",name=window_name)
-                    sizer = wx.BoxSizer()
-                    self.figure = figure= matplotlib.figure.Figure()
-                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure) 
-                    self.SetSizer(sizer)
-                    sizer.Add(self.panel,1,wx.EXPAND)
-                    self.Bind(wx.EVT_PAINT,self.on_paint)
-                    self.input_axes = self.figure.add_subplot(1,2,1)
-                    self.output_axes = self.figure.add_subplot(1,2,2)
-                    self.Fit()
-                    self.Show()
-                def on_paint(self, event):
-                    dc = wx.PaintDC(self)
-                    self.panel.draw(dc)
-
-            my_frame = my_frame_class()
-            
-        my_frame.input_axes.clear()
-        my_frame.input_axes.imshow(input_image)
-        my_frame.input_axes.set_title("Original image")
+        my_frame=cpf.create_or_find(frame, title="Color to gray",
+                                    name=window_name, subplots=(1,2))
+        input_axes = my_frame.subplot(0,0)
+        input_axes.clear()
+        input_axes.imshow(input_image)
+        input_axes.set_title("Original image")
         
-        my_frame.output_axes.clear()
-        my_frame.output_axes.imshow(output_image,matplotlib.cm.Greys_r)
-        my_frame.output_axes.set_title("Grayscale image")
+        output_axes = my_frame.subplot(0,1)
+        output_axes.clear()
+        output_axes.imshow(output_image,matplotlib.cm.Greys_r)
+        output_axes.set_title("Grayscale image")
         my_frame.Refresh()
         
     def run_split(self, pipeline, image_set, object_set, measurements, frame, image):
@@ -211,42 +196,31 @@ class ColorToGray(cpm.AbstractModule):
     
     def display_split(self, frame, input_image, disp_collection):
         window_name = "CellProfiler(%s:%d)Split%d"%(self.module_name,self.module_num,len(disp_collection))
-        my_frame=frame.FindWindowByName(window_name)
-        if not my_frame:
-            class my_frame_class(wx.Frame):
-                def __init__(self):
-                    wx.Frame.__init__(self,frame,-1,"Color to Gray",name=window_name)
-                    sizer = wx.BoxSizer()
-                    self.figure = figure= matplotlib.figure.Figure()
-                    self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure) 
-                    self.SetSizer(sizer)
-                    sizer.Add(self.panel,1,wx.EXPAND)
-                    self.Bind(wx.EVT_PAINT,self.on_paint)
-                    if len(disp_collection) == 1:
-                        self.input_axes = self.figure.add_subplot(1,2,1)
-                        self.output_axes = [self.figure.add_subplot(1,2,2)]
-                    else:
-                        self.input_axes = self.figure.add_subplot(2,2,1)
-                        self.output_axes = [self.figure.add_subplot(2,2,i+2) for i in range(len(disp_collection))]
-                    self.Fit()
-                    self.Show()
-                def on_paint(self, event):
-                    dc = wx.PaintDC(self)
-                    self.panel.draw(dc)
+        ndisp = len(disp_collection)
+        if ndisp == 1:
+            subplots = (1,2)
+        else:
+            subplots = (2,2)
+        my_frame=cpf.create_or_find(frame, title="Color to gray",
+                                    name=window_name, subplots=subplots)
 
-            my_frame = my_frame_class()
-            
-        my_frame.input_axes.clear()
-        my_frame.input_axes.imshow(input_image)
-        my_frame.input_axes.set_title("Original image")
-        
-        for i, disp in zip(range(len(disp_collection)),disp_collection):
-            my_frame.output_axes[i].clear()
-            my_frame.output_axes[i].imshow(disp[0],matplotlib.cm.Greys_r)
-            my_frame.output_axes[i].set_title("%s image"%(disp[1]))
+        input_axes = my_frame.subplot(0,0)
+        input_axes.clear()
+        input_axes.imshow(input_image)
+        input_axes.set_title("Original image")
+
+        if ndisp == 1:
+            layout = [(0,1)]
+        elif ndisp == 2:
+            layout = [ (1,0),(0,1)]
+        else:
+            layout = [(1,0),(0,1),(1,1)]
+        for xy, disp in zip(layout,disp_collection):
+            output_axes = my_frame.subplot(xy[0],xy[1])
+            output_axes.clear()
+            output_axes.imshow(disp[0],matplotlib.cm.Greys_r)
+            output_axes.set_title("%s image"%(disp[1]))
         my_frame.Refresh()
-    
-    
         
     def get_help(self):
         return """SHORT DESCRIPTION:

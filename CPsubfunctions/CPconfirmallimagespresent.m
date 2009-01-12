@@ -26,6 +26,7 @@ function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,SaveOu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+IsBatchSubmission = isfield(handles.Current,'BatchInfo');
 
 if SetBeingAnalyzed ~= 1, return; end
 
@@ -193,7 +194,9 @@ TextString{end+1} = '';
 TextString{end+1} = 'If there are duplicate images, you should halt the pipeline, examine the files and remove the duplicates.';
 TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the cycle containing the missing files.';
 
-CPwarndlg(TextString,'Image check for missing or duplicate files','replace');
+if ~IsBatchSubmission
+    CPwarndlg(TextString,'Image check for missing or duplicate files','replace');
+end
     
 % Output file if desired
 if strncmpi(SaveOutputFile,'y',1),

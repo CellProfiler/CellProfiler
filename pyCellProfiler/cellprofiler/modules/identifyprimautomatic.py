@@ -530,7 +530,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """
         
     def run(self,pipeline,image_set,object_set,measurements, frame):
-        """Run the module (abstract method)
+        """Run the module
         
         pipeline     - instance of CellProfiler.Pipeline for this run
         image_set    - the images in the image set being processed
@@ -543,9 +543,6 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         image = image_set.get_image(self.image_name.value)
         img = image.image
         mask = image.mask
-        if len(img.shape)==3:
-            # cheat - mini grayscale here
-            img = numpy.sum(img,2)/img.shape[2]
         threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
         binary_image = numpy.logical_and((img >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
@@ -680,7 +677,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             my_frame = my_frame_class()
             
         my_frame.orig_axes.clear()
-        my_frame.orig_axes.imshow(image.image)
+        my_frame.orig_axes.imshow(image.image,matplotlib.cm.Greys_r)
         my_frame.orig_axes.set_title("Original image")
         
         my_frame.label_axes.clear()

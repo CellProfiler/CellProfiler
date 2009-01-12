@@ -295,8 +295,15 @@ class ModuleView:
     def on_idle(self,event):
         """Check to see if the selected module is valid"""
         if self.__module:
+            validation_error = None
+            try:
+                self.__module.test_valid(self.__pipeline)
+            except cellprofiler.variable.ValidationError, instance:
+                validation_error = instance
             for idx, variable in zip(range(len(self.__module.visible_variables())),self.__module.visible_variables()):
                 try:
+                    if validation_error and validation_error.variable.key() == variable.key():
+                        raise validation_error
                     variable.test_valid(self.__pipeline)
                     if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
                         self.__controls[idx].SetToolTipString('')

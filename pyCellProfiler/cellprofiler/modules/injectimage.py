@@ -5,6 +5,7 @@ InjectImage.py - for testing, this module injects a single image into the image 
 __version__="$Revision$"
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
+import cellprofiler.variable
 
 class InjectImage(cellprofiler.cpmodule.AbstractModule):
     """Cut and paste this in order to get started writing a module
@@ -14,6 +15,10 @@ class InjectImage(cellprofiler.cpmodule.AbstractModule):
         self.set_module_name("InjectImage")
         self.__image_name = image_name
         self.__image = image
+        self.image_name = cellprofiler.variable.NameProvider("Hardwired image name","imagegroup",image_name) 
+    
+    def visible_variables(self):
+        return [self.image_name]
     
     def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number

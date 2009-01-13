@@ -3,6 +3,7 @@ import os
 
 import unittest
 import numpy
+import scipy.ndimage
 import tempfile
 
 import cellprofiler.modules.identifyprimautomatic as ID
@@ -190,6 +191,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
         img = one_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -307,6 +309,55 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(numpy.product(location_center_y.shape),1)
         self.assertTrue(location_center_y[0]>33)
         self.assertTrue(location_center_y[0]<36)
+    
+    def test_02_04_fill_holes(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.FILL_HOLES_OPTION_VAR).value = True
+        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        img = numpy.zeros((40,40))
+        draw_circle(img, (10,10), 7, .5)
+        draw_circle(img, (30,30), 7, .5)
+        img[10,10] = 0
+        img[30,30] = 0
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertTrue(objects.segmented[10,10] > 0)
+        self.assertTrue(objects.segmented[30,30] > 0)
+        
+    def test_02_05_dont_fill_holes(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.FILL_HOLES_OPTION_VAR).value = False
+        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        img = numpy.zeros((40,40))
+        draw_circle(img, (10,10), 7, .5)
+        draw_circle(img, (30,30), 7, .5)
+        img[10,10] = 0
+        img[30,30] = 0
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertTrue(objects.segmented[10,10] == 0)
+        self.assertTrue(objects.segmented[30,30] == 0)
     
     def test_03_01_run_inside_pipeline(self):
         pipeline = cellprofiler.pipeline.Pipeline()

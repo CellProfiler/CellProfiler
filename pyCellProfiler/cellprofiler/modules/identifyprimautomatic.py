@@ -1,7 +1,7 @@
 """IdentifyPrimAutomatic - identify objects by thresholding and contouring
 
 """
-__version__="$Revision: 1$"
+__version__="$Revision$"
 
 import scipy.ndimage
 import scipy.sparse
@@ -15,6 +15,7 @@ import cellprofiler.cpmodule
 import cellprofiler.variable as cpv
 import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpmath.otsu import otsu
+from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
 import cellprofiler.objects
 from cellprofiler.variable import AUTOMATIC
 
@@ -545,8 +546,14 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         img = image.image
         mask = image.mask
         threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
-        binary_image = numpy.logical_and((img >= threshold),mask)
+        blurred_image = self.smooth_image(img)
+        binary_image = numpy.logical_and((blurred_image >= threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image)
+        #
+        # Fill holes if appropriate
+        #
+        if self.fill_holes.value:
+            labeled_image = fill_labeled_holes(labeled_image)
         # Filter out small and large objects
         labeled_image, unedited_labels, small_removed_labels = \
             self.filter_on_size(labeled_image,object_count)
@@ -584,7 +591,19 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             location_center_y = numpy.zeros((0,),dtype=float)
         measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
         measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
-
+    
+    def smooth_image(self, image):
+        """Apply the smoothing filter to the image"""
+        
+        if self.smoothing_filter_size == 0:
+            return image
+        #
+        # Use the trick where you similarly convolve an array of ones to find out the edge
+        # effects, then divide to correct the edge effects
+        #
+        edge_array = scipy.ndimage.gaussian_filter(numpy.ones(image.shape),1,mode='constant')
+        return scipy.ndimage.gaussian_filter(image,1,mode='constant') / edge_array
+        
     def filter_on_size(self,labeled_image,object_count):
         """ Filter the labeled image based on the size range
         

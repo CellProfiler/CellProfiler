@@ -733,6 +733,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+if strcmp(ImageOrMovie,'Image'),
+    ImageSizes = cell(length(ImageName),1);
+    MissingFileIdx = false(length(ImageName),1);
+end
+
 for n = 1:length(ImageName)
     if strcmp(ImageOrMovie,'Image')
         %%% This try/catch will catch any problems in the load images module.
@@ -746,7 +751,13 @@ for n = 1:length(ImageName)
             %%% Determines the directory to switch to.
             fieldname = ['Pathname', ImageName{n}];
             Pathname = handles.Pipeline.(fieldname);
-            LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}));
+            if isempty(CurrentFileName{1})
+                LoadedImage = 0;    % Missing file: Use 0's to replace
+                MissingFileIdx(n) = true;
+            else
+                LoadedImage = CPimread(fullfile(Pathname,CurrentFileName{1}));
+                MissingFileIdx(n) = false;
+            end
             if SaveAsBinary
                 minval=min(LoadedImage(:));
                 maxval=max(LoadedImage(:));
@@ -775,11 +786,14 @@ for n = 1:length(ImageName)
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         catch
-	    CPerrorImread(ModuleName, n);
+            CPerrorImread(ModuleName, n);
         end % Goes with: catch
 
         % Create a cell array with the filenames
         FileNames(n) = CurrentFileName(1);
+        
+        % Record the image size
+        ImageSizes{n} = size(handles.Pipeline.(ImageName{n}));
     else
         %%% This try/catch will catch any problems in the load movies module.
         try
@@ -827,9 +841,22 @@ for n = 1:length(ImageName)
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
             handles.Pipeline.(ImageName{n}) = LoadedImage;
         catch 
-	    CPerrorImread(ModuleName, n);
+            CPerrorImread(ModuleName, n);
         end % Goes with: catch
         FileNames(n) = {CurrentFileNameWithFrame};
+    end
+end
+
+if strcmp(ImageOrMovie,'Image')
+    % Check if any of the files are missing (i.e., zero)
+    uniqueImageSize = ImageSizes(~MissingFileIdx);
+    uniqueImageSize = unique(cat(1,uniqueImageSize{:}),'rows');
+    if size(uniqueImageSize,1) ~= 1,
+        CPerror('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
+    else
+        % If there are siblings, create a zero matrix with the same size
+        % in place of the missing file
+        handles.Pipeline.(ImageName{MissingFileIdx}) = zeros(uniqueImageSize);
     end
 end
 

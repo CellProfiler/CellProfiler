@@ -3,8 +3,8 @@ function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,SaveOu
 % Given a directory (or subdirectory structure) of input images, find which
 % images (or directories) for a representative channel are not matched up 
 % with the other channels. The output is (currently) a revised
-% handles.Pipeline.FileList* structure with the missing files replaced with
-% [].
+% handles.Pipeline.FileList* structure with the missing filenames replaced with
+% an empty string.
 % Inputs are named after the corresponding cell variables in LoadImages.
 % SaveOutputFile can be 'y' or 'n' depending on whether you want to produce
 % an output file.
@@ -114,6 +114,7 @@ for m = 1:length(uniquePaths)
     % TODO: How to process the duplicate files similarly? Especially when
     % we don't know which file is the "right" one.
     NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
+    [NewFileList{m}{:}] = deal('');
     for n = 1:length(ImageName),
         [idxFileList,locFileList] = ismember(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
         FullFilenames = cellfun(@fullfile,IndivPathnames{n}(idxIndivPaths{n} == m),...
@@ -192,7 +193,7 @@ end
 
 TextString{end+1} = '';
 TextString{end+1} = 'If there are duplicate images, you should halt the pipeline, examine the files and remove the duplicates.';
-TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the cycle containing the missing files.';
+TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing image.';
 
 if ~IsBatchSubmission
     CPwarndlg(TextString,'Image check for missing or duplicate files','replace');

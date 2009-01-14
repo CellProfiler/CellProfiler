@@ -851,12 +851,14 @@ if strcmp(ImageOrMovie,'Image')
     % Check if any of the files are missing (i.e., zero)
     uniqueImageSize = ImageSizes(~MissingFileIdx);
     uniqueImageSize = unique(cat(1,uniqueImageSize{:}),'rows');
-    if size(uniqueImageSize,1) ~= 1,
-        CPerror('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
-    else
-        % If there are siblings, create a zero matrix with the same size
-        % in place of the missing file
-        handles.Pipeline.(ImageName{MissingFileIdx}) = zeros(uniqueImageSize);
+    if any(MissingFileIdx)
+        if size(uniqueImageSize,1) ~= 1,
+            CPerror('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
+        else
+            % If there are siblings, create a zero matrix with the same size
+            % in place of the missing file
+            handles.Pipeline.(ImageName{MissingFileIdx}) = zeros(uniqueImageSize);
+        end
     end
 end
 

@@ -8,16 +8,20 @@ function handles = OverlayOutlines(handles)
 % *************************************************************************
 %
 % Outlines (in a special format produced by an identify module) can be
-% placed on any desired image (grayscale or color) and then this resulting
-% image can be saved using the SaveImages module.
+% placed on any desired image (grayscale, color, or blank) and then this 
+% resulting image can be saved using the SaveImages module.
 %
 % Settings:
 % Would you like to set the intensity (brightness) of the outlines to be
 % the same as the brightest point in the image, or the maximum possible
 % value for this image format?
+%
 % If your image is quite dim, then putting bright white lines onto it may
 % not be useful. It may be preferable to make the outlines equal to the
 % maximal brightness already occurring in the image.
+%
+% If you choose to display outlines on a Blank image, the maximum intensity
+% will default to 'Max possible'.
 %
 % See also identify modules.
 
@@ -41,6 +45,7 @@ drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = On which image would you like to display the outlines?
+%choiceVAR01 = Blank
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
@@ -50,7 +55,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Would you like to set the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format?
+%textVAR03 = Would you like to set the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format? Note: if you chose to display on a Blank image, this will default to Max possible.
 %choiceVAR03 = Max of image
 %choiceVAR03 = Max possible
 MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -78,13 +83,19 @@ OutlineColor = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
-OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
+if strcmp(ImageName,'Blank')
+    OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,'MustBeGray','DontCheckScale');
+    OrigImage = zeros(size(OutlineImage));
+else
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
+    OutlineImage = CPretrieveimage(handles,OutlineName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
+end
+
 
 if size(OrigImage,3) ~= 3
-    if strcmp(MaxType,'Max of image')
+    if strcmp(MaxType,'Max of image') && ~strcmp(ImageName,'Blank')
         ValueToUseForOutlines = max(max(OrigImage));
-    elseif strcmp(MaxType,'Max possible')
+    elseif strcmp(MaxType,'Max possible') || strcmp(ImageName,'Blank')
         if isfloat(OrigImage(1,1))
             ValueToUseForOutlines=1;
         else
@@ -136,9 +147,6 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'OneByOne',ThisModuleFigureNumber)
-    end
     hAx = axes('parent',FigHandle);
     CPimagesc(NewImage,handles,hAx);
     title(hAx,['Original Image with Outline Overlay, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);

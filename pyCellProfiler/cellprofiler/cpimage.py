@@ -12,7 +12,7 @@ import sys
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
     """
-    def __init__(self,image=None,mask=None):
+    def __init__(self,image=None,mask=None,use_mask_from=None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -20,6 +20,8 @@ class Image(object):
             self.set_image(image)
         if mask!=None:
             self.set_mask(mask)
+        elif use_mask_from != None and use_mask_from.has_mask:
+            self.set_mask(use_mask_from.mask)
         
     def get_image(self):
         """Return the primary image"""
@@ -217,8 +219,14 @@ class ImageSet(object):
     
     keys = property(get_keys)
     
-    def get_image(self, name):
+    def get_image(self, name,
+                 must_be_color=False,
+                 must_be_grayscale=False):
         """Return the image associated with the given name
+        
+        name - name of the image within the image_set
+        must_be_color - raise an exception if not a color image
+        must_be_grayscale - raise an exception if not a grayscale image
         """
         if not self.__images.has_key(name):
             providers = filter(lambda x: x.name == name, self.__image_providers)
@@ -226,7 +234,13 @@ class ImageSet(object):
             assert len(providers)==1, "More than one provider of the %s image"%(name)
             image = providers[0].provide_image(self)
             self.__images[name] = image
-        return self.__images[name]
+        
+        image = self.__images[name]
+        if must_be_color and image.pixel_data.ndim != 3:
+            raise ValueError("Image must be color, but it was grayscale")
+        if must_be_grayscale and image.pixel_data.shape.ndim != 2:
+            raise ValueError("Image must be grayscale, but it was color") 
+        return image
     
     def get_providers(self):
         """The list of providers (populated during the image discovery phase)"""
@@ -248,6 +262,10 @@ class ImageSet(object):
         return self.__legacy_fields
     
     legacy_fields = property(get_legacy_fields)
+    
+    def add(self, name, image):
+        provider = VanillaImageProvider(name,image)
+        self.providers.append(provider)
 
 class ImageSetList(object):
     """Represents the list of image sets in a pipeline run

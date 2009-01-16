@@ -16,6 +16,7 @@ import cellprofiler.modules.injectimage as cpm_inject
 import cellprofiler.modules.colortogray as cpm_ctg
 
 import cellprofiler.modules.tests as cpmt
+from cellprofiler.workspace import Workspace
 
 class TestColorToGray(unittest.TestCase):
     def get_my_image(self):
@@ -51,8 +52,8 @@ class TestColorToGray(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         inj.prepare_run(pipeline, image_set_list)
         image_set = image_set_list.get_image_set(0)
-        inj.run(pipeline,image_set,object_set,measurements,None)
-        ctg.run(pipeline,image_set,object_set,measurements,None)
+        inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))
+        ctg.run(Workspace(pipeline,ctg,image_set,object_set,measurements,None))
         grayscale = image_set.get_image("my_grayscale")
         self.assertTrue(grayscale)
         img = grayscale.image
@@ -85,8 +86,8 @@ class TestColorToGray(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         inj.prepare_run(pipeline, image_set_list)
         image_set = image_set_list.get_image_set(0)
-        inj.run(pipeline,image_set,object_set,measurements,None)
-        ctg.run(pipeline,image_set,object_set,measurements,None)
+        inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))
+        ctg.run(Workspace(pipeline,ctg,image_set,object_set,measurements,None))
         red = image_set.get_image("my_red")
         self.assertTrue(red)
         img = red.image

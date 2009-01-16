@@ -64,7 +64,7 @@ class AbstractModule(object):
             self.__notes = []
         variable_count=settings['NumbersOfVariables'][0,idx]
         variable_revision_number = settings['VariableRevisionNumbers'][0,idx]
-        module_name = settings['ModuleNames'][0,idx]
+        module_name = settings['ModuleNames'][0,idx][0]
         for i in range(0,variable_count):
             value_cell = settings['VariableValues'][idx,i]
             if isinstance(value_cell,numpy.ndarray):
@@ -340,7 +340,7 @@ class AbstractModule(object):
         """
         pass
     
-    def run(self,pipeline,workspace):
+    def run(self,workspace):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -422,7 +422,7 @@ class TemplateModule(AbstractModule):
         """Write the module's state, informally, to a text file
         """
         
-    def run(self,pipeline,image_set,object_set,measurements,frame=None):
+    def run(self,workspace):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -500,10 +500,14 @@ class MatlabModule(AbstractModule):
         finally:
             file.close()
         
-    def run(self,pipeline,image_set,object_set,measurements,frame=None):
+    def run(self,workspace):
         """Run the module in Matlab
         
         """
+        pipeline = workspace.pipeline
+        image_set = workspace.image_set
+        object_set = workspace.object_set
+        measurements = workspace.measurements
         matlab = cellprofiler.matlab.cputils.get_matlab_instance()
         handles = pipeline.load_pipeline_into_matlab(image_set,object_set,measurements)
         handles.Current.CurrentModuleNumber = str(self.module_num)

@@ -537,7 +537,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """Write the module's state, informally, to a text file
         """
         
-    def run(self,pipeline,workspace):
+    def run(self,workspace):
         """Run the module
         
         pipeline     - instance of CellProfiler.Pipeline for this run

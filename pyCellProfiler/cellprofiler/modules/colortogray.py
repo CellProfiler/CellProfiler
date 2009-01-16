@@ -177,7 +177,7 @@ See also GrayToColor.
                         input_image[:,:,1] * self.green_contribution.value + 
                         input_image[:,:,2] * self.blue_contribution.value) / denominator
         image = cpi.Image(output_image,use_mask_from=image)
-        workspace.image_set.add_image(self.grayscale_name,image)
+        workspace.image_set.add(self.grayscale_name,image)
         
         if workspace.display:
             self.display_combine(workspace, input_image, output_image)
@@ -207,7 +207,7 @@ See also GrayToColor.
             if v_use.value:
                 output_image = input_image[:,:,index]
                 image = cpi.Image(output_image,use_mask_from=image)
-                workspace.image_set.add(title,image)
+                workspace.image_set.add(v_name.value,image)
                 disp_collection.append([output_image, title])
         if workspace.display:
             self.display_split(workspace, input_image, disp_collection)

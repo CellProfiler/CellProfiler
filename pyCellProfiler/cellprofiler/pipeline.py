@@ -588,9 +588,6 @@ class Pipeline:
         idx =module_num-1
         module = self.__modules[idx]
         self.__modules = self.__modules[:idx]+self.__modules[idx+1:]
-        for variable in module.variables():
-            if self.__variable_choices.has_key(variable.key()):
-                self.__variable_choices.pop(variable.key())
         module.delete()
         for module in self.__modules[idx:]:
             module.module_num = module.module_num-1

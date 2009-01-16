@@ -152,11 +152,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.TEST_MODE_VAR).value = cellprofiler.variable.YES
         self.assertTrue(x.test_mode.value)
         
-    def test_02_00_test_zero_objects(self):
+    def test_02_000_test_zero_objects(self):
         x = ID.IdentifyPrimAutomatic()
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -186,12 +187,102 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(isinstance(location_center_y,numpy.ndarray))
         self.assertEqual(numpy.product(location_center_y.shape),0)
 
+    def test_02_001_test_zero_objects_wa_in_lo_in(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.watershed_method.value = ID.WA_INTENSITY
+        x.unclump_method.value = ID.UN_INTENSITY
+        img = numpy.zeros((25,25))
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
+
+    def test_02_002_test_zero_objects_wa_di_lo_in(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.watershed_method.value = ID.WA_DISTANCE
+        x.unclump_method.value = ID.UN_INTENSITY
+        img = numpy.zeros((25,25))
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
+        
+    def test_02_003_test_zero_objects_wa_in_lo_sh(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.watershed_method.value = ID.WA_INTENSITY
+        x.unclump_method.value = ID.UN_SHAPE
+        img = numpy.zeros((25,25))
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
+
+    def test_02_004_test_zero_objects_wa_di_lo_sh(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.watershed_method.value = ID.WA_DISTANCE
+        x.unclump_method.value = ID.UN_SHAPE
+        img = numpy.zeros((25,25))
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented == 0))
+
     def test_02_01_test_one_object(self):
         x = ID.IdentifyPrimAutomatic()
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
         img = one_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -233,6 +324,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -276,6 +368,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -316,7 +409,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.FILL_HOLES_OPTION_VAR).value = True
+        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
         x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
         draw_circle(img, (30,30), 7, .5)
@@ -342,6 +437,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.FILL_HOLES_OPTION_VAR).value = False
         x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
         draw_circle(img, (30,30), 7, .5)
@@ -359,6 +456,109 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(objects.segmented[10,10] == 0)
         self.assertTrue(objects.segmented[30,30] == 0)
     
+    def test_02_06_test_watershed_shape_shape(self):
+        """Identify by local_maxima:shape & intensity:shape
+        
+        Create an object whose intensity is high near the middle
+        but has an hourglass shape, then segment it using shape/shape
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_SHAPE
+        x.watershed_method.value = ID.WA_DISTANCE
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.6,.6,.6,.6,.6,.6,.6,.6,.6,.6, 0, 0, 0],
+                           [ 0, 0, 0, 0,.7,.7,.7,.7,.7,.7,.7,.7, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.8,.9, 1, 1,.9,.8, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.7,.7,.7,.7,.7,.7,.7,.7, 0, 0, 0, 0],
+                           [ 0, 0, 0,.6,.6,.6,.6,.6,.6,.6,.6,.6,.6, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),2)
+    
+    def test_02_07_test_watershed_shape_intensity(self):
+        """Identify by local_maxima:shape & watershed:intensity
+        
+        Create an object with an hourglass shape to get two maxima, but
+        set the intensities so that one maximum gets the middle portion
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_SHAPE
+        x.watershed_method.value = ID.WA_INTENSITY
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.5,.5,.5,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.4,.4,.4,.4,.4,.4, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),2)
+        self.assertEqual(objects.segmented[7,11],objects.segmented[7,4])
+    
     def test_03_01_run_inside_pipeline(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         inject_image = InjectImage("my_image", two_cell_image())
@@ -369,6 +569,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         ipm.variable(ID.OBJECT_NAME_VAR).value = "my_object"
         ipm.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         ipm.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        ipm.watershed_method.value = ID.WA_NONE
         pipeline.add_module(ipm)
         measurements = pipeline.run()
         (matfd,matpath) = tempfile.mkstemp('.mat')
@@ -436,6 +637,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = True
         x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
         draw_circle(img,(25,25),20,.5)
@@ -464,6 +666,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
         draw_circle(img,(25,25),20,.5)
@@ -490,6 +693,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = True
         x.variable(ID.SIZE_RANGE_VAR).value = '40,60'
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
         draw_circle(img,(25,25),20,.5)
@@ -518,6 +722,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((100,100))
         centers = [(50,50),(10,50),(50,10),(90,50),(50,90)]
         present = [ True,  False,  False,  False,  False]
@@ -547,6 +752,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
         x.variable(ID.EXCLUDE_SIZE_VAR).value = False
         x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         centers = [(100,100),(30,100),(100,30),(170,100),(100,170)]
         present = [ True,  False,  False,  False,  False]
@@ -570,6 +776,32 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                 self.assertTrue(objects.segmented[center[0],center[1]] == 0)
             self.assertTrue(objects.unedited_segmented[center[0],center[1]] > 0)
             self.assertTrue(objects.small_removed_segmented[center[0],center[1]] > 0)
+    def test_06_01_regression_diagonal(self):
+        """Regression test - was using one-connected instead of 3-connected structuring element"""
+        x = ID.IdentifyPrimAutomatic()
+        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
+        img = numpy.zeros((10,10))
+        img[4,4]=1
+        img[5,5]=1
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(pipeline,image_set,object_set,measurements,None)
+        self.assertEqual(len(object_set.object_names),1)
+        self.assertTrue("my_object" in object_set.object_names)
+        objects = object_set.get_objects("my_object")
+        segmented = objects.segmented
+        self.assertTrue(numpy.all(segmented[img>0] == 1))
+        self.assertTrue(numpy.all(img[segmented==1] > 0))
 
 def one_cell_image():
     img = numpy.zeros((25,25))

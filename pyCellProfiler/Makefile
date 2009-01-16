@@ -1,7 +1,18 @@
 
 TEST_MODULES = cellprofiler cellprofiler.modules cellprofiler.gui cellprofiler.matlab cellprofiler.cpmath
 
-all: tests
+ifeq ($(OS),Windows_NT)
+	PYTHON_COMPILER=mingw32
+else
+	PYTHON_COMPILER=unix
+endif
+
+all: exts tests
+
+exts: cellprofiler/cpmath/_cpmorphology.pyd
+
+cellprofiler/cpmath/_cpmorphology.pyd: cellprofiler/cpmath/src/cpmorphology.c
+	python cellprofiler/cpmath/setup.py build_ext -i --compiler=$(PYTHON_COMPILER) 
 
 tests:
 	python -m nose.core --with-nosexunit --core-target=target/xml-report $(TEST_MODULES)

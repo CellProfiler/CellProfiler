@@ -3,6 +3,7 @@
 """
 __version__="$Revision$"
 
+import math
 import scipy.ndimage
 import scipy.sparse
 import matplotlib.backends.backend_wxagg
@@ -15,7 +16,8 @@ import cellprofiler.cpmodule
 import cellprofiler.variable as cpv
 import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpmath.otsu import otsu
-from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
+from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
+from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 import cellprofiler.objects
 from cellprofiler.variable import AUTOMATIC
 
@@ -143,6 +145,11 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
             vv += [self.low_res_maxima, self.save_outlines, self.fill_holes]
             vv += [self.test_mode]
         return vv
+    
+    def test_valid(self, pipeline):
+        super(IdentifyPrimAutomatic,self).test_valid(pipeline)
+        if self.unclump_method.value in (UN_MANUAL,UN_MANUAL_FOR_ID_SECONDARY):
+            raise cpv.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
 
     def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
@@ -540,27 +547,35 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         measurements - the measurements for this run
         """
         #
-        # Ignoring almost everything...
+        # Retrieve the relevant image and mask
         #
         image = image_set.get_image(self.image_name.value)
         img = image.image
         mask = image.mask
-        threshold = otsu(img,self.threshold_range.min,self.threshold_range.max)
-        blurred_image = self.smooth_image(img)
+        #
+        # Get a threshold to use for labeling
+        #
+        threshold = self.get_threshold(img,mask)
+        blurred_image = self.smooth_image(img,mask,1)
         binary_image = numpy.logical_and((blurred_image >= threshold),mask)
-        labeled_image,object_count = scipy.ndimage.label(binary_image)
+        labeled_image,object_count = scipy.ndimage.label(binary_image,
+                                                         numpy.ones((3,3),bool))
         #
         # Fill holes if appropriate
         #
         if self.fill_holes.value:
             labeled_image = fill_labeled_holes(labeled_image)
+        labeled_image,object_count = \
+            self.separate_neighboring_objects(img, mask, 
+                                              labeled_image,
+                                              object_count,threshold)
         # Filter out small and large objects
         labeled_image, unedited_labels, small_removed_labels = \
             self.filter_on_size(labeled_image,object_count)
         # Filter out objects touching the border or mask
         labeled_image = self.filter_on_border(image, labeled_image)
         # Relabel the image
-        labeled_image,object_count = scipy.ndimage.label(labeled_image>0)
+        labeled_image,object_count = relabel(labeled_image)
         # Make an outline image
         outline_image = labeled_image!=0
         temp = scipy.ndimage.binary_dilation(outline_image)
@@ -578,10 +593,12 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         
         object_set.add_objects(objects,self.object_name.value)
         #
-        # Get the centers of each object - center_of_mass returns a list of two-tuples.
+        # Get the centers of each object - center_of_mass <- list of two-tuples.
         #
         if object_count:
-            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), labeled_image, range(1,object_count+1))
+            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), 
+                                                   labeled_image, 
+                                                   range(1,object_count+1))
             centers = numpy.array(centers)
             centers = centers.reshape((object_count,2))
             location_center_x = centers[:,0]
@@ -589,21 +606,170 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         else:
             location_center_x = numpy.zeros((0,),dtype=float)
             location_center_y = numpy.zeros((0,),dtype=float)
-        measurements.add_measurement(self.object_name.value,'Location_Center_X', location_center_x)
-        measurements.add_measurement(self.object_name.value,'Location_Center_Y', location_center_y)
+        measurements.add_measurement(self.object_name.value,'Location_Center_X',
+                                     location_center_x)
+        measurements.add_measurement(self.object_name.value,'Location_Center_Y',
+                                      location_center_y)
     
-    def smooth_image(self, image):
+    def get_threshold(self, image, mask):
+        """Compute the threshold using whichever algorithm was selected by the user
+        image - image to threshold
+        mask  - ignore pixels whose mask value is false
+        returns: threshold to use
+        """
+        if self.threshold_algorithm == TM_OTSU:
+            if self.threshold_modifier == TM_GLOBAL:
+                return otsu(image[mask],
+                            self.threshold_range.min,
+                            self.threshold_range.max)
+            else:
+                raise NotImplementedError("Otsu %s method not implemented"%(self.threshold_modifier.value))
+        else:
+            raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
+        
+    def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         
-        if self.smoothing_filter_size == 0:
+        if self.calc_smoothing_filter_size() == 0:
             return image
         #
-        # Use the trick where you similarly convolve an array of ones to find out the edge
-        # effects, then divide to correct the edge effects
+        # Use the trick where you similarly convolve an array of ones to find 
+        # out the edge effects, then divide to correct the edge effects
         #
-        edge_array = scipy.ndimage.gaussian_filter(numpy.ones(image.shape),1,mode='constant')
-        return scipy.ndimage.gaussian_filter(image,1,mode='constant') / edge_array
+        edge_array = scipy.ndimage.gaussian_filter(mask.astype(float),
+                                                   sigma,mode='constant')
+        return scipy.ndimage.gaussian_filter(image,sigma,mode='constant') / edge_array
+    
+    def separate_neighboring_objects(self, image, mask, 
+                                     labeled_image,object_count,threshold):
+        """Separate objects based on local maxima or distance transform
         
+        image         - the original grayscale image
+        labeled_image - image labeled by scipy.ndimage.label
+        object_count  - # of objects in image
+        
+        returns revised labeled_image and object count
+        """
+        if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
+            return labeled_image, object_count
+        
+        blurred_image = self.smooth_image(image, mask, 
+                                          self.calc_smoothing_filter_size())
+        if self.low_res_maxima.value and self.size_range.min > 10:
+            image_resize_factor = 10.0 / float(self.size_range.min)
+            if self.automatic_suppression.value:
+                maxima_suppression_size = 7
+            else:
+                maxima_suppression_size = int(self.maxima_suppression_size.value *
+                                              image_resize_factor+.5)
+        else:
+            image_resize_factor = 1.0
+            if self.automatic_suppression.value:
+                maxima_suppression_size = int(math.floor(self.size_range.min/1.5+.5))
+            else:
+                maxima_suppression_size = self.maxima_suppression_size.value
+        maxima_mask = strel_disk(maxima_suppression_size)
+        distance_transformed_image = None
+        if self.unclump_method == UN_INTENSITY:
+            # Remove dim maxima
+            maxima_image = blurred_image.copy()
+            maxima_image[maxima_image < threshold] = 0
+            maxima_image = self.get_maxima(blurred_image, 
+                                           labeled_image,
+                                           maxima_mask,
+                                           image_resize_factor)
+        elif self.unclump_method == UN_SHAPE:
+            distance_transformed_image =\
+                scipy.ndimage.distance_transform_edt(labeled_image>0)
+            # randomize the distance slightly to get unique maxima
+            numpy.random.seed(0)
+            distance_transformed_image +=\
+                numpy.random.uniform(0,.001,distance_transformed_image.shape)
+            maxima_image = self.get_maxima(distance_transformed_image,
+                                           labeled_image,
+                                           maxima_mask,
+                                           image_resize_factor)
+        else:
+            raise ValueError("Unsupported local maxima method: "%s(self.unclump_method.value))
+        
+        # Create the image for watershed
+        if self.watershed_method == WA_INTENSITY:
+            # use the reverse of the image to get valleys at peaks
+            watershed_image = 1-image
+        elif self.watershed_method == WA_DISTANCE:
+            if distance_transformed_image == None:
+                distance_transformed_image =\
+                    scipy.ndimage.distance_transform_edt(labeled_image>0)
+            watershed_image = -distance_transformed_image
+            watershed_image = watershed_image - numpy.min(watershed_image)
+        else:
+            raise NotImplementedError("Watershed method %s is not implemented"%(self.watershed_method.value))
+        #
+        # Make the watershed values discrete 0-256 (required by scipy)
+        #
+        max_wa = numpy.max(watershed_image)
+        watershed_image = numpy.floor(254 * watershed_image / max_wa+.5)+1
+        watershed_image = watershed_image.astype(numpy.uint8)
+        #
+        # The background pixels have the lowest value and will be watershedded
+        # first.
+        #
+        watershed_image[labeled_image==0] = 255
+        #
+        # Create a marker array where the unlabeled image has a label of
+        # -(nobjects+1)
+        # and every local maximum has a unique label which will become
+        # the object's label. The labels are negative because that
+        # makes the watershed algorithm use FIFO for the pixels which
+        # yields fair boundaries when markers compete for pixels.
+        #
+        labeled_maxima,object_count = \
+            scipy.ndimage.label(maxima_image>0,numpy.ones((3,3),bool))
+        markers = numpy.zeros(watershed_image.shape,numpy.int16)
+        markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
+        #
+        # Some labels have only one marker in them, some have multiple and
+        # will be split up.
+        # 
+        
+        watershed_boundaries =\
+            scipy.ndimage.watershed_ift(watershed_image,
+                                        markers,
+                                        numpy.ones((3,3),bool))
+        watershed_boundaries[labeled_image==0]=0
+        watershed_boundaries = -watershed_boundaries
+        
+        return watershed_boundaries, object_count
+
+    def get_maxima(self,image,labeled_image,maxima_mask,image_resize_factor):
+        if image_resize_factor < 1.0:
+            resized_image = scipy.ndimage.zoom(image,
+                                               image_resize_factor,
+                                               order=2)
+        else:
+            resized_image = image.copy()
+        #
+        # set all pixels that aren't local maxima to zero
+        #
+        maxima_image = resized_image
+        maximum_filtered_image = scipy.ndimage.maximum_filter(maxima_image,
+                                                              footprint=maxima_mask)
+        maxima_image[resized_image < maximum_filtered_image] = 0
+        if image_resize_factor < 1.0:
+            inverse_resize_factor = float(image.shape[0]) / float(maxima_image.shape[0])
+            maxima_image = scipy.ndimage.zoom(maxima_image,
+                                              inverse_resize_factor,order=2)
+            assert(maxima_image.shape[0] == image.shape[0])
+            assert(maxima_image.shape[1] == image.shape[1])
+        
+        # Erode blobs of touching maxima to a single point
+        
+        binary_maxima_image = maxima_image > 0
+        shrunk_image = binary_shrink(binary_maxima_image)
+        maxima_image[numpy.logical_not(shrunk_image)]=0
+        maxima_image[labeled_image==0]=0
+        return maxima_image
+    
     def filter_on_size(self,labeled_image,object_count):
         """ Filter the labeled image based on the size range
         
@@ -704,7 +870,14 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outlined_axes.imshow(outline_img)
         outlined_axes.set_title("Outlined image")
         my_frame.Refresh()
-         
+    
+    def calc_smoothing_filter_size(self):
+        """Return the size of the smoothing filter, calculating it if in automatic mode"""
+        if self.automatic_smoothing.value:
+            return 2.35*self.size_range.min/3.5;
+        else:
+            return self.smoothing_filter_size.value
+             
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         

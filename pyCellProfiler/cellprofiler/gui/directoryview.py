@@ -6,7 +6,7 @@
 import os
 import wx
 
-import scipy.io.mio
+import scipy.io.matlab
 import PIL.Image
 import matplotlib
 import matplotlib.image

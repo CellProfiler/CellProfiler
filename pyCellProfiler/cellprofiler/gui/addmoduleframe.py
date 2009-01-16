@@ -133,7 +133,7 @@ class AddModuleFrame(wx.Frame):
                 module.set_module_num(module_num)
                 return module
             module = mc()
-            self.__module_dict[module.category()][module.module_name] = loader
+            self.__module_dict[module.category][module.module_name] = loader
     
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)

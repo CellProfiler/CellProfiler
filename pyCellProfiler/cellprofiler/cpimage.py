@@ -88,6 +88,8 @@ class Image(object):
         self.__image = img
     
     image=property(get_image,set_image)
+    pixel_data=property(get_image,set_image)
+    
     """The primary image - a Numpy array representing an image"""
 
     def get_mask(self):

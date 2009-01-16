@@ -309,8 +309,7 @@ class LoadImages(cpmodule.AbstractModule):
         """
         return []
     
-    def category(self):
-        return "File Processing"
+    category = "File Processing"
 
     
     def load_images(self):

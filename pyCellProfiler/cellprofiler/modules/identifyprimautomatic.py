@@ -170,8 +170,7 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
     
     variable_revision_number = 13
 
-    def category(self):
-        return "Object Processing"
+    category =  "Object Processing"
     
     def get_help(self):
         """Return help text for the module
@@ -538,18 +537,19 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """Write the module's state, informally, to a text file
         """
         
-    def run(self,pipeline,image_set,object_set,measurements, frame):
+    def run(self,pipeline,workspace):
         """Run the module
         
         pipeline     - instance of CellProfiler.Pipeline for this run
-        image_set    - the images in the image set being processed
-        object_set   - the objects (labeled masks) in this image set
-        measurements - the measurements for this run
+        workspace    - contains
+            image_set    - the images in the image set being processed
+            object_set   - the objects (labeled masks) in this image set
+            measurements - the measurements for this run
         """
         #
         # Retrieve the relevant image and mask
         #
-        image = image_set.get_image(self.image_name.value)
+        image = workspace.image_set.get_image(self.image_name.value)
         img = image.image
         mask = image.mask
         #
@@ -580,18 +580,18 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outline_image = labeled_image!=0
         temp = scipy.ndimage.binary_dilation(outline_image)
         outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
-        if frame:
-            self.display(frame,image, labeled_image,outline_image)
+        if workspace.frame:
+            self.display(workspace.frame,image, labeled_image,outline_image)
         # Add image measurements
-        measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
-        measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
+        workspace.measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
+        workspace.measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels
         
-        object_set.add_objects(objects,self.object_name.value)
+        workspace.object_set.add_objects(objects,self.object_name.value)
         #
         # Get the centers of each object - center_of_mass <- list of two-tuples.
         #
@@ -606,10 +606,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         else:
             location_center_x = numpy.zeros((0,),dtype=float)
             location_center_y = numpy.zeros((0,),dtype=float)
-        measurements.add_measurement(self.object_name.value,'Location_Center_X',
-                                     location_center_x)
-        measurements.add_measurement(self.object_name.value,'Location_Center_Y',
-                                      location_center_y)
+        workspace.measurements.add_measurement(self.object_name.value,'Location_Center_X',
+                                               location_center_x)
+        workspace.measurements.add_measurement(self.object_name.value,'Location_Center_Y',
+                                               location_center_y)
     
     def get_threshold(self, image, mask):
         """Compute the threshold using whichever algorithm was selected by the user

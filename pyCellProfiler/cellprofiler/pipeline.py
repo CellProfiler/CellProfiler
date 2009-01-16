@@ -20,6 +20,7 @@ import cellprofiler.variablechoices
 import cellprofiler.cpimage
 import cellprofiler.measurements
 import cellprofiler.objects
+import cellprofiler.workspace
 
 CURRENT = 'Current'
 NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
@@ -448,7 +449,8 @@ class Pipeline:
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 failure = 1
                 try:
-                    module.run(self,image_set,object_set,measurements, frame)
+                    workspace = cellprofiler.workspace.Workspace(image_set,object_set,measurements,frame)
+                    module.run(self,workspace)
                     failure = 0
                 except Exception,instance:
                     traceback.print_exc()
@@ -497,7 +499,8 @@ class Pipeline:
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 failure = 1
                 try:
-                    module.run(self,image_set,object_set,measurements, frame)
+                    workspace = cellprofiler.workspace.Workspace(image_set,object_set,measurements,frame)
+                    module.run(self,workspace)
                     failure = 0
                 except Exception,instance:
                     traceback.print_exc()

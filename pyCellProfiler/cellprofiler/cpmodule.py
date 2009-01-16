@@ -41,6 +41,11 @@ class AbstractModule(object):
         self.__variable_revision_number = 0
         self.__module_name = 'unknown'
         self.__annotation_dict = None
+        self.create_variables()
+        
+    def create_variables(self):
+        """Create your variables by subclassing this function"""
+        pass
     
     def create_from_handles(self,handles,module_num):
         """Fill a module with the information stored in the handles structure for module # ModuleNum 
@@ -69,10 +74,12 @@ class AbstractModule(object):
                     variable_values.append(str(value_cell[0]))
             else:
                 variable_values.append(value_cell)
-        self.set_variable_values(variable_values, variable_revision_number, module_name)
+        self.set_variable_values(variable_values, variable_revision_number, 
+                                 module_name)
         self.on_post_load()
     
-    def set_variable_values(self, variable_values, variable_revision_number, module_name):
+    def set_variable_values(self, variable_values, variable_revision_number, 
+                            module_name):
         """Set the variables in a module, given a list of values
         
         The default implementation gets all the variables and then
@@ -81,10 +88,18 @@ class AbstractModule(object):
         whatever values are in the list or however many values
         are in the list.
         """
+        variable_values = self.backwards_compatibilize(variable_values,
+                                                       variable_revision_number,
+                                                       module_name,
+                                                       not '.' in module_name)
         for v,value in zip(self.variables(),variable_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
-        
+    
+    def backwards_compatibilize(self,variable_values,variable_revision_number,
+                                module_name,from_matlab):
+        return variable_values
+    
     def create_from_annotations(self):
         """Create the variables based on what you can discern from the annotations
         """
@@ -200,6 +215,10 @@ class AbstractModule(object):
         """
         for variable in self.visible_variables():
             variable.test_valid(pipeline)
+        self.validate_module(pipeline)
+    
+    def validate_module(self,pipeline):
+        pass
     
     def variable_annotations(self,key):
         """Return annotations for the variable with the given number
@@ -321,14 +340,15 @@ class AbstractModule(object):
         """
         pass
     
-    def run(self,pipeline,image_set,object_set,measurements,frame=None):
+    def run(self,pipeline,workspace):
         """Run the module (abstract method)
         
         pipeline     - instance of CellProfiler.Pipeline for this run
-        image_set    - the images in the image set being processed
-        object_set   - the objects (labeled masks) in this image set
-        measurements - the measurements for this run
-        frame        - the parent frame to whatever frame is created. None means don't draw.
+        workspace    - The workspace contains
+            image_set    - the images in the image set being processed
+            object_set   - the objects (labeled masks) in this image set
+            measurements - the measurements for this run
+            frame        - the parent frame to whatever frame is created. None means don't draw.
         """
         raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
 

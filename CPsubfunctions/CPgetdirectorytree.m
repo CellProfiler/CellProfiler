@@ -21,5 +21,5 @@ Directories = [{RootDirectory}];
 for i=1:length(Listing)
     SubDirectory = fullfile(RootDirectory,Listing{i});
     SubListing = CPgetdirectorytree(SubDirectory);
-    Directories = [Directories;{SubDirectory};SubListing];
+    Directories = [Directories;SubListing];
 end

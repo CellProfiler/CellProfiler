@@ -353,6 +353,9 @@ CheckImageSets = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+if strcmpi(AnalyzeSubDir,'Yes') && (~ isfield(handles.Current, 'BatchInfo'))
+    AnalyzeSubDir = 'Select';    %%% Select subdirectories using the GUI
+end
 if strcmp(FileFormat,'individual images')
     ImageOrMovie = 'Image';
 else
@@ -596,12 +599,6 @@ if SetBeingAnalyzed == 1
                 handles.Pipeline.(fieldname) = Pathname;
 
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
-            end
-            %%% Let the user filter the list if we're analyzing sub-directories
-            %%% and if we are not in batch mode
-            %%%
-            if strcmpi(AnalyzeSubDir,'Yes') && (~isfield(handles.Current, 'BatchInfo')) && strcmpi(SelectSubfolders,'Yes')
-                handles = CPselectdirectories(handles);
             end
             if strcmpi(CheckImageSets,'Yes')
                 handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, 'Yes');

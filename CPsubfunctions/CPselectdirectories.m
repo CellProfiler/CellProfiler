@@ -18,12 +18,21 @@ function handles = CPselectdirectories(handles)
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Determines which cycle is being analyzed.
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+if isempty(handles)
+    return
+end
+if iscell(handles)
+    % The "handles" is just a list of directories
+    return_directories = 1;
+    pathnames = handles;
+    RootDirectoryName = handles{1};
+else
+    return_directories = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST CYCLE FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+    drawnow
 
 % % Trimming the list of files to be analyzed occurs only the first time
 % % through this module.
@@ -36,12 +45,25 @@ drawnow
 % end
 
 % Pull the FileList created by LoadImages
-fn = fieldnames(handles.Pipeline);
-prefix = 'filelist';
-fn = fn{strncmpi(fn,prefix,length(prefix))};
-if iscell(fn), fn = fn{1}; end; % There may be several FileLists, but since they are the same, we just need the first one
-pathnames = cellfun(@fileparts,handles.Pipeline.(fn),'UniformOutput',false);
-UniqueDirectories = unique(pathnames);
+    fn = fieldnames(handles.Pipeline);
+    prefix = 'filelist';
+    fn = fn{strncmpi(fn,prefix,length(prefix))};
+    if iscell(fn), fn = fn{1}; end; % There may be several FileLists, but since they are the same, we just need the first one
+    pathnames = cellfun(@fileparts,handles.Pipeline.(fn),'UniformOutput',false);
+    RootDirectoryName = handles.Pipeline.(['Pathname',fn(length(prefix)+1:end)]);
+end
+%
+% It's necessary to sort the pathnames by directory so that foo\bar occurs
+% before foo.bar\baz in order for everything further on to work. So the
+% path delimiter should have a lower place in the sort order than any other
+% character. This replacement makes it so, in a wierd way - hopefully
+%
+if ~ all(cellfun(@(x) isempty(x), strfind(pathnames,char(1))))
+    error('Some pathname has a character with ASCII value 1 in it');
+end
+
+UniqueDirectories = unique(strrep(pathnames,filesep,char(1)));
+UniqueDirectories = strrep(UniqueDirectories,char(1),filesep);
 
 % Separate out the unique directory names for listing
 DirectoryNames = cell(0,0);     % The separated directories from the path
@@ -56,11 +78,21 @@ end
 
 for i = 1:length(UniqueDirectories),
     p = textscan(UniqueDirectories{i},'%s','delimiter',fileseparator);
+    prefix = [];
+    while (~isempty(p)) && isempty(p{:}{1})
+        p{1} = p{1}(2:end);
+        prefix = [prefix,filesep];
+    end
+    p{1}{1} = [prefix,p{1}{1}];
     DirectoryNames = [DirectoryNames; p{:}];
     DirectoryLevel = [DirectoryLevel; (1:length(p{:}))'];
     DirectoryPath = [];
     for j = 1:length(p{:})
-        DirectoryPath = [DirectoryPath,p{1}{j}];
+        if isempty(DirectoryPath)
+            DirectoryPath = p{1}{j};
+        else
+            DirectoryPath = fullfile(DirectoryPath,p{1}{j});
+        end
         DirectoryPaths = [DirectoryPaths; DirectoryPath];
     end
     str = cell(length(p{1}),1); for j = 1:length(p{1}), str{j} = fullfile('',p{1}{1:j}); end
@@ -73,6 +105,7 @@ end
 % Find the directory names that (1) share a level (2) under the same
 % root...
 [ignore,i,j] = unique(DirectoryPaths,'first');
+DirectoryPathIdx = i;
 UniqueDirectoryLabel = (1:length(i))';  % Each directory gets a numeric label since 'unique' doesn't work row-wise on cell arrays
 UniqueDirectoryLabel = UniqueDirectoryLabel(j);
 [ignore,idx] = unique(UniqueDirectoryLabel,'first');
@@ -87,7 +120,7 @@ UniquePathNumber(EntriesToRemove) = [];
 NumberOfDirectoryEntries = length(DirectoryNames);
 
 % Create the SelectDirectories window
-SelectDirectoryFig = CreateSelectDirectoryWindow(DirectoryNames,DirectoryLevel,ListingTag,NumberOfDirectoryEntries,handles.Pipeline.(['Pathname',fn(length(prefix)+1:end)]));
+SelectDirectoryFig = CreateSelectDirectoryWindow(DirectoryNames,DirectoryLevel,ListingTag,NumberOfDirectoryEntries,RootDirectoryName);
 
 uiwait(SelectDirectoryFig);
 
@@ -105,6 +138,10 @@ else
     Selection = true(NumberOfDirectoryEntries,1);
 end
 
+if return_directories
+    handles = DirectoryPaths(sort(DirectoryPathIdx(Selection)));
+    return
+else
 % Remove the de-selected directories from the FileLists (since there are
 % likely to be less de-selected than selected directories)
 
@@ -139,7 +176,7 @@ end
 if isfield(handles.Current,'NumberOfImageSets')
     handles.Current.NumberOfImageSets = length(idxToRemove(:)) - sum(idxToRemove);
 end
-
+end
 %%%%%%%%%%%% Subfunctions %%%%%%%%%%%%%
 %%
 %%% SUBFUNCTION - SelectDirectories_Callback

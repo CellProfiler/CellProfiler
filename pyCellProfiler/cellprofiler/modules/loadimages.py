@@ -266,21 +266,17 @@ class LoadImages(cpmodule.AbstractModule):
             providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
             image_set.providers.extend(providers)
         
-    def run(self,pipeline,image_set,object_set,measurements, frame):
+    def run(self,workspace):
         """Run the module - add the measurements
         
-        pipeline     - instance of CellProfiler.Pipeline for this run
-        image_set    - the images in the image set being processed
-        object_set   - the objects (labeled masks) in this image set
-        measurements - the measurements for this run
         """
-        for provider in image_set.providers:
+        for provider in workspace.image_set.providers:
             if isinstance(provider,LoadImagesImageProvider):
                 filename = provider.get_filename()
                 path = provider.get_pathname()
                 name = provider.name
-                measurements.add_measurement('Image','FileName_'+name, filename)
-                measurements.add_measurement('Image','PathName_'+name, path)
+                workspace.measurements.add_measurement('Image','FileName_'+name, filename)
+                workspace.measurements.add_measurement('Image','PathName_'+name, path)
 
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces

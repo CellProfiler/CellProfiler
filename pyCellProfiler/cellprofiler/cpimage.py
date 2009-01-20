@@ -238,7 +238,7 @@ class ImageSet(object):
         image = self.__images[name]
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
-        if must_be_grayscale and image.pixel_data.shape.ndim != 2:
+        if must_be_grayscale and image.pixel_data.ndim != 2:
             raise ValueError("Image must be grayscale, but it was color") 
         return image
     

@@ -219,8 +219,8 @@ See also GrayToColor.
             subplots = (1,2)
         else:
             subplots = (2,2)
-        figure=workspace.create_or_find(title="Color to gray",
-                                        subplots=subplots)
+        figure=workspace.create_or_find_figure(title="Color to gray",
+                                               subplots=subplots)
 
         input_axes = figure.subplot(0,0)
         input_axes.clear()

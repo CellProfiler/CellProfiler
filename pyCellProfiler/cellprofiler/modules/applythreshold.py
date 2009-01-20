@@ -82,7 +82,6 @@ as to avoid a 'halo' effect.
                 vv.extend([self.high_threshold, self.dilation])
         else:
             vv.append(self.binary_threshold)
-        print vv
         return vv
     
     def variables(self):
@@ -129,29 +128,29 @@ as to avoid a 'halo' effect.
         """
         input = workspace.image_set.get_image(self.image_name,
                                               must_be_grayscale=True)
-        pixels = input.pixel_data
-        if self.binary.value:
+        pixels = input.pixel_data.copy()
+        if self.binary != 'Grayscale':
             pixels[input.mask] = pixels[input.mask] > self.binary_threshold
         else:
             if self.low.value:
-                pixels[input.mask & pixels < self.low_threshold.value] = 0
+                pixels[input.mask & (pixels < self.low_threshold.value)] = 0
                 if self.shift.value:
                     pixels[input.mask] -= self.low_threshold.value
             if self.high.value:
-                undilated = input.mask & pixels >= self.high_threshold.value
+                undilated = input.mask & (pixels >= self.high_threshold.value)
                 dilated = binary_dilation(undilated, strel_disk(self.dilation.value), mask=input.mask)
                 pixels[dilated] = 0
         output = cpimage.Image(pixels, input.mask)
-        workspace.image_set.add_image(self.thresholded_image_name, output)
-        if workshape.display:
+        workspace.image_set.add(self.thresholded_image_name, output)
+        if workspace.display:
             figure = workspace.create_or_find_figure(subplots=(1,2))
 
             left = figure.subplot(0,0)
             left.clear()
-            left.imshow(input)
-            left.set_title("Original iamge: %s"%(self.image_name,))
+            left.imshow(input.pixel_data,matplotlib.cm.Greys_r)
+            left.set_title("Original image: %s"%(self.image_name,))
 
             right = figure.subplot(0,1)
             right.clear()
-            right.imshow(output)
+            right.imshow(output.pixel_data,matplotlib.cm.Greys_r)
             right.set_title("Thresholded image: %s"%(self.thresholded_image_name,))

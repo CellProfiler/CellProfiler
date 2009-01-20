@@ -69,7 +69,8 @@ class Workspace(object):
         if window_name == None:
             window_name = "CellProfiler:%s:%s"%(self.__module.module_name,
                                                 self.__module.module_num)
-        figure = cpf.create_or_find(self.__frame, title, window_name, subplots)
+        figure = cpf.create_or_find(self.__frame, title = title, 
+                                    name = window_name, subplots = subplots)
         if not figure in self.__windows_to_refresh:
             self.__windows_to_refresh.append(figure)
         return figure

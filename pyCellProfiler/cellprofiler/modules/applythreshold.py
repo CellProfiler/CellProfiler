@@ -9,7 +9,7 @@ import wx
 import matplotlib.cm
 import matplotlib.backends.backend_wxagg
 
-from cellprofiler.cpmodule import AbstractModule as CPModule
+from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.variable as cpsetting
 from cellprofiler.gui import cpfigure

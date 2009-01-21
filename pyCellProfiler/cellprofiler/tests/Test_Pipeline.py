@@ -231,7 +231,7 @@ class TestPipeline(unittest.TestCase):
     
     def test_07_01_InfogroupNotAfter(self):
         x = cellprofiler.pipeline.Pipeline()
-        class MyClass(cellprofiler.cpmodule.AbstractModule):
+        class MyClass(cellprofiler.cpmodule.CPModule):
             def __init__(self):
                 super(MyClass,self).__init__()
                 self.set_module_name("whatever")
@@ -250,7 +250,7 @@ class TestPipeline(unittest.TestCase):
          
     def test_07_02_InfogroupAfter(self):
         x = cellprofiler.pipeline.Pipeline()
-        class MyClass1(cellprofiler.cpmodule.AbstractModule):
+        class MyClass1(cellprofiler.cpmodule.CPModule):
             def __init__(self):
                 super(MyClass1,self).__init__()
                 self.set_module_name("provider")
@@ -258,7 +258,7 @@ class TestPipeline(unittest.TestCase):
 
             def annotations(self):
                 return cellprofiler.variable.indep_group_annotation(1, 'independent', 'whatevergroup')
-        class MyClass2(cellprofiler.cpmodule.AbstractModule):
+        class MyClass2(cellprofiler.cpmodule.CPModule):
             def __init__(self):
                 super(MyClass2,self).__init__()
                 self.set_module_name("subscriber")

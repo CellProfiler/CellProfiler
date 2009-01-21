@@ -80,11 +80,10 @@ AUTOMATIC_SMOOTHING_VAR         = 19
 AUTOMATIC_MAXIMA_SUPPRESSION    = 20
 
 
-class IdentifyPrimAutomatic(cellprofiler.cpmodule.AbstractModule):
+class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
     """Cut and paste this in order to get started writing a module
     """
-    def __init__(self):
-        cellprofiler.cpmodule.AbstractModule.__init__(self)
+    def create_variables(self):
         self.set_module_name("IdentifyPrimAutomatic")
         self.image_name = cpv.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
         self.object_name = cpv.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')

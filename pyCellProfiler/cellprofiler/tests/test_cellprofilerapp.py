@@ -6,7 +6,6 @@ import tempfile
 import cellprofiler.cellprofilerapp
 import cellprofiler.gui.moduleview as mv
 import cellprofiler.variable as vvv
-import cellprofiler.modules.platonicmodule
 import cellprofiler.modules.identifyprimautomatic
 import cellprofiler.gui.addmoduleframe
 
@@ -35,7 +34,7 @@ class Test_CellProfilerApp(unittest.TestCase):
     
     def get_platonic_loader(self):
         def loader(module_num):
-            module = cellprofiler.modules.platonicmodule.LoadImages()
+            module = cellprofiler.modules.loadimages.LoadImages()
             module.set_module_num(module_num)
             return module
         return loader

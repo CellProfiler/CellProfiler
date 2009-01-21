@@ -27,7 +27,7 @@ class TestModuleView(unittest.TestCase):
         return app
 
     def set_variable(self, v):
-        class TestModule(cpm.AbstractModule):
+        class TestModule(cpm.CPModule):
             def __init__(self):
                 super(TestModule,self).__init__()
                 self.vv = [v]

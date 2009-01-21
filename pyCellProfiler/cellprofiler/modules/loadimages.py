@@ -37,7 +37,7 @@ def default_cpimage_name(index):
         return names[index]
     return 'Channel%d'%(index+1)
 
-class LoadImages(cpmodule.AbstractModule):
+class LoadImages(cpmodule.CPModule):
     """Load images from files.  This is the help text that will be displayed
        to the user.
     """

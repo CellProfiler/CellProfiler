@@ -7,11 +7,12 @@ import cellprofiler.cpmodule
 import cellprofiler.cpimage
 import cellprofiler.variable
 
-class InjectImage(cellprofiler.cpmodule.AbstractModule):
-    """Cut and paste this in order to get started writing a module
+class InjectImage(cellprofiler.cpmodule.CPModule):
+    """This module is intended for testing. It injects an image into the
+    image set.
     """
     def __init__(self, image_name, image):
-        cellprofiler.cpmodule.AbstractModule.__init__(self)
+        super(InjectImage,self).__init__()
         self.set_module_name("InjectImage")
         self.__image_name = image_name
         self.__image = image

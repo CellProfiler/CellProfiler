@@ -16,7 +16,7 @@ import cellprofiler.measurements
 import cellprofiler.pipeline
 import cellprofiler.matlab.cputils
 
-class AbstractModule(object):
+class CPModule(object):
     """ Derive from the abstract module class to create your own module in Python
     
     You need to implement the following in the derived class:
@@ -181,7 +181,7 @@ class AbstractModule(object):
         """Return help text for the module
         
         """
-        raise NotImplementedError("Please implement GetHelp in your derived module class")
+        return self.__doc__
             
     def save_to_handles(self,handles):
         module_idx = self.module_num-1
@@ -377,92 +377,12 @@ class AbstractModule(object):
         """
         return []
     
-    def category(self):
-        raise(NotImplementedError("Please implement the Category method to return the category for the module in the AddModules page"));
-
-class TemplateModule(AbstractModule):
-    """Cut and paste this in order to get started writing a module
-    """
-    def __init__(self):
-        AbstractModule.__init__(self)
-        self.SetModuleName("Template")
-    
-    def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the variables in the module to upgrade it to its current revision number
-        
-        """
-        raise NotImplementedError("Please implement UpgradeModuleFromRevision")
-    
-    def get_help(self):
-        """Return help text for the module
-        
-        """
-        raise NotImplementedError("Please implement GetHelp in your derived module class")
-            
-    def get_variable_revision_number(self):
-        """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
-        """
-        raise NotImplementedError("Please implement VariableRevisionNumber in the derived class")
-    
-    def annotations(self):
-        """Return the variable annotations, as read out of the module file.
-        
-        Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the cpv.Annotation
-        class.
-        """
-        raise("Please implement Annotations in your derived class")
-    
-    def write_to_handles(self,handles):
-        """Write out the module's state to the handles
-        
-        """
-    
-    def write_to_text(self,file):
-        """Write the module's state, informally, to a text file
-        """
-        
-    def run(self,workspace):
-        """Run the module (abstract method)
-        
-        pipeline     - instance of CellProfiler.Pipeline for this run
-        image_set    - the images in the image set being processed
-        object_set   - the objects (labeled masks) in this image set
-        measurements - the measurements for this run
-        """
-        raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
-
-    def get_categories(self,pipeline, object_name):
-        """Return the categories of measurements that this module produces
-        
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        """
-        return []
-      
-    def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces
-        
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        category - return measurements made in this category
-        """
-        return []
-    
-    def get_measurement_images(self,pipeline,object_name,category,measurement):
-        """Return a list of image names used as a basis for a particular measure
-        """
-        return []
-    
-    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
-        """Return a list of scales (eg for texture) at which a measurement was taken
-        """
-        return []
-        
-class MatlabModule(AbstractModule):
+class MatlabModule(CPModule):
     """A matlab module, as from a .m file
     
     """
     def __init__(self):
-        AbstractModule.__init__(self)
+        super(MatlabModule,self).__init__()
         self.__annotations = None
         self.__filename = None
         self.__help = None
@@ -478,7 +398,7 @@ class MatlabModule(AbstractModule):
         self.__filename = os.path.join(cellprofiler.preferences.module_directory(),
                                        module_name+cellprofiler.preferences.module_extension())
         self.create_from_annotations()
-        return AbstractModule.create_from_handles(self, handles, module_num)
+        return super(MatlabModule,self).create_from_handles(handles, module_num)
 
     def create_from_file(self,file_path,module_num):
         """Parse a file to get the default variables for a module

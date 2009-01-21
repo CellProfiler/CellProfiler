@@ -19,7 +19,7 @@ import cellprofiler.gui.cpfigure as cpf
 COMBINE = "Combine"
 SPLIT = "Split"
 
-class ColorToGray(cpm.AbstractModule):
+class ColorToGray(cpm.CPModule):
     """SHORT DESCRIPTION:
 Converts RGB (Red, Green, Blue) color images to grayscale. All channels
 can be merged into one grayscale image (COMBINE option) or each channel 

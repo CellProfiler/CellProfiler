@@ -11,7 +11,7 @@ import matplotlib.backends.backend_wxagg
 
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
-import cellprofiler.variable as cpsetting
+import cellprofiler.settings as cpsetting
 from cellprofiler.gui import cpfigure
 
 from cellprofiler.cpmath.cpmorphology import strel_disk

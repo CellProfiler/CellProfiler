@@ -5,7 +5,7 @@ InjectImage.py - for testing, this module injects a single image into the image 
 __version__="$Revision$"
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
-import cellprofiler.variable
+import cellprofiler.settings
 
 class InjectImage(cellprofiler.cpmodule.CPModule):
     """This module is intended for testing. It injects an image into the
@@ -16,7 +16,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         self.set_module_name("InjectImage")
         self.__image_name = image_name
         self.__image = image
-        self.image_name = cellprofiler.variable.NameProvider("Hardwired image name","imagegroup",image_name) 
+        self.image_name = cellprofiler.settings.NameProvider("Hardwired image name","imagegroup",image_name) 
     
     def visible_variables(self):
         return [self.image_name]
@@ -39,7 +39,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """Return the variable annotations, as read out of the module file.
         
         Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the CellProfiler.Variable.Annotation
+        Each annotation is an instance of the Cellprofiler.Settings.Annotation
         class.
         """
         return []

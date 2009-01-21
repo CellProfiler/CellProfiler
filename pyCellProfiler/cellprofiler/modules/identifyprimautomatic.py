@@ -13,13 +13,13 @@ import numpy
 import wx
 
 import cellprofiler.cpmodule
-import cellprofiler.variable as cpv
+import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 import cellprofiler.objects
-from cellprofiler.variable import AUTOMATIC
+from cellprofiler.settings import AUTOMATIC
 
 IMAGE_NAME_VAR                  = 1
 OBJECT_NAME_VAR                 = 2
@@ -85,14 +85,14 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
     """
     def create_variables(self):
         self.set_module_name("IdentifyPrimAutomatic")
-        self.image_name = cpv.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
-        self.object_name = cpv.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
-        self.size_range = cpv.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
+        self.image_name = cps.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
+        self.object_name = cps.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
+        self.size_range = cps.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
                                            (10,40),minval=1)
-        self.exclude_size = cpv.Binary('Discard objects outside the diameter range?', True)
-        self.merge_objects = cpv.Binary('Try to merge too small objects with nearby larger objects?', False)
-        self.exclude_border_objects = cpv.Binary('Discard objects touching the border of the image?', True)
-        self.threshold_method = cpv.Choice('''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
+        self.exclude_size = cps.Binary('Discard objects outside the diameter range?', True)
+        self.merge_objects = cps.Binary('Try to merge too small objects with nearby larger objects?', False)
+        self.exclude_border_objects = cps.Binary('Discard objects touching the border of the image?', True)
+        self.threshold_method = cps.Choice('''Select an automatic thresholding method or enter an absolute threshold in the range [0,1].  To choose a binary image, select "Other" and type its name.  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
                                            [TM_OTSU_GLOBAL,TM_OTSU_ADAPTIVE,TM_OTSU_PER_OBJECT,
                                             TM_MOG_GLOBAL,TM_MOG_ADAPTIVE,TM_MOG_PER_OBJECT,
                                             TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
@@ -100,22 +100,22 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
                                             TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
                                             TM_KAPUR_GLOBAL,TM_KAPUR_ADAPTIVE,TM_KAPUR_PER_OBJECT,
                                             TM_ALL,TM_SET_INTERACTIVELY])
-        self.threshold_correction_factor = cpv.Float('Threshold correction factor', 1)
-        self.threshold_range = cpv.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
-        self.object_fraction = cpv.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
+        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
+        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
+        self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
                                                 ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
-        self.unclump_method = cpv.Choice('Method to distinguish clumped objects (see help for details):', 
+        self.unclump_method = cps.Choice('Method to distinguish clumped objects (see help for details):', 
                                           [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
-        self.watershed_method = cpv.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
+        self.watershed_method = cps.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
                                            [WA_INTENSITY,WA_DISTANCE,WA_NONE])
-        self.automatic_smoothing = cpv.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
-        self.smoothing_filter_size = cpv.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
-        self.automatic_suppression = cpv.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
-        self.maxima_suppression_size = cpv.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
-        self.low_res_maxima = cpv.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        self.save_outlines = cpv.NameProvider('What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.variable.DO_NOT_USE)
-        self.fill_holes = cpv.Binary('Do you want to fill holes in identified objects?', True)
-        self.test_mode = cpv.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
+        self.automatic_smoothing = cps.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
+        self.smoothing_filter_size = cps.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
+        self.automatic_suppression = cps.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
+        self.maxima_suppression_size = cps.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
+        self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
+        self.save_outlines = cps.NameProvider('What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.settings.DO_NOT_USE)
+        self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
+        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
 
     def variables(self):
         return [self.image_name,self.object_name,self.size_range, \
@@ -148,7 +148,7 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
     def test_valid(self, pipeline):
         super(IdentifyPrimAutomatic,self).test_valid(pipeline)
         if self.unclump_method.value in (UN_MANUAL,UN_MANUAL_FOR_ID_SECONDARY):
-            raise cpv.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
+            raise cps.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
 
     def upgrade_module_from_revision(self,variable_revision_number):
         """Possibly rewrite the variables in the module to upgrade it to its current revision number
@@ -158,11 +158,11 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
             # Laplace values removed - propagate variable values to fill the gap
             for i in range(17,20):
                 self.variable(i-1).value = str(self.variable(i))
-            if str(self.variable(SMOOTHING_SIZE_VAR)) == cpv.AUTOMATIC:
-                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.YES
+            if str(self.variable(SMOOTHING_SIZE_VAR)) == cps.AUTOMATIC:
+                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cps.YES
                 self.variable(SMOOTHING_SIZE_VAR).value = 10
             else:
-                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cpv.NO
+                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cps.NO
             variable_revision_number = 13
         if variable_revision_number != self.variable_revision_number:
             raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))

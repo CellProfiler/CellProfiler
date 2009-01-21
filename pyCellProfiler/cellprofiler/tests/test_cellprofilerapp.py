@@ -5,7 +5,7 @@ import tempfile
 
 import cellprofiler.cellprofilerapp
 import cellprofiler.gui.moduleview as mv
-import cellprofiler.variable as vvv
+import cellprofiler.settings as vvv
 import cellprofiler.modules.identifyprimautomatic
 import cellprofiler.gui.addmoduleframe
 
@@ -78,7 +78,7 @@ class Test_CellProfilerApp(unittest.TestCase):
             control_name = mv.edit_control_name(v)
             edit_control = module_panel.FindWindowByName(control_name)
             self.assertTrue(edit_control)
-            if not isinstance(v,cellprofiler.variable.DoSomething):
+            if not isinstance(v,cellprofiler.settings.DoSomething):
                 self.assertTrue(v == edit_control.Value,"variable number %d: %s != %s"%(i,v.value,edit_control.Value))
     
     def test_01_02_Subscriber(self):

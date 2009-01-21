@@ -9,7 +9,7 @@ import os
 
 import numpy
 
-import cellprofiler.variable as cpv
+import cellprofiler.settings as cps
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
@@ -23,7 +23,7 @@ class CPModule(object):
     UpgradeModuleFromRevision - to modify a module's variables after loading to match the current revision number
     GetHelp - to return help for the module
     VariableRevisionNumber - to return the current variable revision number
-    Annotations - to return the variable annotations (see cpv.Annotation).
+    Annotations - to return the variable annotations (see cps.Annotation).
                   These are the annotations in the .M file (like choiceVAR05 = Yes)
     Run - to run the module, producing measurements, etc.
     
@@ -134,33 +134,33 @@ class CPModule(object):
             else:
                 text = ''
             if variable_dict.has_key('infotype'):
-                default_value = value_dict.get(i,cpv.DO_NOT_USE)
+                default_value = value_dict.get(i,cps.DO_NOT_USE)
                 parts = variable_dict['infotype'][0].split(' ')
                 if parts[-1] == 'indep':
-                    v = cpv.NameProvider(text,parts[0], default_value)
+                    v = cps.NameProvider(text,parts[0], default_value)
                 else:
-                    v = cpv.NameSubscriber(text,parts[0],default_value)
+                    v = cps.NameSubscriber(text,parts[0],default_value)
             elif variable_dict.has_key('inputtype') and \
                  variable_dict['inputtype'][0] == 'popupmenu':
                 choices = variable_dict['choice']
-                if len(choices) == 2 and all([choice in [cpv.YES,cpv.NO] for choice in choices]):
-                    v = cpv.Binary(text,choices[0]==cpv.YES)
+                if len(choices) == 2 and all([choice in [cps.YES,cps.NO] for choice in choices]):
+                    v = cps.Binary(text,choices[0]==cps.YES)
                 else:
                     default_value = value_dict.get(i,choices[0])
-                    v = cpv.Choice(text,choices,default_value)
+                    v = cps.Choice(text,choices,default_value)
             elif variable_dict.has_key('inputtype') and \
                  variable_dict['inputtype'][0] == 'popupmenu custom':
                 choices = variable_dict['choice']
                 default_value = value_dict.get(i,choices[0])
-                v = cpv.CustomChoice(text,choices,default_value)
+                v = cps.CustomChoice(text,choices,default_value)
             elif variable_dict.has_key('inputtype') and \
                  variable_dict['inputtype'][0] == 'pathnametext':
-                v = cpv.PathnameText(text,value_dict.get(i,cpv.DO_NOT_USE))
+                v = cps.PathnameText(text,value_dict.get(i,cps.DO_NOT_USE))
             elif variable_dict.has_key('inputtype') and \
                  variable_dict['inputtype'][0] == 'filenametext':
-                v = cpv.FilenameText(text,value_dict.get(i,cpv.DO_NOT_USE))
+                v = cps.FilenameText(text,value_dict.get(i,cps.DO_NOT_USE))
             else:
-                v = cpv.Text(text,value_dict.get(i,"n/a"))
+                v = cps.Text(text,value_dict.get(i,"n/a"))
             variables.append(v)
                      
         self.set_variables(variables)
@@ -201,9 +201,9 @@ class CPModule(object):
                     setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
             except:
                 pass
-            if isinstance(variable,cpv.NameProvider):
+            if isinstance(variable,cps.NameProvider):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
-            elif isinstance(variable,cpv.NameSubscriber):
+            elif isinstance(variable,cps.NameSubscriber):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
         setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
@@ -225,7 +225,7 @@ class CPModule(object):
         
         """
         if not self.__annotation_dict:
-            self.__annotation_dict = cpv.get_annotations_as_dictionary(self.annotations())
+            self.__annotation_dict = cps.get_annotations_as_dictionary(self.annotations())
         if self.__annotation_dict.has_key(key):
             return self.__annotation_dict[key]
         indexes = [index+1 for variable,index in zip(self.variables(),range(len(self.variables()))) if variable.key()==key]
@@ -303,7 +303,7 @@ class CPModule(object):
         """Return the variable annotations, as read out of the module file.
         
         Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the cpv.Annotation
+        Each annotation is an instance of the cps.Annotation
         class.
         """
         raise NotImplementedError("Please implement Annotations in your derived class")
@@ -465,7 +465,7 @@ class MatlabModule(CPModule):
                 else:
                     after_help=True
             try:
-                annotations.append(cpv.Annotation(line))
+                annotations.append(cps.Annotation(line))
             except:
                 # Might be something else...
                 match = re.match('^%%%VariableRevisionNumber = ([0-9]+)',line)
@@ -510,7 +510,7 @@ class MatlabModule(CPModule):
         """Return the variable annotations, as read out of the module file.
         
         Return the variable annotations, as read out of the module file.
-        Each annotation is an instance of the cpv.Annotation
+        Each annotation is an instance of the cps.Annotation
         class.
         """
         if not self.__annotations:

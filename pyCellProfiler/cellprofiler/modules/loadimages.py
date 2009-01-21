@@ -11,7 +11,7 @@ import matplotlib.image
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.preferences as preferences
-import cellprofiler.variable as variable
+import cellprofiler.settings as cps
 
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -46,33 +46,33 @@ class LoadImages(cpmodule.CPModule):
         self.module_name = "LoadImages"
         
         # Settings
-        self.file_types = variable.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
-        self.match_method = variable.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
-        self.match_exclude = variable.Text('If you want to exclude certain files, type the text that the excluded images have in common', variable.DO_NOT_USE)
-        self.order_group_size = variable.Integer('How many images are there in each group?', 3)
-        self.descend_subdirectories = variable.Binary('Analyze all subfolders within the selected folder?', False)
+        self.file_types = cps.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
+        self.match_method = cps.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
+        self.match_exclude = cps.Text('If you want to exclude certain files, type the text that the excluded images have in common', cps.DO_NOT_USE)
+        self.order_group_size = cps.Integer('How many images are there in each group?', 3)
+        self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
      
         # Settings for each CPimage
-        self.images_common_text = [variable.Text('Type the text that these images have in common', 'DAPI')]
-        self.images_order_position = [variable.Integer('What is the position of this image in each group', 1)]
-        self.image_names = [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
-        self.remove_images = [variable.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
+        self.images_common_text = [cps.Text('Type the text that these images have in common', 'DAPI')]
+        self.images_order_position = [cps.Integer('What is the position of this image in each group', 1)]
+        self.image_names = [cps.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
+        self.remove_images = [cps.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
         
         # Add another image
-        self.add_image = variable.DoSomething('Add another image...','Add', self.add_imagecb)
+        self.add_image = cps.DoSomething('Add another image...','Add', self.add_imagecb)
         
         # Location settings
-        self.location = variable.CustomChoice('Where are the images located?',
+        self.location = cps.CustomChoice('Where are the images located?',
                                         [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT, DIR_OTHER])
-        self.location_other = variable.DirectoryPath("Where are the images located?", '')
+        self.location_other = cps.DirectoryPath("Where are the images located?", '')
 
     def add_imagecb(self):
             'Adds another image to the variables'
             img_index = len(self.images_order_position)
-            self.images_common_text += [variable.Text('Type the text that these images have in common', '')]
-            self.images_order_position += [variable.Integer('What is the position of this image in each group', img_index+1)]
-            self.image_names += [variable.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
-            self.remove_images += [variable.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
+            self.images_common_text += [cps.Text('Type the text that these images have in common', '')]
+            self.images_order_position += [cps.Integer('What is the position of this image in each group', img_index+1)]
+            self.image_names += [cps.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
+            self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
 
     def remove_imagecb(self, index):
             'Remove an image from the variables'
@@ -196,7 +196,7 @@ class LoadImages(cpmodule.CPModule):
     def upgrade_3_to_4(self, variable_values):
         """Added text exclusion at slot # 10"""
         new_values = list(variable_values)
-        new_values.insert(10,variable.DO_NOT_USE)
+        new_values.insert(10,cps.DO_NOT_USE)
         return (new_values,4)
     
     def upgrade_4_to_new_1(self,variable_values):
@@ -218,8 +218,8 @@ class LoadImages(cpmodule.CPModule):
         for i in range(0,4):
             text_to_find = variable_values[i*2+1]
             image_name = variable_values[i*2+2]
-            if text_to_find == variable.DO_NOT_USE or \
-               image_name == variable.DO_NOT_USE or\
+            if text_to_find == cps.DO_NOT_USE or \
+               image_name == cps.DO_NOT_USE or\
                text_to_find == '/' or\
                image_name == '/' or\
                text_to_find == '\\' or\
@@ -383,7 +383,7 @@ class LoadImages(cpmodule.CPModule):
     def filter_filename(self, filename):
         """Returns either None or the index of the match variable
         """
-        if self.text_to_exclude() != variable.DO_NOT_USE and \
+        if self.text_to_exclude() != cps.DO_NOT_USE and \
             filename.find(self.text_to_exclude()) >=0:
             return None
         if self.load_choice() == MS_EXACT_MATCH:

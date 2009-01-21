@@ -16,7 +16,6 @@ from cellprofiler.matlab.cputils import new_string_cell_array,get_matlab_instanc
 from cellprofiler.matlab.cputils import s_cell_fun,make_cell_struct_dtype
 from cellprofiler.matlab.cputils import load_into_matlab,get_int_from_matlab
 from cellprofiler.matlab.cputils import encapsulate_strings_in_arrays
-import cellprofiler.variablechoices
 import cellprofiler.cpimage
 import cellprofiler.measurements
 import cellprofiler.objects

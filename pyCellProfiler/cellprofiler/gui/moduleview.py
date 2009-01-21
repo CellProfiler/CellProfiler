@@ -4,7 +4,7 @@ __version__="$Revision$"
 import wx
 import wx.grid
 import cellprofiler.pipeline
-import cellprofiler.variable
+import cellprofiler.settings
 
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
@@ -153,29 +153,29 @@ class ModuleView:
                     control.Show()
                 sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
                 self.__static_texts.append(static_text)
-                if isinstance(v,cellprofiler.variable.Binary):
+                if isinstance(v,cellprofiler.settings.Binary):
                     control = self.make_binary_control(v,control_name,control)
-                elif isinstance(v,cellprofiler.variable.Choice):
+                elif isinstance(v,cellprofiler.settings.Choice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
                                                        wx.CB_READONLY,
                                                        control)
-                elif isinstance(v,cellprofiler.variable.CustomChoice):
+                elif isinstance(v,cellprofiler.settings.CustomChoice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
-                elif isinstance(v,cellprofiler.variable.NameSubscriber):
+                elif isinstance(v,cellprofiler.settings.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
-                elif isinstance(v, cellprofiler.variable.DoSomething):
+                elif isinstance(v, cellprofiler.settings.DoSomething):
                     control = self.make_callback_control(v, control_name,
                                                          control)
-                elif isinstance(v, cellprofiler.variable.IntegerRange) or\
-                     isinstance(v, cellprofiler.variable.FloatRange):
+                elif isinstance(v, cellprofiler.settings.IntegerRange) or\
+                     isinstance(v, cellprofiler.settings.FloatRange):
                     control = self.make_range_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
@@ -342,7 +342,7 @@ class ModuleView:
             validation_error = None
             try:
                 self.__module.test_valid(self.__pipeline)
-            except cellprofiler.variable.ValidationError, instance:
+            except cellprofiler.settings.ValidationError, instance:
                 validation_error = instance
             for idx, variable in zip(range(len(self.__module.visible_variables())),self.__module.visible_variables()):
                 try:
@@ -353,7 +353,7 @@ class ModuleView:
                         self.__controls[idx].SetToolTipString('')
                         self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
                         self.__static_texts[idx].Refresh()
-                except cellprofiler.variable.ValidationError, instance:
+                except cellprofiler.settings.ValidationError, instance:
                     if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
                         self.__controls[idx].SetToolTipString(instance.message)
                         self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)

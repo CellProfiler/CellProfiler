@@ -12,7 +12,7 @@ import cellprofiler.pipeline
 import cellprofiler.objects
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
-import cellprofiler.variable
+import cellprofiler.settings
 import cellprofiler.measurements
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.matlab.cputils import get_matlab_instance
@@ -238,8 +238,8 @@ class TestPipeline(unittest.TestCase):
                 self.create_from_annotations()
 
             def annotations(self):
-                a  = cellprofiler.variable.indep_group_annotation(1, 'independent', 'whatevergroup')
-                a += cellprofiler.variable.group_annotation(2,'dependent','whatevergroup')
+                a  = cellprofiler.settings.indep_group_annotation(1, 'independent', 'whatevergroup')
+                a += cellprofiler.settings.group_annotation(2,'dependent','whatevergroup')
                 return a
         module = MyClass()
         module.set_module_num(1)
@@ -257,7 +257,7 @@ class TestPipeline(unittest.TestCase):
                 self.create_from_annotations()
 
             def annotations(self):
-                return cellprofiler.variable.indep_group_annotation(1, 'independent', 'whatevergroup')
+                return cellprofiler.settings.indep_group_annotation(1, 'independent', 'whatevergroup')
         class MyClass2(cellprofiler.cpmodule.CPModule):
             def __init__(self):
                 super(MyClass2,self).__init__()
@@ -265,7 +265,7 @@ class TestPipeline(unittest.TestCase):
                 self.create_from_annotations()
 
             def annotations(self):
-                return cellprofiler.variable.group_annotation(1,'dependent','whatevergroup')
+                return cellprofiler.settings.group_annotation(1,'dependent','whatevergroup')
         module1 = MyClass1()
         module1.set_module_num(1)
         x.add_module(module1)

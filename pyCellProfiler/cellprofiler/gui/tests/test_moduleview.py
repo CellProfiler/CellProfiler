@@ -10,7 +10,7 @@ import wx
 
 import cellprofiler.cellprofilerapp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.variable as cpv
+import cellprofiler.settings as cps
 import cellprofiler.gui.moduleview as cpmv
 
 class TestModuleView(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestModuleView(unittest.TestCase):
         return module_panel.FindWindowByName(cpmv.max_control_name(v))
     
     def test_01_01_display_text_variable(self):
-        v=cpv.Text("text","value")
+        v=cps.Text("text","value")
         app,text_control,edit_control = self.set_variable(v)
         self.assertEqual(text_control.Label,"text")
         self.assertTrue(isinstance(text_control, wx.StaticText))
@@ -77,7 +77,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
     
     def test_01_02_display_binary_variable(self):
-        v=cpv.Binary("text",True)
+        v=cps.Binary("text",True)
         app,text_control,checkbox = self.set_variable(v)
         self.assertTrue(checkbox.Value)
         self.assertTrue(isinstance(checkbox,wx.CheckBox))
@@ -91,7 +91,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
     
     def test_01_03_display_choice_variable(self):
-        v = cpv.Choice("text",['foo','bar'])
+        v = cps.Choice("text",['foo','bar'])
         app,text_control,combobox = self.set_variable(v)
         self.assertTrue(combobox.Value,'foo')
         self.assertTrue(isinstance(combobox, wx.ComboBox))
@@ -110,7 +110,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
 
     def test_01_04_display_integer_variable(self):
-        v = cpv.Integer("text",1)
+        v = cps.Integer("text",1)
         app,text_control,edit_control = self.set_variable(v)
         self.assertTrue(edit_control.Value,'1')
         self.assertTrue(isinstance(edit_control, wx.TextCtrl))
@@ -126,7 +126,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
     
     def test_01_05_display_integer_range(self):
-        v = cpv.IntegerRange("text",value=(1,2))
+        v = cps.IntegerRange("text",value=(1,2))
         app,text_control,panel = self.set_variable(v)
         min_control = self.get_min_control(app,v)
         self.assertEqual(min_control.Value,"1")
@@ -148,7 +148,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
 
     def test_01_06_display_float_variable(self):
-        v = cpv.Float("text",1.5)
+        v = cps.Float("text",1.5)
         app,text_control,edit_control = self.set_variable(v)
         self.assertAlmostEqual(float(edit_control.Value),1.5)
         self.assertTrue(isinstance(edit_control, wx.TextCtrl))
@@ -164,7 +164,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
     
     def test_01_07_display_float_range(self):
-        v = cpv.FloatRange("text",value=(1.5,2.5))
+        v = cps.FloatRange("text",value=(1.5,2.5))
         app,text_control,panel = self.set_variable(v)
         min_control = self.get_min_control(app,v)
         self.assertAlmostEqual(float(min_control.Value),1.5)
@@ -186,7 +186,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
     
     def test_01_08_display_name_provider(self):
-        v = cpv.NameProvider("text",group="mygroup",value="value")
+        v = cps.NameProvider("text",group="mygroup",value="value")
         app,text_control,edit_control = self.set_variable(v)
         self.assertEqual(text_control.Label,"text")
         self.assertTrue(isinstance(text_control, wx.StaticText))
@@ -202,7 +202,7 @@ class TestModuleView(unittest.TestCase):
         app.ProcessIdle()
 
     def test_02_01_bad_integer_value(self):
-        v = cpv.Integer("text",1)
+        v = cps.Integer("text",1)
         app,text_control,edit_control = self.set_variable(v)
         event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
         event.SetString('bad')

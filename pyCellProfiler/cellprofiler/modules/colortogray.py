@@ -11,7 +11,7 @@ import matplotlib.backends.backend_wxagg
 
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.variable as cpv
+import cellprofiler.settings as cps
 import cellprofiler.cpimage  as cpi
 
 import cellprofiler.gui.cpfigure as cpf
@@ -52,30 +52,30 @@ See also GrayToColor.
     
     def create_variables(self):
         self.module_name = "ColorToGray"
-        self.image_name = cpv.NameSubscriber("Which image do you want to convert to gray?",
+        self.image_name = cps.NameSubscriber("Which image do you want to convert to gray?",
                                              "imagegroup","None")
-        self.combine_or_split = cpv.Choice("How do you want to convert the color image?",
+        self.combine_or_split = cps.Choice("How do you want to convert the color image?",
                                            [COMBINE,SPLIT])
         
         # The following variables are used for the combine option
-        self.grayscale_name = cpv.NameProvider("What do you want to call the resulting grayscale image?",
+        self.grayscale_name = cps.NameProvider("What do you want to call the resulting grayscale image?",
                                                "imagegroup","OrigGray")
-        self.red_contribution = cpv.Float("Enter the relative contribution of the red channel",
+        self.red_contribution = cps.Float("Enter the relative contribution of the red channel",
                                           1,0)
-        self.green_contribution = cpv.Float("Enter the relative contribution of the green channel",
+        self.green_contribution = cps.Float("Enter the relative contribution of the green channel",
                                             1,0)
-        self.blue_contribution = cpv.Float("Enter the relative contribution of the blue channel",
+        self.blue_contribution = cps.Float("Enter the relative contribution of the blue channel",
                                            1,0)
         
         # The following variables are used for the split option
-        self.use_red = cpv.Binary('Create an image from the red channel?',True)
-        self.red_name = cpv.NameProvider('What do you want to call the image that was red?',
+        self.use_red = cps.Binary('Create an image from the red channel?',True)
+        self.red_name = cps.NameProvider('What do you want to call the image that was red?',
                                          "imagegroup","OrigRed")
-        self.use_green = cpv.Binary('Create an image from the green channel?',True)
-        self.green_name = cpv.NameProvider('What do you want to call the image that was green?',
+        self.use_green = cps.Binary('Create an image from the green channel?',True)
+        self.green_name = cps.NameProvider('What do you want to call the image that was green?',
                                          "imagegroup","OrigGreen")
-        self.use_blue = cpv.Binary('Create an image from the blue channel?',True)
-        self.blue_name = cpv.NameProvider('What do you want to call the image that was blue?',
+        self.use_blue = cps.Binary('Create an image from the blue channel?',True)
+        self.blue_name = cps.NameProvider('What do you want to call the image that was blue?',
                                          "imagegroup","OrigBlue")
 
     def visible_variables(self):
@@ -120,7 +120,7 @@ See also GrayToColor.
                                     ]
             for i in range(3):
                 vv = variable_values[i+8]
-                use_it = ((vv == cpv.DO_NOT_USE or vv == "N") and cpv.NO) or cpv.YES
+                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
                 new_variable_values.append(use_it)
                 new_variable_values.append(vv)
             variable_values = new_variable_values
@@ -145,7 +145,7 @@ See also GrayToColor.
         Make sure that we output at least one image if split
         """
         if self.should_split() and not any([self.use_red.value, self.use_blue.value, self.use_green.value]):
-            raise cpv.ValidationError("You must output at least one of the color images when in split mode",
+            raise cps.ValidationError("You must output at least one of the color images when in split mode",
                                       self.use_red)
     
     def run(self,workspace):

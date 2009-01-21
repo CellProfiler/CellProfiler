@@ -50,14 +50,14 @@ See also GrayToColor.
     variable_revision_number = 1
     category = "Image Processing"
     
-    def create_variables(self):
+    def create_settings(self):
         self.module_name = "ColorToGray"
         self.image_name = cps.NameSubscriber("Which image do you want to convert to gray?",
                                              "imagegroup","None")
         self.combine_or_split = cps.Choice("How do you want to convert the color image?",
                                            [COMBINE,SPLIT])
         
-        # The following variables are used for the combine option
+        # The following settings are used for the combine option
         self.grayscale_name = cps.NameProvider("What do you want to call the resulting grayscale image?",
                                                "imagegroup","OrigGray")
         self.red_contribution = cps.Float("Enter the relative contribution of the red channel",
@@ -67,7 +67,7 @@ See also GrayToColor.
         self.blue_contribution = cps.Float("Enter the relative contribution of the blue channel",
                                            1,0)
         
-        # The following variables are used for the split option
+        # The following settings are used for the split option
         self.use_red = cps.Binary('Create an image from the red channel?',True)
         self.red_name = cps.NameProvider('What do you want to call the image that was red?',
                                          "imagegroup","OrigRed")
@@ -78,8 +78,8 @@ See also GrayToColor.
         self.blue_name = cps.NameProvider('What do you want to call the image that was blue?',
                                          "imagegroup","OrigBlue")
 
-    def visible_variables(self):
-        """Return either the "combine" or the "split" variables"""
+    def visible_settings(self):
+        """Return either the "combine" or the "split" settings"""
         vv = [self.image_name, self.combine_or_split]
         if self.should_combine():
             vv.extend([self.grayscale_name, self.red_contribution,
@@ -93,8 +93,8 @@ See also GrayToColor.
                     vv.append(v_name)
         return vv
     
-    def variables(self):
-        """Return all of the variables in a consistent order"""
+    def settings(self):
+        """Return all of the settings in a consistent order"""
         return [self.image_name, self.combine_or_split,
                 self.grayscale_name, self.red_contribution,
                 self.green_contribution, self.blue_contribution,
@@ -104,31 +104,31 @@ See also GrayToColor.
                 ]
     
     def backwards_compatibilize(self,
-                                variable_values,
+                                setting_values,
                                 variable_revision_number,
                                 module_name,
                                 from_matlab):
         if from_matlab and variable_revision_number == 1:
-            new_variable_values = [ variable_values[0],  # image name
-                                    variable_values[1],  # combine or split
+            new_setting_values = [ setting_values[0],  # image name
+                                    setting_values[1],  # combine or split
                                                          # blank slot for text: "Combine options"
-                                    variable_values[3],  # grayscale name
-                                    variable_values[4],  # red contribution
-                                    variable_values[5],  # green contribution
-                                    variable_values[6]   # blue contribution
+                                    setting_values[3],  # grayscale name
+                                    setting_values[4],  # red contribution
+                                    setting_values[5],  # green contribution
+                                    setting_values[6]   # blue contribution
                                                          # blank slot for text: "Split options"
                                     ]
             for i in range(3):
-                vv = variable_values[i+8]
+                vv = setting_values[i+8]
                 use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
-                new_variable_values.append(use_it)
-                new_variable_values.append(vv)
-            variable_values = new_variable_values
+                new_setting_values.append(use_it)
+                new_setting_values.append(vv)
+            setting_values = new_setting_values
             module_name = self.module_class()
             variable_revision_number = 1
             from_matlab = False
             
-        return variable_values
+        return setting_values
         
     def should_combine(self):
         """True if we are supposed to combine RGB to gray"""

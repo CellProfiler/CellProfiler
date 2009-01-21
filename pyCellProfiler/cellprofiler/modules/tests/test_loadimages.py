@@ -18,12 +18,12 @@ class testLoadImages(unittest.TestCase):
     
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
-        l.variables()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.variables()[l.SLOT_LOCATION].value = LI.DIR_OTHER
-        l.variables()[l.SLOT_LOCATION_OTHER].value =\
+        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
+        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.variables()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
-        l.variables()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list)
@@ -35,17 +35,17 @@ class testLoadImages(unittest.TestCase):
         
     def test_01_02load_image_text_match_many(self):
         l=LI.LoadImages()
-        l.variables()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
-        l.variables()[l.SLOT_LOCATION].value = LI.DIR_OTHER
-        l.variables()[l.SLOT_LOCATION_OTHER].value =\
+        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_EXACT_MATCH)
+        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         for i in range(0,4):
             ii = i+1
             if i:
                 l.add_imagecb()
             idx = l.SLOT_FIRST_IMAGE+l.SLOT_IMAGE_FIELD_COUNT * i 
-            l.variables()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
-            l.variables()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
+            l.settings()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
+            l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list)
@@ -58,12 +58,12 @@ class testLoadImages(unittest.TestCase):
         
     def test_02_01load_image_regex_match(self):
         l=LI.LoadImages()
-        l.variables()[l.SLOT_MATCH_METHOD].set_value(LI.MS_REGEXP)
-        l.variables()[l.SLOT_LOCATION].value = LI.DIR_OTHER
-        l.variables()[l.SLOT_LOCATION_OTHER].value =\
+        l.settings()[l.SLOT_MATCH_METHOD].set_value(LI.MS_REGEXP)
+        l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
+        l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.variables()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
-        l.variables()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list)

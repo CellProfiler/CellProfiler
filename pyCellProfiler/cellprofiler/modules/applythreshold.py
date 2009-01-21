@@ -48,7 +48,7 @@ as to avoid a 'halo' effect.
     variable_revision_number = 1
     category = "Image Processing"
 
-    def create_variables(self):
+    def create_settings(self):
         self.module_name = self.__class__.__name__
         self.image_name = cpsetting.NameSubscriber("Which image do you want to threshold?",
                                                    "imagegroup", "None")
@@ -71,7 +71,7 @@ as to avoid a 'halo' effect.
         self.binary_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one.",
                                                 0.5)
 
-    def visible_variables(self):
+    def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
         if self.binary.value == GRAYSCALE:
             vv.append(self.low)
@@ -84,37 +84,37 @@ as to avoid a 'halo' effect.
             vv.append(self.binary_threshold)
         return vv
     
-    def variables(self):
-        """Return all  variables in a consistent order"""
+    def settings(self):
+        """Return all  settings in a consistent order"""
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low, self.high, self.low_threshold,
                 self.shift, self.high_threshold, self.dilation,
                 self.binary_threshold]
     
-    def backwards_compatibilize(self, variable_values,
+    def backwards_compatibilize(self, setting_values,
                                 variable_revision_number, module_name,
                                 from_matlab):
         if from_matlab and variable_revision_number < 4:
             raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
                                         "ApplyThreshold with revision < 4")
         if from_matlab and variable_revision_number == 4:
-            variable_values = [ variable_values[0],  # ImageName
-                                variable_values[1],  # ThresholdedImageName
+            setting_values = [ setting_values[0],  # ImageName
+                                setting_values[1],  # ThresholdedImageName
                                 None,
                                 None,
                                 None,
-                                variable_values[5],  # LowThreshold
-                                variable_values[6],  # Shift
-                                variable_values[7],  # HighThreshold
-                                variable_values[8],  # DilationValue
-                                variable_values[9],  # BinaryChoice
+                                setting_values[5],  # LowThreshold
+                                setting_values[6],  # Shift
+                                setting_values[7],  # HighThreshold
+                                setting_values[8],  # DilationValue
+                                setting_values[9],  # BinaryChoice
                                 ]
-            variable_values[2] = variable_values[9] > 0
-            variable_values[3] = LowThreshold > 0
-            variable_values[4] = HighThreshold < 1
+            setting_values[2] = setting_values[9] > 0
+            setting_values[3] = LowThreshold > 0
+            setting_values[4] = HighThreshold < 1
             variable_revision_number = 1
             from_matlab = False
-        return variable_values
+        return setting_values
         
     def run(self,workspace):
         """Run the module

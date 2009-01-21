@@ -83,7 +83,7 @@ AUTOMATIC_MAXIMA_SUPPRESSION    = 20
 class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
     """Cut and paste this in order to get started writing a module
     """
-    def create_variables(self):
+    def create_settings(self):
         self.set_module_name("IdentifyPrimAutomatic")
         self.image_name = cps.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
         self.object_name = cps.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
@@ -117,7 +117,7 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
         self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
         self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
 
-    def variables(self):
+    def settings(self):
         return [self.image_name,self.object_name,self.size_range, \
                 self.exclude_size, self.merge_objects, \
                 self.exclude_border_objects, self.threshold_method, \
@@ -128,7 +128,7 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
                 self.save_outlines, self.fill_holes, self.test_mode, \
                 self.automatic_smoothing, self.automatic_suppression ]
     
-    def visible_variables(self):
+    def visible_settings(self):
         vv = [self.image_name,self.object_name,self.size_range, \
                 self.exclude_size, self.merge_objects, \
                 self.exclude_border_objects, self.threshold_method, \
@@ -151,21 +151,21 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
             raise cps.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
 
     def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the variables in the module to upgrade it to its current revision number
+        """Possibly rewrite the settings in the module to upgrade it to its current revision number
         
         """
         if variable_revision_number == 12:
-            # Laplace values removed - propagate variable values to fill the gap
+            # Laplace values removed - propagate setting values to fill the gap
             for i in range(17,20):
-                self.variable(i-1).value = str(self.variable(i))
-            if str(self.variable(SMOOTHING_SIZE_VAR)) == cps.AUTOMATIC:
-                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cps.YES
-                self.variable(SMOOTHING_SIZE_VAR).value = 10
+                self.setting(i-1).value = str(self.setting(i))
+            if str(self.setting(SMOOTHING_SIZE_VAR)) == cps.AUTOMATIC:
+                self.setting(AUTOMATIC_SMOOTHING_VAR).value = cps.YES
+                self.setting(SMOOTHING_SIZE_VAR).value = 10
             else:
-                self.variable(AUTOMATIC_SMOOTHING_VAR).value = cps.NO
+                self.setting(AUTOMATIC_SMOOTHING_VAR).value = cps.NO
             variable_revision_number = 13
         if variable_revision_number != self.variable_revision_number:
-            raise ValueError("Unable to rewrite variables from revision # %d"%(variable_revision_number))
+            raise ValueError("Unable to rewrite settings from revision # %d"%(variable_revision_number))
     
     variable_revision_number = 13
 
@@ -509,7 +509,7 @@ settings in this module. The code was kindly donated by Zach Perlman and
 was used in this published work:
 Multidimensional drug profiling by automated microscopy.
 Science. 2004 Nov 12;306(5699):1194-8.  PMID: 15539606
-Regrettably, we have no further description of its variables.
+Regrettably, we have no further description of its settings.
 
 Special note on saving images: Using the settings in this module, object
 outlines can be passed along to the module OverlayOutlines and then saved

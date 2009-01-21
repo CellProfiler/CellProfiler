@@ -25,7 +25,7 @@ class PipelineController:
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
-        self.__variable_errors = {}
+        self.__setting_errors = {}
         self.__running_pipeline = None 
         self.__pipeline_measurements = None
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
@@ -41,7 +41,7 @@ class PipelineController:
         self.__pipeline_list_view = pipeline_list_view
         
     def attach_to_module_view(self,module_view):
-        """Listen for variable changes from the module view
+        """Listen for setting changes from the module view
         
         """
         self.__module_view = module_view
@@ -109,9 +109,9 @@ class PipelineController:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
 
     def __clear_errors(self):
-        for key,error in self.__variable_errors.iteritems():
+        for key,error in self.__setting_errors.iteritems():
             self.__frame.preferences_view.pop_error_text(error)
-        self.__variable_errors = {}
+        self.__setting_errors = {}
         
     def __on_save_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -144,9 +144,9 @@ class PipelineController:
     def on_remove_module(self,event):
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
-            for variable in module.variables():
-                if self.__variable_errors.has_key(variable.key()):
-                    self.__frame.preferencesview.pop_error_text(self.__variable_errors.pop(variable.key()))                    
+            for setting in module.settings():
+                if self.__setting_errors.has_key(setting.key()):
+                    self.__frame.preferencesview.pop_error_text(self.__setting_errors.pop(setting.key()))                    
             self.__pipeline.remove_module(module.module_num)
             
     def on_module_up(self,event):
@@ -173,14 +173,14 @@ class PipelineController:
         self.__pipeline.add_module(event.module_loader(module_num))
         
     def __on_module_view_event(self,caller,event):
-        assert isinstance(event,cellprofiler.gui.moduleview.VariableEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.VariableEditedEvent'%(str(event))
-        variable = event.get_variable()
+        assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
+        setting = event.get_setting()
         proposed_value = event.get_proposed_value()
         
-        variable.value = proposed_value
+        setting.value = proposed_value
             
     def on_analyze_images(self,event):
-        if len(self.__variable_errors):
+        if len(self.__setting_errors):
             wx.MessageBox("Please correct the errors in your pipeline before running.","Can't run pipeline",self.__frame)
             return
         output_path = self.get_output_file_path()

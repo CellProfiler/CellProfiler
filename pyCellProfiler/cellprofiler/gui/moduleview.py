@@ -9,21 +9,21 @@ import cellprofiler.settings
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
 
-class VariableEditedEvent:
-    """Represents an attempt by the user to edit a variable
+class SettingEditedEvent:
+    """Represents an attempt by the user to edit a setting
     
     """
-    def __init__(self,variable,proposed_value,event):
-        self.__variable = variable
+    def __init__(self,setting,proposed_value,event):
+        self.__setting = setting
         self.__proposed_value = proposed_value
         self.__event = event
         self.__accept_change = True
     
-    def get_variable(self):
-        """Return the variable being edited
+    def get_setting(self):
+        """Return the setting being edited
         
         """
-        return self.__variable
+        return self.__setting
     
     def get_proposed_value(self):
         """Return the value proposed by the user
@@ -43,28 +43,28 @@ class VariableEditedEvent:
         return self.__event
 
 def text_control_name(v):
-    """Return the name of a variable's text control
-    v - the variable
-    The text control name is built using the variable's key
+    """Return the name of a setting's text control
+    v - the setting
+    The text control name is built using the setting's key
     """
     return "%s_text"%(str(v.key()))
 
 def edit_control_name(v):
-    """Return the name of a variable's edit control
-    v - the variable
-    The edit control name is built using the variable's key
+    """Return the name of a setting's edit control
+    v - the setting
+    The edit control name is built using the setting's key
     """
     return str(v.key())
 
 def min_control_name(v):
     """For a range, return the control that sets the minimum value
-    v - the variable
+    v - the setting
     """
     return "%s_min"%(str(v.key()))
 
 def max_control_name(v):
     """For a range, return the control that sets the maximum value
-    v - the variable
+    v - the setting
     """
     return "%s_max"%(str(v.key()))
 
@@ -80,9 +80,9 @@ class ModuleView:
     """The module view implements a view on CellProfiler.Module
     
     The module view implements a view on CellProfiler.Module. The view consists
-    of a table composed of one row per variable. The first column of the table
-    has the explanatory text and the second has a VariableView which
-    gives the ui for editing the variable.
+    of a table composed of one row per setting. The first column of the table
+    has the explanatory text and the second has a control which
+    gives the ui for editing the setting.
     """
     
     def __init__(self,module_panel,pipeline):
@@ -96,7 +96,7 @@ class ModuleView:
         wx.EVT_IDLE(module_panel,self.on_idle)
 
     def __set_columns(self):
-        self.__grid.SetColLabelValue(0,'Variable description')
+        self.__grid.SetColLabelValue(0,'Setting description')
         self.__grid.SetColLabelValue(1,'Value')
         self.__grid.SetColSize(1,70)
     
@@ -117,26 +117,26 @@ class ModuleView:
             self.__module_panel.DestroyChildren()
             self.__module = None
     
-    def hide_variables(self):
+    def hide_settings(self):
         for child in self.__module_panel.Children:
             child.Hide()
         
     def set_selection(self,module_num):
-        """Initialize the controls in the view to the variables of the module"""
+        """Initialize the controls in the view to the settings of the module"""
         self.module_panel.Freeze()
         try:
             if self.__module and self.__module.module_num == module_num:
-                self.hide_variables()
+                self.hide_settings()
             else:
                 self.clear_selection()
             self.__module       = self.__pipeline.module(module_num)
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            variables           = self.__module.visible_variables()
-            sizer               = ModuleSizer(len(variables),2)
+            settings           = self.__module.visible_settings()
+            sizer               = ModuleSizer(len(settings),2)
             
-            for v,i in zip(variables, range(0,len(variables))):
+            for v,i in zip(settings, range(0,len(settings))):
                 control_name = edit_control_name(v)
                 text_name    = text_control_name(v)
                 static_text  = self.__module_panel.FindWindowByName(text_name)
@@ -187,11 +187,11 @@ class ModuleView:
             self.module_panel.Thaw()
     
     def make_binary_control(self,v,control_name, control):
-        """Make a checkbox control for a Binary variable"""
+        """Make a checkbox control for a Binary setting"""
         if not control:
             control = wx.CheckBox(self.__module_panel,-1,name=control_name)
-            def callback(event, variable=v, control=control):
-                self.__on_checkbox_change(event, variable, control)
+            def callback(event, setting=v, control=control):
+                self.__on_checkbox_change(event, setting, control)
                 
             self.__module_panel.Bind(wx.EVT_CHECKBOX,
                                      callback,
@@ -202,8 +202,8 @@ class ModuleView:
     def make_choice_control(self,v,choices,control_name,style,control):
         """Make a combo-box that shows choices
         
-        v            - the variable
-        choices      - the possible values for the variable
+        v            - the setting
+        choices      - the possible values for the setting
         control_name - assign this name to the control
         style        - one of the CB_ styles 
         """
@@ -212,12 +212,12 @@ class ModuleView:
                                   choices=choices,
                                   style=style,
                                   name=control_name)
-            def callback(event, variable=v, control = control):
-                self.__on_combobox_change(event, variable,control)
+            def callback(event, setting=v, control = control):
+                self.__on_combobox_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
             if style == wx.CB_DROPDOWN:
-                def on_cell_change(event, variable=v, control=control):
-                     self.__on_cell_change(event, variable, control)
+                def on_cell_change(event, setting=v, control=control):
+                     self.__on_cell_change(event, setting, control)
                 self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
         else:
             old_choices = control.Items
@@ -230,12 +230,12 @@ class ModuleView:
         return control
     
     def make_callback_control(self,v,control_name,control):
-        """Make a control that calls back using the callback buried in the variable"""
+        """Make a control that calls back using the callback buried in the setting"""
         if not control:
             control = wx.Button(self.module_panel,-1,
                                 v.label,name=control_name)
-            def callback(event, variable=v):
-                self.__on_do_something(event, variable)
+            def callback(event, setting=v):
+                self.__on_do_something(event, setting)
                 
             self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
         return control
@@ -247,8 +247,8 @@ class ModuleView:
                                   -1,
                                   str(v),
                                   name=control_name)
-            def on_cell_change(event, variable = v, control=control):
-                self.__on_cell_change(event, variable,control)
+            def on_cell_change(event, setting = v, control=control):
+                self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
         elif control.Value != v.value:
             control.Value = str(v.value)
@@ -269,11 +269,11 @@ class ModuleView:
                                    name=max_control_name(v))
             max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl,0,wx.EXPAND)
-            def on_min_change(event, variable = v, control=min_ctrl):
-                self.__on_min_change(event, variable,control)
+            def on_min_change(event, setting = v, control=min_ctrl):
+                self.__on_min_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
-            def on_max_change(event, variable = v, control=max_ctrl):
-                self.__on_max_change(event, variable,control)
+            def on_max_change(event, setting = v, control=max_ctrl):
+                self.__on_max_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
         else:
             min_ctrl = panel.FindByWindowName(min_control_name(v))
@@ -298,42 +298,42 @@ class ModuleView:
     def __on_column_sized(self,event):
         self.__module_panel.GetTopLevelParent().Layout()
     
-    def __on_checkbox_change(self,event,variable,control):
-        self.__on_cell_change(event, variable, control)
+    def __on_checkbox_change(self,event,setting,control):
+        self.__on_cell_change(event, setting, control)
         self.reset_view()
     
-    def __on_combobox_change(self,event,variable,control):
-        self.__on_cell_change(event, variable, control)
+    def __on_combobox_change(self,event,setting,control):
+        self.__on_cell_change(event, setting, control)
         self.reset_view()
         
-    def __on_cell_change(self,event,variable,control):
-        old_value = str(variable)
+    def __on_cell_change(self,event,setting,control):
+        old_value = str(setting)
         if isinstance(control,wx.CheckBox):
             proposed_value = (control.GetValue() and 'Yes') or 'No'
         else:
             proposed_value = str(control.GetValue())
-        variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
-        self.notify(variable_edited_event)
+        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        self.notify(setting_edited_event)
     
-    def __on_min_change(self,event,variable,control):
-        old_value = str(variable)
-        proposed_value="%s,%s"%(str(control.Value),str(variable.max))
-        variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
-        self.notify(variable_edited_event)
+    def __on_min_change(self,event,setting,control):
+        old_value = str(setting)
+        proposed_value="%s,%s"%(str(control.Value),str(setting.max))
+        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        self.notify(setting_edited_event)
         
-    def __on_max_change(self,event,variable,control):
-        old_value = str(variable)
-        proposed_value="%s,%s"%(str(variable.min),str(control.Value))
-        variable_edited_event = VariableEditedEvent(variable,proposed_value,event)
-        self.notify(variable_edited_event)
+    def __on_max_change(self,event,setting,control):
+        old_value = str(setting)
+        proposed_value="%s,%s"%(str(setting.min),str(control.Value))
+        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        self.notify(setting_edited_event)
         
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event,cellprofiler.pipeline.PipelineLoadedEvent) or
             isinstance(event,cellprofiler.pipeline.PipelineClearedEvent)):
             self.clear_selection()
     
-    def __on_do_something(self, event, variable):
-        variable.on_event_fired()
+    def __on_do_something(self, event, setting):
+        setting.on_event_fired()
         self.reset_view()
     
     def on_idle(self,event):
@@ -344,11 +344,11 @@ class ModuleView:
                 self.__module.test_valid(self.__pipeline)
             except cellprofiler.settings.ValidationError, instance:
                 validation_error = instance
-            for idx, variable in zip(range(len(self.__module.visible_variables())),self.__module.visible_variables()):
+            for idx, setting in zip(range(len(self.__module.visible_settings())),self.__module.visible_settings()):
                 try:
-                    if validation_error and validation_error.variable.key() == variable.key():
+                    if validation_error and validation_error.setting.key() == setting.key():
                         raise validation_error
-                    variable.test_valid(self.__pipeline)
+                    setting.test_valid(self.__pipeline)
                     if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
                         self.__controls[idx].SetToolTipString('')
                         self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
@@ -372,7 +372,7 @@ class ModuleView:
             focus_control.SetFocus()
         
 class ModuleSizer(wx.PySizer):
-    """The module sizer uses the maximum best width of the variable edit controls
+    """The module sizer uses the maximum best width of the setting edit controls
     to compute the column widths, then it sets the text controls to wrap within
     the remaining space, then it uses the best height of each text control to lay
     out the rows.

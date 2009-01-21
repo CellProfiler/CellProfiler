@@ -1,4 +1,4 @@
-"""test_variable.py - test cellprofiler.variable
+"""test_variable.py - test cellprofiler.settings
 
 """
 __version__="$Revision: 1$"
@@ -8,14 +8,14 @@ import cellprofiler.settings as cps
 
 class TestVariable(unittest.TestCase):
     def test_00_00_init(self):
-        x=cps.Variable("text","value")
+        x=cps.Setting("text","value")
         x.test_valid(None)
         self.assertEqual(x.text,"text")
         self.assertEqual(x.value,"value")
         self.assertTrue(x.key())
     
     def test_01_01_equality(self):
-        x=cps.Variable("text","value")
+        x=cps.Setting("text","value")
         self.assertTrue(x == "value")
         self.assertTrue(x != "text")
         self.assertFalse(x != "value")

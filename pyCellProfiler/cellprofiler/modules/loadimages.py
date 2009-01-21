@@ -67,7 +67,7 @@ class LoadImages(cpmodule.CPModule):
         self.location_other = cps.DirectoryPath("Where are the images located?", '')
 
     def add_imagecb(self):
-            'Adds another image to the variables'
+            'Adds another image to the settings'
             img_index = len(self.images_order_position)
             self.images_common_text += [cps.Text('Type the text that these images have in common', '')]
             self.images_order_position += [cps.Integer('What is the position of this image in each group', img_index+1)]
@@ -75,13 +75,13 @@ class LoadImages(cpmodule.CPModule):
             self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
 
     def remove_imagecb(self, index):
-            'Remove an image from the variables'
+            'Remove an image from the settings'
             del self.images_common_text[index]
             del self.images_order_position[index]
             del self.image_names[index]
             del self.remove_images[index]
 
-    def visible_variables(self):
+    def visible_settings(self):
         varlist = [self.file_types, self.match_method]
         if self.match_method == MS_EXACT_MATCH:
             varlist += [self.match_exclude]
@@ -104,7 +104,7 @@ class LoadImages(cpmodule.CPModule):
         return varlist
     
     #
-    # Slots for storing variables in the array
+    # Slots for storing settings in the array
     #
     SLOT_FILE_TYPE = 0
     SLOT_MATCH_METHOD = 1
@@ -118,8 +118,8 @@ class LoadImages(cpmodule.CPModule):
     SLOT_OFFSET_IMAGE_NAME = 1
     SLOT_OFFSET_ORDER_POSITION = 2
     SLOT_IMAGE_FIELD_COUNT = 3
-    def variables(self):
-        """Return the variables array in a consistent order"""
+    def settings(self):
+        """Return the settings array in a consistent order"""
         varlist = range(self.SLOT_FIRST_IMAGE + \
                         self.SLOT_IMAGE_FIELD_COUNT * len(self.image_names))
         varlist[self.SLOT_FILE_TYPE]              = self.file_types
@@ -139,17 +139,17 @@ class LoadImages(cpmodule.CPModule):
                 self.images_order_position[i]
         return varlist
     
-    def set_variable_values(self,variable_values,variable_revision_number,module_name):
-        """Interpret the variable values as saved by the given revision number
+    def set_setting_values(self,setting_values,variable_revision_number,module_name):
+        """Interpret the setting values as saved by the given revision number
         """
         if variable_revision_number == 1 and module_name == 'LoadImages':
-            variable_values,variable_revision_number = self.upgrade_1_to_2(variable_values)
+            setting_values,variable_revision_number = self.upgrade_1_to_2(setting_values)
         if variable_revision_number == 2 and module_name == 'LoadImages':
-            variable_values,variable_revision_number = self.upgrade_2_to_3(variable_values)
+            setting_values,variable_revision_number = self.upgrade_2_to_3(setting_values)
         if variable_revision_number == 3 and module_name == 'LoadImages':
-            variable_values,variable_revision_number = self.upgrade_3_to_4(variable_values)
+            setting_values,variable_revision_number = self.upgrade_3_to_4(setting_values)
         if variable_revision_number == 4 and module_name == 'LoadImages':
-            variable_values,variable_revision_number = self.upgrade_4_to_new_1(variable_values)
+            setting_values,variable_revision_number = self.upgrade_4_to_new_1(setting_values)
             module_name = self.module_class()
 
         if variable_revision_number != self.variable_revision_number or \
@@ -157,57 +157,57 @@ class LoadImages(cpmodule.CPModule):
             raise NotImplementedError("Cannot read version %d of %s"%(
                 variable_revision_number, self.module_name))
         #
-        # Figure out how many images are in the saved variables - make sure
+        # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert (len(variable_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
-        image_count = (len(variable_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
+        assert (len(setting_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
         while len(self.image_names) > image_count:
             self.remove_imagecb(0)
         while len(self.image_names) < image_count:
             self.add_imagecb()
-        super(LoadImages,self).set_variable_values(variable_values, variable_revision_number, module_name)
+        super(LoadImages,self).set_setting_values(setting_values, variable_revision_number, module_name)
     
-    def upgrade_1_to_2(self, variable_values):
+    def upgrade_1_to_2(self, setting_values):
         """Upgrade rev 1 LoadImages to rev 2
         
         Handle movie formats new to rev 2
         """
-        new_values = list(variable_values[:10])
-        image_or_movie =  variable_values[10]
+        new_values = list(setting_values[:10])
+        image_or_movie =  setting_values[10]
         if image_or_movie == 'Image':
             new_values.append('individual images')
-        elif variable_values[11] == 'avi':
+        elif setting_values[11] == 'avi':
             new_values.append('avi movies')
-        elif variable_values[11] == 'stk':
+        elif setting_values[11] == 'stk':
             new_values.append('stk movies')
         else:
-            raise ValueError('Unhandled movie type: %s'%(variable_values[11]))
-        new_values.extend(variable_values[11:])
+            raise ValueError('Unhandled movie type: %s'%(setting_values[11]))
+        new_values.extend(setting_values[11:])
         return (new_values,2)
     
-    def upgrade_2_to_3(self, variable_values):
+    def upgrade_2_to_3(self, setting_values):
         """Added binary/grayscale question"""
-        new_values = list(variable_values)
+        new_values = list(setting_values)
         new_values.append('grayscale')
         new_values.append('')
         return (new_values,3)
     
-    def upgrade_3_to_4(self, variable_values):
+    def upgrade_3_to_4(self, setting_values):
         """Added text exclusion at slot # 10"""
-        new_values = list(variable_values)
+        new_values = list(setting_values)
         new_values.insert(10,cps.DO_NOT_USE)
         return (new_values,4)
     
-    def upgrade_4_to_new_1(self,variable_values):
+    def upgrade_4_to_new_1(self,setting_values):
         """Take the old LoadImages values and put them in the correct slots"""
         new_values = range(self.SLOT_FIRST_IMAGE)
-        new_values[self.SLOT_FILE_TYPE]              = variable_values[11]
-        new_values[self.SLOT_MATCH_METHOD]           = variable_values[0]
-        new_values[self.SLOT_ORDER_GROUP_SIZE]       = variable_values[9]
-        new_values[self.SLOT_MATCH_EXCLUDE]          = variable_values[10]
-        new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = variable_values[12]
-        loc = variable_values[13]
+        new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
+        new_values[self.SLOT_MATCH_METHOD]           = setting_values[0]
+        new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
+        new_values[self.SLOT_MATCH_EXCLUDE]          = setting_values[10]
+        new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = setting_values[12]
+        loc = setting_values[13]
         if loc == '.':
             new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE
         elif loc == '&':
@@ -216,8 +216,8 @@ class LoadImages(cpmodule.CPModule):
             new_values[self.SLOT_LOCATION]           = DIR_OTHER 
         new_values[self.SLOT_LOCATION_OTHER]         = loc 
         for i in range(0,4):
-            text_to_find = variable_values[i*2+1]
-            image_name = variable_values[i*2+2]
+            text_to_find = setting_values[i*2+1]
+            image_name = setting_values[i*2+2]
             if text_to_find == cps.DO_NOT_USE or \
                image_name == cps.DO_NOT_USE or\
                text_to_find == '/' or\
@@ -337,7 +337,7 @@ class LoadImages(cpmodule.CPModule):
                directory currently being searched
         Returns a list of three-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
-        index within the image variables (e.g. ImageNameVars).
+        index within the image settings (e.g. ImageNameVars).
         """
         path = reduce(os.path.join, dirs, self.image_directory() )
         files = os.listdir(path)
@@ -381,7 +381,7 @@ class LoadImages(cpmodule.CPModule):
         return self.match_exclude
     
     def filter_filename(self, filename):
-        """Returns either None or the index of the match variable
+        """Returns either None or the index of the match setting
         """
         if self.text_to_exclude() != cps.DO_NOT_USE and \
             filename.find(self.text_to_exclude()) >=0:

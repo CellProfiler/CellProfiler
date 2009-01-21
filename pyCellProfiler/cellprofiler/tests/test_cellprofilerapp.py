@@ -66,7 +66,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         #
         # Module 1 is Matlab LoadImages
         #
-        vv = module.visible_variables()
+        vv = module.visible_settings()
         self.assertTrue(isinstance(vv[0],vvv.Choice))
         self.assertTrue(isinstance(vv[2],vvv.Text))
         self.assertTrue(isinstance(vv[3],vvv.Binary))
@@ -79,7 +79,7 @@ class Test_CellProfilerApp(unittest.TestCase):
             edit_control = module_panel.FindWindowByName(control_name)
             self.assertTrue(edit_control)
             if not isinstance(v,cellprofiler.settings.DoSomething):
-                self.assertTrue(v == edit_control.Value,"variable number %d: %s != %s"%(i,v.value,edit_control.Value))
+                self.assertTrue(v == edit_control.Value,"setting number %d: %s != %s"%(i,v.value,edit_control.Value))
     
     def test_01_02_Subscriber(self):
         """Test provide/subscribe for images
@@ -97,7 +97,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         app.ProcessPendingEvents()
         module_panel = app.frame.module_view.module_panel
         module = app.frame.pipeline.module(2)
-        v = module.visible_variables()[0]
+        v = module.visible_settings()[0]
         self.assertTrue(isinstance(v,vvv.NameSubscriber))
         control = module_panel.FindWindowByName(mv.edit_control_name(v))
         self.assertTrue(control)

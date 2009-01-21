@@ -217,8 +217,8 @@ class TestPipeline(unittest.TestCase):
         module.set_module_num(2)
         module.create_from_file(os.path.join(module_directory(),'IdentifyPrimAutomatic.m'),2)
         x.add_module(module)
-        module.variables()[0].set_value('OneCell')
-        module.variables()[1].set_value('Nuclei')
+        module.settings()[0].set_value('OneCell')
+        module.settings()[1].set_value('Nuclei')
         measurements = x.run()
         self.assertTrue('Nuclei' in measurements.get_object_names(),"IdentifyPrimAutomatic did not create a Nuclei category")
         self.assertTrue('Location_Center_X' in measurements.get_feature_names('Nuclei'),"IdentifyPrimAutomatic did not create a Location_Center_X measurement")
@@ -244,8 +244,8 @@ class TestPipeline(unittest.TestCase):
         module = MyClass()
         module.set_module_num(1)
         x.add_module(module)
-        module.variables()[0].value = "Hello"
-        choices = module.variables()[1].get_choices(x)
+        module.settings()[0].value = "Hello"
+        choices = module.settings()[1].get_choices(x)
         self.assertEqual(len(choices),0)
          
     def test_07_02_InfogroupAfter(self):
@@ -272,8 +272,8 @@ class TestPipeline(unittest.TestCase):
         module2 = MyClass2()
         module2.set_module_num(2)
         x.add_module(module2)
-        module1.variables()[0].value = "Hello"
-        choices = module2.variables()[0].get_choices(x)
+        module1.settings()[0].value = "Hello"
+        choices = module2.settings()[0].get_choices(x)
         self.assertEqual(len(choices),1)
         self.assertEqual(choices[0],"Hello")
          

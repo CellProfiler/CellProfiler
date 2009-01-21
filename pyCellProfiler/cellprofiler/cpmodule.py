@@ -36,79 +36,79 @@ class CPModule(object):
     
     def __init__(self):
         self.__module_num = -1
-        self.__variables = []
+        self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
         self.__module_name = 'unknown'
         self.__annotation_dict = None
-        self.create_variables()
+        self.create_settings()
         
-    def create_variables(self):
-        """Create your variables by subclassing this function"""
+    def create_settings(self):
+        """Create your settings by subclassing this function"""
         pass
     
     def create_from_handles(self,handles,module_num):
         """Fill a module with the information stored in the handles structure for module # ModuleNum 
         
-        Returns a module with the variables decanted from the handles.
+        Returns a module with the settings decanted from the handles.
         If the revision is old, a different and compatible module can be returned.
         """
         self.__module_num = module_num
         idx = module_num-1
         settings = handles['Settings'][0,0]
-        variable_values = []
+        setting_values = []
         if settings.dtype.fields.has_key('ModuleNotes'):
             n=settings['ModuleNotes'][0,idx]
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
         else:
             self.__notes = []
-        variable_count=settings['NumbersOfVariables'][0,idx]
+        setting_count=settings['NumbersOfVariables'][0,idx]
         variable_revision_number = settings['VariableRevisionNumbers'][0,idx]
         module_name = settings['ModuleNames'][0,idx][0]
-        for i in range(0,variable_count):
+        for i in range(0,setting_count):
             value_cell = settings['VariableValues'][idx,i]
             if isinstance(value_cell,numpy.ndarray):
                 if numpy.product(value_cell.shape) == 0:
-                    variable_values.append('')
+                    setting_values.append('')
                 else:
-                    variable_values.append(str(value_cell[0]))
+                    setting_values.append(str(value_cell[0]))
             else:
-                variable_values.append(value_cell)
-        self.set_variable_values(variable_values, variable_revision_number, 
+                setting_values.append(value_cell)
+        self.set_setting_values(setting_values, variable_revision_number, 
                                  module_name)
         self.on_post_load()
     
-    def set_variable_values(self, variable_values, variable_revision_number, 
+    def set_setting_values(self, setting_values, variable_revision_number, 
                             module_name):
-        """Set the variables in a module, given a list of values
+        """Set the settings in a module, given a list of values
         
-        The default implementation gets all the variables and then
+        The default implementation gets all the settings and then
         sets their values using the string passed. A more modern
-        module may want to tailor the particular variables set to
+        module may want to tailor the particular settings set to
         whatever values are in the list or however many values
         are in the list.
         """
-        variable_values = self.backwards_compatibilize(variable_values,
+        setting_values = self.backwards_compatibilize(setting_values,
                                                        variable_revision_number,
                                                        module_name,
                                                        not '.' in module_name)
-        for v,value in zip(self.variables(),variable_values):
+        for v,value in zip(self.settings(),setting_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
     
-    def backwards_compatibilize(self,variable_values,variable_revision_number,
+    def backwards_compatibilize(self,setting_values,variable_revision_number,
                                 module_name,from_matlab):
-        return variable_values
+        return setting_values
     
     def create_from_annotations(self):
-        """Create the variables based on what you can discern from the annotations
+        """Create the settings based on what you can discern from the annotations
         """
         annotation_dict = {}
         value_dict = {}
-        max_variable = 0
+        max_setting = 0
         
         for annotation in self.annotations():
-            vn = annotation.variable_number
+            vn = annotation.setting_number
             if not annotation_dict.has_key(vn):
                 annotation_dict[vn] = {}
             if not annotation_dict[vn].has_key(annotation.kind):
@@ -118,60 +118,60 @@ class CPModule(object):
                 value_dict[vn] = annotation.value
             elif annotation.kind == 'choice' and not value_dict.has_key(vn):
                 value_dict[vn] = annotation.value
-            if vn > max_variable:
-                max_variable = vn
+            if vn > max_setting:
+                max_setting = vn
         
-        variables = []
-        for i in range(1,max_variable+1):
-            assert annotation_dict.has_key(i), 'There are no annotations for variable # %d'%(i)
-            variable_dict = annotation_dict[i]
-            if variable_dict.has_key('text'):
-                text = variable_dict['text'][0]
-            elif variable_dict.has_key('pathnametext'):
-                text = variable_dict['pathnametext'][0]
-            elif variable_dict.has_key('filenametext'):
-                text = variable_dict['filenametext'][0]
+        settings = []
+        for i in range(1,max_setting+1):
+            assert annotation_dict.has_key(i), 'There are no annotations for setting # %d'%(i)
+            setting_dict = annotation_dict[i]
+            if setting_dict.has_key('text'):
+                text = setting_dict['text'][0]
+            elif setting_dict.has_key('pathnametext'):
+                text = setting_dict['pathnametext'][0]
+            elif setting_dict.has_key('filenametext'):
+                text = setting_dict['filenametext'][0]
             else:
                 text = ''
-            if variable_dict.has_key('infotype'):
+            if setting_dict.has_key('infotype'):
                 default_value = value_dict.get(i,cps.DO_NOT_USE)
-                parts = variable_dict['infotype'][0].split(' ')
+                parts = setting_dict['infotype'][0].split(' ')
                 if parts[-1] == 'indep':
                     v = cps.NameProvider(text,parts[0], default_value)
                 else:
                     v = cps.NameSubscriber(text,parts[0],default_value)
-            elif variable_dict.has_key('inputtype') and \
-                 variable_dict['inputtype'][0] == 'popupmenu':
-                choices = variable_dict['choice']
+            elif setting_dict.has_key('inputtype') and \
+                 setting_dict['inputtype'][0] == 'popupmenu':
+                choices = setting_dict['choice']
                 if len(choices) == 2 and all([choice in [cps.YES,cps.NO] for choice in choices]):
                     v = cps.Binary(text,choices[0]==cps.YES)
                 else:
                     default_value = value_dict.get(i,choices[0])
                     v = cps.Choice(text,choices,default_value)
-            elif variable_dict.has_key('inputtype') and \
-                 variable_dict['inputtype'][0] == 'popupmenu custom':
-                choices = variable_dict['choice']
+            elif setting_dict.has_key('inputtype') and \
+                 setting_dict['inputtype'][0] == 'popupmenu custom':
+                choices = setting_dict['choice']
                 default_value = value_dict.get(i,choices[0])
                 v = cps.CustomChoice(text,choices,default_value)
-            elif variable_dict.has_key('inputtype') and \
-                 variable_dict['inputtype'][0] == 'pathnametext':
+            elif setting_dict.has_key('inputtype') and \
+                 setting_dict['inputtype'][0] == 'pathnametext':
                 v = cps.PathnameText(text,value_dict.get(i,cps.DO_NOT_USE))
-            elif variable_dict.has_key('inputtype') and \
-                 variable_dict['inputtype'][0] == 'filenametext':
+            elif setting_dict.has_key('inputtype') and \
+                 setting_dict['inputtype'][0] == 'filenametext':
                 v = cps.FilenameText(text,value_dict.get(i,cps.DO_NOT_USE))
             else:
                 v = cps.Text(text,value_dict.get(i,"n/a"))
-            variables.append(v)
+            settings.append(v)
                      
-        self.set_variables(variables)
+        self.set_settings(settings)
         self.on_post_load()
     
     def on_post_load(self):
-        """This is a convenient place to do things to your module after the variables have been loaded or initialized"""
+        """This is a convenient place to do things to your module after the settings have been loaded or initialized"""
         pass
 
     def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the variables in the module to upgrade it to its current revision number
+        """Possibly rewrite the settings in the module to upgrade it to its current revision number
         
         """
         if variable_revision_number != self.variable_revision_number:
@@ -190,13 +190,13 @@ class CPModule(object):
         setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.notes()),1),dtype='object')
         for i in range(0,len(self.notes())):
             setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
-        setting[cellprofiler.pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.variables())
-        for i in range(0,len(self.variables())):
-            variable = self.variables()[i]
-            if len(str(variable)) > 0:
+        setting[cellprofiler.pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
+        for i in range(0,len(self.settings())):
+            variable = self.settings()[i]
+            if len(str(setting)) > 0:
                 setting[cellprofiler.pipeline.VARIABLE_VALUES][module_idx,i] = unicode(str(variable))
             try: # matlab & old-style through annotations
-                annotations = self.variable_annotations(variable.key())
+                annotations = self.setting_annotations(variable.key())
                 if annotations.has_key('infotype'):
                     setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
             except:
@@ -213,22 +213,22 @@ class CPModule(object):
         
         Throw a ValidationError exception with an explanation if a module is not valid.
         """
-        for variable in self.visible_variables():
-            variable.test_valid(pipeline)
+        for setting in self.visible_settings():
+            setting.test_valid(pipeline)
         self.validate_module(pipeline)
     
     def validate_module(self,pipeline):
         pass
     
-    def variable_annotations(self,key):
-        """Return annotations for the variable with the given number
+    def setting_annotations(self,key):
+        """Return annotations for the setting with the given number
         
         """
         if not self.__annotation_dict:
             self.__annotation_dict = cps.get_annotations_as_dictionary(self.annotations())
         if self.__annotation_dict.has_key(key):
             return self.__annotation_dict[key]
-        indexes = [index+1 for variable,index in zip(self.variables(),range(len(self.variables()))) if variable.key()==key]
+        indexes = [index+1 for setting,index in zip(self.settings(),range(len(self.settings()))) if setting.key()==key]
         if len(indexes):
             alt_key = indexes[0]
             if self.__annotation_dict.has_key(alt_key):
@@ -273,36 +273,36 @@ class CPModule(object):
     def get_variable_revision_number(self):
         """The version number, as parsed out of the .m file, saved in the handles or rewritten using an import rule
         """
-        raise NotImplementedError("Please implement VariableRevisionNumber in the derived class")
+        raise NotImplementedError("Please implement SettingRevisionNumber in the derived class")
     
     def __internal_get_variable_revision_number(self):
-        """The revision number for the variable format for this module"""
+        """The revision number for the setting format for this module"""
         return self.get_variable_revision_number()
     variable_revision_number = property(__internal_get_variable_revision_number)
     
-    def variables(self):
-        """A module's variables
+    def settings(self):
+        """A module's settings
         
         """
-        return self.__variables
+        return self.__settings
 
-    def variable(self,variable_num):
-        """Reference a variable by its one-based variable number
+    def setting(self,setting_num):
+        """Reference a setting by its one-based setting number
         """
-        return self.variables()[variable_num-1]
+        return self.settings()[setting_num-1]
     
-    def set_variables(self,variables):
-        self.__variables = variables
+    def set_settings(self,settings):
+        self.__settings = settings
         
-    def visible_variables(self):
-        """The variables that are visible in the UI
+    def visible_settings(self):
+        """The settings that are visible in the UI
         """
-        return self.variables()
+        return self.settings()
 
     def annotations(self):
-        """Return the variable annotations, as read out of the module file.
+        """Return the setting annotations, as read out of the module file.
         
-        Return the variable annotations, as read out of the module file.
+        Return the setting annotations, as read out of the module file.
         Each annotation is an instance of the cps.Annotation
         class.
         """
@@ -401,7 +401,7 @@ class MatlabModule(CPModule):
         return super(MatlabModule,self).create_from_handles(handles, module_num)
 
     def create_from_file(self,file_path,module_num):
-        """Parse a file to get the default variables for a module
+        """Parse a file to get the default settings for a module
         """
         self.set_module_num(module_num)
         self.set_module_name(os.path.splitext(os.path.split(file_path)[1])[0])
@@ -446,7 +446,7 @@ class MatlabModule(CPModule):
         cellprofiler.pipeline.add_matlab_measurements(handles, measurements)
 
     def __read_annotations(self,file):
-        """Read and return the annotations and variable revision # from a file
+        """Read and return the annotations and setting revision # from a file
         
         """
         annotations = []
@@ -484,7 +484,7 @@ class MatlabModule(CPModule):
         return self.module_name
 
     def upgrade_module_from_revision(self,variable_revision_number):
-        """Rewrite the variables to upgrade the module from the given revision number.
+        """Rewrite the settings to upgrade the module from the given revision number.
         
         """
         if variable_revision_number != self.target_variable_revision_number():
@@ -499,7 +499,7 @@ class MatlabModule(CPModule):
     variable_revision_number = property(get_variable_revision_number)
     
     def target_variable_revision_number(self):
-        """The variable revision number we need in order to run the module
+        """The setting revision number we need in order to run the module
         
         """
         if not self.__target_revision_number:
@@ -507,9 +507,9 @@ class MatlabModule(CPModule):
         return self.__target_variable_revision_number
     
     def annotations(self):
-        """Return the variable annotations, as read out of the module file.
+        """Return the setting annotations, as read out of the module file.
         
-        Return the variable annotations, as read out of the module file.
+        Return the setting annotations, as read out of the module file.
         Each annotation is an instance of the cps.Annotation
         class.
         """

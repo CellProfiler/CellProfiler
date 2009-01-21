@@ -1,4 +1,4 @@
-""" Variable.py - represents a module variable
+""" Setting.py - represents a module setting
 
 """
 __version__="$Revision$"
@@ -11,16 +11,16 @@ AUTOMATIC = "Automatic"
 YES = 'Yes'
 NO = 'No'
 
-class Variable(object):
-    """A module variable which holds a single string value
+class Setting(object):
+    """A module setting which holds a single string value
     
     """
     def __init__(self,text,value):
-        """Initialize a variable with the enclosing module and its string value
+        """Initialize a setting with the enclosing module and its string value
         
-        module - the module containing this variable
-        text   - the explanatory text for the variable
-        value  - the default or initial value for the variable
+        module - the module containing this setting
+        text   - the explanatory text for the setting
+        value  - the default or initial value for the setting
         """
         self.__annotations = []
         self.__text = text
@@ -31,24 +31,24 @@ class Variable(object):
         self.__value=value
 
     def key(self):
-        """Return a key that can be used in a dictionary to refer to this variable
+        """Return a key that can be used in a dictionary to refer to this setting
         
         """
         return self.__key
     
     def get_text(self):
-        """The explanatory text for the variable
+        """The explanatory text for the setting
         """
         return self.__text
     
     text = property(get_text)
     
     def get_value(self):
-        """The string contents of the variable"""
+        """The string contents of the setting"""
         return self.__value
     
     def __internal_get_value(self):
-        """The value stored within the variable"""
+        """The value stored within the setting"""
         return self.get_value()
     
     def __internal_set_value(self,value):
@@ -63,23 +63,23 @@ class Variable(object):
         return not self.__eq__(x)
     
     def get_is_yes(self):
-        """Return true if the variable's value is "Yes" """
+        """Return true if the setting's value is "Yes" """
         return self.__value == YES
     
     def set_is_yes(self,is_yes):
-        """Set the variable value to Yes if true, No if false"""
+        """Set the setting value to Yes if true, No if false"""
         self.__value = (is_yes and YES) or NO
     
     is_yes = property(get_is_yes,set_is_yes)
     
     def get_is_do_not_use(self):
-        """Return true if the variable's value is Do not use"""
+        """Return true if the setting's value is Do not use"""
         return self.value == DO_NOT_USE
     
     is_do_not_use = property(get_is_do_not_use)
     
     def test_valid(self, pipeline):
-        """Throw a ValidationError if the value of this variable is inappropriate for the context"""
+        """Throw a ValidationError if the value of this setting is inappropriate for the context"""
         pass
     
     def __str__(self):
@@ -87,27 +87,27 @@ class Variable(object):
             raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value
     
-class Text(Variable):
-    """A variable that displays as an edit box, accepting a string
+class Text(Setting):
+    """A setting that displays as an edit box, accepting a string
     
     """
     def __init__(self,text,value):
         super(Text,self).__init__(text,value)
 
 class DirectoryPath(Text):
-    """A variable that displays a filesystem path name
+    """A setting that displays a filesystem path name
     """
     def __init__(self,text,value):
         super(DirectoryPath,self).__init__(text,value)
 
 class FilenameText(Text):
-    """A variable that displays a file name
+    """A setting that displays a file name
     """
     def __init__(self,text,value):
         super(FilenameText,self).__init__(text,value)
 
 class Integer(Text):
-    """A variable that allows only integer input
+    """A setting that allows only integer input
     """
     def __init__(self,text,value=0,minval=None, maxval=None):
         super(Integer,self).__init__(text,str(value))
@@ -121,7 +121,7 @@ class Integer(Text):
         super(Integer,self).set_value(str_value)
         
     def get_value(self):
-        """Return the value of the variable as an integer
+        """Return the value of the setting as an integer
         """
         return int(super(Integer,self).get_value())
     
@@ -140,8 +140,8 @@ class Integer(Text):
             return True
         return self.value == x
 
-class IntegerRange(Variable):
-    """A variable that allows only integer input between two constrained values
+class IntegerRange(Setting):
+    """A setting that allows only integer input between two constrained values
     """
     def __init__(self,text,value=(0,1),minval=None, maxval=None):
         """Initialize an integer range
@@ -200,7 +200,7 @@ class IntegerRange(Variable):
             raise ValidationError("%d is greater than %d"%(self.min, self.max),self)
 
 class Float(Text):
-    """A variable that allows only floating point input
+    """A setting that allows only floating point input
     """
     def __init__(self,text,value=0,minval=None, maxval=None):
         super(Float,self).__init__(text,str(value))
@@ -214,7 +214,7 @@ class Float(Text):
         super(Float,self).set_value(str_value)
         
     def get_value(self):
-        """Return the value of the variable as an integer
+        """Return the value of the setting as an integer
         """
         return float(super(Float,self).get_value())
     
@@ -235,8 +235,8 @@ class Float(Text):
             return True
         return self.value == x
 
-class FloatRange(Variable):
-    """A variable that allows only floating point input between two constrained values
+class FloatRange(Setting):
+    """A setting that allows only floating point input between two constrained values
     """
     def __init__(self,text,value=(0,1),minval=None, maxval=None):
         """Initialize an integer range
@@ -296,14 +296,14 @@ class FloatRange(Variable):
             raise ValidationError("%f is greater than %f"%(self.min, self.max),self)
 
 class NameProvider(Text):
-    """A variable that provides a named object
+    """A setting that provides a named object
     """
     def __init__(self,text,group,value=DO_NOT_USE):
         super(NameProvider,self).__init__(text,value)
         self.__group = group
     
     def get_group(self):
-        """This variable provides a name to this group
+        """This setting provides a name to this group
         
         Returns a group name, e.g. imagegroup or objectgroup
         """
@@ -312,19 +312,19 @@ class NameProvider(Text):
     group = property(get_group)
 
 class ImageNameProvider(NameProvider):
-    """A variable that provides an image name
+    """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
         super(ImageNameProvider,self).__init__(text,'imagegroup',value)
 
 class ObjectNameProvider(NameProvider):
-    """A variable that provides an image name
+    """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
         super(ImageNameProvider,self).__init__(text,'objectgroup',value)
 
-class NameSubscriber(Variable):
-    """A variable that takes its value from one made available by name providers
+class NameSubscriber(Setting):
+    """A setting that takes its value from one made available by name providers
     """
     def __init__(self,text,group,value='None'):
         super(NameSubscriber,self).__init__(text,value)
@@ -332,7 +332,7 @@ class NameSubscriber(Variable):
         self.__group = group
     
     def get_group(self):
-        """This variable provides a name to this group
+        """This setting provides a name to this group
         
         Returns a group name, e.g. imagegroup or objectgroup
         """
@@ -344,13 +344,13 @@ class NameSubscriber(Variable):
         choices = []
         for module in pipeline.modules():
             module_choices = []
-            for variable in module.visible_variables():
-                if variable.key() == self.key():
+            for setting in module.visible_settings():
+                if setting.key() == self.key():
                     return choices
-                if isinstance(variable, NameProvider) and variable != DO_NOT_USE:
-                    module_choices.append(variable.value)
+                if isinstance(setting, NameProvider) and setting != DO_NOT_USE:
+                    module_choices.append(setting.value)
             choices += module_choices
-        assert False, "Variable not among visible variables in pipeline"
+        assert False, "Setting not among visible settings in pipeline"
     
     def test_valid(self,pipeline):
         if len(self.get_choices(pipeline)) == 0:
@@ -359,26 +359,26 @@ class NameSubscriber(Variable):
             raise ValidationError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))),self)
 
 class ImageNameSubscriber(NameSubscriber):
-    """A variable that provides an image name
+    """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
         super(ImageNameSubscriber,self).__init__(text,'imagegroup',value)
 
 class ObjectNameSubscriber(NameSubscriber):
-    """A variable that provides an image name
+    """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
         super(ObjetNameSubscriber,self).__init__(text,'objectgroup',value)
 
-class Binary(Variable):
-    """A variable that is represented as either true or false
-    The underlying value stored in the variables slot is "Yes" or "No"
+class Binary(Setting):
+    """A setting that is represented as either true or false
+    The underlying value stored in the settings slot is "Yes" or "No"
     for historical reasons.
     """
     def __init__(self,text,value):
-        """Initialize the binary variable with the module, explanatory text and value
+        """Initialize the binary setting with the module, explanatory text and value
         
-        The value for a binary variable is True or False
+        The value for a binary setting is True or False
         """
         str_value = (value and YES) or NO
         super(Binary,self).__init__(text, str_value)
@@ -393,7 +393,7 @@ class Binary(Variable):
             super(Binary,self).set_value(str_value)
     
     def get_value(self):
-        """Get the value of a binary variable as a truth value
+        """Get the value of a binary setting as a truth value
         """
         return super(Binary,self).get_value() == YES 
     
@@ -402,14 +402,14 @@ class Binary(Variable):
             x = False
         return (self.value and x) or ((not self.value) and (not x)) 
     
-class Choice(Variable):
-    """A variable that displays a drop-down set of choices
+class Choice(Setting):
+    """A setting that displays a drop-down set of choices
     
     """
     def __init__(self,text,choices,value=None):
         """Initializer
-        module - the module containing the variable
-        text - the explanatory text for the variable
+        module - the module containing the setting
+        text - the explanatory text for the setting
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
         """
@@ -434,8 +434,8 @@ class Choice(Variable):
 class CustomChoice(Choice):
     def __init__(self,text,choices,value=None):
         """Initializer
-        module - the module containing the variable
-        text - the explanatory text for the variable
+        module - the module containing the setting
+        text - the explanatory text for the setting
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
         """
@@ -450,9 +450,9 @@ class CustomChoice(Choice):
     
     def set_value(self,value):
         """Bypass the check in "Choice"."""
-        Variable.set_value(self, value)
+        Setting.set_value(self, value)
     
-class DoSomething(Variable):
+class DoSomething(Setting):
     """Do something in response to a button press
     """
     def __init__(self,text,label,callback,*args):
@@ -471,93 +471,8 @@ class DoSomething(Variable):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
 
-def validate_integer_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer"):
-    """A listener that validates integer variables"""
-    if isinstance(event,BeforeChangeVariableEvent):
-        if not event.new_value.isdigit():
-            event.cancel_change(cancel_reason)
-        value = int(event.new_value)
-        if lower_bound != None and value < lower_bound:
-            event.cancel_change(cancel_reason)
-        if upper_bound != None and value > upper_bound:
-            event.cancel_change(cancel_reason)
-
-def validate_integer_variable_listener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
-    """Return a lambda representation of ValidateIntegerVariable, with arguments bound"""
-    if allow_automatic:
-        return lambda variable,event: validate_integer_or_automatic(variable, event, lower_bound, upper_bound, cancel_reason)
-    return lambda variable, event: validate_integer_variable(variable, event, lower_bound, upper_bound, cancel_reason)
-
-def validate_integer_range(variable, event, lower_bound = None, upper_bound = None):
-    if isinstance(event,BeforeChangeVariableEvent):
-        values = event.new_value.split(',')
-        if len(values) != 2:
-            event.cancel_change("There must be two integer values, separated by commas")
-        elif not (values[0].isdigit() and values[1].isdigit()):
-            event.cancel_change("The values must be integers")
-        elif lower_bound != None and int(values[0]) < lower_bound:
-            event.cancel_change("The lower value must be at least %d"%(lower_bound))
-        elif upper_bound != None and int(values[1]) > upper_bound:
-            event.cancel_change("The upper value must be at most %d"%(upper_bound))
-        elif int(values[0]) > int(values[1]):
-            event.cancel_change("The lower value must be less than the upper value")
-    
-def validate_integer_range_listener(lower_bound = None, upper_bound = None):
-    """Return a lambda representation of ValidateIntegerRange, with arguments bound"""
-    return lambda variable, event: validate_integer_range(variable, event, lower_bound, upper_bound)
-
-def validate_real_variable(variable, event, lower_bound = None, upper_bound = None, cancel_reason = "The value must be a real number"):
-    """A listener that validates floats and such"""
-    if isinstance(event,BeforeChangeVariableEvent):
-        try:
-            value = float(event.new_value)
-        except ValueError:
-            event.cancel_change(cancel_reason)
-            return
-        if lower_bound != None and value < lower_bound:
-            event.cancel_change(cancel_reason)
-        if upper_bound != None and value > upper_bound:
-            event.cancel_change(cancel_reason)
-
-def validate_real_variable_listener(lower_bound = None, upper_bound = None, cancel_reason = "The value must be an integer",allow_automatic=False):
-    """Return a lambda representation of ValidateRealVariable, with arguments bound"""
-    if allow_automatic:
-        return lambda variable, event: validate_real_or_automatic(variable, event, lower_bound, upper_bound, cancel_reason)
-    return lambda variable, event: validate_real_variable(variable, event, lower_bound, upper_bound, cancel_reason)
-
-def validate_real_range(variable, event, lower_bound = None, upper_bound = None):
-    if isinstance(event,BeforeChangeVariableEvent):
-        values = event.new_value.split(',')
-        if len(values) != 2:
-            event.cancel_change("There must be two integer values, separated by commas")
-            return
-        lower = float(values[0])
-        upper = float(values[1])
-        if lower_bound != None and lower < lower_bound:
-            event.cancel_change("The lower value must be at least %d"%(lower_bound))
-        elif upper_bound != None and upper > upper_bound:
-            event.cancel_change("The upper value must be at most %d"%(upper_bound))
-        elif lower > upper:
-            event.cancel_change("The lower value must be less than the upper value")
-    
-def validate_real_range_listener(lower_bound = None, upper_bound = None):
-    """Return a lambda representation of ValidateRealRange, with arguments bound"""
-    return lambda variable, event: validate_real_range(variable, event, lower_bound, upper_bound)
-
-def validate_integer_or_automatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be an integer or "Automatic"."""):
-    if isinstance(event,BeforeChangeVariableEvent):
-        if event.new_value == AUTOMATIC:
-            return
-        validate_integer_variable(variable, event, lower_bound, upper_bound, cancel_reason)
- 
-def validate_real_or_automatic(variable, event, lower_bound = None, upper_bound = None, cancel_reason = """The value must be a real or "Automatic"."""):
-    if isinstance(event,BeforeChangeVariableEvent):
-        if event.new_value == AUTOMATIC:
-            return
-        validate_real_variable(variable, event, lower_bound, upper_bound, cancel_reason)
-        
-class ChangeVariableEvent(object):
-    """Abstract class representing either the event that a variable will be
+class ChangeSettingEvent(object):
+    """Abstract class representing either the event that a setting will be
     changed or has been changed
     
     """
@@ -575,12 +490,12 @@ class ChangeVariableEvent(object):
     
     new_value=property(get_new_value)
 
-class BeforeChangeVariableEvent(ChangeVariableEvent):
-    """Indicates that a variable is about to change, allows a listener to cancel the change
+class BeforeChangeSettingEvent(ChangeSettingEvent):
+    """Indicates that a setting is about to change, allows a listener to cancel the change
     
     """
     def __init__(self,old_value,new_value):
-        ChangeVariableEvent.__init__(self,old_value,new_value)
+        ChangeSettingEvent.__init__(self,old_value,new_value)
         self.__allow_change = True
         self.__cancel_reason = None
         
@@ -596,35 +511,35 @@ class BeforeChangeVariableEvent(ChangeVariableEvent):
     
     cancel_reason = property(get_cancel_reason)
     
-class AfterChangeVariableEvent(ChangeVariableEvent):
-    """Indicates that a variable has changed its value
+class AfterChangeSettingEvent(ChangeSettingEvent):
+    """Indicates that a setting has changed its value
     
     """
     def __init__(self,old_value,new_value):
-        ChangeVariableEvent.__init__(self,old_value,new_value)
+        ChangeSettingEvent.__init__(self,old_value,new_value)
 
-class DeleteVariableEvent():
+class DeleteSettingEvent():
     def __init__(self):
         pass
 
 class ValidationError(ValueError):
-    """An exception indicating that a variable's value prevents the pipeline from running
+    """An exception indicating that a setting's value prevents the pipeline from running
     """
-    def __init__(self,message,variable):
-        """Initialize with an explanatory message and the variable that caused the problem
+    def __init__(self,message,setting):
+        """Initialize with an explanatory message and the setting that caused the problem
         """
         super(ValidationError,self).__init__(message)
-        self.__variable = variable
+        self.__setting = setting
     
-    def get_variable(self):
-        """The variable responsible for the problem
+    def get_setting(self):
+        """The setting responsible for the problem
         
-        This might be one of several variables partially responsible
+        This might be one of several settings partially responsible
         for the problem.
         """
-        return self.__variable
+        return self.__setting
     
-    variable = property(get_variable)
+    setting = property(get_setting)
 # Valid Kind arguments to annotation
 ANN_TEXT   = 'text'
 ANN_CHOICE = 'choice'
@@ -636,7 +551,7 @@ ANN_FILENAMETEXT = 'filenametext'
 DO_NOT_USE = 'Do not use'
 
 class Annotation:
-    """Annotations are the bits of comments parsed out of a .m file that provide metadata on a variable
+    """Annotations are the bits of comments parsed out of a .m file that provide metadata on a setting
     
     """
     def __init__(self,*args,**kwargs):
@@ -645,112 +560,112 @@ class Annotation:
         args - should be a single line that is parsed
         kind - the kind of annotation it is. Legal values are "text", "choice","default","infotype","inputtype",
                "pathnametext" and "filenametext"
-        variable_number - the one-indexed index of the variable in the module's set of variables
+        setting_number - the one-indexed index of the setting in the module's set of settings
         value - the value of the annotation
         """
         if len(args) == 1:
             line = args[0]
             m=re.match("^%([a-z]+)VAR([0-9]+) = (.+)$",line)
             if not m:
-                raise(ValueError('Not a variable annotation comment: %s)'%(line)))
+                raise(ValueError('Not a setting annotation comment: %s)'%(line)))
             self.kind = m.groups()[0]
-            self.variable_number = int(m.groups()[1])
+            self.setting_number = int(m.groups()[1])
             self.value = m.groups()[2]
         else:
             self.kind = kwargs['kind']
-            self.variable_number = kwargs['variable_number']
+            self.setting_number = kwargs['setting_number']
             self.value = kwargs['value']
         if self.kind not in [ANN_TEXT,ANN_CHOICE,ANN_DEFAULT,ANN_INFOTYPE,ANN_INPUTTYPE, ANN_PATHNAMETEXT, ANN_FILENAMETEXT]:
             raise ValueError("Unrecognized annotation: %s"%(self.Kind))
 
-def text_annotation(variable_number, value):
+def text_annotation(setting_number, value):
     """Create a text annotation
     """
-    return Annotation(kind=ANN_TEXT,variable_number = variable_number, value = value)
+    return Annotation(kind=ANN_TEXT,setting_number = setting_number, value = value)
 
-def choice_annotations(variable_number, values):
-    """Create choice annotations for a variable
+def choice_annotations(setting_number, values):
+    """Create choice annotations for a setting
     
-    variable_number - the one-indexed variable number
-    values - a sequence of possible values for the variable
+    setting_number - the one-indexed setting number
+    values - a sequence of possible values for the setting
     """
-    return [Annotation(kind=ANN_CHOICE,variable_number=variable_number,value=value) for value in values]
+    return [Annotation(kind=ANN_CHOICE,setting_number=setting_number,value=value) for value in values]
 
-def default_annotation(variable_number,value):
+def default_annotation(setting_number,value):
     """Create a default value annotation
     """
-    return Annotation(kind=ANN_DEFAULT,variable_number=variable_number,value=value)
+    return Annotation(kind=ANN_DEFAULT,setting_number=setting_number,value=value)
 
-def infotype_provider_annotation(variable_number,value):
+def infotype_provider_annotation(setting_number,value):
     """Create an infotype provider that provides a certain class of thing (e.g. imagegroup or objectgroup)
     
-    variable_number - one-based variable number for the annotation
+    setting_number - one-based setting number for the annotation
     value - infotype such as object
     """
-    return Annotation(kind=ANN_INFOTYPE, variable_number = variable_number, value="%s indep"%(value))
+    return Annotation(kind=ANN_INFOTYPE, setting_number = setting_number, value="%s indep"%(value))
 
-def infotype_client_annotation(variable_number,value):
+def infotype_client_annotation(setting_number,value):
     """Create an infotype provider that needs a certain class of thing (e.g. imagegroup or objectgroup)
     
-    variable_number - one-based variable number for the annotation
+    setting_number - one-based setting number for the annotation
     value - infotype such as object
     """
-    return Annotation(kind=ANN_INFOTYPE, variable_number = variable_number, value=value)
+    return Annotation(kind=ANN_INFOTYPE, setting_number = setting_number, value=value)
 
-def input_type_annotation(variable_number,value):
+def input_type_annotation(setting_number,value):
     """Create an input type annotation, such as popupmenu
     """
-    return Annotation(kind=ANN_INPUTTYPE, variable_number= variable_number, value=value)
+    return Annotation(kind=ANN_INPUTTYPE, setting_number= setting_number, value=value)
 
-def choice_popup_annotation(variable_number, text, values, customizable=False):
-    """Create all the pieces needed for a choice popup variable
+def choice_popup_annotation(setting_number, text, values, customizable=False):
+    """Create all the pieces needed for a choice popup setting
     
-    variable_number - the one-based index of the variable
+    setting_number - the one-based index of the setting
     text - what the user sees to the left of the popup
     values - a sequence containing the allowed values
     """
-    return [text_annotation(variable_number,text)] + \
-            choice_annotations(variable_number, values) +\
-            [input_type_annotation(variable_number,(customizable and 'menupopup custom)') or 'menupopup')]
+    return [text_annotation(setting_number,text)] + \
+            choice_annotations(setting_number, values) +\
+            [input_type_annotation(setting_number,(customizable and 'menupopup custom)') or 'menupopup')]
 
-def indep_group_annotation(variable_number, text, group, default=DO_NOT_USE):
-    """Create all the pieces needed for an edit box for a variable defining a member of a particular group
+def indep_group_annotation(setting_number, text, group, default=DO_NOT_USE):
+    """Create all the pieces needed for an edit box for a setting defining a member of a particular group
     
-    variable_number - the one-based index of the variable
+    setting_number - the one-based index of the setting
     text - what the user sees to the left of the edit box
     group - the group, for instance imagegroup or objectgroup
-    default - the default value that appears when the variable is created
+    default - the default value that appears when the setting is created
     """
-    return edit_box_annotation(variable_number, text, default)+ \
-           [infotype_provider_annotation(variable_number,group)]
+    return edit_box_annotation(setting_number, text, default)+ \
+           [infotype_provider_annotation(setting_number,group)]
 
-def group_annotation(variable_number, text, group):
+def group_annotation(setting_number, text, group):
     """Create the pieces needed for a dependent group popup menu
     
-    variable_number - one-based index of the variable
+    setting_number - one-based index of the setting
     text - the text to the left of the drop-down
     group - the group, forinstance imagegroup or objectgroup
     """
-    return [text_annotation(variable_number, text), \
-            infotype_client_annotation(variable_number, group),
-            input_type_annotation(variable_number,'menupopup')] 
+    return [text_annotation(setting_number, text), \
+            infotype_client_annotation(setting_number, group),
+            input_type_annotation(setting_number,'menupopup')] 
 
-def edit_box_annotation(variable_number, text, default=DO_NOT_USE):
-    """Create a text annotation and a default annotation to define a variable that uses an edit box
+def edit_box_annotation(setting_number, text, default=DO_NOT_USE):
+    """Create a text annotation and a default annotation to define a setting that uses an edit box
     
-    variable_number - the one-based index of the variable
+    setting_number - the one-based index of the setting
     text - what the user sees to the left of the edit box
     default - the default value for the box
     """
-    return [text_annotation(variable_number,text),
-            default_annotation(variable_number, default)]
+    return [text_annotation(setting_number,text),
+            default_annotation(setting_number, default)]
 
-def checkbox_annotation(variable_number, text, default=False):
+def checkbox_annotation(setting_number, text, default=False):
     """Create a checkbox annotation
     
     The checkbox annotation has choice values = 'Yes' and 'No' but
     gets translated by the Gui code into a checkbox.
-    variable_number - the one-based index of the variable
+    setting_number - the one-based index of the setting
     text - the text to display to the user
     default - whether the box should be checked initially (True) or unchecked (False)
     """
@@ -758,19 +673,19 @@ def checkbox_annotation(variable_number, text, default=False):
         choices = [YES,NO]
     else:
         choices = [NO,YES]
-    return choice_popup_annotation(variable_number, text, choices)
+    return choice_popup_annotation(setting_number, text, choices)
     
 def get_annotations_as_dictionary(annotations):
     """Return a multilevel dictionary based on the annotations
     
     Return a multilevel dictionary based on the annotations. The first level
-    is the variable number. The second level is the variable kind. The value
+    is the setting number. The second level is the setting kind. The value
     of the second level is an array containing all annotations of that kind
-    and variable number.
+    and setting number.
     """
     dict = {}
     for annotation in annotations:
-        vn = annotation.variable_number
+        vn = annotation.setting_number
         if not dict.has_key(vn):
             dict[vn]={}
         if not dict[vn].has_key(annotation.kind):
@@ -778,15 +693,15 @@ def get_annotations_as_dictionary(annotations):
         dict[vn][annotation.kind].append(annotation)
     return dict
 
-def get_variable_annotations(annotations,variable_number):
-    variable_annotations = []
+def get_setting_annotations(annotations,setting_number):
+    setting_annotations = []
     for annotation in annotations:
-        if annotation.variable_number == variable_number:
-            variable_annotations.append(annotation)
-    return variable_annotations
+        if annotation.setting_number == setting_number:
+            setting_annotations.append(annotation)
+    return setting_annotations
 
-def get_variable_text(annotations, variable_number):
+def get_setting_text(annotations, setting_number):
     for annotation in annotations:
-        if annotation.variable_number == variable_number and annotation.kind=='text':
+        if annotation.setting_number == setting_number and annotation.kind=='text':
             return annotation.value
     return None

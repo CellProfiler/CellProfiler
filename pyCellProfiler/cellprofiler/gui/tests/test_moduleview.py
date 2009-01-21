@@ -1,4 +1,4 @@
-"""test_moduleview - test layout of variables in the moduleview
+"""test_moduleview - test layout of settings in the moduleview
 
 """
 __version__="$Revision$"
@@ -26,13 +26,13 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         return app
 
-    def set_variable(self, v):
+    def set_setting(self, v):
         class TestModule(cpm.CPModule):
             def __init__(self):
                 super(TestModule,self).__init__()
                 self.vv = [v]
 
-            def visible_variables(self):
+            def visible_settings(self):
                 return self.vv
         
         test_module = TestModule()
@@ -60,9 +60,9 @@ class TestModuleView(unittest.TestCase):
         module_panel = app.frame.module_view.module_panel
         return module_panel.FindWindowByName(cpmv.max_control_name(v))
     
-    def test_01_01_display_text_variable(self):
+    def test_01_01_display_text_setting(self):
         v=cps.Text("text","value")
-        app,text_control,edit_control = self.set_variable(v)
+        app,text_control,edit_control = self.set_setting(v)
         self.assertEqual(text_control.Label,"text")
         self.assertTrue(isinstance(text_control, wx.StaticText))
         self.assertEqual(edit_control.Value,"value")
@@ -76,9 +76,9 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
-    def test_01_02_display_binary_variable(self):
+    def test_01_02_display_binary_setting(self):
         v=cps.Binary("text",True)
-        app,text_control,checkbox = self.set_variable(v)
+        app,text_control,checkbox = self.set_setting(v)
         self.assertTrue(checkbox.Value)
         self.assertTrue(isinstance(checkbox,wx.CheckBox))
         event = wx.CommandEvent(wx.wxEVT_COMMAND_CHECKBOX_CLICKED,checkbox.Id)
@@ -90,9 +90,9 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         app.ProcessIdle()
     
-    def test_01_03_display_choice_variable(self):
+    def test_01_03_display_choice_setting(self):
         v = cps.Choice("text",['foo','bar'])
-        app,text_control,combobox = self.set_variable(v)
+        app,text_control,combobox = self.set_setting(v)
         self.assertTrue(combobox.Value,'foo')
         self.assertTrue(isinstance(combobox, wx.ComboBox))
         self.assertEqual(len(combobox.GetItems()),2)
@@ -109,9 +109,9 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         app.ProcessIdle()
 
-    def test_01_04_display_integer_variable(self):
+    def test_01_04_display_integer_setting(self):
         v = cps.Integer("text",1)
-        app,text_control,edit_control = self.set_variable(v)
+        app,text_control,edit_control = self.set_setting(v)
         self.assertTrue(edit_control.Value,'1')
         self.assertTrue(isinstance(edit_control, wx.TextCtrl))
         event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
@@ -127,7 +127,7 @@ class TestModuleView(unittest.TestCase):
     
     def test_01_05_display_integer_range(self):
         v = cps.IntegerRange("text",value=(1,2))
-        app,text_control,panel = self.set_variable(v)
+        app,text_control,panel = self.set_setting(v)
         min_control = self.get_min_control(app,v)
         self.assertEqual(min_control.Value,"1")
         max_control = self.get_max_control(app,v)
@@ -147,9 +147,9 @@ class TestModuleView(unittest.TestCase):
         app.ProcessPendingEvents()
         app.ProcessIdle()
 
-    def test_01_06_display_float_variable(self):
+    def test_01_06_display_float_setting(self):
         v = cps.Float("text",1.5)
-        app,text_control,edit_control = self.set_variable(v)
+        app,text_control,edit_control = self.set_setting(v)
         self.assertAlmostEqual(float(edit_control.Value),1.5)
         self.assertTrue(isinstance(edit_control, wx.TextCtrl))
         event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
@@ -165,7 +165,7 @@ class TestModuleView(unittest.TestCase):
     
     def test_01_07_display_float_range(self):
         v = cps.FloatRange("text",value=(1.5,2.5))
-        app,text_control,panel = self.set_variable(v)
+        app,text_control,panel = self.set_setting(v)
         min_control = self.get_min_control(app,v)
         self.assertAlmostEqual(float(min_control.Value),1.5)
         max_control = self.get_max_control(app,v)
@@ -187,7 +187,7 @@ class TestModuleView(unittest.TestCase):
     
     def test_01_08_display_name_provider(self):
         v = cps.NameProvider("text",group="mygroup",value="value")
-        app,text_control,edit_control = self.set_variable(v)
+        app,text_control,edit_control = self.set_setting(v)
         self.assertEqual(text_control.Label,"text")
         self.assertTrue(isinstance(text_control, wx.StaticText))
         self.assertEqual(edit_control.Value,"value")
@@ -203,7 +203,7 @@ class TestModuleView(unittest.TestCase):
 
     def test_02_01_bad_integer_value(self):
         v = cps.Integer("text",1)
-        app,text_control,edit_control = self.set_variable(v)
+        app,text_control,edit_control = self.set_setting(v)
         event = wx.CommandEvent(wx.wxEVT_COMMAND_TEXT_UPDATED,edit_control.Id)
         event.SetString('bad')
         edit_control.Command(event)

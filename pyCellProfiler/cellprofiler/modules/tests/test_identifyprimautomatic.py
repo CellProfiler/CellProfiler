@@ -23,101 +23,101 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     
     def test_01_01_image_name(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.IMAGE_NAME_VAR).set_value("MyImage")
+        x.setting(ID.IMAGE_NAME_VAR).set_value("MyImage")
         self.assertEqual(x.image_name, "MyImage")
     
     def test_01_02_object_name(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).set_value("MyObject")
+        x.setting(ID.OBJECT_NAME_VAR).set_value("MyObject")
         self.assertEqual(x.object_name, "MyObject")
     
     def test_01_03_size_range(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.size_range.min,10)
         self.assertEqual(x.size_range.max,40)
-        x.variable(ID.SIZE_RANGE_VAR).set_value("5,100")
+        x.setting(ID.SIZE_RANGE_VAR).set_value("5,100")
         self.assertEqual(x.size_range.min,5)
         self.assertEqual(x.size_range.max,100)
     
     def test_01_04_exclude_size(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.exclude_size.value,"Default should be yes")
-        x.variable(ID.EXCLUDE_SIZE_VAR).set_value("No")
+        x.setting(ID.EXCLUDE_SIZE_VAR).set_value("No")
         self.assertFalse(x.exclude_size.value)
-        x.variable(ID.EXCLUDE_SIZE_VAR).set_value("Yes")
+        x.setting(ID.EXCLUDE_SIZE_VAR).set_value("Yes")
         self.assertTrue(x.exclude_size.value)
         
     def test_01_05_merge_objects(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertFalse(x.merge_objects.value, "Default should be no")
-        x.variable(ID.MERGE_CHOICE_VAR).set_value("Yes")
+        x.setting(ID.MERGE_CHOICE_VAR).set_value("Yes")
         self.assertTrue(x.merge_objects.value)
-        x.variable(ID.MERGE_CHOICE_VAR).set_value("No")
+        x.setting(ID.MERGE_CHOICE_VAR).set_value("No")
         self.assertFalse(x.merge_objects.value)
     
     def test_01_06_exclude_border_objects(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.exclude_border_objects.value,"Default should be yes")
-        x.variable(ID.EXCLUDE_BORDER_OBJECTS_VAR).set_value("Yes")
+        x.setting(ID.EXCLUDE_BORDER_OBJECTS_VAR).set_value("Yes")
         self.assertTrue(x.exclude_border_objects.value)
-        x.variable(ID.EXCLUDE_BORDER_OBJECTS_VAR).set_value("No")
+        x.setting(ID.EXCLUDE_BORDER_OBJECTS_VAR).set_value("No")
         self.assertFalse(x.exclude_border_objects.value)
     
     def test_01_07_threshold_method(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.threshold_method, ID.TM_OTSU_GLOBAL, "Default should be Otsu global")
-        x.variable(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
         self.assertEqual(x.threshold_method, ID.TM_BACKGROUND_GLOBAL)
     
     def test_01_07_01_threshold_modifier(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.threshold_modifier, ID.TM_GLOBAL)
-        x.variable(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_ADAPTIVE)
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_ADAPTIVE)
         self.assertEqual(x.threshold_modifier, ID.TM_ADAPTIVE)
 
     def test_01_07_02_threshold_algorithm(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.threshold_algorithm == ID.TM_OTSU, "Default should be Otsu")
-        x.variable(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
         self.assertTrue(x.threshold_algorithm == ID.TM_BACKGROUND)
 
     def test_01_08_threshold_range(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.threshold_range.min,0)
         self.assertEqual(x.threshold_range.max,1)
-        x.variable(ID.THRESHOLD_RANGE_VAR).set_value(".2,.8")
+        x.setting(ID.THRESHOLD_RANGE_VAR).set_value(".2,.8")
         self.assertEqual(x.threshold_range.min,.2)
         self.assertEqual(x.threshold_range.max,.8)
     
     def test_01_09_threshold_correction_factor(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.threshold_correction_factor.value,1)
-        x.variable(ID.THRESHOLD_CORRECTION_VAR).set_value("1.5")
+        x.setting(ID.THRESHOLD_CORRECTION_VAR).set_value("1.5")
         self.assertEqual(x.threshold_correction_factor.value,1.5)
     
     def test_01_10_object_fraction(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.object_fraction.value,'0.01')
-        x.variable(ID.OBJECT_FRACTION_VAR).set_value("0.2")
+        x.setting(ID.OBJECT_FRACTION_VAR).set_value("0.2")
         self.assertEqual(x.object_fraction.value,'0.2')
         
     def test_01_11_unclump_method(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.unclump_method.value, ID.UN_INTENSITY, "Default should be intensity, was %s"%(x.unclump_method))
-        x.variable(ID.UNCLUMP_METHOD_VAR).set_value(ID.UN_MANUAL)
+        x.setting(ID.UNCLUMP_METHOD_VAR).set_value(ID.UN_MANUAL)
         self.assertEqual(x.unclump_method.value, ID.UN_MANUAL)
 
     def test_01_12_watershed_method(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.watershed_method.value, ID.WA_INTENSITY, "Default should be intensity")
-        x.variable(ID.WATERSHED_VAR).set_value(ID.WA_DISTANCE)
+        x.setting(ID.WATERSHED_VAR).set_value(ID.WA_DISTANCE)
         self.assertEqual(x.watershed_method.value, ID.WA_DISTANCE)
         
     def test_01_13_smoothing_filter_size(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.automatic_smoothing.value, "Default should be automatic")
         x.automatic_smoothing.value = False
-        x.variable(ID.SMOOTHING_SIZE_VAR).set_value("10")
+        x.setting(ID.SMOOTHING_SIZE_VAR).set_value("10")
         self.assertFalse(x.automatic_smoothing.value)
         self.assertEqual(x.smoothing_filter_size,10)
     
@@ -125,39 +125,39 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.automatic_suppression.value, "Default should be automatic")
         x.automatic_suppression.value= False
-        x.variable(ID.MAXIMA_SUPPRESSION_SIZE_VAR).set_value("10")
+        x.setting(ID.MAXIMA_SUPPRESSION_SIZE_VAR).set_value("10")
         self.assertFalse(x.automatic_suppression.value)
         self.assertEqual(x.maxima_suppression_size.value,10)
         
     def test_01_15_use_low_res(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.low_res_maxima.value)
-        x.variable(ID.LOW_RES_MAXIMA_VAR).set_value("No")
+        x.setting(ID.LOW_RES_MAXIMA_VAR).set_value("No")
         self.assertFalse(x.low_res_maxima.value)
-        x.variable(ID.LOW_RES_MAXIMA_VAR).set_value("Yes")
+        x.setting(ID.LOW_RES_MAXIMA_VAR).set_value("Yes")
         self.assertTrue(x.low_res_maxima.value)
         
     def test_01_17_fill_holes(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.fill_holes.value)
-        x.variable(ID.FILL_HOLES_OPTION_VAR).value = cellprofiler.settings.NO
+        x.setting(ID.FILL_HOLES_OPTION_VAR).value = cellprofiler.settings.NO
         self.assertFalse(x.fill_holes.value)
-        x.variable(ID.FILL_HOLES_OPTION_VAR).value = cellprofiler.settings.YES
+        x.setting(ID.FILL_HOLES_OPTION_VAR).value = cellprofiler.settings.YES
         self.assertTrue(x.fill_holes.value)
         
     def test_01_18_test_mode(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertTrue(x.test_mode.value)
-        x.variable(ID.TEST_MODE_VAR).value = cellprofiler.settings.NO
+        x.setting(ID.TEST_MODE_VAR).value = cellprofiler.settings.NO
         self.assertFalse(x.test_mode.value)
-        x.variable(ID.TEST_MODE_VAR).value = cellprofiler.settings.YES
+        x.setting(ID.TEST_MODE_VAR).value = cellprofiler.settings.YES
         self.assertTrue(x.test_mode.value)
         
     def test_02_000_test_zero_objects(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
@@ -190,9 +190,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_001_test_zero_objects_wa_in_lo_in(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_INTENSITY
         img = numpy.zeros((25,25))
@@ -212,9 +212,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_002_test_zero_objects_wa_di_lo_in(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
         x.watershed_method.value = ID.WA_DISTANCE
         x.unclump_method.value = ID.UN_INTENSITY
         img = numpy.zeros((25,25))
@@ -234,9 +234,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         
     def test_02_003_test_zero_objects_wa_in_lo_sh(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_SHAPE
         img = numpy.zeros((25,25))
@@ -256,9 +256,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_004_test_zero_objects_wa_di_lo_sh(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".1,1"
         x.watershed_method.value = ID.WA_DISTANCE
         x.unclump_method.value = ID.UN_SHAPE
         img = numpy.zeros((25,25))
@@ -278,11 +278,11 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_01_test_one_object(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
-        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.setting(ID.AUTOMATIC_SMOOTHING_VAR).value = False
         x.watershed_method.value = ID.WA_NONE
         img = one_cell_image()
         image = cellprofiler.cpimage.Image(img)
@@ -322,9 +322,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_02_test_two_objects(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
@@ -365,10 +365,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_02_03_test_threshold_range(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
         image = cellprofiler.cpimage.Image(img)
@@ -406,12 +406,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     
     def test_02_04_fill_holes(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.FILL_HOLES_OPTION_VAR).value = True
-        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
-        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.FILL_HOLES_OPTION_VAR).value = True
+        x.setting(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.setting(ID.SMOOTHING_SIZE_VAR).value = 0
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
@@ -432,13 +432,13 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         
     def test_02_05_dont_fill_holes(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.FILL_HOLES_OPTION_VAR).value = False
-        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
-        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.THRESHOLD_RANGE_VAR).value = ".7,1"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.FILL_HOLES_OPTION_VAR).value = False
+        x.setting(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.setting(ID.AUTOMATIC_SMOOTHING_VAR).value = False
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
@@ -567,9 +567,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline.add_module(inject_image)
         ipm = ID.IdentifyPrimAutomatic()
         ipm.set_module_num(2)
-        ipm.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        ipm.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        ipm.variable(ID.EXCLUDE_SIZE_VAR).value = False
+        ipm.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        ipm.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        ipm.setting(ID.EXCLUDE_SIZE_VAR).value = False
         ipm.watershed_method.value = ID.WA_NONE
         pipeline.add_module(ipm)
         measurements = pipeline.run()
@@ -634,10 +634,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     
     def test_05_01_discard_large(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = True
-        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = True
+        x.setting(ID.SIZE_RANGE_VAR).value = '10,40'
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
@@ -663,10 +663,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_05_02_keep_large(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.SIZE_RANGE_VAR).value = '10,40'
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
@@ -690,10 +690,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_05_03_discard_small(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = True
-        x.variable(ID.SIZE_RANGE_VAR).value = '40,60'
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = True
+        x.setting(ID.SIZE_RANGE_VAR).value = '40,60'
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         draw_circle(img,(100,100),50,.5)
@@ -719,10 +719,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
 
     def test_05_02_discard_edge(self):
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.SIZE_RANGE_VAR).value = '10,40'
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((100,100))
         centers = [(50,50),(10,50),(50,10),(90,50),(50,90)]
@@ -749,10 +749,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_05_03_discard_with_mask(self):
         """Check discard of objects that are on the border of a mask"""
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.SIZE_RANGE_VAR).value = '10,40'
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.SIZE_RANGE_VAR).value = '10,40'
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
         centers = [(100,100),(30,100),(100,30),(170,100),(100,170)]
@@ -780,11 +780,11 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_06_01_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
         x = ID.IdentifyPrimAutomatic()
-        x.variable(ID.OBJECT_NAME_VAR).value = "my_object"
-        x.variable(ID.IMAGE_NAME_VAR).value = "my_image"
-        x.variable(ID.EXCLUDE_SIZE_VAR).value = False
-        x.variable(ID.SMOOTHING_SIZE_VAR).value = 0
-        x.variable(ID.AUTOMATIC_SMOOTHING_VAR).value = False
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.setting(ID.SMOOTHING_SIZE_VAR).value = 0
+        x.setting(ID.AUTOMATIC_SMOOTHING_VAR).value = False
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((10,10))
         img[4,4]=1

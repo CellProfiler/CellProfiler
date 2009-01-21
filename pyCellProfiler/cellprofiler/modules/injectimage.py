@@ -18,11 +18,11 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         self.__image = image
         self.image_name = cellprofiler.settings.NameProvider("Hardwired image name","imagegroup",image_name) 
     
-    def visible_variables(self):
+    def visible_settings(self):
         return [self.image_name]
     
     def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the variables in the module to upgrade it to its current revision number
+        """Possibly rewrite the settings in the module to upgrade it to its current revision number
         
         """
         raise NotImplementedError("Please implement UpgradeModuleFromRevision")
@@ -36,9 +36,9 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
     
     def annotations(self):
-        """Return the variable annotations, as read out of the module file.
+        """Return the setting annotations, as read out of the module file.
         
-        Return the variable annotations, as read out of the module file.
+        Return the setting annotations, as read out of the module file.
         Each annotation is an instance of the Cellprofiler.Settings.Annotation
         class.
         """

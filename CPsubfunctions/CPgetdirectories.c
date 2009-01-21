@@ -191,6 +191,7 @@ mxArray **dir(const char *dir_name, int *nfiles)
      while (dirent = readdir(dir))
           if (is_dir(dir_name, dirent)) {
                files = add_file(files, dirent->d_name, nfiles, &size);
+          }
      closedir(dir);
      return files;
 }

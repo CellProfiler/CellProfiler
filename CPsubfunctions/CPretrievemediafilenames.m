@@ -14,9 +14,24 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 
 %%% If recurse is true, we list all directories
 if strncmpi(recurse,'Y',1) || strncmpi(recurse,'S',1)
-    Directories = CPgetdirectorytree(Pathname);
+%     Directories = CPgetdirectorytree(Pathname);
     if strncmpi(recurse,'S',1)
-        Directories=CPselectdirectories(Directories);
+        
+        idx = 1;
+        More = 'Yes';
+        while strcmp(More,'Yes')
+            SubDirectory = uigetdir(Pathname);
+            Directories{idx} = SubDirectory;
+            idx = idx + 1;
+            More = CPquestdlg('Do you want to choose another directory?');
+        end
+        if strcmp(More,'Cancel')
+            error('Processing was stopped because the user chose Cancel');
+        end
+        
+        %% CPselectdirectories is still too slow for a lot of subfolders on
+        %% bcb_image
+%         Directories=CPselectdirectories(Directories);
     end
 else
     Directories = {Pathname};

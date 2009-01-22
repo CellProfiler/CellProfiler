@@ -354,7 +354,9 @@ CheckImageSets = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 drawnow
 
 if strcmpi(AnalyzeSubDir,'Yes') && (~ isfield(handles.Current, 'BatchInfo'))
-    AnalyzeSubDir = 'Select';    %%% Select subdirectories using the GUI
+    if strcmpi(SelectSubfolders,'Yes')
+        AnalyzeSubDir = 'Select';    %%% Select subdirectories using the GUI
+    end
 end
 if strcmp(FileFormat,'individual images')
     ImageOrMovie = 'Image';
@@ -580,7 +582,8 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             %%% Extract the file names
             for n = 1:length(ImageName)
-                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir(1), ExactOrRegExp,'Image');
+                
+                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Image');
                 
                 % Remove excluded images
                 if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),

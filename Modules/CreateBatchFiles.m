@@ -68,11 +68,11 @@ drawnow
 %defaultVAR01 = .
 BatchSavePath = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%pathnametextVAR02 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the local machine's perspective, omitting trailing slashes. Otherwise, leave a period (.). If your image and output folder paths are different, enter the input then the output path separated by a comma.
+%pathnametextVAR02 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the LOCAL MACHINE'S perspective, omitting trailing slashes. Otherwise, leave a period (.). If your image and output folder paths are different, enter the input then the output path separated by a comma.
 %defaultVAR02 = .
 OldPathname = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%pathnametextVAR03 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the cluster machines' perspective, omitting trailing slashes. Otherwise, leave a period (.). See above for entering multiple paths.
+%pathnametextVAR03 = If pathnames are specified differently between the local and cluster machines, enter that part of the pathname from the CLUSTER MACHINES' perspective, omitting trailing slashes. Otherwise, leave a period (.). See above for entering multiple paths.
 %defaultVAR03 = .
 NewPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 

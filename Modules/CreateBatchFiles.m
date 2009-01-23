@@ -186,12 +186,14 @@ if ~any(strcmp(OldPathname, '.'))
     PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
     for i = 1:length(PathFieldnames),
         handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
+        handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{2},NewPathname{2}),'\','/');
     end
     % (b) handles.Measurements.Image
     Fieldnames = fieldnames(handles.Measurements.Image);
     PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
     for i = 1:length(PathFieldnames),
         handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
+        handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{2},NewPathname{2}),'\','/');
     end
 end
 

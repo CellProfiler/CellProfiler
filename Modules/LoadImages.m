@@ -432,7 +432,7 @@ if SetBeingAnalyzed == 1
         if strcmp(ImageOrMovie,'Image')
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .tif, .jpg, .DIB).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(Pathname,'',AnalyzeSubDir,'Regular','Image');
+            [handles,FileNames] = CPretrievemediafilenames(handles, Pathname,'',AnalyzeSubDir,'Regular','Image');
 
             %%% Checks whether any files have been specified.
             if isempty(FileNames)
@@ -462,7 +462,7 @@ if SetBeingAnalyzed == 1
         else
             % Get all filenames in the specified directory wich contains the specified extension (e.g., .avi or .stk).
             % Note that there is no check that the extensions actually is the last part of the filename.
-            FileNames = CPretrievemediafilenames(Pathname,'',AnalyzeSubDir,'Regular','Movie');
+            [handles,FileNames] = CPretrievemediafilenames(handles, Pathname,'',AnalyzeSubDir,'Regular','Movie');
 
             %%% Checks whether any files have been found
             if isempty(FileNames)
@@ -583,7 +583,7 @@ if SetBeingAnalyzed == 1
             %%% Extract the file names
             for n = 1:length(ImageName)
                 
-                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Image');
+                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Image');
                 
                 % Remove excluded images
                 if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),
@@ -613,7 +613,7 @@ if SetBeingAnalyzed == 1
         else
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)
-                FileList = CPretrievemediafilenames(Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
+                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 
                 % Remove excluded images
                 if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),

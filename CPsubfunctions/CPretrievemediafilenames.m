@@ -1,4 +1,4 @@
-function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, ExactOrRegExp, ImageOrMovie)
+function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextToFind, recurse, ExactOrRegExp, ImageOrMovie)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -12,15 +12,16 @@ function FileNames = CPretrievemediafilenames(Pathname, TextToFind, recurse, Exa
 %
 % $Revision$
 
-%%% If recurse is true, we list all directories
-if strncmpi(recurse,'Y',1) || strncmpi(recurse,'S',1)
-%     Directories = CPgetdirectorytree(Pathname);
+if ~isfield(handles.Pipeline, 'SubFolders')
     if strncmpi(recurse,'S',1)
-        
+
         idx = 1;
         More = 'Yes';
         while strcmp(More,'Yes')
-            SubDirectory = uigetdir(Pathname);
+            SubDirectory = CPuigetdir(Pathname,'Choose Image Subfolder');
+            if SubDirectory == 0 %% User hit Cancel in uigetdir window
+                error('Processing was stopped because the user chose Cancel');
+            end
             Directories{idx} = SubDirectory;
             idx = idx + 1;
             More = CPquestdlg('Do you want to choose another directory?');
@@ -28,14 +29,21 @@ if strncmpi(recurse,'Y',1) || strncmpi(recurse,'S',1)
         if strcmp(More,'Cancel')
             error('Processing was stopped because the user chose Cancel');
         end
-        
+        handles.Pipeline.SubFolders = Directories;
+    elseif strncmpi(recurse,'Y',1)
+
         %% CPselectdirectories is still too slow for a lot of subfolders on
         %% bcb_image
-%         Directories=CPselectdirectories(Directories);
+        Directories = CPgetdirectorytree(Pathname);
+        %         Directories= CPselectdirectories(Directories);
+        handles.Pipeline.SubFolders = Directories;
+    else
+        Directories = {Pathname};
     end
 else
-    Directories = {Pathname};
+    Directories = handles.Pipeline.SubFolders;
 end
+
 FileNames = cell(0);
 Count = 1;
 for i=1:length(Directories)

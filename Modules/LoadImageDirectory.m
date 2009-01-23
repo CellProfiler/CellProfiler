@@ -194,7 +194,7 @@ end
 DirPaths = handles.Pipeline.(dir_fieldname);
 DirPath = fullfile(handles.Pipeline.(path_fieldname),...
                    DirPaths{handles.Current.SetBeingAnalyzed});
-FileList = CPretrievemediafilenames(DirPath,FileTextToFind,AnalyzeSubDir(1), ExactOrRegExp,'Image');
+[handles,FileList] = CPretrievemediafilenames(handles, DirPath,FileTextToFind,AnalyzeSubDir, ExactOrRegExp,'Image');
 if isempty(FileList)
     error(['Image processing was canceled in the ', ModuleName, ' module because no files were found in the ', DirPath, ' directory.']);
 end

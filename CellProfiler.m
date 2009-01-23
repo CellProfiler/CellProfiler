@@ -3808,7 +3808,7 @@ if exist(pathname,'dir')
     %%% Retrieves the list of image file names from the chosen directory and
     %%% stores them in the handles structure, using the function
     %%% RetrieveImageFileNames.
-    FileNames = CPretrievemediafilenames(pathname,'','No','Exact','Both');
+    [handles,FileNames] = CPretrievemediafilenames(handles, pathname,'','No','Exact','Both');
     handles.Current.FilenamesInImageDir = FileNames;
 %%% We decided that the following is annoying to have pop up all the time. It is
 %%% sufficient for the listbox displaying the files in the default image
@@ -3835,7 +3835,7 @@ else
         [status, message] = mkdir(pathname);
         if status 
             handles.Current.DefaultImageDirectory = pathname;
-            FileNames = CPretrievemediafilenames(pathname,'','No','Exact','Both');
+            [handles,FileNames] = CPretrievemediafilenames(handles, pathname,'','No','Exact','Both');
             handles.Current.FilenamesInImageDir = FileNames;
         else
             CPerrordlg(['Unable to create directory ''' pathname '''.  (' message ')']);

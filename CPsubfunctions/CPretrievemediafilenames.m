@@ -102,7 +102,7 @@ for i=1:length(Directories)
             ExtraPath=[];
         else
             ExtraPath=Directories{i};
-            ExtraPath=ExtraPath(length(Pathname)+2:end);
+            ExtraPath=ExtraPath(length(Pathname)+1:end);
         end
         for j=1:length(NotYetTextMatchedFileNames)
             FileName = char(NotYetTextMatchedFileNames(j));

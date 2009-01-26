@@ -25,7 +25,12 @@ elseif strncmpi(RescaleOption,'S',1) == 1
 elseif strncmpi(RescaleOption,'M',1) == 1
     %%% Rescales the image so the max equals the max of
     %%% the original image.
-    IntermediateImage = InputImage ./ max(max(InputImage));
+    if any(InputImage(:))
+        IntermediateImage = InputImage ./ max(max(InputImage));
+    else
+        %% Image all zeros.  Leave it alone.
+        IntermediateImage = InputImage;
+    end
     OutputImage = IntermediateImage .* max(max(MethodSpecificArguments));
 elseif strncmpi(RescaleOption,'G',1) == 1
     %%% Rescales the image so that all pixels are equal to or greater

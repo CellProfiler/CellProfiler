@@ -169,7 +169,15 @@ class IntegerRange(Setting):
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
         values = str(self).split(',')
-        return (int(values[0]),int(values[1]))
+        if values[0].isdigit():
+            min = int(values[0])
+        else:
+            min = None
+        if len(values) > 1  and values[1].isdigit():
+            max = int(values[1])
+        else:
+            max = None
+        return (min,max)
     
     def get_min(self):
         """The minimum value of the range"""

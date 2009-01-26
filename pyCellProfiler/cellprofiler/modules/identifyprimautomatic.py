@@ -549,8 +549,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Retrieve the relevant image and mask
         #
-        image = workspace.image_set.get_image(self.image_name.value)
-        img = image.image
+        image = workspace.image_set.get_image(self.image_name.value,
+                                              must_be_grayscale = True)
+        img = image.pixel_data
         mask = image.mask
         #
         # Get a threshold to use for labeling
@@ -577,9 +578,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
         # Make an outline image
-        outline_image = labeled_image!=0
-        temp = scipy.ndimage.binary_dilation(outline_image)
-        outline_image = numpy.logical_and(temp,numpy.logical_not(outline_image))
+        temp = scipy.ndimage.grey_dilation(labeled_image,
+                                           footprint=numpy.ones((3,3),bool))
+        outline_image = temp!=labeled_image
         if workspace.frame:
             self.display(workspace.frame,image, labeled_image,outline_image)
         # Add image measurements
@@ -801,8 +802,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
                                                  (border_labels,
                                                   numpy.zeros(border_labels.shape)))).todense()
-            if any(histogram[1:,0] > 0):
-                histogram_image = histogram[labeled_image,0]
+            histogram = numpy.array(histogram).flatten()
+            histogram.resize((numpy.max(labeled_image)+1,))
+            if any(histogram[1:] > 0):
+                histogram_image = histogram[labeled_image]
                 labeled_image[histogram_image > 0] = 0
             elif image.has_mask:
                 # The assumption here is that, if nothing touches the border,
@@ -835,20 +838,29 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outlined_axes = my_frame.subplot(0,1)
 
         orig_axes.clear()
-        orig_axes.imshow(image.image,matplotlib.cm.Greys_r)
+        orig_axes.imshow(image.pixel_data,matplotlib.cm.Greys_r)
         orig_axes.set_title("Original image")
         
+        #
+        # Scramble the label indices so that the colors of adjacent objects
+        # are likely to differ
+        #
+        label_copy = labeled_image.copy()
+        renumber = numpy.random.permutation(numpy.max(label_copy))
+        label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
+        
         label_axes.clear()
-        label_axes.imshow(labeled_image,matplotlib.cm.jet)
+        label_axes.imshow(label_copy,matplotlib.cm.jet)
         label_axes.set_title("Image labels")
         
-        if image.image.ndim == 2:
-            outline_img = numpy.ndarray(shape=(image.image.shape[0],image.image.shape[1],3))
-            outline_img[:,:,0] = image.image 
-            outline_img[:,:,1] = image.image 
-            outline_img[:,:,2] = image.image
+        if image.pixel_data.ndim == 2:
+            outline_img = numpy.ndarray(shape=(image.pixel_data.shape[0],
+                                               image.pixel_data.shape[1],3))
+            outline_img[:,:,0] = image.pixel_data 
+            outline_img[:,:,1] = image.pixel_data
+            outline_img[:,:,2] = image.pixel_data
         else:
-            outline_img = image.image.copy()
+            outline_img = image.pixel_data.copy()
         outline_img[outline_image != 0,0]=1
         outline_img[outline_image != 0,1]=1 
         outline_img[outline_image != 0,2]=0 

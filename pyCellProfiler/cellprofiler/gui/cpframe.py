@@ -18,14 +18,15 @@ from cellprofiler.gui.directoryview import DirectoryView
 import traceback
 import sys
 
-ID_FILE_LOAD_PIPELINE=100
-ID_FILE_EXIT=101
-ID_FILE_WIDGET_INSPECTOR=102
-ID_FILE_SAVE_PIPELINE=103
-ID_FILE_CLEAR_PIPELINE=104
-ID_FILE_ANALYZE_IMAGES=105
+ID_FILE_LOAD_PIPELINE=wx.NewId()
+ID_FILE_EXIT=wx.NewId()
+ID_FILE_WIDGET_INSPECTOR=wx.NewId()
+ID_FILE_SAVE_PIPELINE=wx.NewId()
+ID_FILE_CLEAR_PIPELINE=wx.NewId()
+ID_FILE_ANALYZE_IMAGES=wx.NewId()
+ID_FILE_STOP_ANALYSIS=wx.NewId()
 
-ID_HELP_MODULE=200
+ID_HELP_MODULE=wx.NewId()
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -65,6 +66,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+L','Run the pipeline on the images in the image directory')
+        self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop analysis','Stop running the pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')

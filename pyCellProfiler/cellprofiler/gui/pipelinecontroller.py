@@ -32,6 +32,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
+        wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         wx.EVT_IDLE(frame,self.on_idle)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view):
@@ -189,7 +190,10 @@ class PipelineController:
                 self.__running_pipeline.close()
             self.__output_path = output_path
             self.__running_pipeline = self.__pipeline.experimental_run(self.__frame)
-            
+    
+    def on_stop_running(self,event):
+        self.__running_pipeline = False
+    
     def on_idle(self,event):
         if self.__running_pipeline:
             try:

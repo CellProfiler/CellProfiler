@@ -276,10 +276,10 @@ class ModuleView:
                 self.__on_max_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
         else:
-            min_ctrl = panel.FindByWindowName(min_control_name(v))
+            min_ctrl = panel.FindWindowByName(min_control_name(v))
             if min_ctrl.Value != str(v.min):
                 min_ctrl.Value = str(v.min)
-            max_ctrl = panel.FindByWindowName(max_control_name(v))
+            max_ctrl = panel.FindWindowByName(max_control_name(v))
             if max_ctrl.Value != str(v.max):
                 min_ctrl.Value = str(v.max)
             

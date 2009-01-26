@@ -120,7 +120,27 @@ class Image(object):
         return self.__has_mask
     
     has_mask = property(get_has_mask)
+
+class GrayscaleImage(object):
+    """A wrapper around the image object if the image is 3-d but all channels
+       are the same
+    """
+    def __init__(self, image):
+        self.__image = image
     
+    def get_pixel_data(self):
+        """One 2-d channel of the color image as a numpy array"""
+        return self.__image.pixel_data[:,:,0]
+    
+    pixel_data = property(get_pixel_data)
+    
+    def get_mask(self):
+        return self.__image.get_mask()
+    mask=property(get_mask)
+    
+    def get_has_mask(self):
+        return self.__image.get_has_mask()
+    has_mask=property(get_has_mask)
     
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
@@ -239,6 +259,11 @@ class ImageSet(object):
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
         if must_be_grayscale and image.pixel_data.ndim != 2:
+            pd = image.pixel_data
+            if pd.shape[2] >= 3 and\
+               numpy.all(pd[:,:,0]==pd[:,:,1]) and\
+               numpy.all(pd[:,:,0]==pd[:,:,2]):
+                return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color") 
         return image
     

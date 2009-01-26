@@ -378,7 +378,7 @@ class LoadImages(cpmodule.CPModule):
     def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
         """
-        return self.match_exclude
+        return self.match_exclude.value
     
     def filter_filename(self, filename):
         """Returns either None or the index of the match setting

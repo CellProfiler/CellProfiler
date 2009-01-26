@@ -68,3 +68,13 @@ class testOtsu(unittest.TestCase):
         numpy.random.seed(0)
         x = numpy.zeros((10,))
         self.assertTrue(otsu(x,min_threshold=.1)>=.1)
+    
+    def test_06_bimodal(self):
+        """Test Otsu with two values, equal # of samples each
+        
+        The value should be midway between +/- 1/# of bins
+        """
+        x = numpy.zeros((20,))
+        x[0:10] = 1
+        threshold = otsu(x,bins=100)
+        self.assertTrue(abs(threshold-.5)<.01)

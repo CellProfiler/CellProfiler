@@ -18,6 +18,7 @@ import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
+from cellprofiler.cpmath.watershed import fast_watershed as watershed
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 
@@ -704,17 +705,6 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         else:
             raise NotImplementedError("Watershed method %s is not implemented"%(self.watershed_method.value))
         #
-        # Make the watershed values discrete 0-256 (required by scipy)
-        #
-        max_wa = numpy.max(watershed_image)
-        watershed_image = numpy.floor(254 * watershed_image / max_wa+.5)+1
-        watershed_image = watershed_image.astype(numpy.uint8)
-        #
-        # The background pixels have the lowest value and will be watershedded
-        # first.
-        #
-        watershed_image[labeled_image==0] = 255
-        #
         # Create a marker array where the unlabeled image has a label of
         # -(nobjects+1)
         # and every local maximum has a unique label which will become
@@ -730,12 +720,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # Some labels have only one marker in them, some have multiple and
         # will be split up.
         # 
-        
-        watershed_boundaries =\
-            scipy.ndimage.watershed_ift(watershed_image,
-                                        markers,
-                                        numpy.ones((3,3),bool))
-        watershed_boundaries[labeled_image==0]=0
+        watershed_boundaries = watershed(watershed_image,
+                                         markers,
+                                         numpy.ones((3,3),bool),
+                                         mask=labeled_image!=0)
         watershed_boundaries = -watershed_boundaries
         
         return watershed_boundaries, object_count

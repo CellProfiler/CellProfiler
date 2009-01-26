@@ -4,19 +4,25 @@
 __version__="$Revision$"
 
 from distutils.core import setup,Extension
+from Cython.Distutils import build_ext
 from numpy import get_include
 import os
 
 def configuration():
-    extension = Extension(name="_cpmorphology",
-                          sources=["src/cpmorphology.c"],
-                          include_dirs=['src']+[get_include()],
-                          extra_compile_args=['-O3'])
+    extensions = [Extension(name="_cpmorphology",
+                            sources=["src/cpmorphology.c"],
+                            include_dirs=['src']+[get_include()],
+                            extra_compile_args=['-O3']),
+                  Extension(name="_watershed",
+                            sources=["_watershed.pyx"],
+                            include_dirs=['src']+[get_include()],
+                            extra_compile_args=['-O3'])]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",
              "maintainer":"Lee Kamentsky",
              "maintainer_email":"leek@broad.mit.edu",
-             "ext_modules": [extension]
+             "cmdclass": {'build_ext': build_ext},
+             "ext_modules": extensions
             }
     return dict
 

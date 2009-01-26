@@ -41,8 +41,10 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     int_data = scipy.ndimage.measurements.histogram(data,0,1,bins)
     min_bin = (min_threshold and (int(bins * min_threshold)+1)) or 1
     max_bin = (max_threshold and (int(bins * max_threshold)-1)) or (bins-1)
-    max_score = 0
-    max_k     = min_bin
+    max_score     = 0
+    max_k         = min_bin
+    n_max_k       = 0                          # # of k in a row at max
+    last_was_max  = False                      # True if last k was max 
     for k in range(min_bin,max_bin):
         cT = float(numpy.sum(int_data))        # the count: # of pixels in array
         c0 = float(numpy.sum(int_data[:k]))    # the # of pixels in the lower group
@@ -59,6 +61,16 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
         if score > max_score:
             max_k = k
             max_score = score
-    return float(max_k) / bins 
+            n_max_k = 1
+            last_was_max = True
+        elif score == max_score and last_was_max:
+            max_k   += k
+            n_max_k += 1
+        elif last_was_max:
+            last_was_max = False
+    if n_max_k == 0:
+        max_k = min_bin+max_bin-1
+        n_max_k = 2
+    return float(max_k) / float(bins * n_max_k) 
 
     

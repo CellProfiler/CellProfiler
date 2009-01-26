@@ -9,9 +9,12 @@ endif
 
 all: exts tests
 
-exts: cellprofiler/cpmath/_cpmorphology.pyd
+exts: cellprofiler/cpmath/_cpmorphology.pyd cellprofiler/cpmath/_watershed.pyd
 
 cellprofiler/cpmath/_cpmorphology.pyd: cellprofiler/cpmath/src/cpmorphology.c
+	python cellprofiler/cpmath/setup.py build_ext -i --compiler=$(PYTHON_COMPILER) 
+
+cellprofiler/cpmath/_watershed.pyd: cellprofiler/cpmath/_watershed.pyx
 	python cellprofiler/cpmath/setup.py build_ext -i --compiler=$(PYTHON_COMPILER) 
 
 tests:

@@ -560,6 +560,220 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(numpy.max(objects.segmented),2)
         self.assertEqual(objects.segmented[7,11],objects.segmented[7,4])
     
+    def test_02_08_test_watershed_intensity_distance_single(self):
+        """Identify by local_maxima:intensity & watershed:shape - one object
+        
+        Create an object with an hourglass shape and a peak in the middle.
+        It should be segmented into a single object.
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_INTENSITY
+        x.watershed_method.value = ID.WA_DISTANCE
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.7,.8,.9,.9,.8,.7, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        # We do a little blur here so that there's some monotonic decrease
+        # from the central peak
+        img = scipy.ndimage.gaussian_filter(img, .25, mode='constant')
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),1)
+    
+    def test_02_08_test_watershed_intensity_distance_triple(self):
+        """Identify by local_maxima:intensity & watershed:shape - 3 objects w/o filter
+        
+        Create an object with an hourglass shape and a peak in the middle.
+        It should be segmented into a single object.
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_INTENSITY
+        x.watershed_method.value = ID.WA_DISTANCE
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.7,.8,.9,.9,.8,.7, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),3)
+    
+    def test_02_09_test_watershed_intensity_distance_filter(self):
+        """Identify by local_maxima:intensity & watershed:shape - filtered
+        
+        Create an object with an hourglass shape and a peak in the middle.
+        It should be segmented into a single object.
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 1
+        x.automatic_smoothing.value = 1
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_INTENSITY
+        x.watershed_method.value = ID.WA_DISTANCE
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.7,.8,.9,.9,.8,.7, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.6,.7,.8,.8,.7,.6,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.6,.7,.7,.6,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.6,.6,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),1)
+    
+    def test_02_10_test_watershed_intensity_distance_double(self):
+        """Identify by local_maxima:intensity & watershed:shape - two objects
+        
+        Create an object with an hourglass shape and peaks in the top and
+        bottom, but with a distribution of values that's skewed so that,
+        by intensity, one of the images occupies the middle. The middle
+        should be shared because the watershed is done using the distance
+        transform.
+        """
+        x = ID.IdentifyPrimAutomatic()
+        x.image_name.value = "my_image"
+        x.object_name.value = "my_object"
+        x.exclude_size.value = False
+        x.size_range.value = (2,10)
+        x.fill_holes.value = False
+        x.smoothing_filter_size.value = 0
+        x.automatic_smoothing.value = 0
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.unclump_method.value = ID.UN_INTENSITY
+        x.watershed_method.value = ID.WA_DISTANCE
+        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.9,.9,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0],
+                           [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.5,.5,.5,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.9,.9,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0],
+                           [ 0, 0, 0,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0,.4,.4,.4,.4,.4,.4, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                           ])
+        # We do a little blur here so that there's some monotonic decrease
+        # from the central peak
+        img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects("my_object")
+        self.assertEqual(numpy.max(objects.segmented),2)
+        self.assertNotEqual(objects.segmented[12,7],objects.segmented[4,7])
+    
     def test_03_01_run_inside_pipeline(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         inject_image = InjectImage("my_image", two_cell_image())

@@ -88,7 +88,7 @@ if ~strcmp(ModuleName,'ExportToDatabase')
 end
 
 % Check whether have write permission in current dir
-PropertiesFilename = [DatabaseName,'.properties'];
+PropertiesFilename = [DatabaseName '_v' num2str(version) '.properties'];
 fid = fopen(fullfile(DataPath,PropertiesFilename), 'wt');
 if fid == -1, 
     % I'm using a warning here instead of an error because I can imagine a

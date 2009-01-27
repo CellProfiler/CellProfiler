@@ -109,6 +109,8 @@ if ishandle(SelectDisplay)
     Choice = get(h,'Value');
     if iscell(Choice)
         Selection = cat(1,Choice{:});
+    elseif isscalar(Choice)
+        Selection = Choice;
     else
         Selection = ones(NumberOfModules,1);
     end

@@ -7,6 +7,7 @@ import os
 import unittest
 import numpy
 import numpy.lib.index_tricks
+import cStringIO
 
 import cellprofiler.pipeline
 import cellprofiler.objects
@@ -276,6 +277,32 @@ class TestPipeline(unittest.TestCase):
         choices = module2.settings()[0].get_choices(x)
         self.assertEqual(len(choices),1)
         self.assertEqual(choices[0],"Hello")
+    
+    def test_08_01_empty_variable(self):
+        """Regression test that we can save and load the variable, ''"""
+        x = cellprofiler.pipeline.Pipeline()
+        module = MyClassForTest0801()
+        module.set_module_num(1)
+        x.add_module(module)
+        fh = cStringIO.StringIO()
+        x.save(fh)
+        y = cellprofiler.pipeline.Pipeline()
+        y.load(fh)
+        self.assertEqual(len(y.modules()),1)
+        module = y.module(1)
+        self.assertEqual(module.my_variable.value,'')
          
+class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
+    def create_settings(self):
+        self.my_variable = cellprofiler.settings.Text('','')
+    def settings(self):
+        return [self.my_variable]
+    module_name = "MyClassForTest0801"
+    variable_revision_number = 1
+    
+    def module_class(self):
+        return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
+
+
 if __name__ == "__main__":
     unittest.main()

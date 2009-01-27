@@ -193,7 +193,7 @@ class CPModule(object):
         setting[cellprofiler.pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
         for i in range(0,len(self.settings())):
             variable = self.settings()[i]
-            if len(str(setting)) > 0:
+            if len(str(variable)) > 0:
                 setting[cellprofiler.pipeline.VARIABLE_VALUES][module_idx,i] = unicode(str(variable))
             try: # matlab & old-style through annotations
                 annotations = self.setting_annotations(variable.key())

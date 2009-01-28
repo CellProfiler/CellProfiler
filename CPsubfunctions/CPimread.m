@@ -131,8 +131,7 @@ elseif nargin == 1,
 
     else
         try
-            Header = imfinfo(CurrentFileName);
-            if isfield(Header,'Model') && any(strfind(Header(1).Model,'GenePix'))
+            if IsGenePix(CurrentFileName)
                 PreLoadedImage = CPimreadGP([FileName,ext],Pathname);
                 LoadedImage(:,:,1)=double(PreLoadedImage(:,:,1))/65535;
                 LoadedImage(:,:,2)=double(PreLoadedImage(:,:,1))/65535;
@@ -352,4 +351,72 @@ try
 catch
     % default is no scaling (for non-flex tiffs)
     ScaledImage = RawImage;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Function IsGenePix - determine whether a file is a GenePix TIFF file
+%
+% The TIFF file format specification can be found at
+% http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
+%
+function is_gene_pix = IsGenePix(filename)
+is_gene_pix = 0;
+fid = fopen(filename,'r');
+try
+    % Bytes 0-1 of the file specify the byte order
+    % Byte order is either 'II' for least significant
+    % or 'MM' for most significant
+    ByteOrder = reshape(fread(fid,2,'uint8=>char'),1,2);
+    if strcmp(ByteOrder,'II')
+        ByteOrder = 'ieee-le';
+    elseif strcmp(ByteOrder,'MM')
+        ByteOrder = 'ieee-be';
+    else
+        fclose(fid);
+        return
+    end
+    % Bytes 2-3 identify the file as a TIFF file. They always
+    % have the value 42.
+    TiffCookie = fread(fid,1,'int16',0,ByteOrder);
+    if TiffCookie ~= 42
+        fclose(fid);
+        return
+    end
+    % Bytes 4-7 have an offset to the first IFD
+    Offset = fread(fid,1,'uint32',0,ByteOrder);
+    if fseek(fid,Offset,'bof') ~= 0
+        fclose(fid);
+        return
+    end
+    % An IFD has a 2-byte record count
+    RecordCount = fread(fid,1,'uint16',0,ByteOrder);
+    for i=1:RecordCount
+        Tag = fread(fid,1,'uint16',0,ByteOrder);
+        Type = fread(fid,1,'uint16',0,ByteOrder);
+        Count = fread(fid,1,'uint32',0,ByteOrder);
+        Offset = fread(fid,1,'uint32',0,ByteOrder);
+        %
+        % GenePix files are identified as having a model of GenePix
+        % The model tag is # 272
+        % A type of 2 is ASCII
+        %
+        if Tag == 272 && Type == 2
+            if fseek(fid,Offset,'bof') ~= 0
+                fclose(fid);
+                return
+            end
+            % ASCII strings are null-terminated, so we don't
+            % read the null (Count-1)
+            Model = reshape(fread(fid,Count-1,'uint8=>char'),1,Count-1);
+            if strcmp(Model,'GenePix')
+                is_gene_pix = 1;
+            end
+            fclose(fid);
+            return
+        end
+    end
+    fclose(fid);
+catch
+    fclose(fid);
+    return
 end

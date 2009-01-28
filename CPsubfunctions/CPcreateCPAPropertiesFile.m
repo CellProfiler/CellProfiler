@@ -33,7 +33,11 @@ idx_path = find(~cellfun('isempty',regexp(lower(names),'pathname')));
 % that's not an Image, Experiment, or Neighbor)
 objs = fieldnames(handles.Measurements);
 objs(strcmp(objs,'Image') | strcmp(objs,'Experiment') | strcmp(objs,'Neighbors')) = [];
-supposed_primary_obj = objs{1};
+if ~isempty(objs)
+    supposed_primary_obj = objs{1};
+else
+    supposed_primary_obj = '';
+end
 
 switch lower(DatabaseType),                                                                 % Database Port
     case 'mysql', db_port = '3306';

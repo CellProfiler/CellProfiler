@@ -19,6 +19,7 @@ from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
+from cellprofiler.cpmath.smooth import smooth_with_noise
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 
@@ -556,9 +557,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Get a threshold to use for labeling
         #
-        threshold = self.get_threshold(img,mask)
+        local_threshold,global_threshold = self.get_threshold(img,mask)
         blurred_image = self.smooth_image(img,mask,1)
-        binary_image = numpy.logical_and((blurred_image >= threshold),mask)
+        binary_image = numpy.logical_and((blurred_image >= local_threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image,
                                                          numpy.ones((3,3),bool))
         #
@@ -569,7 +570,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         labeled_image,object_count = \
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
-                                              object_count,threshold)
+                                              object_count,global_threshold)
         # Filter out small and large objects
         labeled_image, unedited_labels, small_removed_labels = \
             self.filter_on_size(labeled_image,object_count)
@@ -584,8 +585,35 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         if workspace.frame:
             self.display(workspace.frame,image, labeled_image,outline_image)
         # Add image measurements
-        workspace.measurements.add_measurement('Image','Count_%s'%(self.object_name.value),numpy.array([object_count],dtype=float))
-        workspace.measurements.add_measurement('Image','Threshold_FinalThreshold_%s'%(self.object_name.value),numpy.array([threshold],dtype=float))
+        objname = self.object_name.value
+        measurements = workspace.measurements
+        measurements.add_measurement('Image',
+                                     'Count_%s'%(objname),
+                                     numpy.array([object_count],
+                                                 dtype=float))
+        if self.threshold_modifier == TM_GLOBAL:
+            # The local threshold is a single number
+            assert(not isinstance(local_threshold,numpy.ndarray))
+            ave_threshold = local_threshold
+        else:
+            # The local threshold is an array
+            ave_threshold = local_threshold.mean()
+        measurements.add_measurement('Image',
+                                     'Threshold_FinalThreshold_%s'%(objname),
+                                     numpy.array([ave_threshold],
+                                                 dtype=float))
+        measurements.add_measurement('Image',
+                                     'Threshold_OrigThreshold_%s'%(objname),
+                                     numpy.array([global_threshold],
+                                                  dtype=float))
+        wv = weighted_variance(img, mask, local_threshold)
+        measurements.add_measurement('Image',
+                                     'Threshold_WeightedVariance_%s'%(objname),
+                                     numpy.array([wv],dtype=float))
+        entropies = sum_of_entropies(img, mask, local_threshold)
+        measurements.add_measurement('Image',
+                                     'Threshold_SumOfEntropies_%s'%(objname),
+                                     numpy.array([entropies],dtype=float))
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
@@ -616,18 +644,72 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """Compute the threshold using whichever algorithm was selected by the user
         image - image to threshold
         mask  - ignore pixels whose mask value is false
-        returns: threshold to use
+        returns: threshold to use (possibly an array) and global threshold
         """
+        threshold = self.get_global_threshold(image, mask)
+        if self.threshold_modifier == TM_GLOBAL:
+            return threshold,threshold
+        elif self.threshold_modifier == TM_ADAPTIVE:
+            return self.get_adaptive_threshold(image, mask, threshold),threshold
+        else:
+            raise NotImplementedError("%s thresholding is not implemented"%(self.threshold_modifier))
+    
+    def get_global_threshold(self,image,mask):
+        """Compute a single threshold over the whole image"""
         if self.threshold_algorithm == TM_OTSU:
-            if self.threshold_modifier == TM_GLOBAL:
-                return otsu(image[mask],
-                            self.threshold_range.min,
-                            self.threshold_range.max)
-            else:
-                raise NotImplementedError("Otsu %s method not implemented"%(self.threshold_modifier.value))
+            return otsu(image[mask],
+                        self.threshold_range.min,
+                        self.threshold_range.max)
         else:
             raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
+    
+    def get_adaptive_threshold(self,image,mask,threshold):
+        """Given a global threshold, compute a threshold per pixel
         
+        Break the image into blocks, computing the threshold per block.
+        Afterwards, constrain the block threshold to .7 T < t < 1.5 T.
+        
+        Block sizes must be at least 50x50. Images > 500 x 500 get 10x10
+        blocks.
+        """
+        # Compute the minimum and maximum allowable thresholds
+        min_threshold = max(.7 * threshold,0)
+        max_threshold = min(1.5 * threshold,1)
+        
+        # for the X and Y direction, find the # of blocks, given the
+        # size constraints
+        image_size = numpy.array(image.shape[:2],dtype=int)
+        block_size = image_size / 10
+        block_size[block_size<50] = 50
+        nblocks = image_size / block_size
+        #
+        # Use a floating point block size to apportion the roundoff
+        # roughly equally to each block
+        #
+        increment = ( numpy.array(image_size,dtype=float) / 
+                      numpy.array(nblocks,dtype=float))
+        #
+        # Put the answer here
+        #
+        thresh_out = numpy.zeros(image_size, image.dtype)
+        #
+        # Loop once per block, computing the "global" threshold within the
+        # block.
+        #
+        for i in range(nblocks[0]):
+            i0 = int(i*increment[0])
+            i1 = int((i+1)*increment[0])
+            for j in range(nblocks[1]):
+                j0 = int(j*increment[1])
+                j1 = int((j+1)*increment[1])
+                block = image[i0:i1,j0:j1]
+                block_mask = mask[i0:i1,j0:j1]
+                block_threshold = self.get_global_threshold(block, block_mask)
+                block_threshold = max(block_threshold, min_threshold)
+                block_threshold = min(block_threshold, max_threshold)
+                thresh_out[i0:i1,j0:j1] = block_threshold
+        return thresh_out
+                
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         
@@ -920,3 +1002,87 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         return parts[0]
     
     threshold_algorithm = property(get_threshold_algorithm)
+
+def weighted_variance(image,mask,threshold):
+    """Compute the log-transformed variance of foreground and background"""
+    if not numpy.any(mask):
+        return 0
+    #
+    # Clamp the dynamic range of the foreground
+    #
+    minval = numpy.max(image[mask])/256
+    if minval == 0:
+        return 0
+    clamped_image = image[mask]
+    clamped_image[clamped_image < minval] = minval
+    
+    fg = numpy.log2(clamped_image[clamped_image >=threshold])
+    bg = numpy.log2(clamped_image[clamped_image < threshold])
+    nfg = numpy.product(fg.shape)
+    nbg = numpy.product(bg.shape)
+    if nfg == 0:
+        return numpy.var(bg)
+    elif nbg == 0:
+        return numpy.var(fg)
+    else:
+        return (numpy.var(fg) * nfg + numpy.var(bg)*nbg) / (nfg+nbg)
+
+def sum_of_entropies(image, mask, threshold):
+    """Bin the foreground and background pixels and compute the entropy 
+    of the distribution of points among the bins
+    """
+    if not numpy.any(mask):
+        return 0
+    #
+    # Clamp the dynamic range of the foreground
+    #
+    minval = numpy.max(image[mask])/256
+    if minval == 0:
+        return 0
+    clamped_image = image.copy()
+    clamped_image[clamped_image < minval] = minval
+    #
+    # Smooth image with -8 bits of noise
+    #
+    image = smooth_with_noise(clamped_image, 8)
+    im_min = numpy.min(image)
+    im_max = numpy.max(image)
+    #
+    # Figure out the bounds for the histogram
+    #
+    upper = math.log(im_max,2)
+    lower = math.log(im_min,2)
+    if upper == lower:
+        # All values are the same, answer is log2 of # of pixels
+        return math.log(numpy.sum(mask),2) 
+    #
+    # Create log-transformed lists of points in the foreground and background
+    # 
+    fg = image[numpy.logical_and(mask, image >= threshold)]
+    bg = image[numpy.logical_and(mask, image < threshold)]
+    log_fg = numpy.log2(fg)
+    log_bg = numpy.log2(bg)
+    #
+    # Make these into histograms
+    hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
+    hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
+    #
+    # Drop empty bins
+    #
+    hfg = hfg[hfg>0]
+    hbg = hbg[hbg>0]
+    if numpy.product(hfg.shape) == 0:
+        hfg = numpy.ones((1,),int)
+    if numpy.product(hbg.shape) == 0:
+        hbg = numpy.ones((1,),int)
+    #
+    # Normalize
+    #
+    hfg = hfg.astype(float) / float(numpy.sum(hfg))
+    hbg = hbg.astype(float) / float(numpy.sum(hbg))
+    #
+    # Compute sum of entropies
+    #
+    return numpy.sum(hfg * numpy.log2(hfg)) + numpy.sum(hbg*numpy.log2(hbg))
+
+    

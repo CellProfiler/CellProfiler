@@ -1017,6 +1017,67 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         segmented = objects.segmented
         self.assertTrue(numpy.all(segmented[img>0] == 1))
         self.assertTrue(numpy.all(img[segmented==1] > 0))
+    
+    def test_07_01_adaptive_otsu_small(self):
+        """Test the function, get_threshold, using Otsu adaptive / small
+        
+        Use a small image (125 x 125) to break the image into four
+        pieces, check that the threshold is different in each block
+        and that there are four blocks broken at the 75 boundary
+        """
+        numpy.random.seed(0)
+        image = numpy.zeros((120,110))
+        for i0,i1 in ((0,60),(60,120)):
+            for j0,j1 in ((0,55),(55,110)):
+                dmin = float(i0 * 2 + j0) / 500.0
+                dmult = 1.0-dmin
+                # use the sine here to get a bimodal distribution of values
+                r = numpy.random.uniform(0,numpy.pi*2,(60,55))
+                rsin = (numpy.sin(r) + 1) / 2
+                image[i0:i1,j0:j1] = dmin + rsin * dmult
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
+        threshold,global_threshold = x.get_threshold(image, 
+                                                     numpy.ones((120,110),bool))
+        for i0,i1 in ((0,60),(60,120)):
+            for j0,j1 in ((0,55),(55,110)):
+                self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
+        self.assertTrue(threshold[0,0] != threshold[0,109])
+        self.assertTrue(threshold[0,0] != threshold[119,0])
+        self.assertTrue(threshold[0,0] != threshold[119,109])
+
+    def test_07_02_adaptive_otsu_big(self): 
+        """Test the function, get_threshold, using Otsu adaptive / big
+        
+        Use a large image (525 x 525) to break the image into 100
+        pieces, check that the threshold is different in each block
+        and that boundaries occur where expected
+        """
+        numpy.random.seed(0)
+        image = numpy.zeros((525,525))
+        blocks = []
+        for i in range(10):
+            for j in range(10):
+                # the following makes a pattern of thresholds where
+                # each square has a different threshold from its 8-connected
+                # neighbors
+                dmin = float((i % 2) * 2 + (j%2)) / 8.0
+                dmult = 1.0-dmin
+                def b(x):
+                    return int(float(x)*52.5)
+                dim = ((b(i),b(i+1)),(b(j),b(j+1)))
+                blocks.append(dim)
+                ((i0,i1),(j0,j1)) = dim
+                # use the sine here to get a bimodal distribution of values
+                r = numpy.random.uniform(0,numpy.pi*2,(i1-i0,j1-j0))
+                rsin = (numpy.sin(r) + 1) / 2
+                image[i0:i1,j0:j1] = dmin + rsin * dmult
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
+        threshold,global_threshold = x.get_threshold(image, 
+                                                     numpy.ones((525,525),bool))
+        for ((i0,i1),(j0,j1)) in blocks:
+                self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
 
 def one_cell_image():
     img = numpy.zeros((25,25))
@@ -1033,3 +1094,68 @@ def draw_circle(img,center,radius,value):
     x,y=numpy.mgrid[0:img.shape[0],0:img.shape[1]]
     distance = numpy.sqrt((x-center[0])*(x-center[0])+(y-center[1])*(y-center[1]))
     img[distance<=radius]=value
+
+class TestWeightedVariance(unittest.TestCase):
+    def test_01_masked_wv(self):
+        output = ID.weighted_variance(numpy.zeros((3,3)), 
+                                      numpy.zeros((3,3),bool), 1)
+        self.assertEqual(output, 0)
+    
+    def test_02_zero_wv(self):
+        output = ID.weighted_variance(numpy.zeros((3,3)),
+                                      numpy.ones((3,3),bool),1)
+        self.assertEqual(output, 0)
+    
+    def test_03_fg_0_bg_0(self):
+        """Test all foreground pixels same, all background same, wv = 0"""
+        img = numpy.zeros((4,4))
+        img[:,2:4]=1
+        output = ID.weighted_variance(img, numpy.ones(img.shape,bool),.5)
+        self.assertEqual(output,0)
+    
+    def test_04_values(self):
+        """Test with two foreground and two background values"""
+        #
+        # The log of this array is [-4,-3],[-2,-1] and
+        # the variance should be (.25 *2 + .25 *2)/4 = .25
+        img = numpy.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
+        threshold = 3.0/16.0
+        output = ID.weighted_variance(img, numpy.ones((2,2),bool), threshold)
+        self.assertEqual(output,.25)
+    
+    def test_05_mask(self):
+        """Test, masking out one of the background values"""
+        #
+        # The log of this array is [-4,-3],[-2,-1] and
+        # the variance should be (.25*2 + .25 *2)/4 = .25
+        img = numpy.array([[1.0/16.,1.0/16.0,1.0/8.0],[1.0/4.0,1.0/4.0,1.0/2.0]])
+        mask = numpy.array([[False,True,True],[False,True,True]])
+        threshold = 3.0/16.0
+        output = ID.weighted_variance(img, mask, threshold)
+        self.assertAlmostEquals(output,.25)
+
+class TestSumOfEntropies(unittest.TestCase):
+    def test_01_all_masked(self):
+        output = ID.sum_of_entropies(numpy.zeros((3,3)), 
+                                     numpy.zeros((3,3),bool), 1)
+        self.assertEqual(output,0)
+    
+    def test_020_all_zero(self):
+        """Can't take the log of zero, so all zero matrix = 0"""
+        output = ID.sum_of_entropies(numpy.zeros((4,2)),numpy.ones((4,2),bool),1)
+        self.assertAlmostEqual(output,0)
+    
+    def test_03_fg_bg_equal(self):
+        img = numpy.ones((128,128))
+        img[0:64,:] *= .1
+        img[64:128,:] *= .9
+        output = ID.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+    
+    def test_04_fg_bg_different(self):
+        img = numpy.ones((128,128))
+        img[0:64,0:64] *= .1
+        img[0:64,64:128] *= .3
+        img[64:128,0:64] *= .7
+        img[64:128,64:128] *= .9
+        output = ID.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+        

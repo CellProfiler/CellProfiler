@@ -52,12 +52,6 @@ def exploding_pipeline(test):
     return x
          
 class TestPipeline(unittest.TestCase):
-    #def test_00(self):
-    #    import scipy.io.matlab.mio
-    #    cells = numpy.ndarray((2),dtype='object')
-    #    cells[1] = 'FOO'
-    #    handles = {'foo':cells}
-    #    scipy.io.matlab.mio.savemat('c:\\temp\\pyfoo.mat', handles, format='5')
     
     def test_00_00_init(self):
         x = cellprofiler.pipeline.Pipeline()

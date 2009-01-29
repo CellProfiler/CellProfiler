@@ -4487,6 +4487,7 @@ else
                             TimerData = get(timer_handle,'UserData');
                             TimerData.CurrentModuleName = ModuleName;
                             TimerData.CurrentModuleNumber = SlotNumber;
+                            handles.Current.TimerData = TimerData;
                             set(timer_handle,'UserData',TimerData);
                             % force an update.
                             eval(get(timer_handle, 'TimerFcn'));

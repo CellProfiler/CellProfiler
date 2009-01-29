@@ -1024,7 +1024,9 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             if strcmp(LaplaceValues,'Do not use')
                 %%% Indicate objects in original image and color excluded objects in red
                 tmp = OrigImage - min(OrigImage(:));
-                tmp = tmp/max(tmp(:));
+                if any(tmp(:))
+                    tmp = tmp/max(tmp(:));
+                end
                 OutlinedObjectsR = tmp;
                 OutlinedObjectsG = tmp;
                 OutlinedObjectsB = tmp;

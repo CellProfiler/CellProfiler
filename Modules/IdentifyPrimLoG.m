@@ -89,7 +89,9 @@ Threshold = str2double(Threshold);
 drawnow
 
 im = double(OrigImage) - double(min(OrigImage(:)));
-im = im / max(im(:));
+if any(im(:))
+    im = im / max(im(:));
+end
 
 %% Set regions outside of CropMasks equal to 0
 fieldname = ['CropMask', ImageName];

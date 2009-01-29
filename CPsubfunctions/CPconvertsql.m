@@ -47,11 +47,11 @@ for ObjectCell = ObjectNames,
         FeatureName = FeatureCell{1};
         
         %%% Certain features are not exported
-	if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
-				features_not_to_be_exported, ...
-				'UniformOutput', false)))
-	    continue
-	end
+        if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
+                features_not_to_be_exported, ...
+                'UniformOutput', false)))
+            continue
+        end
 
         if strcmp(ObjectName, 'Image')
             per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
@@ -86,6 +86,7 @@ for fld=fieldnames(handles.Pipeline)',
     end
 end
 
+MetadataNameWidth = 128;
 
 %%% Write the SQL table description and data loader.
 if (FirstSet == 1)
@@ -103,6 +104,8 @@ if (FirstSet == 1)
                 fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, FileNameWidth);
             elseif  strfind(i{1}, 'Path'),
                 fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, PathNameWidth);
+            elseif  strfind(i{1}, 'Metadata_'),
+                fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, MetadataNameWidth);
             else
                 fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
             end

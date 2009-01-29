@@ -198,7 +198,7 @@ if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
                 end
                 handles = CPaddmeasurements(handles, NewObjectName, Fieldname, MeanVals);
             else
-                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, nan(max(length(NumberOfChildren),1), 1));
+                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, zeros(max(length(NumberOfChildren),1), 1));
             end
         end
     else

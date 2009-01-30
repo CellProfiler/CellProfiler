@@ -93,6 +93,24 @@ if isfield(ExportInfo, 'ExportProcessInfo')
 
     %%% Export measurements
     if ~isempty(ExportInfo.MeasurementFilename)
+        % If there is metadata and the user wants it appended to the per-object data, do so
+        if strcmp(ExportInfo.ExportPerObjectMetadata,'Yes')
+            ObjectNames = ExportInfo.ObjectNames;
+            ExcludedObjects = {'Image', 'Experiment', 'Neighbors'};
+            ObjectNames(ismember(ObjectNames,ExcludedObjects)) = [];
+            MetadataNames = fieldnames(handles.Measurements.Image);
+            prefix = 'metadata';
+            MetadataNames(~strncmpi(MetadataNames,prefix,length(prefix))) = [];
+                    
+            for i = 1:length(ObjectNames)
+                MeasurementFieldnames = fieldnames(handles.Measurements.(ObjectNames{i}));
+                sz = cellfun(@size,handles.Measurements.(ObjectNames{i}).(MeasurementFieldnames{1}),'uniformoutput',false);
+                for j = 1:length(MetadataNames)
+                    handles.Measurements.(ObjectNames{i}).(MetadataNames{j}) = ...
+                        cellfun(@cellstr,cellfun(@repmat,handles.Measurements.Image.(MetadataNames{j}),sz,'uniformoutput',false),'uniformoutput',false);
+                end
+            end
+        end
         try CPwritemeasurements(handles,ExportInfo,RawPathname);
         catch CPerrordlg(lasterr)
             return
@@ -232,8 +250,7 @@ IgnoreNaN = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','
     'HorizontalAlignment','left','units','pixels','position',[400 ypos+5 150 uiheight],'BackgroundColor',get(ETh, 'color'));
 %Help button
 Help_Callback = 'CPhelpdlg(''Sometimes a measurement is recorded as Not a Number, which means that it could not be calculated for some reason. For example, you cannot calculate the texture (smoothness) of an object made of only one pixel. So, when you want to calculate the mean texture for all objects in that image, you have two options: ignore NaNs and calculate the mean only for those objects that have a numerical texture measurement, or, if a NaN is present, record the mean measurement also as NaN.'')';
-
-    uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
         'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
         'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
         'Callback', Help_Callback);
@@ -243,14 +260,31 @@ uicontrol(ETh,'style','text','String','Base filename for exported files:',...
     'FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
     'HorizontalAlignment','left','units','pixels','position',[20 ypos 200 uiheight],...
     'BackgroundColor',get(ETh,'color'));
-EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','pixels','position',[300 ypos+5 250 uiheight*.8],...
+EditMeasurementFilename = uicontrol(ETh,'Style','edit','units','pixels','position',[300 ypos+12 250 uiheight*.8],...
     'backgroundcolor',[1 1 1],'String',ProposedFilename,'FontSize',FontSize);
 %Help button
 Help_Callback = 'CPhelpdlg(''Enter the base file name which will be used to name all of your exported data files. ** For example, if you export data for Image and Cells with "Default" in the basename window, ".xls" in the file extension window, and ".txt" in the pipeline settings extension window, CellProfiler will produce three files: Default_Image.xls, Default_Cells.xls, and Default.txt .'')';
 uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
-    'HorizontalAlignment','center','units','pixels','position',[560 ypos 15 uiheight],...
+    'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
     'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
     'Callback', Help_Callback);
+    
+fn = fieldnames(handles.Measurements.Image);
+prefix = 'metadata';
+doesMetadataExist = any(strncmpi(prefix,fn,length(prefix)));
+if doesMetadataExist,
+    ypos=ypos-uiheight;
+    uicontrol(ETh,'style','text','String','Attach the metadata to the measurements?','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
+        'HorizontalAlignment','left','units','pixels','position',[20 ypos 400 uiheight],'BackgroundColor',get(ETh,'color'));
+    ExportPerObjectMetadata = uicontrol(ETh,'style','popupmenu','String',{'Yes','No'},'FontName','helvetica','FontSize',FontSize,...
+        'HorizontalAlignment','left','units','pixels','position',[400 ypos+5 150 uiheight],'BackgroundColor',get(ETh, 'color'));
+    %Help button
+    Help_Callback = 'CPhelpdlg(''Select whether you want the filename metadata exported along with the object measurements.'')';
+    uicontrol(ETh,'style','pushbutton','String','?','FontName','helvetica','FontSize',FontSize,...
+        'HorizontalAlignment','center','units','pixels','position',[560 ypos+8 15 uiheight],...
+        'BackgroundColor',get(ETh,'color'),'FontWeight', 'bold',...
+        'Callback', Help_Callback);
+end
 
 ypos=ypos-uiheight;
 uicontrol(ETh,'style','text','String','Extension for exported measurement files:','FontName','helvetica','FontSize',FontSize,'FontWeight', 'bold',...
@@ -284,6 +318,12 @@ uicontrol(ETh,'style','pushbutton','String','Export','FontName','helvetica','Fon
 uiwait(ETh);                         % Wait until window is destroyed or uiresume() is called
 
 ExportInfo.IgnoreNaN = get(IgnoreNaN,'Value');
+if doesMetadataExist, 
+    str = get(ExportPerObjectMetadata,'string');
+    ExportInfo.ExportPerObjectMetadata = str{get(ExportPerObjectMetadata,'value')}; 
+else
+    ExportInfo.ExportPerObjectMetadata = 'No';
+end
 
 if get(ETh,'Userdata') == 1,     % The user pressed the Export button
     

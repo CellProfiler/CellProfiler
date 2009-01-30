@@ -21,6 +21,7 @@ waitbarhandle = CPwaitbar(0,'');
 handles = CP_convert_old_measurements(handles);
 
 %%% Do we need to compute means/medians/stddevs?
+ExcludedObjectNames = {'Image', 'Experiment', 'Neighbors'};
 if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataParameter, {'mean', 'std', 'median'})),
     CompositeValues = {};
     CompositeNames = {};
@@ -31,7 +32,7 @@ if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataPar
     AllFields = fieldnames(handles.Measurements);
     for i = 1:length(AllFields)
         ObjectName = AllFields{i};
-        if any(strcmp(ObjectName, {'Image', 'Experiment', 'Neighbors'})), 
+        if any(strcmp(ObjectName,ExcludedObjectNames)), 
             continue;
         end
         FieldCount = FieldCount + length(fieldnames(handles.Measurements.(ObjectName)));
@@ -62,7 +63,7 @@ if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataPar
     FieldsCompleted = 0;
     for i = 1:length(AllFields)
         ObjectName = AllFields{i};
-        if any(strcmp(ObjectName, {'Image', 'Experiment', 'Neighbors'})), 
+        if any(strcmp(ObjectName, ExcludedObjectNames)), 
             continue;
         end
 
@@ -71,6 +72,10 @@ if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataPar
             fieldname = fields{k};
 
             CPwaitbar(FieldsCompleted / FieldCount,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']);
+            
+            if ~isnumeric(handles.Measurements.(ObjectName).(fieldname){1})
+                continue
+            end
             FieldsCompleted = FieldsCompleted + 1;
 
             % Name this measurement
@@ -197,6 +202,12 @@ for Object = 1:length(ExportInfo.ObjectNames)
         for l = 1:length(FieldValues),
             if ischar(FieldValues{l}),
                 Values{ImageOffsets(l), k} = FieldValues{l};
+            elseif iscell(FieldValues{l})
+                numvals = length(FieldValues{l});
+                destination = ImageOffsets(l):(ImageOffsets(l)+numvals-1);
+                for d = 1:numvals,
+                    Values{destination(d), k} = FieldValues{l}{d};
+                end
             else
                 numvals = length(FieldValues{l});
                 destination = ImageOffsets(l):(ImageOffsets(l)+numvals-1);

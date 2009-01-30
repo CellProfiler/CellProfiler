@@ -3,33 +3,41 @@
 import distutils.core
 import optparse
 import os
+import shutil
 import subprocess
+import sys
 import tarfile
 import zipfile
 
 SETUP_TOOLS      = "setuptools-0.6c9.tar.gz"
 NUMPY_SPEC       = "numpy>=1.2.1"
+NUMPY            = "numpy-1.2.1.tar.gz"
 SCIPY_SPEC       = "scipy>=0.7.0rc2"
+SCIPY            = "scipy-0.7.0rc2.tar.gz"
 CYTHON           = "Cython-0.10.3.zip"
 MATPLOTLIB_SPEC  = "matplotlib>=0.98.5.2"
 JPYPE            = "JPype-0.5.4.zip"
-MLABWRAP_SPEC    = "mlabwrap"
+MLABWRAP         = "mlabwrap-1.0.tar.gz"
 PYLINT           = "pylint-0.15.2.zip"
 NOSE_SPEC        = "nose>=0.10.4"
 PIL_SPEC         = "PIL"
 WXPYTHON_EGG_NT  = "wxPython-2.8.4.0.001-py2.5-win32.egg"
+
+default_root = os.path.abspath(os.path.split(__file__)[0])
 
 parser = optparse.OptionParser()
 parser.add_option("-v","--verbose",dest="verbose",
                   action="store_true", default=False,
                   help="Blather on about what we're doing")
 parser.add_option("-r","--root",dest="root",
-                  default= os.path.split(__file__)[0],
+                  default= default_root,
                   help="pyCellProfiler directory")
 parser.add_option("-d","--dry-run",dest="dry_run",
                   action="store_true", default=False,
                   help="Don't do anything - just talk about what we'd do")
 (options,args) = parser.parse_args()
+build_path = os.path.join(options.root,"build")
+package_path = os.path.join(options.root,"packages")
 
 def windows_check_prerequisites():
     """Make sure we have mingw32, make and some other things available"""
@@ -40,6 +48,22 @@ def windows_check_prerequisites():
         Please run MinGW-5.1.4.exe, located in the packages directory
         and make sure to install the g++ and g77 compilers as well as
         MinGW make.""")
+    distutils_cfg_path = os.path.join(os.path.split(sys.executable)[0],'Lib','distutils','pydistutils.cfg')
+    if not os.path.isfile(distutils_cfg_path):
+        if options.verbose:
+            print "Configuring distutils to use mingw32"
+        if not options.dry_run:
+            fid = open(distutils_cfg_path,'w')
+            fid.write("[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n")
+            fid.close()
+    if not os.environ.has_key('ATLAS'):
+        if options.verbose:
+            print "Using Atlas LAPACK library from packages."
+        os.environ['ATLAS'] = os.path.join(package_path,'lapack')
+    if not os.environ.has_key('BLAS'):
+        if options.verbose:
+            print "Using BLAS LAPACK library from packages."
+        os.environ['BLAS'] = os.path.join(package_path,'lapack')
 
 def unpack_zip(filename, targetpath):
     """Unpack a .zip file"""
@@ -143,8 +167,6 @@ if os.name == 'nt':
 else:
     BUILD = "build"
 
-build_path = os.path.join(options.root,"build")
-package_path = os.path.join(options.root,"packages")  
 try:
     import easy_install
 except:
@@ -180,8 +202,29 @@ on your system and you're getting this message because that's not such a
 surprise. You should go to http://www.wxpython.org/download.php and install
 the package using whatever installer is appropriate for your system.""")
             sys.exit(-1)
-install_easy_install(NUMPY_SPEC)
-install_easy_install(SCIPY_SPEC)
+
+try:
+    import numpy
+except:
+    try:
+	install_easy_install(NUMPY_SPEC)
+    except:
+	numpy_pkg, numpy_dir = unpack_package(NUMPY)
+        os.chdir(os.path.join(numpy_dir, numpy_pkg))
+        command = "python setup.py %s install"%(BUILD)
+        run_command(command)
+
+try:
+    import scipy
+except:
+    try:
+        install_easy_install(SCIPY_SPEC)
+    except:
+        scipy_pkg, scipy_dir = unpack_package(SCIPY)
+        os.chdir(os.path.join(scipy_dir, scipy_pkg))
+        command = "python setup.py %s install"%(BUILD)
+        run_command(command)
+
 install_easy_install(MATPLOTLIB_SPEC)
 #
 # Need to install jpype semi-manually because it assumes MSVC build tools
@@ -199,7 +242,17 @@ except:
     os.chdir(os.path.join(jpype_dir,jpype_pkg))
     command = "python setup.py %s install"%(BUILD)
     run_command(command)
-install_easy_install(MLABWRAP_SPEC)
+try:
+    import mlabwrap
+except:
+    mlabwrap_pkg, mlabwrap_dir = unpack_package(MLABWRAP)
+    # Copy a specially modded setup.py over
+    shutil.copy(os.path.join(package_path,'mlabwrap','setup.py'),
+                os.path.join(mlabwrap_dir,mlabwrap_pkg,'setup.py'))
+    os.chdir(os.path.join(mlabwrap_dir,mlabwrap_pkg))
+    command = "python setup.py %s install"%(BUILD)
+    run_command(command)
+
 #
 # Need to install pylint separately from Nose because the windows
 # install is flawed and fixed here. Pylint seems to be moribund...?

@@ -222,7 +222,7 @@ if NumberOfObjects > 0
         BoundaryPixels = bwperim(patch == k, 8);
         % Remove the current cell, and dilate the other objects
         OtherCellsMask = imdilate((patch > 0) & (patch ~= k), se, 'same');
-        PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:));
+        PercentTouching(k) = sum(OtherCellsMask(BoundaryPixels)) / sum(BoundaryPixels(:))*100;
         ImageOfPercentTouching(sub2ind([sr sc],r,c)) = PercentTouching(k);
         if NumberOfObjects >= 3
             %%% CLOSEST NEIGHBORS %%%

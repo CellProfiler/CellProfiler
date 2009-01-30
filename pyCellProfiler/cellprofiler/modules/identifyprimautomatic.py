@@ -87,8 +87,8 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
     """
     def create_settings(self):
         self.set_module_name("IdentifyPrimAutomatic")
-        self.image_name = cps.NameSubscriber('What did you call the images you want to process?', 'imagegroup')
-        self.object_name = cps.NameProvider('What do you want to call the objects identified by this module?', 'objectgroup', 'Nuclei')
+        self.image_name = cps.ImageNameSubscriber('What did you call the images you want to process?')
+        self.object_name = cps.ObjectNameProvider('What do you want to call the objects identified by this module?', 'Nuclei')
         self.size_range = cps.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
                                            (10,40),minval=1)
         self.exclude_size = cps.Binary('Discard objects outside the diameter range?', True)
@@ -117,7 +117,8 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
         self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
         self.save_outlines = cps.NameProvider('What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.settings.DO_NOT_USE)
         self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
-        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', True)
+        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
+        self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range, \
@@ -128,13 +129,16 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
                 self.watershed_method, self.smoothing_filter_size, \
                 self.maxima_suppression_size, self.low_res_maxima, \
                 self.save_outlines, self.fill_holes, self.test_mode, \
-                self.automatic_smoothing, self.automatic_suppression ]
+                self.automatic_smoothing, self.automatic_suppression, \
+                self.masking_object ]
     
     def visible_settings(self):
         vv = [self.image_name,self.object_name,self.size_range, \
                 self.exclude_size, self.merge_objects, \
-                self.exclude_border_objects, self.threshold_method, \
-                self.threshold_correction_factor, self.threshold_range, \
+                self.exclude_border_objects, self.threshold_method]
+        if self.threshold_modifier == TM_PER_OBJECT:
+            vv += [self.masking_object]
+        vv += [ self.threshold_correction_factor, self.threshold_range, \
                 self.object_fraction, self.unclump_method ]
         if self.unclump_method != UN_NONE:
             vv += [self.watershed_method, self.automatic_smoothing]
@@ -166,10 +170,14 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
             else:
                 self.setting(AUTOMATIC_SMOOTHING_VAR).value = cps.NO
             variable_revision_number = 13
+        if variable_revision_number == 13:
+            # Added "masking object" - this will just be blank if needed
+            # and will get filled in
+            variable_revision_number = 14
         if variable_revision_number != self.variable_revision_number:
             raise ValueError("Unable to rewrite settings from revision # %d"%(variable_revision_number))
     
-    variable_revision_number = 13
+    variable_revision_number = 14
 
     category =  "Object Processing"
     
@@ -557,7 +565,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Get a threshold to use for labeling
         #
-        local_threshold,global_threshold = self.get_threshold(img,mask)
+        if self.threshold_modifier == TM_PER_OBJECT:
+            masking_objects = \
+                workspace.object_set.get_objects(self.masking_object.value)
+        else:
+            masking_objects = None
+        local_threshold,global_threshold = self.get_threshold(img, mask,
+                                                              masking_objects)
         blurred_image = self.smooth_image(img,mask,1)
         binary_image = numpy.logical_and((blurred_image >= local_threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image,
@@ -640,10 +654,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         workspace.measurements.add_measurement(self.object_name.value,'Location_Center_Y',
                                                location_center_y)
     
-    def get_threshold(self, image, mask):
+    def get_threshold(self, image, mask, objects):
         """Compute the threshold using whichever algorithm was selected by the user
         image - image to threshold
         mask  - ignore pixels whose mask value is false
+        objects - labels that restrict thresholding to within the object boundary
         returns: threshold to use (possibly an array) and global threshold
         """
         threshold = self.get_global_threshold(image, mask)
@@ -651,6 +666,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             return threshold,threshold
         elif self.threshold_modifier == TM_ADAPTIVE:
             return self.get_adaptive_threshold(image, mask, threshold),threshold
+        elif self.threshold_modifier == TM_PER_OBJECT:
+            return (self.get_per_object_threshold(image, mask, objects, threshold),
+                    threshold) 
         else:
             raise NotImplementedError("%s thresholding is not implemented"%(self.threshold_modifier))
     
@@ -709,7 +727,25 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 block_threshold = min(block_threshold, max_threshold)
                 thresh_out[i0:i1,j0:j1] = block_threshold
         return thresh_out
-                
+    
+    def get_per_object_threshold(self,image,mask,objects,threshold):
+        """Return a matrix giving threshold per pixel calculated per-object
+        
+        image - image to be thresholded
+        mask  - mask out "don't care" pixels
+        objects - a label mask indicating object boundaries
+        threshold - the global threshold
+        """
+        labels = objects.segmented
+        label_extents = scipy.ndimage.find_objects(labels,numpy.max(labels))
+        local_threshold = numpy.ones(image.shape,image.dtype)
+        for i,extent in zip(range(1,len(label_extents)+1),label_extents):
+            label_mask = numpy.logical_and(mask[extent],labels[extent]==i)
+            values = image[extent]
+            per_object_threshold = self.get_global_threshold(values, label_mask)
+            local_threshold[extent][label_mask] = per_object_threshold
+        return local_threshold
+            
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         

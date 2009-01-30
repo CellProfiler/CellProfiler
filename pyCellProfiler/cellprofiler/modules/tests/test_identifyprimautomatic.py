@@ -147,11 +147,11 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         
     def test_01_18_test_mode(self):
         x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.test_mode.value)
-        x.setting(ID.TEST_MODE_VAR).value = cellprofiler.settings.NO
         self.assertFalse(x.test_mode.value)
         x.setting(ID.TEST_MODE_VAR).value = cellprofiler.settings.YES
         self.assertTrue(x.test_mode.value)
+        x.setting(ID.TEST_MODE_VAR).value = cellprofiler.settings.NO
+        self.assertFalse(x.test_mode.value)
         
     def test_02_000_test_zero_objects(self):
         x = ID.IdentifyPrimAutomatic()
@@ -1038,7 +1038,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
-                                                     numpy.ones((120,110),bool))
+                                                     numpy.ones((120,110),bool),
+                                                     None)
         for i0,i1 in ((0,60),(60,120)):
             for j0,j1 in ((0,55),(55,110)):
                 self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
@@ -1075,9 +1076,35 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
-                                                     numpy.ones((525,525),bool))
+                                                     numpy.ones((525,525),bool),
+                                                     None)
         for ((i0,i1),(j0,j1)) in blocks:
                 self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
+    
+    def test_08_01_per_object_otsu(self):
+        """Test get_threshold using Otsu per-object"""
+        
+        image = numpy.zeros((20,20))
+        draw_circle(image,(5,5),2,.1)
+        draw_circle(image,(15,15),3,.1)
+        draw_circle(image,(15,15),2,.2)
+        labels = numpy.zeros((20,20),int)
+        draw_circle(labels,(5,5),3,1)
+        draw_circle(labels,(15,15),3,2)
+        x = ID.IdentifyPrimAutomatic()
+        objects = cellprofiler.objects.Objects()
+        objects.segmented = labels 
+        x.threshold_method.value = ID.TM_OTSU_PER_OBJECT
+        threshold, global_threshold = x.get_threshold(image, 
+                                                      numpy.ones((20,20), bool),
+                                                      objects)
+        t1 = threshold[5,5]
+        t2 = threshold[15,15]
+        self.assertTrue(t1 < .1)
+        self.assertTrue(t2 > .1)
+        self.assertTrue(t2 < .2)
+        self.assertTrue(numpy.all(threshold[labels==1] == threshold[5,5]))
+        self.assertTrue(numpy.all(threshold[labels==2] == threshold[15,15]))
 
 def one_cell_image():
     img = numpy.zeros((25,25))

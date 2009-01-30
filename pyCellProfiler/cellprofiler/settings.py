@@ -329,7 +329,7 @@ class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
-        super(ImageNameProvider,self).__init__(text,'objectgroup',value)
+        super(ObjectNameProvider,self).__init__(text,'objectgroup',value)
 
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
@@ -355,7 +355,9 @@ class NameSubscriber(Setting):
             for setting in module.visible_settings():
                 if setting.key() == self.key():
                     return choices
-                if isinstance(setting, NameProvider) and setting != DO_NOT_USE:
+                if (isinstance(setting, NameProvider) and 
+                    setting != DO_NOT_USE and
+                    setting.group == self.group):
                     module_choices.append(setting.value)
             choices += module_choices
         assert False, "Setting not among visible settings in pipeline"
@@ -376,7 +378,7 @@ class ObjectNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
-        super(ObjetNameSubscriber,self).__init__(text,'objectgroup',value)
+        super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value)
 
 class Binary(Setting):
     """A setting that is represented as either true or false

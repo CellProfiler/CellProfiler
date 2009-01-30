@@ -20,8 +20,10 @@ JPYPE            = "JPype-0.5.4.zip"
 MLABWRAP         = "mlabwrap-1.0.tar.gz"
 PYLINT           = "pylint-0.15.2.zip"
 NOSE_SPEC        = "nose>=0.10.4"
+NOSEXUNIT_SPEC   = "NoseXUnit"
 PIL_SPEC         = "PIL"
 WXPYTHON_EGG_NT  = "wxPython-2.8.4.0.001-py2.5-win32.egg"
+IMAGING          = "Imaging-1.1.6.tar.gz"
 
 default_root = os.path.abspath(os.path.split(__file__)[0])
 
@@ -265,4 +267,11 @@ except:
     command = "python setup.py %s install"%(BUILD)
     run_command(command)
 install_easy_install(NOSE_SPEC)
-install_easy_install(PIL_SPEC)
+install_easy_install(NOSEXUNIT_SPEC)
+try:
+    import PIL
+except:
+    pil_pkg,pil_dir = unpack_package(IMAGING)
+    os.chdir(os.path.join(pil_dir,pil_pkg))
+    command = "python setup.py %s install"%(BUILD)
+    run_command(command)

@@ -21,6 +21,7 @@ MLABWRAP         = "mlabwrap-1.0.tar.gz"
 PYLINT           = "pylint-0.15.2.zip"
 NOSE_SPEC        = "nose>=0.10.4"
 NOSEXUNIT_SPEC   = "NoseXUnit"
+LOGILAB_COMMON_SPEC = "logilab-common"
 PIL_SPEC         = "PIL"
 WXPYTHON_EGG_NT  = "wxPython-2.8.4.0.001-py2.5-win32.egg"
 IMAGING          = "Imaging-1.1.6.tar.gz"
@@ -266,6 +267,7 @@ except:
     os.chdir(os.path.join(pylint_dir,pylint_pkg))
     command = "python setup.py %s install"%(BUILD)
     run_command(command)
+install_easy_install(LOGILAB_COMMON_SPEC)
 install_easy_install(NOSE_SPEC)
 install_easy_install(NOSEXUNIT_SPEC)
 try:

@@ -3,6 +3,7 @@ import os
 
 import unittest
 import numpy
+import PIL.Image
 import scipy.ndimage
 import tempfile
 
@@ -1105,6 +1106,76 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(t2 < .2)
         self.assertTrue(numpy.all(threshold[labels==1] == threshold[5,5]))
         self.assertTrue(numpy.all(threshold[labels==2] == threshold[15,15]))
+    
+    def test_09_01_mog(self):
+        """Test mixture of gaussians thresholding with few pixels
+        
+        Run MOG to see if it blows up, given 0-10 pixels"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_MOG_GLOBAL
+        for i in range(11):
+            if i:
+                image = numpy.array(range(i),float) / float(i)
+            else:
+                image = numpy.array((0,))
+            x.get_threshold(image, numpy.ones((i,),bool),None)
+
+    def test_09_02_mog_fly(self):
+        """Test mixture of gaussians thresholding on the fly image"""
+        image = fly_image()
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_MOG_GLOBAL
+        x.object_fraction.value = '0.10'
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.038)
+        self.assertTrue(threshold < 0.041)
+        x.object_fraction.value = '0.20'
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.0084)
+        self.assertTrue(threshold < 0.0088)
+        x.object_fraction.value = '0.50'
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.0082)
+        self.assertTrue(threshold < 0.0086)
+    
+    def test_10_01_test_background(self):
+        """Test simple mode background for problems with small images"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_BACKGROUND_GLOBAL
+        for i in range(11):
+            if i:
+                image = numpy.array(range(i),float) / float(i)
+            else:
+                image = numpy.array((0,))
+            x.get_threshold(image, numpy.ones((i,),bool),None)
+    
+    def test_10_02_test_background_fly(self):
+        image = fly_image()
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_BACKGROUND_GLOBAL
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.046)
+        self.assertTrue(threshold < 0.048)
+        
+    def test_11_01_test_robust_background(self):
+        """Test robust background for problems with small images"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_ROBUST_BACKGROUND_GLOBAL
+        for i in range(11):
+            if i:
+                image = numpy.array(range(i),float) / float(i)
+            else:
+                image = numpy.array((0,))
+            x.get_threshold(image, numpy.ones((i,),bool),None)
+    
+    def test_11_02_test_robust_background_fly(self):
+        image = fly_image()
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_ROBUST_BACKGROUND_GLOBAL
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.054)
+        self.assertTrue(threshold < 0.056)
+        
 
 def one_cell_image():
     img = numpy.zeros((25,25))
@@ -1115,6 +1186,13 @@ def two_cell_image():
     img = numpy.zeros((50,50))
     draw_circle(img,(10,35),5, .8)
     draw_circle(img,(30,15),5, .6)
+    return img
+
+def fly_image():
+    file = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+                        'ExampleFlyImages','01_POS002_D.TIF')
+    img = numpy.asarray(PIL.Image.open(file))
+    img = img.astype(float) / 255.0
     return img
     
 def draw_circle(img,center,radius,value):

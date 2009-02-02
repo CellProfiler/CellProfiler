@@ -10,6 +10,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.figure
 import matplotlib.cm
 import numpy
+import scipy.stats
 import wx
 
 import cellprofiler.cpmodule
@@ -42,7 +43,7 @@ TM_BACKGROUND                   = "Background"
 TM_BACKGROUND_GLOBAL            = "Background Global"
 TM_BACKGROUND_ADAPTIVE          = "Background Adaptive"
 TM_BACKGROUND_PER_OBJECT        = "Background PerObject"
-TM_ROBUST                       = "Robust"
+TM_ROBUST_BACKGROUND            = "RobustBackground"
 TM_ROBUST_BACKGROUND_GLOBAL     = "RobustBackground Global"
 TM_ROBUST_BACKGROUND_ADAPTIVE   = "RobustBackground Adaptive"
 TM_ROBUST_BACKGROUND_PER_OBJECT = "RobustBackground PerObject"
@@ -138,8 +139,10 @@ class IdentifyPrimAutomatic(cellprofiler.cpmodule.CPModule):
                 self.exclude_border_objects, self.threshold_method]
         if self.threshold_modifier == TM_PER_OBJECT:
             vv += [self.masking_object]
+        if self.threshold_algorithm == TM_MOG:
+            vv += [self.object_fraction]
         vv += [ self.threshold_correction_factor, self.threshold_range, \
-                self.object_fraction, self.unclump_method ]
+                self.unclump_method ]
         if self.unclump_method != UN_NONE:
             vv += [self.watershed_method, self.automatic_smoothing]
             if not self.automatic_smoothing:
@@ -678,6 +681,16 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             return otsu(image[mask],
                         self.threshold_range.min,
                         self.threshold_range.max)
+        elif self.threshold_algorithm == TM_MOG:
+            return self.get_mog_threshold(image,mask)
+        elif self.threshold_algorithm == TM_BACKGROUND:
+            return self.get_background_threshold(image,mask)
+        elif self.threshold_algorithm == TM_ROBUST_BACKGROUND:
+            return self.get_robust_background_threshold(image,mask)
+        elif self.threshold_algorithm == TM_RIDLER_CALVARD:
+            return self.get_ridler_calvard_threshold(image, mask)
+        elif self.threshold_algorithm == TM_KAPUR:
+            return self.get_kapur_threshold(image,mask)
         else:
             raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
     
@@ -745,7 +758,176 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             per_object_threshold = self.get_global_threshold(values, label_mask)
             local_threshold[extent][label_mask] = per_object_threshold
         return local_threshold
-            
+    
+    def get_mog_threshold(self,image,mask):
+        """Compute a background using a mixture of gaussians
+        
+        This function finds a suitable
+        threshold for the input image Block. It assumes that the pixels in the
+        image belong to either a background class or an object class. 'pObject'
+        is an initial guess of the prior probability of an object pixel, or
+        equivalently, the fraction of the image that is covered by objects.
+        Essentially, there are two steps. First, a number of Gaussian
+        distributions are estimated to match the distribution of pixel
+        intensities in OrigImage. Currently 3 Gaussian distributions are
+        fitted, one corresponding to a background class, one corresponding to
+        an object class, and one distribution for an intermediate class. The
+        distributions are fitted using the Expectation-Maximization (EM)
+        algorithm, a procedure referred to as Mixture of Gaussians modeling.
+        When the 3 Gaussian distributions have been fitted, it's decided
+        whether the intermediate class models background pixels or object
+        pixels based on the probability of an object pixel 'pObject' given by
+        the user.        
+        """
+        cropped_image = image[mask]
+        pixel_count = numpy.product(cropped_image.shape)
+        max_count   = 512**2 # maximum # of pixels analyzed
+        #
+        # We need at least 3 pixels to keep from crashingbecause the highest 
+        # and lowest are chopped out below.
+        #
+        object_fraction = float(self.object_fraction.value)
+        background_fraction = 1.0-object_fraction
+        if pixel_count < 3/min(object_fraction,background_fraction):
+            return 1
+        if numpy.max(cropped_image)==numpy.min(cropped_image):
+            return cropped_image[0]
+        number_of_classes = 3
+        if pixel_count > max_count:
+            numpy.random.seed(0)
+            pixel_indices = numpy.random.permutation(pixel_count)[:max_count]
+            cropped_image = cropped_image[pixel_indices]
+        # Initialize mean and standard deviations of the three Gaussian
+        # distributions by looking at the pixel intensities in the original
+        # image and by considering the percentage of the image that is
+        # covered by object pixels. Class 1 is the background class and Class
+        # 3 is the object class. Class 2 is an intermediate class and we will
+        # decide later if it encodes background or object pixels. Also, for
+        # robustness the we remove 1% of the smallest and highest intensities
+        # in case there are any quantization effects that have resulted in
+        # unnaturally many 0:s or 1:s in the image.
+        cropped_image.sort()
+        one_percent = (numpy.product(cropped_image.shape) + 99)/100
+        cropped_image=cropped_image[one_percent:-one_percent]
+        pixel_count = numpy.product(cropped_image.shape)
+        # Guess at the class means for the 3 classes: background,
+        # in-between and object
+        bg_pixel = cropped_image[round(pixel_count * background_fraction/2.0)]
+        fg_pixel = cropped_image[round(pixel_count * (1-object_fraction/2))]
+        class_mean = numpy.array([bg_pixel, (bg_pixel+fg_pixel)/2,fg_pixel])
+        class_std = numpy.ones((3,)) * 0.15
+        # Initialize prior probabilities of a pixel belonging to each class.
+        # The intermediate class steals some probability from the background
+        # and object classes.
+        class_prob = numpy.array([3.0/4.0 * background_fraction ,
+                                  1.0/4.0,
+                                  3.0/4.0 * object_fraction])
+        # Expectation-Maximization algorithm for fitting the three Gaussian
+        # distributions/classes to the data. Note, the code below is general
+        # and works for any number of classes. Iterate until parameters don't
+        # change anymore.
+        delta = 1
+        class_count = numpy.prod(class_mean.shape)
+        while delta > 0.001:
+            old_class_mean = class_mean.copy()
+            # Update probabilities of a pixel belonging to the background or
+            # object1 or object2
+            pixel_class_prob = numpy.ndarray((pixel_count,class_count))
+            for k in range(class_count):
+                norm = scipy.stats.norm(class_mean[k],class_std[k])
+                pixel_class_prob[:,k] = class_prob[k] * norm.pdf(cropped_image)
+            pixel_class_normalizer = numpy.sum(pixel_class_prob,1)+.000000000001
+            for k in range(class_count):
+                pixel_class_prob[:,k] = pixel_class_prob[:,k] / pixel_class_normalizer
+                # Update parameters in Gaussian distributions
+                class_prob[k] = numpy.mean(pixel_class_prob[:,k])
+                class_mean[k] = (numpy.sum(pixel_class_prob[:,k] * cropped_image) /
+                                 (class_prob[k] * pixel_count))
+                class_std[k] = \
+                    math.sqrt(numpy.sum(pixel_class_prob[:,k] * 
+                                        (cropped_image-class_mean[k])**2)/
+                              (pixel_count * class_prob[k])) + .000001
+            delta = numpy.sum(numpy.abs(old_class_mean - class_mean))
+        # Now the Gaussian distributions are fitted and we can describe the
+        # histogram of the pixel intensities as the sum of these Gaussian
+        # distributions. To find a threshold we first have to decide if the
+        # intermediate class 2 encodes background or object pixels. This is
+        # done by choosing the combination of class probabilities "class_prob"
+        # that best matches the user input "object_fraction".
+        
+        # Construct an equally spaced array of values between the background
+        # and object mean
+        ndivisions = 10000
+        level = (numpy.array(range(ndivisions)) *
+                 ((class_mean[2]-class_mean[0]) / ndivisions)
+                 + class_mean[0])
+        class_gaussian = numpy.ndarray((ndivisions,class_count))
+        for k in range(class_count):
+            norm = scipy.stats.norm(class_mean[k],class_std[k])
+            class_gaussian[:,k] = class_prob[k] * norm.pdf(level)
+        if (abs(class_prob[1]+class_prob[2]-object_fraction) <
+            abs(class_prob[2]-object_fraction)):
+            # classifying the intermediate as object more closely models
+            # the user's desired object fraction
+            background_distribution = class_gaussian[:,0]
+            object_distribution = class_gaussian[:,1]+class_gaussian[:,2]
+        else:
+            background_distribution = class_gaussian[:,0]+class_gaussian[:,1]
+            object_distribution = class_gaussian[:,2]
+        # Now, find the threshold at the intersection of the background
+        # distribution and the object distribution.
+        index = numpy.argmin(numpy.abs(background_distribution-
+                                       object_distribution))
+        return level[index]
+
+    def get_background_threshold(self,image,mask):
+        """Get threshold based on the mode of the image
+        The threshold is calculated by calculating the mode and multiplying by
+        2 (an arbitrary empirical factor). The user will presumably adjust the
+        multiplication factor as needed."""
+        cropped_image = image[mask]
+        if numpy.product(cropped_image.shape)==0:
+            return 0
+        if numpy.min(cropped_image) == numpy.max(cropped_image):
+            return cropped_image[0]
+        
+        # Only do the histogram between values a bit removed from saturation
+        robust_min = 0.02
+        robust_max = 0.98
+        nbins = 256
+        cropped_image = cropped_image[numpy.logical_and(cropped_image > robust_min,
+                                                        cropped_image < robust_max)]
+        h = scipy.ndimage.histogram(cropped_image,0,1,nbins)
+        index = numpy.argmax(h)
+        cutoff = float(index) / float(nbins-1)
+        return cutoff * 2
+
+    def get_robust_background_threshold(self,image,mask):
+        """Calculate threshold based on mean & standard deviation
+           The threshold is calculated by trimming the top and bottom 5% of
+           pixels off the image, then calculating the mean and standard deviation
+           of the remaining image. The threshold is then set at 2 (empirical
+           value) standard deviations above the mean.""" 
+
+        cropped_image = image[mask]
+        if numpy.product(cropped_image.shape)<3:
+            return 0
+        if numpy.min(cropped_image) == numpy.max(cropped_image):
+            return cropped_image[0]
+        
+        cropped_image.sort()
+        chop = int(round(numpy.product(cropped_image.shape) * .05))
+        im   = cropped_image[chop:-chop]
+        mean = im.mean()
+        sd   = im.std()
+        return mean+sd*2
+
+    def get_ridler_calvard_threshold(self,image, mask):
+        raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
+    
+    def get_kapur_threshold(self,image,mask):
+        raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
+
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
         
@@ -1121,4 +1303,3 @@ def sum_of_entropies(image, mask, threshold):
     #
     return numpy.sum(hfg * numpy.log2(hfg)) + numpy.sum(hbg*numpy.log2(hbg))
 
-    

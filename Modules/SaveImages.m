@@ -492,27 +492,26 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         end
         fieldname = ['Movie', ImageName];
         if SetBeingAnalyzed == 1
-            NumberExistingFrames = 0;
             %%% Preallocates the variable which signficantly speeds processing
             %%% time.
             handles.Pipeline.(fieldname)(handles.Current.NumberOfImageSets) = struct('colormap',[],'cdata',[]);
-        else
-            Movie = handles.Pipeline.(fieldname);
-            NumberExistingFrames = size(Movie,2);
         end
+        Movie = handles.Pipeline.(fieldname);
+        
         %%% Determines whether the image is RGB.
         if size(Image,3) == 3
             IsRGB = 1;
         else IsRGB = 0;
         end
         if IsRGB == 1
-            Movie(NumberExistingFrames+1) = im2frame(Image);
+            F = im2frame(Image);
+            Movie(SetBeingAnalyzed).cdata = F.cdata;
         else
             %%% For non-RGB images, the colormap will be specified all
             %%% at once later, when the file is saved.
-            Movie(NumberExistingFrames+1).colormap = [];
+            Movie(SetBeingAnalyzed).colormap = [];
             %%% Adds the image as the last frame in the movie.
-            Movie(NumberExistingFrames+1).cdata = Image*256;
+            Movie(SetBeingAnalyzed).cdata = Image*256;
         end
         %%% Saves the movie to the handles structure.
         handles.Pipeline.(fieldname) = Movie;

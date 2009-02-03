@@ -923,10 +923,80 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         return mean+sd*2
 
     def get_ridler_calvard_threshold(self,image, mask):
-        raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
-    
+        """Find a threshold using the method of Ridler and Calvard
+        
+        The reference for this method is:
+        "Picture Thresholding Using an Iterative Selection Method" 
+        by T. Ridler and S. Calvard, in IEEE Transactions on Systems, Man and
+        Cybernetics, vol. 8, no. 8, August 1978.
+        """
+        cropped_image = image[mask]
+        if numpy.product(cropped_image.shape)<3:
+            return 0
+        if numpy.min(cropped_image) == numpy.max(cropped_image):
+            return cropped_image[0]
+        
+        # We want to limit the dynamic range of the image to 256. Otherwise,
+        # an image with almost all values near zero can give a bad result.
+        min_val = numpy.max(cropped_image)/256;
+        cropped_image[cropped_image<min_val] = min_val;
+        im = numpy.log(cropped_image);
+        min_val = numpy.min(im);
+        max_val = numpy.max(im);
+        im = (im - min_val)/(max_val - min_val);
+        pre_thresh = 0;
+        # This method needs an initial value to start iterating. Using
+        # graythresh (Otsu's method) is probably not the best, because the
+        # Ridler Calvard threshold ends up being too close to this one and in
+        # most cases has the same exact value.
+        new_thresh = otsu(im)
+        delta = 0.00001;
+        while abs(pre_thresh - new_thresh)>delta:
+            pre_thresh = new_thresh;
+            mean1 = numpy.mean(im[im<pre_thresh]);
+            mean2 = numpy.mean(im[im>=pre_thresh]);
+            new_thresh = numpy.mean([mean1,mean2]);
+        return math.exp(min_val + (max_val-min_val)*new_thresh);
+
     def get_kapur_threshold(self,image,mask):
-        raise NotImplementedError("%s algorithm not implemented"%(self.threshold_algorithm.value))
+        """The Kapur, Sahoo, & Wong method of thresholding, adapted to log-space."""
+        cropped_image = image[mask]
+        if numpy.product(cropped_image.shape)<3:
+            return 0
+        if numpy.min(cropped_image) == numpy.max(cropped_image):
+            return cropped_image[0]
+        log_image = numpy.log2(smooth_with_noise(cropped_image, 8))
+        min_log_image = numpy.min(log_image)
+        max_log_image = numpy.max(log_image)
+        histogram = scipy.ndimage.histogram(log_image,
+                                            min_log_image,
+                                            max_log_image,
+                                            256)
+        histogram_values = (min_log_image + (max_log_image - min_log_image)*
+                            numpy.array(range(256),float) / 255)
+        # drop any zero bins
+        keep = histogram != 0
+        histogram = histogram[keep]
+        histogram_values = histogram_values[keep]
+        # check for corner cases
+        if numpy.product(histogram_values)==1:
+            return 2**histogram_values[0] 
+        # Normalize to probabilities
+        p = histogram.astype(float) / float(numpy.sum(histogram))
+        # Find the probabilities totals up to and above each possible threshold.
+        lo_sum = numpy.cumsum(p);
+        hi_sum = lo_sum[-1] - lo_sum;
+        lo_e = numpy.cumsum(p * numpy.log2(p));
+        hi_e = lo_e[-1] - lo_e;
+
+        # compute the entropies
+        lo_entropy = lo_e / lo_sum - numpy.log2(lo_sum);
+        hi_entropy = hi_e / hi_sum - numpy.log2(hi_sum);
+
+        sum_entropy = lo_entropy[:-1] + hi_entropy[:-1];
+        sum_entropy[numpy.logical_not(numpy.isfinite(sum_entropy))] = numpy.Inf
+        entry = numpy.argmin(sum_entropy);
+        return 2**((histogram_values[entry] + histogram_values[entry+1]) / 2);
 
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""

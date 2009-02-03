@@ -1176,6 +1176,44 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
         
+    def test_12_01_test_ridler_calvard_background(self):
+        """Test ridler-calvard background for problems with small images"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_RIDLER_CALVARD_GLOBAL
+        for i in range(11):
+            if i:
+                image = numpy.array(range(i),float) / float(i)
+            else:
+                image = numpy.array((0,))
+            x.get_threshold(image, numpy.ones((i,),bool),None)
+    
+    def test_12_02_test_ridler_calvard_background_fly(self):
+        image = fly_image()
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_RIDLER_CALVARD_GLOBAL
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.017)
+        self.assertTrue(threshold < 0.019)
+        
+        
+    def test_13_01_test_kapur_background(self):
+        """Test kapur background for problems with small images"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_KAPUR_GLOBAL
+        for i in range(11):
+            if i:
+                image = numpy.array(range(i),float) / float(i)
+            else:
+                image = numpy.array((0,))
+            x.get_threshold(image, numpy.ones((i,),bool),None)
+    
+    def test_13_02_test_kapur_background_fly(self):
+        image = fly_image()
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = ID.TM_KAPUR_GLOBAL
+        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        self.assertTrue(threshold > 0.015)
+        self.assertTrue(threshold < 0.017)
 
 def one_cell_image():
     img = numpy.zeros((25,25))

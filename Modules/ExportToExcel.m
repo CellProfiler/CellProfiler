@@ -126,11 +126,29 @@ for n = 1:8
 end
 Object = tmp;
 
+% If creating batch files, warn that this module only works if the jobs are
+% submitted as one batch
+if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles') && ~isfield(handles.Current, 'BatchInfo'),
+    msg = ['You are creating batch file(s) for a cluster run. Please note that ',mfilename,' can only work on the cluster if the jobs are submitted as a single batch, since measurements cannot be compiled from multiple batches.'];
+    if isfield(handles.Current, 'BatchInfo'),
+        warning(msg);   % If a batch run, print to text (no dialogs allowed)
+    else
+        CPwarndlg(msg); % If on local machine, create dialog box with the warning
+    end
+end
+
+% If not a batch run, save the output file name from the uicontrol so it
+% can used to name the Excel file (during a batch run, the uicontrol can't
+% be accessed)
+if ~isfield(handles.Current, 'BatchInfo'),
+    handles.Pipeline.OutputFileName = get(handles.OutputFileNameEditBox,'string');
+end
+        
 if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     RawPathname = handles.Current.DefaultOutputDirectory;
     ExportInfo.ObjectNames = unique(Object);
     ExportInfo.MeasurementExtension = '.xls';
-    ExportInfo.MeasurementFilename = get(handles.OutputFileNameEditBox,'string');
+    ExportInfo.MeasurementFilename = handles.Pipeline.OutputFileName;
     ExportInfo.IgnoreNaN = 1;
     ExportInfo.SwapRowsColumnInfo = 'No';
     ExportInfo.DataParameter = 'mean';

@@ -14,8 +14,8 @@ function CPwritemeasurements(handles,ExportInfo,RawPathname)
 % $Revision$
 
 %%% Get the handle to the waitbar and update the text in the waitbar
-waitbarhandle = CPwaitbar(0,'');
-
+isBatchRun = isfield(handles.Current, 'BatchInfo');
+if ~isBatchRun, waitbarhandle = CPwaitbar(0,''); end
 
 %%% Detect and try to deal with old-style measurements
 handles = CP_convert_old_measurements(handles);
@@ -25,7 +25,7 @@ ExcludedObjectNames = {'Image', 'Experiment', 'Neighbors'};
 if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataParameter, {'mean', 'std', 'median'})),
     CompositeValues = {};
     CompositeNames = {};
-    CPwaitbar(0,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']);
+    if ~isBatchRun, CPwaitbar(0,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']); end
     
     % find the number of measurements we need to compute (for the waitbar).
     FieldCount = 0;
@@ -71,7 +71,7 @@ if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataPar
         for k = 1:length(fields)
             fieldname = fields{k};
 
-            CPwaitbar(FieldsCompleted / FieldCount,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']);
+            if ~isBatchRun, CPwaitbar(FieldsCompleted / FieldCount,waitbarhandle,['Export Status - computing ', ExportInfo.DataParameter, 's']); end
             
             if ~isnumeric(handles.Measurements.(ObjectName).(fieldname){1})
                 continue
@@ -90,7 +90,7 @@ if any(strcmp('Image', ExportInfo.ObjectNames)) && any(strcmp(ExportInfo.DataPar
     end
 end
 
-CPwaitbar(0,waitbarhandle,'Export Status - writing data');
+if ~isBatchRun, CPwaitbar(0,waitbarhandle,'Export Status - writing data'); end
 
 for Object = 1:length(ExportInfo.ObjectNames)
     ObjectName = ExportInfo.ObjectNames{Object};
@@ -101,7 +101,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
     end
 
     %%% Update waitbar
-    CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName));
+    if ~isBatchRun, CPwaitbar((Object-1)/length(ExportInfo.ObjectNames),waitbarhandle,sprintf('Exporting %s',ObjectName)); end
 
     % Open a file for exporting the measurements
     % Add dot in extension if it's not there
@@ -301,4 +301,4 @@ for Object = 1:length(ExportInfo.ObjectNames)
     fclose(fid);
 end
 
-close(waitbarhandle);
+if ~isBatchRun, close(waitbarhandle); end

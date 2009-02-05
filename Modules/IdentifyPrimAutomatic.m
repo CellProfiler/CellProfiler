@@ -754,7 +754,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                         MaximaImage = MaximaImage > Threshold;
                     end
                     %%% Shrink to points (needed because of the resizing)
-                    MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+                    if all(MaximaImage(:))
+                        MaximaImage = zeros(size(MaximaImage));
+                    else
+                        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+                    end
                 elseif strcmp(LocalMaximaType,'Shape')
                     %%% Calculate distance transform
                     DistanceTransformedImage = bwdist(~Objects);
@@ -780,7 +784,11 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     %%% We are only interested in maxima within thresholded objects
                     MaximaImage(~Objects) = 0;
                     %%% Shrink to points (needed because of the resizing)
-                    MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+                    if all(MaximaImage(:))
+                        MaximaImage = zeros(size(MaximaImage));
+                    else
+                        MaximaImage = bwmorph(MaximaImage,'shrink',inf);
+                    end
                 elseif strcmp(LocalMaximaType, 'Manual') || strcmp(LocalMaximaType, 'Manual_for_IdSecondary')
                     %%% Do the manual clicking for local maximas
                     IdPrimDistinguishClumpedObjManualFigureNumber = findobj('Tag','IdPrimDistinguishClumpedObjManualFigure');

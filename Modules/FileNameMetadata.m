@@ -123,6 +123,11 @@ if isempty(Metadata)
     error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression']);
 end
 
+if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
+    Metadata.Well = [Metadata.WellRow Metadata.WellColumn];
+    FieldNames{length(FieldNames)+1} = 'Well';
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
 %%%%%%%%%%%%%%%%%%%%%%%

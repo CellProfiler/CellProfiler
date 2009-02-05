@@ -456,19 +456,27 @@ if CollectStatistics
     handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_Trajectory_Y', ...
                     CentroidTrajectory(:,2));
     handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_DistanceTraveled', ...
-                    DistanceTraveled);
+                    DistanceTraveled(:));
     
     % Record the object lifetime once it disappears...
     if SetBeingAnalyzed ~= NumberOfImageSets,
-        Lifetime = NaN(size(CurrentLabels));
-        AbsentObjectsLabels = setdiff(PreviousLabels,CurrentLabels);
-        Lifetime(AbsentObjectsLabels) = AgeOfObjects(AbsentObjectsLabels);
+        Lifetime = NaN(size(PreviousLabels));
+        [AbsentObjectsLabel,idx] = setdiff(PreviousLabels,CurrentLabels);
+        Lifetime(idx) = AgeOfObjects(AbsentObjectsLabel);
     else %... or we reach the end of the analysis
         Lifetime = AgeOfObjects(CurrentLabels);
     end
         
-    handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_Lifetime', ...
-                    Lifetime);
+    LifetimeMeasurementName = 'TrackObjects_Lifetime';
+    handles = CPaddmeasurements(handles, ObjectName, LifetimeMeasurementName, ...
+                    Lifetime(:));
+    % This is a special case: The lifetime for an object is known only
+    % after the cycle where it disappeared, so I need to transfer the
+    % lifetime measurements back one cycle, unless we're at the end
+    if SetBeingAnalyzed > 1 && SetBeingAnalyzed ~= NumberOfImageSets, 
+        handles.Measurements.(ObjectName).(LifetimeMeasurementName){SetBeingAnalyzed-1} = ...
+            handles.Measurements.(ObjectName).(LifetimeMeasurementName){SetBeingAnalyzed}; 
+    end
 end
 
 % Save the structure back to handles.Pipeline 
@@ -595,4 +603,4 @@ DistanceTraveled = sqrt(sum(CentroidTrajectory.^2,2));
 OldLabels = intersect(CurrentLabels,PreviousLabels);
 AgeOfObjects(OldLabels) = AgeOfObjects(OldLabels) + 1;
 NewLabels = setdiff(CurrentLabels,PreviousLabels);
-AgeOfObjects(NewLabels) = 0;
+AgeOfObjects(NewLabels) = 1;

@@ -155,9 +155,15 @@ DatabaseType = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %defaultVAR02 = DefaultDB
 DatabaseName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
+assert(~any(isspace(DatabaseName)),['Image processing was canceled in the ', ModuleName, ...
+            ' module because you have entered one or more spaces in the text box for the database name.'])
+
 %textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?  An underscore will be added to the end of the prefix automatically
 %defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+assert(~any(isspace(TablePrefix)),['Image processing was canceled in the ', ModuleName, ...
+            ' module because you have entered one or more spaces in the text box for the database table prefix.'])
 
 %textVAR04 = What prefix should be used to name the SQL files?
 %defaultVAR04 = SQL_

@@ -264,10 +264,12 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         %%% If the user has selected to use the same base name for all the new file
         %%% names (used for movies).
     elseif strncmpi(ImageFileName,'=',1)
-        Spaces = isspace(ImageFileName);
-        if any(Spaces)
-            error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
-        end
+        assert(~any(isspace(ImageFileName)),['Image processing was canceled in the ', ModuleName, ...
+            ' module because you have entered one or more spaces in the text box for the filename of the image.'])
+        
+        %% Substitute Metadata tokens if found
+        ImageFileName = CPreplacemetadata(handles,ImageFileName);
+               
         FileName = ImageFileName(2:end);
     else
         try

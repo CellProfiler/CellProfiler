@@ -412,7 +412,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         else
             if exist(FileAndPathName,'file') %#ok Ignore MLint
                 Answer = CPquestdlg(['The settings in the ', ModuleName, ' module will cause the file "', FileAndPathName,'" to be overwritten. Do you want to continue or cancel?'], 'Warning', 'Continue','Skip Module','Cancel','Cancel');
-                switch lower(Answer),
+                switch Answer,
                     case 'Skip Module', 
                         return;
                     case 'Cancel',

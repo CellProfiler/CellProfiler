@@ -214,12 +214,13 @@ else
     FirstSet = 1;
     LastSet = handles.Current.NumberOfImageSets;
 end
+
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
+DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & (FirstSet == 1);
 
-DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & DoWriteSQL;
+% Initial checking of variables, if we're writing anything
+if DoWriteSQL || DoWriteCPAPropertiesFile
 
-if DoWriteSQL,
-    % Initial checking of variables
     if isempty(DataPath)
         error(['Image processing was canceled in the ', ModuleName, ' module because no folder was specified.']);
     elseif ~exist(DataPath,'dir')
@@ -228,14 +229,18 @@ if DoWriteSQL,
     if isempty(DatabaseName)
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
+end
+
+if DoWriteSQL,
     CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
-    
-    if DoWriteCPAPropertiesFile,
-        re = regexp(WriteProperties,'V(?<number>[0-9]+\.[0-9]+)','names');
-        for verIdx = 1:length(re)
-            version = str2double(re(verIdx).number);
-            CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType, version);
-        end
+end
+
+if DoWriteCPAPropertiesFile,
+    re = regexp(WriteProperties,'V(?<number>[0-9]+\.[0-9]+)','names');
+    for verIdx = 1:length(re)
+        version = str2double(re(verIdx).number);
+        CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType, version);
+
     end
 end
 

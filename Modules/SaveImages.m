@@ -542,7 +542,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             %%% have been calculated for each frame and are
             %%% already stored in Movie.colormap.
             if IsRGB == 1
-                try movie2avi(Movie,FileAndPathName)
+                try movie2avi(Movie,FileAndPathName,'compression','none');
                 catch error(['Image processing was canceled in the ', ModuleName, ' module because there was an error saving the movie to the hard drive.'])
                 end
             else
@@ -554,7 +554,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                 %%% dependency report, I think, because the variable
                 %%% ChosenColormap will not exist until the eval function
                 %%% is carried out.
-                try movie2avi(Movie,FileAndPathName,'colormap',ChosenColormap)
+                try movie2avi(Movie,FileAndPathName,'colormap',ChosenColormap,'compression','none');
                 catch error(['Image processing was canceled in the ', ModuleName, ' module because there was an error saving the movie to the hard drive.'])
                 end
             end

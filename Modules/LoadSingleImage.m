@@ -102,9 +102,10 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-if handles.Current.SetBeingAnalyzed == 1
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+if SetBeingAnalyzed == 1
     %%% Determines which cycle is being analyzed.
-    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+
 
     %%% Remove slashes '/' from the input
     tmp1 = {};
@@ -148,6 +149,10 @@ if handles.Current.SetBeingAnalyzed == 1
     end
 
     for n = 1:length(ImageName)
+        
+        %% Substitute Metadata tokens if found
+        TextToFind{n} = CPreplacemetadata(handles,TextToFind{n});      
+     
         %%% This try/catch will catch any problems in the load images module.
         try
             CurrentFileName = TextToFind{n};
@@ -176,8 +181,6 @@ if handles.Current.SetBeingAnalyzed == 1
         FileNames(n) = {CurrentFileName};
     end
 
-
-
     %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
     %%%%%%%%%%%%%%%%%%%%%%%
@@ -188,7 +191,7 @@ if handles.Current.SetBeingAnalyzed == 1
         % Remove uicontrols from last cycle
         delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
         
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        if SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure('','NarrowText',ThisModuleFigureNumber)
         end
         for n = 1:length(ImageName)

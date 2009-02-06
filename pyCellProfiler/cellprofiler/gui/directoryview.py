@@ -4,6 +4,7 @@
     TODO - long-term, this should Matlab imformats or CPimread to get the list of images
 """
 import os
+import sys
 import wx
 
 import scipy.io.matlab
@@ -60,7 +61,13 @@ class DirectoryView(object):
         self.__best_height = height
     
     def refresh(self):
-        self.__list_box.Clear()
+        try:
+            self.__list_box.Clear()
+        except wx.PyDeadObjectError:
+            # Refresh can get called when the image directory changes, even
+            # after this window has closed down.
+            sys.stderr.write("Warning: GUI not available during directoryview refresh\n")
+            return
         files = [x 
                  for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
                      if os.path.splitext(x)[1][1:].lower() in self.__image_extensions]

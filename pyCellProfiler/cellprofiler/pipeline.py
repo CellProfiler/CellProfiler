@@ -417,59 +417,12 @@ class Pipeline:
         
         Run the pipeline, returning the measurements made
         """
-        matlab = get_matlab_instance()
-        self.set_matlab_path()
-        display_size = (1024,768)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
-        measurements = cellprofiler.measurements.Measurements()
-        
-        for module in self.modules():
-            try:
-                module.prepare_run(self, image_set_list)
-            except Exception,instance:
-                traceback.print_exc()
-                event = RunExceptionEvent(instance,module)
-                self.notify_listeners(event)
-                if event.cancel_run:
-                    return None
-            
-        first_set = True
-        while first_set or \
-            image_set_list.count()>measurements.image_set_number+1 or \
-            (image_set_list.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and
-             image_set_list.legacy_fields[NUMBER_OF_IMAGE_SETS] > measurements.image_set_number+1):
-            if not first_set:
-                measurements.next_image_set()
-            numberof_windows = 0;
-            slot_number = 0
-            object_set = cellprofiler.objects.ObjectSet()
-            image_set = image_set_list.get_image_set(measurements.image_set_number)
-            for module in self.modules():
-                module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
-                failure = 1
-                try:
-                    workspace = cpw.Workspace(self,
-                                              module,
-                                              image_set,
-                                              object_set,
-                                              measurements,
-                                              frame)
-                    module.run(workspace)
-                    workspace.refresh()
-                    failure = 0
-                except Exception,instance:
-                    traceback.print_exc()
-                    event = RunExceptionEvent(instance,module)
-                    self.notify_listeners(event)
-                    if event.cancel_run:
-                        return None
-                if module.module_name != 'Restart':
-                    measurements.add_measurement('Image',module_error_measurement,failure);
-            first_set = False
+        for m in self.run_with_yield(frame):
+            measurements = m
         return measurements
 
-    def experimental_run(self,frame = None):
-        """Run the pipeline - experimental, uses yield
+    def run_with_yield(self,frame = None):
+        """Run the pipeline, yielding periodically to keep the GUI alive
         
         Run the pipeline, returning the measurements made
         """
@@ -509,6 +462,7 @@ class Pipeline:
                                               image_set,
                                               object_set,
                                               measurements,
+                                              image_set_list,
                                               frame)
                     module.run(workspace)
                     workspace.refresh()

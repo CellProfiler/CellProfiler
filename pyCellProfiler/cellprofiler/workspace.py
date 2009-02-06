@@ -8,12 +8,20 @@ class Workspace(object):
     """The workspace contains the processing information and state for
     a pipeline run on an image set
     """
-    def __init__(self,pipeline,module,image_set,object_set,measurements,frame=None):
+    def __init__(self,
+                 pipeline,
+                 module,
+                 image_set,
+                 object_set,
+                 measurements,
+                 image_set_list,
+                 frame=None):
         self.__pipeline = pipeline
         self.__module = module
         self.__image_set = image_set
         self.__object_set = object_set
         self.__measurements = measurements
+        self.__image_set_list = image_set_list
         self.__frame = frame
         self.__windows_to_refresh = []
     
@@ -32,6 +40,11 @@ class Workspace(object):
         """
         return self.__image_set
     image_set = property(get_image_set)
+    
+    def get_image_set_list(self):
+        """The list of all image sets"""
+        return self.__image_set_list
+    image_set_list = property(get_image_set_list)
 
     def get_object_set(self):
         """The object set is the set of image labels for the current image set

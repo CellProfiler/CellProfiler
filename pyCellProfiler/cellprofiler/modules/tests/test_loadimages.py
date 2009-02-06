@@ -1,9 +1,12 @@
 """Test the LoadImages module
 """
+import base64
+import numpy
 import os
 import unittest
 import tempfile
 
+import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
 import cellprofiler.cpimage as I
@@ -129,6 +132,112 @@ class testLoadImages(unittest.TestCase):
         self.assertEqual(module.image_name_vars()[2].value,'OrigBlue')
         self.assertEqual(module.text_to_find_vars()[2].value,'s1_w3.TIF')
         self.assertFalse(module.analyze_sub_dirs())
+    
+    def test_05_01_load_PNG(self):
+        """Test loading of a .PNG file
+        
+        Regression test a bug in PIL that flips the image
+        """
+        data = base64.b64decode(T.png_8_1)
+        (matfd,matpath) = tempfile.mkstemp('.png')
+        matfh = os.fdopen(matfd,'wb')
+        matfh.write(data)
+        matfh.flush()
+        path,filename = os.path.split(matpath)
+        load_images = LI.LoadImages()
+        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = LI.MS_EXACT_MATCH
+        load_images.images_common_text[0].value = filename
+        load_images.image_names[0].value = 'Orig'
+        load_images.location.value = LI.DIR_OTHER
+        load_images.location_other.value = path
+        load_images.module_num = 1
+        outer_self = self
+        class CheckImage(CPM.CPModule):
+            def run(self,workspace):
+                image = workspace.image_set.get_image('Orig')
+                matfh.close()
+                pixel_data = image.pixel_data
+                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                check_data = base64.b64decode(T.raw_8_1)
+                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+        check_image = CheckImage()
+        check_image.module_num = 2
+        pipeline = P.Pipeline()
+        pipeline.add_module(load_images)
+        pipeline.add_module(check_image)
+        pipeline.run()
+
+    def test_05_02_load_GIF(self):
+        """Test loading of a .GIF file
+        
+        """
+        data = base64.b64decode(T.gif_8_1)
+        (matfd,matpath) = tempfile.mkstemp('.gif')
+        matfh = os.fdopen(matfd,'wb')
+        matfh.write(data)
+        matfh.flush()
+        path,filename = os.path.split(matpath)
+        load_images = LI.LoadImages()
+        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = LI.MS_EXACT_MATCH
+        load_images.images_common_text[0].value = filename
+        load_images.image_names[0].value = 'Orig'
+        load_images.location.value = LI.DIR_OTHER
+        load_images.location_other.value = path
+        load_images.module_num = 1
+        outer_self = self
+        class CheckImage(CPM.CPModule):
+            def run(self,workspace):
+                image = workspace.image_set.get_image('Orig')
+                matfh.close()
+                pixel_data = image.pixel_data
+                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                check_data = base64.b64decode(T.raw_8_1)
+                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+        check_image = CheckImage()
+        check_image.module_num = 2
+        pipeline = P.Pipeline()
+        pipeline.add_module(load_images)
+        pipeline.add_module(check_image)
+        pipeline.run()
+
+    def test_05_03_load_TIF(self):
+        """Test loading of a .TIF file
+        
+        """
+        data = base64.b64decode(T.tif_8_1)
+        (matfd,matpath) = tempfile.mkstemp('.tif')
+        matfh = os.fdopen(matfd,'wb')
+        matfh.write(data)
+        matfh.flush()
+        path,filename = os.path.split(matpath)
+        load_images = LI.LoadImages()
+        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = LI.MS_EXACT_MATCH
+        load_images.images_common_text[0].value = filename
+        load_images.image_names[0].value = 'Orig'
+        load_images.location.value = LI.DIR_OTHER
+        load_images.location_other.value = path
+        load_images.module_num = 1
+        outer_self = self
+        class CheckImage(CPM.CPModule):
+            def run(self,workspace):
+                image = workspace.image_set.get_image('Orig')
+                matfh.close()
+                pixel_data = image.pixel_data
+                pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
+                check_data = base64.b64decode(T.raw_8_1)
+                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
+                outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+        check_image = CheckImage()
+        check_image.module_num = 2
+        pipeline = P.Pipeline()
+        pipeline.add_module(load_images)
+        pipeline.add_module(check_image)
+        pipeline.run()
 
 if __name__=="main":
     unittest.main()

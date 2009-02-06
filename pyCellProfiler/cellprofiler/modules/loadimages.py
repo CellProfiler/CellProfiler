@@ -55,7 +55,7 @@ class LoadImages(cpmodule.CPModule):
         # Settings for each CPimage
         self.images_common_text = [cps.Text('Type the text that these images have in common', 'DAPI')]
         self.images_order_position = [cps.Integer('What is the position of this image in each group', 1)]
-        self.image_names = [cps.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
+        self.image_names = [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
         self.remove_images = [cps.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
         
         # Add another image
@@ -265,6 +265,8 @@ class LoadImages(cpmodule.CPModule):
             image_set = image_set_list.get_image_set(i)
             providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
             image_set.providers.extend(providers)
+        for name in image_names:
+            image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
         
     def run(self,workspace):
         """Run the module - add the measurements
@@ -412,7 +414,18 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         """Load an image from a pathname
         """
         img = PIL.Image.open(self.get_full_name())
-        img = matplotlib.image.pil_to_array(img)
+        # There's an apparent bug in the PIL library that causes
+        # images to be loaded upside-down. At best, load and save have opposite
+        # orientations; in other words, if you load an image and then save it
+        # the resulting saved image will be upside-down
+        img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
+        if img.mode=='I;16':
+            # 16-bit image
+            imgdata = numpy.array(img.getdata(),numpy.uint16)
+            img = imgdata.reshape(img.size)
+            img = img.astype(float) / 65535.0
+        else:
+            img = matplotlib.image.pil_to_array(img)
         return cpimage.Image(img)
     
     def get_name(self):

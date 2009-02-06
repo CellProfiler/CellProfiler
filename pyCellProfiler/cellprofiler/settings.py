@@ -325,6 +325,11 @@ class ImageNameProvider(NameProvider):
     def __init__(self,text,value=DO_NOT_USE):
         super(ImageNameProvider,self).__init__(text,'imagegroup',value)
 
+class FileImageNameProvider(ImageNameProvider):
+    """A setting that provides an image name where the image has an associated file"""
+    def __init__(self,text,value=DO_NOT_USE):
+        super(FileImageNameProvider,self).__init__(text,value)
+    
 class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
@@ -357,10 +362,14 @@ class NameSubscriber(Setting):
                     return choices
                 if (isinstance(setting, NameProvider) and 
                     setting != DO_NOT_USE and
-                    setting.group == self.group):
+                    self.matches(setting)):
                     module_choices.append(setting.value)
             choices += module_choices
         assert False, "Setting not among visible settings in pipeline"
+    
+    def matches(self, setting):
+        """Return true if this subscriber matches the category of the provider"""
+        return self.group == self.group
     
     def test_valid(self,pipeline):
         if len(self.get_choices(pipeline)) == 0:
@@ -374,11 +383,35 @@ class ImageNameSubscriber(NameSubscriber):
     def __init__(self,text,value=DO_NOT_USE):
         super(ImageNameSubscriber,self).__init__(text,'imagegroup',value)
 
+class FileImageNameSubscriber(ImageNameSubscriber):
+    """A setting that provides image names loaded from files"""
+    def __init__(self,text,value=DO_NOT_USE):
+        super(FileImageNameSubscriber,self).__init__(text,value)
+    
+    def matches(self,setting):
+        """Only match FileImageNameProvider variables"""
+        return isinstance(setting, FileImageNameProvider)
+    
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
     def __init__(self,text,value=DO_NOT_USE):
         super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value)
+
+class FigureSubscriber(Setting):
+    """A setting that provides a figure indicator
+    """
+    def __init(self,text,value=DO_NOT_USE):
+        super(Setting,self).__init(text,value)
+    
+    def get_choices(self,pipeline):
+        choices = []
+        for module in pipeline.modules():
+            for setting in module.visible_settings():
+                if setting.key() == self.key():
+                    return choices
+            choices.append("%d: %s"%(module.module_num, module.module_name))
+        assert False, "Setting not among visible settings in pipeline"
 
 class Binary(Setting):
     """A setting that is represented as either true or false

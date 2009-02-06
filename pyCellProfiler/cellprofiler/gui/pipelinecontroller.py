@@ -189,7 +189,7 @@ class PipelineController:
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
-            self.__running_pipeline = self.__pipeline.experimental_run(self.__frame)
+            self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
     
     def on_stop_running(self,event):
         self.__running_pipeline = False

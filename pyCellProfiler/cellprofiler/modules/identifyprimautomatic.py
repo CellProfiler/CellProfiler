@@ -8,6 +8,7 @@ import scipy.ndimage
 import scipy.sparse
 import matplotlib.backends.backend_wxagg
 import matplotlib.figure
+import matplotlib.pyplot
 import matplotlib.cm
 import numpy
 import scipy.stats
@@ -584,7 +585,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         if self.fill_holes.value:
             labeled_image = fill_labeled_holes(labeled_image)
-        labeled_image,object_count = \
+        labeled_image,object_count,maxima_suppression_size = \
             self.separate_neighboring_objects(img, mask, 
                                               labeled_image,
                                               object_count,global_threshold)
@@ -600,7 +601,35 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                            footprint=numpy.ones((3,3),bool))
         outline_image = temp!=labeled_image
         if workspace.frame:
-            self.display(workspace.frame,image, labeled_image,outline_image)
+            statistics = []
+            statistics.append(["Threshold","%0.3f"%(global_threshold)])
+            statistics.append(["# of identified objects",
+                               "%d"%(object_count)])
+            if object_count > 0:
+                areas = scipy.ndimage.histogram(labeled_image,1,object_count+1,object_count)
+                areas.sort()
+                low_diameter  = (math.sqrt(float(areas[object_count/10]))*2/
+                                 numpy.pi)
+                high_diameter = (math.sqrt(float(areas[object_count*9/10]))*2/
+                                 numpy.pi)
+                statistics.append(["10th pctile diameter",
+                                   "%.1f pixels"%(low_diameter)])
+                statistics.append(["90th pctile diameter",
+                                   "%.1f pixels"%(high_diameter)])
+                object_area = numpy.sum(labeled_image > 0)
+                total_area  = numpy.product(labeled_image.shape[:2])
+                statistics.append(["Area covered by objects",
+                                   "%.1f %%"%(100.0*float(object_area)/
+                                              float(total_area))])
+                statistics.append(["Smoothing filter size",
+                                   "%.1f"%(self.calc_smoothing_filter_size())])
+                statistics.append(["Maxima suppression size",
+                                   "%.1f"%(maxima_suppression_size)])
+            self.display(workspace.frame,
+                         image,
+                         labeled_image,
+                         outline_image,
+                         statistics)
         # Add image measurements
         objname = self.object_name.value
         measurements = workspace.measurements
@@ -1019,10 +1048,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         labeled_image - image labeled by scipy.ndimage.label
         object_count  - # of objects in image
         
-        returns revised labeled_image and object count
+        returns revised labeled_image, object count and maxima_suppression_size
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
-            return labeled_image, object_count
+            return labeled_image, object_count, 7
         
         blurred_image = self.smooth_image(image, mask, 
                                           self.calc_smoothing_filter_size())
@@ -1097,7 +1126,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                          mask=labeled_image!=0)
         watershed_boundaries = -watershed_boundaries
         
-        return watershed_boundaries, object_count
+        return watershed_boundaries, object_count, maxima_suppression_size
 
     def get_maxima(self,image,labeled_image,maxima_mask,image_resize_factor):
         if image_resize_factor < 1.0:
@@ -1197,7 +1226,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     
-    def display(self, frame, image, labeled_image, outline_image):
+    def display(self, frame, image, labeled_image, outline_image,statistics):
         """Display the image and labeling"""
         window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
         my_frame=cpf.create_or_find(frame, title="Identify primary automatic", 
@@ -1206,6 +1235,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         orig_axes     = my_frame.subplot(0,0)
         label_axes    = my_frame.subplot(1,0)
         outlined_axes = my_frame.subplot(0,1)
+        table_axes    = my_frame.subplot(1,1)
 
         orig_axes.clear()
         orig_axes.imshow(image.pixel_data,matplotlib.cm.Greys_r)
@@ -1238,6 +1268,16 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outlined_axes.clear()
         outlined_axes.imshow(outline_img)
         outlined_axes.set_title("Outlined image")
+        
+        table_axes.clear()
+        table = table_axes.table(cellText=statistics,
+                                 colWidths=[.7,.3],
+                                 loc='center',
+                                 cellLoc='left')
+        table_axes.set_frame_on(False)
+        table_axes.set_axis_off()
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
         my_frame.Refresh()
     
     def calc_smoothing_filter_size(self):
@@ -1304,6 +1344,8 @@ def weighted_variance(image,mask,threshold):
     clamped_image = image[mask]
     clamped_image[clamped_image < minval] = minval
     
+    if isinstance(threshold,numpy.ndarray):
+        threshold = threshold[mask]
     fg = numpy.log2(clamped_image[clamped_image >=threshold])
     bg = numpy.log2(clamped_image[clamped_image < threshold])
     nfg = numpy.product(fg.shape)

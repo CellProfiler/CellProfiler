@@ -171,6 +171,12 @@ class ModuleView:
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
+                elif isinstance(v,cellprofiler.settings.FigureSubscriber):
+                    choices = v.get_choices(self.__pipeline)
+                    control = self.make_choice_control(v, choices,
+                                                       control_name, 
+                                                       wx.CB_DROPDOWN,
+                                                       control)
                 elif isinstance(v, cellprofiler.settings.DoSomething):
                     control = self.make_callback_control(v, control_name,
                                                          control)

@@ -605,12 +605,8 @@ if SetBeingAnalyzed == 1
 
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
             end
-            if strcmpi(CheckImageSets,'Yes') 
-                if length(ImageName) < 2
-                    CPwarndlg('The check of image sets for missing or duplicate files is only useful for > 1 channels.  This check will not be done.  Please adjust this setting accordingly.')
-                else
-                    handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, 'Yes');
-                end
+            if strcmpi(CheckImageSets,'Yes')
+                handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, 'Yes');
             end
             for n= 1:length(ImageName)
                 fieldname = ['FileList', ImageName{n}];

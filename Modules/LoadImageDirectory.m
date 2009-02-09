@@ -194,7 +194,7 @@ end
 DirPaths = handles.Pipeline.(dir_fieldname);
 DirPath = fullfile(handles.Pipeline.(path_fieldname),...
                    DirPaths{handles.Current.SetBeingAnalyzed});
-[handles,FileList] = CPretrievemediafilenames(handles, DirPath,FileTextToFind,AnalyzeSubDir, ExactOrRegExp,'Image');
+[handles,FileList] = CPretrievemediafilenames(handles, DirPath,FileTextToFind,AnalyzeSubDir(1), ExactOrRegExp,'Image');
 if isempty(FileList)
     error(['Image processing was canceled in the ', ModuleName, ' module because no files were found in the ', DirPath, ' directory.']);
 end
@@ -246,7 +246,7 @@ switch CheckForQC
             ImageOrEmpty = find(Image, 1);
             logical = isempty(ImageOrEmpty);
             if logical == 1
-                disp(fullfile(DirPath,char(FileList(i))))
+                %disp(fullfile(DirPath,char(FileList(i))))
                 ImageNumSkipped = ImageNumSkipped +1;
                 %continue
             end

@@ -232,7 +232,9 @@ if doFirstCycleOnly || doTokensExist,
         end
     else
         % Add the measurement to the handles structure each cycle
-        handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
-        handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
+        for n = 1:length(ImageName),
+            handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
+            handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
+        end
     end
 end

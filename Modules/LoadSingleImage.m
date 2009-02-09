@@ -117,8 +117,8 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 % Remove unused TextToFind and ImageName entries
 idx = strcmp(TextToFind,'Do not use') | strcmp(ImageName,'Do not use');
-TextToFind = TextToFind(idx);
-ImageName = ImageName(idx);
+TextToFind = TextToFind(~idx);
+ImageName = ImageName(~idx);
 
 % Substitute Metadata tokens into TextToFind (if found)
 doTokensExist = false;

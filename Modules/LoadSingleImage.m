@@ -10,12 +10,21 @@ function handles = LoadSingleImage(handles)
 % module, not this one.
 %
 % Tells CellProfiler where to retrieve a single image and gives the image a
-% meaningful name for the other modules to access.  The module only
-% functions the first time through the pipeline, and thereafter the image
+% meaningful name for the other modules to access.  This module processes 
+% the input text string in one of two ways:
+% (1) A string referring to a filename. In this case, the module only
+% executes the first time through the pipeline, and thereafter the image
 % is accessible to all subsequent cycles being processed. This is
 % particularly useful for loading an image like an Illumination correction
 % image to be used by the CorrectIllumination_Apply module. Note: Actually,
 % you can load four 'single' images using this module.
+% (2) A string referring to a regular expression. In this case, the module
+% should be placed after a FileNameMetadata module and use the same regular
+% expression applied in the FileNameMetadata module. It will execute each 
+% cycle of the pipeline, matching the regular expression to the metadata
+% previously measured. This is useful for when you have multiple images
+% that need to be used once per cycle, but have a different name each
+% cycle.
 %
 % Relative pathnames can be used. For example, on the Mac platform you
 % could leave the folder where images are to be loaded as '.' to choose the
@@ -101,24 +110,33 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
+drawnow;
+
+%%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-if SetBeingAnalyzed == 1
-    %%% Determines which cycle is being analyzed.
 
+% Remove unused TextToFind and ImageName entries
+idx = strcmp(TextToFind,'Do not use') | strcmp(ImageName,'Do not use');
+TextToFind = TextToFind(idx);
+ImageName = ImageName(idx);
 
-    %%% Remove slashes '/' from the input
-    tmp1 = {};
-    tmp2 = {};
-    for n = 1:4
-        if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
-            tmp1{end+1} = TextToFind{n};
-            tmp2{end+1} = ImageName{n};
-        end
-    end
-    TextToFind = tmp1;
-    ImageName = tmp2;
+% Substitute Metadata tokens into TextToFind (if found)
+doTokensExist = false;
+for n = 1:length(ImageName)
+    [TextToFind{n},anytokensfound] = CPreplacemetadata(handles,TextToFind{n});
+    doTokensExist =  doTokensExist || anytokensfound;
+end
 
+doFirstCycleOnly = SetBeingAnalyzed == 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIRST CYCLE FILE HANDLING %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% If there no tokens, we are dealing with a static image name and we only
+% want to do this procedure once
+% If tokens are present, we want to do this procedure for each cycle
+% Regardless, we do this for the 1st image set
+if doFirstCycleOnly || doTokensExist,
     %%% Get the pathname and check that it exists
     if strncmp(Pathname,'.',1)
         if length(Pathname) == 1
@@ -139,20 +157,11 @@ if SetBeingAnalyzed == 1
         error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% FIRST CYCLE FILE HANDLING %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
     if isempty(ImageName)
         error(['Image processing was canceled in the ', ModuleName, ' module because you have not chosen any images to load.'])
     end
 
-    for n = 1:length(ImageName)
-        
-        %% Substitute Metadata tokens if found
-        TextToFind{n} = CPreplacemetadata(handles,TextToFind{n});      
-     
+    for n = 1:length(ImageName)  
         %%% This try/catch will catch any problems in the load images module.
         try
             CurrentFileName = TextToFind{n};
@@ -211,13 +220,19 @@ if SetBeingAnalyzed == 1
     %%% SAVE DATA TO HANDLES %%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    % Since there's no need to re-load the same image multiple times,
-    % replicate the filename/pathname measurement the neccesary number of 
-    % times here
-    for m = 1:handles.Current.NumberOfImageSets,
-        for n = 1:length(ImageName),
-            handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n}, m);
-            handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname, m);
+    if doFirstCycleOnly
+        % Since there's no need to re-load the same image multiple times,
+        % replicate the filename/pathname measurement the neccesary number of 
+        % times here
+        for m = 1:handles.Current.NumberOfImageSets,
+            for n = 1:length(ImageName),
+                handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n}, m);
+                handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname, m);
+            end
         end
+    else
+        % Add the measurement to the handles structure each cycle
+        handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n});
+        handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname);
     end
 end

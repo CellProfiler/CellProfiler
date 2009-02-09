@@ -12,36 +12,32 @@ function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextT
 %
 % $Revision$
 
-if ~isfield(handles.Pipeline, 'PathNameSubFolders')
-    if strncmpi(recurse,'S',1)
+if strncmpi(recurse,'S',1)
 
-        idx = 1;
-        More = 'Yes';
-        while strcmp(More,'Yes')
-            SubDirectory = CPuigetdir(Pathname,'Choose Image Subfolder');
-            if SubDirectory == 0 %% User hit Cancel in uigetdir window
-                error('Processing was stopped because the user chose Cancel');
-            end
-            Directories{idx} = SubDirectory;
-            idx = idx + 1;
-            More = CPquestdlg('Do you want to choose another directory?');
-        end
-        if strcmp(More,'Cancel')
+    idx = 1;
+    More = 'Yes';
+    while strcmp(More,'Yes')
+        SubDirectory = CPuigetdir(Pathname,'Choose Image Subfolder');
+        if SubDirectory == 0 %% User hit Cancel in uigetdir window
             error('Processing was stopped because the user chose Cancel');
         end
-        handles.Pipeline.PathNameSubFolders = Directories;
-    elseif strncmpi(recurse,'Y',1)
-
-        %% CPselectdirectories is still too slow for a lot of subfolders on
-        %% bcb_image
-        Directories = CPgetdirectorytree(Pathname);
-        %         Directories= CPselectdirectories(Directories);
-        handles.Pipeline.PathNameSubFolders = Directories;
-    else
-        Directories = {Pathname};
+        Directories{idx} = SubDirectory;
+        idx = idx + 1;
+        More = CPquestdlg('Do you want to choose another directory?');
     end
+    if strcmp(More,'Cancel')
+        error('Processing was stopped because the user chose Cancel');
+    end
+    handles.Pipeline.PathNameSubFolders = Directories;
+elseif strncmpi(recurse,'Y',1)
+
+    %% CPselectdirectories is still too slow for a lot of subfolders on
+    %% bcb_image
+    Directories = CPgetdirectorytree(Pathname);
+    %         Directories= CPselectdirectories(Directories);
+    handles.Pipeline.PathNameSubFolders = Directories;
 else
-    Directories = handles.Pipeline.PathNameSubFolders;
+    Directories = {Pathname};
 end
 
 FileNames = cell(0);

@@ -14,7 +14,7 @@ def configuration():
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3']),
                   Extension(name="_watershed",
-                            sources=["_watershed.pyx"],
+                            sources=["_watershed.pyx", "heap.pxi"],
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3'])]
     dict = { "name":"cpmath",
@@ -27,7 +27,8 @@ def configuration():
     return dict
 
 if __name__ == '__main__':
-    os.chdir(os.path.dirname(__file__))
+    if '/' in __file__:
+        os.chdir(os.path.dirname(__file__))
     setup(**configuration())
     
 

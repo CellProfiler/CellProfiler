@@ -21,8 +21,9 @@ cdef Heap *heap_from_numpy(np_heap):
     heap.width = np_heap.shape[1]
     heap.space = np_heap.shape[0] * np_heap.shape[1]
     heap.data = <np.int32_t *> malloc(np_heap.shape[0] * np_heap.shape[1] * sizeof(np.int32_t))
+    tmp = np_heap.astype(np.int32).flatten('C')
     for k in range(heap.space):
-        heap.data[k] = np_heap.data[k]
+        heap.data[k] = tmp.data[k]
     return heap
 
 cdef void heap_done(Heap *heap):
@@ -41,8 +42,8 @@ cdef void heappop(Heap *heap,
     cdef unsigned int heap_items = heap.items
     cdef unsigned int heap_width = heap.width
     cdef np.int32_t *heap_data = <np.int32_t *> heap.data
-    cdef unsigned int k,l,r,i,smallest
-    cdef unsigned int i_idx,l_idx,r_idx,smallest_idx,heap_items_idx
+    cdef unsigned int k,l,r,i,smallest # heap indices
+    cdef np.int32_t *i_ptr, *smallest_ptr, *r_ptr, *l_ptr # heap element pointers
     
     #
     # Start by copying the first element to the destination
@@ -52,50 +53,53 @@ cdef void heappop(Heap *heap,
     heap_items -= 1
 
     # if the heap is now empty, we can return, no need to fix heap.
-    if heap_items==0:
+    if heap_items == 0:
         heap.items = heap_items
         return
 
-    heap_items_idx = heap_items*heap_width
     #
-    # Copy the (new) last element to the first
+    # Move the last element in the heap to the first.
     #
     for k in range(heap_width):
-        heap_data[k] = heap_data[heap_items_idx+k]
+        heap_data[k] = heap_data[heap_items * heap_width + k]
     #
     # Restore the heap invariant.
     #
     i = 0
-    i_idx = 0
-    smallest_idx = 0
-    smallest = 0
+    i_ptr = heap_data + i
+    smallest = i
+    smallest_ptr = i_ptr
     while True:
         # loop invariant here: smallest == i
+        
+        # find smallest of (i, l, r), and swap it to i's position if necessary
         l = i*2+1 #__left(i)
         r = i*2+2 #__right(i)
         if l < heap_items:
-            l_idx = l*heap_width
+            l_ptr = heap_data + l * heap_width
             for k in range(heap_width):
-                if heap_data[i_idx + k] == heap_data[l_idx + k]:
+                if i_ptr[k] == l_ptr[k]:
                     continue
-                if heap_data[i_idx + k] > heap_data[l_idx + k]:
+                if i_ptr[k] > l_ptr[k]:
                     smallest = l
-                    smallest_idx = l_idx
+                    smallest_ptr = l_ptr
+                    break
         if r < heap_items:
-            # at this point, smallest may or may not be == i
-            r_idx = r*heap_width
+            r_ptr = heap_data + r * heap_width
             for k in range(heap_width):
-                if heap_data[smallest_idx + k] == heap_data[r_idx + k]:
+                if smallest_ptr[k] == r_ptr[k]:
                     continue
-                if heap_data[smallest_idx + k] > heap_data[r_idx + k]:
+                if smallest_ptr[k] > r_ptr[k]:
                     smallest = r
-                    smallest_idx = r_idx
-        if smallest == i:
+                    smallest_ptr = r_ptr
+                    break
+        # the element at i is smaller than either of its children, invariant restored.
+        if smallest_ptr == i_ptr:
                 break
         for k in range(heap_width):
-            heap_data[i_idx + k], heap_data[smallest_idx + k] = heap_data[smallest_idx + k], heap_data[i_idx + k]
+            i_ptr[k], smallest_ptr[k] = smallest_ptr[k], i_ptr[k]
         i = smallest
-        i_idx = smallest_idx
+        i_ptr = smallest_ptr
         
 ##################################################
 # heappush - inlined

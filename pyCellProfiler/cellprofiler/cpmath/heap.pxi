@@ -14,7 +14,7 @@ cdef struct Heap:
     unsigned int space
     np.int32_t *data
 
-cdef Heap *heap_from_numpy(np_heap):
+cdef inline Heap *heap_from_numpy(np_heap):
     cdef unsigned int k
     cdef Heap *heap = <Heap *> malloc(sizeof (Heap))
     heap.items = np_heap.shape[0]
@@ -26,7 +26,7 @@ cdef Heap *heap_from_numpy(np_heap):
         heap.data[k] = tmp.data[k]
     return heap
 
-cdef void heap_done(Heap *heap):
+cdef inline void heap_done(Heap *heap):
    free(heap.data)
    free(heap)
 
@@ -37,7 +37,7 @@ cdef void heap_done(Heap *heap):
 # and (heapify(A,1)) p 143
 #
 ######################################################
-cdef void heappop(Heap *heap,
+cdef inline void heappop(Heap *heap,
                   unsigned int *dest):
     cdef unsigned int heap_items = heap.items
     cdef unsigned int heap_width = heap.width

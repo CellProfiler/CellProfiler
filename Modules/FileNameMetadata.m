@@ -108,7 +108,7 @@ if nargin > 1
     return;
 end
 
-%%%VariableRevisionNumber = 1
+%%%VariableRevisionNumber = 2
 
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%

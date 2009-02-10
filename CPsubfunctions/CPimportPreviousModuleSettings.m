@@ -370,3 +370,15 @@ if strcmp(CurrentModuleName, 'ExportToExcel')
         IsModuleModified = true;
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to FileNameMetadata
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'FileNameMetadata')
+    if SavedVarRevNum == 1      % FileNameMetadata got one new argument, but at the end.
+        Settings.VariableValues{ModuleNum-Skipped,3} = 'No';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 2;
+        IsModuleModified = true;
+    end
+end

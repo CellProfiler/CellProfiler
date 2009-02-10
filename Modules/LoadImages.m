@@ -126,7 +126,30 @@ function handles = LoadImages(handles)
 % by an imaging system). Here you can specify text that mark files for
 % exclusion. This text is treated as a exact match and not as a regular
 % expression. Note: This choice is ignored with the ORDER option.
-%
+% 
+% What do you want to call these images within CellProfiler?
+% Give your images a meaningful name that you will use when referring to
+% these images in later modules.  To avoid errors, image names should
+% follow Matlab naming conventions:
+% 
+% 1. Field names must begin with a letter, which may be followed by any combination of letters, digits, and underscores. The following statements are all invalid:
+% w = setfield(w, 'My.Score', 3);
+% w = setfield(w, '1stScore', 3);
+% w = setfield(w, '1+1=3', 3);
+% w = setfield(w, '@MyScore', 3);
+% 3. Although field names can be of any length, MATLAB uses only the first N characters of the field name, (where N is the number returned by the function namelengthmax), and ignores the rest.
+% N= namelengthmax
+% N=
+%    63
+% **NOTE:** When CellProfiler saves image and object measurements, it
+% appends the text of your ImageName with meaningful text about the
+% measurement (ie, Intensity_MeanIntensity_DAPI) which can quickly reach
+% this 63-char limit and are truncated by CellProfiler to avoid errors.  Take care to name your images
+% and measurements conservatively to avoid truncating measurements to the
+% same name.
+% 3. MATLAB distinguishes between uppercase and lowercase characters. Field name length is not the same as field name Length.
+% 4. In most cases, you should refrain from using the names of functions and variables as field names.
+% %
 % Analyze all subfolders within the selected folder?
 % You may have subfolders within the folder that is being searched, but if
 % you are in TEXT mode, the names of the folders themselves must not

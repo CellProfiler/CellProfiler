@@ -160,7 +160,7 @@ assert(~any(isspace(DatabaseName)),['Image processing was canceled in the ', Mod
 assert(~any(strfind(DatabaseName,'-')),['Image processing was canceled in the ', ModuleName, ...
     ' module because you have entered one or more dashes in the text box for the database name.'])
         
-%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?  An underscore will be added to the end of the prefix automatically
+%textVAR03 = What prefix should be used to name the tables in the database (should be unique per experiment, or leave "Do not use" to have generic Per_Image and Per_Object tables)?  An underscore will be added to the end of the prefix automatically. If a FileNameMetadata module was used, a regular expression may be inserted here.
 %defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -240,6 +240,9 @@ if DoWriteSQL || DoWriteCPAPropertiesFile
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
 end
+
+% Substitute filename metadata tokens into TablePrefix (if found)
+TablePrefix = CPreplacemetadata(handles,TablePrefix);
 
 if DoWriteSQL,
     CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);

@@ -74,6 +74,12 @@ RegularExpression = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 FieldNames = regexp(RegularExpression,'\(\?[<](?<token>.+?)[>]','tokens');
 FieldNames = [FieldNames{:}];
 
+%textVAR03 = Are you trying to capture the plate name from the full path?
+%choiceVAR03 = No
+%choiceVAR03 = Yes
+FullPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+%inputtypeVAR03 = popupmenu
+
 %%%%%%%%%%%%%%%%
 %%% FEATURES %%%
 %%%%%%%%%%%%%%%%
@@ -107,8 +113,11 @@ end
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
-
-FileNameField = ['FileName_',ImageName];
+if strcmp(FullPath,'Yes')
+    FileNameField = ['PathName_',ImageName];
+else
+    FileNameField = ['FileName_',ImageName];
+end
 if ~ isfield(handles.Measurements,'Image')
     error([ 'Image processing was canceled in the ', ModuleName, ' module. There are no image measurements.']);
 end

@@ -6,7 +6,7 @@ function TruncatedName = CPtruncatefeaturename(FeatureName,dlmtr)
 % $Revision$
 
 %% Starting value for Minimum (Sub)string Length
-MinStrLenInit = 63;
+MinStrLenInit = namelengthmax;
 
 if nargin < 2
     dlmtr = '_';
@@ -25,9 +25,13 @@ for MinStrLen = MinStrLenInit:-1:1
         Str = FeatureNameSubstrings{1}{idxStr};
         TruncatedName = CPjoinstrings(TruncatedName,Str(1:min(length(Str),MinStrLen)));
     end
-    
-    if length(TruncatedName) < 64
+  
+    if length(TruncatedName) <= namelengthmax
+        if length(TruncatedName) ~= length(FeatureName)
+            CPwarndlg({['The feature name ' FeatureName ' has exceeded Matlab''s ' num2str(namelengthmax) ' character limit.'];...
+                ['The feature name has been automatically truncated to ' TruncatedName '.'];...
+                'It is possible this will confuse post-hoc analyses, so you might avoid this by shortening this feature name within Cellprofiler.'})
+        end
         return
     end
 end
-

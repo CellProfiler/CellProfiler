@@ -25,6 +25,8 @@ LOGILAB_COMMON_SPEC = "logilab-common"
 PIL_SPEC         = "PIL"
 WXPYTHON_EGG_NT  = "wxPython-2.8.4.0.001-py2.5-win32.egg"
 IMAGING          = "Imaging-1.1.6.tar.gz"
+PYFFMPEG         = "pyffmpeg.zip"
+FFMPEG           = "ffmpeg-export-snapshot.tar.bz2"
 
 default_root = os.path.abspath(os.path.split(__file__)[0])
 
@@ -277,3 +279,23 @@ except:
     os.chdir(os.path.join(pil_dir,pil_pkg))
     command = "python setup.py %s install"%(BUILD)
     run_command(command)
+#
+# Install the prebuilt pyffmpeg package for Windows or build ffmpeg
+# for unixishes and setup pyffmpeg
+#
+pyffmpeg_pkg, pyffmpeg_dir = unpack_package(PYFFMPEG)
+if os.name == 'nt':
+    os.environ["FFMPEG_ROOT"]=os.path.join(package_path,'ffmpeg-windows')
+    os.chdir(pyffmpeg_dir)
+    command = "python setup.py %s install"%(BUILD)
+    run_command(command)
+else:
+    ffmpeg_pkg, ffmpeg_dir = unpack_package(FFMPEG)
+    os.chdir(os.path.join(ffmpeg_dir,ffmpeg_pkg))
+    run_command("./configure")
+    run_command("make")
+    run_command("make install")
+    os.chdir(pyffmpeg_dir)
+    command = "python setup.py %s install"%(BUILD)
+    run_command(command)
+    

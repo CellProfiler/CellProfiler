@@ -82,6 +82,13 @@ function handles = TrackObjects(handles)
 %   the object disappears. At the final frame of the image set/movie, the 
 %   lifetimes of all remaining objects are ouput.
 %
+%   Integrated distance: The total distance traveled by the object during
+%   the lifetime of the object
+%   
+%   Linearity: A measure of how linear the object trajectity is during the
+%   object lifetime. Calculated as (distance from initial to final 
+%   location)/(integrated object distance). Value is in range of [0,1].
+%
 % What do you want to call the image with the tracked objects?
 % Specify a name to give the image showing the tracked objects. This image
 % can be saved with a SaveImages module placed after this module.
@@ -205,7 +212,7 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
     
     % (3) Labels
     InitialNumObjs = length(TrackObjInfo.Current.Locations{SetBeingAnalyzed});
-    CurrentLabels = 1:InitialNumObjs;
+    CurrentLabels = (1:InitialNumObjs)';
     PreviousLabels = CurrentLabels;
     for i = 1:InitialNumObjs,
         CurrHeaders{i} = '';
@@ -216,10 +223,15 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
     TrackObjInfo.ObjToColorMapping = [];
     
     if CollectStatistics
-        TrackObjInfo.Current.AgeOfObjects = zeros(size(CurrentLabels));
+        [TrackObjInfo.Current.AgeOfObjects,TrackObjInfo.Current.SumDistance] = deal(zeros(size(CurrentLabels)));
+        TrackObjInfo.Current.InitialObjectLocation = CurrentLocations;
         AgeOfObjects = TrackObjInfo.Current.AgeOfObjects;
-        [CentroidTrajectory,DistanceTraveled,AgeOfObjects] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,AgeOfObjects);
+        InitialObjectLocation = TrackObjInfo.Current.InitialObjectLocation;
+        SumDistance = TrackObjInfo.Current.SumDistance;
+        [CentroidTrajectory,DistanceTraveled,SumDistance,AgeOfObjects,InitialObjectLocation] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,SumDistance,AgeOfObjects,InitialObjectLocation);
         TrackObjInfo.Current.AgeOfObjects = AgeOfObjects;
+        TrackObjInfo.Current.SumDistance = SumDistance;
+        TrackObjInfo.Current.InitialObjectLocation = InitialObjectLocation;
     end
 else
     % Extracts data from the handles structure
@@ -322,13 +334,12 @@ else
     % back if they are
     if CollectStatistics
         AgeOfObjects = TrackObjInfo.Current.AgeOfObjects;
-        [CentroidTrajectory,DistanceTraveled,AgeOfObjects] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,AgeOfObjects);
-        TrackObjInfo.Current.AgeOfObjects = AgeOfObjects;      
-% 
-%         CentroidTrajectory = NaN(size(CurrentLocations));
-%         [ignore, idx_previous, idx_current] = intersect(PreviousLabels,CurrentLabels);
-%         CentroidTrajectory(idx_current,:) = CurrentLocations(idx_current,:) - PreviousLocations(idx_previous,:);
-%         DistanceTraveled = sqrt(sum(CentroidTrajectory.^2,2));
+        InitialObjectLocation = TrackObjInfo.Current.InitialObjectLocation;
+        SumDistance = TrackObjInfo.Current.SumDistance;
+        [CentroidTrajectory,DistanceTraveled,SumDistance,AgeOfObjects,InitialObjectLocation] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,SumDistance,AgeOfObjects,InitialObjectLocation);
+        TrackObjInfo.Current.AgeOfObjects = AgeOfObjects;
+        TrackObjInfo.Current.SumDistance = SumDistance;
+        TrackObjInfo.Current.InitialObjectLocation = InitialObjectLocation;
     end
 end
 
@@ -458,15 +469,31 @@ if CollectStatistics
     handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_DistanceTraveled', ...
                     DistanceTraveled(:));
     
-    % Record the object lifetime once it disappears...
+    % Record the object lifetime, integrated distance and linearity once it disappears...
     if SetBeingAnalyzed ~= NumberOfImageSets,
-        Lifetime = NaN(size(PreviousLabels));
+        [Lifetime,Linearity,IntegratedDistance] = deal(NaN(size(PreviousLabels)));
         [AbsentObjectsLabel,idx] = setdiff(PreviousLabels,CurrentLabels);
         Lifetime(idx) = AgeOfObjects(AbsentObjectsLabel);
+        IntegratedDistance(idx) = SumDistance(AbsentObjectsLabel);
+        % Linearity: In range of [0,1]. Defined as abs[(x,y)_final -
+        % (x,y)_initial]/(IntegratedDistance).
+        warning('off','MATLAB:divideByZero');
+        Linearity(idx) = sqrt(sum((InitialObjectLocation(AbsentObjectsLabel,:) - PreviousLocations(idx,:)).^2,2))./SumDistance(AbsentObjectsLabel);
+        warning('on','MATLAB:divideByZero');
     else %... or we reach the end of the analysis
         Lifetime = AgeOfObjects(CurrentLabels);
+        IntegratedDistance = SumDistance(CurrentLabels);
+        warning('off','MATLAB:divideByZero');
+        Linearity = sqrt(sum((InitialObjectLocation(CurrentLabels,:) - CurrentLocations).^2,2))./SumDistance(CurrentLabels);
+        warning('on','MATLAB:divideByZero');
     end
         
+    IntegratedDistanceMeasurementName = 'TrackObjects_IntegratedDistance';
+    handles = CPaddmeasurements(handles, ObjectName, IntegratedDistanceMeasurementName, ...
+                    IntegratedDistance(:));
+    LinearityMeasurementName = 'TrackObjects_Linearity';
+    handles = CPaddmeasurements(handles, ObjectName, LinearityMeasurementName, ...
+                    Linearity(:));
     LifetimeMeasurementName = 'TrackObjects_Lifetime';
     handles = CPaddmeasurements(handles, ObjectName, LifetimeMeasurementName, ...
                     Lifetime(:));
@@ -474,8 +501,12 @@ if CollectStatistics
     % after the cycle where it disappeared, so I need to transfer the
     % lifetime measurements back one cycle, unless we're at the end
     if SetBeingAnalyzed > 1 && SetBeingAnalyzed ~= NumberOfImageSets, 
+        handles.Measurements.(ObjectName).(IntegratedDistanceMeasurementName){SetBeingAnalyzed-1} = ...
+            handles.Measurements.(ObjectName).(IntegratedDistanceMeasurementName){SetBeingAnalyzed}; 
         handles.Measurements.(ObjectName).(LifetimeMeasurementName){SetBeingAnalyzed-1} = ...
             handles.Measurements.(ObjectName).(LifetimeMeasurementName){SetBeingAnalyzed}; 
+        handles.Measurements.(ObjectName).(LinearityMeasurementName){SetBeingAnalyzed-1} = ...
+            handles.Measurements.(ObjectName).(LinearityMeasurementName){SetBeingAnalyzed}; 
     end
 end
 
@@ -580,27 +611,32 @@ else
             ObjToColorMapping(NewLabels) = GapsInIndices(1:length(NewLabels));
         else
             % If not, create new random indices
-            ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*255);
+            ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*256);
         end
     else
         % If have enough colors, see if new labels have appeared and
         % assign them a random color
         NewLabels = setdiff(CurrentLabels,PreviousLabels);
-        ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*255);
+        ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*256);
     end 
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION - ComputeTrackingStatistics
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [CentroidTrajectory,DistanceTraveled,AgeOfObjects] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,AgeOfObjects)
+function [CentroidTrajectory,DistanceTraveled,SumDistance,AgeOfObjects,InitialObjectLocation] = ComputeTrackingStatistics(CurrentLocations,PreviousLocations,CurrentLabels,PreviousLabels,SumDistance,AgeOfObjects,InitialObjectLocation)
    
-CentroidTrajectory = NaN(size(CurrentLocations));
-[ignore, idx_previous, idx_current] = intersect(PreviousLabels,CurrentLabels);
+CentroidTrajectory = zeros(size(CurrentLocations));
+[OldLabels, idx_previous, idx_current] = intersect(PreviousLabels,CurrentLabels);
 CentroidTrajectory(idx_current,:) = CurrentLocations(idx_current,:) - PreviousLocations(idx_previous,:);
 DistanceTraveled = sqrt(sum(CentroidTrajectory.^2,2));
+DistanceTraveled(isnan(DistanceTraveled)) = 0;
 
-OldLabels = intersect(CurrentLabels,PreviousLabels);
 AgeOfObjects(OldLabels) = AgeOfObjects(OldLabels) + 1;
-NewLabels = setdiff(CurrentLabels,PreviousLabels);
+[NewLabels,idx_new] = setdiff(CurrentLabels,PreviousLabels);
 AgeOfObjects(NewLabels) = 1;
+
+SumDistance(OldLabels) = SumDistance(OldLabels) + DistanceTraveled(idx_current);
+SumDistance(NewLabels) = 0;
+
+InitialObjectLocation(NewLabels,:) = CurrentLocations(idx_new,:);

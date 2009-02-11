@@ -100,9 +100,11 @@ cdef inline void heappop(Heap *heap,
         if l < heap.items:
             if smaller(l, i, heap):
                 smallest = l
-        if r < heap.items:
-            if smaller(r, smallest, heap):
+            if r < heap.items and smaller(r, smallest, heap):
                 smallest = r
+        else:
+            # this is unnecessary, but trims 0.04 out of 0.85 seconds...
+            break
         # the element at i is smaller than either of its children, heap invariant restored.
         if smallest == i:
                 break

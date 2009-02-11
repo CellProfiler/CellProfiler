@@ -1,4 +1,4 @@
-function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,SaveOutputFile)
+function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,ExactOrRegExp,SaveOutputFile)
 
 % Given a directory (or subdirectory structure) of input images, find which
 % images (or directories) for a representative channel are not matched up 
@@ -69,6 +69,12 @@ for m = 1:length(uniquePaths)
         if isscalar(TextToFindIdx)
             %... drop the filename text after the channel text and use the 
             % remainder for comparision
+            % ASSUMPTION: If TextToFind is a regular expression, the text
+            % in common precedes any alphabetic, numeric, or underscore
+            % characters in the search string
+            if strcmp(ExactOrRegExp,'R'),
+                TextToFindIdx = TextToFindIdx + regexp(TextToFind{n},'\W','once');
+            end
             % ASSUMPTION: Files from same system share common prefix during
             % the same run
             FileNamesForChannelN{n} = strvcat(FileNamesForEachChannel{n}{m});

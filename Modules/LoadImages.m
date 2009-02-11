@@ -629,7 +629,7 @@ if SetBeingAnalyzed == 1
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
             end
             if strcmpi(CheckImageSets,'Yes')
-                handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, 'Yes');
+                handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, ExactOrRegExp, 'Yes');
             end
             for n= 1:length(ImageName)
                 fieldname = ['FileList', ImageName{n}];

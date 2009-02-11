@@ -8,8 +8,15 @@ function handles = Morph(handles)
 % *************************************************************************
 %
 % Beta version: provides access to built in Matlab morphological functions.
+% If you have defined more than one function to be applied, each individual 
+% function is repeated the number of times specified before progressing to 
+% the next function in the list.  
+%
+% Note that these will only operate on binary images
 %
 % Settings:
+% The number of times repeated can be 'Inf', which ceases operation when
+% the image no longer changes.
 %
 % Beta
 
@@ -214,16 +221,11 @@ drawnow
 %%% Reads the images.
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
 
-tmp1 = {};
-tmp2 = {};
-for n = 1:6
-    if ~strcmp(Functions{n}, 'Do not use')
-        tmp1{end+1} = Functions{n}; %#ok Ignore MLint
-        tmp2{end+1} = FunctionVariables{n}; %#ok Ignore MLint
-    end
-end
-Functions = tmp1;
-FunctionVariables = tmp2;
+%% Remove unused settings
+idx = strcmp(Functions,'Do not use');
+Functions = Functions(~idx);
+FunctionVariables = FunctionVariables(~idx);
+
 %%% Check FunctionVariables to make sure they are all valid, if not reset
 %%% to the default value of 1.
 for i=1:length(FunctionVariables)

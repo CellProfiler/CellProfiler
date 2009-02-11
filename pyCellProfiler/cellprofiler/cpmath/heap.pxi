@@ -14,6 +14,7 @@ cdef struct Heap:
     unsigned int width
     unsigned int space
     np.int32_t *data
+    np.int32_t **ptrs
 
 
 cdef inline Heap *heap_from_numpy2(object np_heap):
@@ -22,21 +23,25 @@ cdef inline Heap *heap_from_numpy2(object np_heap):
     heap = <Heap *> malloc(sizeof (Heap))
     heap.items = np_heap.shape[0]
     heap.width = np_heap.shape[1]
-    heap.space = heap.items
+    heap.space = max(heap.items, 1000)
     heap.data = <np.int32_t *> malloc(heap.space * heap.width * sizeof(np.int32_t))
+    heap.ptrs = <np.int32_t **> malloc(heap.space * sizeof(np.int32_t *))
     tmp = np_heap.astype(np.int32).flatten('C')
     for k in range(heap.items * heap.width):
         heap.data[k] = <np.int32_t> tmp[k]
+    for k in range(heap.space):
+        heap.ptrs[k] = heap.data + k * heap.width
     return heap
 
 cdef inline void heap_done(Heap *heap):
    free(heap.data)
+   free(heap.ptrs)
    free(heap)
 
 cdef inline int smaller(unsigned int a, unsigned int b, Heap *h):
     cdef unsigned int k
-    cdef np.int32_t *ap = h.data + a * h.width
-    cdef np.int32_t *bp = h.data + b * h.width
+    cdef np.int32_t *ap = h.ptrs[a]
+    cdef np.int32_t *bp = h.ptrs[b]
     if ap[0] == bp[0]:
         for k in range(1, h.width):
             if ap[k] == bp[k]:
@@ -50,12 +55,7 @@ cdef inline int smaller(unsigned int a, unsigned int b, Heap *h):
     return 0
 
 cdef inline void swap(unsigned int a, unsigned int b, Heap *h):
-    cdef unsigned int k
-    cdef np.int32_t *ap = h.data + a * h.width
-    cdef np.int32_t *bp = h.data + b * h.width
-    for k in range(h.width):
-        ap[k], bp[k] = bp[k], ap[k]
-
+    h.ptrs[a], h.ptrs[b] = h.ptrs[b], h.ptrs[a]
 
 
 ######################################################
@@ -66,7 +66,7 @@ cdef inline void swap(unsigned int a, unsigned int b, Heap *h):
 # Note: heap ordering is the same as python heapq, i.e., smallest first.
 ######################################################
 cdef inline void heappop(Heap *heap,
-                  unsigned int *dest):
+                  np.int32_t *dest):
     cdef unsigned int i, smallest, l, r # heap indices
     cdef unsigned int k
     
@@ -74,7 +74,7 @@ cdef inline void heappop(Heap *heap,
     # Start by copying the first element to the destination
     #
     for k in range(heap.width):
-        dest[k] = heap.data[k]
+        dest[k] = heap.ptrs[0][k]
     heap.items -= 1
 
     # if the heap is now empty, we can return, no need to fix heap.
@@ -120,19 +120,27 @@ cdef inline void heappop(Heap *heap,
 # Note: heap ordering is the same as python heapq, i.e., smallest first.
 ##################################################
 cdef inline void heappush(Heap *heap,
-                          unsigned int *new_elem):
+                          np.int32_t *new_elem):
   cdef unsigned int child         = heap.items
   cdef unsigned int parent
   cdef unsigned int k
+  cdef np.int32_t *new_data
 
   # grow if necessary
   if heap.items == heap.space:
-      heap.space = max(heap.space * 2, 1000)
-      heap.data = <np.int32_t *> realloc(<void *> heap.data, <size_t> (heap.space * heap.width * sizeof(np.int32_t)))
+      heap.space = heap.space * 2
+      new_data = <np.int32_t *> realloc(<void *> heap.data, <size_t> (heap.space * heap.width * sizeof(np.int32_t)))
+      heap.ptrs = <np.int32_t **> realloc(<void *> heap.ptrs, <size_t> (heap.space * sizeof(np.int32_t *)))
+      for k in range(heap.items):
+          heap.ptrs[k] = new_data + (heap.ptrs[k] - heap.data)
+      for k in range(heap.items, heap.space):
+          heap.ptrs[k] = new_data + k * heap.width
+      heap.data = new_data
 
   # insert new data at child
+  
   for k in range(heap.width):
-      heap.data[child * heap.width + k] = new_elem[k]
+      heap.ptrs[child][k] = new_elem[k]
   heap.items += 1
 
   # restore heap invariant, all parents <= children

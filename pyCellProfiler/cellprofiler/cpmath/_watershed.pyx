@@ -49,33 +49,32 @@ def watershed(np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] 
     cdef DTYPE_INT32_t nneighbors = structure.shape[0] 
     cdef DTYPE_INT32_t i = 0
     cdef DTYPE_INT32_t j = 0
+    cdef DTYPE_INT32_t ok
     cdef DTYPE_INT32_t coord = 0
     cdef DTYPE_INT32_t index = 0
     cdef DTYPE_INT32_t old_index = 0
-    cdef DTYPE_INT32_t ok
     cdef DTYPE_INT32_t max_index = image.shape[0]
+    cdef DTYPE_INT32_t old_output
 
     while hp.items > 0:
         #
         # Pop off an item to work on
         #
-        heappop(hp, <unsigned int *> elem.data)
+        heappop(hp, <np.int32_t *> elem.data)
         ####################################################
         # loop through each of the structuring elements
         #
+        old_index = elem[2]
+        old_output = output[old_index]
         for i in range(nneighbors):
-            ok = 1
-            old_index = elem[2]
+            # get the flattened address of the neighbor
             index = structure[i,0]+old_index
-            if index < 0 or index >= max_index:
-                continue
-            if output[index] != 0:
+            if index < 0 or index >= max_index or output[index] or not mask[index]:
                 continue
             # Fill in and push the neighbor
-            if not mask[index]:
-                continue
+            ok = 1
             for j in range(ndim):
-                # the coordinate is offset by 2 (value, age and index come 
+                # the coordinate is offset by 3 (value, age and index come 
                 # first) in the priority queue and by 1 (stride comes first)
                 # in the structure
                 coord = elem[j+3]+structure[i,j+1]
@@ -85,15 +84,13 @@ def watershed(np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] 
                 new_elem[j+3] = coord
             if ok == 0:
                 continue
-            # get the flattened address of the neighbor
             new_elem[0]   = image[index]
             new_elem[1]   = age
             new_elem[2]   = index
             age          += 1
-            output[index] = output[old_index]
-
+            output[index] = old_output
             #
-            # Push the pixel onto the heap to work on it later
+            # Push the neighbor onto the heap to work on it later
             #
-            heappush(hp, <unsigned int *>new_elem.data)
+            heappush(hp, <np.int32_t *>new_elem.data)
     heap_done(hp)

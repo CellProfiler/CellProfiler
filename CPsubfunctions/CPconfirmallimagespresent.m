@@ -107,8 +107,8 @@ for m = 1:length(uniquePaths)
         cellFileNamesForChannelN = cellstr(FileNamesForChannelN{n});
         AllFileNamesForChannelN = union(cellFileNamesForChannelN,AllFileNamesForChannelN);
         
-        % Look for images with duplicate prefixes
-        [ignore,idx] = unique(cellFileNamesForChannelN);
+        % Look for images with duplicate prefixes, and if so, keep the first
+        [ignore,idx] = unique(cellFileNamesForChannelN,'first');
         idxDuplicate = setdiff(1:length(cellFileNamesForChannelN),idx);
         if ~isempty(idxDuplicate)
             DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,cellFileNamesForChannelN(idxDuplicate),{n}));
@@ -119,6 +119,10 @@ for m = 1:length(uniquePaths)
     % files
     % TODO: How to process the duplicate files similarly? Especially when
     % we don't know which file is the "right" one.
+    % For now, for the images which come off ImageXpress, the image that is
+    % alphanumerically first is the proper one (though I don't know whether
+    % this is true for all systems). The 'first' option in the call to 
+    % unique above takes care of this
     NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
     [NewFileList{m}{:}] = deal('');
     for n = 1:length(ImageName),
@@ -213,7 +217,7 @@ if strncmpi(SaveOutputFile,'y',1),
        
     fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'at+');
     if fid > 0,
-        fprintf(fid,'%s\n',['Output of ',mfilename]);
+        fprintf(fid,'%s\n',['Output of ',mfilename,': ',datestr(now)]);
         fprintf(fid,'%s\n','%%%%%%%%%%%%%%%%%%%%%%%%');
         for i = 1:length(TextString)
             fprintf(fid,'%s\n',TextString{i});

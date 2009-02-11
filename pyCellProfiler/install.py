@@ -154,9 +154,9 @@ def run_command(command):
         print "Running %s"%(command)
     if not options.dry_run:
         if options.verbose:
-            result = subprocess.call(command)
+            result = subprocess.call(command.split(" "))
         else:
-            result = subprocess.call(command, subprocess.PIPE)
+            result = subprocess.call(command.split(" "), subprocess.PIPE)
         if result:
             raise IOError("Command did not complete successfully: %s"%(command))
 

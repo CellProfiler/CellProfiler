@@ -4131,8 +4131,7 @@ else
                 try
                     handles.Preferences.DisplayWindows = CPselectmodules(handles.Settings.ModuleNames);
                 catch
-                    CPerrordlg('An error occurred while selecting the modules you wanted to display. All modules will be displayed.');
-                    handles.Preferences.DisplayWindows = ones(handles.Current.NumberOfModules,1);
+                    return
                 end
             else
                 handles.Preferences.DisplayWindows= ones(handles.Current.NumberOfModules,1);

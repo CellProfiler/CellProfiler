@@ -116,8 +116,12 @@ if ishandle(SelectDisplay)
     end
     delete(SelectDisplay);
 else
-    uiwait(CPwarndlg('You have clicked Cancel or closed the window. All modules will be selected.','Warning'));
-    Selection = ones(NumberOfModules,1);
+    button = CPquestdlg('You have clicked Cancel or closed the window. All modules will be selected unless you click Cancel Processing.','Warning','Show All','Cancel Processing','Show All');
+    if strcmp(button, 'Show All')
+        Selection = ones(NumberOfModules,1);
+    else
+        return
+    end
 end
 
 

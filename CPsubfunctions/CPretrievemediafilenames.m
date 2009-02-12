@@ -12,7 +12,7 @@ function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextT
 %
 % $Revision$
 
-if strncmpi(recurse,'S',1)
+if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
 
     idx = 1;
     More = 'Yes';
@@ -29,13 +29,18 @@ if strncmpi(recurse,'S',1)
         error('Processing was stopped because the user chose Cancel');
     end
     handles.Pipeline.PathNameSubFolders = Directories;
-elseif strncmpi(recurse,'Y',1)
+    
+elseif strncmpi(recurse,'Y',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
 
     %% CPselectdirectories is still too slow for a lot of subfolders on
     %% bcb_image
     Directories = CPgetdirectorytree(Pathname);
     %         Directories= CPselectdirectories(Directories);
     handles.Pipeline.PathNameSubFolders = Directories;
+    
+elseif isfield(handles.Pipeline,'PathNameSubFolders')
+    Directories = handles.Pipeline.PathNameSubFolders;
+    
 else
     Directories = {Pathname};
 end

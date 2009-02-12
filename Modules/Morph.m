@@ -218,9 +218,6 @@ FunctionVariables{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads the images.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
-
 %% Remove unused settings
 idx = strcmp(Functions,'Do not use');
 Functions = Functions(~idx);
@@ -236,14 +233,18 @@ for i=1:length(FunctionVariables)
         FunctionVariables{i} = '1';
     end
 end
+
+%%% Reads the images.
+Images = cell(1,length(Functions)+1);
+Images{1} = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
+
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-FinalImage = OrigImage;
 for i = 1:length(Functions)
-    FinalImage = bwmorph(FinalImage,Functions{i},str2double(FunctionVariables{i}));
+    Images{i+1} = bwmorph(Images{i},Functions{i},str2double(FunctionVariables{i}));
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -254,20 +255,41 @@ drawnow
 %%% Determines the figure number to display in.
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
+
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
+
+    %%%% Display FinalImage as default
+    CPimagesc(Images{end}, handles,ThisModuleFigureNumber);
+
+    %%% Construct structure which holds images and figure titles
+    ud = cell2struct(Images,'img',1);
+    
+    if isempty(findobj(ThisModuleFigureNumber,'tag','PopupImage')),
+        
+%         ud.img = Images;
+        ud(1).title = 'Input Image';
+        for i = 1:length(Functions)
+            ud(i+1).title = ['Image after ' Functions{i} ' operation, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+        end
+        ud(end).title = ['Final ' ud(end).title];
+        title(ud(end).title)
+        
+        %%% uicontrol for displaying other images
+        uicontrol(ThisModuleFigureNumber, ...
+            'Style', 'popup',...
+            'String', {ud.title},...
+            'UserData',ud,...
+            'units','normalized',...
+            'position',[.01 .95 .25 .04],...
+            'backgroundcolor',[.7 .7 .9],...
+            'tag','PopupImage',...
+            'Value',length(Functions)+1,...
+            'Callback', @CP_ImagePopupmenu_Callback);
+
+    else
+        title(['Final Image = ', MorphImageName])
     end
-    %%% A subplot of the figure window is set to display the original image.
-    hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber);
-    CPimagesc(OrigImage,handles,hAx);
-    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-    %%% A subplot of the figure window is set to display the adjusted
-    %%%  image.
-    hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber);
-    CPimagesc(FinalImage,handles,hAx);
-    title(hAx,'Morphed Image');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,4 +297,4 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(MorphImageName) = FinalImage;
+handles.Pipeline.(MorphImageName) = Images{end};

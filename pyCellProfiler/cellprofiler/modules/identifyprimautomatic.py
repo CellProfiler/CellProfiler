@@ -22,6 +22,7 @@ from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.smooth import smooth_with_noise
+import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 
@@ -597,9 +598,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
         # Make an outline image
-        temp = scipy.ndimage.grey_dilation(labeled_image,
-                                           footprint=numpy.ones((3,3),bool))
-        outline_image = temp!=labeled_image
+        outline_image = cellprofiler.cpmath.outline.outline(labeled_image)
         if workspace.frame:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])

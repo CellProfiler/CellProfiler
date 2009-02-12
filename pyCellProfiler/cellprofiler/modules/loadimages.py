@@ -7,6 +7,7 @@ import re
 import PIL.Image
 import numpy
 import matplotlib.image
+import pyffmpeg
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -41,8 +42,7 @@ class LoadImages(cpmodule.CPModule):
     """Load images from files.  This is the help text that will be displayed
        to the user.
     """
-    def __init__(self):
-        super(LoadImages, self).__init__()
+    def create_settings(self):
         self.module_name = "LoadImages"
         
         # Settings
@@ -51,6 +51,7 @@ class LoadImages(cpmodule.CPModule):
         self.match_exclude = cps.Text('If you want to exclude certain files, type the text that the excluded images have in common', cps.DO_NOT_USE)
         self.order_group_size = cps.Integer('How many images are there in each group?', 3)
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
+        self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
      
         # Settings for each CPimage
         self.images_common_text = [cps.Text('Type the text that these images have in common', 'DAPI')]
@@ -89,6 +90,9 @@ class LoadImages(cpmodule.CPModule):
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
         
+        if len(self.images_common_text) > 1:
+            varlist += [self.check_images]
+        
         # per image settings
         if self.match_method != MS_ORDER:
             for ctext, imname, rm in zip(self.images_common_text, self.image_names, self.remove_images):
@@ -113,7 +117,8 @@ class LoadImages(cpmodule.CPModule):
     SLOT_DESCEND_SUBDIRECTORIES = 4
     SLOT_LOCATION = 5
     SLOT_LOCATION_OTHER = 6
-    SLOT_FIRST_IMAGE = 7
+    SLOT_CHECK_IMAGES = 7
+    SLOT_FIRST_IMAGE = 8
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
     SLOT_OFFSET_ORDER_POSITION = 2
@@ -129,6 +134,7 @@ class LoadImages(cpmodule.CPModule):
         varlist[self.SLOT_DESCEND_SUBDIRECTORIES] = self.descend_subdirectories
         varlist[self.SLOT_LOCATION]               = self.location
         varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
+        varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
         for i in range(len(self.image_names)):
             ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
             varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
@@ -149,7 +155,9 @@ class LoadImages(cpmodule.CPModule):
         if variable_revision_number == 3 and module_name == 'LoadImages':
             setting_values,variable_revision_number = self.upgrade_3_to_4(setting_values)
         if variable_revision_number == 4 and module_name == 'LoadImages':
-            setting_values,variable_revision_number = self.upgrade_4_to_new_1(setting_values)
+            setting_values,variable_revision_number = self.upgrade_4_to_5(setting_values)
+        if variable_revision_number == 5 and module_name == 'LoadImages':
+            setting_values,variable_revision_number = self.upgrade_5_to_new_1(setting_values)
             module_name = self.module_class()
 
         if variable_revision_number != self.variable_revision_number or \
@@ -199,7 +207,12 @@ class LoadImages(cpmodule.CPModule):
         new_values.insert(10,cps.DO_NOT_USE)
         return (new_values,4)
     
-    def upgrade_4_to_new_1(self,setting_values):
+    def upgrade_4_to_5(self, setting_values):
+        new_values = list(setting_values)
+        new_values.append(cps.NO)
+        return (new_values,5)
+    
+    def upgrade_5_to_new_1(self,setting_values):
         """Take the old LoadImages values and put them in the correct slots"""
         new_values = range(self.SLOT_FIRST_IMAGE)
         new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
@@ -243,8 +256,12 @@ class LoadImages(cpmodule.CPModule):
         """Set up all of the image providers inside the image_set_list
         """
         if self.load_movies():
-            raise NotImplementedError("Movies aren't implemented yet.")
-        
+            self.prepare_run_of_movies(pipeline,image_set_list)
+        else:
+            self.prepare_run_of_images(pipeline, image_set_list)
+    
+    def prepare_run_of_images(self, pipeline, image_set_list):
+        """Set up image providers for image files"""
         files = self.collect_files()
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
@@ -252,8 +269,8 @@ class LoadImages(cpmodule.CPModule):
         #Deal out the image filenames to a list of lists.
         image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
-        for x in files:
-            list_of_lists[x[1]].append(x[0])
+        for pathname,image_index in files:
+            list_of_lists[image_index].append(pathname)
         
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:],image_names):
@@ -264,6 +281,38 @@ class LoadImages(cpmodule.CPModule):
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
             providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
+            image_set.providers.extend(providers)
+        for name in image_names:
+            image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
+    
+    def prepare_run_of_movies(self, pipeline, image_set_list):
+        """Set up image providers for movie files"""
+        files = self.collect_files()
+        if len(files) == 0:
+            raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
+        
+        root = self.image_directory()
+        image_names = self.image_name_vars()
+        #
+        # The list of lists has one list per image type. Each per-image type
+        # list is composed of tuples of pathname and frame #
+        #
+        list_of_lists = [[] for x in image_names]
+        for pathname,image_index in files:
+            frame_count = self.get_frame_count(os.path.join(root,pathname))
+            # the video stream to be used when reading the movie
+            video_stream = pyffmpeg.VideoStream()
+            for i in range(frame_count):
+                list_of_lists[image_index].append((pathname,i,video_stream))
+        image_set_count = len(list_of_lists[0])
+        for x,name in zip(list_of_lists[1:],image_names):
+            if len(x) != image_set_count:
+                raise RuntimeError("Image %s has %d frames, but image %s has %d frames"%(image_names[0],image_set_count,name.value,len(x)))
+        list_of_lists = numpy.array(list_of_lists,dtype=object)
+        for i in range(0,image_set_count):
+            image_set = image_set_list.get_image_set(i)
+            providers = [LoadImagesMovieFrameProvider(name.value, root, file, int(frame), video_stream)
+                         for name,(file,frame,video_stream) in zip(image_names,list_of_lists[:,i])]
             image_set.providers.extend(providers)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
@@ -280,6 +329,18 @@ class LoadImages(cpmodule.CPModule):
                 workspace.measurements.add_measurement('Image','FileName_'+name, filename)
                 workspace.measurements.add_measurement('Image','PathName_'+name, path)
 
+    def get_frame_count(self, pathname):
+        """Return the # of frames in a movie"""
+        if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES):
+            print "opening %s"%(pathname)
+            video_stream = pyffmpeg.VideoStream()
+            video_stream.open("file:%s"%(pathname))
+            frame_count = video_stream.frame_count()
+            video_stream.close()
+            print "Found %d frames"%(frame_count)
+            return frame_count
+        raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
+            
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
@@ -337,7 +398,7 @@ class LoadImages(cpmodule.CPModule):
         and descending downward if AnalyzeSubDirs allows it.
         dirs - a list of subdirectories connecting the image directory to the
                directory currently being searched
-        Returns a list of three-tuples where the first element of the tuple is the path
+        Returns a list of two-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
         index within the image settings (e.g. ImageNameVars).
         """
@@ -414,6 +475,55 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         """Load an image from a pathname
         """
         img = PIL.Image.open(self.get_full_name())
+        # There's an apparent bug in the PIL library that causes
+        # images to be loaded upside-down. At best, load and save have opposite
+        # orientations; in other words, if you load an image and then save it
+        # the resulting saved image will be upside-down
+        img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
+        if img.mode=='I;16':
+            # 16-bit image
+            imgdata = numpy.array(img.getdata(),numpy.uint16)
+            img = imgdata.reshape(img.size)
+            img = img.astype(float) / 65535.0
+        else:
+            img = matplotlib.image.pil_to_array(img)
+        return cpimage.Image(img)
+    
+    def get_name(self):
+        return self.__name
+    
+    def get_pathname(self):
+        return self.__pathname
+    
+    def get_filename(self):
+        return self.__filename
+    
+    def get_full_name(self):
+        return os.path.join(self.get_pathname(),self.get_filename())
+
+class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
+    """Provide an image by filename:frame, loading the file as it is requested
+    """
+    def __init__(self,name,pathname,filename,frame,video_stream):
+        self.__name = name
+        self.__pathname = pathname
+        self.__filename = filename
+        self.__frame    = frame
+        self.__video_stream = video_stream
+    
+    def provide_image(self, image_set):
+        """Load an image from a movie frame
+        """
+        if (self.__frame == 0):
+            # open the stream on the first frame
+            pathname = self.get_full_name()
+            self.__video_stream.open("file:%s"%(pathname))
+        img = self.__video_stream.GetNextFrame()
+        if self.__frame + 1 == self.__video_stream.frame_count():
+            # Close the stream on the last frame
+            # self.__video_stream.close()
+            pass
+
         # There's an apparent bug in the PIL library that causes
         # images to be loaded upside-down. At best, load and save have opposite
         # orientations; in other words, if you load an image and then save it

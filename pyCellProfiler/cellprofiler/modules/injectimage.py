@@ -6,6 +6,7 @@ __version__="$Revision$"
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
 import cellprofiler.settings
+import cellprofiler.objects
 
 class InjectImage(cellprofiler.cpmodule.CPModule):
     """This module is intended for testing. It injects an image into the
@@ -94,3 +95,34 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """
         return []
         
+class InjectObjects(cellprofiler.cpmodule.CPModule):
+    """Inject objects with labels into the pipeline"""
+    
+    def __init__(self,object_name, segmented, unedited_segmented=None, small_removed_segmented=None):
+        """Initialize the module with the objects for the object set
+        
+        object_name - name of the objects to be provided
+        segmented   - labels for the segmentation of the image
+        unedited_segmented - labels including small and boundary, default =
+                             same as segmented
+        small_removed_segmented - labels with small objects removed, default = 
+                                  same as segmented
+        """ 
+        super(InjectObjects,self).__init__()
+        self.module_name = "InjectObjects"
+        self.object_name = cellprofiler.settings.ObjectNameProvider("text",object_name)
+        self.__segmented = segmented
+        self.__unedited_segmented = unedited_segmented
+        self.__small_removed_segmented = small_removed_segmented
+    
+    def settings(self):
+        return [self.object_name]
+    
+    def run(self,workspace):
+        my_objects = cellprofiler.objects.Objects()
+        my_objects.segmented = self.__segmented
+        if self.__unedited_segmented != None:
+            my_objects.unedited_segmented = self.__unedited_segmented
+        if self.__small_removed_segmented != None:
+            my_objects.small_removed_segmented = self.__small_removed_segmented
+        workspace.object_set.add_objects(my_objects, self.object_name.value)

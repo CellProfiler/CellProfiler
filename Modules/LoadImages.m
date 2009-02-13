@@ -394,16 +394,9 @@ SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
 %%% Remove "Do not use" entries from the input,
 %%% i.e., store only valid entries
-tmp1 = {};
-tmp2 = {};
-for n = 1:4
-    if ~strcmp(TextToFind{n}, 'Do not use') && ~strcmp(ImageName{n}, 'Do not use')
-        tmp1{end+1} = TextToFind{n};
-        tmp2{end+1} = ImageName{n};
-    end
-end
-TextToFind = tmp1;
-ImageName = tmp2;
+idx = strcmp(TextToFind,'Do not use') | strcmp(ImageName,'Do not use');
+TextToFind = TextToFind(~idx);
+ImageName = ImageName(~idx);
 
 if strcmp(LoadChoice,'Order')
     TextToFind = str2num(char(TextToFind)); %#ok Ignore MLint
@@ -608,7 +601,7 @@ if SetBeingAnalyzed == 1
             %%% Extract the file names
             for n = 1:length(ImageName)
                 
-                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Image');
+                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,strtrim(char(TextToFind(n))),AnalyzeSubDir, ExactOrRegExp,'Image');
                 
                 % Remove excluded images
                 if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),
@@ -629,7 +622,7 @@ if SetBeingAnalyzed == 1
                 clear FileList % Prevents confusion when loading this value later, for each cycle.
             end
             if strcmpi(CheckImageSets,'Yes')
-                handles = CPconfirmallimagespresent(handles, TextToFind, ImageName, ExactOrRegExp, 'Yes');
+                handles = CPconfirmallimagespresent(handles, strtrim(TextToFind), ImageName, ExactOrRegExp, 'Yes');
             end
             for n= 1:length(ImageName)
                 fieldname = ['FileList', ImageName{n}];
@@ -638,7 +631,7 @@ if SetBeingAnalyzed == 1
         else
             %%% For all non-empty slots, extracts the file names.
             for n = 1:length(ImageName)
-                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,char(TextToFind(n)),AnalyzeSubDir, ExactOrRegExp,'Movie');
+                [handles,FileList] = CPretrievemediafilenames(handles, Pathname,strtrim(char(TextToFind(n))),AnalyzeSubDir, ExactOrRegExp,'Movie');
                 
                 % Remove excluded images
                 if ~isempty(FileList) && ~strcmp(TextToExclude,'Do not use'),

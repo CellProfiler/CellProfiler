@@ -6,7 +6,7 @@ function CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix,
 % the input handles structure.
 
 if version ~= 1 && version ~= 2
-    error('Property file version '+ num2str(version)+' not supported')
+    error(['Property file version ' num2str(version) ' not supported'])
 end
 ExportInfo.DataPath = DataPath;
 

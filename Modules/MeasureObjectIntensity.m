@@ -313,10 +313,16 @@ for i = 1:length(ObjectNameList)
         masked_y = y(mask);
         CM_x = full(sparse(masked_labels, 1, masked_x) ./ sparse(masked_labels, 1, 1));
         CM_y = full(sparse(masked_labels, 1, masked_y) ./ sparse(masked_labels, 1, 1));
-        intensity_CM_x = full(sparse(masked_labels, 1, masked_x .*masked_intensity) ./...
-                              sparse(masked_labels, 1, masked_intensity));
-        intensity_CM_y = full(sparse(masked_labels, 1, masked_y .*masked_intensity) ./...
-                              sparse(masked_labels, 1, masked_intensity));
+        
+        denom = sparse(masked_labels, 1, masked_intensity);
+        if denom ~= 0
+            intensity_CM_x = full(sparse(masked_labels, 1, masked_x .*masked_intensity) ./ denom);
+            intensity_CM_y = full(sparse(masked_labels, 1, masked_y .*masked_intensity) ./ denom);
+        else
+            intensity_CM_x = zeros(size(CM_x));
+            intensity_CM_y = zeros(size(CM_y));
+        end
+
         PixelSize = str2double(handles.Settings.PixelSize);
         diff_x = CM_x - intensity_CM_x;
         diff_y = CM_y - intensity_CM_y;
@@ -334,7 +340,7 @@ for i = 1:length(ObjectNameList)
         Min = min(SortedObjectPixels);
         Max = max(SortedObjectPixels);
         Scale = (Max-Min) / .8;
-        SortedObjectPixels = ((SortedObjectPixels - Min) / Scale)+.1;
+        SortedObjectPixels = ((SortedObjectPixels - Min) / (Scale+eps))+.1;
         SortedObjectPixels = SortedObjectPixels + LabelMatrixImage(LabelMatrixImage>0);
         SortedObjectPixels = sort(SortedObjectPixels);
         SortedObjectPixels = SortedObjectPixels - floor(SortedObjectPixels);

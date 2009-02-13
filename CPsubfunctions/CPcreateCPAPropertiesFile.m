@@ -34,7 +34,7 @@ idx_path = find(~cellfun('isempty',regexp(lower(names),'pathname')));
 objs = fieldnames(handles.Measurements);
 objs(strcmp(objs,'Image') | strcmp(objs,'Experiment') | strcmp(objs,'Neighbors')) = [];
 if ~isempty(objs)
-    supposed_primary_obj = objs{1};
+    supposed_primary_obj = objs{end};
 else
     supposed_primary_obj = '';
 end

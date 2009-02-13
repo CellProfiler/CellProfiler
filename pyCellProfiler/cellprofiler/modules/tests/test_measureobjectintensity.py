@@ -29,13 +29,13 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertTrue(isinstance(module,MOI.MeasureObjectIntensity))
         self.assertEqual(len(module.object_names),1)
         self.assertEqual(module.object_names[0].value,'Nuclei')
-        self.assertEqual(module.image_name.value,'DNA')
+        self.assertEqual(module.image_names[0].value,'DNA')
         
     def test_02_01_supplied_measurements(self):
         """Test the get_category / get_measurements, get_measurement_images functions"""
         
         moi = MOI.MeasureObjectIntensity()
-        moi.image_name.value='MyImage'
+        moi.image_names[0].value='MyImage'
         moi.add_cb()
         moi.object_names[0].value = 'MyObjects1'
         moi.object_names[1].value = 'MyObjects2'
@@ -57,7 +57,7 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',numpy.zeros((10,10),int))
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_name.value = 'MyImage'
+        moi.image_names[0].value = 'MyImage'
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
@@ -82,7 +82,7 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',img.astype(int))
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_name.value = 'MyImage'
+        moi.image_names[0].value = 'MyImage'
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
@@ -149,7 +149,7 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_name.value = 'MyImage'
+        moi.image_names[0].value = 'MyImage'
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
@@ -174,7 +174,7 @@ class TestMeasureObjects(unittest.TestCase):
         io = II.InjectObjects('MyObjects',labels)
         io.module_num = 2
         moi = MOI.MeasureObjectIntensity()
-        moi.image_name.value = 'MyImage'
+        moi.image_names[0].value = 'MyImage'
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()

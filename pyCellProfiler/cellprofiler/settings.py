@@ -369,7 +369,7 @@ class NameSubscriber(Setting):
     
     def matches(self, setting):
         """Return true if this subscriber matches the category of the provider"""
-        return self.group == self.group
+        return self.group == setting.group
     
     def test_valid(self,pipeline):
         if len(self.get_choices(pipeline)) == 0:

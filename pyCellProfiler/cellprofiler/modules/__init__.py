@@ -8,6 +8,7 @@ import colortogray as cpm_ctg
 from applythreshold import ApplyThreshold
 from saveimages import SaveImages
 from measureobjectintensity import MeasureObjectIntensity
+from exporttodatabase import ExportToDatabase
 
 def get_module_classes():
     return [cpm_li.LoadImages,
@@ -15,7 +16,8 @@ def get_module_classes():
             cpm_ctg.ColorToGray,
             ApplyThreshold,
             SaveImages,
-            MeasureObjectIntensity]
+            MeasureObjectIntensity,
+            ExportToDatabase]
 
 def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
@@ -26,7 +28,8 @@ def get_module_substitutions():
             "ColorToGray":cpm_ctg.ColorToGray,
             "ApplyThreshold": ApplyThreshold,
             "SaveImages": SaveImages,
-            "MeasureObjectIntensity": MeasureObjectIntensity
+            "MeasureObjectIntensity": MeasureObjectIntensity,
+            "ExportToDatabase": ExportToDatabase
             }
     
 

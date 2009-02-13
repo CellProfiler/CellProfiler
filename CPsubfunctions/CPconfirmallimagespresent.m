@@ -24,6 +24,14 @@ function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,ExactO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+WarningDlgBoxTitle = 'Image check for missing or duplicate files';
+if ~strcmp(ExactOrRegExp,'R')
+    CPwarndlg(['You must specify "Text-Regular Expressions" to check image sets. Execution of the pipeline will continue but the images will not be checked.'],...
+                WarningDlgBoxTitle,'replace');
+    return;
+end
+
 % Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 IsBatchSubmission = isfield(handles.Current,'BatchInfo');
@@ -47,38 +55,70 @@ end
 
 % First, check if directories in which channel images were located are identical. If
 % not, keep track of the different ones for each channel (e.g., if a
-% channel image is found in only some directories and not in others)
+% channel image is found in only some directories and not in others) and
+% remove them from consideration
 uniquePaths = unique(cat(2,AllPathnames{:}));
 UnmatchedDirectories = cellfun(@setdiff,repmat({uniquePaths},[1 length(AllPathnames)]),AllPathnames,'UniformOutput',false);
+if ~isempty(cat(2,UnmatchedDirectories{:}))
+    pathstoremove = cat(2,UnmatchedDirectories{:});
+    for i = 1:length(ImageName)
+        idx = find(ismember(AllPathnames{i},pathstoremove));
+        AllPathnames{i}(idx) = [];
+        idx = ismember(idxIndivPaths{i},idx);
+        IndivPathnames{i}(idx) = [];
+        IndivFileNames{i}(idx) = [];
+        IndivFileExtensions{i}(idx) = [];
+        idxIndivPaths{i}(idx) = [];
+        [ignore,ignore,idxIndivPaths{i}] = unique(idxIndivPaths{i});
+    end
+    uniquePaths = setdiff(uniquePaths,pathstoremove);
+end
 
-% Second, check if the images in each directory/subdirectory match up by
-% channel
+% Second, for those directories which do have all channels represented,
+% check if the images in each directory/subdirectory match up by channel
+
+% TODO: THE FOLLWOWING SECTION WOULD BENEFIT BY HAVING ACCESS TO
+% THE FILENAME METADATA TOKENS (I.E. NAMED TOKENS)
+
+% TODO: Confirm that there is a token in the text string. Currently I
+% can only check by actually regexp'ing the string against the filenames
+
 FileNamesForEachChannel = cell(length(idxIndivPaths),length(uniquePaths));
 NewFileList = cell(length(uniquePaths),1);
 [UnmatchedFilenames,DuplicateFilenames] = deal(cell(1,length(uniquePaths)));
 for m = 1:length(uniquePaths)
     FileNamesForChannelN = cell(1,length(idxIndivPaths));
+    
     for n = 1:length(ImageName)
         % FileNamesForEachChannel{channel}{subdirectory}: Cell array of strings
         FileNamesForEachChannel{n}{m} = IndivFileNames{n}(idxIndivPaths{n} == m);
 
         % Find the position of the channel text in the filenames for
         % each subdirectory
-        TextToFindIdx = unique(cell2mat(regexpi(FileNamesForEachChannel{n}{m},TextToFind{n},'once')));
+        [tokens,tokenExtents] = regexpi(FileNamesForEachChannel{n}{m},TextToFind{n},'tokens','tokenExtents','once');
+        if all(cellfun(@isempty,tokens))
+            CPwarndlg(['No tokens found in text string, which is needed to use this function properly. Execution of the pipeline will continue but the images will not be checked.'],...
+                        WarningDlgBoxTitle,'replace');
+            return;
+        end
+        tokenExtents = cat(1,tokenExtents{:});
+        StartingIndex = unique(tokenExtents(:,1)); EndingIndex = unique(tokenExtents(:,2));
+        
         % If the position is the same for all...
-        if isscalar(TextToFindIdx)
+        if isscalar(StartingIndex)
             %... drop the filename text after the channel text and use the 
             % remainder for comparision
-            % ASSUMPTION: If TextToFind is a regular expression, the text
-            % in common precedes any alphabetic, numeric, or underscore
-            % characters in the search string
-            if strcmp(ExactOrRegExp,'R'),
-                TextToFindIdx = TextToFindIdx + regexp(TextToFind{n},'\W','once');
+            % ASSUMPTION: Multichannel images will be distinguished by their
+            % token; starting postion must be offset to beginning of token.
+            % Single channel images also distinguished by their token, but
+            % starting position must include the token itself
+            if numel(ImageName) > 1
+                idx = StartingIndex - 1;
+            else
+                idx = EndingIndex;
             end
-            % ASSUMPTION: Files from same system share common prefix during
-            % the same run
             FileNamesForChannelN{n} = strvcat(FileNamesForEachChannel{n}{m});
-            FileNamesForChannelN{n} = FileNamesForChannelN{n}(:,1:TextToFindIdx-1);
+            FileNamesForChannelN{n} = FileNamesForChannelN{n}(:,1:idx);
         else
             %... otherwise, error
             error(['The specified text for ',ImageName{n},' is not located at a consistent position within the filenames in directory ',uniquePaths{m}]);
@@ -111,7 +151,8 @@ for m = 1:length(uniquePaths)
         [ignore,idx] = unique(cellFileNamesForChannelN,'first');
         idxDuplicate = setdiff(1:length(cellFileNamesForChannelN),idx);
         if ~isempty(idxDuplicate)
-            DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,cellFileNamesForChannelN(idxDuplicate),{n}));
+            DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,  cellFileNamesForChannelN(idxDuplicate),...
+                                                                        num2cell(repmat(n,[length(idxDuplicate) 1]))));
         end
     end
     
@@ -128,7 +169,9 @@ for m = 1:length(uniquePaths)
     for n = 1:length(ImageName),
         [idxFileList,locFileList] = ismember(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
         FullFilenames = cellfun(@fullfile,IndivPathnames{n}(idxIndivPaths{n} == m),...
-                                cellfun(@strcat,IndivFileNames{n}(idxIndivPaths{n} == m),IndivFileExtensions{n}(idxIndivPaths{n} == m),'UniformOutput',false),'UniformOutput',false); 
+                                cellfun(@strcat,IndivFileNames{n}(idxIndivPaths{n} == m),IndivFileExtensions{n}(idxIndivPaths{n} == m),...
+                                        'UniformOutput',false),...
+                                'UniformOutput',false); 
         NewFileList{m}(n,idxFileList) = FullFilenames(locFileList(idxFileList));
     end
     
@@ -206,7 +249,7 @@ TextString{end+1} = 'If there are duplicate images, you should halt the pipeline
 TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing image.';
 
 if ~IsBatchSubmission
-    CPwarndlg(TextString,'Image check for missing or duplicate files','replace');
+    CPwarndlg(TextString,WarningDlgBoxTitle,'replace');
 end
     
 % Output file if desired
@@ -215,7 +258,7 @@ if strncmpi(SaveOutputFile,'y',1),
     OutputFilename = [mfilename,'_output'];
     OutputExtension = '.txt';
        
-    fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'at+');
+    fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'wt+');
     if fid > 0,
         fprintf(fid,'%s\n',['Output of ',mfilename,': ',datestr(now)]);
         fprintf(fid,'%s\n','%%%%%%%%%%%%%%%%%%%%%%%%');

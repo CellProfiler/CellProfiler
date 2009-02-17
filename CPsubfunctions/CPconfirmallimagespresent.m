@@ -25,18 +25,41 @@ function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,ExactO
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-WarningDlgBoxTitle = 'Image check for missing or duplicate files';
-if ~strcmp(ExactOrRegExp,'R')
-    CPwarndlg(['You must specify "Text-Regular Expressions" to check image sets. Execution of the pipeline will continue but the images will not be checked.'],...
-                WarningDlgBoxTitle,'replace');
-    return;
-end
-
 % Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 IsBatchSubmission = isfield(handles.Current,'BatchInfo');
 
 if SetBeingAnalyzed ~= 1, return; end
+
+% Make sure a regular expression is input
+WarningDlgBoxTitle = 'Quality control for missing or duplicate image files';
+WarningDlgBoxBoilerplate =  'Execution of the pipeline will continue but the image set will not be checked.';
+if ~strcmp(ExactOrRegExp,'R')
+    msg = ['You must specify "Text-Regular Expressions" to check image sets. ',WarningDlgBoxBoilerplate];
+    if IsBatchSubmission
+        warning(msg);
+    else
+        CPwarndlg(msg, WarningDlgBoxTitle,'replace');
+    end
+    return;
+end
+
+% Make sure tokens are being used
+unnamedTokenPresent = true;
+namedTokenPresent = true;
+for n = 1:numel(TextToFind)
+    unnamedTokenPresent = unnamedTokenPresent & ~isempty(regexp(TextToFind{n},'\(\[(?<token>.+?)\]','tokens','once'));
+    namedTokenPresent = namedTokenPresent & ~isempty(regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once'));
+end
+if ~namedTokenPresent && ~unnamedTokenPresent   % Neither named nor unnamed tokens are present
+    if IsBatchSubmission
+        warning(msg);
+    else
+        CPwarndlg(['Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate],...
+                WarningDlgBoxTitle,'replace');
+    end
+    return;
+end
 
 % Extract the file names
 fn = fieldnames(handles.Pipeline);
@@ -80,9 +103,6 @@ end
 % TODO: THE FOLLWOWING SECTION WOULD BENEFIT BY HAVING ACCESS TO
 % THE FILENAME METADATA TOKENS (I.E. NAMED TOKENS)
 
-% TODO: Confirm that there is a token in the text string. Currently I
-% can only check by actually regexp'ing the string against the filenames
-
 FileNamesForEachChannel = cell(length(idxIndivPaths),length(uniquePaths));
 NewFileList = cell(length(uniquePaths),1);
 [UnmatchedFilenames,DuplicateFilenames] = deal(cell(1,length(uniquePaths)));
@@ -96,26 +116,27 @@ for m = 1:length(uniquePaths)
         % Find the position of the channel text in the filenames for
         % each subdirectory
         [tokens,tokenExtents] = regexpi(FileNamesForEachChannel{n}{m},TextToFind{n},'tokens','tokenExtents','once');
-        if all(cellfun(@isempty,tokens))
-            CPwarndlg(['No tokens found in text string, which is needed to use this function properly. Execution of the pipeline will continue but the images will not be checked.'],...
-                        WarningDlgBoxTitle,'replace');
-            return;
-        end
         tokenExtents = cat(1,tokenExtents{:});
         StartingIndex = unique(tokenExtents(:,1)); EndingIndex = unique(tokenExtents(:,2));
         
         % If the position is the same for all...
         if isscalar(StartingIndex)
-            %... drop the filename text after the channel text and use the 
-            % remainder for comparision
-            % ASSUMPTION: Multichannel images will be distinguished by their
-            % token; starting postion must be offset to beginning of token.
-            % Single channel images also distinguished by their token, but
-            % starting position must include the token itself
-            if numel(ImageName) > 1
-                idx = StartingIndex - 1;
-            else
-                idx = EndingIndex;
+            %... drop the filename text after the token text and use the 
+            % remainder for comparision.
+            % The token can be used to distinguish filename irregualrities.
+            % For multichannel images, the token is used to
+            % distinguish the channel, so the token must be removed to 
+            % identify mismatches and duplicates. Filename mismatches
+            % are not defined for single-channel images but duplicates are
+            % identified based on the token, so it must be retained.
+            % ASSUMPTION: The token is the last component of the filename so
+            % we capture the string up and/or including the token. If the
+            % filename metadata is incorporated, this operation can be made
+            % more general and this assumption can be dropped
+            if numel(ImageName) > 1         % Multi-channel: 
+                idx = StartingIndex - 1;    % Up to the beginning of the token
+            else                            % Single-channel:
+                idx = EndingIndex;          % Include the token
             end
             FileNamesForChannelN{n} = strvcat(FileNamesForEachChannel{n}{m});
             FileNamesForChannelN{n} = FileNamesForChannelN{n}(:,1:idx);
@@ -163,7 +184,7 @@ for m = 1:length(uniquePaths)
     % For now, for the images which come off ImageXpress, the image that is
     % alphanumerically first is the proper one (though I don't know whether
     % this is true for all systems). The 'first' option in the call to 
-    % unique above takes care of this
+    % unique above takes care of this.
     NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
     [NewFileList{m}{:}] = deal('');
     for n = 1:length(ImageName),
@@ -248,7 +269,9 @@ TextString{end+1} = '';
 TextString{end+1} = 'If there are duplicate images, you should halt the pipeline, examine the files and remove the duplicates.';
 TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing image.';
 
-if ~IsBatchSubmission
+if IsBatchSubmission
+    warning(char(TextString)');
+else
     CPwarndlg(TextString,WarningDlgBoxTitle,'replace');
 end
     

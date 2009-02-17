@@ -93,8 +93,13 @@ switch lower(usage),
         %  -a: Needed to add non-matlab .jpg file
         version_info = ver('matlab');
         if str2double(version_info.Version) >= 7.6, %Must include -C to produce separate CTF file
-            mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
-                -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg';
+            if ispc  % Add icon to argument list
+               mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
+                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg' -M './IconForWindows.res';
+           else
+               mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
+                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg';
+           end
         else
             error('You need to have MATLAB version 7.6 (2008a) or above to run this command.')
         end

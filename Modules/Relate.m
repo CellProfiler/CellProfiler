@@ -175,7 +175,7 @@ end
 % Adds a 'Mean<SubObjectName>' field to the handles.Measurements structure
 % which finds the mean measurements of all the subObjects that relate to each parent object
 MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
-NewObjectName=['Means_',SubObjectName, '_per_', ParentName{1}];
+
 if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
 
     % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
@@ -184,7 +184,7 @@ if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
         MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
         for i=1:length(MeasurementFeatures)
             Fieldname = MeasurementFieldnames{i};
-            if strcmp(Fieldname, 'SubObjectFlag'),
+            if strcmp(Fieldname, 'SubObjectFlag') || strncmp(Fieldname, 'Parent_', length('Parent_'))
                 continue;
             end
             Measurements=handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};
@@ -196,9 +196,9 @@ if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
                         MeanVals(j) = mean(Measurements(indices));
                     end
                 end
-                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, MeanVals);
+                handles = CPaddmeasurements(handles, SubObjectName, ['Mean' Fieldname], MeanVals);
             else
-                handles = CPaddmeasurements(handles, NewObjectName, Fieldname, zeros(max(length(NumberOfChildren),1), 1));
+                handles = CPaddmeasurements(handles, SubObjectName, ['Mean' Fieldname], zeros(max(length(NumberOfChildren),1), 1));
             end
         end
     else

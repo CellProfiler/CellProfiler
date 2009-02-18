@@ -28,7 +28,13 @@ if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
     if strcmp(More,'Cancel')
         error('Processing was stopped because the user chose Cancel');
     end
-    handles.Pipeline.PathNameSubFolders = Directories;
+
+    % Recurse selected subdirectories
+    SelectedDirectoryTree = []; 
+    for i = 1:length(Directories), 
+        SelectedDirectoryTree = cat(1,SelectedDirectoryTree,CPgetdirectorytree(Directories{i})); 
+    end; 
+    [handles.Pipeline.PathNameSubFolders,Directories] = deal(SelectedDirectoryTree(:)');
     
 elseif strncmpi(recurse,'Y',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
 

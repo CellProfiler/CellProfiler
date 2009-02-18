@@ -27,7 +27,7 @@ function handles = CPconfirmallimagespresent(handles,TextToFind,ImageName,ExactO
 
 % Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-IsBatchSubmission = isfield(handles.Current,'BatchInfo');
+isBatchSubmission = isfield(handles.Current,'BatchInfo');
 
 if SetBeingAnalyzed ~= 1, return; end
 
@@ -36,7 +36,7 @@ WarningDlgBoxTitle = 'Quality control for missing or duplicate image files';
 WarningDlgBoxBoilerplate =  'Execution of the pipeline will continue but the image set will not be checked.';
 if ~strcmp(ExactOrRegExp,'R')
     msg = ['You must specify "Text-Regular Expressions" to check image sets. ',WarningDlgBoxBoilerplate];
-    if IsBatchSubmission
+    if isBatchSubmission
         warning(msg);
     else
         CPwarndlg(msg, WarningDlgBoxTitle,'replace');
@@ -44,19 +44,18 @@ if ~strcmp(ExactOrRegExp,'R')
     return;
 end
 
-% Make sure tokens are being used
-unnamedTokenPresent = true;
-namedTokenPresent = true;
+% Make sure either named or unnamed tokens are being used
+isTokenPresent = true;
 for n = 1:numel(TextToFind)
-    unnamedTokenPresent = unnamedTokenPresent & ~isempty(regexp(TextToFind{n},'\(\[(?<token>.+?)\]','tokens','once'));
-    namedTokenPresent = namedTokenPresent & ~isempty(regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once'));
+    isTokenPresent = isTokenPresent & ~(isempty(regexp(TextToFind{n},'\(\[(?<token>.+?)\]','tokens','once')) & ...
+                                        isempty(regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once')));
 end
-if ~namedTokenPresent && ~unnamedTokenPresent   % Neither named nor unnamed tokens are present
-    if IsBatchSubmission
+if ~isTokenPresent   % No tokens are present
+    msg = ['Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate];
+    if isBatchSubmission
         warning(msg);
     else
-        CPwarndlg(['Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate],...
-                WarningDlgBoxTitle,'replace');
+        CPwarndlg(msg,WarningDlgBoxTitle,'replace');
     end
     return;
 end
@@ -169,28 +168,24 @@ for m = 1:length(uniquePaths)
         AllFileNamesForChannelN = union(cellFileNamesForChannelN,AllFileNamesForChannelN);
         
         % Look for images with duplicate prefixes, and if so, keep the first
-        [ignore,idx] = unique(cellFileNamesForChannelN,'first');
+        [ignore,idx] = unique(cellFileNamesForChannelN);
         idxDuplicate = setdiff(1:length(cellFileNamesForChannelN),idx);
         if ~isempty(idxDuplicate)
-            DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},cat(2,  cellFileNamesForChannelN(idxDuplicate),...
-                                                                        num2cell(repmat(n,[length(idxDuplicate) 1]))));
+            DuplicateFilenames{m} = cat(1,DuplicateFilenames{m},...
+                                          cat(2,cellFileNamesForChannelN(idxDuplicate),...
+                                                num2cell(repmat(n,[length(idxDuplicate) 1]))));
         end
     end
     
     % Copy the filenames into the new list, leaving [] in place of missing
-    % files
-    % TODO: How to process the duplicate files similarly? Especially when
-    % we don't know which file is the "right" one.
-    % For now, for the images which come off ImageXpress, the image that is
-    % alphanumerically first is the proper one (though I don't know whether
-    % this is true for all systems). The 'first' option in the call to 
-    % unique above takes care of this.
+    % files....
     NewFileList{m} = cell(length(ImageName),length(AllFileNamesForChannelN));
     [NewFileList{m}{:}] = deal('');
     for n = 1:length(ImageName),
         [idxFileList,locFileList] = ismember(AllFileNamesForChannelN,cellstr(FileNamesForChannelN{n}));
-        FullFilenames = cellfun(@fullfile,IndivPathnames{n}(idxIndivPaths{n} == m),...
-                                cellfun(@strcat,IndivFileNames{n}(idxIndivPaths{n} == m),IndivFileExtensions{n}(idxIndivPaths{n} == m),...
+        idxPathlist = idxIndivPaths{n} == m;
+        FullFilenames = cellfun(@fullfile,IndivPathnames{n}(idxPathlist),...
+                                cellfun(@strcat,IndivFileNames{n}(idxPathlist),IndivFileExtensions{n}(idxPathlist),...
                                         'UniformOutput',false),...
                                 'UniformOutput',false); 
         NewFileList{m}(n,idxFileList) = FullFilenames(locFileList(idxFileList));
@@ -199,7 +194,21 @@ for m = 1:length(uniquePaths)
     IsFileMissing = cellfun(@isempty,NewFileList{m});
     idxMissingFiles = any(IsFileMissing,1);
     for n = find(idxMissingFiles)
-        UnmatchedFilenames{m} = cat(1,UnmatchedFilenames{m},cat(2,cellstr(AllFileNamesForChannelN(n,:)),{find(IsFileMissing(:,n))'}));
+        UnmatchedFilenames{m} = cat(1,UnmatchedFilenames{m},...
+                                      cat(2, cellstr(AllFileNamesForChannelN(n,:)),...
+                                             {find(~IsFileMissing(:,n))'}));
+    end
+
+    % ... check whether the unmatched images are corrupt...
+    if ~isempty(UnmatchedFilenames{m}),
+        NewFileList{m} = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList{m},UnmatchedFilenames{m},m,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,fn,prefix);
+    end
+    
+    % ... and removing duplicate files, also by checking integrity.
+    % ASSUMPTION: A duplicate file means that one of them is corrupted,
+    % which seems to be the case on HCS systems
+    if ~isempty(DuplicateFilenames{m}),
+        NewFileList{m} = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList{m},DuplicateFilenames{m},m,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,fn,prefix);
     end
 end
 
@@ -266,10 +275,10 @@ else
 end
 
 TextString{end+1} = '';
-TextString{end+1} = 'If there are duplicate images, you should halt the pipeline, examine the files and remove the duplicates.';
-TextString{end+1} = 'If there are unmatched images, placeholders have been inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing image.';
+TextString{end+1} = 'If there are duplicate images, the integrity of the duplicates are checked and the first "good" image is used, if any. If there are none, the images are treated as missing.';
+TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing images.';
 
-if IsBatchSubmission
+if isBatchSubmission
     warning(char(TextString)');
 else
     CPwarndlg(TextString,WarningDlgBoxTitle,'replace');
@@ -291,5 +300,41 @@ if strncmpi(SaveOutputFile,'y',1),
         fclose(fid);
     else
         error([ModuleName,': Failed to open the output file for writing']);
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - FindAndReplaceCorruptFilesInFilelist
+function NewFileList = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList,FlaggedFilenames,idxUniquePath,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,FileListFieldnames,FileListPrefix)
+
+for n = 1:size(FlaggedFilenames,1)
+    channel = FlaggedFilenames{n,2};
+    % Find the full names of the duplicate images
+    idxFileList = ismember(cellstr(FileNamesForChannelN{channel}),FlaggedFilenames{n,1});
+    idxPathlist = idxIndivPaths{channel} == idxUniquePath;
+    FullFilenames = cellfun(@fullfile,IndivPathnames{channel}(idxPathlist),...
+                            cellfun(@strcat,IndivFileNames{channel}(idxPathlist),IndivFileExtensions{channel}(idxPathlist),...
+                                    'UniformOutput',false),...
+                            'UniformOutput',false);
+    FlaggedFileList = FullFilenames(idxFileList); 
+
+    % Check whether the mismatch is corrupt by attempting an imread
+    isImageCorrupt = false(1,length(FlaggedFileList));
+    for k = 1:length(FlaggedFileList),
+        try
+            CPimread([handles.Pipeline.(['Pathname',FileListFieldnames{channel}(length(FileListPrefix)+1:end)]),FlaggedFileList{k}]);
+        catch
+            isImageCorrupt(k) = true;
+        end
+    end
+
+    % Remove corrupt files from the new FileList, replacing them
+    % with the first file(s) that pass the test, or [] if none of them pass
+    % TODO: A more intelligent way to do this substitution
+    if any(~isImageCorrupt) && length(isImageCorrupt) > 1
+        NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = ...
+                FlaggedFileList(find(~isImageCorrupt,length(find(isImageCorrupt))));
+    else
+        NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = {''};
     end
 end

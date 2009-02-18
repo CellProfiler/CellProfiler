@@ -220,6 +220,7 @@ class LoadImages(cpmodule.CPModule):
         new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
         new_values[self.SLOT_MATCH_EXCLUDE]          = setting_values[10]
         new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = setting_values[12]
+        new_values[self.SLOT_CHECK_IMAGES]           = setting_values[16]
         loc = setting_values[13]
         if loc == '.':
             new_values[self.SLOT_LOCATION]           = DIR_DEFAULT_IMAGE

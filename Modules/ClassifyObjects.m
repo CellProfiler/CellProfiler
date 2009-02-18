@@ -168,7 +168,13 @@ drawnow
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     
-try NumericalBinSpecifications = str2num(BinSpecifications);
+try 
+    NumericalBinSpecifications = str2num(BinSpecifications);
+    if isempty(NumericalBinSpecifications)
+        error(['Image processing was canceled in the ', ModuleName, ...
+            ' module because the bin specifications must be numerical values',...
+            ' separated by commas. Please check your bin specifications.']);
+    end
 catch
     error(['Image processing was canceled in the ', ModuleName, ...
         ' module because the bin specifications must be numerical values',...
@@ -280,7 +286,13 @@ if any(findobj == ThisModuleFigureNumber) || ~strcmpi(SaveColoredObjects,'Do not
 end
 
 % Calculate the percentage of objects per bin
-if ~isempty(PercentageOfObjectsPerBin), PercentageOfObjectsPerBin = ObjectsPerBin/length(Measurements); else PercentageOfObjectsPerBin = 0; end
+if ~isempty(PercentageOfObjectsPerBin), 
+    warning('off','MATLAB:divideByZero');
+    PercentageOfObjectsPerBin = ObjectsPerBin/length(Measurements);
+    warning('on','MATLAB:divideByZero');
+else
+    PercentageOfObjectsPerBin = 0; 
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -362,17 +374,19 @@ if any(findobj == ThisModuleFigureNumber)
             h(i) = patch([0 0 1],[0 1 1],rgbval,'visible','off','parent',hAx); 
         end
         hold(hAx,'off');
-        warning('off','MATLAB:legend:IgnoringExtraEntries');
+        warning('off','MATLAB:legend:IgnoringExtraEntries'); warning('off','MATLAB:legend:PlotEmpty');
         [lg,obj_lg] = legend(hAx,LegLabels{:});
-        warning('on','MATLAB:legend:IgnoringExtraEntries');
+        warning('on','MATLAB:legend:IgnoringExtraEntries'); warning('on','MATLAB:legend:PlotEmpty');
         % Make text white (since bg is black) and remove border
-        set(findobj(obj_lg,'type','text'),'color','w');
-        % Shorten the legend bars a bit
-        % NB: Haven't figured out how to shorten the legend axes itself
-        h = findobj(obj_lg,'type','patch');
-        p = get(h(1),'xdata');
-        set(h,'xdata',[mean(p([1 4]))*ones(2,1); p(3:4)]);
-        set(lg,'color','k','edgecolor','w');
+        if ~isempty(lg),
+            set(findobj(obj_lg,'type','text'),'color','w');
+            % Shorten the legend bars a bit
+            % NB: Haven't figured out how to shorten the legend axes itself
+            h = findobj(obj_lg,'type','patch');
+            p = get(h(1),'xdata');
+            set(h,'xdata',[mean(p([1 4]))*ones(2,1); p(3:4)]);
+            set(lg,'color','k','edgecolor','w');
+        end
     end
 
     if NumberOfObjects > 1,

@@ -16,7 +16,12 @@ def configuration():
                   Extension(name="_watershed",
                             sources=["_watershed.pyx", "heap.pxi"],
                             include_dirs=['src']+[get_include()],
-                            extra_compile_args=['-O3'])]
+                            extra_compile_args=['-O3']),
+                  Extension(name="_propagate",
+                            sources=["_propagate.pyx", "heap.pxi"],
+                            include_dirs=['src']+[get_include()],
+                            extra_compile_args=['-O3'])
+                  ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",
              "maintainer":"Lee Kamentsky",

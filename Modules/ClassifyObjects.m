@@ -347,7 +347,7 @@ if any(findobj == ThisModuleFigureNumber)
             if strcmpi(Labels,'Do not use'),
                 LegLabels{BinNum} = ['Bin',num2str(BinNum)];
             else
-                [ignore,LegLabels{BinNum}] = strrok(ClassifyFeatureNames{BinNum},'_');
+                [ignore,LegLabels{BinNum}] = strtok(ClassifyFeatureNames{BinNum},'_');
                 LegLabels{BinNum} = LegLabels{BinNum}(2:end);
             end
         end

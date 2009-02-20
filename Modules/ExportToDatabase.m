@@ -164,10 +164,12 @@ assert(~any(strfind(DatabaseName,'-')),['Image processing was canceled in the ',
 %defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-assert(~any(isspace(TablePrefix)),['Image processing was canceled in the ', ModuleName, ...
-    ' module because you have entered one or more spaces in the text box for the database table prefix.'])
-assert(~any(strfind(TablePrefix,'-')),['Image processing was canceled in the ', ModuleName, ...
-    ' module because you have entered one or more dashes in the text box for the database table prefix.'])
+if ~strcmp(TablePrefix,'Do not use')
+    assert(~any(isspace(TablePrefix)),['Image processing was canceled in the ', ModuleName, ...
+        ' module because you have entered one or more spaces in the text box for the database table prefix.'])
+    assert(~any(strfind(TablePrefix,'-')),['Image processing was canceled in the ', ModuleName, ...
+        ' module because you have entered one or more dashes in the text box for the database table prefix.'])
+end
 
 %textVAR04 = What prefix should be used to name the SQL files?
 %defaultVAR04 = SQL_
@@ -226,7 +228,7 @@ else
 end
 
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
-DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & (FirstSet == 1);
+DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & (handles.Current.SetBeingAnalyzed == 1);
 
 % Initial checking of variables, if we're writing anything
 if DoWriteSQL || DoWriteCPAPropertiesFile
@@ -253,7 +255,6 @@ if DoWriteCPAPropertiesFile,
     for verIdx = 1:length(re)
         version = str2double(re(verIdx).number);
         CPcreateCPAPropertiesFile(handles, DataPath, DatabaseName, TablePrefix, DatabaseType, version);
-
     end
 end
 

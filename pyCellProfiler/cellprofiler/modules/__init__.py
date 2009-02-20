@@ -9,6 +9,7 @@ from applythreshold import ApplyThreshold
 from saveimages import SaveImages
 from measureobjectintensity import MeasureObjectIntensity
 from exporttodatabase import ExportToDatabase
+from identifysecondary import IdentifySecondary
 
 def get_module_classes():
     return [cpm_li.LoadImages,
@@ -17,7 +18,8 @@ def get_module_classes():
             ApplyThreshold,
             SaveImages,
             MeasureObjectIntensity,
-            ExportToDatabase]
+            ExportToDatabase,
+            IdentifySecondary]
 
 def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
@@ -25,6 +27,7 @@ def get_module_substitutions():
     """
     return {"LoadImages":cpm_li.LoadImages,
             "IdentifyPrimAutomatic":cpm_ipa.IdentifyPrimAutomatic,
+            "IdentifySecondary":IdentifySecondary,
             "ColorToGray":cpm_ctg.ColorToGray,
             "ApplyThreshold": ApplyThreshold,
             "SaveImages": SaveImages,

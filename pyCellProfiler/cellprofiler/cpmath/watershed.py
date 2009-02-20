@@ -34,7 +34,7 @@ def __get_strides_for_shape(shape):
     stride.reverse()
     return numpy.array(stride)
 
-def __heapify_markers(markers,image):
+def __old_heapify_markers(markers,image):
     """Create a priority queue heap with the markers on it"""
     age = 0
     pq = []
@@ -50,6 +50,24 @@ def __heapify_markers(markers,image):
         age += 1
     heapify(pq)
     return (pq,age)
+
+def __heapify_markers(markers,image):
+    """Create a priority queue heap with the markers on it"""
+    stride = __get_strides_for_shape(image.shape)
+    coords = numpy.argwhere(markers != 0)
+    ncoords= coords.shape[0]
+    if ncoords > 0:
+        pixels = image[markers != 0]
+        age    = numpy.array(range(ncoords))
+        offset = numpy.zeros(coords.shape[0],int)
+        for i in range(image.ndim):
+            offset = offset + stride[i]*coords[:,i]
+        pq = numpy.column_stack((pixels, age, offset, coords))
+        ordering = numpy.lexsort((age,pixels)) # pixels = top priority, age=second
+        pq = pq[ordering,:]
+    else:
+        pq = numpy.zeros((0,markers.ndim+3),int)
+    return (pq,ncoords)
     
 def watershed(image, markers, connectivity=8, mask=None):
     """Return a matrix labeled using the watershed algorithm

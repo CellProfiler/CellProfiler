@@ -128,7 +128,7 @@ See also GrayToColor.
             variable_revision_number = 1
             from_matlab = False
             
-        return setting_values
+        return setting_values, variable_revision_number, from_matlab
         
     def should_combine(self):
         """True if we are supposed to combine RGB to gray"""

@@ -114,7 +114,7 @@ as to avoid a 'halo' effect.
             setting_values[4] = HighThreshold < 1
             variable_revision_number = 1
             from_matlab = False
-        return setting_values
+        return setting_values, variable_revision_number, from_matlab
         
     def run(self,workspace):
         """Run the module

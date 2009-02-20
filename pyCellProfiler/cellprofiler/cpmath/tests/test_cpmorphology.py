@@ -70,6 +70,33 @@ class TestFillLabeledHoles(unittest.TestCase):
         self.assertEqual(len(where),1)
         self.assertEqual(where[0][0],2)
         self.assertEqual(where[0][1],2)
+    
+    def test_07_regression_nearby_holes(self):
+        """Check filling an object with three holes"""
+        image = numpy.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,0,0,0,0,0,0,1,0],
+                             [0,1,0,1,0,0,0,0,0,0,1,0],
+                             [0,1,1,1,0,0,0,0,0,0,1,0],
+                             [0,1,0,0,0,0,0,0,0,0,1,0],
+                             [0,1,1,1,0,0,0,0,0,0,1,0],
+                             [0,1,0,1,0,0,0,0,0,0,1,0],
+                             [0,1,1,1,0,0,0,0,0,0,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0]])
+        expec = numpy.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,1,1,1,1,1,1,1,1,1,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0]])
+        output = morph.fill_labeled_holes(image)
+        self.assertTrue(numpy.all(output==expec))
             
 class TestStrelDisk(unittest.TestCase):
     """Test cellprofiler.cpmath.cpmorphology.strel_disk"""

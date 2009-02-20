@@ -36,8 +36,9 @@ def fill_labeled_holes(image):
     four_connect = scipy.ndimage.generate_binary_structure(2, 1)
     negative_mask = (image == 0)
     labeled_holes, nholes = scipy.ndimage.label(negative_mask,four_connect)
+    high = image.max()+1
     image_with_high_holes = image.copy()
-    image_with_high_holes[labeled_holes > 0] = 1000000000
+    image_with_high_holes[labeled_holes > 0] = high
     min_label = scipy.ndimage.minimum_filter(image_with_high_holes,
                                              footprint=numpy.ones((3,3),bool),
                                              mode = 'constant',

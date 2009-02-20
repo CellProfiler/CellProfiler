@@ -88,17 +88,18 @@ class CPModule(object):
         whatever values are in the list or however many values
         are in the list.
         """
-        setting_values = self.backwards_compatibilize(setting_values,
-                                                       variable_revision_number,
-                                                       module_name,
-                                                       not '.' in module_name)
+        setting_values, variable_revision_number, from_matlab =\
+            self.backwards_compatibilize(setting_values,
+                                         variable_revision_number,
+                                         module_name,
+                                         not '.' in module_name)
         for v,value in zip(self.settings(),setting_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)
     
     def backwards_compatibilize(self,setting_values,variable_revision_number,
                                 module_name,from_matlab):
-        return setting_values
+        return setting_values, variable_revision_number, from_matlab
     
     def create_from_annotations(self):
         """Create the settings based on what you can discern from the annotations

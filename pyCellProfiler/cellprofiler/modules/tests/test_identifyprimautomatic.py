@@ -8,6 +8,7 @@ import scipy.ndimage
 import tempfile
 
 import cellprofiler.modules.identifyprimautomatic as ID
+import cellprofiler.modules.identify as I
 from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.settings
 import cellprofiler.cpimage
@@ -66,21 +67,21 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     
     def test_01_07_threshold_method(self):
         x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_method, ID.TM_OTSU_GLOBAL, "Default should be Otsu global")
-        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
-        self.assertEqual(x.threshold_method, ID.TM_BACKGROUND_GLOBAL)
+        self.assertEqual(x.threshold_method, I.TM_OTSU_GLOBAL, "Default should be Otsu global")
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(I.TM_BACKGROUND_GLOBAL)
+        self.assertEqual(x.threshold_method, I.TM_BACKGROUND_GLOBAL)
     
     def test_01_07_01_threshold_modifier(self):
         x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_modifier, ID.TM_GLOBAL)
-        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_ADAPTIVE)
-        self.assertEqual(x.threshold_modifier, ID.TM_ADAPTIVE)
+        self.assertEqual(x.threshold_modifier, I.TM_GLOBAL)
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(I.TM_BACKGROUND_ADAPTIVE)
+        self.assertEqual(x.threshold_modifier, I.TM_ADAPTIVE)
 
     def test_01_07_02_threshold_algorithm(self):
         x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.threshold_algorithm == ID.TM_OTSU, "Default should be Otsu")
-        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(ID.TM_BACKGROUND_GLOBAL)
-        self.assertTrue(x.threshold_algorithm == ID.TM_BACKGROUND)
+        self.assertTrue(x.threshold_algorithm == I.TM_OTSU, "Default should be Otsu")
+        x.setting(ID.THRESHOLD_METHOD_VAR).set_value(I.TM_BACKGROUND_GLOBAL)
+        self.assertTrue(x.threshold_algorithm == I.TM_BACKGROUND)
 
     def test_01_08_threshold_range(self):
         x = ID.IdentifyPrimAutomatic()
@@ -833,8 +834,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
         self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
-        self.assertTrue(module.threshold_algorithm,cellprofiler.modules.identifyprimautomatic.TM_OTSU)
-        self.assertTrue(module.threshold_modifier,cellprofiler.modules.identifyprimautomatic.TM_GLOBAL)
+        self.assertTrue(module.threshold_algorithm,I.TM_OTSU)
+        self.assertTrue(module.threshold_modifier,I.TM_GLOBAL)
         self.assertTrue(module.image_name == cellprofiler.settings.DO_NOT_USE)
     
     def test_04_02_load_v13(self):
@@ -843,8 +844,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
         self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
-        self.assertTrue(module.threshold_algorithm,cellprofiler.modules.identifyprimautomatic.TM_OTSU)
-        self.assertTrue(module.threshold_modifier,cellprofiler.modules.identifyprimautomatic.TM_GLOBAL)
+        self.assertTrue(module.threshold_algorithm,I.TM_OTSU)
+        self.assertTrue(module.threshold_modifier,I.TM_GLOBAL)
         self.assertTrue(module.image_name == 'None')
     
     def test_05_01_discard_large(self):
@@ -1037,7 +1038,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                 rsin = (numpy.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
+        x.threshold_method.value = I.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
                                                      numpy.ones((120,110),bool),
                                                      None)
@@ -1075,7 +1076,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                 rsin = (numpy.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_OTSU_ADAPTIVE
+        x.threshold_method.value = I.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
                                                      numpy.ones((525,525),bool),
                                                      None)
@@ -1095,7 +1096,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         objects = cellprofiler.objects.Objects()
         objects.segmented = labels 
-        x.threshold_method.value = ID.TM_OTSU_PER_OBJECT
+        x.threshold_method.value = I.TM_OTSU_PER_OBJECT
         threshold, global_threshold = x.get_threshold(image, 
                                                       numpy.ones((20,20), bool),
                                                       objects)
@@ -1112,7 +1113,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         
         Run MOG to see if it blows up, given 0-10 pixels"""
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_MOG_GLOBAL
+        x.threshold_method.value = I.TM_MOG_GLOBAL
         for i in range(11):
             if i:
                 image = numpy.array(range(i),float) / float(i)
@@ -1124,7 +1125,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         """Test mixture of gaussians thresholding on the fly image"""
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_MOG_GLOBAL
+        x.threshold_method.value = I.TM_MOG_GLOBAL
         x.object_fraction.value = '0.10'
         local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.038)
@@ -1141,7 +1142,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_10_01_test_background(self):
         """Test simple mode background for problems with small images"""
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_BACKGROUND_GLOBAL
+        x.threshold_method.value = I.TM_BACKGROUND_GLOBAL
         for i in range(11):
             if i:
                 image = numpy.array(range(i),float) / float(i)
@@ -1152,7 +1153,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_10_02_test_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_BACKGROUND_GLOBAL
+        x.threshold_method.value = I.TM_BACKGROUND_GLOBAL
         local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.046)
         self.assertTrue(threshold < 0.048)
@@ -1160,7 +1161,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_11_01_test_robust_background(self):
         """Test robust background for problems with small images"""
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_ROBUST_BACKGROUND_GLOBAL
+        x.threshold_method.value = I.TM_ROBUST_BACKGROUND_GLOBAL
         for i in range(11):
             if i:
                 image = numpy.array(range(i),float) / float(i)
@@ -1171,7 +1172,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_11_02_test_robust_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_ROBUST_BACKGROUND_GLOBAL
+        x.threshold_method.value = I.TM_ROBUST_BACKGROUND_GLOBAL
         local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
@@ -1179,7 +1180,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_12_01_test_ridler_calvard_background(self):
         """Test ridler-calvard background for problems with small images"""
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_RIDLER_CALVARD_GLOBAL
+        x.threshold_method.value = I.TM_RIDLER_CALVARD_GLOBAL
         for i in range(11):
             if i:
                 image = numpy.array(range(i),float) / float(i)
@@ -1190,7 +1191,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_12_02_test_ridler_calvard_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_RIDLER_CALVARD_GLOBAL
+        x.threshold_method.value = I.TM_RIDLER_CALVARD_GLOBAL
         local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.017)
         self.assertTrue(threshold < 0.019)
@@ -1199,7 +1200,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_13_01_test_kapur_background(self):
         """Test kapur background for problems with small images"""
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_KAPUR_GLOBAL
+        x.threshold_method.value = I.TM_KAPUR_GLOBAL
         for i in range(11):
             if i:
                 image = numpy.array(range(i),float) / float(i)
@@ -1210,10 +1211,47 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_13_02_test_kapur_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = ID.TM_KAPUR_GLOBAL
+        x.threshold_method.value = I.TM_KAPUR_GLOBAL
         local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.015)
         self.assertTrue(threshold < 0.017)
+    
+    def test_14_01_test_manual_background(self):
+        """Test manual background"""
+        x = ID.IdentifyPrimAutomatic()
+        x.threshold_method.value = I.TM_MANUAL
+        x.manual_threshold.value = .5
+        local_threshold,threshold = x.get_threshold(numpy.zeros((10,10)), 
+                                                    numpy.ones((10,10),bool),
+                                                    None)
+        self.assertTrue(threshold == .5)
+        self.assertTrue(threshold == .5)
+    
+    def test_15_01_test_binary_background(self):
+        x = ID.IdentifyPrimAutomatic()
+        x.setting(ID.OBJECT_NAME_VAR).value = "my_object"
+        x.setting(ID.IMAGE_NAME_VAR).value = "my_image"
+        x.setting(ID.EXCLUDE_SIZE_VAR).value = False
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = I.TM_BINARY_IMAGE
+        x.binary_image.value = "my_threshold"
+        img = numpy.zeros((200,200))
+        thresh = numpy.zeros((200,200),bool)
+        draw_circle(img,(100,100),50,True)
+        draw_circle(img,(25,25),20,True)
+        image = cellprofiler.cpimage.Image(img)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
+        threshold = cellprofiler.cpimage.Image(thresh)
+        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_threshold",threshold))
+        object_set = cellprofiler.objects.ObjectSet()
+        measurements = cellprofiler.measurements.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
+        count = measurements.get_current_measurement("Image","Count_my_object")
+        self.assertEqual(count,2)
 
 def one_cell_image():
     img = numpy.zeros((25,25))
@@ -1240,12 +1278,12 @@ def draw_circle(img,center,radius,value):
 
 class TestWeightedVariance(unittest.TestCase):
     def test_01_masked_wv(self):
-        output = ID.weighted_variance(numpy.zeros((3,3)), 
+        output = I.weighted_variance(numpy.zeros((3,3)), 
                                       numpy.zeros((3,3),bool), 1)
         self.assertEqual(output, 0)
     
     def test_02_zero_wv(self):
-        output = ID.weighted_variance(numpy.zeros((3,3)),
+        output = I.weighted_variance(numpy.zeros((3,3)),
                                       numpy.ones((3,3),bool),1)
         self.assertEqual(output, 0)
     
@@ -1253,7 +1291,7 @@ class TestWeightedVariance(unittest.TestCase):
         """Test all foreground pixels same, all background same, wv = 0"""
         img = numpy.zeros((4,4))
         img[:,2:4]=1
-        output = ID.weighted_variance(img, numpy.ones(img.shape,bool),.5)
+        output = I.weighted_variance(img, numpy.ones(img.shape,bool),.5)
         self.assertEqual(output,0)
     
     def test_04_values(self):
@@ -1263,7 +1301,7 @@ class TestWeightedVariance(unittest.TestCase):
         # the variance should be (.25 *2 + .25 *2)/4 = .25
         img = numpy.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
         threshold = 3.0/16.0
-        output = ID.weighted_variance(img, numpy.ones((2,2),bool), threshold)
+        output = I.weighted_variance(img, numpy.ones((2,2),bool), threshold)
         self.assertEqual(output,.25)
     
     def test_05_mask(self):
@@ -1274,25 +1312,25 @@ class TestWeightedVariance(unittest.TestCase):
         img = numpy.array([[1.0/16.,1.0/16.0,1.0/8.0],[1.0/4.0,1.0/4.0,1.0/2.0]])
         mask = numpy.array([[False,True,True],[False,True,True]])
         threshold = 3.0/16.0
-        output = ID.weighted_variance(img, mask, threshold)
+        output = I.weighted_variance(img, mask, threshold)
         self.assertAlmostEquals(output,.25)
 
 class TestSumOfEntropies(unittest.TestCase):
     def test_01_all_masked(self):
-        output = ID.sum_of_entropies(numpy.zeros((3,3)), 
+        output = I.sum_of_entropies(numpy.zeros((3,3)), 
                                      numpy.zeros((3,3),bool), 1)
         self.assertEqual(output,0)
     
     def test_020_all_zero(self):
         """Can't take the log of zero, so all zero matrix = 0"""
-        output = ID.sum_of_entropies(numpy.zeros((4,2)),numpy.ones((4,2),bool),1)
+        output = I.sum_of_entropies(numpy.zeros((4,2)),numpy.ones((4,2),bool),1)
         self.assertAlmostEqual(output,0)
     
     def test_03_fg_bg_equal(self):
         img = numpy.ones((128,128))
         img[0:64,:] *= .1
         img[64:128,:] *= .9
-        output = ID.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+        output = I.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
     
     def test_04_fg_bg_different(self):
         img = numpy.ones((128,128))
@@ -1300,5 +1338,5 @@ class TestSumOfEntropies(unittest.TestCase):
         img[0:64,64:128] *= .3
         img[64:128,0:64] *= .7
         img[64:128,64:128] *= .9
-        output = ID.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+        output = I.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
         

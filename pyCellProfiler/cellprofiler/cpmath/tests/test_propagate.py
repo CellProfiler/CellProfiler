@@ -45,22 +45,25 @@ class TestPropagate(unittest.TestCase):
     def test_01_01_zeros(self):
         image = numpy.zeros((10,10))
         labels = numpy.zeros((10,10),int)
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 1.0)
+        mask = numpy.ones((10,10),bool)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 1.0)
         self.assertTrue(numpy.all(result==0))
     
     def test_01_02_one_label(self):
         image = numpy.zeros((10,10))
+        mask = numpy.ones((10,10),bool)
         labels = numpy.zeros((10,10),int)
         labels[5,5] = 1
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 1.0)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 1.0)
         self.assertTrue(numpy.all(result==1))
         
     def test_01_03_two_labels(self):
         image = numpy.zeros((10,10))
         labels = numpy.zeros((10,10),int)
+        mask = numpy.ones((10,10),bool)
         labels[0,5] = 1
         labels[9,5] = 2
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 1.0)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 1.0)
         self.assertTrue(numpy.all(result[:5,:]==1))
         self.assertTrue(numpy.all(result[5:,:]==2))
     
@@ -71,7 +74,8 @@ class TestPropagate(unittest.TestCase):
         labels = numpy.zeros((10,10),int)
         labels[0,0] = 1
         labels[9,0] = 2
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 0.1)
+        mask = numpy.ones((10,10),bool)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 0.1)
         x,y = numpy.mgrid[0:10,0:10]
         self.assertTrue(numpy.all(result[numpy.logical_and(x<5,y<5)]==1))
         self.assertTrue(numpy.all(result[numpy.logical_or(x>5,y>5)]==2))
@@ -83,10 +87,31 @@ class TestPropagate(unittest.TestCase):
         labels = numpy.zeros((10,10),int)
         labels[0,0] = 1
         labels[9,0] = 2
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 0.1)
+        mask = numpy.ones((10,10),bool)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 0.1)
         x,y = numpy.mgrid[0:10,0:10]
         self.assertTrue(numpy.all(result[numpy.logical_and(x<4,y<4)]==1))
         self.assertTrue(result[4,0]==1)
+    
+    def test_01_06_mask(self):
+        image = numpy.zeros((10,10))
+        labels = numpy.zeros((10,10),int)
+        mask = numpy.ones((10,10),bool)
+        mask[2,2] = False
+        mask[7,2] = False
+        labels[0,5] = 1
+        labels[9,5] = 2
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 1.0)
+        self.assertEqual(result[2,2],0)
+        self.assertEqual(result[7,2],0)
+        x,y = numpy.mgrid[0:10,0:10]
+        mask_one = x < 5
+        mask_one[2,2] = False
+        mask_two = x >= 5
+        mask_two[7,2] = False
+        self.assertTrue(numpy.all(result[mask_one] == 1))
+        self.assertTrue(numpy.all(result[mask_two] == 2))
+        
     
     def test_02_01_time_propagate(self):
         image = numpy.random.uniform(size=(1000,1000))
@@ -94,8 +119,9 @@ class TestPropagate(unittest.TestCase):
         y_coords = numpy.random.uniform(low=0, high=1000,size=(300,)).astype(int)
         labels = numpy.zeros((1000,1000),dtype=int)
         labels[x_coords,y_coords]=numpy.array(range(300))+1
+        mask = numpy.ones((1000,1000),bool)
         t1 = time.clock() 
-        result = cellprofiler.cpmath.propagate.propagate(image, labels, 1.0)
+        result,distances = cellprofiler.cpmath.propagate.propagate(image, labels, mask, 1.0)
         t2 = time.clock()
         print "Running time: %f sec"%(t2-t1)
         

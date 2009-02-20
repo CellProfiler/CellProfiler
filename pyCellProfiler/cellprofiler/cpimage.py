@@ -35,13 +35,11 @@ class Image(object):
         * single/double values: keep the same
         * uint8/16/32/64: scale 0 to max to 0 to 1
         * int8/16/32/64: scale min to max to 0 to 1
-        * logical: False = 0, True = 1
+        * logical: save as is (and get if must_be_binary)
         """
         img = numpy.array(image)
-        if img.dtype.type is numpy.bool:
-            img2 = numpy.zeros(shape=self.__image.shape,dtype=numpy.float64)
-            img2[img]=1.0
-            self.__image = img2
+        if img.dtype.name == "bool":
+            self.__image = img
             return
         mval  = 0.
         scale = 1.
@@ -240,6 +238,7 @@ class ImageSet(object):
     keys = property(get_keys)
     
     def get_image(self, name,
+                 must_be_binary=False,
                  must_be_color=False,
                  must_be_grayscale=False):
         """Return the image associated with the given name
@@ -256,6 +255,10 @@ class ImageSet(object):
             self.__images[name] = image
         
         image = self.__images[name]
+        if must_be_binary and image.pixel_data.ndim == 3:
+            raise ValueError("Image must be binary, but it was color")
+        if must_be_binary and image.pixel_data.dtype != numpy.bool:
+            raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
         if must_be_grayscale and image.pixel_data.ndim != 2:

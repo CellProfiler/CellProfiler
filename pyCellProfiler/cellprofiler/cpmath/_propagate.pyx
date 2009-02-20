@@ -12,7 +12,7 @@ DTYPE_INT32 = np.int32
 ctypedef np.int32_t DTYPE_INT32_t
 DTYPE_DOUBLE = np.float64
 ctypedef np.float64_t DTYPE_DOUBLE_t
-DTYPE_BOOL = np.bool
+DTYPE_BOOL = np.int8
 ctypedef np.int8_t DTYPE_BOOL_t
 
 include "heap.pxi"
@@ -156,7 +156,9 @@ cdef inline double distance(double *image,
 @cython.boundscheck(False)
 def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c'] image,
               np.ndarray[DTYPE_INT32_t,ndim=2,negative_indices=False,mode='c'] pq,
+              np.ndarray[DTYPE_BOOL_t,ndim=2,negative_indices=False,mode='c'] mask,
               np.ndarray[DTYPE_INT32_t,ndim=2,negative_indices=False,mode='c'] labels,
+              np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False,mode='c'] distances,
               DTYPE_DOUBLE_t weight):
     """Perform the propagate algorithm
 
@@ -172,7 +174,6 @@ def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c']
     cdef np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False,mode='c'] new_elem = np.zeros((5,),dtype=np.int32)
     cdef np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False,mode='c'] delta_i = np.array((-1,-1,-1, 0, 0, 1,1,1),dtype=np.int32)
     cdef np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False,mode='c'] delta_j = np.array((-1, 0, 1,-1, 1,-1,0,1),dtype=np.int32)
-    cdef np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False,mode='c'] distances
     cdef DTYPE_INT32_t i1=0
     cdef DTYPE_INT32_t j1=0
     cdef DTYPE_INT32_t idx=0
@@ -182,8 +183,6 @@ def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c']
     cdef DTYPE_INT32_t m = image.shape[0]
     cdef DTYPE_INT32_t n = image.shape[1]
     cdef DTYPE_DOUBLE_t d
-
-    distances = np.zeros((m,n),dtype=np.float64)
 
     while hp.items > 0:
         heappop(hp, <np.int32_t *> elem.data)
@@ -206,8 +205,10 @@ def propagate(np.ndarray[DTYPE_DOUBLE_t,ndim=2,negative_indices=False, mode='c']
                     continue
                 if labels[i2,j2] > 0:
                     continue
+                if not mask[i2,j2]:
+                    continue
                 d = distance(<double *>(image.data), i1, j1, i2, j2, m, n, weight)+d0
-                if distances[i2,j2] == 0 or distances[i2,j2] > d:
+                if distances[i2,j2] == -1 or distances[i2,j2] > d:
                     # push the point if no distance recorded or ours is the best
                     distances[i2,j2] = d
                     new_elem[0] = get_most_significant(d)

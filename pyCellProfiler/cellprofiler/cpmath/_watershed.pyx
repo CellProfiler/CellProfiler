@@ -27,6 +27,7 @@ def watershed(np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] 
     pq    - the priority queue, starts with the marked pixels
             the first element in each row is the image intensity
             the second element is the age at entry into the queue
+            the third element is the index into the flattened image or labels
             the remaining elements are the coordinates of the point
     age   - the next age to assign to a pixel
     structure - a numpy int32 array containing the structuring elements

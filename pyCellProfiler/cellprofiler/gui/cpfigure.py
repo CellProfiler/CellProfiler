@@ -106,7 +106,7 @@ class CPFigureFrame(wx.Frame):
         self.Refresh()
     
     def on_button_press(self, event):
-        if event.inaxes:
+        if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata,event.ydata)
             for x in range(self.subplots.shape[0]):
                 for y in range(self.subplots.shape[1]):
@@ -119,7 +119,7 @@ class CPFigureFrame(wx.Frame):
             
     
     def on_mouse_move(self, event):
-        if event.inaxes and self.mouse_down:
+        if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -134,7 +134,7 @@ class CPFigureFrame(wx.Frame):
             self.Refresh()
     
     def on_button_release(self,event):
-        if event.inaxes and self.mouse_down:
+        if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -147,18 +147,29 @@ class CPFigureFrame(wx.Frame):
                         self.zoom_rects[x,y].remove()
                         self.zoom_rects[x,y] = 0
                     if self.subplots[x,y]:
-                        if not old_limits:
-                            old_x0,old_x1 = self.subplots[x,y].get_xlim()
-                            old_y0,old_y1 = self.subplots[x,y].get_ylim()  
-                            old_limits = ((old_x0, old_x1),
-                                          (old_y0, old_y1))
-                        self.subplots[x,y].set_xlim(x0,x1)
-                        self.subplots[x,y].set_ylim(y0,y1)
-            self.zoom_stack.append(old_limits)
+                        if abs(x1 - x0) >= 5 and abs(y1-y0) >= 5:
+                            if not old_limits:
+                                old_x0,old_x1 = self.subplots[x,y].get_xlim()
+                                old_y0,old_y1 = self.subplots[x,y].get_ylim()  
+                                old_limits = ((old_x0, old_x1),
+                                              (old_y0, old_y1))
+                            self.subplots[x,y].set_xlim(x0,x1)
+                            self.subplots[x,y].set_ylim(y0,y1)
+                            self.zoom_stack.append(old_limits)
+                            self.__menu_item_zoom_out.Enable(True)
             self.figure.canvas.draw()
             self.Refresh()
-            self.__menu_item_zoom_out.Enable(True)
-            
+        elif self.mouse_down:
+            # cancel if released outside of axes
+            for x in range(self.subplots.shape[0]):
+                for y in range(self.subplots.shape[1]):
+                    if self.zoom_rects[x,y]:
+                        self.zoom_rects[x,y].remove()
+                        self.zoom_rects[x,y] = 0
+            self.mouse_down = None
+            self.figure.canvas.draw()
+            self.Refresh()
+    
     def subplot(self,x,y):
         """Return the indexed subplot
         

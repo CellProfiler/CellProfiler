@@ -196,7 +196,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 new_setting_values.append(cps.NO)
             from_matlab = False
             setting_values = new_setting_values
-        return setting_values
+        return setting_values, variable_revision_number, from_matlab
     
     def test_valid(self,pipeline):
         if self.want_table_prefix.value:

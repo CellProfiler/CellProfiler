@@ -382,29 +382,16 @@ See also Identify primary modules.
             window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, title="Identify secondary", 
                                         name=window_name, subplots=(2,2))
-            
-            orig_axes     = my_frame.subplot(0,0)
-            label_axes    = my_frame.subplot(1,0)
-            outlined_axes = my_frame.subplot(0,1)
-            primary_outlined_axes    = my_frame.subplot(1,1)
-            orig_axes.clear()
-            orig_axes.imshow(img, matplotlib.cm.Greys_r)
-            orig_axes.set_title("Input image")
-            label_copy = segmented_out.copy()
-            renumber = np.random.permutation(np.max(label_copy))
-            label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
-            
-            label_axes.clear()
-            label_axes.imshow(label_copy,matplotlib.cm.jet)
-            label_axes.set_title("Labeled image")
+            title = "Input image, cycle #%d"%(workspace.image_set.number)
+            my_frame.subplot_imshow_grayscale(0, 0, img, title)
+            my_frame.subplot_imshow_labels(1,0,segmented_out,
+                                           "Labeled image")
 
             secondary_outline_img = img.copy()
             secondary_outline_img[secondary_outline>0] = 1
             outline_img = np.dstack((secondary_outline_img,img,img))
             outline_img.shape=(img.shape[0],img.shape[1],3)
-            outlined_axes.clear()
-            outlined_axes.imshow(outline_img)
-            outlined_axes.set_title("Image with outlines")
+            my_frame.subplot_imshow(0,1, outline_img,"Outlined image")
             
             primary_outline_img = img.copy()
             primary_outline_img[primary_outline>0] = 1
@@ -412,8 +399,7 @@ See also Identify primary modules.
                                      primary_outline_img,
                                      img))
             primary_img.shape=(img.shape[0],img.shape[1],3)
-            primary_outlined_axes.clear()
-            primary_outlined_axes.imshow(primary_img)
+            my_frame.subplot_imshow(1,1,primary_img,"Primary and output outlines")
             my_frame.Refresh()
         #
         # Add the objects to the object set
@@ -422,6 +408,7 @@ See also Identify primary modules.
         objects_out.unedited_segmented = small_removed_segmented_out
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out
+        objects_out.parent_image = image
         objname = self.objects_name.value
         workspace.object_set.add_objects(objects_out, objname)
         object_count = np.max(segmented_out)
@@ -451,28 +438,9 @@ See also Identify primary modules.
             measurements.add_measurement('Image',
                                          'Threshold_SumOfEntropies_%s'%(objname),
                                          np.array([entropies],dtype=float))
-        measurements.add_measurement('Image',
-                                     'Count_%s'%(objname),
-                                     np.array([object_count],
-                                                 dtype=float))
-        #
-        # Get the centers of each object - center_of_mass <- list of two-tuples.
-        #
-        if object_count:
-            centers = scind.center_of_mass(np.ones(segmented_out.shape), 
-                                           segmented_out, 
-                                           range(1,object_count+1))
-            centers = np.array(centers)
-            centers = centers.reshape((object_count,2))
-            location_center_x = centers[:,0]
-            location_center_y = centers[:,1]
-        else:
-            location_center_x = np.zeros((0,),dtype=float)
-            location_center_y = np.zeros((0,),dtype=float)
-        workspace.measurements.add_measurement(objname,'Location_Center_X',
-                                               location_center_x)
-        workspace.measurements.add_measurement(objname,'Location_Center_Y',
-                                               location_center_y)
+        cpmi.add_object_count_measurements(measurements, objname, object_count)
+        cpmi.add_object_location_measurements(measurements, objname,
+                                              segmented_out)
 
 
     def filter_labels(self, labels_out, objects):

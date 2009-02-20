@@ -505,4 +505,39 @@ def sum_of_entropies(image, mask, threshold):
     #
     return numpy.sum(hfg * numpy.log2(hfg)) + numpy.sum(hbg*numpy.log2(hbg))
 
+def add_object_location_measurements(measurements, 
+                                     object_name,
+                                     labels):
+    """Add the X and Y centers of mass to the measurements
     
+    measurements - the measurements container
+    object_name  - the name of the objects being measured
+    labels       - the label matrix
+    """
+    object_count = numpy.max(labels)
+    #
+    # Get the centers of each object - center_of_mass <- list of two-tuples.
+    #
+    if object_count:
+        centers = scipy.ndimage.center_of_mass(numpy.ones(labels.shape), 
+                                               labels, 
+                                               range(1,object_count+1))
+        centers = numpy.array(centers)
+        centers = centers.reshape((object_count,2))
+        location_center_x = centers[:,0]
+        location_center_y = centers[:,1]
+    else:
+        location_center_x = numpy.zeros((0,),dtype=float)
+        location_center_y = numpy.zeros((0,),dtype=float)
+    measurements.add_measurement(object_name,'Location_Center_X',
+                                 location_center_x)
+    measurements.add_measurement(object_name,'Location_Center_Y',
+                                 location_center_y)
+
+def add_object_count_measurements(measurements, object_name, object_count):
+    """Add the # of objects to the measurements"""
+    measurements.add_measurement('Image',
+                                 'Count_%s'%(object_name),
+                                 numpy.array([object_count],
+                                             dtype=float))
+            

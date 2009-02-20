@@ -40,6 +40,8 @@ def module_extension():
 
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
+TITLE_FONT_SIZE = 'TitleFontSize'
+TITLE_FONT_NAME = 'TitleFontName'
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
@@ -85,6 +87,23 @@ def set_default_output_directory(path):
     path=str(path)
     assert os.path.isdir(path),'Default output directory, "%s", is not a directory'%(path)
     get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
+
+def get_title_font_size():
+    if not get_config().Exists(TITLE_FONT_SIZE):
+        return 12
+    title_font_size = get_config().Read(TITLE_FONT_SIZE)
+    return float(title_font_size)
+
+def set_title_font_size(title_font_size):
+    get_config().Write(TITLE_FONT_SIZE,str(title_font_size))
+
+def get_title_font_name():
+    if not get_config().Exists(TITLE_FONT_NAME):
+        return "Tahoma"
+    return get_config().Read(TITLE_FONT_NAME)
+
+def set_title_font_name(title_font_name):
+    get_config().Write(TITLE_FONT_NAME, title_font_name)
 
 __pixel_size = 1
 

@@ -12,16 +12,17 @@ import sys
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
     """
-    def __init__(self,image=None,mask=None,use_mask_from=None):
+    def __init__(self,image=None,mask=None,crop_mask = None, parent_image=None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
+        self.__parent_image = parent_image
+        self.__crop_mask = crop_mask
         if image!=None:
             self.set_image(image)
         if mask!=None:
             self.set_mask(mask)
-        elif use_mask_from != None and use_mask_from.has_mask:
-            self.set_mask(use_mask_from.mask)
+        
         
     def get_image(self):
         """Return the primary image"""
@@ -89,12 +90,22 @@ class Image(object):
     
     image=property(get_image,set_image)
     pixel_data=property(get_image,set_image)
+
+    def get_parent_image(self):
+        """The image from which this one was derived"""
+        return self.__parent_image
     
-    """The primary image - a Numpy array representing an image"""
+    def set_parent_image(self, parent_image):
+        self.__parent_image = parent_image
+        
+    parent_image = property(get_parent_image, set_parent_image)
 
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
+        if self.__mask == None and self.parent_image != None:
+            return self.parent_image.mask
+        
         if self.__mask == None and self.__image != None:
             self.__mask = numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
         return self.__mask
@@ -115,9 +126,70 @@ class Image(object):
     mask=property(get_mask,set_mask)
     
     def get_has_mask(self):
+        """True if the image has a mask"""
+        if (not self.__has_mask) and self.parent_image != None:
+            return parent_image.has_mask
         return self.__has_mask
     
     has_mask = property(get_has_mask)
+    
+    def get_crop_mask(self):
+        """Return the mask used to crop this image"""
+        if self.__crop_mask == None and self.parent_image != None:
+            return self.parent_image.crop_mask
+        return self.__crop_mask
+    
+    def set_crop_mask(self,crop_mask):
+        self.__crop_mask = crop_mask
+        
+    crop_mask = property(get_crop_mask, set_crop_mask)
+    
+    def crop_image_similarly(self, image):
+        """Crop a 2-d or 3-d image using this image's crop mask
+        
+        image - a numpy.ndarray to be cropped (of any type)
+        """
+        if image.shape == self.pixel_data.shape:
+            # Same size - no cropping needed
+            return image
+        if any([my_size > other_size
+                for my_size,other_size
+                in zip(self.pixel_data.shape,image.shape)]):
+            raise ValueError("Image to be cropped is smaller: %s vs %s"%
+                             (repr(image.shape),
+                              repr(self.pixel_data.shape)))
+        if self.crop_mask == None:
+            raise RuntimeError("Images are of different size and no crop mask available")
+        cropped_image = crop_image(image,self.crop_mask)
+        if cropped_image.shape != self.pixel_data.shape:
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s"%
+                             (repr(cropped_image.shape),
+                              repr(self.pixel_data.shape)))
+        return cropped_image
+
+def crop_image(image, crop_mask):
+    """Crop an image to the size of the nonzero portion of a crop mask"""
+    i_histogram = crop_mask.sum(axis=0)
+    i_cumsum    = numpy.cumsum(i_histogram != 0)
+    j_histogram = crop_mask.sum(axis=1)
+    j_cumsum    = numpy.cumsum(j_histogram != 0)
+    if i_cumsum[-1] == 0:
+        # The whole image is cropped away
+        return numpy.zeros((0,0),dtype=image.dtype)
+    #
+    # The first non-blank row and column are where the cumsum is 1
+    # The last are at the first where the cumsum is it's max (meaning
+    # what came after was all zeros and added nothing)
+    #
+    i_first     = numpy.argwhere(i_cumsum==1)[0]
+    i_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
+    i_end       = i_last+1
+    j_first     = numpy.argwhere(i_cumsum==1)[0]
+    j_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
+    j_end       = j_last+1
+    if image.ndim == 3:
+        return image[i_first:i_end,j_first:j_end,:]
+    return image[i_first:i_end,j_first:j_end]
 
 class GrayscaleImage(object):
     """A wrapper around the image object if the image is 3-d but all channels
@@ -139,6 +211,16 @@ class GrayscaleImage(object):
     def get_has_mask(self):
         return self.__image.get_has_mask()
     has_mask=property(get_has_mask)
+    
+    def get_crop_mask(self):
+        return self.__image.crop_mask
+    
+    crop_mask = property(get_crop_mask)
+    
+    def get_parent_image(self):
+        return self.__image.parent_mask
+    
+    parent_image = property(get_parent_image)
     
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""

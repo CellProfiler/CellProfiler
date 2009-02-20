@@ -624,14 +624,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                          image,
                          labeled_image,
                          outline_image,
-                         statistics)
+                         statistics,
+                         workspace.image_set.number+1)
         # Add image measurements
         objname = self.object_name.value
         measurements = workspace.measurements
-        measurements.add_measurement('Image',
-                                     'Count_%s'%(objname),
-                                     numpy.array([object_count],
-                                                 dtype=float))
+        cpmi.add_object_count_measurements(measurements,
+                                           objname, object_count)
         if self.threshold_modifier == cpmi.TM_GLOBAL:
             # The local threshold is a single number
             assert(not isinstance(local_threshold,numpy.ndarray))
@@ -660,26 +659,14 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels
+        objects.parent_image = image
         
         workspace.object_set.add_objects(objects,self.object_name.value)
-        #
-        # Get the centers of each object - center_of_mass <- list of two-tuples.
-        #
-        if object_count:
-            centers = scipy.ndimage.center_of_mass(numpy.ones(labeled_image.shape), 
-                                                   labeled_image, 
-                                                   range(1,object_count+1))
-            centers = numpy.array(centers)
-            centers = centers.reshape((object_count,2))
-            location_center_x = centers[:,0]
-            location_center_y = centers[:,1]
-        else:
-            location_center_x = numpy.zeros((0,),dtype=float)
-            location_center_y = numpy.zeros((0,),dtype=float)
-        workspace.measurements.add_measurement(self.object_name.value,'Location_Center_X',
-                                               location_center_x)
-        workspace.measurements.add_measurement(self.object_name.value,'Location_Center_Y',
-                                               location_center_y)
+        cpmi.add_object_location_measurements(workspace.measurements, 
+                                              self.object_name.value,
+                                              labeled_image)
+        if self.save_outlines != cps.DO_NOT_USE:
+            workspace.add_outline(self.save_outlines.value, outline_image)
     
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""
@@ -880,7 +867,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     
-    def display(self, frame, image, labeled_image, outline_image,statistics):
+    def display(self, frame, image, labeled_image, outline_image,statistics,
+                image_set_number):
         """Display the image and labeling"""
         window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
         my_frame=cpf.create_or_find(frame, title="Identify primary automatic", 
@@ -891,22 +879,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         outlined_axes = my_frame.subplot(0,1)
         table_axes    = my_frame.subplot(1,1)
 
-        orig_axes.clear()
-        orig_axes.imshow(image.pixel_data,matplotlib.cm.Greys_r)
-        orig_axes.set_title("Original image")
-        
-        #
-        # Scramble the label indices so that the colors of adjacent objects
-        # are likely to differ
-        #
-        label_copy = labeled_image.copy()
-        renumber = numpy.random.permutation(numpy.max(label_copy))
-        label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
-        
-        label_axes.clear()
-        label_axes.imshow(label_copy,matplotlib.cm.jet)
-        label_axes.set_title("Image labels")
-        
+        title = "Original image, cycle #%d"%(image_set_number)
+        my_frame.subplot_imshow_grayscale(0, 0,
+                                          image.pixel_data,
+                                          title)
+        my_frame.subplot_imshow_labels(1, 0, labeled_image, 
+                                       self.object_name.value)
+
         if image.pixel_data.ndim == 2:
             outline_img = numpy.ndarray(shape=(image.pixel_data.shape[0],
                                                image.pixel_data.shape[1],3))
@@ -917,11 +896,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             outline_img = image.pixel_data.copy()
         outline_img[outline_image != 0,0]=1
         outline_img[outline_image != 0,1]=1 
-        outline_img[outline_image != 0,2]=0 
+        outline_img[outline_image != 0,2]=0
         
-        outlined_axes.clear()
-        outlined_axes.imshow(outline_img)
-        outlined_axes.set_title("Outlined image")
+        title = "%s outlines"%(self.object_name.value) 
+        my_frame.subplot_imshow(0,1,outline_img, title)
         
         table_axes.clear()
         table = table_axes.table(cellText=statistics,

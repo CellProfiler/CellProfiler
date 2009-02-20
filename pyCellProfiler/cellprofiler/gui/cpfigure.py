@@ -11,6 +11,7 @@ import matplotlib.patches
 import matplotlib.backends.backend_wxagg
 
 from cellprofiler.gui import get_icon
+import cellprofiler.preferences as cpprefs
 
 def create_or_find(parent=None, id=-1, title="", 
                    pos=wx.DefaultPosition, size=wx.DefaultSize,
@@ -182,3 +183,57 @@ class CPFigureFrame(wx.Frame):
             self.subplots[x,y] = plot
         return self.subplots[x,y]
     
+    def set_subplot_title(self,title,x,y):
+        """Set a subplot's title in the standard format
+        
+        title - title for subplot
+        x - subplot's column
+        y - subplot's row
+        """
+        self.subplot(x,y).set_title(title,
+                                   fontname=cpprefs.get_title_font_name(),
+                                   fontsize=cpprefs.get_title_font_size())
+    
+    def clear_subplot(self, x, y):
+        """Clear a subplot of its gui junk
+
+        x - subplot's column
+        y - subplot's row
+        """
+        self.subplot(x,y).clear()
+    
+    def subplot_imshow(self, x,y,image, title=None, clear=True, colormap=None):
+        if clear:
+            self.clear_subplot(x, y)
+        subplot = self.subplot(x,y)
+        if colormap == None:
+            subplot.imshow(image)
+        else:
+            subplot.imshow(image, colormap)
+        if title != None:
+            self.set_subplot_title(title, x, y)
+    
+    def subplot_imshow_labels(self, x,y,labels, title=None, clear=True):
+        labels = renumber_labels_for_display(labels)
+        self.subplot_imshow(x,y,labels,title,clear,matplotlib.cm.jet)
+    
+    def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True):
+        self.subplot_imshow(x, y, image, title, clear, matplotlib.cm.Greys_r)
+    
+    def subplot_imshow_bw(self, x,y,image, title=None, clear=True):
+        self.subplot_imshow(x, y, image, title, clear, 
+                            matplotlib.cm.binary_r)
+    
+def renumber_labels_for_display(labels):
+    """Scramble the label numbers randomly to make the display more discernable
+    
+    The colors of adjacent indices in a color map are less discernable than
+    those of far-apart indices. Nearby labels tend to be adjacent or close,
+    so a random numbering has more color-distance between labels than a
+    straightforward one
+    """
+    numpy.random.seed(0)
+    label_copy = labels.copy()
+    renumber = numpy.random.permutation(numpy.max(label_copy))
+    label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
+    return label_copy

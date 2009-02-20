@@ -23,6 +23,7 @@ class Workspace(object):
         self.__measurements = measurements
         self.__image_set_list = image_set_list
         self.__frame = frame
+        self.__outlines = {}
         self.__windows_to_refresh = []
     
     def refresh(self):
@@ -87,3 +88,15 @@ class Workspace(object):
         if not figure in self.__windows_to_refresh:
             self.__windows_to_refresh.append(figure)
         return figure
+    
+    def get_outline_names(self):
+        """The names of outlines of objects"""
+        return self.__outlines.keys()
+    
+    def add_outline(self, name, outline):
+        """Add an object outline to the workspace"""
+        self.__outlines[name] = outline
+    
+    def get_outline(self, name):
+        """Get a named outline"""
+        return self.__outlines[name]

@@ -221,8 +221,10 @@ for m = 1:length(ImageName),
 end
 
 % Create dialog box with results
-TextString{1} = ['Image directory: ',handles.Current.DefaultImageDirectory];
-TextString{end+1} = '';
+TextString{1} = ['Output of ',mfilename,': ',datestr(now)];
+TextString{2} = '----------------------------------------';
+TextString{3} = ['Image directory: ',handles.Current.DefaultImageDirectory];
+TextString{4} = '';
 
 % List upmatched directories
 TextString{end+1} = 'Unmatched directories found:';
@@ -281,7 +283,7 @@ TextString{end+1} = 'If there are unmatched images, placeholders are inserted fo
 if isBatchSubmission
     warning(char(TextString)');
 else
-    CPwarndlg(TextString,WarningDlgBoxTitle,'replace');
+    CPwarndlg(TextString(3:end),WarningDlgBoxTitle,'replace');
 end
     
 % Output file if desired
@@ -292,8 +294,6 @@ if strncmpi(SaveOutputFile,'y',1),
        
     fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'wt+');
     if fid > 0,
-        fprintf(fid,'%s\n',['Output of ',mfilename,': ',datestr(now)]);
-        fprintf(fid,'%s\n','%%%%%%%%%%%%%%%%%%%%%%%%');
         for i = 1:length(TextString)
             fprintf(fid,'%s\n',TextString{i});
         end

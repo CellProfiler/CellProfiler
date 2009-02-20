@@ -129,17 +129,25 @@ for Object = 1:length(ExportInfo.ObjectNames)
         for k = 1:length(fields)
             fieldname = fields{k};
             val = handles.Measurements.(ObjectName).(fieldname);
-            if isnumeric(val),
+            if length(val)>1
+                for i = 1:length(val)
+                    if isnumeric(val)
+                        fprintf(fid,'%s\t%f\n',fieldname,val(i));
+                    elseif ischar(val)
+                        fprintf(fid, '%s\t%s\n', fieldname, val(i));
+                    end
+                end
+            elseif isnumeric(val),
                 fprintf(fid, '%s\t%f\n', fieldname, val);
             elseif ischar(val),
                 fprintf(fid, '%s\t%s\n', fieldname, val);
             else
-               error(['Don''t know how to export Experiment measurement ' fieldname '.']);
-           end
-       end
-       fclose(fid);
-       continue;
-   end
+                error(['Don''t know how to export Experiment measurement ' fieldname '.']);
+            end
+        end
+        fclose(fid);
+        continue;
+    end
                 
 
     %%% This should warn

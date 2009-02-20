@@ -45,21 +45,44 @@ end
 
 [ImageOrExperiment,Feature] = CPgetfeature(handles);
 
-promptLoop = 0;
-while promptLoop == 0
-    Answers = inputdlg({'What is the lower limit on the feature you chose? "Do not use" to ignore', 'What is the upper limit on this feature? "Do not use" to ignore'}, 'Limits', 1, {'Do not use', 'Do not use'}); 
-    LowLim = Answers{1};
-    UpperLim = Answers{2};
+dlgno = 1;                            % This variable keeps track of which list dialog is shown
 
-    if isnan(str2double(LowLim)) && ~strcmpi(LowLim,'Do not use')
-        uiwait(CPerrordlg('Error: there was a problem with your choice for the lower limit. Please enter a numeric value.'));
-        continue
+while dlgno < 5
+    switch dlgno
+        case 1
+            Input1 = {'Creating a new QCFlag','Appending an existing QCFlag'};
+            [selection,ok] = CPlistdlg('ListString',Input1,'PromptString','What are you doing?');
+            if ok == 0
+                dlgno = 1;
+            elseif strcmp(Input1{selection},'Creating a new QCFlag')
+                dlgno = 2;
+            elseif strcmp(Input1{selection}, 'Appending an existing QCFlag')
+                dlgno = 3;
+            end
+        case 2
+            Answers1 = inputdlg({'What do you what want to call this new QCFlag?'});
+            FlagNameNew = Answers1{1};
+            dlgno = 4;
+        case 3
+            Answers2 = inputdlg({'What did you call the existing QCFlag you would like to append?'});
+            FlagNameOld = Answers2{1};
+            dlgno = 4;
+        case 4
+            Answers3 = inputdlg({'What is the lower limit on the feature you chose? "Do not use" to ignore', 'What is the upper limit on this feature? "Do not use" to ignore'}, 'Limits', 1, {'Do not use', 'Do not use'});
+            LowLim = Answers3{1};
+            UpperLim = Answers3{2};
+
+            if isnan(str2double(LowLim)) && ~strcmpi(LowLim,'Do not use')
+                uiwait(CPerrordlg('Error: there was a problem with your choice for the lower limit. Please enter a numeric value.'));
+                continue
+            end
+            if isnan(str2double(UpperLim)) && ~strcmpi(UpperLim,'Do not use')
+                uiwait(CPerrordlg('Error: there was a problem with your choice for the upper limit. Please enter a numeric value.'));
+                continue
+            end
+            dlgno = 5;
     end
-    if isnan(str2double(UpperLim)) && ~strcmpi(UpperLim,'Do not use')
-        uiwait(CPerrordlg('Error: there was a problem with your choice for the upper limit. Please enter a numeric value.'));
-        continue
-    end
-    promptLoop = 1;
+
 end
 
 
@@ -97,15 +120,33 @@ end
 
 
 % Record the new measure in the handles structure.
-    
-   
-    
+if strcmp(selection, 'Appending an existing QCFlag')
     try
-        handles = CPaddmeasurements(handles,'Experiment','QCFlag',QCFlag);    
+       FlagToAppend = handles.Measurements.Experiment.(FlagNameOld);
     catch
-        uiwait(CPerrordlg(['Could not add new measurements:\n' lasterr]));
-        return;
+       error([lasterrr 'CellProfiler could not find the QCFlag you asked to append.']);
     end
+    try
+        QCFlag = QCFlag + FlagToAppend;
+    catch
+        error([lasterr 'CellProfiler could not append the QCFlag you specified. Perhaps it is not the same size as the one you are trying to append it with?']);
+    end
+    for i = 1:length(QCFlag)
+        if QCFlag(i) == 2
+            QCFlag(i) = 1;
+        end
+    end
+end
+
+if strcmp(selection, 'Appending an existing QCFlag')
+    handles.Measurements.Experiment.(FlagNameOld) = QCFlag;
+end
+if strcmp(selection, 'Creating a new QCFlag')
+    handles.Measurements.Experiment.(FlagNameNew) = QCFlag;
+end
+
+
+ 
 % Save the updated CellProfiler output file
 try
     save(fullfile(Pathname, FileName),'handles');

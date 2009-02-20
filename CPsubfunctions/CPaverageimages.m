@@ -135,8 +135,7 @@ elseif strcmpi(Mode,'Accumulate') == 1
     else
         %%% Adds the current image to it.
         OutputImage = ProjectedImage + OrigImage;
-        %%% Saves the updated projection image to the handles structure.
-        handles.Pipeline.(ProjectionImageName) = OutputImage;
+
         %%% If the last image set has just been processed, indicate that
         %%% the projection image is ready.
         MaskImage = ones(size(OutputImage));
@@ -147,4 +146,6 @@ elseif strcmpi(Mode,'Accumulate') == 1
             ReadyFlag = 'Ready';
         end
     end
+    %%% Saves the updated projection image to the handles structure.
+    handles.Pipeline.(ProjectionImageName) = OutputImage;
 end

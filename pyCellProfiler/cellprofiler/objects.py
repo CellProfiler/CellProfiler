@@ -113,14 +113,21 @@ class Objects(object):
         child_labels = children.segmented
         # Apply cropping to the parent if done to the child
         parent_labels  = children.crop_image_similarly(parent_labels)
+        any_parents = numpy.any(parent_labels > 0)
+        any_children = numpy.any(child_labels > 0)
+        if (not any_parents) and (not any_children):
+            return numpy.zeros((0,)),numpy.zeros((0,))
+        elif (not any_parents):
+            return numpy.zeros((0,)),numpy.zeros((numpy.max(child_labels),))
+        elif (not any_children):
+            return numpy.zeros((numpy.max(parent_labels),)), numpy.zeros((0,))
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = numpy.logical_and(parent_labels > 0,
                                      child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
-        if not_zero_count == 0:
-            return numpy.zeros((0,)),numpy.zeros((0,)) 
+         
         max_parent = numpy.max(parent_labels)
         max_child  = numpy.max(child_labels)
         histogram = scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),

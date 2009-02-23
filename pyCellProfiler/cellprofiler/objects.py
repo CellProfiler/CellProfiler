@@ -119,6 +119,8 @@ class Objects(object):
         not_zero = numpy.logical_and(parent_labels > 0,
                                      child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
+        if not_zero_count == 0:
+            return numpy.zeros((0,)),numpy.zeros((0,)) 
         max_parent = numpy.max(parent_labels)
         max_child  = numpy.max(child_labels)
         histogram = scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
@@ -138,7 +140,10 @@ class Objects(object):
                                                   numpy.zeros((max_child+1,),int))),
                                                  shape=(max_parent+1,1))
         children_per_parent = poc_histogram.toarray().flatten()
-        return children_per_parent, parents_of_children
+        #
+        # Make sure to remove the background elements at index 0
+        #
+        return children_per_parent[1:], parents_of_children[1:]
         
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):

@@ -100,3 +100,9 @@ class Workspace(object):
     def get_outline(self, name):
         """Get a named outline"""
         return self.__outlines[name]
+    
+    def get_module(self):
+        """Get the module currently being run"""
+        return self.__module
+    
+    module = property(get_module)

@@ -120,7 +120,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         self.assertEqual(module_names[2],app.frame.pipeline.module(3).module_name)
 
     def test_02_02_move_down(self):
-        """Move the second module up one using the pipeline controller"""
+        """Move the second module down one using the pipeline controller"""
         app = self.load_pipeline_in_app()
         app.frame.pipeline_list_view.select_module(2)
         module_names = [app.frame.pipeline.module(1).module_name,app.frame.pipeline.module(2).module_name, app.frame.pipeline.module(3).module_name]

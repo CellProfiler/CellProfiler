@@ -222,6 +222,12 @@ See also MeasureImageIntensity.
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
             img = image.pixel_data
+            if image.has_mask:
+                masked_image = img.copy()
+                masked_image[image.mask] = 0
+                img = img[image.mask]
+            else:
+                masked_image = img
             for object_name in self.object_names:
                 objects = workspace.object_set.get_objects(object_name.value)
                 labels   = objects.segmented
@@ -229,9 +235,15 @@ See also MeasureImageIntensity.
                 outlines = cpmo.outline(labels)
                 
                 if image.has_mask:
-                    img = img[image.mask]
+                    masked_labels = labels.copy()
+                    masked_labels[image.mask] = 0
                     labels = labels[image.mask]
+                    masked_outlines = outlines.copy()
+                    masked_outlines[image.mask] = 0
                     outlines = outlines[image.mask]
+                else:
+                    masked_labels = labels
+                    masked_outlines = outlines
                     
                 integrated_intensity = np.array(nd.sum(img,labels,
                                                        range(nobjects)))
@@ -256,13 +268,15 @@ See also MeasureImageIntensity.
                 # center of mass is the average X or Y for the binary image
                 # and the sum of X or Y * intensity / integrated intensity
                 if nobjects > 1:
-                    mesh_x, mesh_y = np.meshgrid(range(img.shape[1]),
-                                                 range(img.shape[0]))
-                    cm_x = np.array(nd.mean(mesh_x,labels,range(nobjects)))
-                    cm_y = np.array(nd.mean(mesh_y,labels,range(nobjects)))
+                    mesh_x, mesh_y = np.meshgrid(range(masked_image.shape[1]),
+                                                 range(masked_image.shape[0]))
+                    cm_x = np.array(nd.mean(mesh_x,masked_labels,range(nobjects)))
+                    cm_y = np.array(nd.mean(mesh_y,masked_labels,range(nobjects)))
                     
-                    i_x = np.array(nd.sum(mesh_x * img,labels,range(nobjects)))
-                    i_y = np.array(nd.sum(mesh_y * img,labels,range(nobjects)))
+                    i_x = np.array(nd.sum(mesh_x * masked_image,masked_labels,
+                                          range(nobjects)))
+                    i_y = np.array(nd.sum(mesh_y * masked_image,masked_labels,
+                                          range(nobjects)))
                     cmi_x = i_x / integrated_intensity
                     cmi_y = i_y / integrated_intensity
                     diff_x = cm_x - cmi_x
@@ -280,7 +294,8 @@ See also MeasureImageIntensity.
                 # the ordered array and you can read out quantiles pretty easily
                 
                 if nobjects > 1:
-                    areas = np.array(nd.sum(np.ones(labels.shape,int), labels,
+                    areas = np.array(nd.sum(np.ones(labels.shape,int),
+                                            labels,
                                             range(nobjects)))
                     indices = np.cumsum(areas)[:-1]
                     ordered_image = img + labels.astype(float)

@@ -42,6 +42,7 @@ DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
+PIXEL_SIZE = 'PixelSize'
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
@@ -105,14 +106,15 @@ def get_title_font_name():
 def set_title_font_name(title_font_name):
     get_config().Write(TITLE_FONT_NAME, title_font_name)
 
-__pixel_size = 1
-
 def get_pixel_size():
-    return __pixel_size
+    """The size of a pixel in microns"""
+    if not get_config().Exists(PIXEL_SIZE):
+        return 1.0
+    return float(get_config().Read(PIXEL_SIZE))
 
 def set_pixel_size(pixel_size):
-    __pixel_size = pixel_size
-    
+    get_config().Write(PIXEL_SIZE,str(pixel_size))
+
 __output_filename = 'DefaultOUT.mat'
 __output_filename_listeners = []
 def get_output_file_name():

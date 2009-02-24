@@ -56,14 +56,14 @@ class TestImage(unittest.TestCase):
     
     def test_06_01_cropping(self):
         x = cellprofiler.cpimage.Image()
-        x.image = numpy.ones((8,8))
+        x.image = numpy.ones((7,7))
         crop_mask = numpy.zeros((10,10),bool)
-        crop_mask[1:-1,1:-1] = True
+        crop_mask[2:-1,1:-2] = True
         x.crop_mask = crop_mask
         i,j = numpy.mgrid[0:10,0:10]
         test = i+j*10
         test_out = x.crop_image_similarly(test)
-        self.assertTrue(numpy.all(test_out == test[1:-1,1:-1]))
+        self.assertTrue(numpy.all(test_out == test[2:-1,1:-2]))
 
     
 class TestImageSetList(unittest.TestCase):

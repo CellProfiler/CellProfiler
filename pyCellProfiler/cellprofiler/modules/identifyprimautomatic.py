@@ -841,9 +841,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             #
             histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
                                                  (border_labels,
-                                                  numpy.zeros(border_labels.shape)))).todense()
+                                                  numpy.zeros(border_labels.shape))),
+                                                 shape=(numpy.max(labeled_image)+1,1)).todense()
             histogram = numpy.array(histogram).flatten()
-            histogram.resize((numpy.max(labeled_image)+1,))
             if any(histogram[1:] > 0):
                 histogram_image = histogram[labeled_image]
                 labeled_image[histogram_image > 0] = 0
@@ -861,9 +861,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 border_labels = border_labels.flatten()
                 histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
                                                      (border_labels,
-                                                      numpy.zeros(border_labels.shape)))).todense()
+                                                      numpy.zeros(border_labels.shape))),
+                                                      shape=(numpy.max(labeled_image)+1,1)).todense()
+                histogram = numpy.array(histogram).flatten()
                 if any(histogram[1:] > 0):
-                    histogram_image = histogram[labeled_image,0]
+                    histogram_image = histogram[labeled_image]
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     

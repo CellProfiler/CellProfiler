@@ -8,6 +8,8 @@ import cellprofiler.settings
 
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
+ABSOLUTE = "Absolute"
+FROM_EDGE = "From edge"
 
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
@@ -67,6 +69,27 @@ def max_control_name(v):
     v - the setting
     """
     return "%s_max"%(str(v.key()))
+
+def absrel_control_name(v):
+    """For a range, return the control that chooses between absolute and relative
+    
+    v - the setting
+    Absolute - far coordinate is an absolute value
+    From edge - far coordinate is a distance from the far edge
+    """
+    return "%s_absrel"%(str(v.key()))
+
+def x_control_name(v):
+    """For coordinates, return the control that sets the x value
+    v - the setting
+    """
+    return "%s_x"%(str(v.key()))
+
+def y_control_name(v):
+    """For coordinates, return the control that sets the y value
+    v - the setting
+    """
+    return "%s_y"%(str(v.key()))
 
 def encode_label(text):
     """Encode text escapes for the static control and button labels
@@ -183,6 +206,10 @@ class ModuleView:
                 elif isinstance(v, cellprofiler.settings.IntegerRange) or\
                      isinstance(v, cellprofiler.settings.FloatRange):
                     control = self.make_range_control(v, control)
+                elif isinstance(v, cellprofiler.settings.IntegerOrUnboundedRange):
+                    control = self.make_unbounded_range_control(v, control)
+                elif isinstance(v, cellprofiler.settings.Coordinates):
+                    control = self.make_coordinates_control(v,control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control,0,wx.EXPAND|wx.ALL,2)
@@ -290,7 +317,139 @@ class ModuleView:
                 min_ctrl.Value = str(v.max)
             
         return panel
+    
+    def make_unbounded_range_control(self, v, panel):
+        """Make a "control" composed of a panel and two combo-boxes representing a range
         
+        v - an IntegerOrUnboundedRange setting
+        panel - put it in this panel
+        
+        The combo box has the word to use to indicate that the range is unbounded
+        and the text portion is the value
+        """
+        if not panel:
+            panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel.SetSizer(sizer)
+            min_ctrl = wx.TextCtrl(panel,-1,value=str(v.min),
+                                   name=min_control_name(v))
+            best_width = min_ctrl.GetCharWidth()*5
+            min_ctrl.SetInitialSize(wx.Size(best_width,-1))
+            sizer.Add(min_ctrl,0,wx.EXPAND|wx.RIGHT,1)
+            max_ctrl = wx.TextCtrl(panel,-1,value=v.display_max,
+                                   name=max_control_name(v))
+            max_ctrl.SetInitialSize(wx.Size(best_width,-1))
+            sizer.Add(max_ctrl,0,wx.EXPAND)
+            if v.unbounded_max or v.max < 0:
+                value = FROM_EDGE
+            else:
+                value = ABSOLUTE 
+            absrel_ctrl = wx.ComboBox(panel,-1,value,
+                                      choices = [ABSOLUTE,FROM_EDGE],
+                                      name = absrel_control_name(v),
+                                      style = wx.CB_DROPDOWN|wx.CB_READONLY)
+            sizer.Add(absrel_ctrl,0,wx.EXPAND|wx.RIGHT,1)
+            def on_min_change(event, setting = v, control=min_ctrl):
+                old_value = str(setting)
+                if setting.unbounded_max:
+                    max_value = cellprofiler.settings.END
+                else:
+                    max_value = str(setting.max)
+                proposed_value="%s,%s"%(str(control.Value),max_value)
+                setting_edited_event = SettingEditedEvent(setting,
+                                                          proposed_value,event)
+                self.notify(setting_edited_event)
+                
+            self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
+            def on_max_change(event, setting = v, control=max_ctrl, 
+                              absrel_ctrl=absrel_ctrl):
+                old_value = str(setting)
+                if (absrel_ctrl.Value == ABSOLUTE):
+                    max_value = str(control.Value)
+                elif control.Value == '0':
+                    max_value = cellprofiler.settings.END
+                else:
+                    max_value = "-"+str(control.Value)
+                proposed_value="%s,%s"%(setting.display_min,max_value)
+                setting_edited_event = SettingEditedEvent(setting,
+                                                          proposed_value,event)
+                self.notify(setting_edited_event)
+            self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
+            def on_absrel_change(event, setting = v, control=absrel_ctrl):
+                if not v.unbounded_max:
+                    old_value = str(setting)
+                    
+                    if control.Value == ABSOLUTE:
+                        proposed_value="%s,%s"%(setting.display_min,
+                                                setting.max)
+                    else:
+                        proposed_value="%s,%d"%(setting.display_min,
+                                                -abs(setting.max))
+                else:
+                    proposed_value="%s,%s"%(setting.display_min,
+                                            cellprofiler.settings.END)
+                setting_edited_event = SettingEditedEvent(setting,
+                                                          proposed_value,event)
+                self.notify(setting_edited_event)
+            self.__module_panel.Bind(wx.EVT_COMBOBOX,
+                                     on_absrel_change,absrel_ctrl)
+        else:
+            min_ctrl = panel.FindWindowByName(min_control_name(v))
+            if min_ctrl.Value != v.display_min:
+                min_ctrl.Value = v.display_min
+            max_ctrl = panel.FindWindowByName(max_control_name(v))
+            if max_ctrl.Value != v.display_max:
+                min_ctrl.Value = v.display_max
+            absrel_ctrl = panel.FindWindowByName(absrel_control_name(v))
+            absrel_value = ABSOLUTE
+            if v.unbounded_max or v.max < 0:
+                absrel_value = FROM_EDGE
+            if absrel_ctrl.Value != absrel_value:
+                absrel_ctrl.Value = absrel_value
+            
+        return panel
+    
+    def make_coordinates_control(self, v, panel):
+        """Make a "control" composed of a panel and two edit boxes representing X and Y"""
+        if not panel:
+            panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel.SetSizer(sizer)
+            sizer.Add(wx.StaticText(panel,-1,"X:"),0,wx.EXPAND|wx.RIGHT,1)
+            x_ctrl = wx.TextCtrl(panel,-1,str(v.x),
+                                   name=x_control_name(v))
+            best_width = x_ctrl.GetCharWidth()*5
+            x_ctrl.SetInitialSize(wx.Size(best_width,-1))
+            sizer.Add(x_ctrl,0,wx.EXPAND|wx.RIGHT,1)
+            sizer.Add(wx.StaticText(panel,-1,"Y:"),0,wx.EXPAND|wx.RIGHT,1)
+            y_ctrl = wx.TextCtrl(panel,-1,str(v.y),
+                                 name=y_control_name(v))
+            y_ctrl.SetInitialSize(wx.Size(best_width,-1))
+            sizer.Add(y_ctrl,0,wx.EXPAND)
+            def on_x_change(event, setting = v, control=x_ctrl):
+                old_value = str(setting)
+                proposed_value="%s,%s"%(str(control.Value),str(setting.y))
+                setting_edited_event = SettingEditedEvent(setting,
+                                                          proposed_value,event)
+                self.notify(setting_edited_event)
+            self.__module_panel.Bind(wx.EVT_TEXT,on_x_change,x_ctrl)
+            def on_y_change(event, setting = v, control=y_ctrl):
+                old_value = str(setting)
+                proposed_value="%s,%s"%(str(setting.x),str(control.Value))
+                setting_edited_event = SettingEditedEvent(setting,
+                                                          proposed_value,event)
+                self.notify(setting_edited_event)
+            self.__module_panel.Bind(wx.EVT_TEXT,on_y_change,y_ctrl)
+        else:
+            x_ctrl = panel.FindWindowByName(x_control_name(v))
+            if x_ctrl.Value != str(v.x):
+                x_ctrl.Value = str(v.x)
+            y_ctrl = panel.FindWindowByName(y_control_name(v))
+            if y_ctrl.Value != str(v.y):
+                y_ctrl.Value = str(v.y)
+            
+        return panel
+    
     def add_listener(self,listener):
         self.__listeners.append(listener)
     
@@ -357,11 +516,15 @@ class ModuleView:
                     setting.test_valid(self.__pipeline)
                     if self.__static_texts[idx].GetForegroundColour() == ERROR_COLOR:
                         self.__controls[idx].SetToolTipString('')
+                        for child in self.__controls[idx].GetChildren():
+                            child.SetToolTipString('')
                         self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
                         self.__static_texts[idx].Refresh()
                 except cellprofiler.settings.ValidationError, instance:
                     if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
                         self.__controls[idx].SetToolTipString(instance.message)
+                        for child in self.__controls[idx].GetChildren():
+                            child.SetToolTipString(instance.message)
                         self.__static_texts[idx].SetForegroundColour(ERROR_COLOR)
                         self.__static_texts[idx].Refresh()
     

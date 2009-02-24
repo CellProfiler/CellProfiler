@@ -14,6 +14,8 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 
 IF_IMAGE       = "Image"
+IF_MASK        = "Mask"
+IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Figure"
 IF_MOVIE       = "Movie"
 FN_FROM_IMAGE  = "From image filename"
@@ -65,7 +67,18 @@ class SaveImages(cpm.CPModule):
   incoming movie files, or filenames made by numerical increments.
  
   Settings:
- 
+
+  Do you want to save an image, the image's crop mask, the image's cropping,
+  a movie or a figure window? 
+  The Crop module creates a mask of pixels of interest in the image (the
+  mask) and a cropping image (the cropping) which is the same size as the
+  original image. The cropping image has the mask embedded in it. The Crop 
+  module can trim its output image so that blank rows and columns in the 
+  cropping image are removed in the output image and mask which is why the 
+  cropping image can be different from the mask.
+  In addition, this module can be used to save a figure or save images as
+  frames of a movie.
+
   Update file names within CellProfiler:
   This setting stores file and path name data in handles.Pipeline 
   as well as a Per_image measurement.  This is useful when exporting to a
@@ -123,8 +136,8 @@ class SaveImages(cpm.CPModule):
     
     def create_settings(self):
         self.module_name = "SaveImages"
-        self.save_image_or_figure = cps.Choice("Do you want to save an image, a movie or a figure window?",
-                                               [IF_IMAGE,IF_MOVIE,IF_FIGURE],IF_IMAGE)
+        self.save_image_or_figure = cps.Choice("Do you want to save an image, the image's crop mask, the image's cropping, a movie or a figure window? (see help)",
+                                               [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE,IF_FIGURE],IF_IMAGE)
         self.image_name  = cps.ImageNameSubscriber("What did you call the images you want to save?","None")
         self.figure_name = cps.FigureSubscriber("What figure do you want to save?","None")
         self.file_name_method = cps.Choice("How do you want to construct file names?",
@@ -177,8 +190,8 @@ class SaveImages(cpm.CPModule):
     def visible_settings(self):
         """Return only the settings that should be shown"""
         result = [self.save_image_or_figure]
-        if self.save_image_or_figure in (IF_IMAGE,IF_FIGURE):
-            if self.save_image_or_figure == IF_IMAGE:
+        if self.save_image_or_figure in (IF_IMAGE,IF_MASK, IF_CROPPING, IF_FIGURE):
+            if self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING):
                 result.append(self.image_name)
             else:
                 result.append(self.figure_name)
@@ -224,7 +237,7 @@ class SaveImages(cpm.CPModule):
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
         """
-        if self.save_image_or_figure == IF_IMAGE:
+        if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
             self.run_image(workspace)
         else:
             raise NotImplementedError(("Saving a %s is not yet supported"%
@@ -244,30 +257,36 @@ class SaveImages(cpm.CPModule):
                 return
             
         image = workspace.image_set.get_image(self.image_name)
-        pixels = image.pixel_data
-        if self.rescale.value:
-            # Rescale the image intensity
-            if pixels.ndim == 3:
-                # get minima along each of the color axes (but not RGB)
-                for i in range(3):
-                    img_min = numpy.min(pixels[:,:,i])
-                    img_max = numpy.max(pixels[:,:,i])
-                    pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
-            else:
-                img_min = numpy.min(pixels)
-                img_max = numpy.max(pixels)
-                pixels=(pixels-img_min) / (img_max-img_min)
-        if pixels.ndim == 2 and self.colormap != CM_GRAY:
-            cm = matplotlib.cm.get_cmap(self.colormap)
-            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-            if self.bit_depth == '8':
-                pixels = mapper.to_rgba(pixels,bytes=True)
+        if self.save_image_or_figure == IF_IMAGE:
+            pixels = image.pixel_data
+            if self.rescale.value:
+                # Rescale the image intensity
+                if pixels.ndim == 3:
+                    # get minima along each of the color axes (but not RGB)
+                    for i in range(3):
+                        img_min = numpy.min(pixels[:,:,i])
+                        img_max = numpy.max(pixels[:,:,i])
+                        pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
+                else:
+                    img_min = numpy.min(pixels)
+                    img_max = numpy.max(pixels)
+                    pixels=(pixels-img_min) / (img_max-img_min)
+            if pixels.ndim == 2 and self.colormap != CM_GRAY:
+                cm = matplotlib.cm.get_cmap(self.colormap)
+                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                if self.bit_depth == '8':
+                    pixels = mapper.to_rgba(pixels,bytes=True)
+                else:
+                    raise NotImplementedError("12 and 16-bit images not yet supported")
+            elif self.bit_depth == '8':
+                pixels = (pixels*255).astype(numpy.uint8)
             else:
                 raise NotImplementedError("12 and 16-bit images not yet supported")
-        elif self.bit_depth == '8':
-            pixels = (pixels*255).astype(numpy.uint8)
-        else:
-            raise NotImplementedError("12 and 16-bit images not yet supported")
+        elif self.save_image_or_figure == IF_MASK:
+            pixels = image.mask.astype(int)*255
+        elif self.save_image_or_figure == IF_CROPPING:
+            pixels = image.crop_mask.astype(int)*255
+            
         filename = self.get_filename(workspace)
         if pixels.ndim == 3 and pixels.shape[2] == 4:
             mode = 'RGBA'

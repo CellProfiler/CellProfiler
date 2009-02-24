@@ -189,7 +189,7 @@ class IntegerRange(Setting):
         """The maximum value of the range"""
         return self.value[1]
     
-    max = property(get_max) 
+    max = property(get_max)
     
     def test_valid(self, pipeline):
         values = str(self).split(',')
@@ -205,6 +205,182 @@ class IntegerRange(Setting):
         if self.__maxval and self.__maxval < self.max:
             raise ValidationError("%d can't be greater than %d"%(self.max,self.__maxval),self)
         if self.min > self.max:
+            raise ValidationError("%d is greater than %d"%(self.min, self.max),self)
+
+class Coordinates(Setting):
+    """A setting representing X and Y coordinates on an image
+    """
+    def __init__(self,text,value=(0,0)):
+        """Initialize an integer range
+        text  - helpful text to be displayed to the user
+        value - initial default value, a two-tuple as x and y
+        """
+        super(Coordinates,self).__init__(text,"%d,%d"%value)
+    
+    def set_value(self,value):
+        """Convert integer tuples to string
+        """
+        try: 
+            if len(value) == 2:
+                super(Coordinates,self).set_value("%d,%d"%(value[0],value[1]))
+                return
+        except: 
+            pass
+        super(Coordinates,self).set_value(value)
+    
+    def get_value(self):
+        """Convert the underlying string to a two-tuple"""
+        values = str(self).split(',')
+        if values[0].isdigit():
+            x = int(values[0])
+        else:
+            x = None
+        if len(values) > 1  and values[1].isdigit():
+            y = int(values[1])
+        else:
+            y = None
+        return (x,y)
+    
+    def get_x(self):
+        """The x coordinate"""
+        return self.value[0]
+    
+    x = property(get_x)
+    
+    def get_y(self):
+        """The y coordinate"""
+        return self.value[1]
+    
+    y = property(get_y)
+    
+    def test_valid(self, pipeline):
+        values = str(self).split(',')
+        if len(values) < 2:
+            raise ValidationError("X and Y values must be separated by a comma",self)
+        if len(values) > 2:
+            raise ValidationError("Only two values allowed",self)
+        for value in values:
+            if not value.isdigit():
+                raise ValidationError("%s is not an integer"%(value),self)
+
+BEGIN = "begin"
+END = "end"
+
+class IntegerOrUnboundedRange(Setting):
+    """A setting that specifies an integer range where the minimum and maximum
+    can be set to unbounded by the user.
+    
+    The maximum value can be relative to the far side in which case a negative
+    number is returned for slicing.
+    """
+    def __init__(self,text,value=(0,END),minval=None, maxval=None):
+        """Initialize an integer range
+        text  - helpful text to be displayed to the user
+        value - initial default value, a two-tuple as minimum and maximum
+        minval - the minimum acceptable value of either
+        maxval - the maximum acceptable value of either
+        """
+        super(IntegerOrUnboundedRange,self).__init__(text,"%s,%s"%
+                                                     (str(value[0]),
+                                                      str(value[1])))
+        self.__minval = minval
+        self.__maxval = maxval
+        
+    
+    def set_value(self,value):
+        """Convert integer tuples to string
+        """
+        try:
+            if len(value) == 2:
+                values = value
+            else:
+                values = value.split(",")
+            min_value = str(values[0])
+            max_value = str(values[1])
+            super(IntegerOrUnboundedRange,self).set_value("%s,%s"%
+                                                          (min_value,
+                                                           max_value))
+            return
+        except: 
+            pass
+        super(IntegerOrUnboundedRange,self).set_value(value)
+    
+    def get_value(self):
+        """Convert the underlying string to a two-tuple"""
+        values = str(self).split(',')
+        if values[0].isdigit():
+            min = int(values[0])
+        else:
+            min = None
+        if len(values) > 1:  
+            if values[1].isdigit():
+                max = int(values[1])
+            elif values[1] == END:
+                max = END
+            else:
+                max = None
+        else:
+            max = None
+        return (min,max)
+    
+    def get_unbounded_min(self):
+        """True if there is no minimum"""
+        return self.get_value()[0]==0
+    
+    unbounded_min = property(get_unbounded_min)
+    
+    def get_min(self):
+        """The minimum value of the range"""
+        return self.value[0]
+    
+    min = property(get_min)
+    
+    def get_display_min(self):
+        """What to display for the minimum"""
+        return str(self.min)
+    display_min = property(get_display_min)
+    
+    def get_unbounded_max(self):
+        """True if there is no maximum"""
+        return self.get_value()[1] == END
+    
+    unbounded_max = property(get_unbounded_max)
+    
+    def get_max(self):
+        """The maximum value of the range"""
+        return self.value[1]
+    
+    max = property(get_max) 
+    
+    def get_display_max(self):
+        """What to display for the maximum"""
+        if self.unbounded_max:
+            return "0"
+        return str(abs(self.max))
+    display_max = property(get_display_max)
+    
+    def test_valid(self, pipeline):
+        values = str(self).split(',')
+        if len(values) < 2:
+            raise ValidationError("Minimum and maximum values must be separated by a comma",self)
+        if len(values) > 2:
+            raise ValidationError("Only two values allowed",self)
+        if not values[0].isdigit():
+            raise ValidationError("%s is not an integer"%(values[0]))
+        if not (values[1] == END or
+                values[1].isdigit() or
+                (values[1][0]=='-' and values[1][1:].isdigit())):
+                raise ValidationError("%s is not an integer or %s"%(values[1], END),self)
+        if ((not self.unbounded_min) and 
+            self.__minval and
+            self.__minval > self.min):
+            raise ValidationError("%d can't be less than %d"%(self.min,self.__minval),self)
+        if ((not self.unbounded_max) and 
+            self.__maxval and 
+            self.__maxval < self.max):
+            raise ValidationError("%d can't be greater than %d"%(self.max,self.__maxval),self)
+        if ((not self.unbounded_min) and (not self.unbounded_max) and 
+            self.min > self.max and self.max > 0):
             raise ValidationError("%d is greater than %d"%(self.min, self.max),self)
 
 class Float(Text):
@@ -329,6 +505,11 @@ class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
     def __init__(self,text,value=DO_NOT_USE):
         super(FileImageNameProvider,self).__init__(text,value)
+
+class CroppingNameProvider(ImageNameProvider):
+    """A setting that provides an image name where the image has a cropping mask"""
+    def __init__(self,text,value=DO_NOT_USE):
+        super(CroppingNameProvider,self).__init__(text,value)
     
 class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
@@ -391,7 +572,16 @@ class FileImageNameSubscriber(ImageNameSubscriber):
     def matches(self,setting):
         """Only match FileImageNameProvider variables"""
         return isinstance(setting, FileImageNameProvider)
+
+class CroppingNameSubscriber(ImageNameSubscriber):
+    """A setting that provides image names that have cropping masks"""
+    def __init__(self,text,value=DO_NOT_USE):
+        super(CroppingNameSubscriber,self).__init__(text,value)
     
+    def matches(self,setting):
+        """Only match CroppingNameProvider variables"""
+        return isinstance(setting, CroppingNameProvider)
+
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """

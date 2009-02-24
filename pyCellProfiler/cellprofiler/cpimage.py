@@ -167,29 +167,40 @@ class Image(object):
                               repr(self.pixel_data.shape)))
         return cropped_image
 
-def crop_image(image, crop_mask):
+def crop_image(image, crop_mask,crop_internal = False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
-    i_histogram = crop_mask.sum(axis=0)
+    i_histogram = crop_mask.sum(axis=1)
     i_cumsum    = numpy.cumsum(i_histogram != 0)
-    j_histogram = crop_mask.sum(axis=1)
+    j_histogram = crop_mask.sum(axis=0)
     j_cumsum    = numpy.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
         return numpy.zeros((0,0),dtype=image.dtype)
-    #
-    # The first non-blank row and column are where the cumsum is 1
-    # The last are at the first where the cumsum is it's max (meaning
-    # what came after was all zeros and added nothing)
-    #
-    i_first     = numpy.argwhere(i_cumsum==1)[0]
-    i_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
-    i_end       = i_last+1
-    j_first     = numpy.argwhere(i_cumsum==1)[0]
-    j_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
-    j_end       = j_last+1
-    if image.ndim == 3:
-        return image[i_first:i_end,j_first:j_end,:]
-    return image[i_first:i_end,j_first:j_end]
+    if crop_internal:
+        #
+        # Make up sequences of rows and columns to keep
+        #
+        i_keep = numpy.argwhere(i_histogram>0)
+        j_keep = numpy.argwhere(j_histogram>0)
+        #
+        # Then slice the array by I, then by J to get what's not blank
+        #
+        return image[i_keep.flatten(),:][:,j_keep.flatten()].copy()
+    else:
+        #
+        # The first non-blank row and column are where the cumsum is 1
+        # The last are at the first where the cumsum is it's max (meaning
+        # what came after was all zeros and added nothing)
+        #
+        i_first     = numpy.argwhere(i_cumsum==1)[0]
+        i_last      = numpy.argwhere(i_cumsum==i_cumsum.max())[0]
+        i_end       = i_last+1
+        j_first     = numpy.argwhere(j_cumsum==1)[0]
+        j_last      = numpy.argwhere(j_cumsum==j_cumsum.max())[0]
+        j_end       = j_last+1
+        if image.ndim == 3:
+            return image[i_first:i_end,j_first:j_end,:].copy()
+        return image[i_first:i_end,j_first:j_end].copy()
 
 class GrayscaleImage(object):
     """A wrapper around the image object if the image is 3-d but all channels

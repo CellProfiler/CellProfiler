@@ -385,6 +385,10 @@ class ImageSet(object):
     legacy_fields = property(get_legacy_fields)
     
     def add(self, name, image):
+        old_providers = [provider for provider in self.providers
+                         if provider.name == name]
+        for provider in old_providers:
+            self.providers.remove(provider)
         provider = VanillaImageProvider(name,image)
         self.providers.append(provider)
 
@@ -419,6 +423,11 @@ class ImageSetList(object):
             image_set = self.__image_sets[number]
         return image_set
     
+    def purge_image_set(self, number):
+        keys = {'number':number }
+        del self.__image_sets[number]
+        self.__image_sets_by_key.pop(repr(keys))
+        
     def count(self):
         return len(self.__image_sets)
 

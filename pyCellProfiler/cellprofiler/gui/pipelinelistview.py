@@ -56,11 +56,18 @@ class PipelineListView:
         elif isinstance(event,cellprofiler.pipeline.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
     
+    def select_one_module(self, module_num):
+        """Select only the given module number in the list box"""
+        for i in self.__list_box.GetSelections():
+            self.__list_box.SetSelection(i, False)
+        self.select_module(module_num)
+        
     def select_module(self,module_num,selected=True):
         """Select the given one-based module number in the list
         This is mostly for testing
         """
         self.__list_box.SetSelection(module_num-1,selected)
+        self.__on_item_selected(None)
         
     def get_selected_modules(self):
         return [self.__list_box.GetClientData(i)\

@@ -7,10 +7,14 @@ import numpy
 import wx
 import os
 import re
+import traceback
 import scipy.io.matlab.mio
 import cpframe
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.measurements as cpm
+import cellprofiler.workspace as cpw
+import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 import cellprofiler.matlab.cputils
@@ -28,11 +32,18 @@ class PipelineController:
         self.__setting_errors = {}
         self.__running_pipeline = None 
         self.__pipeline_measurements = None
+        self.__debug_image_set_list = None
+        self.__debug_measurements = None
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame,cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
+        
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_START,self.on_debug_start)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_STOP,self.on_debug_stop)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_IDLE(frame,self.on_idle)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view):
@@ -193,6 +204,60 @@ class PipelineController:
     
     def on_stop_running(self,event):
         self.__running_pipeline = False
+    
+    def on_debug_start(self, event):
+        self.__debug_image_set_list = self.__pipeline.prepare_run()
+        self.__debug_measurements = cpm.Measurements(can_overwrite=True)
+        self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
+        self.__frame.enable_debug_commands()
+        self.__pipeline_list_view.select_one_module(1)
+    
+    def on_debug_stop(self, event):
+        self.__frame.enable_debug_commands(False)
+        self.__debug_image_set_list = None
+        self.__debug_measurements = None
+        self.__debug_object_set = None
+    
+    def on_debug_step(self, event):
+        modules = self.__pipeline_list_view.get_selected_modules()
+        module = modules[0]
+        failure = 1
+        old_cursor = self.__frame.GetCursor()
+        self.__frame.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        try:
+            image_set_number = self.__debug_measurements.image_set_number
+            image_set = self.__debug_image_set_list.get_image_set(image_set_number)
+            workspace = cpw.Workspace(self.__pipeline,
+                                      module,
+                                      image_set,
+                                      self.__debug_object_set,
+                                      self.__debug_measurements,
+                                      self.__debug_image_set_list,
+                                      self.__frame)
+            module.run(workspace)
+            workspace.refresh()
+            if module.module_num < len(self.__pipeline.modules()):
+                self.__pipeline_list_view.select_one_module(module.module_num+1)
+            failure=0
+        except Exception,instance:
+            traceback.print_exc()
+            event = cellprofiler.pipeline.RunExceptionEvent(instance,module)
+            self.__pipeline.notify_listeners(event)
+            if event.cancel_run:
+                self.on_debug_stop(event)
+                failure=-1
+            failure=1
+        self.__frame.SetCursor(old_cursor)
+        if module.module_name != 'Restart' or failure==-1:
+            module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
+            self.__debug_measurements.add_measurement('Image'
+                                                      ,module_error_measurement,
+                                                      failure);
+    
+    def on_debug_next_image_set(self, event):
+        image_set_number = self.__debug_measurements.image_set_number+1
+        self.__debug_measurements.next_image_set()
+        self.__pipeline_list_view.select_one_module(1)
     
     def on_idle(self,event):
         if self.__running_pipeline:

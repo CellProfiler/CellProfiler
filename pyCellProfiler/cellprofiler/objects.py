@@ -177,12 +177,19 @@ class ObjectSet(object):
     The idea here is to be able to refer to the available objects by name or to be able to iterate over them
     """
     
-    def __init__(self):
+    def __init__(self, can_overwrite = False):
+        """Initialize the object set
+        
+        can_overwrite - True to allow overwriting of a new copy of objects
+                        over an old one of the same name (for debugging)
+        """
         self.__objects_by_name = {}
+        self.__can_overwrite = can_overwrite
     
     def add_objects(self, objects, name):
         assert isinstance(objects,Objects), "objects must be an instance of CellProfiler.Objects"
-        assert not self.__objects_by_name.has_key(name), "The object, %s, is already in the object set"%(name)
+        assert ((not self.__objects_by_name.has_key(name)) or
+                self.__can_overwrite), "The object, %s, is already in the object set"%(name)
         self.__objects_by_name[name] = objects
     
     def get_object_names(self):

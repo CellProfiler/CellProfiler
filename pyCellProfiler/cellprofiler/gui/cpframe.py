@@ -26,6 +26,11 @@ ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
 
+ID_DEBUG_START = wx.NewId()
+ID_DEBUG_STOP = wx.NewId()
+ID_DEBUG_STEP = wx.NewId()
+ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
+
 ID_HELP_MODULE=wx.NewId()
 
 class CPFrame(wx.Frame):
@@ -71,6 +76,15 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
         self.__menu_bar.Append(self.__menu_file,'&File')
+        self.__menu_debug = wx.Menu()
+        self.__menu_debug.Append(ID_DEBUG_START,'&Start debugger\tF5','Start the pipeline debugger')
+        self.__menu_debug.Append(ID_DEBUG_STOP,'S&top debugger\tctrl+F5','Stop the pipeline debugger')
+        self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p debugger\tF6','Execute the currently selected module')
+        self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image set\tF7','Advance to the next image set')
+        self.__menu_debug.Enable(ID_DEBUG_STOP,False)
+        self.__menu_debug.Enable(ID_DEBUG_STEP,False)
+        self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
+        self.__menu_bar.Append(self.__menu_debug,'&Debug')
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
         self.__menu_bar.Append(self.__menu_help,'&Help')
@@ -80,9 +94,20 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
-                                                 (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT)])
+                                                 (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
+                                                 (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_START),
+                                                 (wx.ACCEL_CTRL,wx.WXK_F5,ID_DEBUG_STOP),
+                                                 (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
+                                                 (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET)])
         self.SetAcceleratorTable(accelerator_table)
     
+    def enable_debug_commands(self, enable=True):
+        """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
+        self.__menu_debug.Enable(ID_DEBUG_START,not enable)
+        self.__menu_debug.Enable(ID_DEBUG_STOP,enable)
+        self.__menu_debug.Enable(ID_DEBUG_STEP,enable)
+        self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,enable)
+        
     def __on_widget_inspector(self, evt):
         wx.lib.inspection.InspectionTool().Show()
 

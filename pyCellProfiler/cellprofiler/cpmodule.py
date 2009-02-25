@@ -378,6 +378,9 @@ class CPModule(object):
         """
         return []
     
+    def needs_matlab(self):
+        return False
+    
 class MatlabModule(CPModule):
     """A matlab module, as from a .m file
     
@@ -570,3 +573,6 @@ class MatlabModule(CPModule):
             return result
         else:
             return []
+    
+    def needs_matlab(self):
+        return True

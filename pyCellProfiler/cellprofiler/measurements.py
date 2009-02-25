@@ -6,9 +6,15 @@ import numpy
 class Measurements(object):
     """Represents measurements made on images and objects
     """
-    def __init__(self):
+    def __init__(self, can_overwrite = False):
+        """Create a new measurements collection
+        
+        can_overwrite - if True, overwriting measurements during operation
+                        is allowed. We turn this on for debugging.
+        """
         self.__dictionary = {}
         self.__image_set_number = 0
+        self.__can_overwrite = can_overwrite
     
     def next_image_set(self):
         self.__image_set_number+=1
@@ -36,6 +42,8 @@ class Measurements(object):
                 self.__dictionary[object_name] = {}
             object_dict = self.__dictionary[object_name]
             if not object_dict.has_key(feature_name):
+                object_dict[feature_name] = [data]
+            elif self.__can_overwrite:
                 object_dict[feature_name] = [data]
             else:
                 assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)

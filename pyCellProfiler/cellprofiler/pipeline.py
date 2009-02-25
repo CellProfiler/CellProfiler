@@ -426,23 +426,13 @@ class Pipeline:
         
         Run the pipeline, returning the measurements made
         """
-        matlab = get_matlab_instance()
-        self.set_matlab_path()
-        display_size = (1024,768)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
-        measurements = cellprofiler.measurements.Measurements()
-        
-        for module in self.modules():
-            try:
-                module.prepare_run(self, image_set_list)
-            except Exception,instance:
-                traceback.print_exc()
-                event = RunExceptionEvent(instance,module)
-                self.notify_listeners(event)
-                if event.cancel_run:
-                    return
+        image_set_list = self.prepare_run()
+        if image_set_list == None:
+            return
             
+        measurements = cellprofiler.measurements.Measurements()
         first_set = True
+        matlab_initialized = False
         while first_set or \
             image_set_list.count()>measurements.image_set_number+1 or \
             (image_set_list.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and
@@ -456,6 +446,9 @@ class Pipeline:
             for module in self.modules():
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 failure = 1
+                if (not matlab_initialized) and module.needs_matlab():
+                    self.set_matlab_path()
+                    matlab_initialized = True
                 try:
                     workspace = cpw.Workspace(self,
                                               module,
@@ -477,6 +470,25 @@ class Pipeline:
                     measurements.add_measurement('Image',module_error_measurement,failure);
                 yield measurements
             first_set = False
+            image_set_list.purge_image_set(measurements.image_set_number)
+    
+    def prepare_run(self):
+        """Do "prepare_run" on each module to initialize the image_set_list
+        
+        returns the image_set_list or None if an exception was thrown
+        """
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        
+        for module in self.modules():
+            try:
+                module.prepare_run(self, image_set_list)
+            except Exception,instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance,module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return None
+        return image_set_list
 
     def set_matlab_path(self):
         matlab = get_matlab_instance()

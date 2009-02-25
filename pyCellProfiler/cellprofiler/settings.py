@@ -10,6 +10,7 @@ DO_NOT_USE = 'Do not use'
 AUTOMATIC = "Automatic"
 YES = 'Yes'
 NO = 'No'
+LEAVE_BLANK = 'Leave blank'
 
 class Setting(object):
     """A module setting which holds a single string value
@@ -520,10 +521,15 @@ class ObjectNameProvider(NameProvider):
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
     """
-    def __init__(self,text,group,value='None'):
+    def __init__(self,text,group,value=None,
+                 can_be_blank=False,blank_text=LEAVE_BLANK):
+        if value==None:
+            value = (can_be_blank and blank_text) or "None"
         super(NameSubscriber,self).__init__(text,value)
     
         self.__group = group
+        self.__can_be_blank = can_be_blank
+        self.__blank_text = blank_text
     
     def get_group(self):
         """This setting provides a name to this group
@@ -536,6 +542,8 @@ class NameSubscriber(Setting):
     
     def get_choices(self,pipeline):
         choices = []
+        if self.__can_be_blank:
+            choices.append(self.__blank_text)
         for module in pipeline.modules():
             module_choices = []
             for setting in module.visible_settings():
@@ -547,6 +555,11 @@ class NameSubscriber(Setting):
                     module_choices.append(setting.value)
             choices += module_choices
         assert False, "Setting not among visible settings in pipeline"
+    
+    def get_is_blank(self):
+        """True if the selected choice is the blank one"""
+        return self.__can_be_blank and self.value == self.__blank_text
+    is_blank = property(get_is_blank)
     
     def matches(self, setting):
         """Return true if this subscriber matches the category of the provider"""
@@ -561,13 +574,17 @@ class NameSubscriber(Setting):
 class ImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=DO_NOT_USE):
-        super(ImageNameSubscriber,self).__init__(text,'imagegroup',value)
+    def __init__(self,text,value=None,
+                 can_be_blank = False,blank_text=LEAVE_BLANK):
+        super(ImageNameSubscriber,self).__init__(text,'imagegroup',value,
+                                                 can_be_blank,blank_text)
 
 class FileImageNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names loaded from files"""
-    def __init__(self,text,value=DO_NOT_USE):
-        super(FileImageNameSubscriber,self).__init__(text,value)
+    def __init__(self,text,value=DO_NOT_USE,can_be_blank = False,
+                 blank_text = LEAVE_BLANK):
+        super(FileImageNameSubscriber,self).__init__(text,value,can_be_blank,
+                                                     blank_text)
     
     def matches(self,setting):
         """Only match FileImageNameProvider variables"""
@@ -575,8 +592,10 @@ class FileImageNameSubscriber(ImageNameSubscriber):
 
 class CroppingNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names that have cropping masks"""
-    def __init__(self,text,value=DO_NOT_USE):
-        super(CroppingNameSubscriber,self).__init__(text,value)
+    def __init__(self,text,value=DO_NOT_USE,can_be_blank = False,
+                 blank_text = LEAVE_BLANK):
+        super(CroppingNameSubscriber,self).__init__(text,value,can_be_blank,
+                                                    blank_text)
     
     def matches(self,setting):
         """Only match CroppingNameProvider variables"""
@@ -585,8 +604,10 @@ class CroppingNameSubscriber(ImageNameSubscriber):
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=DO_NOT_USE):
-        super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value)
+    def __init__(self,text,value=DO_NOT_USE,can_be_blank=False,
+                 blank_text = LEAVE_BLANK):
+        super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value,
+                                                  can_be_blank, blank_text)
 
 class FigureSubscriber(Setting):
     """A setting that provides a figure indicator

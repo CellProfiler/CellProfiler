@@ -10,6 +10,7 @@ from crop import Crop
 from saveimages import SaveImages
 from measureobjectintensity import MeasureObjectIntensity
 from exporttodatabase import ExportToDatabase
+from graytocolor import GrayToColor
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
 
@@ -18,6 +19,7 @@ def get_module_classes():
             cpm_ctg.ColorToGray,
             Crop,
             ExportToDatabase,
+            GrayToColor,
             cpm_ipa.IdentifyPrimAutomatic,
             IdentifySecondary,
             IdentifyTertiarySubregion,
@@ -34,6 +36,7 @@ def get_module_substitutions():
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
             "ColorToGray":cpm_ctg.ColorToGray,
+            "GrayToColor":GrayToColor,
             "ApplyThreshold": ApplyThreshold,
             "SaveImages": SaveImages,
             "MeasureObjectIntensity": MeasureObjectIntensity,

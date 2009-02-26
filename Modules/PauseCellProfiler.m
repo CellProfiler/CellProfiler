@@ -45,20 +45,13 @@ CPclosefigure(handles,CurrentModule)
 
 drawnow
 
-%% ButtonName = questdlg(Question, Title, Btn1, Btn2,..., DEFAULT);
-ButtonName = CPquestdlg('Continue processing?','PauseCP','Continue','Cancel','Continue');
-%% TODO - add Modify
-% ButtonName = CPquestdlg('Continue or Modify previous
-% module?','PauseCP','Continue','Modify','Cancel','Continue');
+ButtonName = CPquestdlg({'Continue processing?';'';'Note: Press Ctrl+C to interact with CellProfiler windows while paused.'},...
+    'PauseCP','Continue','Cancel','Continue');
 
 switch ButtonName
     case 'Continue'
         return
-        %% TODO - add Modify
-%     case 'Modify'
-%         handles.Current.CurrentModuleNumber = num2str(str2num(handles.Current.CurrentModuleNumber) - 1);
-%         set(cat(2,handles.VariableBox{:}),'enable','on','foregroundcolor','black'); %% re-enable variable boxes
-        
+
     case 'Cancel'
 
         %%% This should cause a cancel so no further processing is done

@@ -30,9 +30,13 @@ function handles = IdentifyPrimLoG(handles)
 % looking for objects.  Internally, each potential object is assigned
 % a score that depends on both how bright the object is and how
 % blob-like its shape is.  Only objects that score above the threshold
-% are returned.  The threshold must be determined experimentally.  If
-% it is too high, objects will be lost; if it is too low, spurious
-% objects will be found.
+% are returned.  The threshold must be determined experimentally, but 
+% the 'Automatic' setting will make a guess using Otsu's thresholding 
+% method on the transformed image.  If you want the threshold to be 
+% consistent across images, then use the threshold found by the 'Automatic'
+% setting as a starting point for manual threshold input adjustment.  
+% If the thresold is too high, objects will be lost; 
+% if it is too low, spurious objects will be found.
 %
 % The module works by convolving the image with the Laplacian of
 % Gaussian (LoG) kernel.  This is equivalent to convolving with the
@@ -68,8 +72,8 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 10
 Radius = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Score threshold for match
-%defaultVAR04 = 1e-3
+%textVAR04 = Score threshold for match.  Enter a number, or leave as 'Automatic'.
+%defaultVAR04 = Automatic
 Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
@@ -81,7 +85,6 @@ drawnow
 
 OrigImage = double(CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale'));
 Radius = str2double(Radius);
-Threshold = str2double(Threshold);
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%
@@ -106,6 +109,15 @@ if isfield(handles.Pipeline,fieldname)
 end
 
 ac = lapofgau(1 - im, Radius);
+
+if strcmpi('Automatic',Threshold)
+    [handles,Threshold] = CPthreshold(handles,'Otsu Global',0.5,'0','1',1,ac,'LoG',ModuleName);
+% elseif strcmpi('Set interactively',Threshold)
+%     Threshold = CPthresh_tool(ac); %% Need to scale better?
+else
+    Threshold = str2double(Threshold);
+end
+
 ac(ac < Threshold) = Threshold;
 ac = ac - Threshold;
 indices = find(imregionalmax(ac));
@@ -140,6 +152,13 @@ if any(findobj == ThisModuleFigureNumber)
   uicontrol(h_fig,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
       'UserData',{OrigImage visRGB},'backgroundcolor',[.7 .7 .9],...
       'Callback',@CP_OrigNewImage_Callback);
+  
+  text(0.1,-0.08,...
+      ['Threshold: ' num2str(Threshold)],...
+      'Color','black',...
+      'fontsize',handles.Preferences.FontSize,...
+      'Units','Normalized',...
+      'Parent',hAx);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%

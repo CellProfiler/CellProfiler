@@ -2,8 +2,8 @@ function scales=CPgetpriorscales(handles, CurrentModuleNum)
 
 %
 % This function scans back over the modules prior to the current module
-% to get a list of texture, neighbor or radial distribution scales,
-% returning them in an array.
+% to get a list of texture, neighbor radial distribution or image quality
+% scales, returning them in an array.
 %
 %
 % CellProfiler is distributed under the GNU General Public License.

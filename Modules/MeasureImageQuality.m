@@ -393,27 +393,27 @@ for ImageNumber = 1:length(NameImageToCheck);
         LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
 
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber},num2str(WindowSize)), ...
             FocusScore{ImageNumber});
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber},num2str(WindowSize)), ...
             LocalFocusScore{ImageNumber});
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber}), ...
+            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber},num2str(WindowSize)), ...
             WindowSize);
     else
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber}),[]);
+            CPjoinstrings('ImageQuality','FocusScore',NameImageToCheck{ImageNumber},num2str(WindowSize)),[]);
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber}),[]);
+            CPjoinstrings('ImageQuality','LocalFocusScore',NameImageToCheck{ImageNumber},num2str(WindowSize)),[]);
         handles = CPaddmeasurements(handles, 'Image', ...
-            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber}),[]);
+            CPjoinstrings('ImageQuality','WindowSize',NameImageToCheck{ImageNumber},num2str(WindowSize)),[]);
     end
     handles = CPaddmeasurements(handles, 'Image', ...
-        CPjoinstrings('ImageQuality','PercentSaturated',NameImageToCheck{ImageNumber}), ...
+        CPjoinstrings('ImageQuality','PercentSaturated',NameImageToCheck{ImageNumber},num2str(WindowSize)), ...
         PercentSaturation{ImageNumber});
     handles = CPaddmeasurements(handles, 'Image', ...
-        CPjoinstrings('ImageQuality','PercentMaximal',NameImageToCheck{ImageNumber}), ...
+        CPjoinstrings('ImageQuality','PercentMaximal',NameImageToCheck{ImageNumber},num2str(WindowSize)), ...
         PercentMaximal{ImageNumber});
 end
 
@@ -429,7 +429,8 @@ ThresholdCorrection=str2num('1');
 for ImageNumber = 1:length(tmp2);
     OrigImageThresh = double(CPretrieveimage(handles,NameImageToThresh{ImageNumber},ModuleName,'MustBeGray','CheckScale'));
     [handles,OrigThreshold,WeightedVariance, SumOfEntropies] = CPthreshold(handles,ThresholdMethod{ImageNumber},pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImageThresh,NameImageToThresh{ImageNumber},ModuleName, '');
-    handles = CPaddmeasurements(handles,'Image',CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}), OrigThreshold);
+    feature_name = CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize));
+    handles = CPaddmeasurements(handles,'Image',feature_name,OrigThreshold);
 end
 
 SetBeingAnalyzed=handles.Current.SetBeingAnalyzed;
@@ -439,14 +440,14 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 %%% for the entire image set.
 if SetBeingAnalyzed == TotalNumberOfImageSets
         for ImageNumber = 1:length(tmp2),
-            Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber}));
+            Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize)));
         end
         MeanThreshold = mean(cellfun(@mean,Threshold));
         MedianThreshold = median(cellfun(@median,Threshold));
         StdevThreshold = std(cellfun(@mean,Threshold));
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MeanThresh_AllImages'), MeanThreshold);
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MedianThresh_AllImages'), MedianThreshold);
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'StdThresh_AllImages'), StdevThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MeanThresh_AllImages',num2str(WindowSize)), MeanThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MedianThresh_AllImages',num2str(WindowSize)), MedianThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'StdThresh_AllImages',num2str(WindowSize)), StdevThreshold);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

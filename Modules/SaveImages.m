@@ -440,9 +440,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             FileSavingParameters = [FileSavingParameters, ',''mode'', ''lossless'''];
         end        
     elseif strcmp(BitDepth, '16') && (strcmp(FileFormat,'tif') || strcmp(FileFormat,'tiff'))
-        %%% http://www.mathworks.com/support/solutions/data/1-19QIN.html?solution=1-19QIN
-        Image2 = uint16(255 * Image);
-        Image = bitshift(Image2, 8);        
+        Image = im2uint16(Image);        
     end
      
     if ~strcmp(OptionalParameters,'Do not use')

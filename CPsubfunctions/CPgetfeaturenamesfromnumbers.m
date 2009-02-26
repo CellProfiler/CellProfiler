@@ -14,7 +14,7 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 % where we are finding FeatureName from
 %  handles.Measurements.ObjectName.Category_FeatureName (for Non-image/non-texture) OR
 %  handles.Measurements.ObjectName.Category_FeatureName_Image (for Image) OR
-%  handles.Measurements.ObjectName.Category_FeatureName_Image_SizeScale (for Texture)
+%  handles.Measurements.ObjectName.Category_FeatureName_Image_SizeScale (for Texture, RadialDistribution and ImageQuality)
 
 % $Revision$
 
@@ -43,14 +43,14 @@ if strcmp(Category,'AreaShape') || ...
     Image = '';
 %% These should have no SizeScale specified, only Image
 elseif strcmp(Category,'Intensity') || ...
-        strcmp(Category,'ImageQuality') || ...
         strcmp(Category,'Granularity') || ...
         strcmp(Category,'MeasureImageQuality') || ...
         strcmp(Category,'AreaOccupied')
     SizeScale = '';
 %% These should have neither SizeScale nor Image specified
 elseif strcmp(Category,'Texture') ...
-        || strcmp(Category,'RadialDistribution')
+        || strcmp(Category,'RadialDistribution') ...
+        || strcmp(Category,'ImageQuality')
 %% These should have no Image specified, only SizeScale
 elseif strcmp(Category,'Neighbors')
     Image = '';

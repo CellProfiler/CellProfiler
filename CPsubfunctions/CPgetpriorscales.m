@@ -32,6 +32,8 @@ for i = 1:(CurrentModuleNum-1)
         end
     elseif strcmp(ModuleName,'MeasureObjectNeighbors')
         scales=add_scale(scales,str2double(handles.Settings.VariableValues(i,2)));
+    elseif strcmp(ModuleName,'MeasureImageQuality')
+        scales=add_scale(scales,str2double(handles.Settings.VariableValues(i,2)));
     end
 end
 scales = sort(scales);

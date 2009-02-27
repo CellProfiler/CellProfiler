@@ -47,7 +47,7 @@ end
 % Make sure either named or unnamed tokens are being used
 isTokenPresent = true;
 for n = 1:numel(TextToFind)
-    isTokenPresent = isTokenPresent & ~(isempty(regexp(TextToFind{n},'\(\[(?<token>.+?)\]','tokens','once')) & ...
+    isTokenPresent = isTokenPresent & ~(isempty(regexp(TextToFind{n},'\((?<token>.+?)','tokens','once')) & ...
                                         isempty(regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once')));
 end
 if ~isTokenPresent   % No tokens are present

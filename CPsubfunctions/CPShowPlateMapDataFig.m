@@ -409,9 +409,18 @@ WellRowFieldname      = handles.Metadata.WellRowMeasurement;
 WellColumnFieldname   = handles.Metadata.WellColumnMeasurement;
 WellNames = unique(arrayfun(@(x) WellName(handles,x),ImageIndices,'UniformOutput',0));
 AggregateOperation  = GetSelectedPopupValue(handles.AggregateOperation);
+if all(cellfun(@iscell,handles.handles.Measurements.Image.(PlateNameFieldname))),
+    handles.handles.Measurements.Image.(PlateNameFieldname) = cat(2,handles.handles.Measurements.Image.(PlateNameFieldname){:});
+end
+if all(cellfun(@iscell,handles.handles.Measurements.Image.(WellRowFieldname))),
+    handles.handles.Measurements.Image.(WellRowFieldname) = cat(2,handles.handles.Measurements.Image.(WellRowFieldname){:});
+end
+if all(cellfun(@iscell,handles.handles.Measurements.Image.(WellColumnFieldname))),
+    handles.handles.Measurements.Image.(WellColumnFieldname) = cat(2,handles.handles.Measurements.Image.(WellColumnFieldname){:});
+end
 for WellNameIndex=1:length(WellNames)
-    WellName = WellNames{WellNameIndex};
-    [WellRow,WellColumn] = strtok(WellName,'_');
+    IndivWellName = WellNames{WellNameIndex};
+    [WellRow,WellColumn] = strtok(IndivWellName,'_');
     WellColumn=WellColumn(2:end);
     ImageIndices = find(...
         strcmp(handles.handles.Measurements.Image.(PlateNameFieldname),PlateName) &...
@@ -457,8 +466,8 @@ set(hImage,'ButtonDownFcn',@(hObject,event_data) ButtonDownFcn(hObject,event_dat
 function name=WellName(handles,ImageIndex)
 WellRowFieldname    = handles.Metadata.WellRowMeasurement;
 WellColumnFieldname = handles.Metadata.WellColumnMeasurement;
-WellRow             = handles.handles.Measurements.Image.(WellRowFieldname){ImageIndex};
-WellColumn          = handles.handles.Measurements.Image.(WellColumnFieldname){ImageIndex};
+WellRow             = char(handles.handles.Measurements.Image.(WellRowFieldname){ImageIndex});
+WellColumn          = char(handles.handles.Measurements.Image.(WellColumnFieldname){ImageIndex});
 name = [WellRow,'_',WellColumn];
 
 % --- Return the size (columns x rows) of a plate.

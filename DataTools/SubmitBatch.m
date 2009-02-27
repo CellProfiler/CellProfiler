@@ -211,7 +211,7 @@ uipushbutton(SBh,'Submit',[posx+125 10 75 uiheight],'[foo,fig] = gcbo;set(fig,''
 uiwait()
 if get(SBh,'Userdata') == 1,     % The user pressed the Submit button
     CPmsgbox(['PLEASE WAIT while the webserver submits the batches for processing.  ' ...
-        'A window should appear with your batch number, however this may take a minute or so...'])
+        'A window should appear with your batch number, however this may take a minute or so...']);
     unix_dir = get(DataDirCtl,'String');
     local_path = get(LocalPathCtl, 'String');
     unix_path = get(UnixPathCtl, 'String');

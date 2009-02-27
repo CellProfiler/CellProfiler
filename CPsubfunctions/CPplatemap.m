@@ -55,7 +55,7 @@ end
 % The colormap here is pretty bogus in that this is a true color image
 % Hopefully, when you show the colorbar, it should show the colormap
 % and annotate it with the minimum and maximum values.
-cmap = zeros(128,3)
+cmap = zeros(128,3);
 for i=1:64
     cmap(i+64,1)=i/64;
     cmap(i,2)=(64-i)/64;

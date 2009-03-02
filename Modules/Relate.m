@@ -184,7 +184,7 @@ if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
         MeasurementFeatures=fieldnames(handles.Measurements.(SubObjectName));
         for i=1:length(MeasurementFeatures)
             Fieldname = MeasurementFieldnames{i};
-            if strcmp(Fieldname, 'SubObjectFlag') || strncmp(Fieldname, 'Parent_', length('Parent_'))
+            if strcmp(Fieldname, 'SubObjectFlag') || strncmp(Fieldname, 'Parent_', length('Parent_')) || strncmp(Fieldname, 'Mean', length('Mean'))
                 continue;
             end
             Measurements=handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};

@@ -7,19 +7,28 @@ import os
 import re
 
 connection = MySQLdb.Connect(host="imgdb01", db="batchprofiler", user="cpadmin", passwd="cPus3r")
+
 def SetEnvironment(my_batch):
+    orig_PATH = os.environ['PATH']
+    orig_LD_LIBRARY_PATH = os.environ['LD_LIBRARY_PATH']
     mcr_root = '/imaging/analysis/CPCluster/MCR/v78'
     jre_file = open('/imaging/analysis/CPCluster/MCR/v78/sys/java/jre/glnxa64/jre.cfg')
     jre_version = jre_file.readline().replace('\n','').replace('\r','')
     jre_file.close()
     os.environ['LD_LIBRARY_PATH']=':'.join([
-        os.environ['LD_LIBRARY_PATH'],
+        orig_LD_LIBRARY_PATH,
         '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/native_threads'%(locals()),
         '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/server'%(locals()),
         '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/client'%(locals()),
         '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64'%(locals())])
     os.environ['XAPPLRESDIR']='%(mcr_root)s/X11/app-defaults'%(locals())
     os.environ['MCR_CACHE_ROOT']='%(cpcluster)s'%(my_batch)
+    os.environ['PATH']=orig_PATH.replace('/home/radon01/ljosa/software/x86_64/bin:','').replace('/home/radon01/ljosa/bin:','')
+    return orig_PATH, orig_LD_LIBRARY_PATH
+
+def RestoreEnvironment(vals):
+    os.environ['PATH'] = vals[0]
+    os.environ['LD_LIBRARY_PATH'] = vals[1]
 
 def CreateBatchRun(my_batch):
     """Create a batch ID in the database
@@ -164,13 +173,11 @@ def RunOne(my_batch,run):
          "%(write_data_yes)s"%(x),
          "%(timeout)d"%(x)]
     cmd = ' '.join(cmd)
-    SetEnvironment(my_batch)
-    old_path=os.environ['PATH']
-    os.environ['PATH']=os.environ['PATH'].replace('/home/radon01/ljosa/software/x86_64/bin:','').replace('/home/radon01/ljosa/bin:','')
+    old_environ = SetEnvironment(my_batch)
     p=os.popen(". /broad/lsf/conf/profile.lsf;"+cmd,'r')
     output=p.read()
     exit_code=p.close()
-    os.environ['PATH']=old_path
+    RestoreEnvironment(old_environ)
     job=None
     if output:
         match = re.search(r'<([0-9]+)>',output)

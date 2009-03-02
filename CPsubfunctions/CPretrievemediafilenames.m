@@ -72,6 +72,12 @@ end
 
 FileNames = cell(0);
 Count = 1;
+
+%% Add feedback
+if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')
+    hWait = CPwaitbar(0,'Loading files from multiple subdirectories, once for each channel...');
+end
+
 for i=1:length(Directories)
     % Lists all the contents of that path into a structure which includes the
     % name of each object as well as whether the object is a file or
@@ -160,4 +166,10 @@ for i=1:length(Directories)
             end
         end
     end
+    if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')
+        CPwaitbar(i./length(Directories),hWait)
+    end
+end
+if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')
+    close(hWait)
 end

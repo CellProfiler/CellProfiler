@@ -364,13 +364,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-CurrentColoredLabelImage = label2rgb(CurrentIndexedLabelImage, LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
-    
+LookUpTable = [0 ObjToColorMapping];
+lengthCmap = size(LabelMatrixColormap,1);
+CurrentColoredLabelImage = ind2rgb(gray2ind(LookUpTable(CurrentIndexedLabelImage+1)/lengthCmap,lengthCmap),LabelMatrixColormap);
+
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber) || (~any(findobj == ThisModuleFigureNumber) && ~strcmp(DataImage,'Do not use') )
     % Create colored images
     % (1) Colored label image of current objects
-    CurrentColoredPerimImage = label2rgb(CPlabelperim(CurrentIndexedLabelImage),LabelMatrixColormap(ObjToColorMapping,:,:), 'k', 'noshuffle');
+    CurrentColoredPerimImage = ind2rgb(gray2ind(LookUpTable(CPlabelperim(CurrentIndexedLabelImage)+1)/lengthCmap,lengthCmap),LabelMatrixColormap);
     % (2) Colored perimeter image of current and previous objects
     ColoredPerimeterImage = cast(repmat(255*double(CPlabelperim(PreviousIndexedLabelImage) > 0),[1 1 3]),class(CurrentColoredPerimImage));
     idx = find(CurrentColoredPerimImage(:));
@@ -586,39 +588,23 @@ ColoredImage = LookupTable(LabelMatrix+1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [LabelMatrixColormap, ObjToColorMapping] = UpdateTrackObjectsDisplayImage(LabelMatrix, CurrentLabels, PreviousLabels, LabelMatrixColormap, ObjToColorMapping, DefaultLabelColorMap)
 
+NumberOfColors = 256;
+
 if isempty(LabelMatrixColormap),
-    % If just starting, create a colormap based on the number of objects or
-    %  256, whichever is bigger
+    % If just starting, create a 256-element colormap
     colormap_fxnhdl = str2func(DefaultLabelColorMap);
     NumOfRegions = double(max(LabelMatrix(:)));
-    cmap = colormap_fxnhdl(max(NumOfRegions,256));
+    cmap = [0 0 0; colormap_fxnhdl(NumberOfColors-1)];
     rand('twister', rand('twister'));
-    index = ceil(rand(1,NumOfRegions)*256);
+    index = rand(1,NumOfRegions)*NumberOfColors;
     
     % Save the colormap and indices into the handles
     LabelMatrixColormap = cmap;
     ObjToColorMapping = index;
 else
-    % Otherwise, do a check to see if we hit the max number of colors
-    % available for each obj
-    if length(CurrentLabels) > length(LabelMatrixColormap)
-        % See if there are open slots in the colormap by checking the
-        % indices
-        NewLabels = setdiff(CurrentLabels,PreviousLabels);
-        GapsInIndices = setdiff(PreviousLabels,CurrentLabels);
-        if length(GapsInIndices) > length(NewLabels)
-            % If so, re-assign them to the new labels
-            ObjToColorMapping(NewLabels) = GapsInIndices(1:length(NewLabels));
-        else
-            % If not, create new random indices
-            ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*256);
-        end
-    else
-        % If have enough colors, see if new labels have appeared and
-        % assign them a random color
-        NewLabels = setdiff(CurrentLabels,PreviousLabels);
-        ObjToColorMapping(NewLabels) = round(rand(1,length(NewLabels))*256);
-    end 
+    % See if new labels have appeared and assign them a random color
+    NewLabels = setdiff(CurrentLabels,PreviousLabels);
+    ObjToColorMapping(NewLabels) = rand(1,length(NewLabels))*NumberOfColors;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

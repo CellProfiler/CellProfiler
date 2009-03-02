@@ -269,3 +269,83 @@ class TestRelabel(unittest.TestCase):
         self.assertTrue(numpy.all((output==2)[input==3]))
         self.assertTrue(numpy.all((input==output)[input!=3]))
         self.assertEqual(count,2)
+
+class TestConvexHull(unittest.TestCase):
+    def test_00_00_zeros(self):
+        """Make sure convex_hull can handle an empty array"""
+        result,counts = morph.convex_hull(numpy.zeros((10,10),int), [])
+        self.assertEqual(numpy.product(result.shape),0)
+        self.assertEqual(numpy.product(counts.shape),0)
+    
+    def test_01_01_zeros(self):
+        """Make sure convex_hull can work if a label has no points"""
+        result,counts = morph.convex_hull(numpy.zeros((10,10),int), [1])
+        self.assertEqual(numpy.product(result.shape),0)
+        self.assertEqual(numpy.product(counts.shape),1)
+        self.assertEqual(counts[0],0)
+    
+    def test_01_02_point(self):
+        """Make sure convex_hull can handle the degenerate case of one point"""
+        labels = numpy.zeros((10,10),int)
+        labels[4,5] = 1
+        result,counts = morph.convex_hull(labels,[1])
+        self.assertEqual(numpy.product(result.shape),2)
+        self.assertEqual(result[0,0,0],4)
+        self.assertEqual(result[0,0,1],5)
+        self.assertEqual(counts[0],1)
+    
+    def test_01_03_line(self):
+        """Make sure convex_hull can handle the degenerate case of a line"""
+        labels = numpy.zeros((10,10),int)
+        labels[2:8,5] = 1
+        result,counts = morph.convex_hull(labels,[1])
+        self.assertEqual(counts[0],2)
+        self.assertEqual(numpy.product(result.shape),4)
+        self.assertTrue(result[0,0,0] in (2,7))
+        self.assertTrue(result[0,1,0] in (2,7))
+        self.assertTrue(numpy.all(result[0,:,1]==5))
+    
+    def test_01_04_square(self):
+        """Make sure convex_hull can handle a square which is not degenerate"""
+        labels = numpy.zeros((10,10),int)
+        labels[2:7,3:8] = 1
+        result,counts = morph.convex_hull(labels,[1])
+        self.assertEqual(counts[0],4)
+        order = numpy.lexsort((result[0,:,1], result[0,:,0]))
+        result = result[:,order,:]
+        self.assertTrue((result[0,0,0],result[0,0,1]) == (2,3))
+        self.assertTrue((result[0,1,0],result[0,1,1]) == (2,7))
+        self.assertTrue((result[0,2,0],result[0,2,1]) == (6,3))
+        self.assertTrue((result[0,3,0],result[0,3,1]) == (6,7))
+    
+    def test_02_01_out_of_order(self):
+        """Make sure convex_hull can handle out of order indices"""
+        labels = numpy.zeros((10,10),int)
+        labels[2,3] = 1
+        labels[5,6] = 2
+        result,counts = morph.convex_hull(labels,[2,1])
+        self.assertEqual(counts.shape[0],2)
+        self.assertTrue(numpy.all(counts==1))
+        self.assertEqual(result[0,0,0],5)
+        self.assertEqual(result[0,0,1],6)
+        self.assertEqual(result[1,0,0],2)
+        self.assertEqual(result[1,0,1],3)
+    
+    def test_03_01_concave(self):
+        """Make sure convex_hull handles a square with a concavity"""
+        labels = numpy.zeros((10,10),int)
+        labels[2:8,3:9] = 1
+        labels[3:7,3] = 0
+        labels[2:6,4] = 0
+        labels[4:5,5] = 0
+        result,counts = morph.convex_hull(labels,[1])
+        self.assertEqual(counts[0],4)
+        order = numpy.lexsort((result[0,:,1],result[0,:,0]))
+        result = result[:,order,:]
+        self.assertTrue((result[0,0,0],result[0,0,1]) == (2,3))
+        self.assertTrue((result[0,1,0],result[0,1,1]) == (2,8))
+        self.assertTrue((result[0,2,0],result[0,2,1]) == (7,3))
+        self.assertTrue((result[0,3,0],result[0,3,1]) == (7,8))
+        
+        
+        

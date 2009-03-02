@@ -5,7 +5,9 @@ __version__="$Revision: 1 "
 
 import numpy
 import scipy.ndimage
-import _cpmorphology 
+import scipy.sparse
+import _cpmorphology
+from outline import outline 
 
 def fill_labeled_holes(image):
     """Fill holes in objects in a labeled image
@@ -155,3 +157,267 @@ def relabel(image):
     #
     new_image = label_table[image]
     return (new_image,len(unique_labels)-1)
+
+def convex_hull(labels, indexes=None):
+    """Given a labeled image, return a list of points per object ordered by
+    angle from an interior point, representing the convex hull.
+    
+    labels - the label matrix
+    indexes - an array of label #s to be processed, defaults to all non-zero
+              labels
+    
+    returns a 3d array of complex numbers where the first dimension is
+    the label #, the second dimension is the index into the coordinates,
+    and the third dimension is i=0,j=1, the coordinates of each of the 
+    convex hull points and a 1d array giving the number of points in the
+    convex hull of each label
+    """
+    if indexes == None:
+        indexes = numpy.unique(labels)
+        indexes.sort()
+        indexes=indexes[indexes!=0]
+    else:
+        indexes=numpy.array(indexes)
+    if len(indexes) == 0:
+        return numpy.zeros((0,0,2),int),numpy.zeros((0,),int)
+    #
+    # An array that converts from label # to index in "indexes"
+    anti_indexes = numpy.zeros((numpy.max(indexes)+1,),int)
+    anti_indexes[indexes] = range(len(indexes))
+    #
+    # Reduce the # of points to consider
+    #
+    outlines = outline(labels)
+    centers  = scipy.ndimage.center_of_mass(outlines,outlines, indexes)
+    centers = numpy.array([centers])
+    centers.shape=(indexes.shape[0],2) # if max_label = 1, you get 1d array
+    #
+    # Make matrices to hold the results (tried this with sparse & ran into
+    # problems). Our initial guess of max # of convex hull pts is pretty big
+    # but, if there's overflow, we resize below.
+    # 
+    result_i = numpy.zeros((len(indexes),100),dtype=int)
+    result_j = numpy.zeros((len(indexes),100),dtype=int)
+    result_counts = numpy.zeros((len(indexes),),dtype=int)
+    #
+    #
+    # Now make an array with one outline point per row and the following
+    # columns:
+    #
+    # index of label # in indexes array
+    # angle of the point relative to the center
+    # i coordinate of the point
+    # j coordinate of the point
+    #
+    coords = numpy.argwhere(outlines > 0)
+    if len(coords)==0:
+        # Every outline of every image is blank
+        return numpy.zeros((len(indexes),0,2),int),result_counts
+    
+    i = coords[:,0]
+    j = coords[:,1]
+    labels_per_point = labels[i,j]
+    anti_indexes_per_point = anti_indexes[labels_per_point]
+    centers_per_point = centers[anti_indexes_per_point]
+    angle = numpy.arctan2(j-centers_per_point[:,1],i-centers_per_point[:,0])
+    a = numpy.zeros((len(i),4))
+    a[:,0] = anti_indexes_per_point
+    a[:,1] = angle
+    a[:,2:] = coords
+    #
+    # Sort the array first by label # (sort of), then by angle
+    #
+    order = numpy.lexsort((angle,anti_indexes_per_point))
+    a=a[order]
+    #
+    # Initialize the counts of convex hull points to a ridiculous number
+    #
+    counts = numpy.ones((len(indexes),),int) * (numpy.product(labels.shape)+1)
+    while True:
+        #
+        # Figure out how many putative convex hull points there are for
+        # each label.
+        #
+        # If the count for a label is 3 or less, it's a convex hull or
+        # degenerate case.
+        #
+        # If the count hasn't changed in an iteration, then we've done
+        # as well as we can hope to do.
+        #
+        v = numpy.ones((a.shape[0],),dtype=int)
+        new_counts = scipy.sparse.coo_matrix((v,(a[:,0].astype(int),v*0)),
+                                             shape=(len(indexes),1))
+        new_counts = new_counts.toarray().flatten()
+        finish_me = numpy.logical_or(numpy.logical_and(new_counts > 0,
+                                                       new_counts <= 3),
+                                     new_counts == counts)
+        indexes_to_finish = numpy.argwhere(finish_me)
+        keep_me = numpy.logical_and(new_counts > 3,
+                                    new_counts < counts)
+        indexes_to_keep = numpy.argwhere(keep_me)
+        if len(indexes_to_finish):
+            result_counts[finish_me] = new_counts[finish_me]
+            #
+            # Store the coordinates of each of the points to finish
+            #
+            finish_this_row = finish_me[a[:,0].astype(int)]
+            rows_to_finish = numpy.argwhere(finish_this_row).flatten()
+            a_to_finish = a[rows_to_finish]
+            atf_indexes = a_to_finish[:,0].astype(int) # a[float(1)] doesn't work
+            #
+            # Map label #s to the index into indexes_to_finish of that label #
+            #
+            anti_indexes_to_finish = numpy.zeros((len(indexes),),int)
+            anti_indexes_to_finish[indexes_to_finish] = range(len(indexes_to_finish))
+            #
+            # Figure out the indices of each point in a label to be finished.
+            # We figure out how much to subtract for each label, then
+            # subtract that much from 0:N to get successive indexes at
+            # each label.
+            #
+            finish_idx_base = numpy.zeros((len(indexes_to_finish),),int)
+            finish_idx_base[1:]=numpy.cumsum(new_counts[indexes_to_finish])[0:-1]
+            finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
+            finish_idx = (numpy.array(range(a_to_finish.shape[0]))-
+                          finish_idx_bases)
+            max_idx = numpy.max(finish_idx)
+            if max_idx >= result_i.shape[1]:
+                # Must resize the results to get more room
+                result_i=numpy.reshape(result_i,
+                                       (result_i.shape[0],int((max_idx)*1.5)))
+                result_j=numpy.reshape(result_j,
+                                       (result_j.shape[0],int((max_idx)*1.5)))
+            result_i[atf_indexes,finish_idx] = a_to_finish[:,2]
+            result_j[atf_indexes,finish_idx] = a_to_finish[:,3]
+        if len(indexes_to_keep) == 0:
+            break
+        #
+        # Figure out which points are still available
+        #
+        rows_to_keep=numpy.argwhere(keep_me[a[:,0].astype(int)]).flatten()
+        a = a[rows_to_keep]
+        a_label = a[:,0].astype(int)
+        centers_per_point = centers_per_point[rows_to_keep]
+        counts = new_counts
+        #
+        # The rule is that the area of the triangle from the center to
+        # point N-1 to point N plus the area of the triangle from the center
+        # to point N to point N+1 must be greater than the area of the
+        # triangle from the center to point N-1 to point N+1 for a point
+        # to be on the convex hull.
+        # N-1 and N+1 have to be modulo "counts", so we make special arrays
+        # to address those situations.
+        #
+        n_minus_one = numpy.array(range(-1,a.shape[0]-1))
+        n_plus_one = numpy.array(range(1,a.shape[0]+1))
+        anti_indexes = numpy.zeros((len(indexes),),int)
+        anti_indexes[indexes_to_keep] = range(len(indexes_to_keep))
+        idx_base = numpy.zeros((len(indexes_to_keep),),int)
+        idx_base[1:]=numpy.cumsum(counts[indexes_to_keep])[0:-1]
+        idx_bases = idx_base[anti_indexes[a_label]]
+        idx = numpy.array(range(a.shape[0]),int)-idx_bases
+        n_minus_one[idx==0] = counts[a_label[idx==0]]-1
+        wrap_high = (idx==counts[a_label]-1) 
+        n_plus_one[wrap_high] = 0
+        #
+        # Compute the triangle areas
+        #
+        t_left = triangle_areas(centers_per_point,
+                                a[n_minus_one,2:],
+                                a[:,2:])
+        t_right = triangle_areas(centers_per_point,
+                                 a[:,2:],
+                                 a[n_plus_one,2:])
+        t_lr = triangle_areas(centers_per_point,
+                              a[n_minus_one,2:],a[n_plus_one,2:])
+        #
+        # Keep the points where the area of the left triangle plus the
+        # area of the right triangle is bigger than the area of the triangle
+        # composed of the points to the left and right. This means that
+        # there's a little triangle sitting on top of t_lr with our point
+        # on top and convex in relation to its neighbors.
+        #
+        keep_me = t_left+t_right > t_lr
+        #
+        # If all points on a line are co-linear with the center, then the
+        # whole line goes away. Special handling for this to find the points
+        # most distant from the center and on the same side
+        #
+        consider_me = t_left+t_right == 0
+        if numpy.any(consider_me):
+            diff_i = a[consider_me,2]-centers_per_point[consider_me,0]
+            diff_j = a[consider_me,3]-centers_per_point[consider_me,1]
+            #
+            # The manhattan distance is good enough
+            #
+            dist = numpy.abs(diff_i)+numpy.abs(diff_j)
+            # The sign is different on different sides of a line including
+            # the center. Multiply j by 2 to keep from colliding with i
+            #
+            sign = numpy.sign(diff_i) + numpy.sign(diff_j)*2
+            n_minus_one_consider = n_minus_one[consider_me]
+            n_plus_one_consider = n_plus_one[consider_me]
+            left_is_worse = numpy.logical_or(dist > dist[n_minus_one_consider],
+                                             sign != sign[n_minus_one_consider])
+            right_is_worse = numpy.logical_or(dist > dist[n_plus_one_consider],
+                                              sign != sign[n_plus_one_consider])
+            keep_me[consider_me] = numpy.logical_and(left_is_worse,
+                                                     right_is_worse)
+            
+        a = a[keep_me,:]
+    #
+    # Convert the sparse COO to the array we want to return
+    #
+    max_count = numpy.max(result_counts)
+    result = numpy.zeros((len(indexes),max_count,2),int)
+    result[:,:,0]=result_i[:,:max_count]
+    result[:,:,1]=result_j[:,:max_count]
+    return result, result_counts
+
+def triangle_areas(p1,p2,p3):
+    """Compute an array of triangle areas given three arrays of triangle pts
+    
+    p1,p2,p3 - three Nx2 arrays of points
+    """
+    v1 = p2-p1
+    v2 = p3-p1
+    cross1 = v1[:,0] * v2[:,1]
+    cross2 = v2[:,0] * v1[:,1]
+    a = (cross1-cross2) / 2
+    return a  
+
+def draw_line(labels,pt0,pt1,value=1):
+    """Draw a line between two points
+    
+    Uses the Bresenham algorithm
+    Some code transcribed from http://www.cs.unc.edu/~mcmillan/comp136/Lecture6/Lines.html
+    """
+    x0,y0 = pt0
+    x1,y1 = pt1
+    diff_y = abs(y1-y0)
+    diff_x = abs(x1-x0)
+    x = x0
+    y = y0
+    labels[y,x]=value
+    step_x = (x1 > x0 and 1) or -1
+    step_y = (y1 > y0 and 1) or -1
+    if diff_y > diff_x:
+        # Y varies fastest, do x before y
+        remainder = diff_x*2 - diff_y
+        while y != y1:
+            if remainder >= 0:
+                 x += step_x
+                 remainder -= diff_y*2
+            y += step_y
+            remainder += diff_x*2
+            labels[y,x] = value
+    else:
+        remainder = diff_y*2 - diff_x
+        while x != x1:
+            if remainder >= 0:
+                 y += step_y
+                 remainder -= diff_x*2
+            x += step_x
+            remainder += diff_y*2
+            labels[y,x] = value
+        

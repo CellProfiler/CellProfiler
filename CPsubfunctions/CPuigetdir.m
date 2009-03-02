@@ -9,7 +9,7 @@ function Dirname = CPuigetdir(start_path,txt)
 
 if ismac
     [ScreenWidth,ScreenHeight] = CPscreensize;
-    h = CPmsgbox(txt);
+    h = CPmsgbox(txt,'','help');
     old_pos = get(h,'position');
     set(h,'Position',[0 ScreenHeight,old_pos(3:4)])
 end

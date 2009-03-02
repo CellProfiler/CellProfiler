@@ -20,7 +20,7 @@ else
 end
 set(h,'UserData',userData);
 
-if ~strcmp(varargin(3),'help')
+if nargin > 2 && ~strcmp(varargin(3),'help')
     try
         % Find the ui elements (not the most portable way to do this, hence the "try"
         ax = findobj(h,'Type','axes','Tag',''); %% IconAxes will have a Tagg that says so

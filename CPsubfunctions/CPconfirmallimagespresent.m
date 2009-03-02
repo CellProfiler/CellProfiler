@@ -241,7 +241,7 @@ end
 TextString{end+1} = '';
 
 % List duplicate filenames
-TextString{end+1} = 'Duplicate filenames found: (Prefix: Channel)';
+TextString{end+1} = 'Duplicate filenames found: (File prefix, followed by duplicated channel)';
 if cellfun(@isempty,DuplicateFilenames)
     TextString{end+1} = '  None';
 else
@@ -260,7 +260,7 @@ end
 TextString{end+1} = '';
 
 % List unmatched filenames
-TextString{end+1} = 'Unmatched filenames found: (Prefix: Channel)';
+TextString{end+1} = 'Unmatched filenames found: (File prefix, followed by channel found)';
 if cellfun(@isempty,UnmatchedFilenames)
     TextString{end+1} = '  None';
 else
@@ -277,8 +277,9 @@ else
 end
 
 TextString{end+1} = '';
-TextString{end+1} = 'If there are duplicate images, the integrity of the duplicates are checked and the first "good" image is used, if any. If there are none, the images are treated as missing.';
-TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files and pipeline execution will continue. However, there will be no measurements made for the missing images.';
+TextString{end+1} = 'If there are duplicate images, the file integrity of the duplicates are checked and the first "good" image for that cycle, if any. If there are no "good" files, the images for that cycle are treated as missing and are skipped in pipeline execution.';
+TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files (i.e., an image of zeros) and pipeline execution will continue. However, there will be no measurements made for the missing images.';
+TextString{end+1} = ['In the Default output directory, there will be a text file called ',mfilename,'_output.txt which contains the report shown in this figure.'];
 
 if isBatchSubmission
     warning(char(TextString)');
@@ -331,7 +332,7 @@ for n = 1:size(FlaggedFilenames,1)
     % Remove corrupt files from the new FileList, replacing them
     % with the first file(s) that pass the test, or [] if none of them pass
     % TODO: A more intelligent way to do this substitution
-    if any(~isImageCorrupt) && length(isImageCorrupt) > 1
+    if length(isImageCorrupt) > 1 && ~isempty(find(isImageCorrupt,1))
         NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = ...
                 FlaggedFileList(find(~isImageCorrupt,length(find(isImageCorrupt))));
     else

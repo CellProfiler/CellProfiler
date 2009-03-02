@@ -20,8 +20,18 @@ if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
         if SubDirectory == 0 %% User hit Cancel in uigetdir window
             error('Processing was stopped because the user chose Cancel');
         end
+
+        %% Check for duplicate directories
+        if idx > 1 && any(strcmp(SubDirectory, Directories))
+            CPmsgbox(['This directory ' SubDirectory ' has already been selected.  Please choose another.'])
+            continue
+        end
+        
         Directories{idx} = SubDirectory;
         
+        %% Feedback for directories chosen
+        msgbox(char(Directories), 'SubDirectories chosen:','none','replace');
+ 
         % Make sure the selected directories all lie under the Default Image path
         % Here, characters are treated like numbers in order to find where the 
         % difference lies between the DefaultImage path and the selected

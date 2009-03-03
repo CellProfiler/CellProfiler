@@ -86,6 +86,7 @@ while dlgno < 5
 end
 
 
+
 [FeatureName,CategoryAndImageName] = strtok(Feature,'_');
 [CategoryName,ImageName]=strtok(CategoryAndImageName,'_');
 
@@ -120,7 +121,7 @@ end
 
 
 % Record the new measure in the handles structure.
-if strcmp(selection, 'Appending an existing QCFlag')
+if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
     try
        FlagToAppend = handles.Measurements.Experiment.(FlagNameOld);
     catch
@@ -138,11 +139,10 @@ if strcmp(selection, 'Appending an existing QCFlag')
     end
 end
 
-if strcmp(selection, 'Appending an existing QCFlag')
-    handles.Measurements.Experiment.(FlagNameOld) = QCFlag;
-end
-if strcmp(selection, 'Creating a new QCFlag')
-    handles.Measurements.Experiment.(FlagNameNew) = QCFlag;
+if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
+    handles = CPaddmeasurements(handles,'Experiment',FlagNameOld,QCFlag);
+elseif strcmpi(Input1{selection},'Creating a new QCFlag')
+    handles = CPaddmeasurements(handles,'Experiment',FlagNameNew,QCFlag);
 end
 
 
@@ -161,10 +161,6 @@ Values = QCFlag;
 filename = '*.txt';
 SavePathname = handles.Current.DefaultOutputDirectory;
 [filename,SavePathname] = CPuiputfile(filename, 'Save QCFlag As...',SavePathname);
-if filename == 0
-    CPmsgbox('You have canceled the option to save the pipeline as a text file, but your pipeline will still be saved in .mat format.');
-    return
-end
 fid = fopen(fullfile(SavePathname,filename),'w');
 if fid == -1
     error('Cannot create the output file %s. There might be another program using a file with the same name.',filename);

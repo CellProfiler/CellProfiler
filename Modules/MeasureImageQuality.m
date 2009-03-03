@@ -426,7 +426,7 @@ ThresholdCorrection=str2num('1');
 for ImageNumber = 1:length(tmp2);
     OrigImageThresh = double(CPretrieveimage(handles,NameImageToThresh{ImageNumber},ModuleName,'MustBeGray','CheckScale'));
     [handles,OrigThreshold,WeightedVariance, SumOfEntropies] = CPthreshold(handles,ThresholdMethod{ImageNumber},pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImageThresh,NameImageToThresh{ImageNumber},ModuleName, '');
-    feature_name = CPjoinstrings('ImageQuality','Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize));
+    feature_name = CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize));
     handles = CPaddmeasurements(handles,'Image',feature_name,OrigThreshold);
 end
 
@@ -437,14 +437,14 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 %%% for the entire image set.
 if SetBeingAnalyzed == TotalNumberOfImageSets
         for ImageNumber = 1:length(tmp2),
-            Threshold = handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize)));
+            Threshold = handles.Measurements.Image.(CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize)));
         end
         MeanThreshold = mean(cellfun(@mean,Threshold));
         MedianThreshold = median(cellfun(@median,Threshold));
         StdevThreshold = std(cellfun(@mean,Threshold));
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MeanThresh_AllImages',num2str(WindowSize)), MeanThreshold);
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'MedianThresh_AllImages',num2str(WindowSize)), MedianThreshold);
-        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(ModuleName,'StdThresh_AllImages',num2str(WindowSize)), StdevThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(MeasurementPrefix,'MeanThresh_AllImages',num2str(WindowSize)), MeanThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(MeasurementPrefix,'MedianThresh_AllImages',num2str(WindowSize)), MedianThreshold);
+        handles = CPaddmeasurements(handles,'Experiment', CPjoinstrings(MeasurementPrefix,'StdThresh_AllImages',num2str(WindowSize)), StdevThreshold);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

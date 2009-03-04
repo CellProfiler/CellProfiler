@@ -314,8 +314,9 @@ else
          hdl_dlg = CPwarndlg(TextString(headerLength+warningLength:end),WarningDlgBoxTitle,'replace');
          set(hdl_dlg,'visible','off');
          hdl_text = findobj(hdl_dlg,'type','text','-depth',inf);
-         set(hdl_text,'visible','off');
-         uicontrol('parent',hdl_dlg,'style','edit','string',TextString(3:end),'units','points','position',get(hdl_text,'extent'),'enable','inactive','max',1.001,'min',0);
+         set(hdl_text,'visible','off','units','normalized'); 
+         p = get(hdl_text,'extent');
+         uicontrol('parent',hdl_dlg,'style','edit','string',TextString(3:end),'units','normalized','position',[p(1:2) 1-p(1) p(4)],'enable','inactive','max',1.001,'min',0);
          set(hdl_dlg,'visible','on');
      else
          CPwarndlg(TextString(headerLength:end),WarningDlgBoxTitle,'replace');

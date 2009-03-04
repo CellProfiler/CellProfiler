@@ -72,19 +72,19 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR05 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Did you want to append an existing flag, or create a new one?
+%textVAR06 = Did you want to append an existing flag, or create a new one? ** Warning, if you choose to append a flag, you will be overwriting it with the appended flag **
 %choiceVAR06 = Create a new flag
 %choiceVAR06 = Append existing flag
 %inputtypeVAR06 = popupmenu
 NewOrAppend = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 
 %textVAR07 = If you're creating a new flag, what do you want to call it?
-%defaultVAR07 = QCFlag_new
+%defaultVAR07 = NewFlag
 %inputtypeVAR07 = popupmenu custom
 NewName = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 
 %textVAR08 = If you're appending an existing flag, what did you call it?
-%defaultVAR08 = QCFlag
+%defaultVAR08 = Flag
 %inputtypeVAR08 = popupmenu custom
 OldName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
@@ -95,101 +95,104 @@ OldName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    if isempty(FeatureNumOrName)
-        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
-    end
+
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+
+if isempty(FeatureNumOrName)
+    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+end
+try
+    FeatureName = CPgetfeaturenamesfromnumbers(handles, 'Image', ...
+        Category, FeatureNumOrName, ImageName);
+
+catch
+    error([lasterr '  Image processing was canceled in the ', ModuleName, ...
+        ' module (#' num2str(CurrentModuleNum) ...
+        ') because an error ocurred when retrieving the data.  '...
+        'Likely the category of measurement you chose, ',...
+        Category, ', was not available with feature ' num2str(FeatureNumOrName) ...
+        ', possibly specific to image ''' ImageName '''']);
+end
+MeasureInfo = handles.Measurements.Image.(FeatureName){SetBeingAnalyzed};
+
+if strcmpi(MinValue1, 'No minimum')
+    MinValue1 = -Inf;
+else
+    MinValue1 = str2double(MinValue1);
+end
+
+if strcmpi(MaxValue1, 'No maximum')
+    MaxValue1 = Inf;
+else
+    MaxValue1 = str2double(MaxValue1);
+end
+
+if strcmpi(MinValue1, 'No minimum') && strcmpi(MaxValue1, 'No maximum')
+    CPwarndlg(['You are not flagging any images with the default settings ' ...
+        ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
+end
+
+
+
+if strcmpi(NewOrAppend,'Append existing flag')
     try
-        FeatureName = CPgetfeaturenamesfromnumbers(handles, 'Image', ...
-            Category, FeatureNumOrName, ImageName);
-
+        OldName = CPjoinstrings('QCFlag',OldName);
+        FlagToAppend = handles.Measurements.Image.(OldName){SetBeingAnalyzed};
     catch
-        error([lasterr '  Image processing was canceled in the ', ModuleName, ...
-            ' module (#' num2str(CurrentModuleNum) ...
+        error([lasterr ' Image processing was cancelled in the ', ModuleName, ...
+            ' module (#' num2str(CurrentModuleNum)...
             ') because an error ocurred when retrieving the data.  '...
-            'Likely the category of measurement you chose, ',...
-            Category, ', was not available with feature ' num2str(FeatureNumOrName) ...
-            ', possibly specific to image ''' ImageName '''']);
+            'Likely the name of the QCFlag you specified to append,',...
+            OldName,',did not exist']);
     end
-    MeasureInfo = handles.Measurements.Image.(FeatureName);
+end
 
-    if strcmpi(MinValue1, 'No minimum')
-        MinValue1 = -Inf;
-    else
-        MinValue1 = str2double(MinValue1);
+
+%%%%%%%%%%%%%%%%%%%%%%
+%%% IMAGE ANALYSIS %%%
+%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+%% Do Filtering
+
+if MeasureInfo < MinValue1 || MeasureInfo > MaxValue1
+    Flag = 1;
+else 
+    Flag = 0;
+end
+
+if strcmpi(NewOrAppend,'Append existing flag')
+    try
+        Flag = Flag + FlagToAppend;
+    catch
+        error([lasterr 'Image processing was cancelled in the ', ModuleName, ...
+            ' module (#' num2str(CurrentModuleNum)...
+            ') because an error while saving the data.  '...
+            'Likely the name of the QCFlag you specified to append,',...
+            OldName,',was not the same length as the one you were appending to it']);
     end
-
-    if strcmpi(MaxValue1, 'No maximum')
-        MaxValue1 = Inf;
-    else
-        MaxValue1 = str2double(MaxValue1);
-    end
-
-    if strcmpi(MinValue1, 'No minimum') && strcmpi(MaxValue1, 'No maximum')
-        CPwarndlg(['You are not flagging any images with the default settings ' ...
-            ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
-    end
-
-
-
-    if strcmpi(NewOrAppend,'Append existing flag')
-        try
-            FlagToAppend = handles.Measurements.Experiment.(OldName);
-        catch
-            error([lasterrr ' Image processing was cancelled in the ', ModuleName, ...
-                ' module (#' num2str(CurrentModuleNum)...
-                ') because an error ocurred when retrieving the data.  '...
-                'Likely the name of the QCFlag you specified to append,',...
-                OldName,',did not exist']);
-        end
-    end
-
-
-    %%%%%%%%%%%%%%%%%%%%%%
-    %%% IMAGE ANALYSIS %%%
-    %%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-    %% Do Filtering
-    MeasureInfo = cell2mat(MeasureInfo);
-    Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
-    Flag = zeros(size(MeasureInfo));
-    for i = 1:numel(Filter)
-        Flag(Filter(i)) = 1;
-    end
-
-    if strcmpi(NewOrAppend,'Append existing flag')
-        try
-            Flag = Flag + FlagToAppend;
-        catch
-            error([lasterr 'Image processing was cancelled in the ', ModuleName, ...
-                ' module (#' num2str(CurrentModuleNum)...
-                ') because an error while saving the data.  '...
-                'Likely the name of the QCFlag you specified to append,',...
-                OldName,',was not the same length as the one you were appending to it']);
-        end
-        for i = 1:length(Flag)
-            if Flag(i) == 2
-                Flag(i) = 1;
-            end
-        end
-    end
-
-
- 
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% SAVE DATA TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    drawnow
-
-    if strcmpi(NewOrAppend,'Append existing flag')
-        handles.Measurements.Experiment.(OldName) = Flag;
-    end
-    if strcmpi(NewOrAppend,'Create a new flag')
-        handles.Measurements.Experiment.(NewName) = Flag;
+    if Flag == 2
+        Flag =1;
     end
     
 end
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SAVE DATA TO HANDLES STRUCTURE %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+drawnow
+
+if strcmpi(NewOrAppend,'Append existing flag')
+    handles.Measurements.Image.(OldName){SetBeingAnalyzed} = Flag;
+end
+if strcmpi(NewOrAppend,'Create a new flag')
+    NewName = CPjoinstrings('QCFlag',NewName);
+    handles = CPaddmeasurements(handles,'Image',NewName,Flag,SetBeingAnalyzed);
+end
+    
+
 %% display %%
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber)
@@ -205,7 +208,7 @@ if any(findobj == ThisModuleFigureNumber)
         displaytexthandle = findobj('Parent',ThisModuleFigureNumber,'tag','TextUIControl');
     end
 
-    DisplayText = strvcat(['The QCFlag is calculated on the last cycle and stored in the output file.']);
+    DisplayText = strvcat(['QCFlag = ',num2str(Flag)]);
     set(displaytexthandle,'string',DisplayText)
 end
 

@@ -111,38 +111,40 @@ CPwarndlg(['No images are being filtered using your current settings'])
 end
    
     % Do filtering
-MeasureInfo = cell2mat(MeasureInfo);
-
-Filter = find((MeasureInfo < LowLim) | (MeasureInfo > UpperLim));
-QCFlag = zeros(size(MeasureInfo));
-for i = 1:numel(Filter)
-    QCFlag(Filter(i)) = 1;
-end
-
-
-% Record the new measure in the handles structure.
+%QCFlag = cell(size(MeasureInfo));
 if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
-    try
-       FlagToAppend = handles.Measurements.Experiment.(FlagNameOld);
-    catch
-       error([lasterrr 'CellProfiler could not find the QCFlag you asked to append.']);
+    FlagNameOld = CPjoinstrings('QCFlag',FlagNameOld);
+else
+    FlagNameNew = CPjoinstrings('QCFlag',FlagNameNew);
+end
+for i = 1:handles.Current.NumberOfImageSets
+    if (MeasureInfo{i} < LowLim) || (MeasureInfo{i} > UpperLim)
+        QCFlag{i} = 1;
+    else QCFlag{i} = 0;
     end
-    try
-        QCFlag = QCFlag + FlagToAppend;
-    catch
-        error([lasterr 'CellProfiler could not append the QCFlag you specified. Perhaps it is not the same size as the one you are trying to append it with?']);
-    end
-    for i = 1:length(QCFlag)
-        if QCFlag(i) == 2
-            QCFlag(i) = 1;
+    % Record the new measure in the handles structure.
+    if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
+        try
+           FlagToAppend = handles.Measurements.Image.(FlagNameOld);
+        catch
+           error([lasterrr 'CellProfiler could not find the QCFlag you asked to append.']);
+        end
+        try
+            QCFlag{i}  = QCFlag{i} + FlagToAppend{i};
+        catch
+            error([lasterr 'CellProfiler could not append the QCFlag you specified. Perhaps it is not the same size as the one you are trying to append it with?']);
+        end
+        if QCFlag{i} == 2
+            QCFlag{i} = 1;
         end
     end
-end
 
-if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
-    handles = CPaddmeasurements(handles,'Experiment',FlagNameOld,QCFlag);
-elseif strcmpi(Input1{selection},'Creating a new QCFlag')
-    handles = CPaddmeasurements(handles,'Experiment',FlagNameNew,QCFlag);
+    if strcmpi(Input1{selection}, 'Appending an existing QCFlag')
+        handles.Measurements.Image.(FlagNameOld){i} = QCFlag{i};
+    elseif strcmpi(Input1{selection},'Creating a new QCFlag')
+        handles = CPaddmeasurements(handles,'Image',FlagNameNew,QCFlag{i},i);
+    end
+
 end
 
 
@@ -155,7 +157,7 @@ catch
     CPwarndlg(['Could not save updated ',FileName,' file.']);
 end
 
-Values = QCFlag;
+Values = cell2mat(QCFlag);
 
 %Prompt what to save file as, and where to save it.
 filename = '*.txt';

@@ -220,20 +220,28 @@ for m = 1:length(ImageName),
     end
 end
 
+isWarningNeeded = false;
+warningLength = 0;
+
 % Create dialog box with results
 TextString{1} = ['Output of ',mfilename,': ',datestr(now)];
 TextString{2} = '----------------------------------------';
 TextString{3} = ['Image directory: ',handles.Current.DefaultImageDirectory];
 TextString{4} = '';
+headerLength = length(TextString)-1;
 
 % List upmatched directories
 TextString{end+1} = 'Unmatched directories found:';
 if all(cellfun(@isempty,UnmatchedDirectories))
-    TextString{end+1} = '  None';
+    TextString{end} = [TextString{end},' None'];
 else
+    isWarningNeeded = true;
     for n = 1:length(UnmatchedDirectories)
-        for m = 1:size(UnmatchedDirectories{n},1),
-            TextString{end+1} = ['    ',UnmatchedDirectories{n}{m,:}];
+        if ~isempty(UnmatchedDirectories{n}),
+            for m = 1:size(UnmatchedDirectories{n},1),
+                TextString{end+1} = ['    ',UnmatchedDirectories{n}{m,:}];
+                warningLength = warningLength + 1;
+            end
         end
     end
 end
@@ -241,17 +249,21 @@ end
 TextString{end+1} = '';
 
 % List duplicate filenames
-TextString{end+1} = 'Duplicate filenames found: (File prefix, followed by duplicated channel)';
+TextString{end+1} = 'Duplicate filenames found:';
 if cellfun(@isempty,DuplicateFilenames)
-    TextString{end+1} = '  None';
+    TextString{end} = [TextString{end},' None'];
 else
+    isWarningNeeded = true;
+    TextString{end} = [TextString{end},' (File prefix, followed by duplicated channel)'];
     for n = 1:length(DuplicateFilenames)
         if ~isempty(DuplicateFilenames{n}),
             if ~isempty(uniquePaths{n})
                 TextString{end+1} = ['  Subdirectory: ',uniquePaths{n}];
+                warningLength = warningLength + 1;
             end
             for m = 1:size(DuplicateFilenames{n},1),
                 TextString{end+1} = ['    ',DuplicateFilenames{n}{m,1},':  ',num2str(DuplicateFilenames{n}{m,2})];
+                warningLength = warningLength + 1;
             end
         end
     end
@@ -260,31 +272,54 @@ end
 TextString{end+1} = '';
 
 % List unmatched filenames
-TextString{end+1} = 'Unmatched filenames found: (File prefix, followed by channel found)';
+TextString{end+1} = 'Unmatched filenames found: ';
 if cellfun(@isempty,UnmatchedFilenames)
-    TextString{end+1} = '  None';
+    TextString{end} = [TextString{end},' None'];
 else
+    isWarningNeeded = true;
+    TextString{end} = [TextString{end},' (File prefix, followed by channel found)'];
     for n = 1:length(UnmatchedFilenames)
         if ~isempty(UnmatchedFilenames{n}),
             if ~isempty(uniquePaths{n})
                 TextString{end+1} = ['  Subdirectory: ',uniquePaths{n}];
+                warningLength = warningLength + 1;
             end
             for m = 1:size(UnmatchedFilenames{n},1),
                 TextString{end+1} = ['    ',UnmatchedFilenames{n}{m,1},':  ',num2str(UnmatchedFilenames{n}{m,2})];
+                warningLength = warningLength + 1;
             end
         end
     end
 end
 
-TextString{end+1} = '';
-TextString{end+1} = 'If there are duplicate images, the file integrity of the duplicates are checked and the first "good" image for that cycle, if any. If there are no "good" files, the images for that cycle are treated as missing and are skipped in pipeline execution.';
-TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files (i.e., an image of zeros) and pipeline execution will continue. However, there will be no measurements made for the missing images.';
-TextString{end+1} = ['In the Default output directory, there will be a text file called ',mfilename,'_output.txt which contains the report shown in this figure.'];
+if isWarningNeeded
+    TextString{end+1} = '';
+    TextString{end+1} = 'If there are duplicate images, the file integrity of the duplicates are checked and the first "good" image for that cycle, if any. If there are no "good" files, the images for that cycle are treated as missing and are skipped in pipeline execution.';
+    TextString{end+1} = '';
+    TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files (i.e., an image of zeros) and pipeline execution will continue. However, there will be no measurements made for the missing images.';
+    TextString{end+1} = '';
+    TextString{end+1} = ['In the Default output directory, there will be a text file called ',mfilename,'_output.txt which contains the report shown in this figure.'];
+end
 
 if isBatchSubmission
-    warning(char(TextString)');
+    if isWarningNeeded
+        warning(char(TextString)');
+    else
+        disp(char(TextString)');
+    end
 else
-    CPwarndlg(TextString(3:end),WarningDlgBoxTitle,'replace');
+    if isWarningNeeded
+         % Create a warning box and replace the text uicontrol with a
+         % scrollable editbox
+         hdl_dlg = CPwarndlg(TextString(headerLength+warningLength:end),WarningDlgBoxTitle,'replace');
+         set(hdl_dlg,'visible','off');
+         hdl_text = findobj(hdl_dlg,'type','text','-depth',inf);
+         set(hdl_text,'visible','off');
+         uicontrol('parent',hdl_dlg,'style','edit','string',TextString(3:end),'units','points','position',get(hdl_text,'extent'),'enable','inactive','max',1.001,'min',0);
+         set(hdl_dlg,'visible','on');
+     else
+         CPwarndlg(TextString(headerLength:end),WarningDlgBoxTitle,'replace');
+     end
 end
     
 % Output file if desired
@@ -332,7 +367,7 @@ for n = 1:size(FlaggedFilenames,1)
     % Remove corrupt files from the new FileList, replacing them
     % with the first file(s) that pass the test, or [] if none of them pass
     % TODO: A more intelligent way to do this substitution
-    if length(isImageCorrupt) > 1 && ~isempty(find(isImageCorrupt,1))
+    if length(isImageCorrupt) > 1 && any(isImageCorrupt) && ~all(isImageCorrupt)
         NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = ...
                 FlaggedFileList(find(~isImageCorrupt,length(find(isImageCorrupt))));
     else

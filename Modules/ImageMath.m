@@ -133,16 +133,19 @@ ThirdImageConstant = str2num(ThirdImageName);
 
 % Reads (opens) the images you want to analyze and assigns them to
 % variables.
-FirstImage = CPretrieveimage(handles,FirstImageName,ModuleName,'MustBeGray','CheckScale');
+FirstImage = CPretrieveimage(handles,FirstImageName,ModuleName,'DontCheckColor','CheckScale');
+nImages = 1;
 if isempty(SecondImageConstant) && ~any(strcmp(Operation,{'Invert', 'Log transform (base 2)'})),
-    SecondImage = CPretrieveimage(handles,SecondImageName,ModuleName,'MustBeGray','CheckScale');
+    SecondImage = CPretrieveimage(handles,SecondImageName,ModuleName,'DontCheckColor','CheckScale');
+    nImages = 2;
 else 
     SecondImage = SecondImageConstant;
     clear SecondImageConstant
 end
 if isempty(ThirdImageConstant) && any(strcmp(Operation,{'Combine'})),
     if ~strcmp(ThirdImageName,'Do not use')
-        ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'MustBeGray','CheckScale');
+        ThirdImage = CPretrieveimage(handles,ThirdImageName,ModuleName,'DontCheckColor','CheckScale');
+        nImages = 3;
     else
         ThirdImage = 0;
     end
@@ -151,6 +154,10 @@ else
     clear ThirdImageConstant
 end
 
+if  (nImages == 2 && length(unique([ndims(FirstImage) ndims(SecondImage)])) > 1) || ...
+    (nImages == 3 && length(unique([ndims(FirstImage) ndims(SecondImage) ndims(ThirdImage)])) > 1)
+    error(['All images within ',ModuleName,' must have the same color depth, i.e., all grayscale or all color.']);
+end
 
 % Check to make sure multiply factors are valid entries. If not change to
 % default and warn user.
@@ -282,7 +289,7 @@ if any(findobj == ThisModuleFigureNumber)
     end
     
     % ImageAfterMath
-    hAx=subplot(2,NumColumns,2,'Parent',ThisModuleFigureNumber);
+    hAx = subplot(2,NumColumns,2,'Parent',ThisModuleFigureNumber);
     CPimagesc(ImageAfterMath,handles,hAx);
     if strcmp(Operation, 'Combine')
         title(hAx,[FirstText ' ' Operation ' ' SecondText ' ' ThirdText ' = ' ImageAfterMathName]);

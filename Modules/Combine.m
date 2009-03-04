@@ -167,7 +167,7 @@ if any(findobj == ThisModuleFigureNumber)
     title(hAx,['Combined Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
     %%% A subplot of the figure window is set to display Image 1.
     for i = 1:length(Images)
-        hAx=subplot(2,2,i+1,'Parent',ThisModuleFigureNumber)
+        hAx=subplot(2,2,i+1,'Parent',ThisModuleFigureNumber);
         CPimagesc(Images{i},handles,hAx);
         title(hAx,['Image ' num2str(i)]);
     end

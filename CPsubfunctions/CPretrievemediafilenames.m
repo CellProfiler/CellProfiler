@@ -167,7 +167,7 @@ for i=1:length(Directories)
         end
     end
     if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')
-        CPwaitbar(i./length(Directories),hWait)
+        CPwaitbar(i./length(Directories),hWait);
     end
 end
 if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')

@@ -64,13 +64,15 @@ elseif nargin == 1,
 
         Channels = from_little_endian(A(13:14));
 	Compression = from_little_endian(A(17:20));
-	if Compression ~= 0
-	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB compression of type %d', CurrentFileName, Compression));
-	end
+	% Commenting this line out 03/05/09, since images with Compression ~= 0
+	% seem to be OK
+%     if Compression ~= 0
+% 	  error(sprintf('The file %s could not be opened because CellProfiler does not understand DIB compression of type %d', CurrentFileName, Compression));
+% 	end
 	% We have never seen a DIB file with more than one channel.
-        % It seems reasonable to assume that the second channel would
-        % follow the first, but this needs to be verified.
-        LoadedImage = zeros(Height,Width,Channels);
+    % It seems reasonable to assume that the second channel would
+    % follow the first, but this needs to be verified.
+    LoadedImage = zeros(Height,Width,Channels);
 	for c=1:Channels,
 	  % The 'l' causes convertion from little-endian byte order.
 	  [Data, Count] = fread(fid, Width * Height, 'uint16', 0, 'l');
@@ -115,20 +117,19 @@ elseif nargin == 1,
         end
     elseif strcmp('.ZVI',upper(ext))
         try
-            %%% Read (open) the image you want to analyze and assign it to a variable,
-            %%% "LoadedImage".
-            %%% Opens Matlab-readable file formats.
+            % Read (open) the image you want to analyze and assign it to a variable,
+            % "LoadedImage".
+            % Opens Matlab-readable file formats.
             LoadedImage = im2double(CPimreadZVI(CurrentFileName));
         catch
             error(['Image processing was canceled because the module could not load the image "', CurrentFileName, '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
     elseif strcmp('.FLEX',upper(ext))
         CPwarndlg('Flex files support is still under development.  The image displayed is likely only the first image within the file')
-        %% TODO: Display subplots of all images within one flex file (can
-        %% happen when image double-clicked in main GUI)
-        %% For now, we will just disaply the first image...
+        % TODO: Display subplots of all images within one flex file (can
+        % happen when image double-clicked in main GUI)
+        % For now, we will just disaply the first image...
         LoadedImage = im2double(imread(CurrentFileName));
-
     else
         try
             if IsGenePix(CurrentFileName)
@@ -298,8 +299,6 @@ end
 
 % Remove Header fields from "not good" images
 Header(setdiff(1:numel(Header),imageIdx)) = [];
-
-%num2str(Header(imageNums(1)).BitDepth) %possible later addition
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ScaledImage = CPimread_flex(imname, flex_idx)

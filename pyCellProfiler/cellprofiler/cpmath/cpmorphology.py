@@ -166,11 +166,12 @@ def convex_hull(labels, indexes=None):
     indexes - an array of label #s to be processed, defaults to all non-zero
               labels
     
-    returns a 3d array of complex numbers where the first dimension is
-    the label #, the second dimension is the index into the coordinates,
-    and the third dimension is i=0,j=1, the coordinates of each of the 
-    convex hull points and a 1d array giving the number of points in the
-    convex hull of each label
+    Returns a matrix and a vector. The matrix consists of one row per
+    point in the convex hull. Each row has three columns, the label #,
+    the i coordinate of the point and the j coordinate of the point. The
+    result is organized first by label, then the points are arranged
+    counter-clockwise around the perimeter.
+    The vector is a vector of #s of points in the convex hull per label
     """
     if indexes == None:
         indexes = numpy.unique(labels)
@@ -179,7 +180,7 @@ def convex_hull(labels, indexes=None):
     else:
         indexes=numpy.array(indexes)
     if len(indexes) == 0:
-        return numpy.zeros((0,0,2),int),numpy.zeros((0,),int)
+        return numpy.zeros((0,2),int),numpy.zeros((0,),int)
     #
     # An array that converts from label # to index in "indexes"
     anti_indexes = numpy.zeros((numpy.max(indexes)+1,),int)
@@ -192,15 +193,6 @@ def convex_hull(labels, indexes=None):
     centers = numpy.array([centers])
     centers.shape=(indexes.shape[0],2) # if max_label = 1, you get 1d array
     #
-    # Make matrices to hold the results (tried this with sparse & ran into
-    # problems). Our initial guess of max # of convex hull pts is pretty big
-    # but, if there's overflow, we resize below.
-    # 
-    result_i = numpy.zeros((len(indexes),100),dtype=int)
-    result_j = numpy.zeros((len(indexes),100),dtype=int)
-    result_counts = numpy.zeros((len(indexes),),dtype=int)
-    #
-    #
     # Now make an array with one outline point per row and the following
     # columns:
     #
@@ -212,23 +204,43 @@ def convex_hull(labels, indexes=None):
     coords = numpy.argwhere(outlines > 0)
     if len(coords)==0:
         # Every outline of every image is blank
-        return numpy.zeros((len(indexes),0,2),int),result_counts
+        return (numpy.zeros((0,3),int),
+                numpy.zeros((len(indexes),),int))
     
     i = coords[:,0]
     j = coords[:,1]
     labels_per_point = labels[i,j]
     anti_indexes_per_point = anti_indexes[labels_per_point]
     centers_per_point = centers[anti_indexes_per_point]
-    angle = numpy.arctan2(j-centers_per_point[:,1],i-centers_per_point[:,0])
-    a = numpy.zeros((len(i),4))
+    angle = numpy.arctan2(i-centers_per_point[:,0],j-centers_per_point[:,1])
+    a = numpy.zeros((len(i),3),int)
     a[:,0] = anti_indexes_per_point
-    a[:,1] = angle
-    a[:,2:] = coords
+    a[:,1:] = coords
     #
     # Sort the array first by label # (sort of), then by angle
     #
     order = numpy.lexsort((angle,anti_indexes_per_point))
     a=a[order]
+    anti_indexes_per_point = anti_indexes_per_point[order]
+    #
+    # Make the result matrix, leaving enough space so that all points might
+    # be on the convex hull.
+    #
+    result = numpy.zeros((len(i),3),int)
+    result[:,0] = labels_per_point[order]
+    #
+    # Create an initial count vector
+    #
+    v = numpy.ones((a.shape[0],),dtype=int)
+    result_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
+                                            shape=(len(indexes),1))
+    result_counts = result_counts.toarray().flatten()
+    r_anti_indexes_per_point = anti_indexes_per_point # save this
+    #
+    # Create a vector that indexes into the results for each label
+    #
+    result_index = numpy.zeros(result_counts.shape,int)
+    result_index[1:]=numpy.cumsum(result_counts[:-1])
     #
     # Initialize the counts of convex hull points to a ridiculous number
     #
@@ -245,12 +257,12 @@ def convex_hull(labels, indexes=None):
         # as well as we can hope to do.
         #
         v = numpy.ones((a.shape[0],),dtype=int)
-        new_counts = scipy.sparse.coo_matrix((v,(a[:,0].astype(int),v*0)),
+        new_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                              shape=(len(indexes),1))
         new_counts = new_counts.toarray().flatten()
-        finish_me = numpy.logical_or(numpy.logical_and(new_counts > 0,
-                                                       new_counts <= 3),
-                                     new_counts == counts)
+        finish_me = numpy.logical_and(new_counts > 0,
+                                      numpy.logical_or(new_counts <= 3,
+                                                       new_counts == counts))
         indexes_to_finish = numpy.argwhere(finish_me)
         keep_me = numpy.logical_and(new_counts > 3,
                                     new_counts < counts)
@@ -260,10 +272,10 @@ def convex_hull(labels, indexes=None):
             #
             # Store the coordinates of each of the points to finish
             #
-            finish_this_row = finish_me[a[:,0].astype(int)]
+            finish_this_row = finish_me[a[:,0]]
             rows_to_finish = numpy.argwhere(finish_this_row).flatten()
             a_to_finish = a[rows_to_finish]
-            atf_indexes = a_to_finish[:,0].astype(int) # a[float(1)] doesn't work
+            atf_indexes = a_to_finish[:,0]
             #
             # Map label #s to the index into indexes_to_finish of that label #
             #
@@ -274,21 +286,16 @@ def convex_hull(labels, indexes=None):
             # We figure out how much to subtract for each label, then
             # subtract that much from 0:N to get successive indexes at
             # each label.
+            # Then we add the result_index to figure out where to store it
+            # in the result table.
             #
             finish_idx_base = numpy.zeros((len(indexes_to_finish),),int)
-            finish_idx_base[1:]=numpy.cumsum(new_counts[indexes_to_finish])[0:-1]
+            finish_idx_base[1:]=numpy.cumsum(new_counts[indexes_to_finish])[:-1]
             finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
             finish_idx = (numpy.array(range(a_to_finish.shape[0]))-
                           finish_idx_bases)
-            max_idx = numpy.max(finish_idx)
-            if max_idx >= result_i.shape[1]:
-                # Must resize the results to get more room
-                result_i=numpy.reshape(result_i,
-                                       (result_i.shape[0],int((max_idx)*1.5)))
-                result_j=numpy.reshape(result_j,
-                                       (result_j.shape[0],int((max_idx)*1.5)))
-            result_i[atf_indexes,finish_idx] = a_to_finish[:,2]
-            result_j[atf_indexes,finish_idx] = a_to_finish[:,3]
+            finish_idx = finish_idx + result_index[atf_indexes]
+            result[finish_idx,1:] = a_to_finish[:,1:]
         if len(indexes_to_keep) == 0:
             break
         #
@@ -296,7 +303,6 @@ def convex_hull(labels, indexes=None):
         #
         rows_to_keep=numpy.argwhere(keep_me[a[:,0].astype(int)]).flatten()
         a = a[rows_to_keep]
-        a_label = a[:,0].astype(int)
         centers_per_point = centers_per_point[rows_to_keep]
         counts = new_counts
         #
@@ -308,28 +314,26 @@ def convex_hull(labels, indexes=None):
         # N-1 and N+1 have to be modulo "counts", so we make special arrays
         # to address those situations.
         #
-        n_minus_one = numpy.array(range(-1,a.shape[0]-1))
-        n_plus_one = numpy.array(range(1,a.shape[0]+1))
-        anti_indexes = numpy.zeros((len(indexes),),int)
-        anti_indexes[indexes_to_keep] = range(len(indexes_to_keep))
+        anti_indexes_to_keep = numpy.zeros((len(indexes),),int)
+        anti_indexes_to_keep[indexes_to_keep] = range(len(indexes_to_keep))
         idx_base = numpy.zeros((len(indexes_to_keep),),int)
-        idx_base[1:]=numpy.cumsum(counts[indexes_to_keep])[0:-1]
-        idx_bases = idx_base[anti_indexes[a_label]]
+        idx_base[1:]=numpy.cumsum(counts[keep_me])[0:-1]
+        idx_bases = idx_base[anti_indexes_to_keep[a[:,0]]]
+        counts_per_pt = counts[a[:,0]]
         idx = numpy.array(range(a.shape[0]),int)-idx_bases
-        n_minus_one[idx==0] = counts[a_label[idx==0]]-1
-        wrap_high = (idx==counts[a_label]-1) 
-        n_plus_one[wrap_high] = 0
+        n_minus_one = numpy.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
+        n_plus_one  = numpy.mod(idx+1,counts_per_pt)+idx_bases
         #
         # Compute the triangle areas
         #
         t_left = triangle_areas(centers_per_point,
-                                a[n_minus_one,2:],
-                                a[:,2:])
+                                a[n_minus_one,1:],
+                                a[:,1:])
         t_right = triangle_areas(centers_per_point,
-                                 a[:,2:],
-                                 a[n_plus_one,2:])
+                                 a[:,1:],
+                                 a[n_plus_one,1:])
         t_lr = triangle_areas(centers_per_point,
-                              a[n_minus_one,2:],a[n_plus_one,2:])
+                              a[n_minus_one,1:],a[n_plus_one,1:])
         #
         # Keep the points where the area of the left triangle plus the
         # area of the right triangle is bigger than the area of the triangle
@@ -345,8 +349,8 @@ def convex_hull(labels, indexes=None):
         #
         consider_me = t_left+t_right == 0
         if numpy.any(consider_me):
-            diff_i = a[consider_me,2]-centers_per_point[consider_me,0]
-            diff_j = a[consider_me,3]-centers_per_point[consider_me,1]
+            diff_i = a[:,1]-centers_per_point[:,0]
+            diff_j = a[:,2]-centers_per_point[:,1]
             #
             # The manhattan distance is good enough
             #
@@ -354,24 +358,35 @@ def convex_hull(labels, indexes=None):
             # The sign is different on different sides of a line including
             # the center. Multiply j by 2 to keep from colliding with i
             #
+            # If both signs are zero, then the point is in the center
+            #
             sign = numpy.sign(diff_i) + numpy.sign(diff_j)*2
             n_minus_one_consider = n_minus_one[consider_me]
             n_plus_one_consider = n_plus_one[consider_me]
-            left_is_worse = numpy.logical_or(dist > dist[n_minus_one_consider],
-                                             sign != sign[n_minus_one_consider])
-            right_is_worse = numpy.logical_or(dist > dist[n_plus_one_consider],
-                                              sign != sign[n_plus_one_consider])
-            keep_me[consider_me] = numpy.logical_and(left_is_worse,
-                                                     right_is_worse)
-            
+            left_is_worse = numpy.logical_or(dist[consider_me] >
+                                             dist[n_minus_one_consider],
+                                             sign[consider_me] != 
+                                             sign[n_minus_one_consider])
+            right_is_worse = numpy.logical_or(dist[consider_me] >
+                                              dist[n_plus_one_consider],
+                                              sign[consider_me] !=
+                                              sign[n_plus_one_consider])
+            to_keep = numpy.logical_and(numpy.logical_and(left_is_worse,
+                                                          right_is_worse),
+                                        sign[consider_me] != 0)
+            keep_me[consider_me] = to_keep 
         a = a[keep_me,:]
+        centers_per_point = centers_per_point[keep_me]
     #
-    # Convert the sparse COO to the array we want to return
+    # Finally, we have to shrink the results. We number each of the
+    # points for a label, then only keep those whose indexes are
+    # less than the count for their label.
     #
-    max_count = numpy.max(result_counts)
-    result = numpy.zeros((len(indexes),max_count,2),int)
-    result[:,:,0]=result_i[:,:max_count]
-    result[:,:,1]=result_j[:,:max_count]
+    within_label_index = numpy.array(range(result.shape[0]),int)
+    counts_per_point = result_counts[r_anti_indexes_per_point]
+    result_indexes_per_point = result_index[r_anti_indexes_per_point] 
+    within_label_index = (within_label_index - result_indexes_per_point)
+    result = result[within_label_index < counts_per_point]
     return result, result_counts
 
 def triangle_areas(p1,p2,p3):
@@ -381,19 +396,20 @@ def triangle_areas(p1,p2,p3):
     """
     v1 = p2-p1
     v2 = p3-p1
-    cross1 = v1[:,0] * v2[:,1]
-    cross2 = v2[:,0] * v1[:,1]
+    cross1 = v1[:,1] * v2[:,0]
+    cross2 = v2[:,1] * v1[:,0]
     a = (cross1-cross2) / 2
     return a  
 
 def draw_line(labels,pt0,pt1,value=1):
     """Draw a line between two points
     
+    pt0, pt1 are in i,j format which is the reverse of x,y format
     Uses the Bresenham algorithm
     Some code transcribed from http://www.cs.unc.edu/~mcmillan/comp136/Lecture6/Lines.html
     """
-    x0,y0 = pt0
-    x1,y1 = pt1
+    y0,x0 = pt0
+    y1,x1 = pt1
     diff_y = abs(y1-y0)
     diff_x = abs(x1-x0)
     x = x0
@@ -420,4 +436,337 @@ def draw_line(labels,pt0,pt1,value=1):
             x += step_x
             remainder += diff_y*2
             labels[y,x] = value
+
+def fixup_scipy_ndimage_result(whatever_it_returned):
+    """Convert a result from scipy.ndimage to a numpy array
+    
+    scipy.ndimage has the annoying habit of returning a single, bare
+    value instead of an array if the indexes passed in are of length 1.
+    For instance:
+    scipy.ndimage.maximum(image, labels, [1]) returns a float
+    but
+    scipy.ndimage.maximum(image, labels, [1,2]) returns a list
+    """
+    if getattr(whatever_it_returned,"__getitem__",False):
+        return numpy.array(whatever_it_returned)
+    else:
+        return numpy.array([whatever_it_returned])
+
+def minimum_enclosing_circle(labels, indexes = None):
+    """Find the location of the minimum enclosing circle and its radius
+    
+    labels - a labels matrix
+    indexes - an array giving the label indexes to be processed
+    
+    returns an Nx3 array organized as i,j of the center and radius
+    Algorithm from 
+    http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/CG-Applets/Center/centercli.htm
+    who calls it the Applet's Algorithm and ascribes it to Pr. Chrystal
+    The original citation is Professor Chrystal, "On the problem to construct
+    the minimum circle enclosing n given points in a plane", Proceedings of
+    the Edinburgh Mathematical Society, vol 3, 1884
+    """
+    if indexes == None:
+        max_label = numpy.max(labels)
+        indexes = numpy.array(range(1,max_label+1))
+    else:
+        indexes = numpy.array(indexes)
+    if indexes.shape[0] == 0:
+        return numpy.zeros((0,2)),numpy.zeros((0,))
+
+    hull, point_count = convex_hull(labels, indexes)
+    centers = numpy.zeros((len(indexes),2))
+    radii = numpy.zeros((len(indexes),))
+    #
+    # point_index is the index to the first point in "hull" for a label
+    #
+    point_index = numpy.zeros((indexes.shape[0],),int)
+    point_index[1:] = numpy.cumsum(point_count[:-1]) 
+    #
+    # The algorithm is this:
+    # * Choose a line S from S0 to S1 at random from the set of adjacent
+    #   S0 and S1
+    # * For every vertex (V) other than S, compute the angle from S0
+    #   to V to S. If this angle is obtuse, the vertex V lies within the
+    #   minimum enclosing circle and can be ignored.
+    # * Find the minimum angle for all V.
+    #   If the minimum angle is obtuse, stop and accept S as the diameter of 
+    #   the circle.
+    # * If some vertex V with an acute angle makes angles S0-S1-V and
+    #   S1-S0-V that are also acute, then S0-S1 and V are on the edge of
+    #   the minimum enclosing circle and the circumcenter of the triangle
+    #   is the center of the circle
+    # * Otherwise, find the largest obtuse angle among S0-S1-V and
+    #   S1-S0-V, choosing V and S0 as the new S if S1 is the vertex of
+    #   the obtuse angle or V and S1 as the new S if S0 is the vertex
+    #   of the obtuse angle.
+    #
+    #
+    # anti_indexes is used to transform a label # into an index in the above array
+    # anti_indexes_per_point gives the label index of any vertex
+    #
+    anti_indexes=numpy.zeros((numpy.max(indexes)+1,),int)
+    anti_indexes[indexes] = range(indexes.shape[0])
+    anti_indexes_per_point = anti_indexes[hull[:,0]]
+    #
+    # Start out by eliminating the degenerate cases: 0, 1 and 2
+    #
+    centers[point_count==0,:]= numpy.NaN
+    if numpy.all(point_count == 0):
+        # Bail if there are no points in any hull to prevent
+        # index failures below.
+        return centers,radii
         
+    centers[point_count==1,:]=hull[point_index[point_count==1],1:]
+    radii[point_count < 2]=0
+    centers[point_count==2,:]=(hull[point_index[point_count==2],1:]+
+                               hull[point_index[point_count==2]+1,1:])/2
+    distance = centers[point_count==2,:] - hull[point_index[point_count==2],1:]
+    radii[point_count==2]=numpy.sqrt(distance[:,0]**2+distance[:,1]**2)
+    #
+    # Get rid of the degenerate points
+    #
+    keep_me = point_count > 2
+    #
+    # Pick S0 as the first point in each label
+    # and S1 as the second.
+    #
+    s0_idx = point_index.copy()
+    s1_idx = s0_idx+1
+    #
+    # number each of the points in a label with an index # which gives
+    # the order in which we'll get their angles. We use this to pick out
+    # points # 2 to N which are the candidate vertices to S
+    # 
+    within_label_indexes = (numpy.array(range(hull.shape[0]),int) -
+                            point_index[anti_indexes_per_point])
+    
+    while(numpy.any(keep_me)):
+        #############################################################
+        # Label indexing for active labels
+        #############################################################
+        #
+        # labels_to_consider contains the labels of the objects which
+        # have not been completed
+        #
+        labels_to_consider = indexes[keep_me]
+        #
+        # anti_indexes_to_consider gives the index into any vector
+        # shaped similarly to labels_to_consider (for instance, min_angle
+        # below) for every label in labels_to_consider.
+        #
+        anti_indexes_to_consider =\
+            numpy.zeros((numpy.max(labels_to_consider)+1,),int)
+        anti_indexes_to_consider[labels_to_consider] = \
+            numpy.array(range(labels_to_consider.shape[0]))
+        ##############################################################
+        # Vertex indexing for active vertexes other than S0 and S1
+        ##############################################################
+        #
+        # The vertices are hull-points with indexes of 2 or more
+        # keep_me_vertices is a mask of the vertices to operate on
+        # during this iteration
+        #
+        keep_me_vertices = numpy.logical_and(keep_me[anti_indexes_per_point],
+                                             within_label_indexes >= 2)
+        #
+        # v is the vertex coordinates for each vertex considered
+        #
+        v  = hull[keep_me_vertices,1:]
+        #
+        # v_labels is the label from the label matrix for each vertex
+        #
+        v_labels = hull[keep_me_vertices,0]
+        #
+        # v_indexes is the index into "hull" for each vertex (and similarly
+        # shaped vectors such as within_label_indexes
+        #
+        v_indexes=numpy.argwhere(keep_me_vertices).flatten()
+        #
+        # anti_indexes_per_vertex gives the index into "indexes" and
+        # any similarly shaped array of per-label values
+        # (for instance s0_idx) for each vertex being considered
+        #
+        anti_indexes_per_vertex = anti_indexes_per_point[keep_me_vertices]
+        #
+        # anti_indexes_to_consider_per_vertex gives the index into any
+        # vector shaped similarly to labels_to_consider for each
+        # vertex being analyzed
+        #
+        anti_indexes_to_consider_per_vertex = anti_indexes_to_consider[v_labels]
+        #
+        # Get S0 and S1 per vertex
+        #
+        s0 = hull[s0_idx[keep_me],1:]
+        s1 = hull[s1_idx[keep_me],1:]
+        s0 = s0[anti_indexes_to_consider_per_vertex]
+        s1 = s1[anti_indexes_to_consider_per_vertex]
+        #
+        # Compute the angle S0-S1-V
+        #
+        # the first vector of the angles is between S0 and S1
+        #
+        s01 = (s0 - s1).astype(float)
+        #
+        # compute V-S1 and V-S0 at each of the vertices to be considered
+        #
+        vs0 = (v - s0).astype(float)
+        vs1 = (v - s1).astype(float) 
+        #
+        #` Take the dot product of s01 and vs1 divided by the length of s01 *
+        # the length of vs1. This gives the cosine of the angle between.
+        #
+        dot_vs1s0 = (numpy.sum(s01*vs1,1) /
+                     numpy.sqrt(numpy.sum(s01**2,1)*numpy.sum(vs1**2,1)))
+        angle_vs1s0 = numpy.abs(numpy.arccos(dot_vs1s0))
+        s10 = -s01
+        dot_vs0s1 = (numpy.sum(s10*vs0,1) /
+                     numpy.sqrt(numpy.sum(s01**2,1)*numpy.sum(vs0**2,1)))
+        angle_vs0s1 = numpy.abs(numpy.arccos(dot_vs0s1))
+        #
+        # S0-V-S1 is pi - the other two
+        #
+        angle_s0vs1 = numpy.pi - angle_vs1s0 - angle_vs0s1
+        assert numpy.all(angle_s0vs1 >= 0)
+        #
+        # Now we find the minimum angle per label
+        #
+        min_angle = scipy.ndimage.minimum(angle_s0vs1,v_labels,
+                                          labels_to_consider)
+        min_angle = fixup_scipy_ndimage_result(min_angle)
+        min_angle_per_vertex = min_angle[anti_indexes_to_consider_per_vertex]
+        #
+        # Calculate the index into V of the minimum angle per label.
+        # Use "indexes" instead of labels_to_consider so we get something
+        # with the same shape as keep_me
+        #
+        min_position = scipy.ndimage.minimum_position(angle_s0vs1,v_labels,
+                                                      indexes)
+        min_position = fixup_scipy_ndimage_result(min_position)
+        min_position = min_position.flatten()
+        #
+        # Case 1: minimum angle is obtuse or right. Accept S as the diameter.
+        # Case 1a: there are no vertices. Accept S as the diameter.
+        #
+        vertex_counts = scipy.ndimage.sum(keep_me_vertices,
+                                          hull[:,0],
+                                          labels_to_consider)
+        vertex_counts = fixup_scipy_ndimage_result(vertex_counts)
+        case_1 = numpy.logical_or(min_angle >= numpy.pi / 2,
+                                  vertex_counts == 0)
+                                   
+        if numpy.any(case_1):
+            # convert from a boolean over indexes_to_consider to a boolean
+            # over indexes
+            finish_me = numpy.zeros((indexes.shape[0],),bool)
+            finish_me[anti_indexes[labels_to_consider[case_1]]] = True
+            s0_finish_me = hull[s0_idx[finish_me],1:].astype(float)
+            s1_finish_me = hull[s1_idx[finish_me],1:].astype(float)
+            centers[finish_me] = (s0_finish_me + s1_finish_me)/2
+            radii[finish_me] = numpy.sqrt(numpy.sum((s0_finish_me - 
+                                                     s1_finish_me)**2,1))/2
+            keep_me[finish_me] = False
+        #
+        # Case 2: all angles for the minimum angle vertex are acute 
+        #         or right.
+        #         Pick S0, S1 and the vertex with the
+        #         smallest angle as 3 points on the circle. If you look at the
+        #         geometry, the diameter is the length of S0-S1 divided by
+        #         the cosine of 1/2 of the angle. The center of the circle
+        #         is at the circumcenter of the triangle formed by S0, S1 and
+        #         V.
+        case_2 = keep_me.copy()
+        case_2[angle_vs1s0[min_position] > numpy.pi/2] = False
+        case_2[angle_vs0s1[min_position] > numpy.pi/2] = False
+        case_2[angle_s0vs1[min_position] > numpy.pi/2] = False
+        
+        if numpy.any(case_2):
+            #
+            # Wikipedia (http://en.wikipedia.org/wiki/Circumcircle#Cartesian_coordinates)
+            # gives the following:
+            # D = 2(S0y Vx + S1y S0x - S1y Vx - S0y S1x - S0x Vy + S1x Vy)
+            # D = 2(S0x (S1y-Vy) + S1x(Vy-S0y) + Vx(S0y-S1y)
+            # x = ((S0x**2+S0y**2)(S1y-Vy)+(S1x**2+S1y**2)(Vy-S0y)+(Vx**2+Vy**2)(S0y-S1y)) / D
+            # y = ((S0x**2+S0y**2)(Vx-S1x)+(S1x**2+S1y**2)(S0y-Vy)+(Vx**2+Vy**2)(S1y-S0y)) / D
+            #
+            ss0 = hull[s0_idx[case_2],1:].astype(float)
+            ss1 = hull[s1_idx[case_2],1:].astype(float)
+            vv  = v[min_position[case_2]].astype(float)
+            Y = 0
+            X = 1 
+            D = 2*(ss0[:,X] * (ss1[:,Y] - vv[:,Y]) +
+                   ss1[:,X] * (vv[:,Y]  - ss0[:,Y]) +
+                   vv[:,X]  * (ss0[:,Y] - ss1[:,Y]))
+            x = (numpy.sum(ss0**2,1)*(ss1[:,Y] - vv[:,Y]) +
+                 numpy.sum(ss1**2,1)*(vv[:,Y]  - ss0[:,Y]) +
+                 numpy.sum(vv**2,1) *(ss0[:,Y] - ss1[:,Y])) / D
+            y = (numpy.sum(ss0**2,1)*(vv[:,X]  - ss1[:,X]) +
+                 numpy.sum(ss1**2,1)*(ss0[:,X] - vv[:,X]) +
+                 numpy.sum(vv**2,1) *(ss1[:,X] - ss0[:,X])) / D
+            centers[case_2,X] = x
+            centers[case_2,Y] = y
+            distances = ss0-centers[case_2]
+            radii[case_2] = numpy.sqrt(numpy.sum(distances**2,1))
+            keep_me[case_2] = False
+        #
+        # Finally, for anybody who's left, for each of S0-S1-V and
+        # S1-S0-V, for V, the vertex with the minimum angle,
+        # find the largest obtuse angle. The vertex of this
+        # angle (S0 or S1) is inside the enclosing circle, so take V
+        # and either S1 or S0 as the new S.
+        #
+        # This involves a relabeling of within_label_indexes. We replace
+        # either S0 or S1 with V and assign V either 0 or 1
+        #
+        if numpy.any(keep_me):
+            labels_to_consider = indexes[keep_me]
+            indexes_to_consider = anti_indexes[labels_to_consider]
+            #
+            # Index into within_label_indexes for each V with the
+            # smallest angle
+            #
+            v_obtuse_indexes = v_indexes[min_position[keep_me]]
+            angle_vs0s1_to_consider = angle_vs0s1[min_position[keep_me]]
+            angle_vs1s0_to_consider = angle_vs1s0[min_position[keep_me]]
+            #
+            # Do the cases where S0 is larger
+            #
+            s0_is_obtuse = angle_vs0s1_to_consider > numpy.pi/2
+            if numpy.any(s0_is_obtuse):
+                #
+                # The index of the obtuse S0
+                #
+                v_obtuse_s0_indexes = v_obtuse_indexes[s0_is_obtuse]
+                obtuse_s0_idx = s0_idx[indexes_to_consider[s0_is_obtuse]]
+                #
+                # S0 gets the within_label_index of the vertex
+                #
+                within_label_indexes[obtuse_s0_idx] = \
+                    within_label_indexes[v_obtuse_s0_indexes]
+                #
+                # Assign V as the new S0
+                #
+                s0_idx[indexes_to_consider[s0_is_obtuse]] = v_obtuse_s0_indexes
+                within_label_indexes[v_obtuse_s0_indexes] = 0
+            #
+            # Do the cases where S1 is larger
+            #
+            s1_is_obtuse = numpy.logical_not(s0_is_obtuse)
+            if numpy.any(s1_is_obtuse):
+                #
+                # The index of the obtuse S1
+                #
+                v_obtuse_s1_indexes = v_obtuse_indexes[s1_is_obtuse]
+                obtuse_s1_idx = s1_idx[indexes_to_consider[s1_is_obtuse]]
+                #
+                # S1 gets V's within_label_index and goes onto the list
+                # of considered vertices.
+                #
+                within_label_indexes[obtuse_s1_idx] = \
+                    within_label_indexes[v_obtuse_s1_indexes]
+                #
+                # Assign V as the new S1
+                #
+                s1_idx[indexes_to_consider[s1_is_obtuse]] = v_obtuse_s1_indexes
+                within_label_indexes[v_obtuse_s1_indexes] = 1
+    return centers, radii

@@ -6,6 +6,7 @@ __version__="$Revision$"
 import unittest
 import numpy
 import scipy.ndimage
+import scipy.misc
 
 import cellprofiler.cpmath.cpmorphology as morph
 
@@ -289,21 +290,40 @@ class TestConvexHull(unittest.TestCase):
         labels = numpy.zeros((10,10),int)
         labels[4,5] = 1
         result,counts = morph.convex_hull(labels,[1])
-        self.assertEqual(numpy.product(result.shape),2)
-        self.assertEqual(result[0,0,0],4)
-        self.assertEqual(result[0,0,1],5)
+        self.assertEqual(result.shape,(1,3))
+        self.assertEqual(result[0,0],1)
+        self.assertEqual(result[0,1],4)
+        self.assertEqual(result[0,2],5)
         self.assertEqual(counts[0],1)
     
-    def test_01_03_line(self):
+    def test_01_030_line(self):
         """Make sure convex_hull can handle the degenerate case of a line"""
         labels = numpy.zeros((10,10),int)
         labels[2:8,5] = 1
         result,counts = morph.convex_hull(labels,[1])
         self.assertEqual(counts[0],2)
-        self.assertEqual(numpy.product(result.shape),4)
-        self.assertTrue(result[0,0,0] in (2,7))
-        self.assertTrue(result[0,1,0] in (2,7))
-        self.assertTrue(numpy.all(result[0,:,1]==5))
+        self.assertEqual(result.shape,(2,3))
+        self.assertTrue(numpy.all(result[:,0]==1))
+        self.assertTrue(result[0,1] in (2,7))
+        self.assertTrue(result[1,1] in (2,7))
+        self.assertTrue(numpy.all(result[:,2]==5))
+    
+    def test_01_031_odd_line(self):
+        """Make sure convex_hull can handle the degenerate case of a line with odd length
+        
+        This is a regression test: the line has a point in the center if
+        it's odd and the sign of the difference of that point is zero
+        which causes it to be included in the hull.
+        """
+        labels = numpy.zeros((10,10),int)
+        labels[2:7,5] = 1
+        result,counts = morph.convex_hull(labels,[1])
+        self.assertEqual(counts[0],2)
+        self.assertEqual(result.shape,(2,3))
+        self.assertTrue(numpy.all(result[:,0]==1))
+        self.assertTrue(result[0,1] in (2,6))
+        self.assertTrue(result[1,1] in (2,6))
+        self.assertTrue(numpy.all(result[:,2]==5))
     
     def test_01_04_square(self):
         """Make sure convex_hull can handle a square which is not degenerate"""
@@ -311,12 +331,13 @@ class TestConvexHull(unittest.TestCase):
         labels[2:7,3:8] = 1
         result,counts = morph.convex_hull(labels,[1])
         self.assertEqual(counts[0],4)
-        order = numpy.lexsort((result[0,:,1], result[0,:,0]))
-        result = result[:,order,:]
-        self.assertTrue((result[0,0,0],result[0,0,1]) == (2,3))
-        self.assertTrue((result[0,1,0],result[0,1,1]) == (2,7))
-        self.assertTrue((result[0,2,0],result[0,2,1]) == (6,3))
-        self.assertTrue((result[0,3,0],result[0,3,1]) == (6,7))
+        order = numpy.lexsort((result[:,2], result[:,1]))
+        result = result[order,:]
+        expected = numpy.array([[1,2,3],
+                                [1,2,7],
+                                [1,6,3],
+                                [1,6,7]])
+        self.assertTrue(numpy.all(result==expected))
     
     def test_02_01_out_of_order(self):
         """Make sure convex_hull can handle out of order indices"""
@@ -326,11 +347,45 @@ class TestConvexHull(unittest.TestCase):
         result,counts = morph.convex_hull(labels,[2,1])
         self.assertEqual(counts.shape[0],2)
         self.assertTrue(numpy.all(counts==1))
-        self.assertEqual(result[0,0,0],5)
-        self.assertEqual(result[0,0,1],6)
-        self.assertEqual(result[1,0,0],2)
-        self.assertEqual(result[1,0,1],3)
+        
+        expected = numpy.array([[2,5,6],[1,2,3]])
+        self.assertTrue(numpy.all(result == expected))
     
+    def test_02_02_out_of_order(self):
+        """Make sure convex_hull can handle out of order indices
+        that require different #s of loop iterations"""
+        
+        labels = numpy.zeros((10,10),int)
+        labels[2,3] = 1
+        labels[1:7,4:8] = 2
+        result,counts = morph.convex_hull(labels, [2,1])
+        self.assertEqual(counts.shape[0],2)
+        self.assertTrue(numpy.all(counts==(4,1)))
+        self.assertEqual(result.shape,(5,3))
+        order = numpy.lexsort((result[:,2],result[:,1],
+                               numpy.array([0,2,1])[result[:,0]]))
+        result = result[order,:]
+        expected = numpy.array([[2,1,4],
+                                [2,1,7],
+                                [2,6,4],
+                                [2,6,7],
+                                [1,2,3]])
+        self.assertTrue(numpy.all(result==expected))
+    
+    def test_02_03_two_squares(self):
+        """Make sure convex_hull can handle two complex shapes"""
+        labels = numpy.zeros((10,10),int)
+        labels[1:5,3:7] = 1
+        labels[6:10,1:7] = 2
+        result,counts = morph.convex_hull(labels, [1,2])
+        self.assertEqual(counts.shape[0],2)
+        self.assertTrue(numpy.all(counts==(4,4)))
+        order = numpy.lexsort((result[:,2],result[:,1],result[:,0]))
+        result = result[order,:]
+        expected = numpy.array([[1,1,3],[1,1,6],[1,4,3],[1,4,6],
+                                [2,6,1],[2,6,6],[2,9,1],[2,9,6]])
+        self.assertTrue(numpy.all(result==expected))
+        
     def test_03_01_concave(self):
         """Make sure convex_hull handles a square with a concavity"""
         labels = numpy.zeros((10,10),int)
@@ -340,12 +395,197 @@ class TestConvexHull(unittest.TestCase):
         labels[4:5,5] = 0
         result,counts = morph.convex_hull(labels,[1])
         self.assertEqual(counts[0],4)
-        order = numpy.lexsort((result[0,:,1],result[0,:,0]))
-        result = result[:,order,:]
-        self.assertTrue((result[0,0,0],result[0,0,1]) == (2,3))
-        self.assertTrue((result[0,1,0],result[0,1,1]) == (2,8))
-        self.assertTrue((result[0,2,0],result[0,2,1]) == (7,3))
-        self.assertTrue((result[0,3,0],result[0,3,1]) == (7,8))
+        order = numpy.lexsort((result[:,2],result[:,1],result[:,0]))
+        result = result[order,:]
+        expected = numpy.array([[1,2,3],
+                                [1,2,8],
+                                [1,7,3],
+                                [1,7,8]])
+        self.assertTrue(numpy.all(result==expected))
         
+    def test_04_01_regression(self):
+        """The set of points given in this case yielded one in the interior"""
+        numpy.random.seed(0)
+        s = 10 # divide each image into this many mini-squares with a shape in each
+        side = 250
+        mini_side = side / s
+        ct = 20
+        labels = numpy.zeros((side,side),int)
+        pts = numpy.zeros((s*s*ct,2),int)
+        index = numpy.array(range(pts.shape[0])).astype(float)/float(ct)
+        index = index.astype(int)
+        idx = 0
+        for i in range(0,side,mini_side):
+            for j in range(0,side,mini_side):
+                idx = idx+1
+                # get ct+1 unique points
+                p = numpy.random.uniform(low=0,high=mini_side,
+                                         size=(ct+1,2)).astype(int)
+                while True:
+                    pu = numpy.unique(p[:,0]+p[:,1]*mini_side)
+                    if pu.shape[0] == ct+1:
+                        break
+                    p[:pu.shape[0],0] = numpy.mod(pu,mini_side).astype(int)
+                    p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                    p_size = (ct+1-pu.shape[0],2)
+                    p[pu.shape[0],:] = numpy.random.uniform(low=0,
+                                                            high=mini_side,
+                                                            size=p_size)
+                # Use the last point as the "center" and order
+                # all of the other points according to their angles
+                # to this "center"
+                center = p[ct,:]
+                v = p[:ct,:]-center
+                angle = numpy.arctan2(v[:,0],v[:,1])
+                order = numpy.lexsort((angle,))
+                p = p[:ct][order]
+                p[:,0] = p[:,0]+i
+                p[:,1] = p[:,1]+j
+                pts[(idx-1)*ct:idx*ct,:]=p
+                #
+                # draw lines on the labels
+                #
+                for k in range(ct):
+                    morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
+        self.assertTrue(labels[5,106]==5)
+        result,counts = morph.convex_hull(labels,numpy.array(range(100))+1)
+        self.assertFalse(numpy.any(numpy.logical_and(result[:,1]==5,
+                                                     result[:,2]==106)))
         
+    
+class TestMinimumEnclosingCircle(unittest.TestCase):
+    def test_00_00_zeros(self):
+        """Make sure minimum_enclosing_circle can handle an empty array"""
+        center,radius = morph.minimum_enclosing_circle(numpy.zeros((10,10),int), [])
+        self.assertEqual(numpy.product(center.shape),0)
+        self.assertEqual(numpy.product(radius.shape),0)
+    
+    def test_01_01_zeros(self):
+        """Make sure minimum_enclosing_circle can work if a label has no points"""
+        center,radius = morph.minimum_enclosing_circle(numpy.zeros((10,10),int), [1])
+        self.assertEqual(center.shape,(1,2))
+        self.assertEqual(numpy.product(radius.shape),1)
+        self.assertEqual(radius[0],0)
+    
+    def test_01_02_point(self):
+        """Make sure minimum_enclosing_circle can handle the degenerate case of one point"""
+        labels = numpy.zeros((10,10),int)
+        labels[4,5] = 1
+        center,radius = morph.minimum_enclosing_circle(labels,[1])
+        self.assertEqual(center.shape,(1,2))
+        self.assertEqual(radius.shape,(1,))
+        self.assertTrue(numpy.all(center==numpy.array([(4,5)])))
+        self.assertEqual(radius[0],0)
+    
+    def test_01_03_line(self):
+        """Make sure minimum_enclosing_circle can handle the degenerate case of a line"""
+        labels = numpy.zeros((10,10),int)
+        labels[2:7,5] = 1
+        center,radius = morph.minimum_enclosing_circle(labels,[1])
+        self.assertTrue(numpy.all(center==numpy.array([(4,5)])))
+        self.assertEqual(radius[0],2)
+    
+    def test_01_04_square(self):
+        """Make sure minimum_enclosing_circle can handle a square which is not degenerate"""
+        labels = numpy.zeros((10,10),int)
+        labels[2:7,3:8] = 1
+        center,radius = morph.minimum_enclosing_circle(labels,[1])
+        self.assertTrue(numpy.all(center==numpy.array([(4,5)])))
+        self.assertAlmostEqual(radius[0],numpy.sqrt(8))
+    
+    def test_02_01_out_of_order(self):
+        """Make sure minimum_enclosing_circle can handle out of order indices"""
+        labels = numpy.zeros((10,10),int)
+        labels[2,3] = 1
+        labels[5,6] = 2
+        center,radius = morph.minimum_enclosing_circle(labels,[2,1])
+        self.assertEqual(center.shape,(2,2))
         
+        expected_center = numpy.array(((5,6),(2,3)))
+        self.assertTrue(numpy.all(center == expected_center))
+    
+    def test_02_02_out_of_order(self):
+        """Make sure minimum_enclosing_circle can handle out of order indices
+        that require different #s of loop iterations"""
+        
+        labels = numpy.zeros((10,10),int)
+        labels[2,3] = 1
+        labels[1:6,4:9] = 2
+        center,result = morph.minimum_enclosing_circle(labels, [2,1])
+        expected_center = numpy.array(((3,6),(2,3)))
+        self.assertTrue(numpy.all(center == expected_center))
+    
+    def test_03_01_random_polygons(self):
+        """Test minimum_enclosing_circle on 250 random dodecagons"""
+        numpy.random.seed(0)
+        s = 10 # divide each image into this many mini-squares with a shape in each
+        side = 250
+        mini_side = side / s
+        ct = 20
+        #
+        # We keep going until we get at least 10 multi-edge cases -
+        # polygons where the minimum enclosing circle intersects 3+ vertices
+        #
+        n_multi_edge = 0
+        while n_multi_edge < 10:
+            labels = numpy.zeros((side,side),int)
+            pts = numpy.zeros((s*s*ct,2),int)
+            index = numpy.array(range(pts.shape[0])).astype(float)/float(ct)
+            index = index.astype(int)
+            idx = 0
+            for i in range(0,side,mini_side):
+                for j in range(0,side,mini_side):
+                    idx = idx+1
+                    # get ct+1 unique points
+                    p = numpy.random.uniform(low=0,high=mini_side,
+                                             size=(ct+1,2)).astype(int)
+                    while True:
+                        pu = numpy.unique(p[:,0]+p[:,1]*mini_side)
+                        if pu.shape[0] == ct+1:
+                            break
+                        p[:pu.shape[0],0] = numpy.mod(pu,mini_side).astype(int)
+                        p[:pu.shape[0],1] = (pu / mini_side).astype(int)
+                        p_size = (ct+1-pu.shape[0],2)
+                        p[pu.shape[0],:] = numpy.random.uniform(low=0,
+                                                                high=mini_side,
+                                                                size=p_size)
+                    # Use the last point as the "center" and order
+                    # all of the other points according to their angles
+                    # to this "center"
+                    center = p[ct,:]
+                    v = p[:ct,:]-center
+                    angle = numpy.arctan2(v[:,0],v[:,1])
+                    order = numpy.lexsort((angle,))
+                    p = p[:ct][order]
+                    p[:,0] = p[:,0]+i
+                    p[:,1] = p[:,1]+j
+                    pts[(idx-1)*ct:idx*ct,:]=p
+                    #
+                    # draw lines on the labels
+                    #
+                    for k in range(ct):
+                        morph.draw_line(labels, p[k,:], p[(k+1)%ct,:], idx)
+            center,radius = morph.minimum_enclosing_circle(labels, 
+                                                           numpy.array(range(s**2))+1)
+            epsilon = .000001
+            center_per_pt = center[index]
+            radius_per_pt = radius[index]
+            distance_from_center = numpy.sqrt(numpy.sum((pts.astype(float)-
+                                                         center_per_pt)**2,1))
+            #
+            # All points must be within the enclosing circle
+            #
+            self.assertTrue(numpy.all(distance_from_center - epsilon < radius_per_pt))
+            pt_on_edge = numpy.abs(distance_from_center - radius_per_pt)<epsilon
+            count_pt_on_edge = scipy.ndimage.sum(pt_on_edge,
+                                                 index,
+                                                 range(s**2))
+            count_pt_on_edge = numpy.array(count_pt_on_edge)
+            #
+            # Every dodecagon must have at least 2 points on the edge.
+            #
+            self.assertTrue(numpy.all(count_pt_on_edge>=2))
+            #
+            # Count the multi_edge cases
+            #
+            n_multi_edge += numpy.sum(count_pt_on_edge>=3) 

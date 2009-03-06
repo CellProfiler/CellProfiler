@@ -30,7 +30,7 @@ if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
         Directories{idx} = SubDirectory;
         
         %% Feedback for directories chosen
-        msgbox(char(Directories), 'SubDirectories chosen:','none','replace');
+        CPmsgbox(char(Directories), 'SubDirectories chosen:','help','replace');
  
         % Make sure the selected directories all lie under the Default Image path
         % Here, characters are treated like numbers in order to find where the 

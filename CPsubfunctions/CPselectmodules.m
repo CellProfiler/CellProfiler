@@ -42,7 +42,6 @@ Width = 4.2;
 set(SelectDisplay,'Position',[Pos(1)+1 YDist Width Height]);
 
 %%% Create text and special checkboxes
-FontSize = 11;
 uicontrol(SelectDisplay,'Style','Text','String','Select which module windows to display: ','HorizontalAlignment','Left','Units','Inches','Position',[0.2 Height-0.25 3.5 0.2],'BackgroundColor',[.7 .7 .9]);
 
 %%% Create panel and slider, if needed
@@ -116,12 +115,7 @@ if ishandle(SelectDisplay)
     end
     delete(SelectDisplay);
 else
-    button = CPquestdlg('You have clicked Cancel or closed the window. All modules will be selected unless you click Cancel Processing.','Warning','Show All','Cancel Processing','Show All');
-    if strcmp(button, 'Show All')
-        Selection = ones(NumberOfModules,1);
-    else
-        return
-    end
+    return
 end
 
 

@@ -162,7 +162,7 @@ CPvalidfieldname(DatabaseName)
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 if ~strcmp(TablePrefix,'Do not use')
-    CPvalidfieldname(DatabaseName)
+    CPvalidfieldname(TablePrefix)
 end
 
 %textVAR04 = What prefix should be used to name the SQL files?

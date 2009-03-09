@@ -294,7 +294,7 @@ end
 
 if isWarningNeeded
     TextString{end+1} = '';
-    TextString{end+1} = 'If there are duplicate images, the file integrity of the duplicates are checked and the first "good" image for that cycle, if any. If there are no "good" files, the images for that cycle are treated as missing and are skipped in pipeline execution.';
+    TextString{end+1} = 'If there are duplicate images, the file integrity of the duplicates are checked and the first "good" image for that cycle, if any. If there are no "good" files, the images for that cycle are treated as missing and are skipped in pipeline execution. If both files are "good", the most recent one out of the pair is used.';
     TextString{end+1} = '';
     TextString{end+1} = 'If there are unmatched images, placeholders are inserted for the missing files (i.e., an image of zeros) and pipeline execution will continue. However, there will be no measurements made for the missing images.';
     TextString{end+1} = '';
@@ -363,6 +363,17 @@ for n = 1:size(FlaggedFilenames,1)
         catch
             isImageCorrupt(k) = true;
         end
+    end
+    
+    % If dealing with duplicate files, and BOTH are fine, use the most
+    % recent one
+    if length(isImageCorrupt) > 1 && all(~isImageCorrupt)
+        d = [];
+        for k = 1:length(FlaggedFileList)
+            d = cat(1,d,dir([handles.Pipeline.(['Pathname',FileListFieldnames{channel}(length(FileListPrefix)+1:end)]),FlaggedFileList{k}]));
+        end
+        d = arrayfun(@(x)(datenum(x.date)),d);
+        isImageCorrupt = d ~= max(d);
     end
 
     % Remove corrupt files from the new FileList, replacing them

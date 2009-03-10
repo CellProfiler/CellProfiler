@@ -127,7 +127,7 @@ for n = 1:length(ImageName)
     doTokensExist =  doTokensExist || anytokensfound;
 end
 
-doFirstCycleOnly = SetBeingAnalyzed == 1;
+doFirstCycleOnly = (SetBeingAnalyzed == 1 & doTokensExist == 0);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% FIRST CYCLE FILE HANDLING %%%

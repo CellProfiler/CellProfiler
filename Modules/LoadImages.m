@@ -876,7 +876,7 @@ for n = 1:length(ImageName)
     end
 end
 
-if strcmp(ImageOrMovie,'Image')
+if strcmp(ImageOrMovie,'Image')        
     % Check if any of the files are missing (i.e., zero)
     uniqueImageSize = ImageSizes(~MissingFileIdx);
     uniqueImageSize = unique(cat(1,uniqueImageSize{:}),'rows');
@@ -921,3 +921,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, FileNames);
+% If images checked, record QC measurements
+if strcmpi(CheckImageSets,'Yes')
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageUnmatched'), handles.Pipeline.idxUnmatchedFiles{SetBeingAnalyzed});
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageDuplicated'),handles.Pipeline.idxDuplicateFiles{SetBeingAnalyzed});
+end

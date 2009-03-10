@@ -104,7 +104,7 @@ end
 
 FileNamesForEachChannel = cell(length(idxIndivPaths),length(uniquePaths));
 NewFileList = cell(length(uniquePaths),1);
-[UnmatchedFilenames,DuplicateFilenames] = deal(cell(1,length(uniquePaths)));
+[UnmatchedFilenames,DuplicateFilenames,idxUnmatchedFiles,idxDuplicateFiles] = deal(cell(1,length(uniquePaths)));
 for m = 1:length(uniquePaths)
     FileNamesForChannelN = cell(1,length(idxIndivPaths));
     
@@ -192,8 +192,8 @@ for m = 1:length(uniquePaths)
     end
     
     IsFileMissing = cellfun(@isempty,NewFileList{m});
-    idxMissingFiles = any(IsFileMissing,1);
-    for n = find(idxMissingFiles)
+    idxUnmatchedFiles{m} = any(IsFileMissing,1);
+    for n = find(idxUnmatchedFiles{m})
         UnmatchedFilenames{m} = cat(1,UnmatchedFilenames{m},...
                                       cat(2, cellstr(AllFileNamesForChannelN(n,:)),...
                                              {find(~IsFileMissing(:,n))'}));
@@ -208,11 +208,13 @@ for m = 1:length(uniquePaths)
     % ASSUMPTION: A duplicate file means that one of them is corrupted,
     % which seems to be the case on HCS systems
     if ~isempty(DuplicateFilenames{m}),
-        NewFileList{m} = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList{m},DuplicateFilenames{m},m,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,fn,prefix);
+        [NewFileList{m},idxDuplicateFiles{m}] = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList{m},DuplicateFilenames{m},m,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,fn,prefix);
+    else
+        idxDuplicateFiles{m} = false(1,size(NewFileList{m},2));
     end
 end
 
-% Saves the new filelist to the handles structure
+% Save the new filelist to the handles structure
 for m = 1:length(ImageName),
     handles.Pipeline.(fn{m}) = [];
     for n = 1:length(uniquePaths),
@@ -220,6 +222,16 @@ for m = 1:length(ImageName),
     end
 end
 
+% Save the results to the handles structure
+[handles.Pipeline.idxUnmatchedFiles,handles.Pipeline.idxDuplicateFiles] = deal([]);
+for m = 1:length(uniquePaths),
+    handles.Pipeline.idxUnmatchedFiles = cat(2,handles.Pipeline.idxUnmatchedFiles, num2cell(idxUnmatchedFiles{m}));
+    handles.Pipeline.idxDuplicateFiles = cat(2,handles.Pipeline.idxDuplicateFiles, num2cell(idxDuplicateFiles{m}));
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISPLAY RESULTS %%%
+%%%%%%%%%%%%%%%%%%%%%%%
 isWarningNeeded = false;
 warningLength = 0;
 
@@ -342,7 +354,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SUBFUNCTION - FindAndReplaceCorruptFilesInFilelist
-function NewFileList = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList,FlaggedFilenames,idxUniquePath,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,FileListFieldnames,FileListPrefix)
+function [NewFileList,idxFlaggedFiles] = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList,FlaggedFilenames,idxUniquePath,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,FileListFieldnames,FileListPrefix)
+
+idxFlaggedFiles = false(1,size(NewFileList,2));
 
 for n = 1:size(FlaggedFilenames,1)
     channel = FlaggedFilenames{n,2};
@@ -380,9 +394,13 @@ for n = 1:size(FlaggedFilenames,1)
     % with the first file(s) that pass the test, or [] if none of them pass
     % TODO: A more intelligent way to do this substitution
     if length(isImageCorrupt) > 1 && any(isImageCorrupt) && ~all(isImageCorrupt)
-        NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = ...
+        idx = ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt));
+        NewFileList(channel,idx) = ...
                 FlaggedFileList(find(~isImageCorrupt,length(find(isImageCorrupt))));
+        idxFlaggedFiles(idx) = true;
     else
-        NewFileList(channel,ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt))) = {''};
+        idx = ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt));
+        NewFileList(channel,idx) = {''};
+        idxFlaggedFiles(idx) = true;
     end
 end

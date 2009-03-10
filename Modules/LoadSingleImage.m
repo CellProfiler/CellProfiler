@@ -123,7 +123,7 @@ ImageName = ImageName(~idx);
 % Substitute Metadata tokens into TextToFind (if found)
 doTokensExist = false;
 for n = 1:length(ImageName)
-    [TextToFind{n},anytokensfound] = CPreplacemetadata(handles,TextToFind{n});
+    [TextToFind{n},anytokensfound] = CPreplacemetadata(handles,TextToFind{n},SetBeingAnalyzed);
     doTokensExist =  doTokensExist || anytokensfound;
 end
 

@@ -1,9 +1,28 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 
 """
+import decorator
 import numpy
 import scipy.sparse
 
+@decorator
+def memoize_method(function, *args):
+    """Cache the result of a method in that class's dictionary
+    
+    The dictionary is indexed by function name and the values of that
+    dictionary are themselves dictionaries with args[1:] as the keys
+    and the result of applying function to args[1:] as the values.
+    """
+    sself = args[0]
+    d = getattr(self, "memoize_method_dictionary", False)
+    if not d:
+        setattr(self,"memoize_method_dictionary",{})
+    if not d.has_key(function):
+        d[function] = {}
+    if not d[function].has_key(args[1:]):
+        d[function][args[1:]] = function(*args)
+    return d[function][args[1:]]
+        
 class Objects(object):
     """The labelling of an image with object #s
     """
@@ -21,6 +40,11 @@ class Objects(object):
     def set_segmented(self,labels):
         check_consistency(labels, self.__unedited_segmented, self.__small_removed_segmented)
         self.__segmented = labels
+        #
+        # Clear all cached results
+        #
+        if getattr(self, "memoize_method_dictionary", False):
+            self.memoize_method_dictionary = {}
     
     segmented = property(get_segmented,set_segmented)
     
@@ -151,7 +175,57 @@ class Objects(object):
         # Make sure to remove the background elements at index 0
         #
         return children_per_parent[1:], parents_of_children[1:]
+    
+    @memoize_method
+    def get_indices(self):
+        """Get the indices for a scipy.ndimage-style function from the segmented labels
         
+        """
+        return numpy.array(range(numpy.max(self.segmented)))+1
+    
+    indices = property(get_indices)
+     
+    @memoize_method
+    def fn_of_label_and_index(self, function):
+        """Call a function taking a label matrix with the segmented labels
+        
+        function - should have signature like
+                   labels - label matrix
+                   index  - sequence of label indices documenting which
+                            label indices are of interest
+        """
+        return function(self.segmented,self.indices)
+    
+    @memoize_method
+    def fn_of_ones_label_and_index(self,function):
+        """Call a function taking an image, a label matrix and an index with an image of all ones
+        
+        function - should have signature like
+                   image  - image with same dimensions as labels
+                   labels - label matrix
+                   index  - sequence of label indices documenting which
+                            label indices are of interest
+        Pass this function an "image" of all ones, for instance to compute
+        a center or an area
+        """
+    
+        return function(numpy.ones(self.segmented.shape),
+                        self.segmented,
+                        self.indices)
+    
+    @memoize_method
+    def fn_of_image_label_and_index(self,function,image):
+        """Call a function taking an image, a label matrix and an index
+        
+        function - should have signature like
+                   image  - image with same dimensions as labels
+                   labels - label matrix
+                   index  - sequence of label indices documenting which
+                            label indices are of interest
+        """
+        return function(image,
+                self.segmented,
+                self.indices)
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent

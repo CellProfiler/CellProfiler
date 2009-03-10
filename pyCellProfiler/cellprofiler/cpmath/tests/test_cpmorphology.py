@@ -588,4 +588,185 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
             #
             # Count the multi_edge cases
             #
-            n_multi_edge += numpy.sum(count_pt_on_edge>=3) 
+            n_multi_edge += numpy.sum(count_pt_on_edge>=3)
+
+class TestEllipseFromSecondMoments(unittest.TestCase):
+    def assertWithinFraction(self, actual, expected, 
+                             fraction=.001, message=None):
+        """Assert that a "correlation" of the actual value to the expected is within the fraction
+        
+        actual - the value as calculated
+        expected - the expected value of the variable
+        fraction - the fractional difference of the two
+        message - message to print on failure
+        
+        We divide the absolute difference by 1/2 of the sum of the variables
+        to get our measurement.
+        """
+        measurement = abs(actual-expected)/(2*(actual+expected))
+        self.assertTrue(measurement < fraction,
+                        "%(actual)f != %(expected)f by the measure, abs(%(actual)f-%(expected)f)) / 2(%(actual)f + %(expected)f)"%(locals()))
+        
+    def test_00_00_zeros(self):
+        centers,eccentricity,major_axis_length,minor_axis_length =\
+            morph.ellipse_from_second_moments(numpy.zeros((10,10)),
+                                              numpy.zeros((10,10),int),
+                                              [])
+        self.assertEqual(centers.shape,(0,2))
+        self.assertEqual(eccentricity.shape[0],0)
+        self.assertEqual(major_axis_length.shape[0],0)
+        self.assertEqual(minor_axis_length.shape[0],0)
+    
+    def test_00_01_zeros(self):
+        centers,eccentricity,major_axis_length,minor_axis_length,theta =\
+            morph.ellipse_from_second_moments(numpy.zeros((10,10)),
+                                              numpy.zeros((10,10),int),
+                                              [1])
+        self.assertEqual(centers.shape,(1,2))
+        self.assertEqual(eccentricity.shape[0],1)
+        self.assertEqual(major_axis_length.shape[0],1)
+        self.assertEqual(minor_axis_length.shape[0],1)
+    
+    def test_01_01_rectangle(self):
+        centers,eccentricity,major_axis_length,minor_axis_length,theta =\
+            morph.ellipse_from_second_moments(numpy.ones((10,20)),
+                                              numpy.ones((10,20),int),
+                                              [1])
+        self.assertEqual(centers.shape,(1,2))
+        self.assertEqual(eccentricity.shape[0],1)
+        self.assertEqual(major_axis_length.shape[0],1)
+        self.assertEqual(minor_axis_length.shape[0],1)
+        self.assertAlmostEqual(eccentricity[0],.866,2)
+        self.assertAlmostEqual(centers[0,0],4.5)
+        self.assertAlmostEqual(centers[0,1],9.5)
+        self.assertWithinFraction(major_axis_length[0],23.0940,.001)
+        self.assertWithinFraction(minor_axis_length[0],11.5470,.001)
+        self.assertAlmostEqual(theta[0],0)
+    
+    def test_01_02_circle(self):
+        img = numpy.zeros((101,101),int)
+        y,x = numpy.mgrid[-50:51,-50:51]
+        img[x*x+y*y<=2500] = 1
+        centers,eccentricity,major_axis_length, minor_axis_length,theta =\
+            morph.ellipse_from_second_moments(numpy.ones((101,101)),img,[1])
+        self.assertAlmostEqual(eccentricity[0],0)
+        self.assertWithinFraction(major_axis_length[0],100,.001)
+        self.assertWithinFraction(minor_axis_length[0],100,.001)
+
+class TestCalculateExtents(unittest.TestCase):
+    def test_00_00_zeros(self):
+        """Make sure calculate_extents doesn't throw an exception if no image"""
+        extents = morph.calculate_extents(numpy.zeros((10,10),int), [1])
+    
+    def test_01_01_square(self):
+        """A square should have an extent of 1"""
+        labels = numpy.zeros((10,10),int)
+        labels[1:8,2:9]=1
+        extents = morph.calculate_extents(labels,[1])
+        self.assertAlmostEqual(extents,1)
+    
+    def test_01_02_circle(self):
+        """A circle should have an extent of pi/4"""
+        labels = numpy.zeros((1001,1001),int)
+        y,x = numpy.mgrid[-500:501,-500:501]
+        labels[x*x+y*y<=250000] = 1
+        extents = morph.calculate_extents(labels,[1])
+        self.assertAlmostEqual(extents,numpy.pi/4,2)
+
+class TestCalculatePerimeters(unittest.TestCase):
+    def test_00_00_zeros(self):
+        """The perimeters of a zeros matrix should be all zero"""
+        perimeters = morph.calculate_perimeters(numpy.zeros((10,10),int),[1])
+        self.assertEqual(perimeters,0)
+    
+    def test_01_01_square(self):
+        """The perimeter of a square should be the sum of the sides"""
+        
+        labels = numpy.zeros((10,10),int)
+        labels[1:9,1:9] = 1
+        perimeter = morph.calculate_perimeters(labels, [1])
+        self.assertEqual(perimeter, 4*8)
+        
+    def test_01_02_circle(self):
+        """The perimeter of a circle should be pi * diameter"""
+        labels = numpy.zeros((101,101),int)
+        y,x = numpy.mgrid[-50:51,-50:51]
+        labels[x*x+y*y<=2500] = 1
+        perimeter = morph.calculate_perimeters(labels, [1])
+        epsilon = 20
+        self.assertTrue(perimeter-numpy.pi*101<epsilon)
+
+class TestCalculateConvexArea(unittest.TestCase):
+    def test_00_00_degenerate_zero(self):
+        """The convex area of an empty labels matrix should be zero"""
+        labels = numpy.zeros((10,10),int)
+        result = morph.calculate_convex_hull_areas(labels, [1])
+        self.assertEqual(result.shape[0],1)
+        self.assertEqual(result[0],0)
+    
+    def test_00_01_degenerate_point(self):
+        """The convex area of a point should be 1"""
+        labels = numpy.zeros((10,10),int)
+        labels[4,4] = 1
+        result = morph.calculate_convex_hull_areas(labels, [1])
+        self.assertEqual(result.shape[0],1)
+        self.assertEqual(result[0],1)
+
+    def test_00_02_degenerate_line(self):
+        """The convex area of a line should be its length"""
+        labels = numpy.zeros((10,10),int)
+        labels[1:9,4] = 1
+        result = morph.calculate_convex_hull_areas(labels, [1])
+        self.assertEqual(result.shape[0],1)
+        self.assertEqual(result[0],8)
+    
+    def test_01_01_square(self):
+        """The convex area of a square should be its area"""
+        labels = numpy.zeros((10,10),int)
+        labels[1:9,1:9] = 1
+        result = morph.calculate_convex_hull_areas(labels, [1])
+        self.assertEqual(result.shape[0],1)
+        self.assertAlmostEqual(result[0],64)
+    
+    def test_01_02_cross(self):
+        """The convex area of a cross should be the area of the enclosing diamond
+        
+        The area of a diamond is 1/2 of the area of the enclosing bounding box
+        """
+        labels = numpy.zeros((10,10),int)
+        labels[1:9,4] = 1
+        labels[4,1:9] = 1
+        result = morph.calculate_convex_hull_areas(labels, [1])
+        self.assertEqual(result.shape[0],1)
+        self.assertAlmostEqual(result[0],32)
+    
+    def test_02_01_degenerate_point_and_line(self):
+        """Test a degenerate point and line in the same image, out of order"""
+        labels = numpy.zeros((10,10),int)
+        labels[1,1] = 1
+        labels[1:9,4] = 2
+        result = morph.calculate_convex_hull_areas(labels, [2,1])
+        self.assertEqual(result.shape[0],2)
+        self.assertEqual(result[0],8)
+        self.assertEqual(result[1],1)
+    
+    def test_02_02_degenerate_point_and_square(self):
+        """Test a degenerate point and a square in the same image"""
+        labels = numpy.zeros((10,10),int)
+        labels[1,1] = 1
+        labels[3:8,4:9] = 2
+        result = morph.calculate_convex_hull_areas(labels, [2,1])
+        self.assertEqual(result.shape[0],2)
+        self.assertEqual(result[1],1)
+        self.assertAlmostEqual(result[0],25)
+    
+    def test_02_03_square_and_cross(self):
+        """Test two non-degenerate figures"""
+        labels = numpy.zeros((20,10),int)
+        labels[1:9,1:9] = 1
+        labels[11:19,4] = 2
+        labels[14,1:9] = 2
+        result = morph.calculate_convex_hull_areas(labels, [2,1])
+        self.assertEqual(result.shape[0],2)
+        self.assertAlmostEqual(result[0],32)
+        self.assertAlmostEqual(result[1],64)

@@ -51,8 +51,17 @@ class Workspace(object):
         """The object set is the set of image labels for the current image set
         """
         return self.__object_set
-
+    
     object_set = property(get_object_set)
+
+    def get_objects(self,objects_name):
+        """Return the objects (labels + goodies) from the object set given a name
+        
+        objects_name - the name of the objects to retrieve
+        
+        see cellprofiler.objects.Objects for info on what's returned
+        """
+        return self.object_set.get_objects(objects_name)
 
     def get_measurements(self):
         """The measurements contain measurements made on images and objects
@@ -60,6 +69,15 @@ class Workspace(object):
         return self.__measurements
 
     measurements = property(get_measurements)
+    
+    def add_measurement(self, object_name, feature_name, data):
+        """Add a measurement to the workspace's measurements
+        
+        object_name - name of the objects measured or 'Image'
+        feature_name - name of the feature measured
+        data - the result of the measurement
+        """
+        self.measurements.add_measurement(object_name, feature_name, data)
 
     def get_frame(self):
         """The frame is CellProfiler's gui window

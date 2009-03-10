@@ -222,6 +222,8 @@ def convex_hull(labels, indexes=None):
     order = numpy.lexsort((angle,anti_indexes_per_point))
     a=a[order]
     anti_indexes_per_point = anti_indexes_per_point[order]
+    angle = angle[order]
+    centers_per_point = centers_per_point[order]
     #
     # Make the result matrix, leaving enough space so that all points might
     # be on the convex hull.
@@ -482,6 +484,7 @@ def minimum_enclosing_circle(labels, indexes = None):
     #
     point_index = numpy.zeros((indexes.shape[0],),int)
     point_index[1:] = numpy.cumsum(point_count[:-1]) 
+    #########################################################################
     #
     # The algorithm is this:
     # * Choose a line S from S0 to S1 at random from the set of adjacent
@@ -492,15 +495,14 @@ def minimum_enclosing_circle(labels, indexes = None):
     # * Find the minimum angle for all V.
     #   If the minimum angle is obtuse, stop and accept S as the diameter of 
     #   the circle.
-    # * If some vertex V with an acute angle makes angles S0-S1-V and
-    #   S1-S0-V that are also acute, then S0-S1 and V are on the edge of
-    #   the minimum enclosing circle and the circumcenter of the triangle
-    #   is the center of the circle
+    # * If the vertex with the minimum angle makes angles S0-S1-V and
+    #   S1-S0-V that are acute and right, then take S0, S1 and V as the
+    #   triangle within the circumscribed minimum enclosing circle.
     # * Otherwise, find the largest obtuse angle among S0-S1-V and
-    #   S1-S0-V, choosing V and S0 as the new S if S1 is the vertex of
-    #   the obtuse angle or V and S1 as the new S if S0 is the vertex
-    #   of the obtuse angle.
+    #   S1-S0-V (V is the vertex with the minimum angle, not all of them).
+    #   If S0-S1-V is obtuse, make V the new S1, otherwise make V the new S0
     #
+    ##########################################################################
     #
     # anti_indexes is used to transform a label # into an index in the above array
     # anti_indexes_per_point gives the label index of any vertex
@@ -770,3 +772,289 @@ def minimum_enclosing_circle(labels, indexes = None):
                 s1_idx[indexes_to_consider[s1_is_obtuse]] = v_obtuse_s1_indexes
                 within_label_indexes[v_obtuse_s1_indexes] = 1
     return centers, radii
+
+def ellipse_from_second_moments(image, labels, indexes):
+    """Calculate measurements of ellipses equivalent to the second moments of labels
+    
+    image  - the intensity at each point
+    labels - for each labeled object, derive an ellipse
+    indexes - sequence of indexes to process
+    
+    returns the following arrays:
+       coordinates of the center of the ellipse
+       eccentricity
+       major axis length
+       minor axis length
+       orientation
+    
+    some definitions taken from "Image Moments-Based Structuring and Tracking
+    of Objects", LOURENA ROCHA, LUIZ VELHO, PAULO CEZAR P. CARVALHO,
+    http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
+    particularly equation 5 (which has some errors in it).
+    These yield the rectangle with equivalent second moments. I translate
+    to the ellipse by multiplying by 1.154701 which is Matlab's calculation
+    of the major and minor axis length for a square of length X divided
+    by the actual length of the side of a square of that length.
+    
+    eccentricity is the distance between foci divided by the major axis length
+    orientation is the angle of the major axis with respect to the X axis
+    """
+    if len(indexes) == 0:
+        return numpy.zeros((0,2)),numpy.zeros((0,)),numpy.zeros((0,)),numpy.zeros((0,))
+    i,j = numpy.mgrid[0:labels.shape[0],0:labels.shape[1]]
+    #
+    # Start by calculating the moments m[p][q] of the image
+    # sum(i**p j**q)
+    #
+    fix = fixup_scipy_ndimage_result
+    m = {}
+    m[0,0] = fix(scipy.ndimage.sum(image,    labels, indexes))
+    m[1,0] = fix(scipy.ndimage.sum(i*image,  labels, indexes))
+    m[0,1] = fix(scipy.ndimage.sum(j*image,  labels, indexes))
+    m[1,1] = fix(scipy.ndimage.sum(i*j*image,labels, indexes))
+    m[2,0] = fix(scipy.ndimage.sum(i*i*image,labels, indexes))
+    m[0,2] = fix(scipy.ndimage.sum(j*j*image,labels, indexes))
+    
+    ic = m[1,0] / m[0,0]
+    jc = m[0,1] / m[0,0]
+    
+    a = m[2,0] / m[0,0] - ic**2
+    b = 2*(m[1,1]/m[0,0] - ic * jc)
+    c = m[0,2] / m[0,0] - jc**2
+    
+    theta = numpy.arctan2(b,c-a) / 2
+    temp = numpy.sqrt(4*b**2+(a-c)**2)
+    #
+    # If you do a linear regression of the circles from 1 to 50 radius
+    # in Matlab, the resultant values fit a line with slope=.9975 and
+    # intercept .095. I'm adjusting the lengths accordingly.
+    #
+    mystery_constant = 0.095
+    mystery_multiplier = 0.9975
+    major_axis_len = (numpy.sqrt(8*(a+c+temp)) * mystery_multiplier +
+                      mystery_constant)
+    minor_axis_len = (numpy.sqrt(8*(a+c-temp)) * mystery_multiplier +
+                      mystery_constant)
+    eccentricity = numpy.sqrt(1-(minor_axis_len / major_axis_len)**2) 
+    return (numpy.dstack((ic,jc))[0,:,:],
+            eccentricity,
+            major_axis_len,
+            minor_axis_len,theta)
+
+def calculate_extents(labels, indexes):
+    """Return the area of each object divided by the area of its bounding box"""
+    areas = scipy.ndimage.sum(labels,labels,indexes)
+    y,x = numpy.mgrid[0:labels.shape[0],0:labels.shape[1]]
+    xmin = scipy.ndimage.minimum(x, labels, indexes)
+    xmax = scipy.ndimage.maximum(x, labels, indexes)
+    ymin = scipy.ndimage.minimum(y, labels, indexes)
+    ymax = scipy.ndimage.maximum(y, labels, indexes)
+    bbareas = (xmax-xmin+1)*(ymax-ymin+1)
+    return areas / bbareas
+
+# The perimeter scoring matrix provides the distance to the next point
+#    
+#   To use this, the value at [i-1,j-1] is bit 0, [i-1,j] is bit 1, [i-1,j+1]
+#   is bit 2, etc. of an index into the perimeter_scoring
+#   the distance from the center point to the next point clockwise on the
+#   perimeter. The values must be the label matrix == shifted label matrix
+#    
+#   I came up with the idea for this independently, but while Googling,
+#   found a reference to the same idea. The perimeter matrix is taken from
+#   the reference:
+#   Prashker, "An Improved Algorithm for Calculating the Perimeter and Area 
+#   of Raster Polygons", GeoComputation 99.
+#    http://www.geovista.psu.edu/sites/geocomp99/Gc99/076/gc_076.htm 
+def __calculate_perimeter_scoring():
+    """Return a 512 element vector which gives the perimeter given surrounding pts
+    
+    """
+    #
+    # This is the array from the paper - a 256 - element array leaving out
+    # the center point. The first value is the index, the second, the perimeter
+    #
+    prashker = numpy.array([                                                        
+        [0 ,4    ],[32,4    ],[64,3    ],[96 ,1.414],[128,4    ],[160,4    ],[192,1.414],[224,2.828],
+        [1 ,4    ],[33,4    ],[65,3    ],[97 ,1.414],[129,4    ],[161,4    ],[193,3    ],[225,3    ],
+        [2 ,3    ],[34,3    ],[66,2    ],[98 ,2    ],[130,3    ],[162,3    ],[194,2    ],[226,2    ],
+        [3 ,1.414],[35,1.414],[67,2    ],[99 ,2    ],[131,3    ],[163,3    ],[195,2    ],[227,2    ],
+        [4 ,4    ],[36,4    ],[68,3    ],[100,3    ],[132,4    ],[164,4    ],[196,1.414],[228,3    ],
+        [5 ,4    ],[37,4    ],[69,3    ],[101,3    ],[133,4    ],[165,4    ],[197,3    ],[229,3    ],
+        [6 ,1.414],[38,3    ],[70,2    ],[102,2    ],[134,1.414],[166,3    ],[198,2    ],[230,2    ],
+        [7 ,2.828],[39,3    ],[71,2    ],[103,2    ],[135,3    ],[167,3    ],[199,2    ],[231,1.414],
+        [8 ,3    ],[40,1.414],[72,2    ],[104,2    ],[136,3    ],[168,1.414],[200,1.414],[232,1.414],
+        [9 ,1.414],[41,2.828],[73,1.414],[105,1.414],[137,3    ],[169,3    ],[201,1.414],[233,1.414],
+        [10,2    ],[42,1.414],[74,1    ],[106,1    ],[138,2    ],[170,2    ],[202,1    ],[234,1.414],
+        [11,2    ],[43,1.414],[75,1    ],[107,1    ],[139,2    ],[171,2    ],[203,1    ],[235,1    ],
+        [12,3    ],[44,3    ],[76,2    ],[108,2    ],[140,3    ],[172,3    ],[204,2    ],[236,2    ],
+        [13,1.414],[45,3    ],[77,2    ],[109,2    ],[141,3    ],[173,3    ],[205,1.414],[237,1.414],
+        [14,1.414],[46,1.414],[78,1    ],[110,1    ],[142,2    ],[174,1.414],[206,2    ],[238,1    ],
+        [15,1.414],[47,1.414],[79,1.414],[111,1    ],[143,2    ],[175,1.414],[207,1    ],[239,1    ],
+        [16,3    ],[48,3    ],[80,2    ],[112,1.414],[144,1.414],[176,1.414],[208,2    ],[240,1.414],
+        [17,3    ],[49,3    ],[81,2    ],[113,2    ],[145,3    ],[177,3    ],[209,2    ],[241,2    ],
+        [18,2    ],[50,2    ],[82,1    ],[114,1    ],[146,1.414],[178,2    ],[210,1    ],[242,1.414],
+        [19,1.414],[51,2    ],[83,1    ],[115,2    ],[147,1.414],[179,1.414],[211,1    ],[243,1    ],
+        [20,1.414],[52,3    ],[84,1.414],[116,1.414],[148,2.828],[180,3    ],[212,1.414],[244,1.414],
+        [21,1.414],[53,3    ],[85,2    ],[117,1.414],[149,3    ],[181,3    ],[213,2    ],[245,1.414],
+        [22,2    ],[54,2    ],[86,1    ],[118,1    ],[150,1.414],[182,2    ],[214,1    ],[246,1    ],
+        [23,1.414],[55,2    ],[87,1.414],[119,1    ],[151,1.414],[183,1.414],[215,1    ],[247,1    ],
+        [24,2    ],[56,2    ],[88,1    ],[120,1    ],[152,2    ],[184,2    ],[216,1    ],[248,1    ],
+        [25,2    ],[57,2    ],[89,1    ],[121,1.414],[153,2    ],[185,2    ],[217,1    ],[249,1    ],
+        [26,1    ],[58,1    ],[90,0    ],[122,0    ],[154,1    ],[186,2    ],[218,0    ],[250,0    ],
+        [27,1    ],[59,1.414],[91,0    ],[123,0    ],[155,1    ],[187,1    ],[219,0    ],[251,0    ],
+        [28,2    ],[60,2    ],[92,1    ],[124,1    ],[156,2    ],[188,2    ],[220,1.414],[252,1    ],
+        [29,2    ],[61,2    ],[93,2    ],[125,1    ],[157,2    ],[189,1.414],[221,1    ],[253,1    ],
+        [30,1    ],[62,1    ],[94,0    ],[126,0    ],[158,1.414],[190,1    ],[222,0    ],[254,0    ],
+        [31,1    ],[63,1    ],[95,0    ],[127,0    ],[159,1    ],[191,1    ],[223,0    ],[255,0]])
+    score = numpy.zeros((512,))
+    i = numpy.zeros((prashker.shape[0]),int)
+    for j in range(4): # 1,2,4,8
+        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**j
+    i = i+16
+    for j in range(4,8):
+        i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**(j+1)
+    score[i.astype(int)] = prashker[:,1]
+    return score
+
+__perimeter_scoring = __calculate_perimeter_scoring()
+
+def calculate_perimeters(labels, indexes):
+    """Count the distances between adjacent pixels in the perimeters of the labels"""
+    #
+    # Create arrays that tell whether a pixel is like its neighbors.
+    # index = 0 is the pixel -1,-1 from the pixel of interest, 1 is -1,0, etc.
+    #
+    m=numpy.zeros((labels.shape[0],labels.shape[1]),int)
+    exponent = 0
+    for i in range(-1,2):
+        ilow = (i==-1 and 1) or 1
+        iend = (i==1 and labels.shape[0]-1) or labels.shape[0] 
+        for j in range(-1,2):
+            jlow = (j==-1 and 1) or 1
+            jend = (j==1 and labels.shape[0]-1) or labels.shape[0] 
+            m[ilow:iend,jlow:jend] = \
+                (m[ilow:iend,jlow:jend] +
+                 (labels[ilow:iend,jlow:jend] == 
+                  labels[ilow+i:iend+i,jlow+j:jend+j])*2**exponent)
+            exponent += 1
+    pixel_score = __perimeter_scoring[m]
+    return scipy.ndimage.sum(pixel_score, labels, indexes)
+
+def calculate_convex_hull_areas(labels,indexes=None):
+    """Calulculate the area of the convex hull of each labeled object
+    
+    labels - a label matrix
+    indexes - None: calculate convex hull area over entire image
+              number: calculate convex hull for a single label
+              sequence: calculate convex hull for labels matching a sequence
+                        member and return areas in same order.
+    """
+    if getattr(indexes,"__getitem__",False):
+        indexes = numpy.array(indexes)
+    elif indexes != None:
+        indexes = numpy.array([indexes])
+    else:
+        labels = labels !=0
+        indexes = numpy.array([1])
+    hull, counts = convex_hull(labels, indexes)
+    result = numpy.zeros((counts.shape[0],))
+    #
+    # Get rid of the degenerate cases
+    #
+    result[counts==1] = 1 # a single point has area 1
+    if not numpy.any(counts >1):
+        return result
+    #
+    # Given a label number "index_of_label" indexes into the result
+    #
+    index_of_label = numpy.zeros((hull[:,0].max()+1),int)
+    index_of_label[indexes] = numpy.array(range(indexes.shape[0]))
+    #
+    # hull_index is the index into hull of the first point on the hull
+    # per label
+    #
+    hull_index = numpy.zeros((counts.shape[0],),int)
+    hull_index[1:] = numpy.cumsum(counts[:-1])
+    #
+    # A 2-point case is a line. The area of a line is its length * 1
+    # and its length needs to be expanded by 1 because the end-points are
+    # at the limits, not the ends.
+    # 
+    if numpy.any(counts==2):
+        diff_2 = hull[hull_index[counts==2],1:]-hull[hull_index[counts==2]+1,1:]
+        result[counts==2] = numpy.sqrt(numpy.sum(diff_2**2))+1
+    if not numpy.any(counts>=3):
+        return result
+    #
+    # Now do the non-degenerate cases (_nd)
+    #
+    counts_per_label = numpy.zeros((hull[:,0].max()+1),counts.dtype)
+    counts_per_label[indexes] = counts
+    hull_nd = hull[counts_per_label[hull[:,0]] >=3]
+    counts_nd = counts[counts>=3]
+    indexes_nd = indexes[counts>=3]
+    index_of_label_nd = numpy.zeros((index_of_label.shape[0],),int)
+    index_of_label_nd[indexes_nd] = numpy.array(range(indexes_nd.shape[0]))
+    #
+    # Figure out the within-label index of each point in a label. This is
+    # so we can do modulo arithmetic when pairing a point with the next
+    # when determining an edge
+    #
+    hull_index_nd = numpy.zeros((counts_nd.shape[0],),int)
+    if hull_index_nd.shape[0] > 1:
+        hull_index_nd[1:] = numpy.cumsum(counts_nd[:-1])
+    index_of_label_per_pixel_nd = index_of_label_nd[hull_nd[:,0]]
+    hull_index_per_pixel_nd = hull_index_nd[index_of_label_per_pixel_nd] 
+    within_label_index = (numpy.array(range(hull_nd.shape[0])) -
+                          hull_index_per_pixel_nd)
+    #
+    # Find some point within each convex hull.
+    #
+    within_hull = numpy.zeros((counts_nd.shape[0],2))
+    within_hull[:,0] = scipy.ndimage.sum(hull_nd[:,1],
+                                         hull_nd[:,0],
+                                         indexes_nd) / counts_nd
+    within_hull[:,1] = scipy.ndimage.sum(hull_nd[:,2],
+                                         hull_nd[:,0],
+                                         indexes_nd) / counts_nd
+    within_hull_per_pixel = within_hull[index_of_label_per_pixel_nd]
+    #
+    # Now, we do a little, slightly wierd fixup, arguing that the
+    # edge of a pixel is +/- .5 of its coordinate. So we move the ones
+    # left of center to the left by .5, right of center to the right by .5
+    # etc.
+    #
+    # It works for a square...
+    #
+    hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
+    hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
+    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5
+    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += .5
+    #
+    # Finally, we go around the circle, computing triangle areas
+    # from point n to point n+1 (modulo count) to the point within
+    # the hull.
+    #
+    plus_one_idx = numpy.array(range(hull_nd.shape[0]))+1
+    modulo_mask = within_label_index+1 == counts_nd[index_of_label_per_pixel_nd]
+    plus_one_idx[modulo_mask] = hull_index_per_pixel_nd[modulo_mask]
+    area_per_pt_nd = triangle_areas(hull_nd[:,1:],
+                                    hull_nd[plus_one_idx,1:],
+                                    within_hull_per_pixel)
+    #
+    # The convex area is the sum of these triangles
+    #
+    result[counts>=3] = scipy.ndimage.sum(area_per_pt_nd,
+                                          hull_nd[:,0],
+                                          indexes_nd)
+    return result
+
+def calculate_solidity(labels,indexes=None):
+    """Calculate the area of each label divided by the area of its convex hull
+    
+    labels - a label matrix
+    indexes - the indexes of the labels to measure
+    """
+    areas = scipy.ndimage.sum(numpy.ones(labels.shape),labels,indexes)
+    convex_hull_areas = calculate_convex_hull_areas(labels, indexes)
+    return areas / convex_hull_areas

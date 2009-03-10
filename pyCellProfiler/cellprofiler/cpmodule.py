@@ -74,9 +74,24 @@ class CPModule(object):
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
+        self.prepare_to_set_values(setting_values)
         self.set_setting_values(setting_values, variable_revision_number, 
                                  module_name)
         self.on_post_load()
+    
+    def prepare_to_set_values(self,setting_values):
+        """Do any sort of adjustment to the settings required for the given values
+        
+        setting_values - the values for the settings just prior to mapping
+                         as done by set_setting_values
+        This method allows a module to specialize itself according to
+        the number of settings and their value. For instance, a module that
+        takes a variable number of images or objects can increase or decrease
+        the number of relevant settings so they map correctly to the values.
+        
+        See cellprofiler.modules.measureobjectareashape for an example.
+        """
+        pass
     
     def set_setting_values(self, setting_values, variable_revision_number, 
                             module_name):

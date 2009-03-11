@@ -770,3 +770,48 @@ class TestCalculateConvexArea(unittest.TestCase):
         self.assertEqual(result.shape[0],2)
         self.assertAlmostEqual(result[0],32)
         self.assertAlmostEqual(result[1],64)
+
+class TestEulerNumber(unittest.TestCase):
+    def test_00_00_even_zeros(self):
+        labels = numpy.zeros((10,12),int)
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],0)
+    
+    def test_00_01_odd_zeros(self):
+        labels = numpy.zeros((11,13),int)
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],0)
+    
+    def test_01_00_square(self):
+        labels = numpy.zeros((10,12),int)
+        labels[1:9,1:9] = 1
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],1)
+        
+    def test_01_01_square_with_hole(self):
+        labels = numpy.zeros((10,12),int)
+        labels[1:9,1:9] = 1
+        labels[3:6,3:6] = 0
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],0)
+    
+    def test_01_02_square_with_two_holes(self):
+        labels = numpy.zeros((10,12),int)
+        labels[1:9,1:9] = 1
+        labels[2:4,2:8] = 0
+        labels[6:8,2:8] = 0
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],-1)
+    
+    def test_02_01_square_touches_border(self):
+        labels = numpy.ones((10,10),int)
+        result = morph.euler_number(labels, [1])
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0],1)
+        self.assertEqual(result[0],1)
+        

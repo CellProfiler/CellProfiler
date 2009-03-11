@@ -14,6 +14,7 @@ from cellprofiler.cpmath.cpmorphology import ellipse_from_second_moments
 from cellprofiler.cpmath.cpmorphology import calculate_extents
 from cellprofiler.cpmath.cpmorphology import calculate_perimeters
 from cellprofiler.cpmath.cpmorphology import calculate_solidity
+from cellprofiler.cpmath.cpmorphology import euler_number
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'
@@ -193,7 +194,8 @@ See also MeasureImageAreaOccupied.
         if from_matlab and variable_revision_number == 3:
             # Remove the "Do not use" objects from the list
             setting_values = np.array(setting_values)
-            setting_values = list(setting_values[value != cps.DO_NOT_USE])
+            setting_values = list(setting_values[setting_values !=
+                                                 cps.DO_NOT_USE])
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
@@ -249,7 +251,7 @@ See also MeasureImageAreaOccupied.
         
         zernike_index - a 2 element sequence organized as N,M
         """
-        return "Zernike_%d_%d"%zernike_index
+        return "Zernike_%d_%d"%(zernike_index[0],zernike_index[1])
     
     def get_feature_names(self):
         """Return the names of the features measured"""
@@ -296,7 +298,7 @@ See also MeasureImageAreaOccupied.
         self.record_measurement(workspace, object_name, 
                                 F_MINOR_AXIS_LENGTH, minor_axis_length)
         self.record_measurement(workspace, object_name, F_ORIENTATION, 
-                                theta * 180 / numpy.pi)
+                                theta * 180 / np.pi)
         #
         # The extent (area / bounding box area)
         #
@@ -315,17 +317,21 @@ See also MeasureImageAreaOccupied.
         #
         # Form factor
         #
-        form_factor = objects.fn_of_label_and_index(form_factor)
+        ff = form_factor(objects)
         self.record_measurement(workspace, object_name, 
-                                F_FORM_FACTOR, form_factor)
+                                F_FORM_FACTOR, ff)
+        #
+        # Euler number
+        self.perform_measurement(workspace, euler_number,
+                                 object_name, F_EULER_NUMBER)
         #
         # Zernike features
         #
         if self.calculate_zernikes.value:
             zernike_numbers = self.get_zernike_numbers()
-            zernike_features = cpmz.zernike(zernike_numbers, 
-                                            object.segmented,
-                                            object.indices)
+            zernike_features,z_images = cpmz.zernike(zernike_numbers, 
+                                                     objects.segmented,
+                                                     objects.indices)
             for i in range(zernike_numbers.shape[0]):
                 zernike_number = zernike_numbers[i]
                 zernike_feature = zernike_features[:,i]
@@ -374,11 +380,14 @@ See also MeasureImageAreaOccupied.
                            object_name, feature_name, result):
         """Record the result of a measurement in the workspace's measurements"""
         data = fixup_scipy_ndimage_result(result)
-        workspace.add_measurement(object_name, feature_name, result)
+        workspace.add_measurement(object_name, 
+                                  "%s_%s"%(AREA_SHAPE,feature_name), 
+                                  data)
         
 def form_factor(objects):
-    """FormFactor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
-    areas = objects.fn_of_ones_label_and_index(scind.sum)
+    """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
+    areas = fixup_scipy_ndimage_result(
+                objects.fn_of_ones_label_and_index(scind.sum))
     perimeter = objects.fn_of_label_and_index(calculate_perimeters)
-    return 4*np.pi*areas / perimeter**2
+    return 4.0*np.pi*areas / perimeter**2
 

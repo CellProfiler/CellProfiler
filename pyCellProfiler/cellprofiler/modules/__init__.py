@@ -7,12 +7,13 @@ import loadimages as cpm_li
 import colortogray as cpm_ctg
 from applythreshold import ApplyThreshold
 from crop import Crop
-from saveimages import SaveImages
-from measureobjectintensity import MeasureObjectIntensity
 from exporttodatabase import ExportToDatabase
 from graytocolor import GrayToColor
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
+from measureobjectintensity import MeasureObjectIntensity
+from measureobjectareashape import MeasureObjectAreaShape
+from saveimages import SaveImages
 
 def get_module_classes():
     return [ApplyThreshold,
@@ -24,6 +25,7 @@ def get_module_classes():
             IdentifySecondary,
             IdentifyTertiarySubregion,
             cpm_li.LoadImages,
+            MeasureObjectAreaShape,
             MeasureObjectIntensity,
             SaveImages ]
 
@@ -31,17 +33,18 @@ def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
     
     """
-    return {"LoadImages":cpm_li.LoadImages,
+    return {"ApplyThreshold": ApplyThreshold,
+            "LoadImages":cpm_li.LoadImages,
+            "ColorToGray":cpm_ctg.ColorToGray,
+            "Crop": Crop,
+            "ExportToDatabase": ExportToDatabase,
+            "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":cpm_ipa.IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
-            "ColorToGray":cpm_ctg.ColorToGray,
-            "GrayToColor":GrayToColor,
-            "ApplyThreshold": ApplyThreshold,
-            "SaveImages": SaveImages,
+            "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
-            "ExportToDatabase": ExportToDatabase,
-            "Crop": Crop
+            "SaveImages": SaveImages
             }
     
 

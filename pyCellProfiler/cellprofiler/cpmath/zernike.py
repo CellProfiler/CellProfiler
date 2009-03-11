@@ -151,7 +151,7 @@ def get_zernike_indexes(limit=10):
     
     limit - return all Zernike indexes with N less than this limit
     
-    returns a list of 2-tuples. Each tuple is organized as (N,M).
+    returns an array of 2-tuples. Each tuple is organized as (N,M).
     The Zernikes are stored as complex numbers with the real part
     being (N,M) and the imaginary being (N,-M)
     """
@@ -160,7 +160,7 @@ def get_zernike_indexes(limit=10):
         for m in range(n+1):
             if (m+n) & 1 == 0:
                 zernike_n_m.append((n,m))
-    return zernike_n_m
+    return np.array(zernike_n_m)
 
 if __name__ == "__main__":
     import wx
@@ -170,7 +170,7 @@ if __name__ == "__main__":
     import traceback
     
     ORIGINAL_IMAGE = "Original image"
-    zernike_indexes = np.array(get_zernike_indexes(6))
+    zernike_indexes = get_zernike_indexes(6)
     y,x = np.mgrid[-100:101,-100:101].astype(float) / 100
     
     zf = construct_zernike_polynomials(x,y, zernike_indexes)

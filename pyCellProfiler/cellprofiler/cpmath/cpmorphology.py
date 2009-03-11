@@ -3,7 +3,7 @@
 """
 __version__="$Revision: 1 "
 
-import numpy
+import numpy as np
 import scipy.ndimage
 import scipy.sparse
 import _cpmorphology
@@ -42,11 +42,11 @@ def fill_labeled_holes(image):
     image_with_high_holes = image.copy()
     image_with_high_holes[labeled_holes > 0] = high
     min_label = scipy.ndimage.minimum_filter(image_with_high_holes,
-                                             footprint=numpy.ones((3,3),bool),
+                                             footprint=np.ones((3,3),bool),
                                              mode = 'constant',
                                              cval = 0)
     max_label = scipy.ndimage.maximum_filter(image,
-                                             footprint=numpy.ones((3,3),bool),
+                                             footprint=np.ones((3,3),bool),
                                              mode = 'constant',
                                              cval = 0)
     min_label_per_hole = scipy.ndimage.minimum(min_label,
@@ -55,8 +55,8 @@ def fill_labeled_holes(image):
     max_label_per_hole = scipy.ndimage.maximum(max_label,
                                                labeled_holes,
                                                range(nholes+1))
-    max_label_per_hole = numpy.array(max_label_per_hole)
-    hole_label = numpy.array(min_label_per_hole)
+    max_label_per_hole = np.array(max_label_per_hole)
+    hole_label = np.array(min_label_per_hole)
     hole_label[hole_label != max_label_per_hole] = 0
     hole_mask = hole_label[labeled_holes] > 0
     output_image = image.copy()
@@ -69,7 +69,7 @@ def binary_thin(image, strel1, strel2):
     strel2 - at each pixel, the complement of strel1 if we care about the value
     """
     hit_or_miss = scipy.ndimage.binary_hit_or_miss(image, strel1, strel2)
-    return numpy.logical_and(image,numpy.logical_not(hit_or_miss))
+    return np.logical_and(image,np.logical_not(hit_or_miss))
 
 def binary_shrink(image, iterations=-1):
     """Shrink an image by repeatedly removing pixels which have partners
@@ -91,16 +91,16 @@ def binary_shrink(image, iterations=-1):
        0  0  1
        Rotate each of these 4x to get the four directions for each
     """
-    hv_thinner = numpy.array([[False,False,False],[False,True,False],[False,True,False]])
-    hv_anti_thinner = numpy.array([[True,True,True],[False,False,False],[False,False,False]])
-    d_thinner = numpy.array([[False,False,False],[False,True,False],[False,False,True]])
-    d_anti_thinner = numpy.array([[True,True,True],[True,False,True],[True,True,False]])
+    hv_thinner = np.array([[False,False,False],[False,True,False],[False,True,False]])
+    hv_anti_thinner = np.array([[True,True,True],[False,False,False],[False,False,False]])
+    d_thinner = np.array([[False,False,False],[False,True,False],[False,False,True]])
+    d_anti_thinner = np.array([[True,True,True],[True,False,True],[True,True,False]])
     thinners = []
     anti_thinners = []
     for thinner,anti_thinner in ((hv_thinner, hv_anti_thinner),(d_thinner,d_anti_thinner)):
         for n in range(4):
-            thinners.append(numpy.lib.rot90(thinner,n))
-            anti_thinners.append(numpy.lib.rot90(anti_thinner,n))
+            thinners.append(np.lib.rot90(thinner,n))
+            anti_thinners.append(np.lib.rot90(anti_thinner,n))
     if iterations == -1:
         iterations = 10000
     result = image
@@ -108,7 +108,7 @@ def binary_shrink(image, iterations=-1):
         temp = result.copy()
         for thinner,anti_thinner in zip(thinners,anti_thinners):
             temp = binary_thin(temp,thinner,anti_thinner)
-        if numpy.all(temp==result):
+        if np.all(temp==result):
             return result
         result=temp
 
@@ -118,13 +118,13 @@ def strel_disk(radius):
     radius - radius of the disk
     """
     iradius = int(radius)
-    x,y     = numpy.mgrid[-iradius:iradius+1,-iradius:iradius+1]
+    x,y     = np.mgrid[-iradius:iradius+1,-iradius:iradius+1]
     radius2 = radius * radius
-    strel   = numpy.zeros(x.shape)
+    strel   = np.zeros(x.shape)
     strel[x*x+y*y <= radius2] = 1
     return strel
 
-def cpmaximum(image, structure=numpy.ones((3,3),dtype=bool),offset=None):
+def cpmaximum(image, structure=np.ones((3,3),dtype=bool),offset=None):
     """Find the local maximum at each point in the image, using the given structuring element
     
     image - a 2-d array of doubles
@@ -147,9 +147,9 @@ def relabel(image):
     # Build a label table that converts an old label # into
     # labels using the new numbering scheme
     #
-    unique_labels = numpy.unique(image)
-    consecutive_labels = numpy.array(range(len(unique_labels)+1))
-    label_table = numpy.ndarray(((unique_labels[-1]+1),),int)
+    unique_labels = np.unique(image)
+    consecutive_labels = np.array(range(len(unique_labels)+1))
+    label_table = np.ndarray(((unique_labels[-1]+1),),int)
     for old,new in zip(unique_labels,consecutive_labels):
         label_table[old]=new
     #
@@ -174,23 +174,23 @@ def convex_hull(labels, indexes=None):
     The vector is a vector of #s of points in the convex hull per label
     """
     if indexes == None:
-        indexes = numpy.unique(labels)
+        indexes = np.unique(labels)
         indexes.sort()
         indexes=indexes[indexes!=0]
     else:
-        indexes=numpy.array(indexes)
+        indexes=np.array(indexes)
     if len(indexes) == 0:
-        return numpy.zeros((0,2),int),numpy.zeros((0,),int)
+        return np.zeros((0,2),int),np.zeros((0,),int)
     #
     # An array that converts from label # to index in "indexes"
-    anti_indexes = numpy.zeros((numpy.max(indexes)+1,),int)
+    anti_indexes = np.zeros((np.max(indexes)+1,),int)
     anti_indexes[indexes] = range(len(indexes))
     #
     # Reduce the # of points to consider
     #
     outlines = outline(labels)
     centers  = scipy.ndimage.center_of_mass(outlines,outlines, indexes)
-    centers = numpy.array([centers])
+    centers = np.array([centers])
     centers.shape=(indexes.shape[0],2) # if max_label = 1, you get 1d array
     #
     # Now make an array with one outline point per row and the following
@@ -201,25 +201,25 @@ def convex_hull(labels, indexes=None):
     # i coordinate of the point
     # j coordinate of the point
     #
-    coords = numpy.argwhere(outlines > 0)
+    coords = np.argwhere(outlines > 0)
     if len(coords)==0:
         # Every outline of every image is blank
-        return (numpy.zeros((0,3),int),
-                numpy.zeros((len(indexes),),int))
+        return (np.zeros((0,3),int),
+                np.zeros((len(indexes),),int))
     
     i = coords[:,0]
     j = coords[:,1]
     labels_per_point = labels[i,j]
     anti_indexes_per_point = anti_indexes[labels_per_point]
     centers_per_point = centers[anti_indexes_per_point]
-    angle = numpy.arctan2(i-centers_per_point[:,0],j-centers_per_point[:,1])
-    a = numpy.zeros((len(i),3),int)
+    angle = np.arctan2(i-centers_per_point[:,0],j-centers_per_point[:,1])
+    a = np.zeros((len(i),3),int)
     a[:,0] = anti_indexes_per_point
     a[:,1:] = coords
     #
     # Sort the array first by label # (sort of), then by angle
     #
-    order = numpy.lexsort((angle,anti_indexes_per_point))
+    order = np.lexsort((angle,anti_indexes_per_point))
     a=a[order]
     anti_indexes_per_point = anti_indexes_per_point[order]
     angle = angle[order]
@@ -228,12 +228,12 @@ def convex_hull(labels, indexes=None):
     # Make the result matrix, leaving enough space so that all points might
     # be on the convex hull.
     #
-    result = numpy.zeros((len(i),3),int)
+    result = np.zeros((len(i),3),int)
     result[:,0] = labels_per_point[order]
     #
     # Create an initial count vector
     #
-    v = numpy.ones((a.shape[0],),dtype=int)
+    v = np.ones((a.shape[0],),dtype=int)
     result_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                             shape=(len(indexes),1))
     result_counts = result_counts.toarray().flatten()
@@ -241,12 +241,12 @@ def convex_hull(labels, indexes=None):
     #
     # Create a vector that indexes into the results for each label
     #
-    result_index = numpy.zeros(result_counts.shape,int)
-    result_index[1:]=numpy.cumsum(result_counts[:-1])
+    result_index = np.zeros(result_counts.shape,int)
+    result_index[1:]=np.cumsum(result_counts[:-1])
     #
     # Initialize the counts of convex hull points to a ridiculous number
     #
-    counts = numpy.ones((len(indexes),),int) * (numpy.product(labels.shape)+1)
+    counts = np.ones((len(indexes),),int) * (np.product(labels.shape)+1)
     while True:
         #
         # Figure out how many putative convex hull points there are for
@@ -258,30 +258,30 @@ def convex_hull(labels, indexes=None):
         # If the count hasn't changed in an iteration, then we've done
         # as well as we can hope to do.
         #
-        v = numpy.ones((a.shape[0],),dtype=int)
+        v = np.ones((a.shape[0],),dtype=int)
         new_counts = scipy.sparse.coo_matrix((v,(a[:,0],v*0)),
                                              shape=(len(indexes),1))
         new_counts = new_counts.toarray().flatten()
-        finish_me = numpy.logical_and(new_counts > 0,
-                                      numpy.logical_or(new_counts <= 3,
+        finish_me = np.logical_and(new_counts > 0,
+                                      np.logical_or(new_counts <= 3,
                                                        new_counts == counts))
-        indexes_to_finish = numpy.argwhere(finish_me)
-        keep_me = numpy.logical_and(new_counts > 3,
+        indexes_to_finish = np.argwhere(finish_me)
+        keep_me = np.logical_and(new_counts > 3,
                                     new_counts < counts)
-        indexes_to_keep = numpy.argwhere(keep_me)
+        indexes_to_keep = np.argwhere(keep_me)
         if len(indexes_to_finish):
             result_counts[finish_me] = new_counts[finish_me]
             #
             # Store the coordinates of each of the points to finish
             #
             finish_this_row = finish_me[a[:,0]]
-            rows_to_finish = numpy.argwhere(finish_this_row).flatten()
+            rows_to_finish = np.argwhere(finish_this_row).flatten()
             a_to_finish = a[rows_to_finish]
             atf_indexes = a_to_finish[:,0]
             #
             # Map label #s to the index into indexes_to_finish of that label #
             #
-            anti_indexes_to_finish = numpy.zeros((len(indexes),),int)
+            anti_indexes_to_finish = np.zeros((len(indexes),),int)
             anti_indexes_to_finish[indexes_to_finish] = range(len(indexes_to_finish))
             #
             # Figure out the indices of each point in a label to be finished.
@@ -291,10 +291,10 @@ def convex_hull(labels, indexes=None):
             # Then we add the result_index to figure out where to store it
             # in the result table.
             #
-            finish_idx_base = numpy.zeros((len(indexes_to_finish),),int)
-            finish_idx_base[1:]=numpy.cumsum(new_counts[indexes_to_finish])[:-1]
+            finish_idx_base = np.zeros((len(indexes_to_finish),),int)
+            finish_idx_base[1:]=np.cumsum(new_counts[indexes_to_finish])[:-1]
             finish_idx_bases = finish_idx_base[anti_indexes_to_finish[atf_indexes]]
-            finish_idx = (numpy.array(range(a_to_finish.shape[0]))-
+            finish_idx = (np.array(range(a_to_finish.shape[0]))-
                           finish_idx_bases)
             finish_idx = finish_idx + result_index[atf_indexes]
             result[finish_idx,1:] = a_to_finish[:,1:]
@@ -303,7 +303,7 @@ def convex_hull(labels, indexes=None):
         #
         # Figure out which points are still available
         #
-        rows_to_keep=numpy.argwhere(keep_me[a[:,0].astype(int)]).flatten()
+        rows_to_keep=np.argwhere(keep_me[a[:,0].astype(int)]).flatten()
         a = a[rows_to_keep]
         centers_per_point = centers_per_point[rows_to_keep]
         counts = new_counts
@@ -316,15 +316,15 @@ def convex_hull(labels, indexes=None):
         # N-1 and N+1 have to be modulo "counts", so we make special arrays
         # to address those situations.
         #
-        anti_indexes_to_keep = numpy.zeros((len(indexes),),int)
+        anti_indexes_to_keep = np.zeros((len(indexes),),int)
         anti_indexes_to_keep[indexes_to_keep] = range(len(indexes_to_keep))
-        idx_base = numpy.zeros((len(indexes_to_keep),),int)
-        idx_base[1:]=numpy.cumsum(counts[keep_me])[0:-1]
+        idx_base = np.zeros((len(indexes_to_keep),),int)
+        idx_base[1:]=np.cumsum(counts[keep_me])[0:-1]
         idx_bases = idx_base[anti_indexes_to_keep[a[:,0]]]
         counts_per_pt = counts[a[:,0]]
-        idx = numpy.array(range(a.shape[0]),int)-idx_bases
-        n_minus_one = numpy.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
-        n_plus_one  = numpy.mod(idx+1,counts_per_pt)+idx_bases
+        idx = np.array(range(a.shape[0]),int)-idx_bases
+        n_minus_one = np.mod(idx+counts_per_pt-1,counts_per_pt)+idx_bases
+        n_plus_one  = np.mod(idx+1,counts_per_pt)+idx_bases
         #
         # Compute the triangle areas
         #
@@ -350,30 +350,30 @@ def convex_hull(labels, indexes=None):
         # most distant from the center and on the same side
         #
         consider_me = t_left+t_right == 0
-        if numpy.any(consider_me):
+        if np.any(consider_me):
             diff_i = a[:,1]-centers_per_point[:,0]
             diff_j = a[:,2]-centers_per_point[:,1]
             #
             # The manhattan distance is good enough
             #
-            dist = numpy.abs(diff_i)+numpy.abs(diff_j)
+            dist = np.abs(diff_i)+np.abs(diff_j)
             # The sign is different on different sides of a line including
             # the center. Multiply j by 2 to keep from colliding with i
             #
             # If both signs are zero, then the point is in the center
             #
-            sign = numpy.sign(diff_i) + numpy.sign(diff_j)*2
+            sign = np.sign(diff_i) + np.sign(diff_j)*2
             n_minus_one_consider = n_minus_one[consider_me]
             n_plus_one_consider = n_plus_one[consider_me]
-            left_is_worse = numpy.logical_or(dist[consider_me] >
+            left_is_worse = np.logical_or(dist[consider_me] >
                                              dist[n_minus_one_consider],
                                              sign[consider_me] != 
                                              sign[n_minus_one_consider])
-            right_is_worse = numpy.logical_or(dist[consider_me] >
+            right_is_worse = np.logical_or(dist[consider_me] >
                                               dist[n_plus_one_consider],
                                               sign[consider_me] !=
                                               sign[n_plus_one_consider])
-            to_keep = numpy.logical_and(numpy.logical_and(left_is_worse,
+            to_keep = np.logical_and(np.logical_and(left_is_worse,
                                                           right_is_worse),
                                         sign[consider_me] != 0)
             keep_me[consider_me] = to_keep 
@@ -384,7 +384,7 @@ def convex_hull(labels, indexes=None):
     # points for a label, then only keep those whose indexes are
     # less than the count for their label.
     #
-    within_label_index = numpy.array(range(result.shape[0]),int)
+    within_label_index = np.array(range(result.shape[0]),int)
     counts_per_point = result_counts[r_anti_indexes_per_point]
     result_indexes_per_point = result_index[r_anti_indexes_per_point] 
     within_label_index = (within_label_index - result_indexes_per_point)
@@ -450,9 +450,9 @@ def fixup_scipy_ndimage_result(whatever_it_returned):
     scipy.ndimage.maximum(image, labels, [1,2]) returns a list
     """
     if getattr(whatever_it_returned,"__getitem__",False):
-        return numpy.array(whatever_it_returned)
+        return np.array(whatever_it_returned)
     else:
-        return numpy.array([whatever_it_returned])
+        return np.array([whatever_it_returned])
 
 def minimum_enclosing_circle(labels, indexes = None):
     """Find the location of the minimum enclosing circle and its radius
@@ -469,21 +469,21 @@ def minimum_enclosing_circle(labels, indexes = None):
     the Edinburgh Mathematical Society, vol 3, 1884
     """
     if indexes == None:
-        max_label = numpy.max(labels)
-        indexes = numpy.array(range(1,max_label+1))
+        max_label = np.max(labels)
+        indexes = np.array(range(1,max_label+1))
     else:
-        indexes = numpy.array(indexes)
+        indexes = np.array(indexes)
     if indexes.shape[0] == 0:
-        return numpy.zeros((0,2)),numpy.zeros((0,))
+        return np.zeros((0,2)),np.zeros((0,))
 
     hull, point_count = convex_hull(labels, indexes)
-    centers = numpy.zeros((len(indexes),2))
-    radii = numpy.zeros((len(indexes),))
+    centers = np.zeros((len(indexes),2))
+    radii = np.zeros((len(indexes),))
     #
     # point_index is the index to the first point in "hull" for a label
     #
-    point_index = numpy.zeros((indexes.shape[0],),int)
-    point_index[1:] = numpy.cumsum(point_count[:-1]) 
+    point_index = np.zeros((indexes.shape[0],),int)
+    point_index[1:] = np.cumsum(point_count[:-1]) 
     #########################################################################
     #
     # The algorithm is this:
@@ -507,14 +507,14 @@ def minimum_enclosing_circle(labels, indexes = None):
     # anti_indexes is used to transform a label # into an index in the above array
     # anti_indexes_per_point gives the label index of any vertex
     #
-    anti_indexes=numpy.zeros((numpy.max(indexes)+1,),int)
+    anti_indexes=np.zeros((np.max(indexes)+1,),int)
     anti_indexes[indexes] = range(indexes.shape[0])
     anti_indexes_per_point = anti_indexes[hull[:,0]]
     #
     # Start out by eliminating the degenerate cases: 0, 1 and 2
     #
-    centers[point_count==0,:]= numpy.NaN
-    if numpy.all(point_count == 0):
+    centers[point_count==0,:]= np.NaN
+    if np.all(point_count == 0):
         # Bail if there are no points in any hull to prevent
         # index failures below.
         return centers,radii
@@ -524,7 +524,7 @@ def minimum_enclosing_circle(labels, indexes = None):
     centers[point_count==2,:]=(hull[point_index[point_count==2],1:]+
                                hull[point_index[point_count==2]+1,1:])/2
     distance = centers[point_count==2,:] - hull[point_index[point_count==2],1:]
-    radii[point_count==2]=numpy.sqrt(distance[:,0]**2+distance[:,1]**2)
+    radii[point_count==2]=np.sqrt(distance[:,0]**2+distance[:,1]**2)
     #
     # Get rid of the degenerate points
     #
@@ -540,10 +540,10 @@ def minimum_enclosing_circle(labels, indexes = None):
     # the order in which we'll get their angles. We use this to pick out
     # points # 2 to N which are the candidate vertices to S
     # 
-    within_label_indexes = (numpy.array(range(hull.shape[0]),int) -
+    within_label_indexes = (np.array(range(hull.shape[0]),int) -
                             point_index[anti_indexes_per_point])
     
-    while(numpy.any(keep_me)):
+    while(np.any(keep_me)):
         #############################################################
         # Label indexing for active labels
         #############################################################
@@ -558,9 +558,9 @@ def minimum_enclosing_circle(labels, indexes = None):
         # below) for every label in labels_to_consider.
         #
         anti_indexes_to_consider =\
-            numpy.zeros((numpy.max(labels_to_consider)+1,),int)
+            np.zeros((np.max(labels_to_consider)+1,),int)
         anti_indexes_to_consider[labels_to_consider] = \
-            numpy.array(range(labels_to_consider.shape[0]))
+            np.array(range(labels_to_consider.shape[0]))
         ##############################################################
         # Vertex indexing for active vertexes other than S0 and S1
         ##############################################################
@@ -569,7 +569,7 @@ def minimum_enclosing_circle(labels, indexes = None):
         # keep_me_vertices is a mask of the vertices to operate on
         # during this iteration
         #
-        keep_me_vertices = numpy.logical_and(keep_me[anti_indexes_per_point],
+        keep_me_vertices = np.logical_and(keep_me[anti_indexes_per_point],
                                              within_label_indexes >= 2)
         #
         # v is the vertex coordinates for each vertex considered
@@ -583,7 +583,7 @@ def minimum_enclosing_circle(labels, indexes = None):
         # v_indexes is the index into "hull" for each vertex (and similarly
         # shaped vectors such as within_label_indexes
         #
-        v_indexes=numpy.argwhere(keep_me_vertices).flatten()
+        v_indexes=np.argwhere(keep_me_vertices).flatten()
         #
         # anti_indexes_per_vertex gives the index into "indexes" and
         # any similarly shaped array of per-label values
@@ -618,18 +618,18 @@ def minimum_enclosing_circle(labels, indexes = None):
         #` Take the dot product of s01 and vs1 divided by the length of s01 *
         # the length of vs1. This gives the cosine of the angle between.
         #
-        dot_vs1s0 = (numpy.sum(s01*vs1,1) /
-                     numpy.sqrt(numpy.sum(s01**2,1)*numpy.sum(vs1**2,1)))
-        angle_vs1s0 = numpy.abs(numpy.arccos(dot_vs1s0))
+        dot_vs1s0 = (np.sum(s01*vs1,1) /
+                     np.sqrt(np.sum(s01**2,1)*np.sum(vs1**2,1)))
+        angle_vs1s0 = np.abs(np.arccos(dot_vs1s0))
         s10 = -s01
-        dot_vs0s1 = (numpy.sum(s10*vs0,1) /
-                     numpy.sqrt(numpy.sum(s01**2,1)*numpy.sum(vs0**2,1)))
-        angle_vs0s1 = numpy.abs(numpy.arccos(dot_vs0s1))
+        dot_vs0s1 = (np.sum(s10*vs0,1) /
+                     np.sqrt(np.sum(s01**2,1)*np.sum(vs0**2,1)))
+        angle_vs0s1 = np.abs(np.arccos(dot_vs0s1))
         #
         # S0-V-S1 is pi - the other two
         #
-        angle_s0vs1 = numpy.pi - angle_vs1s0 - angle_vs0s1
-        assert numpy.all(angle_s0vs1 >= 0)
+        angle_s0vs1 = np.pi - angle_vs1s0 - angle_vs0s1
+        assert np.all(angle_s0vs1 >= 0)
         #
         # Now we find the minimum angle per label
         #
@@ -654,18 +654,18 @@ def minimum_enclosing_circle(labels, indexes = None):
                                           hull[:,0],
                                           labels_to_consider)
         vertex_counts = fixup_scipy_ndimage_result(vertex_counts)
-        case_1 = numpy.logical_or(min_angle >= numpy.pi / 2,
+        case_1 = np.logical_or(min_angle >= np.pi / 2,
                                   vertex_counts == 0)
                                    
-        if numpy.any(case_1):
+        if np.any(case_1):
             # convert from a boolean over indexes_to_consider to a boolean
             # over indexes
-            finish_me = numpy.zeros((indexes.shape[0],),bool)
+            finish_me = np.zeros((indexes.shape[0],),bool)
             finish_me[anti_indexes[labels_to_consider[case_1]]] = True
             s0_finish_me = hull[s0_idx[finish_me],1:].astype(float)
             s1_finish_me = hull[s1_idx[finish_me],1:].astype(float)
             centers[finish_me] = (s0_finish_me + s1_finish_me)/2
-            radii[finish_me] = numpy.sqrt(numpy.sum((s0_finish_me - 
+            radii[finish_me] = np.sqrt(np.sum((s0_finish_me - 
                                                      s1_finish_me)**2,1))/2
             keep_me[finish_me] = False
         #
@@ -678,11 +678,11 @@ def minimum_enclosing_circle(labels, indexes = None):
         #         is at the circumcenter of the triangle formed by S0, S1 and
         #         V.
         case_2 = keep_me.copy()
-        case_2[angle_vs1s0[min_position] > numpy.pi/2] = False
-        case_2[angle_vs0s1[min_position] > numpy.pi/2] = False
-        case_2[angle_s0vs1[min_position] > numpy.pi/2] = False
+        case_2[angle_vs1s0[min_position] > np.pi/2] = False
+        case_2[angle_vs0s1[min_position] > np.pi/2] = False
+        case_2[angle_s0vs1[min_position] > np.pi/2] = False
         
-        if numpy.any(case_2):
+        if np.any(case_2):
             #
             # Wikipedia (http://en.wikipedia.org/wiki/Circumcircle#Cartesian_coordinates)
             # gives the following:
@@ -699,16 +699,16 @@ def minimum_enclosing_circle(labels, indexes = None):
             D = 2*(ss0[:,X] * (ss1[:,Y] - vv[:,Y]) +
                    ss1[:,X] * (vv[:,Y]  - ss0[:,Y]) +
                    vv[:,X]  * (ss0[:,Y] - ss1[:,Y]))
-            x = (numpy.sum(ss0**2,1)*(ss1[:,Y] - vv[:,Y]) +
-                 numpy.sum(ss1**2,1)*(vv[:,Y]  - ss0[:,Y]) +
-                 numpy.sum(vv**2,1) *(ss0[:,Y] - ss1[:,Y])) / D
-            y = (numpy.sum(ss0**2,1)*(vv[:,X]  - ss1[:,X]) +
-                 numpy.sum(ss1**2,1)*(ss0[:,X] - vv[:,X]) +
-                 numpy.sum(vv**2,1) *(ss1[:,X] - ss0[:,X])) / D
+            x = (np.sum(ss0**2,1)*(ss1[:,Y] - vv[:,Y]) +
+                 np.sum(ss1**2,1)*(vv[:,Y]  - ss0[:,Y]) +
+                 np.sum(vv**2,1) *(ss0[:,Y] - ss1[:,Y])) / D
+            y = (np.sum(ss0**2,1)*(vv[:,X]  - ss1[:,X]) +
+                 np.sum(ss1**2,1)*(ss0[:,X] - vv[:,X]) +
+                 np.sum(vv**2,1) *(ss1[:,X] - ss0[:,X])) / D
             centers[case_2,X] = x
             centers[case_2,Y] = y
             distances = ss0-centers[case_2]
-            radii[case_2] = numpy.sqrt(numpy.sum(distances**2,1))
+            radii[case_2] = np.sqrt(np.sum(distances**2,1))
             keep_me[case_2] = False
         #
         # Finally, for anybody who's left, for each of S0-S1-V and
@@ -720,7 +720,7 @@ def minimum_enclosing_circle(labels, indexes = None):
         # This involves a relabeling of within_label_indexes. We replace
         # either S0 or S1 with V and assign V either 0 or 1
         #
-        if numpy.any(keep_me):
+        if np.any(keep_me):
             labels_to_consider = indexes[keep_me]
             indexes_to_consider = anti_indexes[labels_to_consider]
             #
@@ -733,8 +733,8 @@ def minimum_enclosing_circle(labels, indexes = None):
             #
             # Do the cases where S0 is larger
             #
-            s0_is_obtuse = angle_vs0s1_to_consider > numpy.pi/2
-            if numpy.any(s0_is_obtuse):
+            s0_is_obtuse = angle_vs0s1_to_consider > np.pi/2
+            if np.any(s0_is_obtuse):
                 #
                 # The index of the obtuse S0
                 #
@@ -753,8 +753,8 @@ def minimum_enclosing_circle(labels, indexes = None):
             #
             # Do the cases where S1 is larger
             #
-            s1_is_obtuse = numpy.logical_not(s0_is_obtuse)
-            if numpy.any(s1_is_obtuse):
+            s1_is_obtuse = np.logical_not(s0_is_obtuse)
+            if np.any(s1_is_obtuse):
                 #
                 # The index of the obtuse S1
                 #
@@ -800,8 +800,8 @@ def ellipse_from_second_moments(image, labels, indexes):
     orientation is the angle of the major axis with respect to the X axis
     """
     if len(indexes) == 0:
-        return numpy.zeros((0,2)),numpy.zeros((0,)),numpy.zeros((0,)),numpy.zeros((0,))
-    i,j = numpy.mgrid[0:labels.shape[0],0:labels.shape[1]]
+        return np.zeros((0,2)),np.zeros((0,)),np.zeros((0,)),np.zeros((0,))
+    i,j = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
     #
     # Start by calculating the moments m[p][q] of the image
     # sum(i**p j**q)
@@ -822,8 +822,8 @@ def ellipse_from_second_moments(image, labels, indexes):
     b = 2*(m[1,1]/m[0,0] - ic * jc)
     c = m[0,2] / m[0,0] - jc**2
     
-    theta = numpy.arctan2(b,c-a) / 2
-    temp = numpy.sqrt(4*b**2+(a-c)**2)
+    theta = np.arctan2(b,c-a) / 2
+    temp = np.sqrt(4*b**2+(a-c)**2)
     #
     # If you do a linear regression of the circles from 1 to 50 radius
     # in Matlab, the resultant values fit a line with slope=.9975 and
@@ -831,24 +831,25 @@ def ellipse_from_second_moments(image, labels, indexes):
     #
     mystery_constant = 0.095
     mystery_multiplier = 0.9975
-    major_axis_len = (numpy.sqrt(8*(a+c+temp)) * mystery_multiplier +
+    major_axis_len = (np.sqrt(8*(a+c+temp)) * mystery_multiplier +
                       mystery_constant)
-    minor_axis_len = (numpy.sqrt(8*(a+c-temp)) * mystery_multiplier +
+    minor_axis_len = (np.sqrt(8*(a+c-temp)) * mystery_multiplier +
                       mystery_constant)
-    eccentricity = numpy.sqrt(1-(minor_axis_len / major_axis_len)**2) 
-    return (numpy.dstack((ic,jc))[0,:,:],
+    eccentricity = np.sqrt(1-(minor_axis_len / major_axis_len)**2) 
+    return (np.dstack((ic,jc))[0,:,:],
             eccentricity,
             major_axis_len,
             minor_axis_len,theta)
 
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""
-    areas = scipy.ndimage.sum(labels,labels,indexes)
-    y,x = numpy.mgrid[0:labels.shape[0],0:labels.shape[1]]
-    xmin = scipy.ndimage.minimum(x, labels, indexes)
-    xmax = scipy.ndimage.maximum(x, labels, indexes)
-    ymin = scipy.ndimage.minimum(y, labels, indexes)
-    ymax = scipy.ndimage.maximum(y, labels, indexes)
+    fix = fixup_scipy_ndimage_result
+    areas = fix(scipy.ndimage.sum(labels,labels,indexes))
+    y,x = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
+    xmin = fix(scipy.ndimage.minimum(x, labels, indexes))
+    xmax = fix(scipy.ndimage.maximum(x, labels, indexes))
+    ymin = fix(scipy.ndimage.minimum(y, labels, indexes))
+    ymax = fix(scipy.ndimage.maximum(y, labels, indexes))
     bbareas = (xmax-xmin+1)*(ymax-ymin+1)
     return areas / bbareas
 
@@ -873,7 +874,7 @@ def __calculate_perimeter_scoring():
     # This is the array from the paper - a 256 - element array leaving out
     # the center point. The first value is the index, the second, the perimeter
     #
-    prashker = numpy.array([                                                        
+    prashker = np.array([                                                        
         [0 ,4    ],[32,4    ],[64,3    ],[96 ,1.414],[128,4    ],[160,4    ],[192,1.414],[224,2.828],
         [1 ,4    ],[33,4    ],[65,3    ],[97 ,1.414],[129,4    ],[161,4    ],[193,3    ],[225,3    ],
         [2 ,3    ],[34,3    ],[66,2    ],[98 ,2    ],[130,3    ],[162,3    ],[194,2    ],[226,2    ],
@@ -906,8 +907,8 @@ def __calculate_perimeter_scoring():
         [29,2    ],[61,2    ],[93,2    ],[125,1    ],[157,2    ],[189,1.414],[221,1    ],[253,1    ],
         [30,1    ],[62,1    ],[94,0    ],[126,0    ],[158,1.414],[190,1    ],[222,0    ],[254,0    ],
         [31,1    ],[63,1    ],[95,0    ],[127,0    ],[159,1    ],[191,1    ],[223,0    ],[255,0]])
-    score = numpy.zeros((512,))
-    i = numpy.zeros((prashker.shape[0]),int)
+    score = np.zeros((512,))
+    i = np.zeros((prashker.shape[0]),int)
     for j in range(4): # 1,2,4,8
         i = i+((prashker[:,0].astype(int) / 2**j)%2)*2**j
     i = i+16
@@ -924,7 +925,7 @@ def calculate_perimeters(labels, indexes):
     # Create arrays that tell whether a pixel is like its neighbors.
     # index = 0 is the pixel -1,-1 from the pixel of interest, 1 is -1,0, etc.
     #
-    m=numpy.zeros((labels.shape[0],labels.shape[1]),int)
+    m=np.zeros((labels.shape[0],labels.shape[1]),int)
     exponent = 0
     for i in range(-1,2):
         ilow = (i==-1 and 1) or 1
@@ -938,7 +939,8 @@ def calculate_perimeters(labels, indexes):
                   labels[ilow+i:iend+i,jlow+j:jend+j])*2**exponent)
             exponent += 1
     pixel_score = __perimeter_scoring[m]
-    return scipy.ndimage.sum(pixel_score, labels, indexes)
+    return fixup_scipy_ndimage_result(
+        scipy.ndimage.sum(pixel_score, labels, indexes))
 
 def calculate_convex_hull_areas(labels,indexes=None):
     """Calulculate the area of the convex hull of each labeled object
@@ -950,67 +952,67 @@ def calculate_convex_hull_areas(labels,indexes=None):
                         member and return areas in same order.
     """
     if getattr(indexes,"__getitem__",False):
-        indexes = numpy.array(indexes)
+        indexes = np.array(indexes)
     elif indexes != None:
-        indexes = numpy.array([indexes])
+        indexes = np.array([indexes])
     else:
         labels = labels !=0
-        indexes = numpy.array([1])
+        indexes = np.array([1])
     hull, counts = convex_hull(labels, indexes)
-    result = numpy.zeros((counts.shape[0],))
+    result = np.zeros((counts.shape[0],))
     #
     # Get rid of the degenerate cases
     #
     result[counts==1] = 1 # a single point has area 1
-    if not numpy.any(counts >1):
+    if not np.any(counts >1):
         return result
     #
     # Given a label number "index_of_label" indexes into the result
     #
-    index_of_label = numpy.zeros((hull[:,0].max()+1),int)
-    index_of_label[indexes] = numpy.array(range(indexes.shape[0]))
+    index_of_label = np.zeros((hull[:,0].max()+1),int)
+    index_of_label[indexes] = np.array(range(indexes.shape[0]))
     #
     # hull_index is the index into hull of the first point on the hull
     # per label
     #
-    hull_index = numpy.zeros((counts.shape[0],),int)
-    hull_index[1:] = numpy.cumsum(counts[:-1])
+    hull_index = np.zeros((counts.shape[0],),int)
+    hull_index[1:] = np.cumsum(counts[:-1])
     #
     # A 2-point case is a line. The area of a line is its length * 1
     # and its length needs to be expanded by 1 because the end-points are
     # at the limits, not the ends.
     # 
-    if numpy.any(counts==2):
+    if np.any(counts==2):
         diff_2 = hull[hull_index[counts==2],1:]-hull[hull_index[counts==2]+1,1:]
-        result[counts==2] = numpy.sqrt(numpy.sum(diff_2**2))+1
-    if not numpy.any(counts>=3):
+        result[counts==2] = np.sqrt(np.sum(diff_2**2))+1
+    if not np.any(counts>=3):
         return result
     #
     # Now do the non-degenerate cases (_nd)
     #
-    counts_per_label = numpy.zeros((hull[:,0].max()+1),counts.dtype)
+    counts_per_label = np.zeros((hull[:,0].max()+1),counts.dtype)
     counts_per_label[indexes] = counts
     hull_nd = hull[counts_per_label[hull[:,0]] >=3]
     counts_nd = counts[counts>=3]
     indexes_nd = indexes[counts>=3]
-    index_of_label_nd = numpy.zeros((index_of_label.shape[0],),int)
-    index_of_label_nd[indexes_nd] = numpy.array(range(indexes_nd.shape[0]))
+    index_of_label_nd = np.zeros((index_of_label.shape[0],),int)
+    index_of_label_nd[indexes_nd] = np.array(range(indexes_nd.shape[0]))
     #
     # Figure out the within-label index of each point in a label. This is
     # so we can do modulo arithmetic when pairing a point with the next
     # when determining an edge
     #
-    hull_index_nd = numpy.zeros((counts_nd.shape[0],),int)
+    hull_index_nd = np.zeros((counts_nd.shape[0],),int)
     if hull_index_nd.shape[0] > 1:
-        hull_index_nd[1:] = numpy.cumsum(counts_nd[:-1])
+        hull_index_nd[1:] = np.cumsum(counts_nd[:-1])
     index_of_label_per_pixel_nd = index_of_label_nd[hull_nd[:,0]]
     hull_index_per_pixel_nd = hull_index_nd[index_of_label_per_pixel_nd] 
-    within_label_index = (numpy.array(range(hull_nd.shape[0])) -
+    within_label_index = (np.array(range(hull_nd.shape[0])) -
                           hull_index_per_pixel_nd)
     #
     # Find some point within each convex hull.
     #
-    within_hull = numpy.zeros((counts_nd.shape[0],2))
+    within_hull = np.zeros((counts_nd.shape[0],2))
     within_hull[:,0] = scipy.ndimage.sum(hull_nd[:,1],
                                          hull_nd[:,0],
                                          indexes_nd) / counts_nd
@@ -1035,7 +1037,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # from point n to point n+1 (modulo count) to the point within
     # the hull.
     #
-    plus_one_idx = numpy.array(range(hull_nd.shape[0]))+1
+    plus_one_idx = np.array(range(hull_nd.shape[0]))+1
     modulo_mask = within_label_index+1 == counts_nd[index_of_label_per_pixel_nd]
     plus_one_idx[modulo_mask] = hull_index_per_pixel_nd[modulo_mask]
     area_per_pt_nd = triangle_areas(hull_nd[:,1:],
@@ -1055,6 +1057,122 @@ def calculate_solidity(labels,indexes=None):
     labels - a label matrix
     indexes - the indexes of the labels to measure
     """
-    areas = scipy.ndimage.sum(numpy.ones(labels.shape),labels,indexes)
+    areas = scipy.ndimage.sum(np.ones(labels.shape),labels,indexes)
     convex_hull_areas = calculate_convex_hull_areas(labels, indexes)
     return areas / convex_hull_areas
+
+def euler_number(labels, indexes=None):
+    """Calculate the Euler number of each label
+    
+    labels - a label matrix
+    indexes - the indexes of the labels to measure or None to
+              treat the labels matrix as a binary matrix
+    """
+    if indexes == None:
+        labels = labels != 0
+        indexes = np.array([1])
+    elif getattr(indexes,'__getitem__',False):
+        indexes = np.array(indexes)
+    else:
+        indexes = np.array([indexes])
+    fix = fixup_scipy_ndimage_result
+    #
+    # The algorithm here is from the following reference:
+    # S.B. Gray, "Local Properties of Binary Images in Two Dimensions",
+    # IEEE Transactions on Computers, Vol c-20 # 5 p 551, May 1971
+    #
+    # The general idea is that crossings into objects can be measured locally
+    # through counting numbers of patterns resulting in crossings. There
+    # are three sets that are applicable in Euler Numbers:
+    # Q1: 1 0  0 1  0 0  0 0 (or more simply, 1 bit per quad)
+    #     0 0  0 0  1 0  0 1
+    #
+    # Q3: 0 1  1 0  1 1  1 1 (or 3 bits per quad)
+    #     1 1  1 1  1 0  0 1
+    #
+    # QD: 1 0  0 1
+    #     0 1  1 0
+    #
+    # and the Euler number = W of an object is
+    #
+    # 4W = n(Q1) - n(Q3) - 2n(QD) (equation 34)
+    # W  = (n(Q1) - n(Q3) - 2n(QD))/4
+    #
+    # We shift the label matrix to make matrices, padded by zeros on the
+    # sides for each of the four positions of the quad:
+    # I00 I01
+    # I10 I11
+    # 
+    # We can then assign each bitquad to a label based on the value
+    # of the label at one of the "on" bits. For example, the first pattern
+    # of Q1 has the label I00 because that bit is on. It's truth value is
+    # I00 != I01 and I00 != I02 and I00 != I03.
+    #
+    I_shape = (labels.shape[0]+3,labels.shape[1]+3)
+    I00 = np.zeros(I_shape,int)
+    I01 = np.zeros(I_shape,int)
+    I10 = np.zeros(I_shape,int)
+    I11 = np.zeros(I_shape,int)
+    I00[1:labels.shape[0]+1,1:labels.shape[1]+1] = labels
+    I01[1:labels.shape[0]+1,2:labels.shape[1]+2] = labels
+    I10[2:labels.shape[0]+2,1:labels.shape[1]+1] = labels
+    I11[2:labels.shape[0]+2,2:labels.shape[1]+2] = labels
+    #
+    # There are 6 binary comparisons among the four bits
+    #
+    EQ00_01 = I00 == I01;              EQ01_00 = EQ00_01
+    EQ00_10 = I00 == I10;              EQ10_00 = EQ00_10
+    EQ00_11 = I00 == I11;              EQ11_00 = EQ00_11
+    EQ01_10 = I01 == I10;              EQ10_01 = EQ01_10
+    EQ01_11 = I01 == I11;              EQ11_01 = EQ01_11
+    EQ10_11 = I10 == I11;              EQ11_10 = EQ10_11
+    NE00_01 = np.logical_not(EQ00_01); NE01_00 = NE00_01
+    NE00_10 = np.logical_not(EQ00_10); NE10_00 = NE00_10
+    NE00_11 = np.logical_not(EQ00_11); NE11_00 = NE00_11
+    NE01_10 = np.logical_not(EQ01_10); NE10_01 = NE01_10
+    NE01_11 = np.logical_not(EQ01_11); NE11_01 = NE01_11
+    NE10_11 = np.logical_not(EQ10_11); NE11_10 = NE10_11
+    #
+    # Q1: 1 0 
+    #     0 0
+    Q1_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),NE00_11)
+    Q1  = fix(scipy.ndimage.sum(Q1_condition, I00, indexes))
+    #     0 1
+    #     0 0
+    Q1_condition = np.logical_and(np.logical_and(NE01_00, NE01_10),NE01_11)
+    Q1 += fix(scipy.ndimage.sum(Q1_condition, I01, indexes))
+    #     0 0
+    #     1 0
+    Q1_condition = np.logical_and(np.logical_and(NE10_00, NE10_01),NE10_11)
+    Q1 += fix(scipy.ndimage.sum(Q1_condition, I10, indexes))
+    #     0 0
+    #     0 1
+    Q1_condition = np.logical_and(np.logical_and(NE11_00, NE11_01),NE11_10)
+    Q1 += fix(scipy.ndimage.sum(Q1_condition, I11, indexes))
+    #
+    # Q3: 0 1
+    #     1 1
+    Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ01_10),EQ01_11)
+    Q3  = fix(scipy.ndimage.sum(Q3_condition, I01, indexes))
+    #     1 0
+    #     1 1
+    Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ00_10),EQ00_11)
+    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    #     1 1
+    #     1 0
+    Q3_condition = np.logical_and(np.logical_and(NE00_11, EQ00_01),EQ00_10)
+    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    #     1 1
+    #     0 1
+    Q3_condition = np.logical_and(np.logical_and(NE00_10, EQ00_01),EQ00_11)
+    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    # QD: 1 0
+    #     0 1
+    QD_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),EQ00_11)
+    QD  = fix(scipy.ndimage.sum(QD_condition, I00, indexes))
+    #     0 1
+    #     1 0
+    QD_condition = np.logical_and(np.logical_and(NE01_00, NE01_11),EQ01_10)
+    QD  = fix(scipy.ndimage.sum(QD_condition, I01, indexes))
+    W = (Q1 - Q3 - 2*QD).astype(float)/4.0
+    return W

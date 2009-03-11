@@ -5,7 +5,7 @@ import decorator
 import numpy
 import scipy.sparse
 
-@decorator
+@decorator.decorator
 def memoize_method(function, *args):
     """Cache the result of a method in that class's dictionary
     
@@ -14,9 +14,10 @@ def memoize_method(function, *args):
     and the result of applying function to args[1:] as the values.
     """
     sself = args[0]
-    d = getattr(self, "memoize_method_dictionary", False)
+    d = getattr(sself, "memoize_method_dictionary", False)
     if not d:
-        setattr(self,"memoize_method_dictionary",{})
+        d = {}
+        setattr(sself,"memoize_method_dictionary",d)
     if not d.has_key(function):
         d[function] = {}
     if not d[function].has_key(args[1:]):
@@ -181,7 +182,7 @@ class Objects(object):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
         
         """
-        return numpy.array(range(numpy.max(self.segmented)))+1
+        return numpy.array(range(numpy.max(self.segmented)),int)+1
     
     indices = property(get_indices)
      

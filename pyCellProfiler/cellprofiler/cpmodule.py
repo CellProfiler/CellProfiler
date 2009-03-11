@@ -74,7 +74,6 @@ class CPModule(object):
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
-        self.prepare_to_set_values(setting_values)
         self.set_setting_values(setting_values, variable_revision_number, 
                                  module_name)
         self.on_post_load()
@@ -108,6 +107,7 @@ class CPModule(object):
                                          variable_revision_number,
                                          module_name,
                                          not '.' in module_name)
+        self.prepare_to_set_values(setting_values)
         for v,value in zip(self.settings(),setting_values):
             v.value = value
         self.upgrade_module_from_revision(variable_revision_number)

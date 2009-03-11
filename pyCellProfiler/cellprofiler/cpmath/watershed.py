@@ -13,6 +13,16 @@ The most important insight in the paper is that entry time onto the queue
 solves two problems: a pixel should be assigned to the neighbor with the
 largest gradient or, if there is no gradient, pixels on a plateau should
 be split between markers on opposite sides.
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
 """
 
 __version__ = "$Revision$"

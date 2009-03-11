@@ -2,6 +2,16 @@
 
 Image        - Represents an image with secondary attributes such as a mask and labels
 ImageSetList - Represents the list of image filenames that make up a pipeline run
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision: 1$"
 
@@ -424,9 +434,10 @@ class ImageSetList(object):
         return image_set
     
     def purge_image_set(self, number):
+        """Remove the memory associated with an image set"""
         keys = {'number':number }
-        del self.__image_sets[number]
-        self.__image_sets_by_key.pop(repr(keys))
+        self.__image_sets[number] = None
+        self.__image_sets_by_key[repr(keys)] = None
         
     def count(self):
         return len(self.__image_sets)

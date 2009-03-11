@@ -1,10 +1,21 @@
 """Preferences.py - singleton preferences for CellProfiler
 
-   $Revision$
    TO-DO - load the default preferences from somewhere.
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
 """
+__version__="$Revision$"
+
 import cellprofiler
 import os
 import re

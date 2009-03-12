@@ -165,6 +165,10 @@ assert(~any(strfind(DatabaseName,'-')),['Image processing was canceled in the ',
 %defaultVAR03 = Do not use
 TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
+% Substitute filename metadata tokens into TablePrefix (if found) and
+% checks if the prefix is valid
+TablePrefix = CPreplacemetadata(handles,TablePrefix,handles.Current.SetBeingAnalyzed);
+
 if ~strcmp(TablePrefix,'Do not use')
     CPvalidfieldname(TablePrefix)
 end
@@ -240,9 +244,6 @@ if DoWriteSQL || DoWriteCPAPropertiesFile
         error(['Image processing was canceled in the ', ModuleName, ' module because no database was specified.']);
     end
 end
-
-% Substitute filename metadata tokens into TablePrefix (if found)
-TablePrefix = CPreplacemetadata(handles,TablePrefix);
 
 if DoWriteSQL,
     CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);

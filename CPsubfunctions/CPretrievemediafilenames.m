@@ -1,5 +1,5 @@
 function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextToFind, recurse, ExactOrRegExp, ImageOrMovie)
-
+%                                                               (handles, pathname,'','No','Exact','Both')
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %
@@ -10,7 +10,7 @@ function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextT
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision$
+% $Revision$ 
 
 if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
     idx = 1;
@@ -63,9 +63,12 @@ elseif strncmpi(recurse,'Y',1) && ~isfield(handles.Pipeline,'PathNameSubFolders'
     %         Directories= CPselectdirectories(Directories);
     handles.Pipeline.PathNameSubFolders = Directories;
     
-elseif isfield(handles.Pipeline,'PathNameSubFolders')
+elseif isfield(handles.Pipeline,'PathNameSubFolders') && ~strcmpi(ImageOrMovie,'Both')
+    %% This is only used for multiple channels, so that Directories is set to PathNameSubFolders after the first channel
+    %% The 'Both' protection is used because CellProfiler.m, which just happens to be the only function that uses the 'Both' argument, 
+    %% runs a DefaultImageDirectory check which calls this subfn and
+    %% occurs before handles.Pipeline is cleared, so that PathNameSubFolders is still hanging around even after Analyze Images is clicked.
     Directories = handles.Pipeline.PathNameSubFolders;
-    
 else
     Directories = {Pathname};
 end

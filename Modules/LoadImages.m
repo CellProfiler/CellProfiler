@@ -923,6 +923,10 @@ end
 handles = CPsaveFileNamesToHandles(handles, ImageName, Pathname, FileNames);
 % If images checked, record QC measurements
 if strcmpi(CheckImageSets,'Yes')
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageUnmatched'), handles.Pipeline.idxUnmatchedFiles{SetBeingAnalyzed});
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageDuplicated'),handles.Pipeline.idxDuplicateFiles{SetBeingAnalyzed});
+    if isfield(handles.Pipeline,'idxUnmatchedFiles') %% If no tokens are defined, this field won't exist, and the check is cancelled
+        handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageUnmatched'), handles.Pipeline.idxUnmatchedFiles{SetBeingAnalyzed});
+    end
+    if isfield(handles.Pipeline,'idxDuplicateFiles') %% If no tokens are defined, this field won't exist, and the check is cancelled
+        handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('QualityControl','isImageDuplicated'),handles.Pipeline.idxDuplicateFiles{SetBeingAnalyzed});
+    end
 end

@@ -116,15 +116,15 @@ ProjectionType = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 CheckForQC = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = What did you call the loaded text that contains the QCFlag? 
+%textVAR08 = What did you call the loaded text that contains the QCFlag? (This is only used for QCFlag=YES)
 %defaultVAR08 = QCFlag
 QCFileName = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = How many images are in each directory you are loading?
+%textVAR09 = How many images are in each directory you are loading? (This is only used for QCFlag=YES)
 %defaultVAR09 = 288
 NumEachDirTotal = str2double(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%textVAR10 = How many channels are there each directory you are loading?
+%textVAR10 = How many channels are there each directory you are loading? (This is only used for QCFlag=YES)
 %defaultVAR10 = 3
 NumChannels = str2double(handles.Settings.VariableValues{CurrentModuleNum,10});
 
@@ -199,7 +199,6 @@ if isempty(FileList)
     error(['Image processing was canceled in the ', ModuleName, ' module because no files were found in the ', DirPath, ' directory.']);
 end
 
-
 switch CheckForQC
     case 'No'
         for i=1:length(FileList)
@@ -260,8 +259,6 @@ switch CheckForQC
             ProjectionImage = ProjectionImage/(length(FileList)-ImageNumSkipped);
         end
 end
-
-        
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%

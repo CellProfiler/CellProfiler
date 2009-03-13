@@ -192,7 +192,7 @@ for m = 1:length(uniquePaths)
     end
     
     IsFileMissing = cellfun(@isempty,NewFileList{m});
-    idxUnmatchedFiles{m} = any(IsFileMissing,1);
+    idxUnmatchedFiles{m} = double(any(IsFileMissing,1));
     for n = find(idxUnmatchedFiles{m})
         UnmatchedFilenames{m} = cat(1,UnmatchedFilenames{m},...
                                       cat(2, cellstr(AllFileNamesForChannelN(n,:)),...
@@ -210,7 +210,7 @@ for m = 1:length(uniquePaths)
     if ~isempty(DuplicateFilenames{m}),
         [NewFileList{m},idxDuplicateFiles{m}] = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList{m},DuplicateFilenames{m},m,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,fn,prefix);
     else
-        idxDuplicateFiles{m} = false(1,size(NewFileList{m},2));
+        idxDuplicateFiles{m} = zeros(1,size(NewFileList{m},2));
     end
 end
 
@@ -356,7 +356,7 @@ end
 %%% SUBFUNCTION - FindAndReplaceCorruptFilesInFilelist
 function [NewFileList,idxFlaggedFiles] = FindAndReplaceCorruptFilesInFilelist(handles,NewFileList,FlaggedFilenames,idxUniquePath,FileNamesForChannelN,idxIndivPaths,IndivPathnames,IndivFileNames,IndivFileExtensions,FileListFieldnames,FileListPrefix)
 
-idxFlaggedFiles = false(1,size(NewFileList,2));
+idxFlaggedFiles = zeros(1,size(NewFileList,2));
 
 for n = 1:size(FlaggedFilenames,1)
     channel = FlaggedFilenames{n,2};
@@ -397,10 +397,10 @@ for n = 1:size(FlaggedFilenames,1)
         idx = ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt));
         NewFileList(channel,idx) = ...
                 FlaggedFileList(find(~isImageCorrupt,length(find(isImageCorrupt))));
-        idxFlaggedFiles(idx) = true;
+        idxFlaggedFiles(idx) = 1;
     else
         idx = ismember(NewFileList(channel,:),FlaggedFileList(isImageCorrupt));
         NewFileList(channel,idx) = {''};
-        idxFlaggedFiles(idx) = true;
+        idxFlaggedFiles(idx) = 1;
     end
 end

@@ -348,7 +348,7 @@ if strncmpi(SaveOutputFile,'y',1),
         end
         fclose(fid);
     else
-        error([ModuleName,': Failed to open the output file for writing']);
+        error([mfilename,': Failed to open the output file for writing']);
     end
 end
 

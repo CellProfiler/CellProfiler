@@ -268,7 +268,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             ' module because you have entered one or more spaces in the text box for the filename of the image.'])
         
         %% Substitute Metadata tokens if found
-        ImageFileName = CPreplacemetadata(handles,ImageFileName);
+        ImageFileName = CPreplacemetadata(handles,ImageFileName,SetBeingAnalyzed);
                
         FileName = ImageFileName(2:end);
     else

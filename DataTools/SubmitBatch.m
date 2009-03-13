@@ -108,7 +108,11 @@ end;
 SubmitInfo.Email = [];
 SubmitInfo.Queue = 'broad';
 SubmitInfo.Server = 'imageweb.broad.mit.edu';
-SubmitInfo.CPCluster = '5445';
+if isfield(handles.Settings,'CurrentSVNVersion')
+    SubmitInfo.CPCluster = num2str(handles.Settings.CurrentSVNVersion);
+else
+    SubmitInfo.CPCluster = '5445';
+end
 SubmitInfo.BatchSize = 10;
 SubmitInfo.Timeout = 30;
 SubmitInfo.WriteData = 1;

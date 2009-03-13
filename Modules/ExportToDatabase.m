@@ -170,6 +170,13 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 TablePrefix = CPreplacemetadata(handles,TablePrefix,handles.Current.SetBeingAnalyzed);
 
 if ~strcmp(TablePrefix,'Do not use')
+    % Try to enusre prefix validity by removing whitespaces and hyphens
+    if any(TablePrefix == ' ' | TablePrefix == '_')
+        TablePrefix = strrep(TablePrefix,' ','');
+        TablePrefix = strrep(TablePrefix,'_','');
+        CPwarndlg('Your table prefix has spaces and/or hyphens; these will be removed. Check your database script to see if this change is acceptable','Invalid characters in Table Prefix','replace');
+    end
+    
     CPvalidfieldname(TablePrefix)
 end
 

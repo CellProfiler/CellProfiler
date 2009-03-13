@@ -3,12 +3,15 @@
 %% Example line:
 %% Well, PLATE, PHENOTYPE1_COUNT, PHENOTYPE2_COUNT, PVALUE_PHENOTYPE1, PVALUE_PHENOTYPE2, ENRICHMENT
 %% A01,2002-01-W01-02-01-CN00002412-B,3198,2352,0.986617752,0.013382248,1.867619843
+%%
+%% NOTE!  You must manually strip off the header lines of CPA output .csv file before you run this.  
+%% The way newlines are encoded now in the header make it complicated to do this programmatically.   
 
 clear all
 close all
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-numRows = 4;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% USER SETS THESE
+numRows = 4;  
 numCols = 5; 
 suptitle_all = {'PHENOTYPE1_COUNT', 'PHENOTYPE2_COUNT', 'PVALUE_PHENOTYPE1', 'PVALUE_PHENOTYPE2', 'ENRICHMENT'};
 file = '/Users/dlogan/Desktop/CPA_output.csv';

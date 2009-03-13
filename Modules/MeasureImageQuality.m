@@ -297,27 +297,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-tmp1 = {};
-for n = 1:4
-    if ~strcmp(NameImageToCheck{n}, 'Do not use')
-        tmp1{end+1} = NameImageToCheck{n};
-    end
-end
-if isempty(tmp1)
+NameImageToCheck(strcmp(NameImageToCheck,'Do not use')) = [];
+if isempty(NameImageToCheck)
     error('You have not selected any images to check for saturation and blur.')
 end
 
-tmp2 = {};
-for n = 1:4
-    if ~strcmp(NameImageToThresh{n}, 'Do not use')
-        tmp2{end+1} = NameImageToThresh{n};
-    end
-end
-if isempty(tmp2)
+NameImageToThresh(strcmp(NameImageToThresh,'Do not use')) = [];
+if isempty(NameImageToThresh)
     error('You have not selected any images to calculate the suggested threshold.')
 end
-
-NameImageToCheck = tmp1;
 
 %%% Calculate the Saturation and Blur
 [FocusScore,LocalFocusScore,PercentMaximal,PercentSaturation] = deal(cell(1,length(NameImageToCheck)));
@@ -364,7 +352,8 @@ for ImageNumber = 1:length(NameImageToCheck);
         % like an error.  Why would we want to ask the user to specify a
         % window size if we are going to over-ride it? -Martha 2008-05-22
         m_numblocks = floor(m/WindowSize);
-        n_numblocks = floor(n/WindowSize);        
+        n_numblocks = floor(n/WindowSize); 
+        LocalNormVar = zeros(m_numblocks,n_numblocks);
         for i = 1 : m_numblocks
             for j = 1 : n_numblocks
                 SubImage = Image((i-1)*WindowSize+1:i*WindowSize,(j-1)*WindowSize+1:j*WindowSize);
@@ -387,11 +376,11 @@ for ImageNumber = 1:length(NameImageToCheck);
         %normvarLocalNormVar{ImageNumber} = var(LocalNormVar(:))/mean(LocalNormVar(:));
         
         if median(LocalNormVar(:)) == 0
-            normvarLocalNormVar2{ImageNumber} = 0;
+            normvarLocalNormVar2 = 0;
         else
-            normvarLocalNormVar2{ImageNumber} = var(LocalNormVar(:))/median(LocalNormVar(:));
+            normvarLocalNormVar2 = var(LocalNormVar(:))/median(LocalNormVar(:));
         end
-        LocalFocusScore{ImageNumber} = normvarLocalNormVar2{ImageNumber};
+        LocalFocusScore{ImageNumber} = normvarLocalNormVar2;
     else
         FocusScore{ImageNumber} = [];
         LocalFocusScore{ImageNumber} = [];

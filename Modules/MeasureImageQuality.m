@@ -404,15 +404,14 @@ for ImageNumber = 1:length(NameImageToCheck);
 end
 
 %%% Calculate the Suggested Threshold
-NameImageToThresh = tmp2;
 pObject='10%';
 MinimumThreshold= char('0');
 MaximumThreshold=char('1');
 ThresholdCorrection=str2num('1');
 
 
-%%% Now, loop through tmp1 to grab the 'OrigThreshold' from CPthreshold
-for ImageNumber = 1:length(tmp2);
+%%% Now, loop through NameImageToThresh to grab the 'OrigThreshold' from CPthreshold
+for ImageNumber = 1:length(NameImageToThresh);
     OrigImageThresh = double(CPretrieveimage(handles,NameImageToThresh{ImageNumber},ModuleName,'MustBeGray','CheckScale'));
     [handles,OrigThreshold,WeightedVariance, SumOfEntropies] = CPthreshold(handles,ThresholdMethod{ImageNumber},pObject,MinimumThreshold,MaximumThreshold,ThresholdCorrection,OrigImageThresh,NameImageToThresh{ImageNumber},ModuleName, '');
     feature_name = CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize));
@@ -425,7 +424,7 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 %%% At the end of the image set, calculate the mean, median, and stdev
 %%% for the entire image set.
 if SetBeingAnalyzed == TotalNumberOfImageSets
-        for ImageNumber = 1:length(tmp2),
+        for ImageNumber = 1:length(NameImageToThresh),
             Threshold = handles.Measurements.Image.(CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize)));
         end
         MeanThreshold = mean(cellfun(@mean,Threshold));

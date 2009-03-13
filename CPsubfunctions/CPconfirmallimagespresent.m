@@ -317,7 +317,7 @@ if isBatchSubmission
     if isWarningNeeded
         warning(char(TextString)');
     else
-        disp(char(TextString)');
+        disp(char(TextString));
     end
 else
     if isWarningNeeded

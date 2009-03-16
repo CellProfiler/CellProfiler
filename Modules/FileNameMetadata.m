@@ -67,14 +67,14 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = Enter the regular expression to use to capture the fields:
-%defaultVAR02 = ^(?<Plate>.+)_(?<WellRow>[A-P])(?<WellColumn>[0-9]{1,2})
+%defaultVAR02 = ^(?<Plate>.+)_(?<WellRow>[A-P])(?<WellColumn>[0-9]{1,2})_(?<Site>[0-9])
 RegularExpression = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%% Capture the field names inside the structure, (?<fieldname>
 FieldNames = regexp(RegularExpression,'\(\?[<](?<token>.+?)[>]','tokens');
 FieldNames = [FieldNames{:}];
 
-%textVAR03 = Are you trying to capture the plate name from the full path?
+%textVAR03 = Are you trying to capture metadata from the full path (including the file name)? Choosing NO will only search the filename.
 %choiceVAR03 = No
 %choiceVAR03 = Yes
 FullPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
@@ -113,11 +113,8 @@ end
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
-if strcmp(FullPath,'Yes')
-    FileNameField = ['PathName_',ImageName];
-else
-    FileNameField = ['FileName_',ImageName];
-end
+FileNameField = ['FileName_',ImageName];
+
 if ~ isfield(handles.Measurements,'Image')
     error([ 'Image processing was canceled in the ', ModuleName, ' module. There are no image measurements.']);
 end
@@ -127,9 +124,16 @@ end
 
 SetIndex = handles.Current.SetBeingAnalyzed;
 FileName = handles.Measurements.Image.(FileNameField){SetIndex};
-Metadata = regexp(FileName,RegularExpression,'names');
+
+if strcmp(FullPath,'Yes')
+    FileOrPathName = [handles.Measurements.Image.(['PathName_',ImageName]){SetIndex} filesep FileName];
+else
+    FileOrPathName = FileName;
+end
+
+Metadata = regexp(FileOrPathName,RegularExpression,'names');
 if isempty(Metadata)
-    error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression']);
+    error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileOrPathName,'" doesn''t match the regular expression']);
 end
 
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');

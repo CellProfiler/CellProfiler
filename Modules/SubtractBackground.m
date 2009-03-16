@@ -88,8 +88,8 @@ CorrectedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Reads (opens) the image you want to analyze and assigns it to a
-%%% variable.
+% Reads (opens) the image you want to analyze and assigns it to a
+% variable.
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -97,33 +97,33 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScal
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% The first time the module is run, the threshold shifting value must be
-%%% calculated.
+% The first time the module is run, the threshold shifting value must be
+% calculated.
 if handles.Current.SetBeingAnalyzed == 1
     try
         drawnow
-        %%% Retrieves the path where the images are stored from the handles
-        %%% structure.
+        % Retrieves the path where the images are stored from the handles
+        % structure.
         fieldname = ['Pathname', ImageName];
         try Pathname = handles.Pipeline.(fieldname);
         catch error(['Image processing was canceled in the ', ModuleName, ' module because it must be run using images straight from a load images module (i.e. the images cannot have been altered by other image processing modules). This is because the Subtract Background module calculates an illumination correction image based on all of the images before correcting each individual image as CellProfiler cycles through them. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from the ', ModuleName,' module onward.'])
         end
-        %%% Retrieves the list of filenames where the images are stored from the
-        %%% handles structure.
+        % Retrieves the list of filenames where the images are stored from the
+        % handles structure.
         fieldname = ['FileList', ImageName];
         FileList = handles.Pipeline.(fieldname);
         if size(FileList,1) == 2
             error(['Image processing was canceled in the ', ModuleName, ' module because it cannot function on movies.']);
         end
-        %%% Calculates the pixel intensity of the pixel that is 10th dimmest in
-        %%% each image, then finds the Minimum of that value across all
-        %%% images. Our typical images have a million pixels. We are not
-        %%% choosing the lowest pixel value, because it might be zero if
-        %%% it?s a stuck pixel.  We are pretty sure there won?t be 10 stuck
-        %%% pixels so this should be safe.
-        %%% Starts with a high value for MinimumTenthMinimumPixelValue;
+        % Calculates the pixel intensity of the pixel that is 10th dimmest in
+        % each image, then finds the Minimum of that value across all
+        % images. Our typical images have a million pixels. We are not
+        % choosing the lowest pixel value, because it might be zero if
+        % it?s a stuck pixel.  We are pretty sure there won?t be 10 stuck
+        % pixels so this should be safe.
+        % Starts with a high value for MinimumTenthMinimumPixelValue;
         MinimumTenthMinimumPixelValue = 1;
-        %%% Obtains the screen size.
+        % Obtains the screen size.
         [ScreenWidth,ScreenHeight] = CPscreensize;
         PotentialBottom = [0, (ScreenHeight-720)];
         BottomOfMsgBox = max(PotentialBottom);
@@ -134,19 +134,16 @@ if handles.Current.SetBeingAnalyzed == 1
         WaitbarText = 'Preliminary background calculations underway... ';
         WaitbarHandle = waitbar(1/NumberOfImages, WaitbarText);
         set(WaitbarHandle,'Position', PositionMsgBox,'color',[.7 .7 .9])
-        for i=1:NumberOfImages
+        for i = 1:NumberOfImages
             Image = CPimread(fullfile(Pathname,char(FileList(i))));
             SortedColumnImage = sort(reshape(Image, [],1));
             TenthMinimumPixelValue = SortedColumnImage(10);
             if TenthMinimumPixelValue == 0
                 CPmsgbox([ImageName , ' image number ', num2str(i), ', and possibly others in the set, has the 10th dimmest pixel equal to zero, which means there is no camera background to subtract, either because the exposure time was very short, or the camera has 10 or more pixels stuck at zero, or that images have been rescaled such that at least 10 pixels are zero, or that for some other reason you have more than 10 pixels of value zero in the image.  This means that the ', ModuleName, ' module will not alter the images in any way, although image processing has not been aborted.'], 'Warning', 'warn','replace')
-                %%% Stores the minimum tenth minimum pixel value in the handles structure for
-                %%% later use.
-                fieldname = ['IntensityToShift', ImageName];
                 MinimumTenthMinimumPixelValue = 0;
-                handles.Pipeline.(fieldname) = 0;
-                %%% Determines the figure number to close, because no
-                %%% processing will be performed.
+                
+                % Determines the figure number to close, because no
+                % processing will be performed.
                 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
                 close(ThisModuleFigureNumber)
                 break
@@ -167,30 +164,19 @@ if handles.Current.SetBeingAnalyzed == 1
     catch [ErrorMessage, ErrorMessage2] = lasterr;
         error(['Image processing was canceled in the ', ModuleName, '. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
     end
-    %%% Stores the minimum tenth minimum pixel value in the handles structure for
-    %%% later use.
-    if isfield(handles.Measurements.Image,'IntensityToShiftFeatures')
-        NewPos = length(handles.Measurements.Image.IntensityToShiftFeatures)+1;
-        handles.Measurements.Image.IntensityToShiftFeatures(1,NewPos) = {ImageName};
-        handles.Measurements.Image.IntensityToShift{handles.Current.SetBeingAnalyzed}(:,NewPos) = MinimumTenthMinimumPixelValue;
-    else
-        handles.Measurements.Image.IntensityToShiftFeatures = {ImageName};
-        handles.Measurements.Image.IntensityToShift{handles.Current.SetBeingAnalyzed} = MinimumTenthMinimumPixelValue;
-    end
-    fieldname = ['IntensityToShift',ImageName];
-    handles.Pipeline.(fieldname) = MinimumTenthMinimumPixelValue;
+else
+    % The following is run all other cycles. Retrieves the minimum tenth
+    % minimum pixel value from the handles structure.
+    fieldname = CPjoinstrings('IntensityToShift',ImageName);
+    MinimumTenthMinimumPixelValue = handles.Measurements.Image.(fieldname){1};
 end
 
-%%% The following is run for every cycle. Retrieves the minimum tenth
-%%% minimum pixel value from the handles structure.
-fieldname = ['IntensityToShift', ImageName];
-MinimumTenthMinimumPixelValue = handles.Pipeline.(fieldname);
 if MinimumTenthMinimumPixelValue ~= 0
-    %%% Subtracts the MinimumTenthMinimumPixelValue from every pixel in the
-    %%% original image.  This strategy is similar to that used for the "Apply
-    %%% Threshold and Shift" module.
+    % Subtracts the MinimumTenthMinimumPixelValue from every pixel in the
+    % original image.  This strategy is similar to that used for the "Apply
+    % Threshold and Shift" module.
     CorrectedImage = OrigImage - MinimumTenthMinimumPixelValue;
-    %%% Values below zero are set to zero.
+    % Values below zero are set to zero.
     CorrectedImage(CorrectedImage < 0) = 0;
 
     %%%%%%%%%%%%%%%%%%%%%%%
@@ -200,24 +186,24 @@ if MinimumTenthMinimumPixelValue ~= 0
 
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
-        %%% Activates the appropriate figure window.
+        % Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
             CPresizefigure(OrigImage,'TwoByOne',ThisModuleFigureNumber)
         end
-        %%% A subplot of the figure window is set to display the original
-        %%% image, some intermediate images, and the final corrected image.
+        % A subplot of the figure window is set to display the original
+        % image, some intermediate images, and the final corrected image.
         hAx=subplot(2,1,1,'Parent',ThisModuleFigureNumber); 
         CPimagesc(OrigImage,handles,hAx);
         title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-        %%% The mean image does not absolutely have to be present in order to
-        %%% carry out the calculations if the illumination image is provided,
-        %%% so the following subplot is only shown if MeanImage exists in the
-        %%% workspace.
+        % The mean image does not absolutely have to be present in order to
+        % carry out the calculations if the illumination image is provided,
+        % so the following subplot is only shown if MeanImage exists in the
+        % workspace.
         hAx=subplot(2,1,2,'Parent',ThisModuleFigureNumber); 
         CPimagesc(CorrectedImage,handles,hAx);
         title(hAx,'Corrected Image');
-        %%% Displays the text.
+        % Displays the text.
         if isempty(findobj('Parent',ThisModuleFigureNumber,'tag','DisplayText'))
             displaytexthandle = uicontrol(ThisModuleFigureNumber,'tag','DisplayText','style','text', 'position', [0 0 200 20],'fontname','helvetica','backgroundcolor',[0.7 0.7 0.9],'FontSize',handles.Preferences.FontSize);
         else
@@ -234,6 +220,10 @@ end % This end goes with the if MinimumTenthMinimumPixelValue ~= 0 line above.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%%% Saves the corrected image to the handles structure so it can be used by
-%%% subsequent modules.
+% Stores the minimum tenth minimum pixel value in the handles structure for
+% later use
+handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('IntensityToShift',ImageName), MinimumTenthMinimumPixelValue);
+
+% Saves the corrected image to the handles structure so it can be used by
+% subsequent modules.
 handles.Pipeline.(CorrectedImageName) = CorrectedImage;

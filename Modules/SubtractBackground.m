@@ -49,6 +49,9 @@ function handles = SubtractBackground(handles)
 % Features measured:    Feature Number:
 % IntensityToShift    |   1
 %
+% NOTE: The functionality performed by this module can also be performed by
+% CorrectIllumination_Calculate and CorrectIllumination_Apply. You may want
+% to consider using those modules instead.
 %
 % See also ApplyThreshold.
 
@@ -100,6 +103,7 @@ drawnow
 % The first time the module is run, the threshold shifting value must be
 % calculated.
 if handles.Current.SetBeingAnalyzed == 1
+    CPwarndlg(['The functionality performed by ', ModuleName, ' can be performed by CorrectIllumination_Calculate and CorrectIllumination_Apply. You may want to consider using those modules instead.'],'Obsolete module','replace');    
     try
         drawnow
         % Retrieves the path where the images are stored from the handles

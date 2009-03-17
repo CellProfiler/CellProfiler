@@ -66,19 +66,29 @@ drawnow
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu
 
-%textVAR02 = Enter the regular expression to use to capture the fields:
+%textVAR02 = For the filename, enter the regular expression to use to capture the fields. Type "Do not use" to ignore.
 %defaultVAR02 = ^(?<Plate>.+)_(?<WellRow>[A-P])(?<WellColumn>[0-9]{1,2})_(?<Site>[0-9])
-RegularExpression = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+RegularExpressionFilename = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%%% Capture the field names inside the structure, (?<fieldname>
-FieldNames = regexp(RegularExpression,'\(\?[<](?<token>.+?)[>]','tokens');
-FieldNames = [FieldNames{:}];
+% Capture the field names inside the structure, (?<fieldname>
+if ~strcmpi(RegularExpressionFilename,'Do not use')
+    FileFieldNames = regexp(RegularExpressionFilename,'\(\?[<](?<token>.+?)[>]','tokens');
+    FileFieldNames = [FileFieldNames{:}];
+else
+    FileFieldNames = [];
+end
 
-%textVAR03 = Are you trying to capture metadata from the full path (including the file name)? Choosing NO will only search the filename.
-%choiceVAR03 = No
-%choiceVAR03 = Yes
-FullPath = char(handles.Settings.VariableValues{CurrentModuleNum,3});
-%inputtypeVAR03 = popupmenu
+%textVAR03 = For the pathname, enter the regular expression to use to capture the fields. Separate each directory-specific field using vertical lines (i.e, | ). Type "Do not use" to ignore.
+%defaultVAR03 = Do not use
+RegularExpressionPathname = char(handles.Settings.VariableValues{CurrentModuleNum,3});
+
+% Capture the field names inside the structure, (?<fieldname>
+if ~strcmpi(RegularExpressionPathname,'Do not use')
+    PathFieldNames = regexp(RegularExpressionPathname,'\(\?[<](?<token>.+?)[>]','tokens');
+    PathFieldNames = [PathFieldNames{:}];
+else
+    PathFieldNames = [];
+end
 
 %%%%%%%%%%%%%%%%
 %%% FEATURES %%%
@@ -108,34 +118,46 @@ if nargin > 1
     return;
 end
 
-%%%VariableRevisionNumber = 2
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
 FileNameField = ['FileName_',ImageName];
 
-if ~ isfield(handles.Measurements,'Image')
+if ~isfield(handles.Measurements,'Image')
     error([ 'Image processing was canceled in the ', ModuleName, ' module. There are no image measurements.']);
 end
-if ~ isfield(handles.Measurements.Image,FileNameField)
+if ~isfield(handles.Measurements.Image,FileNameField)
     error([ 'Image processing was canceled in the ', ModuleName, ' module. ',ImageName,' has no file name measurement (maybe you did not use LoadImages to create it?)']);
 end
 
 SetIndex = handles.Current.SetBeingAnalyzed;
-FileName = handles.Measurements.Image.(FileNameField){SetIndex};
+FileOrPathName = [handles.Measurements.Image.(['PathName_',ImageName]){SetIndex} filesep handles.Measurements.Image.(FileNameField){SetIndex}];
+[PathName,FileName] = fileparts(FileOrPathName);
 
-if strcmp(FullPath,'Yes')
-    FileOrPathName = [handles.Measurements.Image.(['PathName_',ImageName]){SetIndex} filesep FileName];
-else
-    FileOrPathName = FileName;
+Metadata = [];
+if ~isempty(PathFieldNames)
+    if strcmp(filesep,'\')
+        RegularExpressionPathname = strrep(RegularExpressionPathname,'|',[filesep filesep]);
+    else
+        RegularExpressionPathname = strrep(RegularExpressionPathname,'|',filesep);
+    end
+    Metadata = cat(1,Metadata, regexp(PathName,RegularExpressionPathname,'names'));
+end
+if ~isempty(FileFieldNames)
+    s2 = regexp(FileName,RegularExpressionFilename,'names');
+    f = fieldnames(s2);
+    for i = 1:length(f)
+        Metadata.(f{i}) = s2.(f{i});
+    end
 end
 
-Metadata = regexp(FileOrPathName,RegularExpression,'names');
 if isempty(Metadata)
     error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileOrPathName,'" doesn''t match the regular expression']);
 end
 
+FieldNames = [PathFieldNames,FileFieldNames];
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
     Metadata.Well = [Metadata.WellRow Metadata.WellColumn];
     FieldNames{length(FieldNames)+1} = 'Well';
@@ -152,14 +174,14 @@ if any(findobj == ThisModuleFigureNumber);
     FontSize = handles.Preferences.FontSize;
 
     figure_position = get(ThisModuleFigureNumber,'Position');
-    w=figure_position(3);
-    h=figure_position(4);
-    LineHeight=20;
+    w = figure_position(3);
+    h = figure_position(4);
+    LineHeight = 20;
     FieldNameX = 10;
     FieldNameWidth = w/3;
     ValueX = FieldNameX*2+FieldNameWidth;
     ValueWidth = FieldNameWidth;
-    for i=1:length(FieldNames)
+    for i = 1:length(FieldNames)
         h = h - LineHeight;
         uicontrol(ThisModuleFigureNumber,...
                   'style','text',...

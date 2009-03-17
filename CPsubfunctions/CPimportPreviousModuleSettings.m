@@ -381,6 +381,21 @@ if strcmp(CurrentModuleName, 'FileNameMetadata')
         SavedVarRevNum = 2;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 2      % Same number of arguments, but replaced third argument.
+        if strcmpi(Settings.VariableValues{ModuleNum-Skipped,3},'no')
+            % User only wants to look at the filename. Keep where it is,
+            % and ignore the new path setting
+            Settings.VariableValues{ModuleNum-Skipped,3} = 'Do not use';
+        else
+            % User wants to look at the path. We can't assume that the
+            % fields specified the previous version are only for the path, but
+            % we'll put it there and let the user decide
+            Settings.VariableValues{ModuleNum-Skipped,3} = Settings.VariableValues{ModuleNum-Skipped,2};
+            Settings.VariableValues{ModuleNum-Skipped,2} = 'Do not use';
+        end
+        SavedVarRevNum = 3;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

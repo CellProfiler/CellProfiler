@@ -176,7 +176,8 @@ elseif isCMYK
                                     c{i}(4)*Image{4}.*adj(4));
     end
 end
-RGBImage = RGBImage/sum(adj);
+% Normalize by adjustment factors. Not sure if this is needed?
+%RGBImage = RGBImage/sum(adj);
 
 %%%%%%%%%
 % DISPLAY RESULTS %

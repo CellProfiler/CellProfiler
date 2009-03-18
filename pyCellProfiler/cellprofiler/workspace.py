@@ -25,7 +25,19 @@ class Workspace(object):
                  object_set,
                  measurements,
                  image_set_list,
-                 frame=None):
+                 frame=None,
+                 create_new_window = False):
+        """Workspace constructor
+        
+        pipeline   - the pipeline of modules being run
+        module     - the current module to run
+        image_set  - the set of images available for this iteration
+        object_set - the set of calculated label masks for the image set
+        image_set_list - the list of all images
+        frame      - the application's frame. None = don't display anything
+        create_new_window - True to create another frame, even if one is open
+                            False to reuse the current frame.
+        """
         self.__pipeline = pipeline
         self.__module = module
         self.__image_set = image_set
@@ -34,12 +46,16 @@ class Workspace(object):
         self.__image_set_list = image_set_list
         self.__frame = frame
         self.__outlines = {}
-        self.__windows_to_refresh = []
+        self.__windows_used = []
+        self.__create_new_window = create_new_window
     
     def refresh(self):
         """Refresh any windows created during use"""
-        for window in self.__windows_to_refresh:
+        for window in self.__windows_used:
             window.Refresh()
+    
+    def get_windows_used(self):
+        return self.__windows_used
 
     def get_pipeline(self):
         """Get the pipeline being run"""
@@ -111,10 +127,17 @@ class Workspace(object):
         if window_name == None:
             window_name = "CellProfiler:%s:%s"%(self.__module.module_name,
                                                 self.__module.module_num)
-        figure = cpf.create_or_find(self.__frame, title = title, 
-                                    name = window_name, subplots = subplots)
-        if not figure in self.__windows_to_refresh:
-            self.__windows_to_refresh.append(figure)
+        if self.__create_new_window:
+            figure = CPFigureFrame(self, 
+                                   title=title,
+                                   name = window_name,
+                                   subplots = subplots)
+        else:
+            figure = cpf.create_or_find(self.__frame, title = title, 
+                                        name = window_name, 
+                                        subplots = subplots)
+        if not figure in self.__windows_used:
+            self.__windows_used.append(figure)
         return figure
     
     def get_outline_names(self):

@@ -26,6 +26,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
+from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 import cellprofiler.matlab.cputils
 
 class PipelineController:
@@ -55,11 +56,13 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_IDLE(frame,self.on_idle)
     
-    def attach_to_pipeline_list_view(self,pipeline_list_view):
+    def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
         
         """
         self.__pipeline_list_view = pipeline_list_view
+        self.__movie_viewer = movie_viewer
+        self.__frame.Bind(EVT_TAKE_STEP, self.on_take_step, movie_viewer)
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
@@ -214,12 +217,19 @@ class PipelineController:
     def on_stop_running(self,event):
         self.__running_pipeline = False
     
+    def is_in_debug_mode(self):
+        """True if there's some sort of debugging in progress"""
+        return self.__debug_image_set_list != None
+    
     def on_debug_start(self, event):
+        self.__pipeline_list_view.select_one_module(1)
+        self.start_debugging()
+    
+    def start_debugging(self):
         self.__debug_image_set_list = self.__pipeline.prepare_run()
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
-        self.__pipeline_list_view.select_one_module(1)
     
     def on_debug_stop(self, event):
         self.__frame.enable_debug_commands(False)
@@ -230,6 +240,11 @@ class PipelineController:
     def on_debug_step(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()
         module = modules[0]
+        self.do_step(module)
+    
+    def do_step(self, module):
+        """Do a debugging step by running a module
+        """
         failure = 1
         old_cursor = self.__frame.GetCursor()
         self.__frame.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
@@ -262,7 +277,19 @@ class PipelineController:
             self.__debug_measurements.add_measurement('Image'
                                                       ,module_error_measurement,
                                                       failure);
+        return failure==0
     
+    def on_take_step(self, event):
+        if not self.is_in_debug_mode():
+            self.start_debugging()
+        module_idx = self.__movie_viewer.slider.value
+        module = self.__pipeline.modules()[module_idx]
+        success = self.do_step(module)
+        if success:
+            self.__movie_viewer.on_step_taken()
+        else:
+            self.__movie_viewer.on_step_failed()
+        
     def on_debug_next_image_set(self, event):
         image_set_number = self.__debug_measurements.image_set_number+1
         self.__debug_measurements.next_image_set()

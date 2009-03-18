@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import csv
 import datetime
 import numpy as np
 import os
@@ -361,7 +362,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         object_filename = os.path.join(self.get_output_directory(),
                                        '%s_object.CSV'%(self.base_name(workspace)))
         fid_per_image = open(image_filename,"wt")
+        csv_per_image = csv.writer(fid_per_image)
         fid_per_object = open(object_filename,"wt")
+        csv_per_object = csv.writer(fid_per_object)
         
         per_image_cols = max(per_image.values())+1
         per_object_cols = max(per_object.values())+1
@@ -409,6 +412,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                             continue
                         feature_name = "%s_%s"%(object_name, feature)
                         values = measurements.get_measurement(object_name, feature, i)
+                        values[np.logical_not(np.isfinite(values))] = 0
                         nvalues = np.product(values.shape)
                         if (nvalues < max_count):
                             sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
@@ -426,8 +430,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                         stdev = values.std()
                         image_row[per_image[stdev_feature_name]] = stdev
                 for row in range(max_count):
-                    fid_per_object.write(','.join(map(str,object_rows[row,:]))+'\n')
-            fid_per_image.write(','.join(map(str,image_row))+'\n')
+                    csv_per_object.writerow(object_rows[row,:])
+            csv_per_image.writerow(image_row)
         fid_per_image.close()
         fid_per_object.close()
     

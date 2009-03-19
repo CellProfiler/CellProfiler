@@ -145,6 +145,11 @@ if ~isempty(PathFieldNames)
     end
     Metadata = cat(1,Metadata, regexp(PathName,RegularExpressionPathname,'names'));
 end
+
+if isempty(Metadata)
+    error([ 'Image processing was canceled in the ', ModuleName, ' module. The path "',PathName,'" doesn''t match the regular expression "',RegularExpressionPathname,'"']);
+end
+
 if ~isempty(FileFieldNames)
     s2 = regexp(FileName,RegularExpressionFilename,'names');
     f = fieldnames(s2);
@@ -154,7 +159,7 @@ if ~isempty(FileFieldNames)
 end
 
 if isempty(Metadata)
-    error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileOrPathName,'" doesn''t match the regular expression']);
+    error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression "',RegularExpressionFilename,'"']);
 end
 
 FieldNames = [PathFieldNames,FileFieldNames];

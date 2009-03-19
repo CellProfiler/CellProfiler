@@ -857,7 +857,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 for k = 1:length(tmp)
                     %%% If there is no maxima in these pixels, exclude object
                     if sum(MaximaImage(tmp(k).PixelIdxList)) == 0
-                        Objects(index) = 0;
+                        Objects(tmp(k).PixelIdxList) = 0;
                     end
                 end
             end

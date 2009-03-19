@@ -96,7 +96,17 @@ if strcmp(CurrentModuleName, 'RescaleIntensity')
     end
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to FilterByObjectMeasurement
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'FilterByObjectMeasurement')
+    if SavedVarRevNum == 5      % Swapping arguments 1 and 2, so we're able to use the measurment popup fill-in
+        [Settings.VariableValues{ModuleNum-Skipped,[1 2]}] = deal(Settings.VariableValues{ModuleNum-Skipped,[2 1]});
+        [Settings.VariableInfoTypes{ModuleNum-Skipped,[1 2]}] = deal(Settings.VariableInfoTypes{ModuleNum-Skipped,[2 1]});
+        SavedVarRevNum = 6;
+        IsModuleModified = true;
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Changes to SaveImages

@@ -57,15 +57,15 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which object would you like to filter by, or if using a Ratio, what is the numerator object?
-%infotypeVAR01 = objectgroup
-%inputtypeVAR01 = popupmenu
-ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+%textVAR01 = What do you want to call the filtered objects?
+%defaultVAR01 = FilteredNuclei
+%infotypeVAR01 = objectgroup indep
+TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = What do you want to call the filtered objects?
-%defaultVAR02 = FilteredNuclei
-%infotypeVAR02 = objectgroup indep
-TargetName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
+%textVAR02 = Which object would you like to filter by, or if using a Ratio, what is the numerator object?
+%infotypeVAR02 = objectgroup
+%inputtypeVAR02 = popupmenu
+ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = Which category of measurements would you want to filter by?
 %inputtypeVAR03 = popupmenu category
@@ -101,7 +101,7 @@ MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %infotypeVAR09 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 5
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

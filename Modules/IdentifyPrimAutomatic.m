@@ -657,7 +657,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 BlurredImage = OrigImage;
             else
                 sigma = 1;
-                FiltLength = 2*sigma;                                              % Determine filter size, min 3 pixels, max 61
+                FiltLength = 2*sigma;
                 [x,y] = meshgrid(-FiltLength:FiltLength,-FiltLength:FiltLength);   % Filter kernel grid
                 f = exp(-(x.^2+y.^2)/(2*sigma^2));f = f/sum(f(:));                 % Gaussian filter kernel
                 %                BlurredImage = conv2(OrigImage,f,'same');                             % Blur original image

@@ -1,3 +1,5 @@
+function plot_384well_enrichments
+
 %% Read in data, Scored by Well, possibly with >1 plate
 %%
 %% Example line:
@@ -7,8 +9,7 @@
 %% NOTE!  You must manually strip off the header lines of CPA output .csv file before you run this.  
 %% The way newlines are encoded now in the header make it complicated to do this programmatically.   
 
-clear all
-close all
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% USER SETS THESE
 numRows = 4;  
@@ -75,7 +76,7 @@ mkdir(output_folder)
 for idxDataType = size(Data,2):-1:1
     for idxPlate = length(plate_list):-1:1
 
-        figure(idxDataType);
+        figure(100+idxDataType);
         subplot(numRows,numCols,idxPlate)
         thisData = Data_array(:,:,idxPlate,idxDataType);
         imshow(thisData, [min(thisData(:)) max(thisData(:))])

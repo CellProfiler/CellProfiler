@@ -67,8 +67,8 @@ function handles = TrackObjects(handles,varargin)
 % the measurements for that object. The current statistics are collected:
 %
 % Features measured:       Feature Number:
-% Trajectory_X          |       1
-% Trajectory_Y          |       2
+% TrajectoryX           |       1
+% TrajectoryY           |       2
 % DistanceTraveled      |       3
 % IntegratedDistance    |       4
 % Linearity             |       5
@@ -210,7 +210,7 @@ if nargin > 1
         case 'measurements'
             if ismember(varargin{2},{ObjectName}) && strcmp(varargin{3},'TrackObjects')
                 result = {...
-                    'Trajectory_X','Trajectory_Y','DistanceTraveled','IntegratedDistance','Linearity' };
+                    'TrajectoryX','TrajectoryY','DistanceTraveled','IntegratedDistance','Linearity' };
             else
                 result = {};
             end
@@ -504,9 +504,9 @@ if CollectStatistics
                     CurrentLabels(:));
     handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_ProgenyID', ...
                     str2double(strcat(CurrHeaders', cellstr(num2str((CurrentLabels)')))));
-    handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_Trajectory_X', ...
+    handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_TrajectoryX', ...
                     CentroidTrajectory(:,1));
-    handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_Trajectory_Y', ...
+    handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_TrajectoryY', ...
                     CentroidTrajectory(:,2));
     handles = CPaddmeasurements(handles, ObjectName, 'TrackObjects_DistanceTraveled', ...
                     DistanceTraveled(:));

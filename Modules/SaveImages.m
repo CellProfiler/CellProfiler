@@ -109,7 +109,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 ImageFileName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu custom
 
-%textVAR03 = Enter text to append to the image name, type N to use sequential numbers, or leave "Do not use" to not append anything.
+%textVAR03 = Enter text or metadata tokens to append to the image name, type N to use sequential numbers, or leave "Do not use" to not append anything.
 %defaultVAR03 = Do not use
 Appendage = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -267,7 +267,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         assert(~any(isspace(ImageFileName)),['Image processing was canceled in the ', ModuleName, ...
             ' module because you have entered one or more spaces in the text box for the filename of the image.'])
         
-        %% Substitute Metadata tokens if found
+        % Substitute Metadata tokens if found
         ImageFileName = CPreplacemetadata(handles,ImageFileName,SetBeingAnalyzed);
                
         FileName = ImageFileName(2:end);
@@ -294,6 +294,9 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             if any(Spaces)
                 error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
             end
+            % Substitute Metadata tokens if found
+            Appendage = CPreplacemetadata(handles,Appendage,SetBeingAnalyzed);
+            
             FileName = [FileName Appendage];
         end
     end

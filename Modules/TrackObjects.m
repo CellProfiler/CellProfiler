@@ -1,4 +1,4 @@
-function handles = TrackObjects(handles)
+function handles = TrackObjects(handles,varargin)
 
 % Help for the Track Objects module:
 % Category: Object Processing
@@ -66,12 +66,23 @@ function handles = TrackObjects(handles)
 % Select whether you want statistics on the tracked objects to be added to
 % the measurements for that object. The current statistics are collected:
 %
+% Features measured:       Feature Number:
+% Trajectory_X          |       1
+% Trajectory_Y          |       2
+% DistanceTraveled      |       3
+% IntegratedDistance    |       4
+% Linearity             |       5
+%
+% In addition to these, the following features are also recorded: Label, 
+% Lifetime.
+%
+% Desscription of each feature:
 %   Label: Each tracked object is assigned a unique identifier (label). 
 %   Results of splits or merges are seen as new objects and assigned a new
 %   label.
 %
-%   Trajectory: The direction of motion (as a x and y coordinates vector)
-%   of the object from the previous frame to the curent frame.
+%   Trajectory: The direction of motion (in x and y coordinates) of the 
+%   object from the previous frame to the curent frame.
 %
 %   Distance traveled: The distance traveled by the object from the 
 %   previous frame to the curent frame (calculated as the magnititude of 
@@ -180,6 +191,35 @@ CollectStatistics = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %defaultVAR11 = Do not use
 %infotypeVAR11 = imagegroup indep
 DataImage = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+
+%%%%%%%%%%%%%%%%%
+%%% FEATURES  %%%
+%%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},{ObjectName})
+                result = { 'TrackObjects' };
+            else
+                result = {};
+            end
+
+%feature:measurements
+        case 'measurements'
+            if ismember(varargin{2},{ObjectName}) && strcmp(varargin{3},'TrackObjects')
+                result = {...
+                    'Trajectory_X','Trajectory_Y','DistanceTraveled','IntegratedDistance','Linearity' };
+            else
+                result = {};
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles = result;
+    return;
+end
 
 %%%VariableRevisionNumber = 3
 

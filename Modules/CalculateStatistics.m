@@ -122,6 +122,27 @@ function handles = CalculateStatistics(handles)
 %
 % $Revision$
 
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) What did you call the grouping values specifying the experimental 
+% conditions? These values are loaded using the LoadText module; see Help 
+% for additional details. (DataName)
+% (2) Would you like to log-transform the grouping values before fitting a
+% sigmoid curve? (Logarithmic)
+% (4) If you want to save the plotted dose response data for each feature
+% as an interactive figure in the default output folder, enter the filename 
+% here (.fig extension will be automatically added). Select "Do not use" to
+% ignore. Note that figures will not remain open during processing in order
+% to conserve memory. Also, this option will be ignored when running on a 
+% computing cluster. (FigureName)
+%
+% (i) (4) assumes that MATLAB's .fig format is being used. I don't know
+% what formats Python is capable of saving figures in.
+% (ii) (4) assumes that figures aren't saveable on the cluster. I don't 
+% think this is the case in MATLAB and it may not be the case with Python
+% either.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

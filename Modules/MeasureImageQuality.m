@@ -36,7 +36,6 @@ function handles = MeasureImageQuality(handles,varargin)
 % intensity value is equal to the maximum possible intensity value for that
 % image type.
 %
-% Update [Oct-11-2007]
 % Because the saturated pixels may not reach to the maximum possible
 % intensity value of the image type for some reasons such as CCDs saturate
 % before 255 in graylevel, we also calculate the percentage of the maximal
@@ -61,8 +60,6 @@ function handles = MeasureImageQuality(handles,varargin)
 % FocusScore{ImageNumber} = ...
 %    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 %
-% Update (2007-10-11):
-%
 % The above score is to measure a relative score given a focus setting of 
 % a certain microscope. Using this, one can calibrrate the microscope's
 % focus setting. However it doesn't necessarily tell you how well an image
@@ -70,9 +67,9 @@ function handles = MeasureImageQuality(handles,varargin)
 % images probably taken in different situations and with different cell
 % contents can not be used for focus comparison.
 % 
-% The newly added LocalFocusScore is a local version of the original 
-% FocusScore. LocalFocusScore was just named after the original one to be
-% consistent with naming. Note that these focus scores do not necessarily 
+% The LocalFocusScore is a local version of the original FocusScore. 
+% LocalFocusScore was just named after the original one to be consistent 
+% with naming. Note that these focus scores do not necessarily 
 % represent the qualities of focusing between different images. 
 % LocalFocusScore was added to differentiate good segmentation and bad 
 % segmentation images in the cases when bad segmentation images usually 
@@ -105,6 +102,25 @@ function handles = MeasureImageQuality(handles,varargin)
 % Website: http://www.cellprofiler.org
 %
 % $Revision$
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) What grayscale image would you like to use to measure image quality?
+% (NameImageToCheck)
+% (2) The local focus score is measured within an NxN pixel window applied 
+% to the image. What value of N would you like to use? A suggested value
+% is twice the average object diameter. (WindowSize)
+% (3) Would you like to check for image saturation on this image?
+% (4a) Would you like to calculate a suggested threshold for this image?
+% (4b) If so, what thresholding method would you like to use?
+% (ThresholdMethod)
+%
+% (i) A button should be added after (5) that lets the user add/substract
+% images, prompting with question (1).
+% (ii) A range of N values should be allowable for (2) so additional
+% modules are not needed
+% (iii) The prompt for (4b) should appear only if the user selects 'yes' to (4a) 
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

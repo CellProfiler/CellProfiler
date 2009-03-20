@@ -18,7 +18,6 @@ import re
 import PIL.Image
 import numpy
 import matplotlib.image
-import pyffmpeg
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -34,6 +33,11 @@ FF_INDIVIDUAL_IMAGES = 'individual images'
 FF_STK_MOVIES = 'stk movies'
 FF_AVI_MOVIES = 'avi movies'
 FF_OTHER_MOVIES = 'tif,tiff,flex movies'
+try:
+    import ffmpeg
+    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
+except ImportError:
+    FF = [FF_INDIVIDUAL_IMAGES]
 
 DIR_DEFAULT_IMAGE = 'Default Image Directory'
 DIR_DEFAULT_OUTPUT = 'Default Output Directory'
@@ -57,7 +61,7 @@ class LoadImages(cpmodule.CPModule):
         self.module_name = "LoadImages"
         
         # Settings
-        self.file_types = cps.Choice('What type of files are you loading?',[FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES])
+        self.file_types = cps.Choice('What type of files are you loading?', FF)
         self.match_method = cps.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
         self.match_exclude = cps.Text('If you want to exclude certain files, type the text that the excluded images have in common', cps.DO_NOT_USE)
         self.order_group_size = cps.Integer('How many images are there in each group?', 3)

@@ -52,6 +52,10 @@ function handles = Align(handles)
 %
 % $Revision$
 
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
+
 % NEW SETTINGS FOR pyCP:
 % In general,
 % (1) Make the settings color order RGB (seems more intuitive than BRG)
@@ -126,9 +130,6 @@ function handles = Align(handles)
 % to the user about when each is preferable (other than what's there
 % already about bright vs. dark?)
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

@@ -39,7 +39,8 @@ function handles = DICTransform(handles)
 
 % pyCP notes:
 % (1) There needs to be more Help on all the individual 
-%   transformation method settings. 
+%   transformation method settings. More info might be found here:
+%   http://wwwdev.broad.mit.edu/imaging/privatewiki/index.php/2008_06_09_DIC_Transformation_Module_(Imaging_Platform)
 % (2) All of the settings below the transformation method
 %   should be displayed only with the repsective method.
 

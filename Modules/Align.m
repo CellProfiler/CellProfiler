@@ -40,6 +40,18 @@ function handles = Align(handles)
 % using the cross correlation method, the second image should serve as a
 % template and be smaller than the first image selected.
 
+% CellProfiler is distributed under the GNU General Public License.
+% See the accompanying file LICENSE for details.
+%
+% Developed by the Whitehead Institute for Biomedical Research.
+% Copyright 2003,2004,2005.
+%
+% Please see the AUTHORS file for credits.
+%
+% Website: http://www.cellprofiler.org
+%
+% $Revision$
+
 % NEW SETTINGS FOR pyCP:
 % In general,
 % (1) Make the settings color order RGB (seems more intuitive than BRG)
@@ -113,18 +125,6 @@ function handles = Align(handles)
 % We also need further description of the MI and NCC methods - any advice
 % to the user about when each is preferable (other than what's there
 % already about bright vs. dark?)
-
-% CellProfiler is distributed under the GNU General Public License.
-% See the accompanying file LICENSE for details.
-%
-% Developed by the Whitehead Institute for Biomedical Research.
-% Copyright 2003,2004,2005.
-%
-% Please see the AUTHORS file for credits.
-%
-% Website: http://www.cellprofiler.org
-%
-% $Revision$
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

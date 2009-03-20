@@ -4,45 +4,28 @@ function handles = DICTransform(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Transforms a DIC image so that standard segmentation algorithms
-% will function.
+% Transforms a DIC image to more readily enable object identification.
 % 
 % ************************************************************************
 %
-% Thresholding algorithms (such as the IdentifyPrimaryAutomatic
-% module) cannot be used to identify the foreground of an
-% untransformed DIC image because the interior of the objects has
-% similar intensity to the background.  This module provides several
-% algorithms for transforming the image so that the objects have a
-% different intensity than the background.
+% Typically, identifying objects with algorithms like those in
+% CellProfiler's "Identify" modules does not work well for DIC images
+% because the interior of each object has similar intensity values as the
+% background. This module provides several algorithms for transforming a
+% DIC image to enhance the brightness of objects relative to the
+% background.
 % 
-% On most images, the line integration and the energy minimization
-% algorithms perform the best.  However, these algorithms don't work
-% as well when the objects in the images are heavily textured (e.g.,
-% mice embryos).  On such images, a simple normally weighted variance
-% filter is usually more helpful.
 %
 % Settings:
 %
-%   Shear axis: Direction along which the "shadow" of the objects 
-%               appear to lie.
+% * Transformation methods: Several options are provided. For most DIC
+% images, the line integration and the energy minimization algorithms
+% perform the best. For objects that are heavily textured (e.g., mice
+% embryos), a simple normally weighted variance filter is usually more
+% helpful.
 %
-%   Transformation methods:
-%       Line integration:
-%
-%       Variance filter:
-%
-%       Hilbert transform:
-%
-%       Energy minimization:
-%
-
-% pyCP notes:
-% (1) There needs to be more Help on all the individual 
-%   transformation method settings. More info might be found here:
-%   http://wwwdev.broad.mit.edu/imaging/privatewiki/index.php/2008_06_09_DIC_Transformation_Module_(Imaging_Platform)
-% (2) All of the settings below the transformation method
-%   should be displayed only with the repsective method.
+% * Shear axis: Direction along which the "shadow" of the objects appears
+% to lie.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -59,6 +42,18 @@ function handles = DICTransform(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% pyCP notes:
+% (1) There needs to be more Help on all the individual 
+%   transformation method settings. In particular, there's no mention in
+%   the help of when Hilbert transform is useful - can
+% we provide some guidance on that?  More info might be found here:
+%   http://wwwdev.broad.mit.edu/imaging/privatewiki/index.php/2008_06_09_DIC_Transformation_Module_(Imaging_Platform)
+% (2) All of the settings below the transformation method
+%   should be displayed only with the respective method.
+% (3) The transformation method should be setting #3, because it's the
+% biggest decision (aside from naming images).
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

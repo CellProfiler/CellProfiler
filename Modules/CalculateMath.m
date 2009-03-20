@@ -55,6 +55,38 @@ function handles = CalculateMath(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Variable order (setting, followed by current variable in MATLAB CP)
+% (1) Nane of result (OutputFeatureName)
+% (2) Desired operation (Operation)
+% Perhaps show settings for the operands in two columns (eg, numerator settings on
+% left, denominator settings on right). Maybe show mathematical symbol (based on answer
+% to (2) between the columns)
+%
+% (3a) First operand (ObjectName{1})
+% (3b) Measurement category for first operand (Category{1})
+% (3c) Feature category for first operand  (FeatureNumber{1})
+% (3d) Depending on (2c), either Scale category (SizeScale{1}) or Image
+% (ImageName{1}) or both (not implemented) for first operand
+% (3e) Constant to multiply first operand by (MultiplyFactor1)
+%
+% (4a) Second operand (ObjectName{2})
+% (4b) Measurement category for first operand (Category{2})
+% (4c) Feature category for first operand  (FeatureNumber{2})
+% (4d) Depending on (3c), either Scale category (SizeScale{2}) or Image
+% (ImageName{2}) or both (not implemented) for first operand
+% (4e) Constant to multiply second operand by (MultiplyFactor2)
+%
+% (5a) Exponent to raise result by (Power)
+% (5b) Constant to multiply result by (MultiplyFactor3)
+%
+% (i) Measurement category/feature/image/scale settings should only be shown if
+% the measurement hierarchy requires it.
+% (ii) Some clarification will be needed to show the order of operations to
+% the user
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

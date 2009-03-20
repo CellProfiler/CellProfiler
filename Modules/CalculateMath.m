@@ -58,7 +58,7 @@ function handles = CalculateMath(handles)
 
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
-% Variable order (setting, followed by current variable in MATLAB CP)
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
 % (1) Nane of result (OutputFeatureName)
 % (2) Desired operation (Operation)
 % Perhaps show settings for the operands in two columns (eg, numerator settings on

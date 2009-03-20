@@ -115,6 +115,20 @@ function handles = MeasureImageAreaOccupied(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Variable order (setting, followed by current variable in MATLAB CP)
+% The functionality of this module is sufficiently similar to IDPrimAuto
+% that it should simply ask for an object previously created by
+% IDPrimAuto and measure the area occcupied by that object. The settings
+% would then be:
+% (1) Nane of input object
+% (2) Name of output binary image (StainName)
+%
+% If we want to keep the original format, it might be nice to have the 
+% option of importing settings from a previous IDPrimAuto module.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

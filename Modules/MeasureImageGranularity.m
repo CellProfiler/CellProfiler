@@ -66,6 +66,14 @@ function handles = MeasureImageGranularity(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order: Unchanged from current variables/settings in
+% MATLAB CP)
+%
+% The help on this section needs to be greatly clarified.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

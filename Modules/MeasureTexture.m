@@ -119,6 +119,18 @@ function handles = MeasureTexture(handles,varargin)
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
 
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) Input grayscale image (ImageName)
+% (2) Input objects (ObjectNameList)
+% (3) Feature scale (ScaleOfTexture)
+%
+% (i) A button should be added that lets the user add/substract objects 
+% for (2)
+% (ii) The feature scale should let the user specify a range of texture 
+% scales, so a module doesn't have to be added for each one.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the greyscale images you want to measure?

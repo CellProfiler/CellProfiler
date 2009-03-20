@@ -48,6 +48,12 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
+%Klmadden 2009_03_20 I know 'append' is not really the word that I mean,
+%but I can't think of the right word; What I mean is, you flag by one
+%criteria and then you want to flag by another criteria, retaining those
+%original flags. So perhaps something more like 'overwrite an existing
+%QCFlag, retaining existing flags?' 
+
 %textVAR01 = Which image would you like to flag for quality control?
 %infotypeVAR01 = imagegroup
 %inputtypeVAR01 = popupmenu

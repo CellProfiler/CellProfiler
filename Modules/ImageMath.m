@@ -49,6 +49,10 @@ function handles = ImageMath(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+% Klmadden 2009_03_20 In PyCP it would be great if there's a way to only
+% show the options for choosing one image, but then you could push a button
+% for 'add another image'...and the corresponding options would show up
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Choose first image:

@@ -60,6 +60,13 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
+% Klmadden 2009_03_20 I think this warning should be moved to a header
+% position in the variable settings:
+% This module allows you to rename (=overwrite) your files. Please See the help for this module for other warnings.
+% And the first variable should say say:
+% What did you call the images you want to rename/renumber?
+
+
 %textVAR01 = What did you call the images you want to rename/renumber? Be very careful since you will be renaming (= overwriting) your files!! See the help for this module for other warnings.
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});

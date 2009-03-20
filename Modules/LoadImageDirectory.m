@@ -73,6 +73,23 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
+%Klmadden 2009_03_20 For variable 1, it should be clear that this is one
+%level ABOVE the the directory you would like to load in as a projection, for ex:
+% Enter the pathname where the directory you are loading is located
+% For variable 4/5, it should be clear that you are now referring to which
+% files within these directories you want to load
+% Var 7 should be :
+% Would you like to check images for a QCFlag (loaded earler in a load text
+% module) and bypass images possessing a flag in making the projection?
+% I think maybe 'What do you want to call the projected image?' should be
+% moved ahead of all the QCFlag stuff, so if you're not checking for a
+% QCFlag you dont miss it
+% Also, it would be nice if in the PyCP version, the QCFlag options about
+% number of channels, etc only appeared to the user if they select 'yes'
+% for 'Do you want to check for a QCFlag' instead of being qualified by
+% 'this is only used for qcflag = YES' at the end.
+
+
 %textVAR01 = Enter the pathname to the folders containing images:
 %defaultVAR01 = .
 Pathname = char(handles.Settings.VariableValues{CurrentModuleNum,1});

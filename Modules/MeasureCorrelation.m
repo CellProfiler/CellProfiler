@@ -36,21 +36,26 @@ function handles = MeasureCorrelation(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1a) First input grayscale image (ImageName{1})
-% (1b) First input grayscale image (ImageName{1})
+% (1) What images would you like use to measure pixel correlations? You must choose
+%   at least two. (ImageName{1}, ImageName{2})
 % A button should be added that lets the user add/substract images for (1),
 % but must have no less than 2 images.
 %
-% (2) First input object(ObjectName{1})
+% (2) If you would like to measure pixel correlations within an object, what object 
+%   would you like to use? (ObjectName{1})
+%
 % (i) A button should be added that lets the user add/substract objects for (2)
-% (ii) (2) should default to no objects selected.
+%   for the images in (1)
+% (ii) Setting (2) should default to a "Do not use" option.
+% (iii) A button should be added after (2) that lets the user add/substract
+% images (and more asociated objects)
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

@@ -81,10 +81,6 @@ function handles = MeasureObjectIntensity(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
@@ -98,6 +94,10 @@ function handles = MeasureObjectIntensity(handles,varargin)
 % (ii) Creating another image by (ii) should create another object setting with 
 %  buttons that perform (i). Subtracting an image should remove the associated
 %  objects measured against it.
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

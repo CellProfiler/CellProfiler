@@ -41,10 +41,6 @@ function handles = MeasureRadialDistribution(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
@@ -58,6 +54,10 @@ function handles = MeasureRadialDistribution(handles,varargin)
 % (ii) A button should be added after (4) allowing the user to add more 
 % images, associated objects, and binning to specify other object radial
 % distributions.
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

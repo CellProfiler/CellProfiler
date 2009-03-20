@@ -72,10 +72,6 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
@@ -89,6 +85,10 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 % suitble for SaveImages/ConvertToImage, there should be a tag which
 % identifies it as a label matrix vs. grayscale, so that other modules can
 % handle it properly.
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

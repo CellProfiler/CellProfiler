@@ -115,10 +115,6 @@ function handles = MeasureTexture(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
@@ -130,6 +126,10 @@ function handles = MeasureTexture(handles,varargin)
 % for (2)
 % (ii) The feature scale should let the user specify a range of texture 
 % scales, so a module doesn't have to be added for each one.
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

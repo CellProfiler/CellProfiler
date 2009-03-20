@@ -54,21 +54,21 @@ function handles=FileNameMetadata(handles, varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
 % This module needs to be folded into LoadImages, so we have access to the 
 % metadata from the very beginning (such as for image confirmation). In
 % that case, the settings would be:
-% (1) Regexp to capture fields in filename (RegularExpressionFilename)
-% (2) Regexp to capture fields in pathname (RegularExpressionPathname)
+% (1) What is the regular expression to capture the fields in the image filename? (RegularExpressionFilename)
+% (2) What is the regular expression to capture the fields in the image pathname? (RegularExpressionPathname)
 %
 % Both (1) and (2) need 'Do not use' defaults to allow user to use one or
 % the other or both.
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

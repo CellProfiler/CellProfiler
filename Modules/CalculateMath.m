@@ -52,40 +52,46 @@ function handles = CalculateMath(handles)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) Nane of result (OutputFeatureName)
-% (2) Desired operation (Operation)
+% (1) What do you want to call the output image calculated by this module? (OutputFeatureName)
+% (2) What operation would you like to perform? (Operation)
 % Perhaps show settings for the operands in two columns (eg, numerator settings on
 % left, denominator settings on right). Maybe show mathematical symbol (based on answer
-% to (2) between the columns)
+% to (2)) between the columns
 %
-% (3a) First operand (ObjectName{1})
-% (3b) Measurement category for first operand (Category{1})
-% (3c) Feature category for first operand  (FeatureNumber{1})
-% (3d) Depending on (2c), either Scale category (SizeScale{1}) or Image
-% (ImageName{1}) or both (not implemented) for first operand
-% (3e) Constant to multiply first operand by (MultiplyFactor1)
+% (3a) Which object would you like to use as the first operand? (ObjectName{1})
+% (3b) What is the measurement category? (Category{1})
+% (3c) What is the measurment feature for the above category? (FeatureNumber{1})
+% (3d) (If the answer to (3c) involves a scale) What scale was used to 
+%      calculate the feature? (SizeScale{1}) 
+%      (If the answer to (3c) involves an image) What image was used to
+%      calculate the feature? (ImageName{1})
+% (3e) What number would you like to multiply the operand by?  (MultiplyFactor1)
 %
-% (4a) Second operand (ObjectName{2})
-% (4b) Measurement category for first operand (Category{2})
-% (4c) Feature category for first operand  (FeatureNumber{2})
-% (4d) Depending on (3c), either Scale category (SizeScale{2}) or Image
-% (ImageName{2}) or both (not implemented) for first operand
-% (4e) Constant to multiply second operand by (MultiplyFactor2)
+% (4a) Which object would you like to use as the second operand  (ObjectName{2})
+% (4b) What is the measurement category? (Category{2})
+% (4c) What is the measurment feature for the above category? (FeatureNumber{2})
+% (4d) (If the answer to (4c) involves a scale) What scale was used to 
+%      calculate the feature? (SizeScale{2}) 
+%      (If the answer to (4c) involves an image) What image was used to
+%      calculate the feature? (ImageName{2})
+% (4e) What number would you like to multiply the operand by? (MultiplyFactor2)
 %
-% (5a) Exponent to raise result by (Power)
-% (5b) Constant to multiply result by (MultiplyFactor3)
+% (5a) What power would you like to raise the result to? (Power)
+% (5b) What number would you like to multiply the above result by? (MultiplyFactor3)
 %
-% (i) Measurement category/feature/image/scale settings should only be shown if
+% (i) Setting (1) should not have an automatic option; the user should
+% specify the name explicitly.
+% (ii) Measurement category/feature/image/scale settings should only be shown if
 % the measurement hierarchy requires it.
-% (ii) Some clarification will be needed to show the order of operations to
+% (iii) Some clarification will be needed to show the order of operations to
 % the user
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 
@@ -216,23 +222,23 @@ if isnan(MultiplyFactor2)
     MultiplyFactor2 = 1;
 end
     
-%% Check sizes (note, 'Image' measurements have length=1)
+% Check sizes (note, 'Image' measurements have length=1)
 if length(Measurements{1}) ~= length(Measurements{2}) && ...
         ~(length(Measurements{1}) ==1 || length(Measurements{2}) == 1)
     error(['Image processing was canceled in the ', ModuleName, ' module because the specified object names ',ObjectName{1},' and ',ObjectName{2},' do not have the same object count.']);
 end
 
-%% Construct field name
+% Construct field name
 if isempty(OutputFeatureName) || strcmp(OutputFeatureName,'Automatic') == 1
     FullFeatureName = CPjoinstrings('Math',ObjectName{1},FeatureName{1},...
                                     Operation,ObjectName{2},FeatureName{2});
 
-    %% Since Matlab's max name length is 63, we need to truncate the fieldname
+    % Since Matlab's max name length is 63, we need to truncate the fieldname
     TruncFeatureName = CPtruncatefeaturename(FullFeatureName);
 else
     TruncFeatureName = CPjoinstrings('Math',OutputFeatureName);
 end
-%% Do Math
+% Do Math
 if( strcmpi(Operation, 'Multiply') )
     FinalMeasurements = (MultiplyFactor1.*Measurements{1}) .* (MultiplyFactor2.*Measurements{2});
 elseif( strcmpi(Operation, 'Divide') )
@@ -266,8 +272,8 @@ if ~isnan(MultiplyFactor3)
     FinalMeasurements = FinalMeasurements.*MultiplyFactor3;
 end
 
-%% Save, depending on type of measurement (ObjectName)
-%% Note that Image measurements are scalars, while Objects are potentially vectors
+% Save, depending on type of measurement (ObjectName)
+% Note that Image measurements are scalars, while Objects are potentially vectors
 if strcmp(ObjectName{1}, 'Image') && strcmp(ObjectName{2}, 'Image'),
     handles = CPaddmeasurements(handles,'Image',TruncFeatureName,FinalMeasurements);
 else
@@ -284,7 +290,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%% TODO add display of numbers, as in CalculateRatios, and remove CPclosefigure
+% TODO add display of numbers, as in CalculateRatios, and remove CPclosefigure
 
 %%% The figure window display is unnecessary for this module, so it is
 %%% closed during the starting image cycle.

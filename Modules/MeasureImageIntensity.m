@@ -52,10 +52,6 @@ function handles = MeasureImageIntensity(handles,varargin)
 %
 % $Revision$
 
-%%%%%%%%%%%%%%%%%
-%%% VARIABLES %%%
-%%%%%%%%%%%%%%%%%
-
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
@@ -65,6 +61,10 @@ function handles = MeasureImageIntensity(handles,varargin)
 % (2a) Input object, if desired
 % (2b) If no input object, lower/upper threshold to ignore (LowThreshold,HighThreshold)
 % (3) Pixel range around objects above upper threshold (ExpansionDistance)
+
+%%%%%%%%%%%%%%%%%
+%%% VARIABLES %%%
+%%%%%%%%%%%%%%%%%
 
 drawnow
 

@@ -50,6 +50,10 @@ function handles = Combine(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+% Klmadden 2009_03_20 In the PyCP version it would be great to have maybe a
+% plus button for 'add an image' in case you only want to combine two
+% images you dont need to see all these options, or we want to allow the possibility to combine four images etc
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the first image to be combined?

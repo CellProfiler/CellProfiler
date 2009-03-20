@@ -44,6 +44,21 @@ function handles = MeasureRadialDistribution(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) Name of input image (ImageName)
+% (2) Name of input object to measure intensity (MainObjects)
+% (3) Name of input object to use as center (CenterObjects)
+% (4) # of bins to conpute distribution (BinCount)
+%
+% (i) User should be permitted to specify a range of values in (4) so they
+% don't have to add a separate module for each
+% (ii) A button should be added after (4) allowing the user to add more 
+% images, associated objects, and binning to specify other object radial
+% distributions.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

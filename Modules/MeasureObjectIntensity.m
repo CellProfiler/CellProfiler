@@ -84,6 +84,21 @@ function handles = MeasureObjectIntensity(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) First image to measure from (ImageName{1})
+% (2) First object to measure against (ObjectNameList{1})
+%
+% (i) Buttons are needed after (2) to let the user add/subtract objects to
+% measaure against (1)
+% (ii) A button should be added that lets the user add/substract additional
+% images after the last object in (2)
+% (ii) Creating another image by (ii) should create another object setting with 
+%  buttons that perform (i). Subtracting an image should remove the associated
+%  objects measured against it.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

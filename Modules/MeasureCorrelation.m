@@ -39,6 +39,19 @@ function handles = MeasureCorrelation(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1a) First input grayscale image (ImageName{1})
+% (1b) First input grayscale image (ImageName{1})
+% A button should be added that lets the user add/substract images for (1),
+% but must have no less than 2 images.
+%
+% (2) First input object(ObjectName{1})
+% (i) A button should be added that lets the user add/substract objects for (2)
+% (ii) (2) should default to no objects selected.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
@@ -264,7 +277,7 @@ for ObjectNameNbr = 1:ObjectNameCount
                         c = corrcoef([Image{i}(index) Image{j}(index)]);             % Get the values for these indexes in the images and calculate the correlation
                         CorrelationForCurrentObject = c(1,2);
                         
-                        %% Checks for undefined values, and sets them to zero
+                        % Checks for undefined values, and sets them to zero
                         if isnan(CorrelationForCurrentObject) || isinf(CorrelationForCurrentObject)
                             CorrelationForCurrentObject = 0;
                         end

@@ -75,6 +75,21 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) Name of input object (ObjectName)
+% (2) Distance within which objects are neighbors (NeighborDistance)
+% (3) Output images to save: Dropdown box of output images + editbox for 
+% user to specify name (ColoredNeighborsName/GrayscaleNeighborsName)
+%
+% (i) Options for (3): (a) Number of neighbors, (b) Percent touching
+% (ii) In order to avoid the issue of making sure the output image is
+% suitble for SaveImages/ConvertToImage, there should be a tag which
+% identifies it as a label matrix vs. grayscale, so that other modules can
+% handle it properly.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

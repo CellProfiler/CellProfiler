@@ -4,28 +4,25 @@ function handles = Align(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Aligns two or three images relative to each other. Particularly useful to
-% align microscopy images acquired from different color channels.
+% Aligns images relative to each other.
 % *************************************************************************
 %
-% For two or three input images, this module determines the optimal
-% alignment among them.  If using Mutual Information (see below), this
-% works whether the images are correlated or anti-correlated (bright
-% in one = bright in the other, or bright in one = dim in the other).
-% The Normalized Cross Correlation option requires that the images
-% have matching bright and dark areas.  This is useful when the
-% microscope is not perfectly calibrated because, for example, proper
-% alignment is necessary for primary objects to be helpful to identify
-% secondary objects. 
+% For two or more input images, this module determines the optimal
+% alignment among them. Aligning images is useful to obtain proper
+% measurements of the intensities in one channel based on objects
+% identified in another channel, for example. Alignment is often needed
+% when the microscope is not perfectly calibrated. It can also be useful to
+% align images in a time-lapse series of images.
 %
 % Some important notes for proper use of this module:
-% (1) Regardless of the number of input images, they will all be aligned with
-% respect to the first image.
+% (1) Regardless of the number of input images, they will all be aligned
+% with respect to the first image.
 % (2) The images are cropped according to the smallest input image. If the
 % images are all the same size, then no cropping is performed
-% (3) If an image is aligned, the padded pixels are assigned a fill value of zero.
-% (4) The module stores the amount of shift between images as a measurement,
-% which can be useful for quality control purposes.
+% (3) If an image is aligned, the padded pixels are assigned a fill value 
+% of zero.
+% (4) The module stores the amount of shift between images as a
+% measurement, which can be useful for quality control purposes.
 %
 % Measured feature:                 Feature Number:
 % Xshift_Image1NamevsImage2Name  |       1 (e.g., Xshift_BluevsRed)
@@ -35,13 +32,13 @@ function handles = Align(handles)
 % The latter two are measured only if three images are aligned.
 %
 % Settings:
-%
-% After entering the names of the images to be aligned as well as the 
-% aligned image name(s), select the method of alignment. There are two 
-% choices, one is based on mutual information while the other is based on 
-% the cross correlation. When using the cross correlation method, 
-% the second image should serve as a template
-% and be smaller than the first image selected.
+% * "Mutual Information" method: alignment works whether the images are
+% correlated or anti-correlated (bright in one = bright in the other, or
+% bright in one = dim in the other). 
+% * "Normalized Cross Correlation" method: alignment works only when the
+% images are correlated (they have matching bright and dark areas). When
+% using the cross correlation method, the second image should serve as a
+% template and be smaller than the first image selected.
 
 % NEW SETTINGS FOR pyCP:
 % In general,
@@ -56,16 +53,66 @@ function handles = Align(handles)
 %       "median aligned" one, though this would probably be difficult.
 %
 % e.g.
-%1. What is the name of the first image to be aligned? (will be displayed as red)
+%1. What is the name of the image to which you would like to align the other(s)? (will be displayed as red)
+% [do we need a comment to the user to tell them that this image can be a
+% different one for eery cycle, or alternately they can load a single
+% template image using LoadSingleImage? Or, should this suggestion just be
+% in the help section instead?]
 %2. What do you want to call the aligned first image? (default to "AlignedRed")
 %3. What is the name of the second image to be aligned? (will be displayed as green) 
 %4. What do you want to call the aligned second image? (default to "AlignedGreen")
 %5. Button asking "Add another image?" which will create dialogs like #1&2, which will display as "AlignedBlue"
-% (any additional chanels would have to be mapped to a new color, so this may not be worth the trouble)
-%6. Use Mutual Information or Normalized Cross Correlation as the alignment method?  
-%       If using normalized cross correlation, the second image should be the template and smaller than the first. (DLOGAN -- this seems odd to me, 
-%       since it goes against the logic of aligning all the images to the first one input) 
-% The MoreImageXName settings are not necessary, as far as I can tell, since the above "Add another image?" should subsume this.
+% (any channels beyond RGB can't easily be displayed, and even if they can
+% it's not really worth the trouble, although they can still be aligned -
+% it's your call how to handle this; perhaps for the 4th channel just say
+% "result will not be displayed" or if you're really ambitious you could
+% show each channel beyond the first three in a new image where the first
+% channel would again be red but channels 4 and 5 would be green and blue,
+% then another image with the first channel as red and channels 6 and 7 as
+% green and blue, and so on. In reality it's pretty rare for someone to
+% have more than 4 channels, so keep that in mind).
+%6. Which alignment method would you like to use? (to replace the question "Use Mutual Information or Normalized Cross Correlation as the alignment method?")  
+% Note: currently if you choose normalized cross correlation, the second
+% image should be the template and smaller than the first. We should of
+% course change this so that if they choose NCC the FIRST image will be the
+% template (consistent with the statement in setting #1 "to which you would
+% like to align"), but we DO need to let them know that the template first
+% image must be smaller than the image to be aligned - assuming this
+% actually is true in the code!)
+% 7. The questions related to "Two image alignment only": We do want to
+% retain this functionality - it lets you align #2 to #1 and then apply the
+% calculated X and Y shift to a different image. However, I think that we
+% can change the question to read: "Apply alignment shift: To what
+% additional image do you want to apply the shift calculated for the second
+% image?" and "What do you want to call the subsequently aligned
+% image?" and then have another "Add another image?" button.
+%
+% Other things to consider when converting this module to PyCP: decide
+% whether we should adjust the code to address the following comments in
+% the help section:
+% "(2) The images are cropped according to the smallest input image. If the
+% images are all the same size, then no cropping is performed"
+%   [should we make the cropping optional, the alternative being to pad the
+%   image? Actually, it's confusing overall, because shouldn't cropping
+%   occur even if the images are the same size and they've been shifted to
+%   align to each other?]
+% "(3) If an image is aligned, the padded pixels are assigned a fill value
+% of zero."
+% This doesn't make sense to me; I'm not sure what it's talking about and
+% whether it just needs to be explained better or whether we should offer
+% other options. Won't downstream analysis be messed up if there is a
+% border of zeroes in some images? It *is* useful, however, to enable the
+% user to choose to keep the images exactly a particular size, because
+% sometimes they may be doing something that requires is - e.g., if they
+% are aligning each frame of a movie to a template they want every image to
+% be the same size so the frames can be compiled together into a movie
+% downstream. So if data is missing because one frame was shifted
+% substantially, they'd likely want that frame to be padded rather than
+% cropped really small.
+%
+% We also need further description of the MI and NCC methods - any advice
+% to the user about when each is preferable (other than what's there
+% already about bright vs. dark?)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

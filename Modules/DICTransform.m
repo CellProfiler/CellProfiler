@@ -21,6 +21,27 @@ function handles = DICTransform(handles)
 % as well when the objects in the images are heavily textured (e.g.,
 % mice embryos).  On such images, a simple normally weighted variance
 % filter is usually more helpful.
+%
+% Settings:
+%
+%   Shear axis: Direction along which the "shadow" of the objects 
+%               appear to lie.
+%
+%   Transformation methods:
+%       Line integration:
+%
+%       Variance filter:
+%
+%       Hilbert transform:
+%
+%       Energy minimization:
+%
+
+% pyCP notes:
+% (1) There needs to be more Help on all the individual 
+%   transformation method settings. 
+% (2) All of the settings below the transformation method
+%   should be displayed only with the repsective method.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -51,7 +72,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %infotypeVAR02 = imagegroup indep
 TransformedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Choose a shear angle:
+%textVAR03 = Choose a shear axis:
 %choiceVAR03 = Main diagonal
 %choiceVAR03 = Antidiagonal
 %choiceVAR03 = Vertical
@@ -175,6 +196,7 @@ elseif strcmpi(Method, 'Energy minimization')
     end
 end
 
+%%% Anti-rotate if rotated before.
 if strcmpi(Shear, 'Antidiagonal') || strcmpi(Shear, 'Horizontal')
     TransformedImage = imrotate(TransformedImage,-90);
 end

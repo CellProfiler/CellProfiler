@@ -39,8 +39,33 @@ function handles = Align(handles)
 % After entering the names of the images to be aligned as well as the 
 % aligned image name(s), select the method of alignment. There are two 
 % choices, one is based on mutual information while the other is based on 
-% the cross correlation. When using the cross correlation method, the second image should serve as a template
+% the cross correlation. When using the cross correlation method, 
+% the second image should serve as a template
 % and be smaller than the first image selected.
+
+% NEW SETTINGS FOR pyCP:
+% In general,
+% (1) Make the settings color order RGB (seems more intuitive than BRG)
+% (2) Remove the third image input, but add an "Add another image?" button, 
+% which creates unlimited "other" images/channels.
+% (3) The general approach of Align is to either:
+%   (a) align channels within one cycle, or
+%   (b) Load a template image (from a separate LoadSingleImage module) and align
+%       all cycles to it.  Additionally, it would be great to automate this to load in 
+%       a stack of images, as in an illumination correction, and align all images to the 
+%       "median aligned" one, though this would probably be difficult.
+%
+% e.g.
+%1. What is the name of the first image to be aligned? (will be displayed as red)
+%2. What do you want to call the aligned first image? (default to "AlignedRed")
+%3. What is the name of the second image to be aligned? (will be displayed as green) 
+%4. What do you want to call the aligned second image? (default to "AlignedGreen")
+%5. Button asking "Add another image?" which will create dialogs like #1&2, which will display as "AlignedBlue"
+% (any additional chanels would have to be mapped to a new color, so this may not be worth the trouble)
+%6. Use Mutual Information or Normalized Cross Correlation as the alignment method?  
+%       If using normalized cross correlation, the second image should be the template and smaller than the first. (DLOGAN -- this seems odd to me, 
+%       since it goes against the logic of aligning all the images to the first one input) 
+% The MoreImageXName settings are not necessary, as far as I can tell, since the above "Add another image?" should subsume this.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -61,6 +86,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
+% DLogan 2009_03_20: Change the color to Red
 %textVAR01 = What is the name of the first image to be aligned? (will be displayed as blue) 
 %infotypeVAR01 = imagegroup
 Image1Name = char(handles.Settings.VariableValues{CurrentModuleNum,1});
@@ -157,7 +183,7 @@ if ~strcmpi(MoreImage1Name,'Do not use')
     [M3 N3 P3] = size(MoreImage1);
 end
 if ~strcmpi(MoreImage2Name,'Do not use')
-    MoreImage2 = CPretrieveimage(handles,MoreImage1Name,ModuleName,'DontCheckColor','CheckScale');
+    MoreImage2 = CPretrieveimage(handles,MoreImage2Name,ModuleName,'DontCheckColor','CheckScale');
     [M3 N3 P3] = size(MoreImage2);
 end
 

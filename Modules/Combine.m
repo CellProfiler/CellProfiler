@@ -4,34 +4,38 @@ function handles = Combine(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Takes 1 to 3 color or grayscale images and combines them into 1. Each image's
-% intensity can be adjusted independently.
+% Takes two or more images and combines them into one. Each image's
+% contribution to the combined image can be adjusted independently.
 % *************************************************************************
 %
-% This module takes color or grayscale images as inputs, and produces a new one
-% which results from the weighted average of the pixel intensities of the
-% input images. All the images to be combined must be all either grayscale
-% or color.  The average is found by taking the product of each weight
-% and the intensity of its corresponding image, adding the products, and
-% then dividing the result by the sum of the weights. By taking the
-% weighted average of the pixel intensities, the overall intensity of the
-% resulting image will remain the same as that of the inputs. If you want
-% to change the overall intensity, you should use the Rescale module.
+% This module combines input images into a new image that is the weighted
+% average of the input images' pixel intensities. The average is found by
+% first multiplying each input image by its requested weight, adding up
+% those images, and dividing the result by the sum of the weights. By
+% taking the weighted average of the pixel intensities, the overall
+% intensity of the resulting image will remain in the same range as that of
+% the inputs.
+%
+% The images to be combined must be either all grayscale or all color. If
+% you want to combine grayscale images to create a color image, see the
+% GrayToColor module. If you want to change an image's overall intensity,
+% you should use the Rescale module.
+%
 %
 % Settings:
 %
-% Choose the input images: You must select at least two images which you
-% would like to combine. They must all be the same size, since the average
-% will be taken pixel by pixel.
+% * Choosing the input images: The images that you would like to combine
+% must all be the same size, since the average will be taken pixel by
+% pixel. The input images must be all grayscale or all color.
 %
-% Weights: The weights will determine how each input image will affect the
-% combined one. The higher the weight of an image, the more it will be
-% reflected in the combined image. Because of the way the average is taken,
-% it only matters how these weights relate to each other (e.g. entering
-% weights 0.27, 0.3, and 0.3 is the same as entering weights 0.9, 1, and
-% 1). Make sure all the weights have positive values.
+% * Weights: The weights will determine how much each input image will
+% contribute to the combined image. The higher the weight of an image, the
+% more it will be reflected in the combined image. Because of the way the
+% average is taken, it only matters how these weights relate to each other
+% (e.g. entering weights 0.25, 0.25, and 0.5 is the same as entering
+% weights 1, 1, and 2). The weights must be positive values.
 %
-% See also GrayToColor, ColorToGray, and Rescale modules.
+% See also: GrayToColor and Rescale
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -50,9 +54,21 @@ function handles = Combine(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
-% Klmadden 2009_03_20 In the PyCP version it would be great to have maybe a
+% Klmadden 2009_03_20 In the PyCP version we want a
 % plus button for 'add an image' in case you only want to combine two
-% images you dont need to see all these options, or we want to allow the possibility to combine four images etc
+% images you dont need to see all these options, and we want to allow the
+% possibility to combine an infinite number of images.
+%
+% Note that the help was a little confusing about whether it works for
+% color images. I adjusted it to say yes, but we need to ensure that the
+% code backs that up!
+%
+% It's possible someone would just choose a single image here and enter a
+% weight, hoping to just multiply the image - we should catch them, force
+% them to specify at least two images, and direct them to ImageMath (I
+% think) which lets them multiply an image by a number (or perhaps
+% RescaleIntensity? The help for this module might need adjusting because
+% it points to RescaleIntensity.)
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

@@ -32,9 +32,13 @@ def memoize_method(function, *args):
     if not d[function].has_key(args[1:]):
         d[function][args[1:]] = function(*args)
     return d[function][args[1:]]
+
         
 class Objects(object):
-    """The labelling of an image with object #s
+    """Represents a segmentation of an image.
+
+    IdentityPrimAutomatic produces three variants of its segmentation
+    result. This object contains all three.
     """
     def __init__(self):
         self.__segmented = None
@@ -43,30 +47,31 @@ class Objects(object):
         self.__parent_image = None
     
     def get_segmented(self):
-        """Get the de-facto segmentation of the image into objects: a matrix of object #s
+        """Get the de-facto segmentation of the image into objects: a matrix 
+        of object numbers.
         """
         return self.__segmented
     
     def set_segmented(self,labels):
-        check_consistency(labels, self.__unedited_segmented, self.__small_removed_segmented)
+        check_consistency(labels, self.__unedited_segmented, 
+                          self.__small_removed_segmented)
         self.__segmented = labels
-        #
-        # Clear all cached results
-        #
+        # Clear all cached results.
         if getattr(self, "memoize_method_dictionary", False):
             self.memoize_method_dictionary = {}
     
     segmented = property(get_segmented,set_segmented)
     
     def has_unedited_segmented(self):
-        """Return true if there is an unedited segmented matrix
-        """
+        """Return true if there is an unedited segmented matrix."""
         return self.__unedited_segmented != None
     
     def get_unedited_segmented(self):
-        """Get the segmentation of the image into objects including junk that should be ignored: a matrix of object #s
+        """Get the segmentation of the image into objects, including junk that 
+        should be ignored: a matrix of object numbers.
         
-        The default, if no unedited matrix is available, is the segmented labeling
+        The default, if no unedited matrix is available, is the
+        segmented labeling.
         """
         if self.__segmented != None:
             if self.__unedited_segmented != None:
@@ -75,14 +80,15 @@ class Objects(object):
         return self.__unedited_segmented
     
     def set_unedited_segmented(self,labels):
-        check_consistency(self.__segmented, labels, self.__small_removed_segmented)
+        check_consistency(self.__segmented, labels, 
+                          self.__small_removed_segmented)
         self.__unedited_segmented = labels
     
-    unedited_segmented = property(get_unedited_segmented,set_unedited_segmented)
+    unedited_segmented = property(get_unedited_segmented, 
+                                  set_unedited_segmented)
     
     def has_small_removed_segmented(self):
-        """Return true if there is a junk object matrix
-        """
+        """Return true if there is a junk object matrix."""
         return self.__small_removed_segmented != None
     
     def get_small_removed_segmented(self):
@@ -96,22 +102,25 @@ class Objects(object):
             return self.__small_removed_segmented
         if self.__segmented != None:
             if self.__unedited_segmented != None:
-                # The small removed are the unedited minus the official segmentation
+                # The small removed are the unedited minus the
+                # official segmentation.
                 result = self.__unedited_segmented.copy()
                 result[self.__unedited_segmented == self.__segmented] = 0
                 return result
-            # if there's only a segmented, then there is no junk
-            return numpy.zeros(shape=self.__segmented.shape,dtype=self.__segmented.dtype)
+            # If there's only a segmented, then there is no junk.
+            return numpy.zeros(shape=self.__segmented.shape,
+                               dtype=self.__segmented.dtype)
         return self.__small_removed_segmented
     
     def set_small_removed_segmented(self,labels):
         check_consistency(self.__segmented, self.__unedited_segmented, labels)
         self.__small_removed_segmented = labels
     
-    small_removed_segmented = property(get_small_removed_segmented, set_small_removed_segmented)
+    small_removed_segmented = property(get_small_removed_segmented, 
+                                       set_small_removed_segmented)
     
     def get_parent_image(self):
-        """The image that was analyzed to yield the objects
+        """The image that was analyzed to yield the objects.
         
         The image is an instance of CPImage which means it has the mask
         and crop mask.
@@ -124,9 +133,7 @@ class Objects(object):
     parent_image = property(get_parent_image, set_parent_image)
     
     def crop_image_similarly(self, image):
-        """Crop an image similarly to the way the parent image of these objects were cropped
-        
-        """
+        """Crop an image in the same way as the parent image was cropped."""
         if image.shape == self.segmented.shape:
             return image
         if self.parent_image == None:
@@ -224,7 +231,7 @@ class Objects(object):
                         self.indices)
     
     @memoize_method
-    def fn_of_image_label_and_index(self,function,image):
+    def fn_of_image_label_and_index(self, function, image):
         """Call a function taking an image, a label matrix and an index
         
         function - should have signature like
@@ -256,9 +263,10 @@ def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     
 
 class ObjectSet(object):
-    """The set of objects associated with some image set
+    """A set of objects.Objects instances.
     
-    The idea here is to be able to refer to the available objects by name or to be able to iterate over them
+    This class allows you to either refer to an object by name or
+    iterate over all available objects.
     """
     
     def __init__(self, can_overwrite = False):

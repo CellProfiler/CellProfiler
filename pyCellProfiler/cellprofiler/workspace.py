@@ -29,12 +29,12 @@ class Workspace(object):
                  create_new_window = False):
         """Workspace constructor
         
-        pipeline   - the pipeline of modules being run
-        module     - the current module to run
-        image_set  - the set of images available for this iteration
-        object_set - the set of calculated label masks for the image set
-        image_set_list - the list of all images
-        frame      - the application's frame. None = don't display anything
+        pipeline          - the pipeline of modules being run
+        module            - the current module to run
+        image_set         - the set of images available for this iteration
+        object_set        - an object.ObjectSet instance
+        image_set_list    - the list of all images
+        frame             - the application's frame, or None for no display
         create_new_window - True to create another frame, even if one is open
                             False to reuse the current frame.
         """
@@ -81,11 +81,9 @@ class Workspace(object):
     object_set = property(get_object_set)
 
     def get_objects(self,objects_name):
-        """Return the objects (labels + goodies) from the object set given a name
+        """Return the objects.Objects instance for the given name.
         
         objects_name - the name of the objects to retrieve
-        
-        see cellprofiler.objects.Objects for info on what's returned
         """
         return self.object_set.get_objects(objects_name)
 

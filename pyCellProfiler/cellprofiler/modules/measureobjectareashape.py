@@ -291,7 +291,7 @@ See also MeasureImageAreaOccupied.
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
         #
-        # Compute the area as the sum of 1's over a label matrix
+        # Compute the area as the sum of 1s over a label matrix
         #
         self.perform_ndmeasurement(workspace, scind.sum,
                                    object_name, F_AREA)

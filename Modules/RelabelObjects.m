@@ -49,6 +49,21 @@ function handles = RelabelObjects(handles)
 % $Revision$
 
 %%% VARIABLES
+
+% New Settings for PyCP:
+% This module combined 'Split' and 'Unify' since both relabeled objects. We
+% could think about including other schemes for relabeling objects in this
+% module; also, given that in PyCP objects are allowed to touch I think
+% this module might need to be looked at more carefully.
+%
+% Vars 4&5 should only appear when the user has selected Unify.
+% Maybe they should be combined into an option like:
+% How would you like to unify your objects? See help for details.
+% choice1: distance only 
+% choice2: distance and intensity
+% and have a textbox for distance only if you choose 1, and a textbox +
+% image selection for choice 2
+
 drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

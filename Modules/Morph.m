@@ -32,6 +32,18 @@ function handles = Morph(handles)
 %
 % $Revision$
 
+% New Settings for PyCP
+% Klmadden 2009_03_20 Did we decide to standardize 'What do you want to call
+% the resulting image' to being the last question? If so, move that to the
+% end.
+% Perhaps change the second, third, 'what function..?' questions to 'What
+% function do you want to perform next?' so that user understands the they
+% are being performed in sequence.  
+% If possible in PyCP, only show one function & one 'how many times..' and
+% allow the user to click a 'plus' button to add another morphological
+% function.  This module always looked somewhat cluttered for a quite
+% simple module.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

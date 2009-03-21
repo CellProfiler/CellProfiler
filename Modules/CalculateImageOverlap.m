@@ -41,6 +41,17 @@ function handles = CalculateImageOverlap(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% New Settings for PyCP:
+% This module was written very specifically for testing a segmented image
+% against ground truth, but theoretically it could be used to find the
+% overlap in any two binary images so the variables could be more general.
+%
+% Even changing Var2 to
+% Which image do you want to test for overlap against the ground truth?
+%
+% may make the function of the module more clear.  
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

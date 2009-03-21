@@ -73,6 +73,42 @@ function handles = RescaleIntensity(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% New Settings for PyCP
+% In general, this module is very confusing with the (Method E only) and
+% (Method T) only etc qualifiers.  In the PyCp version, it would be great
+% if the (Method E only) variables only became visible once the user had
+% selected method E.  
+% While I like the that Var 3 explains to the user (briefly) what each
+% method does, in most modules we leave this explanation to the help to
+% avoid overly long variable settings. (Think: IdPrimAuto etc)  I think it
+% is fine to do the same and chane Var 3 to: 'Please select rescaling method
+% below.'  If it is possible, perhaps the user could mouse over the choice
+% and see a brief explanation?
+%
+% Vars 4&5:  This is seems more suited to a popup, with the choices being:
+% AA (or 'Calculated-Automatic' or 'Calculated-All;), AE (or maybe 'Calculated-Independent' or
+% 'Calculated-Each') , and 'Other...' (custom value).  A better variable description
+% might be:
+% 'What is the intensity from the original image that will be set to the
+% lowest value in the rescaled image?
+% choice1: Calculated- All
+% choice2: Calculated- Each
+% choice3: Other...
+% If Python allows, in this an other 'popupcustom'-type cases, I almost
+% think it is most obvious to leave a blank textbox for editing, rather
+% than forcing the user to click other and then enter a value (since it may
+% not be inherently obvious you can enter your own value?)
+%
+% Vars 6-9: If it's possible, condense these variables into just two:
+% Var 6: Map low intensity or negative pixels from the original image to this value: (default 0)
+% Var 7: Map high intensity or >1 pixels from the original image to this value: (default 1)
+% I can't think of a case where you would want these to be different
+% values??  I'm not sure if this is the correct way to re-word these
+% variables, but I don't think they are very clear how they are presented
+% now.
+
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

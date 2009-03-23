@@ -16,6 +16,6 @@ end
 
 Dirname = uigetdir(start_path,txt);
 
-if ismac,
+if ismac && ishandle(h),
     close(h);
 end

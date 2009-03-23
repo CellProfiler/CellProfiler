@@ -46,9 +46,16 @@ end
 
 % Make sure either named or unnamed tokens are being used
 isTokenPresent = true;
+[unnamedToken,namedToken] = deal(cell(1,numel(TextToFind)));
 for n = 1:numel(TextToFind)
-    isTokenPresent = isTokenPresent & ~(isempty(regexp(TextToFind{n},'\((?<token>.+?)','tokens','once')) & ...
-                                        isempty(regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once')));
+    % Named tokens
+    token = regexp(TextToFind{n},'\((?<token>.+?)\)','tokens','once');
+    if ~isempty(token), unnamedToken(n) = token; end
+    % Unnamed tokens
+    token = regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once');
+    if ~isempty(token), namedToken(n)= token; end
+    
+    isTokenPresent = isTokenPresent & ~(isempty(unnamedToken(n)) && isempty(namedToken(n)));
 end
 if ~isTokenPresent   % No tokens are present
     msg = ['Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate];

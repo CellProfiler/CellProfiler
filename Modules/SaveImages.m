@@ -303,6 +303,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     FileName = [FileName '.' FileFormat];
     
+    FileDirectory = CPreplacemetadata(handles,FileDirectory,SetBeingAnalyzed);
     if strncmp(FileDirectory,'.',1)
         PathName = fullfile(handles.Current.DefaultOutputDirectory, strrep(strrep(FileDirectory(2:end),'/',filesep),'\',filesep),'');
     elseif strncmp(FileDirectory, '&', 1)

@@ -225,6 +225,8 @@ drawnow
 %%% MEASUREMENTS %%%
 %%%%%%%%%%%%%%%%%%%%
 
-for i=1:length(FieldNames)
-    handles = CPaddmeasurements(handles, 'Image', ['Metadata_',FieldNames{i}],Metadata.(FieldNames{i}));
+for i = 1:length(FieldNames)
+    value = Metadata.(FieldNames{i});
+    if isempty(value), value = ''; end
+    handles = CPaddmeasurements(handles, 'Image', ['Metadata_',FieldNames{i}],value);
 end

@@ -95,24 +95,30 @@ class DirectoryView(object):
             # A matlab file might be an image or a pipeline
             handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
             if handles.has_key('Image'):
-                self.__display_matlab_image(handles)
+                self.__display_matlab_image(handles, filename)
             else:
                 self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
         else:
             self.__display_image(filename)
     
-    def __display_matlab_image(self,handles):
-        wx.MessageBox('Matlab image display has not been implemented','Not yet implemented',parent=self.__list_box,style=wx.ICON_INFORMATION)
+    def __display_matlab_image(self,handles, filename):
+            frame = ImageFrame(self.__list_box.GetTopLevelParent(),
+                               filename,
+                               image=handles["Image"])
+            frame.Show()
     
     def __display_image(self,filename):
         frame = ImageFrame(self.__list_box.GetTopLevelParent(),filename)
         frame.Show()
 
 class ImageFrame(wx.Frame):
-    def __init__(self,parent,filename):
+    def __init__(self,parent,filename, image=None):
         wx.Frame.__init__(self,parent,-1,filename)
-        pil_image = PIL.Image.open(filename)
-        self.__image = matplotlib.image.pil_to_array(pil_image)
+        if image != None:
+            self.__image = image
+        else:
+            pil_image = PIL.Image.open(filename)
+            self.__image = matplotlib.image.pil_to_array(pil_image)
         sizer = wx.BoxSizer()
         self.__figure= matplotlib.figure.Figure()
         self.__axes = self.__figure.add_subplot(111)

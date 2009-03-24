@@ -14,6 +14,7 @@ __version__="$Revision: 1 $"
 
 import numpy as np
 import scipy.ndimage as scind
+import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -33,6 +34,8 @@ OG_NAME = 'name'
 
 """The "remove"slot in the object group dictionary entry"""
 OG_REMOVE = 'remove'
+
+OG_UUID = 'uuid'
 
 """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
 ZERNIKE_N = 9
@@ -228,13 +231,18 @@ See also MeasureImageAreaOccupied.
     
     def add_object_cb(self):
         """Add a slot for another object"""
-        index = len(self.object_groups)
+        new_uuid = uuid.uuid1()
         self.object_groups.append({OG_NAME:cps.ObjectNameSubscriber("What did you call the objects you want to measure?","None"),
-                                   OG_REMOVE:cps.DoSomething("Remove the above objects","Remove",self.remove_object_cb,index)})
+                                   OG_REMOVE:cps.DoSomething("Remove the above objects","Remove",self.remove_object_cb,new_uuid),
+                                   OG_UUID:new_uuid})
         
-    def remove_object_cb(self, index):
+    def remove_object_cb(self, id):
         """Remove the indexed object from the to-do list"""
-        del self.object_groups[index]
+        indexes = [i for i in range(len(self.object_groups))
+                   if self.object_groups[i][OG_UUID] == id]
+        if len(indexes) != 1:
+            raise ValueError("The id, '%s', was not in the object_groups list"%(id))
+        del self.object_groups[indexes[0]]
         
     def get_categories(self,pipeline, object_name):
         """Get the categories of measurements supplied for the given object name

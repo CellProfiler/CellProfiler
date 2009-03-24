@@ -18,6 +18,8 @@ import re
 import PIL.Image
 import numpy
 import matplotlib.image
+import scipy.io.mio
+import uuid
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -69,10 +71,11 @@ class LoadImages(cpmodule.CPModule):
         self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
      
         # Settings for each CPimage
+        self.image_keys = [ uuid.uuid1() ]
         self.images_common_text = [cps.Text('Type the text that these images have in common', 'DAPI')]
         self.images_order_position = [cps.Integer('What is the position of this image in each group', 1)]
         self.image_names = [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
-        self.remove_images = [cps.DoSomething('Remove this image...','Remove', self.remove_imagecb, 0)]
+        self.remove_images = [cps.DoSomething('Remove this image...','Remove', self.remove_imagecb, self.image_keys[0])]
         
         # Add another image
         self.add_image = cps.DoSomething('Add another image...','Add', self.add_imagecb)
@@ -85,13 +88,17 @@ class LoadImages(cpmodule.CPModule):
     def add_imagecb(self):
             'Adds another image to the settings'
             img_index = len(self.images_order_position)
+            new_uuid = uuid.uuid1()
+            self.image_keys += [ new_uuid ]
             self.images_common_text += [cps.Text('Type the text that these images have in common', '')]
             self.images_order_position += [cps.Integer('What is the position of this image in each group', img_index+1)]
             self.image_names += [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
-            self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
+            self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)]
 
-    def remove_imagecb(self, index):
+    def remove_imagecb(self, id):
             'Remove an image from the settings'
+            index = self.image_keys.index(id)
+            del self.image_keys[index]
             del self.images_common_text[index]
             del self.images_order_position[index]
             del self.image_names[index]
@@ -186,7 +193,7 @@ class LoadImages(cpmodule.CPModule):
         assert (len(setting_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
         image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
         while len(self.image_names) > image_count:
-            self.remove_imagecb(0)
+            self.remove_imagecb(self.image_keys[0])
         while len(self.image_names) < image_count:
             self.add_imagecb()
         super(LoadImages,self).set_setting_values(setting_values, variable_revision_number, module_name)
@@ -491,6 +498,9 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
+        if self.__filename.endswith(".mat"):
+            imgdata = scipy.io.mio.loadmat(self.get_full_name())
+            return cpimage.Image(imgdata["Image"])
         img = PIL.Image.open(self.get_full_name())
         # There's an apparent bug in the PIL library that causes
         # images to be loaded upside-down. At best, load and save have opposite

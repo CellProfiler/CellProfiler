@@ -331,10 +331,11 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                                                     must_be_grayscale=True,
                                                     cache = False)
                     output_image_provider.add_image(image)
-                    should_continue, skip = progress_dialog.Update(i+1)
-                    if not should_continue:
-                        progress_dialog.EndModal(0)
-                        return False
+                    if frame != None:
+                        should_continue, skip = progress_dialog.Update(i+1)
+                        if not should_continue:
+                            progress_dialog.EndModal(0)
+                            return False
         return True
         
     def run(self, workspace):

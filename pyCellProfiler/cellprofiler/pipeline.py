@@ -454,6 +454,7 @@ class Pipeline:
             image_set = image_set_list.get_image_set(measurements.image_set_number)
             for module in self.modules():
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
+                execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
                 failure = 1
                 if (not matlab_initialized) and module.needs_matlab():
                     self.set_matlab_path()
@@ -466,7 +467,9 @@ class Pipeline:
                                               measurements,
                                               image_set_list,
                                               frame)
+                    t0 = datetime.datetime.now()
                     module.run(workspace)
+                    t1 = datetime.datetime.now()
                     workspace.refresh()
                     failure = 0
                 except Exception,instance:
@@ -476,7 +479,15 @@ class Pipeline:
                     if event.cancel_run:
                         return
                 if module.module_name != 'Restart':
-                    measurements.add_measurement('Image',module_error_measurement,failure);
+                    measurements.add_measurement('Image',
+                                                 module_error_measurement,
+                                                 failure);
+                    delta = t1-t0
+                    delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
+                                 float(delta.microseconds) / 1000. / 1000.)
+                    measurements.add_measurement('Image',
+                                                 execution_time_measurement,
+                                                 delta_sec)
                 yield measurements
             first_set = False
             image_set_list.purge_image_set(measurements.image_set_number)

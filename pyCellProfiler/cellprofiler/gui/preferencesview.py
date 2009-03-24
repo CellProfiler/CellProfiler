@@ -86,8 +86,8 @@ class PreferencesView:
         
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()
-        self.__status_text.set_label(text)
-        self.__status_text.set_size(saved_size)
+        self.__status_text.SetLabel(text)
+        self.__status_text.SetSize(saved_size)
     
     def pop_error_text(self,error_text):
         if error_text in self.__errors:

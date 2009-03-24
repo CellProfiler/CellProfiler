@@ -14,6 +14,7 @@ __version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as nd
+import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -114,31 +115,47 @@ See also MeasureImageIntensity.
     
     def create_settings(self):
         self.module_name = "MeasureObjectIntensity"
+        self.image_keys =[uuid.uuid1()]
         self.image_names = [cps.ImageNameSubscriber("What did you call the grayscale images you want to process?","None")]
-        self.image_names_remove_buttons = [cps.DoSomething("Remove above image","Remove",self.remove_image_cb,0)]
-        self.image_name_add_button = cps.DoSomething("Add another image","Add image", self.add_image_cb)
+        self.image_names_remove_buttons = [cps.DoSomething("Remove above image",
+                                                           "Remove",
+                                                           self.remove_image_cb,
+                                                           self.image_keys[0])]
+        self.image_name_add_button = cps.DoSomething("Add another image",
+                                                     "Add image", 
+                                                     self.add_image_cb)
         self.image_divider = cps.Text("Marks end of images list",cps.DO_NOT_USE)
+        self.object_keys = [uuid.uuid1()]
         self.object_names = [cps.ObjectNameSubscriber("What did you call the objects that you want to measure?","None")]
-        self.object_name_remove_buttons = [cps.DoSomething("Remove this object","Remove",self.remove_cb,0)]
+        self.object_name_remove_buttons = [cps.DoSomething("Remove this object",
+                                                           "Remove",
+                                                           self.remove_cb,
+                                                           self.object_keys[0])]
         self.object_name_add_button = cps.DoSomething("Add another object","Add object",self.add_cb)
     
-    def remove_cb(self, index):
+    def remove_cb(self, id):
+        index = self.object_keys.index(id)
+        del self.object_keys[index]
         del self.object_names[index]
         del self.object_name_remove_buttons[index]
     
     def add_cb(self):
-        nitems = len(self.object_names)
+        new_uuid = uuid.uuid1()
+        self.object_keys.append(new_uuid)
         self.object_names.append(cps.ObjectNameSubscriber("What did you call the objects that you want to measure?","None"))
-        self.object_name_remove_buttons.append(cps.DoSomething("Remove this object","Remove",self.remove_cb,nitems))
+        self.object_name_remove_buttons.append(cps.DoSomething("Remove this object","Remove",self.remove_cb,new_uuid))
 
-    def remove_image_cb(self, index):
+    def remove_image_cb(self, id):
+        index = self.image_keys.index(id)
+        del self.image_keys[index]
         del self.image_names[index]
         del self.image_names_remove_buttons[index]
     
     def add_image_cb(self):
-        nitems = len(self.image_names)
+        new_uuid = uuid.uuid1()
+        self.image_keys.append(new_uuid)
         self.image_names.append(cps.ImageNameSubscriber("What did you call the grayscale images you want to process?","None"))
-        self.image_names_remove_buttons.append(cps.DoSomething("Remove above image","Remove",self.remove_image_cb, nitems))
+        self.image_names_remove_buttons.append(cps.DoSomething("Remove above image","Remove",self.remove_image_cb, new_uuid))
         
     def visible_settings(self):
         result = []

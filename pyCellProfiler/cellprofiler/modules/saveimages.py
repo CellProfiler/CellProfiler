@@ -16,6 +16,7 @@ import matplotlib
 import numpy
 import os
 import PIL.Image
+import scipy.io.matlab.mio
 import wx
 
 import cellprofiler.cpmodule as cpm
@@ -345,14 +346,17 @@ class SaveImages(cpm.CPModule):
             mode = 'RGB'
         else:
             mode = 'L'
-        pil = PIL.Image.fromarray(pixels,mode)
         filename = self.get_filename(workspace)
-        if self.overwrite_check.value and os.path.isfile(filename):
-            over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
-                                 "Warning: overwriting file", wx.YES_NO)
-            if over == wx.ID_NO:
-                return
-        pil.save(filename,self.get_file_format())
+        if self.get_file_format() == FF_MAT:
+            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+        else:
+            pil = PIL.Image.fromarray(pixels,mode)
+            if self.overwrite_check.value and os.path.isfile(filename):
+                over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
+                                     "Warning: overwriting file", wx.YES_NO)
+                if over == wx.ID_NO:
+                    return
+            pil.save(filename,self.get_file_format())
         if self.update_file_names.value:
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',

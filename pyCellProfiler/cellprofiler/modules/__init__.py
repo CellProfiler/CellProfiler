@@ -15,6 +15,8 @@ import identifyprimautomatic as cpm_ipa
 import loadimages as cpm_li
 import colortogray as cpm_ctg
 from applythreshold import ApplyThreshold
+from correctillumination_calculate import CorrectIllumination_Calculate
+from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
 from exporttodatabase import ExportToDatabase
 from graytocolor import GrayToColor
@@ -27,6 +29,8 @@ from saveimages import SaveImages
 def get_module_classes():
     return [ApplyThreshold,
             cpm_ctg.ColorToGray,
+            CorrectIllumination_Calculate,
+            CorrectIllumination_Apply,
             Crop,
             ExportToDatabase,
             GrayToColor,
@@ -45,6 +49,8 @@ def get_module_substitutions():
     return {"ApplyThreshold": ApplyThreshold,
             "LoadImages":cpm_li.LoadImages,
             "ColorToGray":cpm_ctg.ColorToGray,
+            "CorrectIllumination_Calculate":CorrectIllumination_Calculate,
+            "CorrectIllumination_Apply":CorrectIllumination_Apply,
             "Crop": Crop,
             "ExportToDatabase": ExportToDatabase,
             "GrayToColor":GrayToColor,

@@ -1185,3 +1185,28 @@ def euler_number(labels, indexes=None):
     QD  = fix(scipy.ndimage.sum(QD_condition, I01, indexes))
     W = (Q1 - Q3 - 2*QD).astype(float)/4.0
     return W
+
+def block(shape, block_shape):
+    """Create a labels image that divides the image into blocks
+    
+    shape - the shape of the image to be blocked
+    block_shape - the shape of one block
+    
+    returns a labels matrix and the indexes of all labels generated
+    
+    The idea here is to block-process an image by using SciPy label
+    routines. This routine divides the image into blocks of a configurable
+    dimension. The caller then calls scipy.ndimage functions to process
+    each block as a labeled image. The block values can then be applied
+    to the image via indexing. For instance:
+    
+    labels, indexes = block(image.shape, (60,60))
+    minima = scipy.ndimage.minimum(image, labels, indexes)
+    img2 = image - minima[labels]
+    """
+    i,j = np.mgrid[0:shape[0],0:shape[1]]
+    i = (i / block_shape[0]).astype(int)
+    j = (j / block_shape[1]).astype(int)
+    labels = i * block_shape[0] + j
+    indexes = np.array(range(np.product(block_shape)))
+    return labels, indexes

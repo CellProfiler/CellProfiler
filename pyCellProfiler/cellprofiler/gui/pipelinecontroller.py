@@ -115,7 +115,7 @@ class PipelineController:
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
                          'Load path', wx.YES_NO|wx.ICON_QUESTION ,self.__frame) & wx.YES:
-            self.__do_load_pipeline(event.Path)
+            self.do_load_pipeline(event.Path)
     
     def do_load_pipeline(self,pathname):
         try:
@@ -226,12 +226,19 @@ class PipelineController:
         self.start_debugging()
     
     def start_debugging(self):
-        self.__debug_image_set_list = self.__pipeline.prepare_run()
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
+        self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
+        if self.__debug_image_set_list == None:
+            self.stop_debugging()
+            return False
+        return True
     
     def on_debug_stop(self, event):
+        self.stop_debugging()
+
+    def stop_debugging(self):
         self.__frame.enable_debug_commands(False)
         self.__debug_image_set_list = None
         self.__debug_measurements = None
@@ -272,7 +279,8 @@ class PipelineController:
                 failure=-1
             failure=1
         self.__frame.SetCursor(old_cursor)
-        if module.module_name != 'Restart' or failure==-1:
+        if ((module.module_name != 'Restart' or failure==-1) and
+            self.__debug_measurements != None):
             module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
             self.__debug_measurements.add_measurement('Image'
                                                       ,module_error_measurement,
@@ -281,7 +289,9 @@ class PipelineController:
     
     def on_take_step(self, event):
         if not self.is_in_debug_mode():
-            self.start_debugging()
+            if not self.start_debugging():
+                self.__movie_viewer.on_step_failed()
+                return
         module_idx = self.__movie_viewer.slider.value
         module = self.__pipeline.modules()[module_idx]
         success = self.do_step(module)
@@ -294,6 +304,7 @@ class PipelineController:
         image_set_number = self.__debug_measurements.image_set_number+1
         self.__debug_measurements.next_image_set()
         self.__pipeline_list_view.select_one_module(1)
+        self.__movie_viewer.slider.value = 0
     
     def on_idle(self,event):
         if self.__running_pipeline:

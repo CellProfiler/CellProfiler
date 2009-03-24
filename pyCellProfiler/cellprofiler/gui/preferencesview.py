@@ -67,25 +67,17 @@ class PreferencesView:
     
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        pixel_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
-        pixel_size_text = wx.StaticText(panel,-1,'Pixel size:')
-        self.__pixel_size_edit_box = wx.TextCtrl(panel,-1,'1',(0,0),(25,20))
         output_filename_text = wx.StaticText(panel,-1,'Output filename:')
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
         output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddMany([(pixel_help_button,0,wx.ALL,1),
-                       (pixel_size_text,0,wx.ALL,1),
-                       (self.__pixel_size_edit_box,0,wx.ALL,1),
-                       (output_filename_text,0,wx.ALL,1),
+        sizer.AddMany([(output_filename_text,0,wx.ALL,1),
                        (self.__output_filename_edit_box,3,wx.EXPAND|wx.ALL,1),
                        (output_filename_help_button,0,wx.ALL,1),
                        (self.__analyze_images_button,0,wx.ALL,1)])
         panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpPixelSize.m"),pixel_help_button)
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpOutputFileName.m"),output_filename_help_button)
-        panel.Bind(wx.EVT_TEXT, self.__on_pixel_size_changed, self.__pixel_size_edit_box)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
         cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
 

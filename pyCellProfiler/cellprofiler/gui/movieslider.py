@@ -146,6 +146,7 @@ class SliderCtl(wx.Panel):
             self.stop_value = min_value
         if self.value < min_value:
             self.value = min_value
+        self.Refresh()
     min_value = property(get_min_value, set_min_value)
     
     def get_max_value(self):
@@ -160,6 +161,7 @@ class SliderCtl(wx.Panel):
             self.stop_value = max_value
         if self.value > max_value:
             self.value = max_value
+        self.Refresh()
     max_value = property(get_max_value, set_max_value)
     
     
@@ -376,8 +378,18 @@ class MovieSlider(wx.Panel):
         #self.skip_end_button = self.make_bitmap_button(BUTTON_SKIPEND)
         #controls_sizer.Add(self.skip_end_button,0,wx.SHAPED)
         self.Bind(wx.EVT_BUTTON, self.on_play_pressed, self.play_button)
+        self.Bind(EVT_VALUE_CHANGED, self.on_slider_value_changed, self.slider)
         self.state = STATE_PAUSED 
-        
+    
+    def on_slider_value_changed(self, event):
+        # Handle some button display issues here relating to the position
+        # of the slider and the max_value
+        if self.state == STATE_PAUSED: 
+            if self.slider.value == self.slider.max_value:
+                self.set_play_button_image(BUTTON_PAUSE)
+            else:
+                self.set_play_button_image(BUTTON_PLAY)
+            
     def on_play_pressed(self, event):
         if self.state == STATE_PAUSED:
             if self.slider.value == self.slider.max_value:
@@ -399,7 +411,6 @@ class MovieSlider(wx.Panel):
             self.AddPendingEvent(event)
     
     def on_step_failed(self):
-        self.slider.value = self.slider.value + 1
         self.set_state(STATE_PAUSED)
 
     def set_state(self,new_state):
@@ -411,11 +422,14 @@ class MovieSlider(wx.Panel):
                 data = BUTTON_PLAY
         else:
             data = BUTTON_PAUSE
+        self.set_play_button_image(data)
+        self.state = new_state
+    
+    def set_play_button_image(self, data): 
         stream = StringIO.StringIO(data)
         image  = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
         self.play_button.SetBitmapLabel(bitmap)
-        self.state = new_state
     
     def make_bitmap_button(self, data):
         stream = StringIO.StringIO(data)

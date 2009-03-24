@@ -361,10 +361,18 @@ class CPModule(object):
         """
         pass
     
-    def prepare_run(self, pipeline, image_set_list):
+    def prepare_run(self, pipeline, image_set_list, frame):
         """Prepare the image set list for a run (& whatever else you want to do)
+        
+        pipeline - the pipeline being run
+        image_set_list - add any image providers for this module to this
+                         image set list
+        frame - parent frame of application if GUI enabled, None if GUI
+                disabled
+        
+        return True if operation completed, False if aborted 
         """
-        pass
+        return True
     
     def run(self,workspace):
         """Run the module (abstract method)

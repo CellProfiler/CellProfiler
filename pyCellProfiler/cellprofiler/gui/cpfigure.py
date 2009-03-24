@@ -233,6 +233,29 @@ class CPFigureFrame(wx.Frame):
         self.subplot_imshow(x, y, image, title, clear, 
                             matplotlib.cm.binary_r)
     
+    def subplot_table(self, x, y, statistics, 
+                      ratio = (.6, .4),
+                      loc = 'center',
+                      cellLoc = 'left'):
+        """Put a table into a subplot
+        
+        x,y - subplot's column and row
+        statistics - a sequence of sequences that form the values to
+                     go into the table
+        ratio - the ratio of column widths
+        loc   - placement of the table within the axes
+        cellLoc - alignment of text within cells
+        """
+        table_axes = self.subplot(x, y)
+        table = table_axes.table(cellText=statistics,
+                                 colWidths=ratio,
+                                 loc=loc,
+                                 cellLoc=cellLoc)
+        table_axes.set_frame_on(False)
+        table_axes.set_axis_off()
+        table.auto_set_font_size(False)
+        table.set_fontsize(cpprefs.get_table_font_size())
+    
 def renumber_labels_for_display(labels):
     """Scramble the label numbers randomly to make the display more discernable
     

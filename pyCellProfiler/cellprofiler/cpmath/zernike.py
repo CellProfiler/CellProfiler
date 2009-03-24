@@ -88,7 +88,7 @@ def score_zernike(zf, radii, labels, indexes=None):
     each labeled object.
     """
     if indexes == None:
-        indexes = np.array(range(np.max(labels)),int)+1
+        indexes = np.arange(1,np.max(labels)+1,dtype=int)
     else:
         indexes = np.array(indexes)
     radii = np.array(radii)
@@ -120,11 +120,11 @@ def zernike(zernike_indexes,labels,indexes):
     # and other similarly shaped vectors (like the results)
     #
     if indexes == None:
-        indexes = np.array(range(np.max(indexes)))+1
+        indexes = np.arange(1,np.max(indexes)+1,dtype=int)
     else:
         indexes = np.array(indexes)
     reverse_indexes = -np.ones((np.max(indexes)+1,),int)
-    reverse_indexes[indexes] = np.array(range(indexes.shape[0]))
+    reverse_indexes[indexes] = np.arange(indexes.shape[0],dtype=int)
     mask = reverse_indexes[labels] != -1
 
     centers,radii = minimum_enclosing_circle(labels,indexes)
@@ -231,7 +231,7 @@ if __name__ == "__main__":
             np.random.seed(0)
             self.labels = self.make_labels()
             self.scores, self.zf = zernike(zernike_indexes, self.labels, 
-                                           np.array(range(100))+1)
+                                           np.arange(100,dtype=int)+1)
             wx.Frame.__init__(self, None, title="Zernikes",
                               pos=wx.DefaultPosition, size=wx.DefaultSize,
                               style=wx.DEFAULT_FRAME_STYLE)
@@ -256,7 +256,7 @@ if __name__ == "__main__":
             mini_side = side / s
             labels = np.zeros((side,side),int)
             pts = np.zeros((s*s*ct,2),int)
-            index = np.array(range(pts.shape[0])).astype(float)/float(ct)
+            index = np.arange(pts.shape[0],dtype=float)/float(ct)
             index = index.astype(int)
             idx = 0
             for i in range(0,side,mini_side):

@@ -138,7 +138,7 @@ class Image(object):
     def get_has_mask(self):
         """True if the image has a mask"""
         if (not self.__has_mask) and self.parent_image != None:
-            return parent_image.has_mask
+            return self.parent_image.has_mask
         return self.__has_mask
     
     has_mask = property(get_has_mask)
@@ -343,7 +343,8 @@ class ImageSet(object):
     def get_image(self, name,
                  must_be_binary=False,
                  must_be_color=False,
-                 must_be_grayscale=False):
+                 must_be_grayscale=False,
+                 cache = True):
         """Return the image associated with the given name
         
         name - name of the image within the image_set
@@ -351,13 +352,11 @@ class ImageSet(object):
         must_be_grayscale - raise an exception if not a grayscale image
         """
         if not self.__images.has_key(name):
-            providers = filter(lambda x: x.name == name, self.__image_providers)
-            assert len(providers)>0, "No provider of the %s image"%(name)
-            assert len(providers)==1, "More than one provider of the %s image"%(name)
-            image = providers[0].provide_image(self)
-            self.__images[name] = image
-        
-        image = self.__images[name]
+            image = self.get_image_provider(name).provide_image(self)
+            if cache:
+                self.__images[name] = image
+        else:
+            image = self.__images[name]
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
         if must_be_binary and image.pixel_data.dtype != numpy.bool:
@@ -378,6 +377,16 @@ class ImageSet(object):
         return self.__image_providers
     
     providers = property(get_providers)
+    
+    def get_image_provider(self, name):
+        """Get a named image provider
+        
+        name - return the image provider with this name
+        """
+        providers = filter(lambda x: x.name == name, self.__image_providers)
+        assert len(providers)>0, "No provider of the %s image"%(name)
+        assert len(providers)==1, "More than one provider of the %s image"%(name)
+        return providers[0]
     
     def get_names(self):
         """Get the image provider names
@@ -438,6 +447,14 @@ class ImageSetList(object):
         keys = {'number':number }
         self.__image_sets[number] = None
         self.__image_sets_by_key[repr(keys)] = None
+    
+    def add_provider_to_all_image_sets(self, provider):
+        """Provide an image to every image set
+        
+        provider - an instance of AbstractImageProvider
+        """
+        for image_set in self.__image_sets:
+            image_set.providers.append(provider)
         
     def count(self):
         return len(self.__image_sets)

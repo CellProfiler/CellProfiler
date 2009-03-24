@@ -53,6 +53,7 @@ DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
+TABLE_FONT_SIZE = 'TableFontSize'
 PIXEL_SIZE = 'PixelSize'
 
 def get_default_image_directory():
@@ -116,6 +117,15 @@ def get_title_font_name():
 
 def set_title_font_name(title_font_name):
     get_config().Write(TITLE_FONT_NAME, title_font_name)
+
+def get_table_font_size():
+    if not get_config().Exists(TABLE_FONT_SIZE):
+        return 9
+    table_font_size = get_config().Read(TABLE_FONT_SIZE)
+    return float(table_font_size)
+
+def set_table_font_size(table_font_size):
+    get_config().Write(TABLE_FONT_SIZE,str(table_font_size))
 
 def get_pixel_size():
     """The size of a pixel in microns"""

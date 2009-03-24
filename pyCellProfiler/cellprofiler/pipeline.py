@@ -435,7 +435,7 @@ class Pipeline:
         
         Run the pipeline, returning the measurements made
         """
-        image_set_list = self.prepare_run()
+        image_set_list = self.prepare_run(frame)
         if image_set_list == None:
             return
             
@@ -481,7 +481,7 @@ class Pipeline:
             first_set = False
             image_set_list.purge_image_set(measurements.image_set_number)
     
-    def prepare_run(self):
+    def prepare_run(self, frame):
         """Do "prepare_run" on each module to initialize the image_set_list
         
         returns the image_set_list or None if an exception was thrown
@@ -490,7 +490,8 @@ class Pipeline:
         
         for module in self.modules():
             try:
-                module.prepare_run(self, image_set_list)
+                if not module.prepare_run(self, image_set_list, frame):
+                    return None
             except Exception,instance:
                 traceback.print_exc()
                 event = RunExceptionEvent(instance,module)

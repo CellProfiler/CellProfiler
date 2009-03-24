@@ -12,7 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
-import numpy
+import numpy as np
 
 def smooth_with_noise(image, bits):
     """Smooth the image with a per-pixel random multiplier
@@ -24,13 +24,56 @@ def smooth_with_noise(image, bits):
     get either multiplied or divided by a normally distributed # of bits
     """
     
-    numpy.random.seed(0)
-    r = numpy.random.normal(size=image.shape)
+    np.random.seed(0)
+    r = np.random.normal(size=image.shape)
     image_copy = image.copy()
     image_copy[image_copy==0]= pow(2.0,-bits)
-    result = numpy.exp(numpy.log(image_copy)+ 0.5*r *
-                       (-numpy.log2(image_copy)/bits))
+    result = np.exp(np.log(image_copy)+ 0.5*r *
+                       (-np.log2(image_copy)/bits))
     result[result>1] = 1
     result[result<0] = 0
     return result
+
+def smooth_with_function_and_mask(image, function, mask):
+    """Smooth an image with a linear function, ignoring the contribution of masked pixels
     
+    image - image to smooth
+    function - a function that takes an image and returns a smoothed image
+    mask  - mask with 1's for significant pixels, 0 for masked pixels
+    
+    This function calculates the fractional contribution of masked pixels
+    by applying the function to the mask (which gets you the fraction of
+    the pixel data that's due to significant points). We then mask the image
+    and apply the function. The resulting values will be lower by the bleed-over
+    fraction, so you can recalibrate by dividing by the function on the mask
+    to recover the effect of smoothing from just the significant pixels.
+    """
+    not_mask               = np.logical_not(mask)
+    bleed_over             = function(mask.astype(float))
+    masked_image           = np.zeros(image.shape, image.dtype)
+    masked_image[mask]     = image[mask]
+    smoothed_image         = function(masked_image)
+    output_image           = smoothed_image / bleed_over
+    output_image[not_mask] = image[not_mask]
+    return output_image
+
+def circular_gaussian_kernel(sd,radius):
+    """Create a 2-d Gaussian convolution kernel
+    
+    sd     - standard deviation of the gaussian in pixels
+    radius - build a circular kernel that convolves all points in the circle
+             bounded by this radius 
+    """
+    i,j = np.mgrid[-radius:radius+1,-radius:radius+1].astype(float) / radius
+    mask = i**2 + j**2 <= 1
+    i = i * radius / sd
+    j = j * radius / sd
+
+    kernel = np.zeros((2*radius+1,2*radius+1))
+    kernel[mask] = np.e ** (-(i[mask]**2+j[mask]**2) /
+                            (2 * sd **2))
+    #
+    # Normalize the kernel so that there is no net effect on a uniform image
+    #
+    kernel = kernel / np.sum(kernel)
+    return kernel

@@ -21,11 +21,12 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     """This module is intended for testing. It injects an image into the
     image set.
     """
-    def __init__(self, image_name, image):
+    def __init__(self, image_name, image, mask=None):
         super(InjectImage,self).__init__()
         self.set_module_name("InjectImage")
         self.__image_name = image_name
         self.__image = image
+        self.__mask  = mask
         self.image_name = cellprofiler.settings.NameProvider("Hardwired image name","imagegroup",image_name) 
     
     def visible_settings(self):
@@ -63,11 +64,14 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """Write the module's state, informally, to a text file
         """
     
-    def prepare_run(self, pipeline, image_set_list):
+    def prepare_run(self, pipeline, image_set_list, frame):
         """Set up all of the image providers inside the image_set_list
         """
-        image = cellprofiler.cpimage.Image(self.__image)
-        image_set_list.get_image_set(0).providers.append(cellprofiler.cpimage.VanillaImageProvider(self.__image_name,image)) 
+        image = cellprofiler.cpimage.Image(self.__image, self.__mask)
+        provider = cellprofiler.cpimage.VanillaImageProvider(self.__image_name,
+                                                             image)
+        image_set_list.get_image_set(0).providers.append(provider)
+        return True 
 
     def run(self,workspace):
         """Run the module (abstract method)

@@ -87,7 +87,7 @@ class LoadImages(cpmodule.CPModule):
             img_index = len(self.images_order_position)
             self.images_common_text += [cps.Text('Type the text that these images have in common', '')]
             self.images_order_position += [cps.Integer('What is the position of this image in each group', img_index+1)]
-            self.image_names += [cps.ImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
+            self.image_names += [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
             self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, img_index)]
 
     def remove_imagecb(self, index):
@@ -268,13 +268,14 @@ class LoadImages(cpmodule.CPModule):
         """Write the module's state, informally, to a text file
         """
 
-    def prepare_run(self, pipeline, image_set_list):
+    def prepare_run(self, pipeline, image_set_list, frame):
         """Set up all of the image providers inside the image_set_list
         """
         if self.load_movies():
             self.prepare_run_of_movies(pipeline,image_set_list)
         else:
             self.prepare_run_of_images(pipeline, image_set_list)
+        return True
     
     def prepare_run_of_images(self, pipeline, image_set_list):
         """Set up image providers for image files"""

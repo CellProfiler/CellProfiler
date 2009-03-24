@@ -27,6 +27,7 @@ import identify as cpmi
 import cellprofiler.cpmodule
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
+import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
@@ -920,7 +921,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         table_axes.set_frame_on(False)
         table_axes.set_axis_off()
         table.auto_set_font_size(False)
-        table.set_fontsize(9)
+        table.set_fontsize(cpp.get_table_font_size())
         my_frame.Refresh()
     
     def calc_smoothing_filter_size(self):

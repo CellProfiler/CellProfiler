@@ -38,11 +38,12 @@ end
 
 %%% Link any image axis limits together so zoom/pan is reflected in all axes
 if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-    AllAxesHandles = findobj(CurrentFig,'type','axes');
+    AllAxesHandles = get(findobj(CurrentFig,'type','image'),'parent');
+    if iscell(AllAxesHandles), AllAxesHandles = cell2mat(AllAxesHandles); end
     
     %%% Make sure the axis limits are the same in all axes, otherwise
     %%% linkaxes will adjust them all to the same value (which would be bad)
-    AllAxesLimits = [get(AllAxesHandles,'xlim') get(AllAxesHandles,'ylim')];
+    AllAxesLimits = [get(AllAxesHandles,'xlim') get(AllAxesHandles,'ylim')]; 
     if size(AllAxesLimits,1) > 1,
         AllAxesLimits = cell2mat(AllAxesLimits);
         if size(unique(AllAxesLimits,'rows'),1) == 1,

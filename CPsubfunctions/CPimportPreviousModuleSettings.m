@@ -219,7 +219,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Standardization of non-used parameter text placeholders
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-idx = ismember(cellstr(lower(char(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Leave this black','Do not load','Do not save','/'}));
+idx = ismember(cellstr(lower(char(Settings.VariableValues{ModuleNum-Skipped,:}))),lower({'NO FILE LOADED','Leave this blank','Leave this black','None','Do not load','Do not save','/'}));
 if any(idx),
     [Settings.VariableValues{ModuleNum-Skipped,idx}] = deal('Do not use');
     NeedsPlaceholderUpdateMsg = true;

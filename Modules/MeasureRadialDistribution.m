@@ -44,10 +44,10 @@ function handles = MeasureRadialDistribution(handles,varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) Name of input image (ImageName)
-% (2) Name of input object to measure intensity (MainObjects)
-% (3) Name of input object to use as center (CenterObjects)
-% (4) # of bins to conpute distribution (BinCount)
+% (1) What did you call the image from which you want to measure the intentsity distribution? (ImageName)
+% (2) What did you call the objects from which you want to measure the intensity distribution? (MainObjects)
+% (3) What objects do you want to use as centers? (use "Do not use" to use distance-based centers) (CenterObjects)
+% (4) How many bins do you want to use to store the distribution? (BinCount)
 %
 % (i) User should be permitted to specify a range of values in (4) so they
 % don't have to add a separate module for each
@@ -133,7 +133,7 @@ Image = CPretrieveimage(handles,ImageName,ModuleName);
 %%% will be measured with this module.
 LabelMatrixImage = CPretrieveimage(handles,['Segmented', MainObjects],ModuleName,'MustBeGray','DontCheckScale');
 
-if ~ strcmp(CenterObjects, 'None'),
+if ~strcmp(CenterObjects, 'Do not use'),
     CenterLabels = CPretrieveimage(handles,['Segmented', CenterObjects],ModuleName,'MustBeGray','DontCheckScale');
     %%% Find the centers of the center objects (for anisotropy calculation)
     props = regionprops(CenterLabels, 'Centroid');

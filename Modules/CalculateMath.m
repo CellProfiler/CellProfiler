@@ -55,35 +55,72 @@ function handles = CalculateMath(handles)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) What do you want to call the output image calculated by this module? (OutputFeatureName)
+% (1) What do you want to call the measurement calculated by this module? (OutputFeatureName)
 % (2) What operation would you like to perform? (Operation)
+% (do we currently allow 'raise to a power' here?)
 % Perhaps show settings for the operands in two columns (eg, numerator settings on
 % left, denominator settings on right). Maybe show mathematical symbol (based on answer
-% to (2)) between the columns
+% to (2)) between the columns. Or, if this is too time-consuming, at least
+% show, based on the selection in (2), which operand is which. In other
+% words, if they choose Division, then show: Operand 1/operand 2. If they
+% choose subtraction, show: operand 1 - operand 2.
 %
-% (3a) Which object would you like to use as the first operand? (ObjectName{1})
+% (2.5) What type of number is the first operand? 
+% CHOICES: (a) measurement of an individual object, (b) measurement from a whole
+% image, (c) number
+% If they choose (a) then provide the list of objects, if (b) then list of
+% images, if (c) then provide an edit box for them to enter something. This
+% new ability to calculate per-image features or enter numbers then affects
+% the rest of the questions below (they are currently written for
+% per-object measurements, but hopefully it's clear how to adjust them for
+% per-image measurements or for a number the user specifies):
+%
+% (3a) Which object's measurement would you like to use as the first operand? (ObjectName{1})
 % (3b) What is the measurement category? (Category{1})
-% (3c) What is the measurment feature for the above category? (FeatureNumber{1})
+% (3c) What is the measurement feature? (FeatureNumber{1})
 % (3d) (If the answer to (3c) involves a scale) What scale was used to 
 %      calculate the feature? (SizeScale{1}) 
 %      (If the answer to (3c) involves an image) What image was used to
 %      calculate the feature? (ImageName{1})
 % (3e) What number would you like to multiply the operand by?  (MultiplyFactor1)
+% (3f) What power would you like to raise the operand to? (this feature
+% currently doesn't exist; should we ask the user what operation they want
+% to perform on the first operand prior to calculating with the second
+% operand, then offer multiply, raise to a power, and perhaps other
+% options? or is this just getting way too confusing?)
 %
-% (4a) Which object would you like to use as the second operand  (ObjectName{2})
+%
+% (3.5) Again, insert "what type of number is the second operand?"
+%
+% (4a) Which object's measurement would you like to use as the second operand? (ObjectName{2})
 % (4b) What is the measurement category? (Category{2})
-% (4c) What is the measurment feature for the above category? (FeatureNumber{2})
+% (4c) What is the measurement feature? (FeatureNumber{2})
 % (4d) (If the answer to (4c) involves a scale) What scale was used to 
 %      calculate the feature? (SizeScale{2}) 
 %      (If the answer to (4c) involves an image) What image was used to
 %      calculate the feature? (ImageName{2})
 % (4e) What number would you like to multiply the operand by? (MultiplyFactor2)
+% (4f) What power would you like to raise the operand to? (this feature
+% currently doesn't exist)
 %
+% question: should we allow the user to choose additional operands (perhaps just for
+% addition and multiplication) or just let them use an additional
+% CalculateMath module in the pipeline for that sort of thing? I think the
+% latter would be fine, especially if it keeps this module from ending up
+% being confusing.
+%
+% Note: we could eliminate the next two questions because the user could
+% just put an additional CalculateMath module in the pipeline, right?
 % (5a) What power would you like to raise the result to? (Power)
 % (5b) What number would you like to multiply the above result by? (MultiplyFactor3)
 %
+% NOTES:
 % (i) Setting (1) should not have an automatic option; the user should
-% specify the name explicitly.
+% specify the name explicitly. (Anne says: why not, Mark? Do we tend to run
+% into trouble with the name being too long? If so, then this makes sense.
+% We should make sure then, that the custom-entered feature name is
+% choosable in other drop down menus downstream in the pipeline - I think
+% we have a 'custom' measurement type.)
 % (ii) Measurement category/feature/image/scale settings should only be shown if
 % the measurement hierarchy requires it.
 % (iii) Some clarification will be needed to show the order of operations to

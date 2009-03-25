@@ -22,6 +22,7 @@ from exporttodatabase import ExportToDatabase
 from graytocolor import GrayToColor
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
+from maskimage import MaskImage
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
 from saveimages import SaveImages
@@ -38,6 +39,7 @@ def get_module_classes():
             IdentifySecondary,
             IdentifyTertiarySubregion,
             cpm_li.LoadImages,
+            MaskImage,
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
             SaveImages ]
@@ -57,6 +59,7 @@ def get_module_substitutions():
             "IdentifyPrimAutomatic":cpm_ipa.IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
+            "MaskImage": MaskImage,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
             "SaveImages": SaveImages

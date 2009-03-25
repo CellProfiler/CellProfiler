@@ -30,6 +30,8 @@ def create_or_find(parent=None, id=-1, title="",
     if parent:
         window = parent.FindWindowByName(name)
         if window:
+            if len(title) and title != window.Title:
+                window.Title = title
             return window
     return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
 

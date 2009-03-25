@@ -345,6 +345,7 @@ class LoadImages(cpmodule.CPModule):
         """Run the module - add the measurements
         
         """
+        statistics = [("Image name","Path","Filename")]
         for provider in workspace.image_set.providers:
             if isinstance(provider,LoadImagesImageProvider):
                 filename = provider.get_filename()
@@ -352,6 +353,11 @@ class LoadImages(cpmodule.CPModule):
                 name = provider.name
                 workspace.measurements.add_measurement('Image','FileName_'+name, filename)
                 workspace.measurements.add_measurement('Image','PathName_'+name, path)
+                statistics.append((name, path, filename))
+        if workspace.frame:
+            figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(workspace.measurements.image_set_number+1),
+                                                     subplots=(1,1))
+            figure.subplot_table(0,0,statistics,ratio=[.25,.5,.25])
 
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""

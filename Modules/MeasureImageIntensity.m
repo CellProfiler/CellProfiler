@@ -57,10 +57,12 @@ function handles = MeasureImageIntensity(handles,varargin)
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
 % This module should be able to measure the intensity of objects previously
 % identified. So the settings should be:
-% (1) Input images (ImageName)
-% (2a) Input object, if desired
-% (2b) If no input object, lower/upper threshold to ignore (LowThreshold,HighThreshold)
-% (3) Pixel range around objects above upper threshold (ExpansionDistance)
+% (1) What did you call the images you want to measure from? (ImageName)
+% (2a) What did you call the objects that you want to measure from? Select "Do not use" to ignore. 
+% (2b) What is the lower and upper intensity threshold with which to ignore pixels (LowThreshold,HighThreshold)
+% (3) For an object above the upper threshold, how many pixels around the object should also be excluded? (ExpansionDistance)
+%
+% (i) (2b) is shown if (2a) if the user selects "Do not use"
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

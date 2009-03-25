@@ -11,8 +11,11 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 % module determines how many neighbors each object has. The user selects
 % the distance within which objects should be considered neighbors. The
 % module can measure the number of neighbors each object has if every
-% object were expanded up until the point where it hits another object. To
-% use this option, enter 0 (the number zero) for the pixel distance.
+% object were expanded up until the point where it hits another object; to
+% use this option, enter 0 (the number zero) for the pixel distance. If you
+% want your objects to be touching before you count neighbors (for 
+% instance, in an image of tissue), use the ExpandOrShrink module to expand
+% your objects beforehand.
 %
 % Features measured:      Feature Number:
 % NumberOfNeighbors         |    1
@@ -75,10 +78,13 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) Name of input object (ObjectName)
-% (2) Distance within which objects are neighbors (NeighborDistance)
-% (3) Output images to save: Dropdown box of output images + editbox for 
-% user to specify name (ColoredNeighborsName/GrayscaleNeighborsName)
+% (1) What did you call the objects whose neighbors you want to measure? (ObjectName)
+% (2) Within what distance (in pixels) are objects to be considered 
+%   neighbors? Enter 0 if you want to expand objects until they contact all 
+%   neighbors. (NeighborDistance)
+% (3a) Which output images to you want to save? (Dropdown box of 
+%   NumberOfNeighbors/PercentTouching)
+% (3b) What name do you want to give the output image?
 %
 % (i) Options for (3): (a) Number of neighbors, (b) Percent touching
 % (ii) In order to avoid the issue of making sure the output image is

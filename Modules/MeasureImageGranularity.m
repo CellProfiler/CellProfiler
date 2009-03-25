@@ -68,7 +68,8 @@ function handles = MeasureImageGranularity(handles,varargin)
 % Recommended variable order: Unchanged from current variables/settings in
 % MATLAB CP)
 %
-% The help on this section needs to be greatly clarified.
+% The help on this section needs to be greatly clarified as to what the
+% various features mean.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -127,6 +127,29 @@ function handles = TrackObjects(handles,varargin)
 %
 % $Revision$
 
+% MBray 2009_03_25: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) What tracking method would you like to use? (TrackingMethod)
+% (2) What did you call the objects you want to track? (ObjectName)
+% (3a) What category of measurement do you want to use (MeasurementCategory)
+% (3b) What feature do you want to use? (MeasurementFeature)
+% (3c) (If the answer to (3b) involves a scale) What scale was used to 
+%      calculate the feature? (SizeScale) 
+%      (If the answer to (3b) involves an image) What image was used to
+%      calculate the feature? (ImageName)
+% (4) Within what pixel distance will objects be considered to find a
+%   potential match? (PixelRadius)
+% (5) How do you want to display the tracked objects? (DisplayType)
+% (6) What do you want to call the resulting image with tracked,
+%   color-coded objects? Type "Do not use" to ignore. (DataImage)
+%
+% (i) Option (3) should appear only if the user selects "Measuremement" in (2)
+% (ii) The Measurement category/feature/image/scale settings in (3a,b,c) should only be shown if
+% the measurement hierarchy requires it.
+% (iii) The setting to collect statistics (CollectStatistics) should be
+% removed as it should be collected by default.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
@@ -146,11 +169,11 @@ TrackingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu
 ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = (Tracking by Measurements only) Select the category of measurement you want to use
+%textVAR03 = (Tracking by Measurements only) What category of measurement you want to use?
 %inputtypeVAR03 = popupmenu category
 MeasurementCategory = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = (Tracking by Measurements only) Select the feature you want to use? (Enter the feature number or name - see help for details)
+%textVAR04 = (Tracking by Measurements only) What feature you want to use? (Enter the feature number or name - see help for details)
 %defaultVAR04 = Do not use
 %inputtypeVAR04 = popupmenu measurement
 MeasurementFeature = char(handles.Settings.VariableValues{CurrentModuleNum,4});
@@ -175,7 +198,7 @@ PixelRadius = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,7
 %inputtypeVAR08 = popupmenu
 DisplayType = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = If you chose an option with "Number" above, select the number you want displayed
+%textVAR09 = If you chose an option with "Number" above, select the number you want displayed (ProgenyID is not yet working)
 %choiceVAR09 = Object ID
 %choiceVAR09 = Progeny ID
 %inputtypeVAR09 = popupmenu

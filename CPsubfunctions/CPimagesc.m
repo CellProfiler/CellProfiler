@@ -36,9 +36,14 @@ else
     error('CPimagesc argument # 3 must be an axis or figure handle');
 end
 
+%%% Embeds the Image tool submenu so that it appears when the user clicks
+%%% on the image. 
+set(h,'ButtonDownFcn','CPimagetool');
+
 %%% Link any image axis limits together so zoom/pan is reflected in all axes
 if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
-    AllAxesHandles = get(findobj(CurrentFig,'type','image'),'parent');
+    % Will need to change this line if the image tags are ever set
+    AllAxesHandles = get(findobj(CurrentFig,'type','image','ButtonDownFcn','CPimagetool'),'parent');
     if iscell(AllAxesHandles), AllAxesHandles = cell2mat(AllAxesHandles); end
     
     %%% Make sure the axis limits are the same in all axes, otherwise
@@ -52,9 +57,6 @@ if exist('linkaxes','file'),    % Make sure linkaxes exists (available in > R13)
     end
 end
 
-%%% Embeds the Image tool submenu so that it appears when the user clicks
-%%% on the image. 
-set(h,'ButtonDownFcn','CPimagetool');
 
 %%% Sets the user's preference for font size, which should affect tick
 %%% labels and current and future titles.

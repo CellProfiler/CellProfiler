@@ -51,6 +51,16 @@ function handles = CalculateImageOverlap(handles)
 % Which image do you want to test for overlap against the ground truth?
 %
 % may make the function of the module more clear.  
+%
+% Anne says:  Agreed. Let's go with this (and adjust the help accordingly;
+% we should also explain how to interpret true positives/false positives and
+% provide guidance on whether the images should have foreground = white or
+% black and suggest they use InvertIntensity if needed):
+% 1: Which binary (black/white) image do you want to use as the basis for
+% calculating the amount of overlap? This image is known as the "ground truth"
+% image.
+% 2: Which binary (black/white) image do you want to compare to the ground
+% truth image?
 
 drawnow
 

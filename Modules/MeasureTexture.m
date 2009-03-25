@@ -119,13 +119,22 @@ function handles = MeasureTexture(handles,varargin)
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
 % (1) Input grayscale image (ImageName)
-% (2) Input objects (ObjectNameList)
-% (3) Feature scale (ScaleOfTexture)
+% We should reword this to be "What did you call the greyscale images whose texture you
+% want to measure?
 %
-% (i) A button should be added that lets the user add/substract objects 
+% (2) Input objects (ObjectNameList)
+% We should reword this to be "What did you call the objects within which you want
+% to measure texture?"
+%
+% (3) Feature scale (ScaleOfTexture)
+% We should reword this to be "What scale of texture do you want to measure?"
+%
+% (i) A button should be added that lets the user add/subtract images for (1) and objects 
 % for (2)
 % (ii) The feature scale should let the user specify a range of texture 
-% scales, so a module doesn't have to be added for each one.
+% scales, so a module doesn't have to be added for each one. (not sure
+% whether we want a "range of textures" (not sure how that would be
+% entered) or instead add/subtract buttons to type in individual scales of texture.)
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

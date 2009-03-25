@@ -18,6 +18,9 @@ function handles = PauseCellProfiler(handles)
 %
 % $Revision$
 
+% MBray 2009_03_20: Comments on variables for pyCP upgrade
+% If debugging/history is implimented in pyCP, this module will probably be removed. 
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

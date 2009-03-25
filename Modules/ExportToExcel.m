@@ -39,6 +39,20 @@ function handles = ExportToExcel(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% PyCP notes
+% (1) There should be something in the help explaining Image vs Experiment
+% vs Objects... because it seems confusing to ask, Which objects do you
+% want to export? and then offer Image and Experiment as choices.
+% (2) Perhaps it should also be made clear that each selection you make
+% will create a separate tab-delimited file, and give you the option to
+% name these.
+% (3) Having all the blank selection menus under the initial
+% question has always looked visually unappealing to me; if there is a way
+% in Python to allow the user to click a "+" button and simply add another
+% object to export, I think that would be preferable to an arbitrary number
+% of blank objects.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);%#ok Ignore MLint

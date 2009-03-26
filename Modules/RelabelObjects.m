@@ -54,15 +54,28 @@ function handles = RelabelObjects(handles)
 % This module combined 'Split' and 'Unify' since both relabeled objects. We
 % could think about including other schemes for relabeling objects in this
 % module; also, given that in PyCP objects are allowed to touch I think
-% this module might need to be looked at more carefully.
+% this module might need to be looked at more carefully. Anne 3-26-09: Also
+% think about whether the Relate module is relevant here. It relabels
+% objects based on their parentage although the primary goal is to relabel
+% and combine the measurements rather than produce a relabeled image.
 %
-% Vars 4&5 should only appear when the user has selected Unify.
-% Maybe they should be combined into an option like:
-% How would you like to unify your objects? See help for details.
-% choice1: distance only 
-% choice2: distance and intensity
-% and have a textbox for distance only if you choose 1, and a textbox +
-% image selection for choice 2
+% A major point that could use some discussion is that most users have no
+% idea what a label even is. The object label concept is not something that
+% is heavily emphasized. So, we should really reconsider how to make this
+% understandable; e.g., should this module be something like "Redefine
+% Relationships" and include the Unify/Split/Relate functionalities?
+%
+% Vars 4&5 should only appear when the user has selected Unify, of course.
+% Var 4 can be reworded: "What is the distance within which objects should
+% be unified?"
+% Var 5 should then be: "If you would also like to use intensities to
+% determine which objects to unify, select the image here:" (and None id
+% the default option).
+% 
+% We should be careful about using the words "unify" and "merge". I think
+% we should add a new Merge option that behaves like Unify except that it
+% physically fills in the space between the two objects so it becomes a
+% continguous object.
 
 drawnow
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

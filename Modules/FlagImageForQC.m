@@ -78,6 +78,12 @@ drawnow
 % 
 % Hopefully, this reduces
 % some of the confusion surrounding the terms "append" & "overwrite".
+%
+% More long-term question: right now, we only have functionality for
+% flagging based on per-image measurements but it seems reasonable that
+% someone might want to flag based on average object measurements or even
+% an individual object measurement (e.g., flag all the images that have any
+% object > 100 pixels.)
 
 
 %textVAR01 = Which image would you like to flag for quality control?

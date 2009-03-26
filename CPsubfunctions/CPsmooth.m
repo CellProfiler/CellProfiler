@@ -111,6 +111,7 @@ switch lower(SmoothingMethod)
         SmoothedImage = conv2(PaddedImage.^2,ones(FiltLength,FiltLength),'same');
         SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
         RealFilterLength=2*FiltLength;
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
     case {'square of sum','q'}
         %%% The following is used for the Square of sum method.
         FiltLength = SizeOfSmoothingFilter;
@@ -122,6 +123,7 @@ switch lower(SmoothingMethod)
         SmoothedImage = SumImage.^2;
         SmoothedImage = SmoothedImage(FiltLength+1:end-FiltLength,FiltLength+1:end-FiltLength);
         RealFilterLength=2*FiltLength;
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
     case 'median filter'
         %%% The following is used for the Median Filtering smoothing method
         %%% medfilt2 on double images is too slow. Let's covert it to uint16 which is much faster!
@@ -214,11 +216,13 @@ switch lower(SmoothingMethod)
         disk_radius = round(SPECKLE_RADIUS);
         SE = strel('disk', disk_radius);
         SmoothedImage = imopen(OrigImage, SE);
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
     case 'enhance brightroundspeckles (tophat filter)'
         SPECKLE_RADIUS = round(SizeOfSmoothingFilter/2);
         disk_radius = round(SPECKLE_RADIUS);
         SE = strel('disk', disk_radius);
         SmoothedImage = imtophat(OrigImage,SE);
+        SizeOfSmoothingFilterUsed = SizeOfSmoothingFilter;
     otherwise
         if ~strcmp(SmoothingMethod,'N');
             error('The smoothing method you specified is not valid. This error should not have occurred. Check the code in the module or tool you are using or let the CellProfiler team know.');

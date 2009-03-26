@@ -43,6 +43,12 @@ function handles = Morph(handles)
 % allow the user to click a 'plus' button to add another morphological
 % function.  This module always looked somewhat cluttered for a quite
 % simple module.
+%
+% Anne 3-26-09: I think it might be good practice to state what type of
+% images the module works on right in the question, so "Which binary
+% (black/white) image do you want to morph?" Although in this particular
+% module's case, perhaps we plan to make morphological operations operate
+% on binary OR grayscale in the new PyCP?
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

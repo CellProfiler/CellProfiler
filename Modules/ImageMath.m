@@ -51,7 +51,19 @@ drawnow
 
 % Klmadden 2009_03_20 In PyCP it would be great if there's a way to only
 % show the options for choosing one image, but then you could push a button
-% for 'add another image'...and the corresponding options would show up
+% for 'add another image'...and the corresponding options would show up.
+%
+% Anne 3-26-09: Agreed. Let's also re-order the settings in this module; I
+% think the settings of CalculateMath module should be used as a model, we
+% worked a lot of this out in detail there. For example, the operation
+% should be listed first, then many of the other settings become dependent
+% on which operation you chose (you will always choose an image first, but
+% in some cases you don't need to choose another image and in others you
+% can choose infinitely many images.
+%
+% Can we explain the meaning of "Combine" briefly, in the list of choices?
+% The user could think it's identical to Average or Add. We might also try
+% to explain Invert briefly. Should we offer other Log options?
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 

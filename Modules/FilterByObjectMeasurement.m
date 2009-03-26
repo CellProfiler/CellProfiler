@@ -50,6 +50,46 @@ function handles = FilterByObjectMeasurement(handles)
 %
 % $Revision$
 
+% MBray 2009_03_26: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) What do you want to call the filtered objects? (TargetName)
+% (2) Which object would you like to filter by, or if using a Ratio, what 
+%   is the numerator object? (ObjectName)
+% (3a) What category of measurement do you want to use (MeasurementCategory)
+% (3b) What feature do you want to use? (MeasurementFeature)
+% (3c) (If the answer to (3b) involves a scale) What scale was used to 
+%      calculate the feature? (SizeScale) 
+%      (If the answer to (3b) involves an image) What image was used to
+%      calculate the feature? (ImageName)
+% (4a) What is the minimum value of the measurement? (MinValue1)
+% (4b) What is the maxmimum value of the measurement? (MaxValue1)
+% (5) What additional object do you want to receive the same labels as the
+% filtered objects? (See notes below)
+% (6) What do you want to call the outlines of the identified objects? Type
+%   "Do not use" to ignore. (SaveOutlines)
+%
+% (i) The Measurements for the filtered objects should be inherited from
+% the original objects, otherwise the user must add the same modules again 
+% to obtain  measurements which already exist.
+% (ii) The Measurement category/feature/image/scale settings in (3a,b,c) 
+% should only be shown if the measurement hierarchy requires it.
+% (iii) Buttons are needed after setting (4) to let the user add/subtract 
+% additional Measurements to measure against. The filtered objects should 
+% be those that satisfy all constraints simultaneously.
+% (iv) Notes on option (5): This was added to the 5811Bugfix branch for
+% a one-off user request from Ray but not incorporated in the main trunk. 
+% Description: In order to insure that correspondences are maintained 
+% between objects after filtering, a user can select an additional object 
+% to receive the same post-filtering labels. This removes the need to use 
+% IDSecondary to regenerate the 2ndary objects, or the problem of 
+% relabelling primary objects if the 2ndary/tertiary objects have been 
+% filtered. This should only be performed on object pairs that are 
+% primary/secondary/tertiary to each other since there is a 
+% guaranteed one-to-one correspondence between them. This option could
+% probably be expanded to auto-fill with primary/secondary/tertiary objects
+% to the input object as long as pyCP keeps track of these relationships.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
@@ -96,7 +136,7 @@ MinValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR08 = popupmenu custom
 MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call the outlines of the identified objects (optional)?
+%textVAR09 = What do you want to call the outlines of the identified objects? Type "Do not use" to ignore.
 %defaultVAR09 = Do not use
 %infotypeVAR09 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});

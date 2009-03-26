@@ -67,14 +67,14 @@ function handles = LoadSingleImage(handles)
 
 % Notes for PyCP
 % (1) Right now, we do not explicitly state that users have the ability to
-% load images via a token obtained from FileNameMetaData using this module.
+% load a different single image for each image group via a token obtained from FileNameMetaData using this module.
 %  The two methods (exact match vs reg expression) also lead to two diff.
 %  methods of processing in this module; the first populates the filelist
 %  with the path and filename of the same image for every cycle, while the
 %  other allows a different image to be loaded.  When the 'image grouping'
-%  issue is worked out, it is probably best to have the user chose- do you
+%  issue is worked out, it is probably best to have the user choose- do you
 %  want to load one image for ALL cycles; do you want to load one image for
-%  each plate (or whatever we decide to call each group of images); this of
+%  each image group (often image group = plate); this of
 %  course depends on how we decide to handle image groups.
 %  (2) Regardless of image grouping: users should be able to add additional
 %  single images via '+ button' and initally only the path and first image

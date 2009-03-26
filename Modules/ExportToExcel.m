@@ -41,9 +41,27 @@ function handles = ExportToExcel(handles)
 %%%%%%%%%%%%%%%%%
 
 % PyCP notes
+% (0) Most importantly, we eventually should just have a single ExportData
+% module, right? With the option of Excel/spreadsheet (perhaps both tab-delimited and comma-delimited) vs. Oracle DB vs.
+% MySQLDB. This would replace both ExportToExcel and ExportToDatabase.
 % (1) There should be something in the help explaining Image vs Experiment
 % vs Objects... because it seems confusing to ask, Which objects do you
 % want to export? and then offer Image and Experiment as choices.
+% Actually, I think we should say "What data do you want to export?" then
+% list Experiment-wide data, Image data, and then Individual object data.
+% If they choose the latter, the list of objects becomes available. There
+% should be "Add another" buttons at the level of the first question (Expt
+% vs Image vs Object) so they can add infinitely many. There should also be
+% an option as to whether to export each object to a new separate file or
+% to the same file as the previous object - right? because although many
+% times there is precise concordance between dift objects (same # of nuclei
+% as cells as cytoplasms) this is sometimes not the case (when we have
+% multiple individual speckles inside each nucleus) and currently the
+% ExportToExcel module spits them all into separate files whereas
+% ExportToDatabase spits them all into a single file. Neither behavior is
+% always what people want. If spitting into a single file, there should be
+% a check to ensure that the # of objects matches.
+%
 % (2) Perhaps it should also be made clear that each selection you make
 % will create a separate tab-delimited file, and give you the option to
 % name these.
@@ -51,7 +69,7 @@ function handles = ExportToExcel(handles)
 % question has always looked visually unappealing to me; if there is a way
 % in Python to allow the user to click a "+" button and simply add another
 % object to export, I think that would be preferable to an arbitrary number
-% of blank objects.
+% of blank objects. (Agreed --Anne)
 
 drawnow
 

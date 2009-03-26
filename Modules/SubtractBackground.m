@@ -72,6 +72,13 @@ function handles = SubtractBackground(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+% PyCP NOTES: Anne 3-16-09: I think that this module could be subsumed into
+% RescaleIntensity. Right now it's confusing because people assume it has
+% Illumination correction-like functionality when in reality it subtracts a
+% single integer from every pixel in every image. It doesn't 'stretch' the
+% intensity in any way, but as long as we make it clear how it works, I
+% think RescaleIntensity is a good home for it.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the image to be corrected?

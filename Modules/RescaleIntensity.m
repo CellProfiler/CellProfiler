@@ -78,27 +78,41 @@ function handles = RescaleIntensity(handles)
 % In general, this module is very confusing with the (Method E only) and
 % (Method T) only etc qualifiers.  In the PyCp version, it would be great
 % if the (Method E only) variables only became visible once the user had
-% selected method E.  
+% selected method E.
+%
 % While I like the that Var 3 explains to the user (briefly) what each
 % method does, in most modules we leave this explanation to the help to
 % avoid overly long variable settings. (Think: IdPrimAuto etc)  I think it
-% is fine to do the same and chane Var 3 to: 'Please select rescaling method
-% below.'  If it is possible, perhaps the user could mouse over the choice
-% and see a brief explanation?
+% is fine to do the same and change Var 3 to: 'Which rescaling method
+% do you want to use?'  If it is possible, perhaps the user could mouse
+% over the choice and see a brief explanation? Anne 3-26-09: Yes, I think that
+% we can get away with a simple dropdown menu, with the existing choices
+% expanded on slightly (and additional explanation in the help or when
+% further options are presented for the particular choice that's made):
 %
-% Vars 4&5:  This is seems more suited to a popup, with the choices being:
-% AA (or 'Calculated-Automatic' or 'Calculated-All;), AE (or maybe 'Calculated-Independent' or
-% 'Calculated-Each') , and 'Other...' (custom value).  A better variable description
-% might be:
-% 'What is the intensity from the original image that will be set to the
+% -Stretch each image to use the full intensity range
+% -Choose specific values to be re-set to the full intensity range
+% -Divide by the image's minimum so that all pixels are equal to or greater than 1
+% -Match the image's maximum to another image's maximum
+% -Convert to 8 bit
+% -Divide each image by the same value ([Note: this new option should let
+% you just enter a number])
+% -Divide each image by a previously calculated value ([note: for this one, once you
+% choose this, the question should be something like "What did you call the
+% numbers that you want to divide each image by? You should calculate one
+% number per image in advance and load the numbers with the LoadText
+% module.])
+%
+% Vars 4&5:  This is suited to a dropdown menu, like this:
+% What is the intensity value in the input image that will be set to the
 % lowest value in the rescaled image?
-% choice1: Calculated- All
-% choice2: Calculated- Each
-% choice3: Other...
-% If Python allows, in this an other 'popupcustom'-type cases, I almost
+% - Automatically calculate based on all images
+% - Automatically calculate based on each image independently
+% - Specify a value...
+% If Python allows, in this and other 'popupcustom'-type cases, I almost
 % think it is most obvious to leave a blank textbox for editing, rather
-% than forcing the user to click other and then enter a value (since it may
-% not be inherently obvious you can enter your own value?)
+% than forcing the user to click 'specify a value' and then enter a value
+% (since it may not be inherently obvious you can enter your own value?)
 %
 % Vars 6-9: If it's possible, condense these variables into just two:
 % Var 6: Map low intensity or negative pixels from the original image to this value: (default 0)
@@ -106,8 +120,15 @@ function handles = RescaleIntensity(handles)
 % I can't think of a case where you would want these to be different
 % values??  I'm not sure if this is the correct way to re-word these
 % variables, but I don't think they are very clear how they are presented
-% now.
-
+% now. Anne 3-26-09: I agree it sounds strange, but there *was* a case
+% where we needed to do this (can't remember why; I think there was
+% supr-bright artifactual schmutz that we wanted to set to 0).  Lee,
+% perhaps you can think this over a bit - presumably someone could put a
+% few modules in order to carry out a weird case like that?  Also, how
+% should this module relate to ApplyThreshold... it sounds like this module
+% is partly doing that function. This will require a bit of thinking to
+% figure out where these functionalities ought to be.
+%
 
 drawnow
 

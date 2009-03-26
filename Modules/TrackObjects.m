@@ -113,6 +113,10 @@ function handles = TrackObjects(handles,varargin)
 % Since the movie is processed sequentially by frame, it cannot be broken
 % up into batches for execution on a distributed cluster.
 %
+% If running on a cluster and saving the colored image with text labels,
+% the labels will not show up in the final result. This is a limitation of
+% using MATLAB's hardcopy command.
+%
 % See also: Any of the Measure* modules, IdentifyPrimAutomatic
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -502,7 +506,9 @@ TrackObjInfo.Current.Headers = CurrHeaders;
 if ~strcmp(DataImage,'Do not use')   
     % Do the screen capture at high-res and resize to original image size.
     % This will get the image plus any text
+    warning('off','MATLAB:Text:DrawStringIntoBitmap');
     CapturedImage = CPimcapture(ThisModuleFigureNumber,'img',150);
+    warning('on','MATLAB:Text:DrawStringIntoBitmap');
     OrigImSize = size(CurrentColoredLabelImage(:,:,1));
     ResizedCapturedImage = cat(3,   imresize(double(CapturedImage(:,:,1)),OrigImSize),...
                                     imresize(double(CapturedImage(:,:,2)),OrigImSize),...

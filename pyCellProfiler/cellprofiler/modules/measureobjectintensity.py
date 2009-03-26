@@ -19,6 +19,7 @@ import uuid
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline as cpmo
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -257,7 +258,7 @@ See also MeasureImageIntensity.
             for object_name in self.object_names:
                 objects = workspace.object_set.get_objects(object_name.value)
                 labels   = objects.segmented
-                nobjects = np.max(labels)+1
+                nobjects = int(np.max(labels))
                 outlines = cpmo.outline(labels)
                 
                 if image.has_mask:
@@ -270,44 +271,55 @@ See also MeasureImageIntensity.
                 else:
                     masked_labels = labels
                     masked_outlines = outlines
+                
+                if nobjects > 0:
+                    lindexes = np.arange(nobjects)+1
+                    integrated_intensity = fix(nd.sum(img, labels, lindexes))
+                    integrated_intensity_edge = fix(nd.sum(img, outlines,
+                                                           lindexes))
+                    mean_intensity = fix(nd.mean(img, labels, lindexes))
+                    mean_intensity_edge = fix(nd.mean(img, outlines, lindexes))
+                    std_intensity = fix(nd.standard_deviation(img, labels, 
+                                                              lindexes))
+                    std_intensity_edge = fix(nd.standard_deviation(img, outlines, 
+                                                                   lindexes))
+                    min_intensity = fix(nd.minimum(img, labels, lindexes))
+                    min_intensity_edge = fix(nd.minimum(img, outlines,
+                                                        lindexes))
+                    max_intensity = fix(nd.maximum(img, labels, lindexes))
+                    max_intensity_edge = fix(nd.maximum(img, outlines,
+                                                        lindexes))
+                else:
+                    integrated_intensity = np.zeros((0,))
+                    integrated_intensity_edge = np.zeros((0,))
+                    mean_intensity = np.zeros((0,))
+                    mean_intensity_edge = np.zeros((0,))
+                    std_intensity = np.zeros((0,))
+                    std_intensity_edge = np.zeros((0,))
+                    min_intensity = np.zeros((0,))
+                    min_intensity_edge = np.zeros((0,))
+                    max_intensity = np.zeros((0,))
+                    max_intensity_edge = np.zeros((0,))
                     
-                integrated_intensity = np.array(nd.sum(img,labels,
-                                                       range(nobjects)))
-                integrated_intensity_edge = np.array(nd.sum(img,outlines,
-                                                            range(nobjects)))
-                mean_intensity = np.array(nd.mean(img,labels,
-                                                  range(nobjects)))
-                mean_intensity_edge = np.array(nd.mean(img,outlines,
-                                                       range(nobjects)))
-                std_intensity = np.array(nd.standard_deviation(img, labels, 
-                                                               range(nobjects)))
-                std_intensity_edge = np.array(nd.standard_deviation(img, outlines, 
-                                                                    range(nobjects)))
-                min_intensity = np.array(nd.minimum(img, labels, range(nobjects)))
-                min_intensity_edge = np.array(nd.minimum(img,outlines,
-                                                         range(nobjects)))
-                max_intensity = np.array(nd.maximum(img,labels,range(nobjects)))
-                max_intensity_edge = np.array(nd.maximum(img,outlines,
-                                                         range(nobjects)))
                 # The mass displacement is the distance between the center
                 # of mass of the binary image and of the intensity image. The
                 # center of mass is the average X or Y for the binary image
                 # and the sum of X or Y * intensity / integrated intensity
-                if nobjects > 1:
+                if nobjects > 0:
                     mesh_x, mesh_y = np.meshgrid(range(masked_image.shape[1]),
                                                  range(masked_image.shape[0]))
-                    cm_x = np.array(nd.mean(mesh_x,masked_labels,range(nobjects)))
-                    cm_y = np.array(nd.mean(mesh_y,masked_labels,range(nobjects)))
+                    cm_x = fix(nd.mean(mesh_x, masked_labels, lindexes))
+                    cm_y = fix(nd.mean(mesh_y, masked_labels, lindexes))
                     
-                    i_x = np.array(nd.sum(mesh_x * masked_image,masked_labels,
-                                          range(nobjects)))
-                    i_y = np.array(nd.sum(mesh_y * masked_image,masked_labels,
-                                          range(nobjects)))
+                    i_x = fix(nd.sum(mesh_x * masked_image,masked_labels,
+                                          lindexes))
+                    i_y = fix(nd.sum(mesh_y * masked_image,masked_labels,
+                                          lindexes))
                     cmi_x = i_x / integrated_intensity
                     cmi_y = i_y / integrated_intensity
                     diff_x = cm_x - cmi_x
                     diff_y = cm_y - cmi_y
-                    mass_displacement = np.sqrt(diff_x * diff_x+diff_y*diff_y)[1:]
+                    mass_displacement = np.sqrt(diff_x * diff_x+diff_y*diff_y)
                 else:
                     mass_displacement = np.zeros((0,))
                 
@@ -319,53 +331,36 @@ See also MeasureImageIntensity.
                 # do a cumsum of areas of labels, you'll get indices into
                 # the ordered array and you can read out quantiles pretty easily
                 
-                if nobjects > 1:
-                    areas = np.array(nd.sum(np.ones(labels.shape,int),
-                                            labels,
-                                            range(nobjects)))
+                if nobjects > 0:
+                    assert img.min() >= 0,"Algorithm requires image values between 0 and 1"
+                    assert img.max() <= 1,"Algorithm requires image values between 0 and 1"
+                    areas = fix(nd.sum(np.ones(labels.shape,int),
+                                       labels, np.arange(nobjects+1)))
+                    areas = areas.astype(int)
                     indices = np.cumsum(areas)[:-1]
                     ordered_image = img + labels.astype(float)
                     ordered_image = ordered_image.flatten()
                     ordered_image.sort()
-                    indices_25 = (indices+areas[1:]/4+.5).astype(int)
-                    indices_50 = (indices+areas[1:]/2+.5).astype(int)
-                    indices_75 = (indices+3*areas[1:] / 4 +.5).astype(int)
+                    max_indices = (indices + areas[1:] - 1).astype(int)
+                    indices_25  = indices+(areas[1:]+2)/4
+                    indices_50  = indices+(areas[1:]+1)/2
+                    indices_75  = indices+3*(areas[1:]+2) / 4
+                    #
+                    # Check for round-up overflow
+                    #
+                    for indices in (indices_25, indices_50, indices_75):
+                        imask = indices > max_indices
+                        indices[imask] = max_indices[imask]
                     lower_quartile_intensity = (ordered_image[indices_25] - 
-                                                range(1,nobjects))
+                                                range(1,nobjects+1))
                     median_intensity         = (ordered_image[indices_50] - 
-                                                range(1,nobjects))
+                                                range(1,nobjects+1))
                     upper_quartile_intensity = (ordered_image[indices_75] - 
-                                                range(1,nobjects))
+                                                range(1,nobjects+1))
                 else:
                     lower_quartile_intensity = np.zeros((0,))
                     median_intensity = np.zeros((0,))
                     upper_quartile_intensity = np.zeros((0,))
-                
-                if nobjects > 1:
-                    integrated_intensity = integrated_intensity[1:]
-                    mean_intensity = mean_intensity[1:]
-                    std_intensity = std_intensity[1:]
-                    min_intensity = min_intensity[1:]
-                    max_intensity = max_intensity[1:]
-    
-                    integrated_intensity_edge = integrated_intensity_edge[1:]
-                    mean_intensity_edge = mean_intensity_edge[1:]
-                    std_intensity_edge = std_intensity_edge[1:]
-                    min_intensity_edge = min_intensity_edge[1:]
-                    max_intensity_edge = max_intensity_edge[1:]
-                else:
-                    integrated_intensity = np.zeros((0,))
-                    mean_intensity = np.zeros((0,))
-                    std_intensity = np.zeros((0,))
-                    min_intensity = np.zeros((0,))
-                    max_intensity = np.zeros((0,))
-    
-                    integrated_intensity_edge = np.zeros((0,))
-                    mean_intensity_edge = np.zeros((0,))
-                    std_intensity_edge = np.zeros((0,))
-                    min_intensity_edge = np.zeros((0,))
-                    max_intensity_edge = np.zeros((0,))
-                    
                 
                 m = workspace.measurements
                 for feature_name, measurement in \

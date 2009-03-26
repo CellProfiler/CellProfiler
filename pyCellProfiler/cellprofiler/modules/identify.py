@@ -533,11 +533,11 @@ def add_object_location_measurements(measurements,
                                                range(1,object_count+1))
         centers = numpy.array(centers)
         centers = centers.reshape((object_count,2))
-        location_center_x = centers[:,0]
-        location_center_y = centers[:,1]
+        location_center_y = centers[:,0]
+        location_center_x = centers[:,1]
     else:
-        location_center_x = numpy.zeros((0,),dtype=float)
         location_center_y = numpy.zeros((0,),dtype=float)
+        location_center_x = numpy.zeros((0,),dtype=float)
     measurements.add_measurement(object_name,'Location_Center_X',
                                  location_center_x)
     measurements.add_measurement(object_name,'Location_Center_Y',

@@ -201,7 +201,12 @@ class CPModule(object):
         
         """
         if variable_revision_number != self.variable_revision_number:
-            raise NotImplementedError("Please implement UpgradeModuleFromRevision")
+            raise NotImplementedError(
+                "Please implement upgrade_module_from_revision or "
+                "backwards_compatiblize to upgrade module %s from "
+                "revision %d to revision %d"%(self.module_name, 
+                                              variable_revision_number, 
+                                              self.variable_revision_number))
     
     def get_help(self):
         """Return help text for the module

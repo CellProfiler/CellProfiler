@@ -289,17 +289,17 @@ class PipelineListView(object):
         self.__module_view.clear_selection()
         
     def __on_module_moved(self,pipeline,event):
-        module=pipeline.modules()[event.module_num-1]
-        selected = module in self.get_selected_modules()
         if event.direction == cellprofiler.pipeline.DIRECTION_UP:
-            other_module = pipeline.modules()[event.module_num-2]
+            old_index = event.module_num
         else:
-            other_module = pipeline.modules()[event.module_num]
-        self.__populate_row(module)
-        self.__populate_row(other_module)
+            old_index = event.module_num - 2
+        new_index = event.module_num - 1
+        selected = self.__grid.IsInSelection(old_index, MODULE_NAME_COLUMN)
+        self.__populate_row(pipeline.modules()[old_index])
+        self.__populate_row(pipeline.modules()[new_index])
         if selected:
-            self.__grid.SelectBlock(module.module_num-1, MODULE_NAME_COLUMN,
-                                    module.module_num-1, MODULE_NAME_COLUMN,
+            self.__grid.SelectBlock(new_index, MODULE_NAME_COLUMN,
+                                    new_index, MODULE_NAME_COLUMN,
                                     False)
         self.__adjust_rows()
     

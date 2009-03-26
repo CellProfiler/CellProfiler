@@ -11,17 +11,18 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
-import identifyprimautomatic as cpm_ipa
-import loadimages as cpm_li
-import colortogray as cpm_ctg
 from applythreshold import ApplyThreshold
+from colortogray import ColorToGray
 from correctillumination_calculate import CorrectIllumination_Calculate
 from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
 from exporttodatabase import ExportToDatabase
 from graytocolor import GrayToColor
+from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
+from loadimages import LoadImages
+from loadsingleimage import LoadSingleImage
 from maskimage import MaskImage
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
@@ -29,16 +30,17 @@ from saveimages import SaveImages
 
 def get_module_classes():
     return [ApplyThreshold,
-            cpm_ctg.ColorToGray,
+            ColorToGray,
             CorrectIllumination_Calculate,
             CorrectIllumination_Apply,
             Crop,
             ExportToDatabase,
             GrayToColor,
-            cpm_ipa.IdentifyPrimAutomatic,
+            IdentifyPrimAutomatic,
             IdentifySecondary,
             IdentifyTertiarySubregion,
-            cpm_li.LoadImages,
+            LoadImages,
+            LoadSingleImage,
             MaskImage,
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
@@ -49,16 +51,17 @@ def get_module_substitutions():
     
     """
     return {"ApplyThreshold": ApplyThreshold,
-            "LoadImages":cpm_li.LoadImages,
-            "ColorToGray":cpm_ctg.ColorToGray,
+            "ColorToGray":ColorToGray,
             "CorrectIllumination_Calculate":CorrectIllumination_Calculate,
             "CorrectIllumination_Apply":CorrectIllumination_Apply,
             "Crop": Crop,
             "ExportToDatabase": ExportToDatabase,
             "GrayToColor":GrayToColor,
-            "IdentifyPrimAutomatic":cpm_ipa.IdentifyPrimAutomatic,
+            "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
+            "LoadImages":LoadImages,
+            "LoadSingleImage":LoadSingleImage,
             "MaskImage": MaskImage,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,

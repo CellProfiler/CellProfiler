@@ -259,9 +259,11 @@ class SaveImages(cpm.CPModule):
             result.append(self.pathname_choice)
             if self.pathname_choice == PC_CUSTOM:
                 result.append(self.pathname)
-            result.append(self.bit_depth)
+            if self.file_format != FF_MAT:
+                result.append(self.bit_depth)
             result.append(self.when_to_save)
-            if self.save_image_or_figure == IF_IMAGE:
+            if (self.save_image_or_figure == IF_IMAGE and
+                self.file_format != FF_MAT):
                 result.append(self.rescale)
                 result.append(self.colormap)
             if self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL):
@@ -311,29 +313,30 @@ class SaveImages(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
-            if self.rescale.value:
-                # Rescale the image intensity
-                if pixels.ndim == 3:
-                    # get minima along each of the color axes (but not RGB)
-                    for i in range(3):
-                        img_min = numpy.min(pixels[:,:,i])
-                        img_max = numpy.max(pixels[:,:,i])
-                        pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
-                else:
-                    img_min = numpy.min(pixels)
-                    img_max = numpy.max(pixels)
-                    pixels=(pixels-img_min) / (img_max-img_min)
-            if pixels.ndim == 2 and self.colormap != CM_GRAY:
-                cm = matplotlib.cm.get_cmap(self.colormap)
-                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                if self.bit_depth == '8':
-                    pixels = mapper.to_rgba(pixels,bytes=True)
+            if self.file_format != FF_MAT:
+                if self.rescale.value:
+                    # Rescale the image intensity
+                    if pixels.ndim == 3:
+                        # get minima along each of the color axes (but not RGB)
+                        for i in range(3):
+                            img_min = numpy.min(pixels[:,:,i])
+                            img_max = numpy.max(pixels[:,:,i])
+                            pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
+                    else:
+                        img_min = numpy.min(pixels)
+                        img_max = numpy.max(pixels)
+                        pixels=(pixels-img_min) / (img_max-img_min)
+                if pixels.ndim == 2 and self.colormap != CM_GRAY:
+                    cm = matplotlib.cm.get_cmap(self.colormap)
+                    mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                    if self.bit_depth == '8':
+                        pixels = mapper.to_rgba(pixels,bytes=True)
+                    else:
+                        raise NotImplementedError("12 and 16-bit images not yet supported")
+                elif self.bit_depth == '8':
+                    pixels = (pixels*255).astype(numpy.uint8)
                 else:
                     raise NotImplementedError("12 and 16-bit images not yet supported")
-            elif self.bit_depth == '8':
-                pixels = (pixels*255).astype(numpy.uint8)
-            else:
-                raise NotImplementedError("12 and 16-bit images not yet supported")
         elif self.save_image_or_figure == IF_MASK:
             pixels = image.mask.astype(int)*255
         elif self.save_image_or_figure == IF_CROPPING:

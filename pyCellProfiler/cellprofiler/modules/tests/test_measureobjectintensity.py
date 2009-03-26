@@ -29,8 +29,13 @@ import cellprofiler.pipeline as P
 pipeline_data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBXZWQgRmViIDExIDE2OjU4OjUyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkgIAAHic7VhPb9MwFHfatPwZmsomJtRTjhzGaAUHjlQqgkqsrdg0iaObuMUoiavEnlo+xaR9EY4cOCDxxYjbpHW8UudvAamWLOs57/3eez87z04OAQCNEwDqwXg/6BWwbLVQ1oTO5QtEKXYnfg3o4Gk4/zPoV9DDcGSjK2gz5INVi+Z77phczqerR+fEYjbqQ0dUDlqfOSPk+YNxZBg+HuIZsi/wVwTiLVL7iK6xj4kb2of48uzKL6GS38OgfztY86BJPFSDfizMc/03YK2vb+CtIeg3wn6JZvT52xk0qeFAan7mOC0FTjWGUwXdfgeUaafH7HTQ7Qx73O61wq4u5cvlPjNthJd85bXPmq/Kb03yy+V26/QV95dknR9K9lzuEsMl1GB+uGGLxEnLw6dgr/+PeVRiOBXQJ/v1KDMPFc6BhMPlAfWZ8c4mI2jvPJ6i1keL4WigHdrtOg55n7RO27E40ubxMqGdXO9bZ612GfmrcB5IOFzuuRS5PqZzIZ5ofK/AeyzhcRm7Fr7GFoO2gR04Wd0CyoivrPq2KY4OoyS4UGAzQxzyvjnLwce2OLLgTTw4901oIwEna73Na6+KP+l7kDSOss+/rHy4L2Ah65CXh8j+pr793i7Wgbx1bVE0Jh5h0+JxojFLXSOjL8ikC0AjqHFomiLPTee6gJcYZ9P3zjrPZVi7jCcpzq552vO95/tv8C2PReWr8vOvj6p6ewTiPHCZMGpjF90puCJuQ/vzuSSfj1nPkQ8EWj3hIpsknycSDpd7FnIpHs+HHnbEO1wSvBMJj8vnCPrMQ4PFdhQuyfJ5X1fwUgmko+N7ub7j0vqrParc+W+kstNDnV/NH83b5tLvd5Bu/Z9t0Y/arvR/A0/mSFM='
 
 class TestMeasureObjects(unittest.TestCase):
+    def error_callback(self, calller, event):
+        if isinstance(event, P.RunExceptionEvent):
+            self.fail(event.error.message)
+    
     def test_01_01_load(self):
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         fd = StringIO.StringIO(base64.b64decode(pipeline_data))
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),3)
@@ -70,6 +75,7 @@ class TestMeasureObjects(unittest.TestCase):
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
@@ -95,6 +101,7 @@ class TestMeasureObjects(unittest.TestCase):
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
@@ -116,7 +123,7 @@ class TestMeasureObjects(unittest.TestCase):
             feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
             self.assertEqual(numpy.product(data.shape),1)
-            self.assertEqual(data[0],value)
+            self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
         
     def test_03_03_mass_displacement(self):
         """Check the mass displacement of three squares"""
@@ -162,6 +169,7 @@ class TestMeasureObjects(unittest.TestCase):
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
@@ -187,6 +195,7 @@ class TestMeasureObjects(unittest.TestCase):
         moi.object_names[0].value = 'MyObjects'
         moi.module_num = 3
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
@@ -201,4 +210,27 @@ class TestMeasureObjects(unittest.TestCase):
         data = m.get_current_measurement('MyObjects',feature_name)
         self.assertAlmostEqual(data[0],.75,2)
         
+    def test_03_05_quartiles(self):
+        """Regression test a bug that occurs in an image with one pixel"""
+        labels = numpy.zeros((10,20))
+        labels[2:7,3:8] = 1
+        labels[5,15] = 2
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10,20))
+        ii = II.InjectImage('MyImage',image)
+        ii.module_num = 1
+        io = II.InjectObjects('MyObjects',labels)
+        io.module_num = 2
+        moi = MOI.MeasureObjectIntensity()
+        moi.image_names[0].value = 'MyImage'
+        moi.object_names[0].value = 'MyObjects'
+        moi.module_num = 3
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(ii)
+        pipeline.add_module(io)
+        pipeline.add_module(moi)
+        # Crashes when pipeline runs in measureobjectintensity.py revision 7146
+        m = pipeline.run()
+
         

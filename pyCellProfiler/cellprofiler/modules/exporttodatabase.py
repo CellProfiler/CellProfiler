@@ -475,6 +475,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         image_channel_file_names = ','.join(['Image_FileName_%s'%(name) for name in image_names])+','
         image_channel_file_paths = ','.join(['Image_PathName_%s'%(name) for name in image_names])+','
         image_channel_names = ','.join(image_names)+','
+        if len(image_names) == 1:
+            image_channel_colors = 'gray,'
+        else:
+            image_channel_colors = 'red,green,blue,cyan,magenta,yellow,gray,none,none,none,'  
         image_url = 'http://imageweb/images/CPALinks'
         contents = """#%(date)s
 # ==============================================
@@ -560,6 +564,7 @@ image_tile_size   =  50
 # (Units = 1 image. ie: "image_buffer_size = 100", will cache 100 images before it starts replacing old ones.
 image_buffer_size = 1
 tile_buffer_size  = 1
+image_channel_colors = %(image_channel_colors)s
 """%(locals())
         fid.write(contents)
         fid.close()

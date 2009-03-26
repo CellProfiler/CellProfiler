@@ -20,7 +20,7 @@ ctypedef np.int32_t DTYPE_INT32_t
 DTYPE_BOOL = np.bool
 ctypedef np.int8_t DTYPE_BOOL_t
 
-include "heap.pxi"
+include "heap_watershed.pxi"
 
 @cython.boundscheck(False)
 def watershed(np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] image,
@@ -53,55 +53,44 @@ def watershed(np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] 
                   a numpy array of np.int32
     output - put the image labels in here
     """
-    cdef Heap *hp = <Heap *> heap_from_numpy2(pq)
-
-    cdef np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] elem = np.zeros((hp.width,),dtype=np.int32)
-    cdef np.ndarray[DTYPE_INT32_t,ndim=1,negative_indices=False, mode='c'] new_elem = np.zeros((hp.width,),dtype=np.int32)
+    cdef Heapitem elem
+    cdef Heapitem new_elem
     cdef DTYPE_INT32_t nneighbors = structure.shape[0] 
     cdef DTYPE_INT32_t i = 0
-    cdef DTYPE_INT32_t j = 0
-    cdef DTYPE_INT32_t ok
-    cdef DTYPE_INT32_t coord = 0
     cdef DTYPE_INT32_t index = 0
     cdef DTYPE_INT32_t old_index = 0
     cdef DTYPE_INT32_t max_index = image.shape[0]
-    cdef DTYPE_INT32_t old_output
+
+    cdef Heap *hp = <Heap *> heap_from_numpy2()
+
+    for i in range(pq.shape[0]):
+        elem.value = pq[i, 0]
+        elem.age = pq[i, 1]
+        elem.index = pq[i, 2]
+        heappush(hp, &elem)
 
     while hp.items > 0:
         #
         # Pop off an item to work on
         #
-        heappop(hp, <np.int32_t *> elem.data)
+        heappop(hp, &elem)
         ####################################################
         # loop through each of the structuring elements
         #
-        old_index = elem[2]
-        old_output = output[old_index]
+        old_index = elem.index
         for i in range(nneighbors):
             # get the flattened address of the neighbor
             index = structure[i,0]+old_index
             if index < 0 or index >= max_index or output[index] or not mask[index]:
                 continue
-            # Fill in and push the neighbor
-            ok = 1
-            for j in range(ndim):
-                # the coordinate is offset by 3 (value, age and index come 
-                # first) in the priority queue and by 1 (stride comes first)
-                # in the structure
-                coord = elem[j+3]+structure[i,j+1]
-                if coord < 0 or coord >= image_shape[j]:
-                    ok = 0
-                    break
-                new_elem[j+3] = coord
-            if ok == 0:
-                continue
-            new_elem[0]   = image[index]
-            new_elem[1]   = age
-            new_elem[2]   = index
+
+            new_elem.value   = image[index]
+            new_elem.age   = elem.age + 1
+            new_elem.index   = index
             age          += 1
-            output[index] = old_output
+            output[index] = output[old_index]
             #
             # Push the neighbor onto the heap to work on it later
             #
-            heappush(hp, <np.int32_t *>new_elem.data)
+            heappush(hp, &new_elem)
     heap_done(hp)

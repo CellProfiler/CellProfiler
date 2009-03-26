@@ -23,7 +23,7 @@ def configuration():
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3']),
                   Extension(name="_watershed",
-                            sources=["_watershed.pyx", "heap.pxi"],
+                            sources=["_watershed.pyx", "heap_watershed.pxi"],
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3']),
                   Extension(name="_propagate",

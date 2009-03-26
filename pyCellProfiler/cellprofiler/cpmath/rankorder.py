@@ -20,12 +20,12 @@ def rank_order(image):
     The returned image's elements are of type numpy.uint32 which
     simplifies processing in C code.
     """
-    flat_image = image.flatten()
-    sort_order = flat_image.argsort()
-    sort_rank  = numpy.zeros(sort_order.shape,numpy.uint32)
-    sort_rank[1:] = numpy.cumsum(flat_image[sort_order[:-1]] != 
-                                 flat_image[sort_order[1:]])
-    int_image = numpy.zeros(sort_order.shape,numpy.uint32)
+    flat_image = image.ravel()
+    sort_order = flat_image.argsort().astype(numpy.uint32)
+    flat_image = flat_image[sort_order]
+    sort_rank  = numpy.zeros_like(sort_order)
+    numpy.cumsum(flat_image[:-1] != flat_image[1:], out=sort_rank[1:])
+    int_image = numpy.zeros_like(sort_order)
     int_image[sort_order] = sort_rank
     return int_image.reshape(image.shape)
     

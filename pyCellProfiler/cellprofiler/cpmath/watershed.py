@@ -149,6 +149,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
     denominator types, then passes these to a C algorithm that operates
     as above.
     """
+    
     if connectivity == None:
         c_connectivity = scipy.ndimage.generate_binary_structure(image.ndim, 1)
     else:
@@ -162,6 +163,22 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
         # offset to center of connectivity array
         #
         offset = numpy.array(c_connectivity.shape)/2
+
+    # pad the image, markers, and mask so that we can use the mask to keep from running off the edges
+    pads = offset
+
+    def pad(im):
+        new_im = numpy.zeros([i + 2*p for i,p in zip(im.shape, pads)], im.dtype)
+        new_im[[slice(p, -p,None) for p in pads]] = im
+        return new_im
+
+    if mask is not None:
+        mask = pad(mask)
+    else:
+        mask = pad(numpy.ones(image.shape, bool))
+    image = pad(image)
+    markers = pad(markers)
+
     c_image = rank_order(image).astype(numpy.int32)
     c_markers = numpy.ascontiguousarray(markers,dtype=numpy.int32)
     if c_markers.ndim!=c_image.ndim:
@@ -180,6 +197,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
     else:
         c_mask = None
     c_output = c_markers.copy()
+
     #
     # We pass a connectivity array that pre-calculates the stride for each
     # neighbor.
@@ -209,7 +227,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
             offs.insert(0,stride)
             c.append(offs)
     c = numpy.array(c,numpy.int32)
-    
+
     pq,age = __heapify_markers(c_markers, c_image)
     pq = numpy.ascontiguousarray(pq,dtype=numpy.int32)
     if numpy.product(pq.shape) > 0:
@@ -226,7 +244,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
                              c_mask,
                              numpy.array(c_image.shape,numpy.int32),
                              c_output)
-        c_output = c_output.reshape(c_image.shape)
+        c_output = c_output.reshape(c_image.shape)[[slice(1,-1,None)] * image.ndim]
     try:
         return c_output.astype(markers.dtype)
     except:

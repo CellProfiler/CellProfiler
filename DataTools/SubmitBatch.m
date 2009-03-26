@@ -108,11 +108,17 @@ end;
 SubmitInfo.Email = [];
 SubmitInfo.Queue = 'broad';
 SubmitInfo.Server = 'imageweb.broad.mit.edu';
-if isfield(handles.Settings,'CurrentSVNVersion')
-    SubmitInfo.CPCluster = num2str(handles.Settings.CurrentSVNVersion);
-else
-    SubmitInfo.CPCluster = '5445';
+try
+    if isdeployed
+        svn_ver_char = handles.Settings.CurrentSVNVersion;
+    else
+        svn_ver_char = CPsvnversionnumber(handles.Preferences.DefaultModuleDirectory);
+    end
+catch
+    svn_ver_char = '0';
 end
+SubmitInfo.CPCluster = num2str(svn_ver_char);
+
 SubmitInfo.BatchSize = 10;
 SubmitInfo.Timeout = 30;
 SubmitInfo.WriteData = 1;

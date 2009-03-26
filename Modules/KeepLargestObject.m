@@ -27,6 +27,17 @@ function handles = KeepLargestObject(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+% PyCP Notes: 
+% Anne 3-26-09: I think this module should be a new option within
+% FilterByObjectMeasurement. We could add this one simple case, or we could
+% add the more flexible "Keep the single object with the lowest or highest
+% value of which measurement?" I think this module functions only on
+% primary objects inside secondary ones whereas the new functionality
+% should allow things like discarding everything but the largest primary
+% object in the whole image, discarding everything but the brightest
+% child object inside each parent object, etc.
+
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the primary objects?

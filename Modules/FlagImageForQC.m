@@ -48,11 +48,37 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%Klmadden 2009_03_20 I know 'append' is not really the word that I mean,
-%but I can't think of the right word; What I mean is, you flag by one
-%criteria and then you want to flag by another criteria, retaining those
-%original flags. So perhaps something more like 'overwrite an existing
-%QCFlag, retaining existing flags?' 
+% PyCP notes: We want to change the name of this module to FlagImage (note
+% there is an identically-functioning data tool, too).
+%
+% New Var: What do you want to call the flag? The default should be QCflag
+% (this is currently being asked in Var 7)
+% Var 2: Which category of measurements would you like to use to determine whether to record a flag?
+% Var 3: "Which feature do you want to use?" should be replaced with: "Which specific feature do you want to use?"
+% [we need to also add 'which image?' question here rather than up front in
+% Var1, because it is sometimes not necessary to even ask, if they choose AreaShape for
+% example. For texture features, we need to ask scale of texture].
+% Var 4: "Images should be flagged if the measurement is below what value?"
+% (the option: "No minimum" should be replaced by "Do not flag based on low values")
+% Var 5: adjust as for Var 4
+%
+% Now, for Var 6, there will be several options, some new. First option:
+% "Record the same flag if a different measurement criterion is met." This
+% will place new flags into the same flag bin name as already done for the
+% previously specified measurement, but the criterion will be based on a
+% new set of measurements. After this is done, you won't be able
+% to tell which measurement the flags came from; they will all be stored
+% together under a single flag name - this is convenient if the user just
+% wants to have a single "BadImages" flag.
+% Another option is "Record this flag only if another measurement criterion
+% is met". This will have similar questions as above, but will function by
+% only placing a flag if BOTH criteria are true. 
+% Another option is "Add a separate, new flag", in which case the above
+% questions repeat, including a new name for the new flag. 
+% 
+% Hopefully, this reduces
+% some of the confusion surrounding the terms "append" & "overwrite".
+
 
 %textVAR01 = Which image would you like to flag for quality control?
 %infotypeVAR01 = imagegroup

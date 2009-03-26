@@ -112,7 +112,7 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
             self.assertTrue(np.product(value.shape),1)
             self.assertTrue(value[0], 1)
         
-        for axis, expected in (("X",4),("Y",5)):
+        for axis, expected in (("X",5),("Y",4)):
             feature = "Location_Center_%s"%(axis)
             self.assertTrue(feature in measurements.get_feature_names(TERTIARY))
             value = measurements.get_current_measurement(TERTIARY, feature)

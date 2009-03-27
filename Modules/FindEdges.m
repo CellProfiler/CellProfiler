@@ -92,6 +92,16 @@ function handles = FindEdges(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Settings for PyCP
+% The variables should be context-depedent, so only the appropriate settings appear if you select the corresponding edge-finding method.
+% Ratio- vars 6&7 are applicable
+% Sobel- vars 8&9
+% Prewitt-var 9
+% Roberts- var 8
+% LoG- var 10
+% Canny- vars 10&11
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

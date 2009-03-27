@@ -13,42 +13,68 @@ function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextT
 % $Revision$ 
 
 if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
-    idx = 1;
-    More = 'Yes';
-    while strcmp(More,'Yes')
-        SubDirectory = CPuigetdir(Pathname,'Choose Image Subfolder');
-        if SubDirectory == 0 %% User hit Cancel in uigetdir window
+    SelectDirType = CPquestdlg('Do you want to select directories using a dialog box, or entering a text list of directories?','Choose Image Subfolder','Dialog','Text','Cancel','Dialog');
+    switch SelectDirType
+        case 'Dialog'
+            idx = 1;
+            More = 'Yes';
+            while strcmp(More,'Yes')
+                SubDirectory = CPuigetdir(Pathname,'Choose Image Subfolder');
+                if SubDirectory == 0 %% User hit Cancel in uigetdir window
+                    error('Processing was stopped because the user chose Cancel');
+                end
+
+                % Check for duplicate directories
+                if idx > 1 && any(strcmp(SubDirectory, Directories))
+                    CPmsgbox(['This directory ' SubDirectory ' has already been selected.  Please choose another.'])
+                    continue
+                end
+
+                Directories{idx} = SubDirectory;
+
+                % Feedback for directories chosen
+                CPmsgbox(char(Directories), 'SubDirectories chosen:','help','replace');
+
+                % Make sure the selected directories all lie under the Default Image path
+                % Here, characters are treated like numbers in order to find where the 
+                % difference lies between the DefaultImage path and the selected
+                % path.
+                str = strvcat(Pathname,Directories{idx});
+                offset = find(str(1,:)-str(2,:),1,'first');
+                if offset < length(Pathname),
+                    CPwarndlg('All selected director(ies) must be located under the Default image folder. Please choose a different directory, or Cancel and then change the Default Image directory appropriately and try again.','Error in directory selection','replace');
+                else
+                  idx = idx + 1;
+                end
+                More = CPquestdlg('Do you want to choose another directory?');
+            end
+            switch More
+                case 'Cancel'
+                    error('Processing was stopped because the user chose Cancel');
+                case 'No'
+                    DirectoryText = strcat(char(Directories),pathsep); DirectoryText = DirectoryText'; DirectoryText = DirectoryText(:)';
+                    OutputPathname = handles.Current.DefaultOutputDirectory;
+                    OutputFilename = [mfilename,'_directorylist'];
+                    OutputExtension = '.txt';
+                    fid = fopen(fullfile(OutputPathname,[OutputFilename OutputExtension]),'wt+');
+                    if fid > 0,
+                        fprintf(fid,'%s',DirectoryText);
+                        fclose(fid);
+                    else
+                        error([mfilename,': Failed to open the output file for writing']);
+                    end
+                    CPmsgbox(['The directory list you entered was saved as ',[OutputFilename OutputExtension],' in the Default Output directory. Use this file if you want to process the same folders using the Text directory selection option']);
+            end
+        case 'Text'
+            Directories = CPinputdlg(['Enter the text string with the directories. Each path should be separated with a "',pathsep,'"'],'Enter Image Subfolders');
+            if isempty(Directories)
+                error('Processing was stopped because the user chose Cancel or entered no text.');
+            end
+            Directories = strread(Directories{:},'%s','delimiter',['',pathsep,'']);
+        case 'Cancel'
             error('Processing was stopped because the user chose Cancel');
-        end
-
-        %% Check for duplicate directories
-        if idx > 1 && any(strcmp(SubDirectory, Directories))
-            CPmsgbox(['This directory ' SubDirectory ' has already been selected.  Please choose another.'])
-            continue
-        end
-        
-        Directories{idx} = SubDirectory;
-        
-        %% Feedback for directories chosen
-        CPmsgbox(char(Directories), 'SubDirectories chosen:','help','replace');
- 
-        % Make sure the selected directories all lie under the Default Image path
-        % Here, characters are treated like numbers in order to find where the 
-        % difference lies between the DefaultImage path and the selected
-        % path.
-        str = strvcat(Pathname,Directories{idx});
-        offset = find(str(1,:)-str(2,:),1,'first');
-        if offset < length(Pathname),
-            CPwarndlg('All selected director(ies) must be located under the Default image folder. Please choose a different directory, or Cancel and then change the Default Image directory appropriately and try again.','Error in directory selection','replace');
-        else
-          idx = idx + 1;
-        end
-        More = CPquestdlg('Do you want to choose another directory?');
     end
-    if strcmp(More,'Cancel')
-        error('Processing was stopped because the user chose Cancel');
-    end
-
+    
     % Recurse selected subdirectories
     SelectedDirectoryTree = []; 
     for i = 1:length(Directories), 
@@ -64,10 +90,10 @@ elseif strncmpi(recurse,'Y',1) && ~isfield(handles.Pipeline,'PathNameSubFolders'
     handles.Pipeline.PathNameSubFolders = Directories;
     
 elseif isfield(handles.Pipeline,'PathNameSubFolders') && ~strcmpi(ImageOrMovie,'Both')
-    %% This is only used for multiple channels, so that Directories is set to PathNameSubFolders after the first channel
-    %% The 'Both' protection is used because CellProfiler.m, which just happens to be the only function that uses the 'Both' argument, 
-    %% runs a DefaultImageDirectory check which calls this subfn and
-    %% occurs before handles.Pipeline is cleared, so that PathNameSubFolders is still hanging around even after Analyze Images is clicked.
+    % This is only used for multiple channels, so that Directories is set to PathNameSubFolders after the first channel
+    % The 'Both' protection is used because CellProfiler.m, which just happens to be the only function that uses the 'Both' argument, 
+    % runs a DefaultImageDirectory check which calls this subfn and
+    % occurs before handles.Pipeline is cleared, so that PathNameSubFolders is still hanging around even after Analyze Images is clicked.
     Directories = handles.Pipeline.PathNameSubFolders;
 else
     Directories = {Pathname};
@@ -76,7 +102,7 @@ end
 FileNames = cell(0);
 Count = 1;
 
-%% Add feedback
+% Add feedback
 if strncmpi(recurse,'S',1) && isfield(handles.Pipeline,'PathNameSubFolders')
     hWait = CPwaitbar(0,'Loading files from multiple subdirectories, once for each channel...');
 end

@@ -46,6 +46,23 @@ function handles = SpeedUpCellProfiler(handles)
 %
 % $Revision$
 
+
+% MBray 2009_03_27: Comments on variables for pyCP upgrade
+%
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) Output files will be saved every Nth cycle (1,2,3...). What value of 
+%   N do want to use? Note: The output file is always saved after the first
+%   or last cycle is processed, regardless of N. (SaveWhen)
+% (2) Which image(s) do you want to remain in memory?
+% (3) What image(s) do you want to remove from memory?
+%
+% (i) A button should be added that lets the user add/subtract images for
+%   (1) and (2)
+% (ii) A user may want to remove a large set of images and leave only a 
+% few, or remove only a few images and leave a large set. Options (2) and (3)
+% give the user flexibility to choose which they want to do with the least
+% number of images.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

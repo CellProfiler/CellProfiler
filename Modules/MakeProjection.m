@@ -69,6 +69,17 @@ function handles = MakeProjection(handles)
 %%%%%%%%%%%%%%%%%
 drawnow
 
+% PyCP notes: The 4th variable is basically asking whether you want to do
+% this calculation during the first cycle (in which case the resulting
+% image will be available downstream in the pipeline) or whether you need
+% to let other processing proceed cycle-by-cycle in order to gather the raw
+% material for this module to do its thing, thus producing the final image
+% only at the end of the last cycle. So this should be more clear because
+% right now it seems like a weird question to ask the user where their
+% images are coming from - of course in the new PyCP we could just figure
+% this out automatically probably, but that's not exactly the point of the
+% question.
+
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = What did you call the images to be made into a projection?

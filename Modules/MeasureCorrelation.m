@@ -39,18 +39,24 @@ function handles = MeasureCorrelation(handles,varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) What images would you like use to measure pixel correlations? You must choose
-%   at least two. (ImageName{1}, ImageName{2})
-% A button should be added that lets the user add/substract images for (1),
-% but must have no less than 2 images.
+% (1) Between which images would you like to measure intensity correlations? (ImageName{1}, ImageName{2})
+% A button should be added that lets the user add/subtract images, but with
+% the first 2 images always required/always visible (having the first two
+% shown by default will make it clear that they have to choose a minimum of
+% two.
 %
-% (2) If you would like to measure pixel correlations within an object, what object 
-%   would you like to use? (ObjectName{1})
-%
-% (i) A button should be added that lets the user add/substract objects for (2)
-%   for the images in (1)
-% (ii) Setting (2) should default to a "Do not use" option.
-% (iii) A button should be added after (2) that lets the user add/substract
+% (2) Within which objects would you like to measure intensity correlations? (Intensity correlations will automatically be measured across the entire input images) (ObjectName{1})
+% [note: I added the word 'also' here; it implies that measuring
+% whole-image correlations is default, which I think is our intent - that
+% is, is there any reason to first ask the user whether they want to measure
+% whole-image correlations vs. per-object ones? Or just assume that
+% whole-image is a 'yes' (since it doesn't take that much time, presumably)
+% and ask about per-object here in (2)?
+% 
+% (i) A button should be added that lets the user add/subtract additional
+% objects.
+% (ii) Setting (2) should default to a "Do not measure correlations within objects" option.
+% (iii) A button should be added after (2) that lets the user add/subtract
 % images (and more asociated objects)
 
 %%%%%%%%%%%%%%%%%

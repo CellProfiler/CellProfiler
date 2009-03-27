@@ -130,6 +130,12 @@ function handles = CalculateStatistics(handles)
 % for additional details. (DataName)
 % (2) Would you like to log-transform the grouping values before fitting a
 % sigmoid curve? (Logarithmic)
+% [this q is only relevant if you have dose response data, not if you just
+% have positive/negative controls. I'm not sure whether it makes sense to
+% just ask the user whether they have dose vs pos/neg control samples. We
+% can figure it out from the data itself, but if it's dose data we need to
+% ask them these questions.
+%
 % (4) If you want to save the plotted dose response data for each feature
 % as an interactive figure in the default output folder, enter the filename 
 % here (.fig extension will be automatically added). Select "Do not use" to
@@ -142,6 +148,12 @@ function handles = CalculateStatistics(handles)
 % (ii) (4) assumes that figures aren't saveable on the cluster. I don't 
 % think this is the case in MATLAB and it may not be the case with Python
 % either.
+% (iii) The reason that this isn't just asking you to give the resulting
+% image a name (so you can use SaveImages to save it) is because saving
+% images to the handles structure doesn't allow saving all the GUI
+% elements that make this module so nice. But perhaps in Python we can save
+% both types of images (with/without GUI elements) to the handles
+% structure.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

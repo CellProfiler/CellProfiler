@@ -1,6 +1,5 @@
 function ispresent = CPisimageinpipeline(handles, fieldname)
-% Add images to the handles.Pipeline structure.
-% Location will be "handles.Pipeline.ImageName".
+% Check if images exist in handles.Pipeline structure.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

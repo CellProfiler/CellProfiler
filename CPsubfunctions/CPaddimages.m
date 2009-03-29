@@ -16,7 +16,7 @@ function handles = CPaddimages(handles, varargin)
 
 % Parse out varargin
 if mod(length(varargin),2) ~= 0 || ...
-   ~all(cellfun(@ischar,varargin(1:2:end)) & cellfun(@isnumeric,varargin(2:2:end)))
+   ~all(cellfun(@ischar,varargin(1:2:end)) & (cellfun(@isnumeric,varargin(2:2:end)) | cellfun(@islogical,varargin(2:2:end))))
     error('The argument list must be of the form: ''ImageName1'', ImageData1, etc');
 else
     ImageName = varargin(1:2:end);

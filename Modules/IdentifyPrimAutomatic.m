@@ -268,9 +268,9 @@ function handles = IdentifyPrimAutomatic(handles)
 % distance-transformed and object centers are defined as peaks in this
 % image. 
 %
-% * None (fastest option) - If objects are far apart and are very well
+% * Do not use (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped objects.
-% Using the 'None' option, a simple threshold will be used to identify
+% Using the 'Do not use' option, a simple threshold will be used to identify
 % objects. This will override any declumping method chosen in the next
 % question.
 %
@@ -284,9 +284,9 @@ function handles = IdentifyPrimAutomatic(handles)
 % cells need not be dimmer along the lines between clumped objects.
 % Technical description: watershed on the distance-transformed thresholded
 % image.
-% * None (fastest option) - If objects are far apart and are very well
+% * Do not use (fastest option) - If objects are far apart and are very well
 % separated, it may be unnecessary to attempt to separate clumped objects.
-% Using the 'None' option, the thresholded image will be used to identify
+% Using the 'Do not use' option, the thresholded image will be used to identify
 % objects. This will override any declumping method chosen in the above
 % question.
 %
@@ -466,14 +466,14 @@ pObject = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %choiceVAR11 = Shape
 %choiceVAR11 = Manual
 %choiceVAR11 = Manual_for_IdSecondary
-%choiceVAR11 = None
+%choiceVAR11 = Do not use
 OriginalLocalMaximaType = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
 %textVAR12 =  Method to draw dividing lines between clumped objects (see help for details):
 %choiceVAR12 = Intensity
 %choiceVAR12 = Distance
-%choiceVAR12 = None
+%choiceVAR12 = Do not use
 OriginalWatershedTransformImageType = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
@@ -629,7 +629,7 @@ end
 %%% Sets up loop for test mode.
 if strcmp(TestMode,'Yes')
     LocalMaximaTypeList = {'Intensity' 'Shape'};
-    WatershedTransformImageTypeList = {'Intensity' 'Distance' 'None'};
+    WatershedTransformImageTypeList = {'Intensity' 'Distance' 'Do not use'};
 else
     %%% Not looping, but use code for looping below.
     LocalMaximaTypeList = {OriginalLocalMaximaType};
@@ -690,7 +690,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 
             %%% STEP 2. If user wants, extract local maxima (of intensity or distance) and apply watershed transform
             %%% to separate neighboring objects.
-            if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
+            if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'Do not use') %#ok Ignore MLint
 
                 %%% Smooth images for maxima suppression
                 if strcmpi(SizeOfSmoothingFilter,'Automatic')
@@ -1028,7 +1028,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
         %%%%%%%%%%%%%%%%%%%%%%%
         drawnow
 
-        if strcmp(OriginalLocalMaximaType,'None') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
+        if strcmp(OriginalLocalMaximaType,'Do not use') || (strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType))
 
             if strcmp(LaplaceValues,'Do not use')
                 %%% Indicate objects in original image and color excluded objects in red
@@ -1099,7 +1099,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     n = n+1;
                     uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04*n posx(3)+0.1 0.04],'tag','TextUIControl',...
                         'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('%0.1f%% of image consists of objects',ObjectCoverage),'FontSize',handles.Preferences.FontSize);
-                    if ~strcmp(LocalMaximaType,'None') & ~strcmp(WatershedTransformImageType,'None') %#ok Ignore MLint
+                    if ~strcmp(LocalMaximaType,'Do not use') & ~strcmp(WatershedTransformImageType,'Do not use') %#ok Ignore MLint
                         n = n+2;
                         uicontrol(ThisModuleFigureNumber,'Style','Text','Units','Normalized','Position',[posx(1)-0.05 posy(2)+posy(4)-0.04*n posx(3)+0.1 0.04],'tag','TextUIControl',...
                             'BackgroundColor',bgcolor,'HorizontalAlignment','Left','String',sprintf('Smoothing filter size:  %0.1f',SizeOfSmoothingFilter),'FontSize',handles.Preferences.FontSize);
@@ -1241,7 +1241,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     CPfigure(handles,'Image',IdPrimTestModeSegmentedFigureNumber);
                     set(IdPrimTestModeSegmentedFigureNumber,'Tag','IdPrimTestModeSegmentedFigure',...
                         'name','IdentifyPrimAutomatic Test Objects Display, cycle # ');
-                    uicontrol(IdPrimTestModeSegmentedFigureNumber,'style','text','units','normalized','string','Identified objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
+                    uicontrol(IdPrimTestModeSegmentedFigureNumber,'style','text','units','normalized','string','Identified objects are shown here. Note: Choosing "Do not use" for either option will result in the same image, therefore only the Intensity and "Do not use" option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9])
                 end
                 %%% If the figure window DOES exist now, then calculate and display items
                 %%% in it.
@@ -1265,7 +1265,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     CPfigure(handles,'Image',IdPrimTestModeOutlinedFigureNumber);
                     set(IdPrimTestModeOutlinedFigureNumber,'Tag','IdPrimTestModeOutlinedFigure',...
                         'name','IdentifyPrimAutomatic Test Outlines Display, cycle # ');
-                    uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "None" for either option will result in the same image, therefore only the Intensity and None option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
+                    uicontrol(IdPrimTestModeOutlinedFigureNumber,'style','text','units','normalized','string','Outlined objects are shown here. Note: Choosing "Do not use" for either option will result in the same image, therefore only the Intensity and "Do not use" option has been shown.','position',[.65 .1 .3 .4],'BackgroundColor',[.7 .7 .9]);
                 end
 
                 if ~isempty(IdPrimTestModeOutlinedFigureNumber)

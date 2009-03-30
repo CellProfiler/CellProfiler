@@ -248,17 +248,17 @@ if strcmp(ObjectChoice,'Primary')
     %%% Saves the segmented image, not edited for objects along the edges or
     %%% for size, to the handles structure.
     fieldname = ['UneditedSegmented',ShrunkenObjectName];
-    handles.Pipeline.(fieldname) = FinalShrunkenUneditedSegmentedImage;
+    handles = CPaddimages(handles,fieldname,FinalShrunkenUneditedSegmentedImage);
 
     %%% Saves the segmented image, only edited for small objects, to the
     %%% handles structure.
     fieldname = ['SmallRemovedSegmented',ShrunkenObjectName];
-    handles.Pipeline.(fieldname) = FinalShrunkenSmallRemovedSegmentedImage;
+    handles = CPaddimages(handles,fieldname,FinalShrunkenSmallRemovedSegmentedImage);
 end
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',ShrunkenObjectName];
-handles.Pipeline.(fieldname) = FinalShrunkenSegmentedImage;
+handles = CPaddimages(handles,fieldname,FinalShrunkenSegmentedImage);
 
 if ~strcmpi(SaveOutlines,'Do not use')
     %%% Calculates object outlines
@@ -269,7 +269,7 @@ if ~strcmpi(SaveOutlines,'Do not use')
     warning off MATLAB:conversionToLogical
     LogicalOutlines = logical(IntensityOutlines);
     warning on MATLAB:conversionToLogical
-    handles.Pipeline.(SaveOutlines) = LogicalOutlines;
+    handles = CPaddimages(handles,SaveOutlines,LogicalOutlines);
 end
 
 handles = CPsaveObjectCount(handles, ShrunkenObjectName, FinalShrunkenSegmentedImage);

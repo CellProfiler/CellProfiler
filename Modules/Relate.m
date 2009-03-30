@@ -134,7 +134,7 @@ if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
 
     for thisParent = ParentName %% Will need to change if we add more StepParents
         % Calculate perimeters for all parents simultaneously
-        DistTransAll = CPlabelperim(handles.Pipeline.(['Segmented' thisParent{1}]));
+        DistTransAll = CPlabelperim((CPretrieveimage(handles,['Segmented' thisParent{1}],ModuleName)));
         Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
         if max(ParentsOfChildren) > 0,
             for iParentsOfChildren = 1:max(ParentsOfChildren)
@@ -232,7 +232,7 @@ if any(findobj == ThisModuleFigureNumber)
     fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
     
-    %%% Default image
+    %% Default image
     CPimagesc(ColoredNewObjectParentLabelMatrix,handles,ThisModuleFigureNumber);
     title('New Sub Objects')
     
@@ -245,7 +245,7 @@ if any(findobj == ThisModuleFigureNumber)
     ud(2).title = ['Original Sub Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     ud(3).title = ['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
 
-    %%% Construct uicontrol text, accounting for possible StepParents
+    % Construct uicontrol text, accounting for possible StepParents
     if ~exist('StepParentObjectLabelMatrix','var')
         str = 'New Sub Objects|Original Sub Objects|Parent Objects';
     else
@@ -255,7 +255,7 @@ if any(findobj == ThisModuleFigureNumber)
         ud(4).title = ['StepParent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     end
     
-    %%% uicontrol for displaying multiple images
+    % Uicontrol for displaying multiple images
     uicontrol(fig_h, 'Style', 'popup',...
         'String', str,...
         'UserData',ud,...
@@ -274,4 +274,4 @@ drawnow
 %%% The label matrix image is saved to the handles structure so it can be
 %%% used by subsequent modules.
 ColoredNewObjectParentLabelMatrixName = [ParentName{1} '_' SubObjectName];
-handles.Pipeline.(ColoredNewObjectParentLabelMatrixName) = ColoredNewObjectParentLabelMatrix;
+handles = CPaddimages(handles,ColoredNewObjectParentLabelMatrixName,ColoredNewObjectParentLabelMatrix);

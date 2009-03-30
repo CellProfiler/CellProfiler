@@ -298,4 +298,4 @@ handles = CPaddmeasurements(handles, 'Image', ...
 			    CPjoinstrings('AreaOccupied','ThresholdUsed',StainName), mean(Threshold(:)));
 
 %%% Save the thresholded image in handles.Pipeline for later use.
-handles.Pipeline.(StainName) = ThresholdedOrigImage;
+handles = CPaddimages(handles,StainName,ThresholdedOrigImage);

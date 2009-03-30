@@ -94,7 +94,9 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
+%LabelMatrixImage = handles.Pipeline.(['Segmented' ObjectName]);
+LabelMatrixImage = CPretrieveimage(handles,['Segmented',ObjectName],ModuleName);
+
 if strcmp(ImageMode,'Binary (black & white)')
     Image = logical(LabelMatrixImage ~= 0);
 elseif strcmp(ImageMode,'Grayscale')
@@ -140,6 +142,5 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% SAVE DATA TO HANDLES STRUCTURE %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-handles.Pipeline.(ImageName) = Image;
+drawnow;
+handles = CPaddimages(handles,ImageName,Image);

@@ -261,4 +261,4 @@ drawnow
 
 %%% The Rescaled image is saved to the handles structure so it can be
 %%% used by subsequent modules.
-handles.Pipeline.(RescaledImageName) = RescaledImage;
+handles = CPaddimages(handles,RescaledImageName,RescaledImage);

@@ -301,7 +301,7 @@ drawnow
 
 %%% Saves the averaged image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(ImageName) = ProjectionImage;
+handles = CPaddimages(handles,ImageName,ProjectionImage);
 handles = CPaddmeasurements(handles, 'Image', ...
 				['FileName_', ImageName], DirPath);
 handles = CPaddmeasurements(handles, 'Image', ...

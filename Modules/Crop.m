@@ -222,13 +222,13 @@ if RecalculateFlag == 1
 
     if ~strcmp(Shape,'Ellipse') && ~strcmp(Shape,'Rectangle')
         if strcmp(PlateFix,'Yes')
-            try BinaryCropImage = handles.Pipeline.(Shape);
+            try BinaryCropImage = CPretrieveimage(handles,Shape,ModuleName);
             catch
                 fieldname = ['Segmented',Shape];
-                try BinaryCropImage = handles.Pipeline.(fieldname);
+                try BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);
                 catch
                     fieldname = ['Cropping',Shape];
-                    try BinaryCropImage = handles.Pipeline.(fieldname);
+                    try BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);
                     catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end
@@ -311,18 +311,18 @@ if RecalculateFlag == 1
         else
             CropFromObjectFlag = 1;
             try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,Shape,ModuleName,RemoveRowsAndColumns);
-                handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
+                handles = CPaddimages(handles,['CropMask' CroppedImageName],BinaryCropMaskImage);
             catch
                 try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Segmented',Shape],ModuleName,RemoveRowsAndColumns);
-                    handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
+                    handles = CPaddimages(handles,['CropMask' CroppedImageName],BinaryCropMaskImage);
                 catch
                     try [handles, CroppedImage, BinaryCropImage,BinaryCropMaskImage] = CropImageBasedOnMaskInHandles(handles,OrigImage,['Cropping',Shape],ModuleName,RemoveRowsAndColumns);
-                        handles.Pipeline.(['CropMask' CroppedImageName]) = BinaryCropMaskImage;
+                        handles = CPaddimages(handles,['CropMask' CroppedImageName],BinaryCropMaskImage);
                     catch error(['Image processing was canceled in the ', ModuleName, ' module because the image to be used for cropping cannot be found.']);
                     end
                 end
             end
-            handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+            handles = CPaddimages(handles,['Cropping' CroppedImageName],BinaryCropImage);
         end
     end
 
@@ -409,7 +409,7 @@ if RecalculateFlag == 1
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
-        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+        handles = CPaddimages(handles,['Cropping' CroppedImageName],BinaryCropImage);
         [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles,OrigImage,CroppedImageName,ModuleName,RemoveRowsAndColumns);
     elseif strcmp(Shape,'Rectangle')
         if strcmp(CropMethod,'Coordinates')
@@ -475,7 +475,7 @@ if RecalculateFlag == 1
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because your entry for the cropping method is not recognized']);
         end
-        handles.Pipeline.(['Cropping' CroppedImageName]) = BinaryCropImage;
+        handles = CPaddimages(handles,['Cropping' CroppedImageName],BinaryCropImage);
         [handles, CroppedImage, BinaryCropImage,Ignore] = CropImageBasedOnMaskInHandles(handles, OrigImage,CroppedImageName, ModuleName,RemoveRowsAndColumns);
     end
     %%% See subfunction below.
@@ -511,7 +511,7 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(CroppedImageName) = CroppedImage;
+handles = CPaddimages(handles,CroppedImageName,CroppedImage);
 
 %%% Saves the amount of cropping in case it is useful.
 %%% Retrieves the pixel size that the user entered (micrometers per pixel).
@@ -580,5 +580,4 @@ if isempty(CroppedImage)
     CroppedImage = 0;
     BinaryCropMaskImage = 0;
 end
-fieldname = ['CropMask',CroppedImageName];
-handles.Pipeline.(fieldname) = BinaryCropMaskImage;
+handles = CPaddimages(handles,['CropMask',CroppedImageName],BinaryCropMaskImage);

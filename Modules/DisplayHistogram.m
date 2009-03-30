@@ -429,4 +429,4 @@ tempData.handles = rmfield(handles,'Pipeline');
 tempData.Application = 'CellProfiler';
 set(HistHandle,'UserData',tempData);
 FigureShot = CPimcapture(HistHandle); %% using defaults of whole figure and 150 dpi
-handles.Pipeline.(HistImage)=FigureShot;
+handles = CPaddimages(handles,HistImage,FigureShot);

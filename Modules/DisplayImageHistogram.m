@@ -96,7 +96,7 @@ drawnow
 %%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-OrigImage=handles.Pipeline.(ImageName);
+OrigImage = CPretrieveimage(handles,ImageName,ModuleName);
 
 if strcmp(LogOption,'Yes')
     OrigImage(OrigImage == 0) = min(OrigImage(OrigImage > 0));
@@ -143,4 +143,4 @@ end
 
 %%% Store into handles structure
 FigureShot = CPimcapture(HistHandle); %% using defaults of whole figure and 150 dpi
-handles.Pipeline.(HistImage)=FigureShot;
+handles = CPaddimages(handles,HistImage,FigureShot);

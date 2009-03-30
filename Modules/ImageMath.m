@@ -322,4 +322,4 @@ end
 drawnow
 
 % Saves the processed image to the handles structure.
-handles.Pipeline.(ImageAfterMathName) = ImageAfterMath;
+handles = CPaddimages(handles,ImageAfterMathName,ImageAfterMath);

@@ -237,4 +237,4 @@ handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('IntensityToShift',I
 
 % Saves the corrected image to the handles structure so it can be used by
 % subsequent modules.
-handles.Pipeline.(CorrectedImageName) = CorrectedImage;
+handles = CPaddimages(handles,CorrectedImageName,CorrectedImage);

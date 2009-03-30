@@ -365,16 +365,15 @@ drawnow
 
 % Saves the adjusted image to the handles structure so it can be used
 % by subsequent modules.
-handles.Pipeline.(AlignedImage1Name) = AlignedImage1;
-handles.Pipeline.(AlignedImage2Name) = AlignedImage2;
+handles = CPaddimages(handles,AlignedImage1Name,AlignedImage1,AlignedImage2Name,AlignedImage2);
 if ~strcmpi(MoreImage1Name,'Do not use')
-    handles.Pipeline.(MoreAlignedImage1Name) = MoreAlignedImage1;
+    handles = CPaddimages(handles,MoreAlignedImage1Name,MoreAlignedImage1);
 end
 if ~strcmpi(MoreImage2Name,'Do not use')
-    handles.Pipeline.(MoreAlignedImage2Name) = MoreAlignedImage2;
+    handles = CPaddimages(handles,MoreAlignedImage2Name,MoreAlignedImage2);
 end
 if AreThereThreeInputImages
-    handles.Pipeline.(AlignedImage3Name) = AlignedImage3;
+    handles = CPaddimages(handles,AlignedImage3Name,AlignedImage3);
 end
 
 % Stores the shift in alignment as a measurement. We store the image

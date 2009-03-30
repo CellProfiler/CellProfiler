@@ -244,4 +244,4 @@ drawnow
 
 % Saves the adjusted image to the handles structure so it can be used by
 % subsequent modules.
-handles.Pipeline.(RGBImageName) = RGBImage;
+handles = CPaddimages(handles,RGBImageName,RGBImage);

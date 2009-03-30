@@ -364,4 +364,4 @@ end
 handles = CPaddmeasurements(handles, 'Image', ['Rotation_', ImageName], ...
 			    AngleToRotateDegrees);
 
-handles.Pipeline.(OutputName) = RotatedImage;
+handles = CPaddimages(handles,OutputName,RotatedImage);

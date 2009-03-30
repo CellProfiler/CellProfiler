@@ -350,7 +350,8 @@ drawnow
 
 %%% Saves the adjusted image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(OutputName) = double(EdgedImage);
+handles = CPaddimages(handles,OutputName,double(EdgedImage));
+
 if ~strcmpi(Method,'ratio') || ~strcmpi(BinaryOrGray,'Grayscale')
     if strcmpi(Method,'canny')        
         handles = CPaddmeasurements(handles,'Image',CPjoinstrings('Edges','OrigThreshold',OutputName),ThresholdUsed(1));

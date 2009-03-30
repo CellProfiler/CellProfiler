@@ -813,7 +813,7 @@ for n = 1:length(ImageName)
             %%% batch.
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
+            handles = CPaddimages(handles,ImageName{n},LoadedImage);
         catch
             CPerrorImread(ModuleName, n);
         end % Goes with: catch
@@ -822,7 +822,7 @@ for n = 1:length(ImageName)
         FileNames(n) = CurrentFileName(1);
         
         % Record the image size
-        ImageSizes{n} = size(handles.Pipeline.(ImageName{n}));
+        ImageSizes{n} = size(CPretrieveimage(handles,ImageName{n},ModuleName));
     else
         %%% This try/catch will catch any problems in the load movies module.
         try
@@ -868,7 +868,7 @@ for n = 1:length(ImageName)
             %%% appropriately based on the user's input, and put into the Pipeline
             %%% substructure so it will be deleted at the end of the analysis batch.
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = {CurrentFileNameWithFrame};
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
+            handles = CPaddimages(handles,ImageName{n},LoadedImage);
         catch 
             CPerrorImread(ModuleName, n);
         end % Goes with: catch
@@ -886,7 +886,7 @@ if strcmp(ImageOrMovie,'Image')
         else
             % If there are siblings, create a zero matrix with the same size
             % in place of the missing file
-            handles.Pipeline.(ImageName{MissingFileIdx}) = zeros(uniqueImageSize);
+            handles = CPaddimages(handles,ImageName{MissingFileIdx},zeros(uniqueImageSize));
         end
     end
 end

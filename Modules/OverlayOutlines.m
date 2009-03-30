@@ -161,5 +161,5 @@ end
 drawnow
 
 if ~strcmp(SavedImageName,'Do not use')
-    handles.Pipeline.(SavedImageName) = NewImage;
+    handles = CPaddimages(handles,SavedImageName,NewImage);
 end

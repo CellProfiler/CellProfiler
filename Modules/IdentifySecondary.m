@@ -760,7 +760,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% Saves the final, segmented label matrix image of secondary objects to
         %%% the handles structure so it can be used by subsequent modules.
         fieldname = ['Segmented',SecondaryObjectName];
-        handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+        handles = CPaddimages(handles,fieldname,FinalLabelMatrixImage);
 
         if strcmp(IdentChoice,'Propagation')
             % Save the Threshold value to the handles structure.
@@ -790,7 +790,7 @@ for IdentChoiceNumber = 1:length(IdentChoiceList)
         %%% drive, if the user requested.
         try
             if ~strcmpi(SaveOutlines,'Do not use')
-                handles.Pipeline.(SaveOutlines) = LogicalOutlines;
+                handles = CPaddimages(handles,SaveOutlines,LogicalOutlines);
             end
         catch
             error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])

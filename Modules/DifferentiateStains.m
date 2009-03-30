@@ -205,7 +205,8 @@ end
 %%% SAVE IMAGES %%%
 %%%%%%%%%%%%%%%%%%%
 
-[handles.Pipeline.(Stain1Name),handles.Pipeline.(Stain2Name)] = split_images(data);
+[Stain1Image,Stain2Image] = split_images(data);
+handles = CPaddimages(handles,Stain1Name,Stain1Image,Stain2Name,Stain2Image);
 
 function OkPressed(hObject, event)
 data = guidata(hObject);

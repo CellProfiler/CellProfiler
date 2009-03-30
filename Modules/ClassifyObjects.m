@@ -442,7 +442,7 @@ if ~strcmpi(SaveColoredObjects,'Do not use')
     end
     % Saves images to the handles structure so they can be saved to the hard
     % drive, if the user requests.
-    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
+    handles = CPaddimages(handles,SaveColoredObjects,QuantizedRGBimage);
 end
 
 % Save FeatureNames and the indices of the objects that fall into each

@@ -358,7 +358,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                 error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module.'])
             end
         end
-        Image = handles.Pipeline.(ImageName);
+        Image = CPretrieveimage(handles,ImageName,ModuleName);
         if max(Image(:)) > 1 || min(Image(:)) < 0
             % Warn the users that the value is being changed.
             % Outside 0-1 RangeWarning Box

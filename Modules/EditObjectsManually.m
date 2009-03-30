@@ -190,9 +190,9 @@ end
 
 for imgstruct =OutputImages
     if strcmp(RenumberOrRetain,'Renumber')
-        handles.Pipeline.(imgstruct.fieldname) = bwlabel(imgstruct.image);
+        handles = CPaddimages(handles,imgstruct.fieldname,bwlabel(imgstruct.image));
     else
-        handles.Pipeline.(imgstruct.fieldname) = imgstruct.image;
+        handles = CPaddimages(handles,imgstruct.fieldname,imgstruct.image);
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

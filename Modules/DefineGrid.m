@@ -640,5 +640,5 @@ handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridNa
 handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('DefinedGrid',GridName,'RowsOrColumnsNum'), RowsOrColumnsNum);
 
 if ~strcmpi(RGBname,'Do not use')
-    handles.Pipeline.(RGBname) = ColorImage;
+    handles = CPaddimages(handles,RGBname,ColorImage);
 end

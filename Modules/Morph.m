@@ -236,7 +236,7 @@ FunctionVariables{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-%% Remove unused settings
+% Remove unused settings
 idx = strcmp(Functions,'Do not use');
 Functions = Functions(~idx);
 FunctionVariables = FunctionVariables(~idx);
@@ -315,4 +315,4 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(MorphImageName) = Images{end};
+handles = CPaddimages(handles,MorphImageName,Images{end});

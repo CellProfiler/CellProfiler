@@ -201,7 +201,7 @@ if handles.Current.SetBeingAnalyzed == 1
         NewFileList = flipud(NewFileList);
     end
 
-    LoadedImage = handles.Pipeline.(ImageName);
+    LoadedImage = CPretrieveimage(handles,ImageName,ModuleName);
     ImageSize = size(imresize(LoadedImage,SizeChange));
     ImageHeight = ImageSize(1);
     ImageWidth = ImageSize(2);
@@ -231,7 +231,7 @@ NumberColumns = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModu
 NumberRows = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NumberRows;
 NewFileList = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).NewFileList;
 
-CurrentImage = handles.Pipeline.(ImageName);
+CurrentImage = CPretrieveimage(handles,ImageName,ModuleName);
 if SizeChange ~= 1
     CurrentImage = imresize(CurrentImage,SizeChange);
 end
@@ -545,7 +545,8 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
 
     %%% Saves the tiled image to the handles structure so it can be used by
     %%% subsequent modules.
-    handles.Pipeline.(TiledImageName) = handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage;
+    handles = CPaddimages(handles,TiledImageName,...
+                handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage);
 else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)

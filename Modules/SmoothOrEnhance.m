@@ -247,7 +247,7 @@ drawnow
 
 %%% Saves the processed image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(SmoothedImageName) = SmoothedImage;
+handles = CPaddimages(handles,SmoothedImageName,SmoothedImage);
 
 function MAD = ImageMAD(Image)
     GradientImage = Image(:,1:end-1)-Image(:,2:end);

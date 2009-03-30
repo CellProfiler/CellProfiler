@@ -310,7 +310,7 @@ ReadyFlag = 'Not Ready';
 MaskFieldname = ['CropMask', ImageName];
 HasMask = isfield(handles.Pipeline,MaskFieldname);
 if HasMask
-	MaskImage = handles.Pipeline.(MaskFieldname);
+    MaskImage = CPretrieveimage(handles,MaskFieldname,ModuleName);
 end
 
 if strcmp(EachOrAll,'All')
@@ -372,11 +372,12 @@ if strcmp(EachOrAll,'All')
                 if handles.Current.SetBeingAnalyzed == 1
                     % Creates the empty variable so it can be retrieved later
                     % without causing an error on the first cycle.
-                    handles.Pipeline.(IlluminationImageName) = zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero)));
+                    handles = CPaddimages(handles,IlluminationImageName,...
+                        zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero))));
                 end
                 % Retrieves the existing illumination image, as accumulated so
                 % far.
-                SumMiniIlluminationImage = handles.Pipeline.(IlluminationImageName);
+                SumMiniIlluminationImage = CPretrieveimage(handles,IlluminationImageName,ModuleName);
                 % Adds the current image to it.
                 SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero);
                 % If the last cycle has just been processed, indicate that
@@ -403,7 +404,7 @@ elseif strcmp(EachOrAll,'Each')
         if HasMask
             %%% Retrieves previously selected cropping mask from handles
             %%% structure.
-            MaskImage = handles.Pipeline.(MaskFieldname);
+            MaskImage = CPretrieveimage(handles,MaskFieldname,ModuleName);
             RawImage = RawImage .* MaskImage;
         end
 
@@ -706,7 +707,7 @@ drawnow
 % after every cycle is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && handles.Current.SetBeingAnalyzed == 1)
     if strcmp(ReadyFlag, 'Ready') == 1
-        handles.Pipeline.(IlluminationImageName) = FinalIlluminationFunction;
+        handles = CPaddimages(handles,IlluminationImageName,FinalIlluminationFunction);
     end
     if strcmp(IntensityChoice,'Regular')
         % Whether these images exist depends on whether the user has chosen
@@ -715,7 +716,7 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
             if strcmp(EachOrAll,'Each')
                 error(['Image processing was canceled in the ', ModuleName, ' module because you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.'])
             end
-            try handles.Pipeline.(AverageImageName) = RawImage;
+            try handles = CPaddimages(handles,AverageImageName,RawImage);
             catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the averaged image. This image can only be passed along if you choose to dilate.'])
             end
             % Saves the ready flag to the handles structure so it can be used by
@@ -724,7 +725,7 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
             handles.Pipeline.(fieldname) = ReadyFlag;
         end
         if ~strcmpi(DilatedImageName,'Do not use')
-            try handles.Pipeline.(DilatedImageName) = DilatedImage;
+            try handles = CPaddimages(handles,DilatedImageName,DilatedImage);
             catch error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the dilated image. This image can only be passed along if you choose to dilate.'])
             end
         end

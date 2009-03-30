@@ -98,7 +98,7 @@ drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',LargestObjectName];
-handles.Pipeline.(fieldname) = Largest;
+handles = CPaddimages(handles,fieldname,Largest);
 
 handles = CPsaveObjectCount(handles, LargestObjectName, Largest);
 handles = CPsaveObjectLocations(handles, LargestObjectName, Largest);

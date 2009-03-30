@@ -135,7 +135,7 @@ HorizLinesX = Grid.HorizLinesX;
 HorizLinesY = Grid.HorizLinesY;
 
 if strcmp(Shape,'Natural Shape') || strcmp(Shape,'Circle Natural Location') || strcmp(Shape,'Circle Forced Location') && strcmp(Diameter,'Automatic')
-    Image = handles.Pipeline.(['Segmented' OldObjectName]);
+    Image = CPretrieveimage(handles,['Segmented' OldObjectName],ModuleName);
 end
 
 if strmatch('Circle',Shape)
@@ -356,13 +356,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(['Segmented',NewObjectName]) = FinalLabelMatrixImage;
-handles.Pipeline.(['UneditedSegmented',NewObjectName]) = FinalLabelMatrixImage;
-handles.Pipeline.(['SmallRemovedSegmented',NewObjectName]) = FinalLabelMatrixImage;
+handles = CPaddimages(handles,  ['Segmented',NewObjectName],FinalLabelMatrixImage,...
+                                ['UneditedSegmented',NewObjectName],FinalLabelMatrixImage,...
+                                ['SmallRemovedSegmented',NewObjectName],FinalLabelMatrixImage);
 
 handles = CPsaveObjectCount(handles, NewObjectName, FinalLabelMatrixImage);
 handles = CPsaveObjectLocations(handles, NewObjectName, FinalLabelMatrixImage);
 
 if ~strcmpi(SaveOutlines,'Do not use')
-    handles.Pipeline.(SaveOutlines) = FinalOutline;
+    handles = CPaddimages(handles,SaveOutlines,FinalOutline);
 end

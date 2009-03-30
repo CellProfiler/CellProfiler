@@ -73,7 +73,7 @@ else
         %%% image has values above one, so we temporarily turn the warning
         %%% off.
         OrigWarnState = warning('off','MATLAB:conversionToLogical');
-        RetrievedCropMask = handles.Pipeline.(fieldname);
+        RetrievedCropMask = CPretrieveimage(handles,fieldname,ModuleName);
         RetrievedBinaryCropMask = logical(RetrievedCropMask);
         warning(OrigWarnState);
         %%% Handle the case where there are no pixels on in the mask, in

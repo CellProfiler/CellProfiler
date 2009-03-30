@@ -102,7 +102,7 @@ if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
     try 
-        im(~(handles.Pipeline.(fieldname))) = 0;
+        im(~CPretrieveimage(handles,fieldname,ModuleName)) = 0;
     catch
         error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
     end
@@ -169,7 +169,7 @@ prefixes = {'Segmented', 'SmallRemovedSegmented'};
 for i=1:length(prefixes)
   prefix = prefixes{i};
   fieldname = [prefix, ObjectName];
-  handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+  handles = CPaddimages(handles,fieldname,FinalLabelMatrixImage);
 end
 
 handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);

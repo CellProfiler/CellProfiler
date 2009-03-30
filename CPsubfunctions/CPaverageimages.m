@@ -105,14 +105,14 @@ elseif strcmpi(Mode,'Accumulate') == 1
             error(['Image processing was canceled because the average function (which is used by the Average and Correct Illumination modules) could not find the input image.  CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the average function.'])
         end
         %%% Retrieves the current image.
-        OrigImage = handles.Pipeline.(fieldname);
+        OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
         %%% Creates the empty variable so it can be retrieved later
         %%% without causing an error on the first image set.
-        handles.Pipeline.(ProjectionImageName) = zeros(size(OrigImage));
-        handles.Pipeline.(MaskCountImageName) = zeros(size(OrigImage));
+        handles = CPaddimages(handles,  ProjectionImageName,zeros(size(OrigImage)),...
+                                        MaskCountImageName,zeros(size(OrigImage)));
     end
     %%% Retrieves the current image.
-    OrigImage = handles.Pipeline.(fieldname);
+    OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
     %%% Checks that the original image is two-dimensional (i.e. not a
     %%% color image), which would disrupt several of the image
     %%% functions.
@@ -121,13 +121,15 @@ elseif strcmpi(Mode,'Accumulate') == 1
     end
     %%% Retrieves the existing projection image, as accumulated so
     %%% far.
-    ProjectedImage = handles.Pipeline.(ProjectionImageName);
+    ProjectedImage = CPretrieveimage(handles,ProjectionImageName,ModuleName);
     if has_mask
-        mask = handles.Pipeline.(mask_fieldname);
+        mask = CPretrieveimage(handles,mask_fieldname,ModuleName); 
         OutputImage = ProjectedImage + OrigImage .* mask;
-        handles.Pipeline.(MaskCountImageName) = handles.Pipeline.(MaskCountImageName)+mask;
-        MaskImage = (handles.Pipeline.(MaskCountImageName) > 0);
-        OutputImage = OutputImage./max(handles.Pipeline.(MaskCountImageName),1);
+        MaskCountImage = CPretrieveimage(handles,MaskCountImageName,ModuleName);
+        MaskCountImage = MaskCountImage + mask;
+        MaskImage = MaskCountImage > 0;
+        OutputImage = OutputImage./max(MaskCountImage,1);
+        handles = CPaddimages(handles,MaskCountImageName,MaskCountImage);
         if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
             %%% Divides by the total number of images in order to average.
             ReadyFlag = 'Ready';
@@ -147,5 +149,5 @@ elseif strcmpi(Mode,'Accumulate') == 1
         end
     end
     %%% Saves the updated projection image to the handles structure.
-    handles.Pipeline.(ProjectionImageName) = OutputImage;
+    handles = CPaddimages(handles,ProjectionImageName,OutputImage);
 end

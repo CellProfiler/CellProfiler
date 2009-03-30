@@ -193,12 +193,11 @@ drawnow
 if strcmp(GrayOrSplit,'Combine')
     %%% Saves the Grayscaled image to the handles structure so it can be
     %%% used by subsequent modules.
-    fieldname = GrayscaleImageName;
-    handles.Pipeline.(fieldname) = GrayscaleImage;
+    handles = CPaddimages(handles,GrayscaleImageName,GrayscaleImage);
 elseif strcmp(GrayOrSplit,'Split')
     %%% Saves the adjusted image to the handles structure so it can be used by
     %%% subsequent modules.
-    handles.Pipeline.(RedImageName) = RedImage;
-    handles.Pipeline.(GreenImageName) = GreenImage;
-    handles.Pipeline.(BlueImageName) = BlueImage;
+    handles = CPaddimages(handles,  RedImageName,RedImage,...
+                                    GreenImageName,GreenImage,...
+                                    BlueImageName,BlueImage);
 end

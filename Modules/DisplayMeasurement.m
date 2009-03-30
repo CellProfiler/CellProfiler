@@ -172,10 +172,10 @@ end
 %%% DISPLAY %%%
 %%%%%%%%%%%%%%%
 drawnow
-%% Handle the case where Cancel button was pushed.  This results in the
-%% Renderer being set to 'None' and will throw an error in CPimcapture
-%% if not handled here.
+% Handle the case where Cancel button was pushed.  This results in the
+% Renderer being set to 'None' and will throw an error in CPimcapture
+% if not handled here.
 if ~strcmp(get(FigHandle,'renderer'),'None')
     FigureShot = CPimcapture(FigHandle); %% using defaults of whole figure and 150 dpi
-    handles.Pipeline.(PlotImage)=FigureShot;
+    handles = CPaddimages(handles,PlotImage,FigureShot);
 end

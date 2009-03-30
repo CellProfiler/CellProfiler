@@ -66,19 +66,19 @@ InvertMask = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%%%%%%%%%%%%%%%
 
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
-ObjectLabelMatrix = handles.Pipeline.(['Segmented',ObjectName]);
+ObjectLabelMatrix = CPretrieveimage(handles,['Segmented',ObjectName],ModuleName);
 CropMask = ObjectLabelMatrix>0;
 
 if strcmp(InvertMask,'Yes')
     CropMask = ~CropMask;
 end
 
-%% Respect previous MaskImage modules
+% Respect previous MaskImage modules
 fieldname = ['CropMask', ImageName];
 if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
-    BinaryCropImage = handles.Pipeline.(fieldname);
+    BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName):
     try 
         CropMask = CropMask & BinaryCropImage;
     catch
@@ -121,5 +121,5 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(MaskedImageName)=MaskedImage;
-handles.Pipeline.(['CropMask',MaskedImageName])=CropMask;
+handles = CPaddimages(handles,  MaskedImageName,MaskedImage,...
+                                ['CropMask',MaskedImageName],CropMask);

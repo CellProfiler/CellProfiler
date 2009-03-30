@@ -131,7 +131,7 @@ end
 % Save measurements for the 'Segmented' objects only, so as to agree
 % with IdentifyPrimaryAuto.
 fieldName = ['Segmented', RelabeledObjectName];
-labels = handles.Pipeline.(fieldName);
+labels = CPretrieveimage(handles,fieldName,ModuleName);
 handles = CPsaveObjectCount(handles, RelabeledObjectName, labels);
 handles = CPsaveObjectLocations(handles, RelabeledObjectName, labels);
 
@@ -237,12 +237,14 @@ if strcmp(RelabelOption, 'Unify')
   Relabeled = CPrelabelDensely(Relabeled);
 end
 
-%%% SAVE DATA TO HANDLES STRUCTURE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SAVE DATA TO HANDLES STRUCTURE %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
 %%% Saves the label matrix image to the handles structure.
 fieldName = [prefix, RelabeledObjectName];
-handles.Pipeline.(fieldName) = Relabeled;
+handles = CPaddimages(handles,fieldName,Relabeled);
 
 %%%
 %%% Subfunction

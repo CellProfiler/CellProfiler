@@ -227,12 +227,12 @@ drawnow
 
 %%% Saves the final segmented label matrix image to the handles structure.
 fieldname = ['Segmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewSegmentedObjectImage;
+handles = CPaddimages(handles,fieldname,NewSegmentedObjectImage);
 
 %%% Saves images to the handles structure so they can be saved to the hard
 %%% drive, if the user requested.
 if ~strcmp(SaveOutlines,'Do not use')
-    try    handles.Pipeline.(SaveOutlines) = PrimaryObjectOutlines;
+    try    handles = CPaddimages(handles,SaveOutlines,PrimaryObjectOutlines);
     catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end
 end
@@ -240,16 +240,16 @@ end
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
 if exist('NewUneditedSegmentedObjectImage','var') == 1
-%%% Saves the segmented image, not edited for objects along the edges or
-%%% for size, to the handles structure.
-fieldname = ['UneditedSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewUneditedSegmentedObjectImage;
+    %%% Saves the segmented image, not edited for objects along the edges or
+    %%% for size, to the handles structure.
+    fieldname = ['UneditedSegmented',RemainingObjectName];
+    handles = CPaddimages(handles,fieldname,NewUneditedSegmentedObjectImage);
 end
 if exist('NewSmallRemovedSegmentedObjectImage','var') == 1
-%%% Saves the segmented image, only edited for small objects, to the
-%%% handles structure.
-fieldname = ['SmallRemovedSegmented',RemainingObjectName];
-handles.Pipeline.(fieldname) = NewSmallRemovedSegmentedObjectImage;
+    %%% Saves the segmented image, only edited for small objects, to the
+    %%% handles structure.
+    fieldname = ['SmallRemovedSegmented',RemainingObjectName];
+    handles = CPaddimages(handles,fieldname,NewSmallRemovedSegmentedObjectImage);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%

@@ -676,7 +676,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             if isfield(handles.Pipeline,fieldname)
                 %%% Retrieves previously selected cropping mask from handles
                 %%% structure.
-                BinaryCropImage = handles.Pipeline.(fieldname);
+                BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);
                 try Objects = Objects & BinaryCropImage;
                 catch
                     error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
@@ -918,7 +918,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 %%% CODE TO REMOVE BORDERS FROM ELLIPSE CROPPED OBJECTS
                 if sum(PrevObjects(:)) == sum(Objects(:))
                     try %#ok Ignore MLint
-                        CropMask = handles.Pipeline.(['CropMask',ImageName]);
+                        CropMask = CPretrieveimage(handles,['CropMask',ImageName],ModuleName);
                         CropBorders = bwperim(CropMask);
                         BorderTable = sortrows(unique([CropBorders(:) Objects(:)],'rows'),1);
                         for z = 1:size(BorderTable,1)
@@ -1168,21 +1168,21 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             %%% Saves the segmented image, not edited for objects along the edges or
             %%% for size, to the handles structure.
             fieldname = ['UneditedSegmented',ObjectName];
-            handles.Pipeline.(fieldname) = UneditedLabelMatrixImage;
+            handles = CPaddimages(handles,fieldname,UneditedLabelMatrixImage);
 
             %%% Saves the segmented image, only edited for small objects, to the
             %%% handles structure.
             fieldname = ['SmallRemovedSegmented',ObjectName];
-            handles.Pipeline.(fieldname) = SmallRemovedLabelMatrixImage;
+            handles = CPaddimages(handles,fieldname,SmallRemovedLabelMatrixImage);
 
             %%% Saves the final segmented label matrix image to the handles structure.
             fieldname = ['Segmented',ObjectName];
-            handles.Pipeline.(fieldname) = FinalLabelMatrixImage;
+            handles = CPaddimages(handles,fieldname,FinalLabelMatrixImage);
 
             %%% Saves images to the handles structure so they can be saved to the hard
             %%% drive, if the user requested.
             if ~strcmpi(SaveOutlines,'Do not use')
-                try    handles.Pipeline.(SaveOutlines) = FinalOutline;
+                try    handles = CPaddimages(handles,SaveOutlines,FinalOutline);
                 catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
                 end
             end

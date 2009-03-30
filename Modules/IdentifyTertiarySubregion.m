@@ -196,11 +196,11 @@ drawnow
 %%% Saves the final, segmented label matrix image of secondary objects to
 %%% the handles structure so it can be used by subsequent modules.
 fieldname = ['Segmented', SubregionObjectName];
-handles.Pipeline.(fieldname) = SubregionObjectImage;
+handles = CPaddimages(handles,fieldname,SubregionObjectImage);
 
 handles = CPsaveObjectCount(handles, SubregionObjectName, SubregionObjectImage);
 handles = CPsaveObjectLocations(handles, SubregionObjectName, SubregionObjectImage);
 
 if ~strcmpi(SaveOutlines,'Do not use')
-    handles.Pipeline.(SaveOutlines) = FinalOutline;
+    handles = CPaddimages(handles,SaveOutlines,FinalOutline);
 end

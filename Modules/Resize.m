@@ -150,4 +150,4 @@ drawnow
 
 %%% The processed image is saved to the handles structure so it can be
 %%% used by subsequent modules.
-handles.Pipeline.(ResizedImageName) = ResizedImage;
+handles = CPaddimages(handles,ResizedImageName,ResizedImage);

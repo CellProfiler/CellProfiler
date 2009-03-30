@@ -172,4 +172,4 @@ drawnow
 
 %%% The Thresholded image is saved to the handles structure so it can be
 %%% used by subsequent modules.
-handles.Pipeline.(ThresholdedImageName) = ThresholdedImage;
+handles = CPaddimages(handles,ThresholdedImageName,ThresholdedImage);

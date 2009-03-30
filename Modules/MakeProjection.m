@@ -172,15 +172,15 @@ elseif strcmpi(ProjectionType, 'Maximum')
                     error(['Image processing was cancelled because CellProfiler could not find the input image.  CellProfiler expected to find an image named "',ImageName,'" but that image has not been created by the pipeline.  Please adjust your pipeline to produce the image "',ImageName,''])
                 end
                 %%%First Image
-                OrigImage = handles.Pipeline.(fieldname);
+                OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
                 %%% Creates the empty variable so it can be retrieved later
                 %%% without causing an error on the first image set.
-                handles.Pipeline.(ProjectionImageName) = zeros(size(OrigImage));
+                handles = CPaddimages(handles,ProjectionImageName,zeros(size(OrigImage)));
             end
             %%%Current Image
-            OrigImage = handles.Pipeline.(fieldname);
+            OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
             %%%Projected Image so far
-            ProjectionImage = handles.Pipeline.(ProjectionImageName);
+            ProjectionImage = CPretrieveimage(handles,ProjectionImageName,ModuleName);
             ProjectionImage = max(ProjectionImage,OrigImage);
         else
             error(['Image processing was canceled in the ', ModuleName, ' module because you must choose either "Load images" or "Pipeline".']);
@@ -225,7 +225,7 @@ drawnow
 
 %%% Saves the averaged image to the handles structure so it can be used by
 %%% subsequent modules.
-handles.Pipeline.(ProjectionImageName) = ProjectionImage;
+handles = CPaddimages(handles,ProjectionImageName,ProjectionImage);
 %%% Saves the ready flag to the handles structure so it can be used by
 %%% subsequent modules.
 fieldname = [ProjectionImageName,'ReadyFlag'];

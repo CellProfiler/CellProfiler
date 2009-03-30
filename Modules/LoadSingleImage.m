@@ -197,8 +197,7 @@ if doFirstCycleOnly || doTokensExist,
             FileAndPathname = fullfile(Pathname, CurrentFileName);
             LoadedImage = CPimread(FileAndPathname);
             %%% Saves the image to the handles structure.
-            handles.Pipeline.(ImageName{n}) = LoadedImage;
-
+            handles = CPaddimages(handles,ImageName{n},LoadedImage);
         catch
             CPerrorImread(ModuleName, n);
         end % Goes with: catch

@@ -284,7 +284,7 @@ drawnow
 
 % Save QuantizedRGBimage or not?
 if ~strcmpi(SaveColoredObjects,'Do not use')
-    handles.Pipeline.(SaveColoredObjects) = QuantizedRGBimage;
+    handles = CPaddimages(handles,SaveColoredObjects,QuantizedRGBimage);
 end
 
 % Calculate Objects per Bin (Absolute and Percentage)

@@ -261,25 +261,27 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-handles.Pipeline.(['Segmented' TargetName]) = FinalLabelMatrixImage;
+handles = CPaddimages(handles,['Segmented' TargetName],FinalLabelMatrixImage);
 
 fieldname = ['SmallRemovedSegmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
-    handles.Pipeline.(['SmallRemovedSegmented' TargetName]) = handles.Pipeline.(['SmallRemovedSegmented',ObjectName]);
+    handles = CPaddimages(handles,['SmallRemovedSegmented' TargetName],...
+                            CPretrieveimage(handles,['SmallRemovedSegmented',ObjectName],ModuleName));
 end
 
 fieldname = ['UneditedSegmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if isfield(handles.Pipeline, fieldname)
-    handles.Pipeline.(['UneditedSegmented' TargetName]) = handles.Pipeline.(['UneditedSegmented',ObjectName]);
+    handles = CPaddimages(handles,['UneditedSegmented' TargetName],...
+                            CPretrieveimage(handles,['UneditedSegmented',ObjectName],ModuleName));
 end
 
 handles = CPsaveObjectCount(handles, TargetName, FinalLabelMatrixImage);
 handles = CPsaveObjectLocations(handles, TargetName, FinalLabelMatrixImage);
 
 if ~strcmpi(SaveOutlines,'Do not use')
-    try handles.Pipeline.(SaveOutlines) = LogicalOutlines;
+    try handles = CPaddimages(handles,SaveOutlines,LogicalOutlines);
     catch
         error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end

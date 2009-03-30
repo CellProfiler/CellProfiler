@@ -12,7 +12,7 @@ function handles = CPaddimages(handles, varargin)
 %
 % Website: http://www.cellprofiler.org
 %
-% $Revision: 5722 $
+% $Revision$
 
 % Parse out varargin
 if mod(length(varargin),2) ~= 0 || ...

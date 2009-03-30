@@ -70,7 +70,7 @@ ParentName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %textVAR03 = What other object do you want to find distances to? (Must be one object per parent object, e.g. Nuclei)
 %infotypeVAR03 = objectgroup
-%choiceVAR03 = None
+%choiceVAR03 = Do not use
 %inputtypeVAR03 = popupmenu
 ParentName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -93,7 +93,7 @@ ParentObjectLabelMatrix = CPretrieveimage(handles,['Segmented', ParentName{1}],M
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
-if ~strcmp(ParentName{2},'None')
+if ~strcmp(ParentName{2},'Do not use')
 
     % Sanity checks
     if strcmp(SubObjectName,ParentName{1}) || strcmp(SubObjectName,ParentName{2})
@@ -232,7 +232,7 @@ if any(findobj == ThisModuleFigureNumber)
     fig_h = CPfigure(handles,'Image',ThisModuleFigureNumber);
 
     
-    %% Default image
+    %%% Default image
     CPimagesc(ColoredNewObjectParentLabelMatrix,handles,ThisModuleFigureNumber);
     title('New Sub Objects')
     
@@ -245,7 +245,7 @@ if any(findobj == ThisModuleFigureNumber)
     ud(2).title = ['Original Sub Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     ud(3).title = ['Parent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
 
-    %% Construct uicontrol text, accounting for possible StepParents
+    %%% Construct uicontrol text, accounting for possible StepParents
     if ~exist('StepParentObjectLabelMatrix','var')
         str = 'New Sub Objects|Original Sub Objects|Parent Objects';
     else
@@ -255,7 +255,7 @@ if any(findobj == ThisModuleFigureNumber)
         ud(4).title = ['StepParent Objects, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
     end
     
-    %% uicontrol for displaying multiple images
+    %%% uicontrol for displaying multiple images
     uicontrol(fig_h, 'Style', 'popup',...
         'String', str,...
         'UserData',ud,...

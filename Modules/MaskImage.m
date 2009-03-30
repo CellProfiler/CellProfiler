@@ -78,7 +78,7 @@ fieldname = ['CropMask', ImageName];
 if isfield(handles.Pipeline,fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
-    BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName):
+    BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);
     try 
         CropMask = CropMask & BinaryCropImage;
     catch

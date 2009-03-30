@@ -77,6 +77,9 @@ for fld=fieldnames(handles.Pipeline)',
         end
     end
 end
+%% Pad length since we don't know the true max length will be across all cycles 
+PadLength = 20;
+FileNameWidth = FileNameWidth + PadLength;
 
 % set a reasonable minimum
 PathNameWidth = 128;
@@ -85,8 +88,10 @@ for fld=fieldnames(handles.Pipeline)',
         PathNameWidth = max(PathNameWidth, length(handles.Pipeline.(fld{1})));
     end
 end
+%% Pad length since we don't know the true max length will be across all cycles 
+PathNameWidth = PathNameWidth + PadLength;
 
-MetadataNameWidth = 128;
+MetadataNameWidth = PathNameWidth;
 
 %%% Write the SQL table description and data loader.
 if (FirstSet == 1)

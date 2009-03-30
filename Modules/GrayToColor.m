@@ -119,7 +119,7 @@ end
 
 % Determine whether 3- or 4-color combination
 [isRGB,isCMYK] = deal(0);
-if all(ImagesSpecified(1:3)) && ~ImagesSpecified(4)
+if ~ImagesSpecified(4)
     isRGB = 1;
 else
     isCMYK = 1;

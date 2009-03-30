@@ -141,7 +141,7 @@ FileFormat = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %%% special code for handling.
 %%% WE CANNOT PUT DIB OR STK HERE, BECAUSE WE CANNOT SAVE IN THOSE FORMATS
 
-%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory or ampersand (&) for the directory of the original image.
+%pathnametextVAR05 = Enter the pathname to the directory where you want to save the images.  Type period (.) for default output directory or ampersand (&) for the directory of the original image. If this directory does not exist, it will be created automatically.
 %defaultVAR05 = .
 FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
@@ -341,7 +341,11 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         end
     else
         if ~isdir(PathName)
-            error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
+            [success,ignore,ignore] = mkdir(PathName);
+            if ~success
+                error(['Image processing was canceled in the ', ModuleName, ...
+                    ' module because the specified directory "', PathName, '" does not exist.']);
+            end
         end
     end
 

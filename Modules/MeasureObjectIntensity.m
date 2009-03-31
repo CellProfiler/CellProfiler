@@ -84,16 +84,23 @@ function handles = MeasureObjectIntensity(handles,varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) What did you call the greyscale images you want to measure from? (ImageName{1})
-% (2) What did you call the objects that you want to measure from? (ObjectNameList{1})
+% (1) What did you call the greyscale images whose intensity you want to measure? (ImageName{1})
+% (2) What did you call the objects whose intensity you want to measure? (ObjectNameList{1})
 %
 % (i) Buttons are needed after (2) to let the user add/subtract objects to
 % measure against (1)
-% (ii) A button should be added that lets the user add/substract additional
+% (ii) A button should be added that lets the user add/subtract additional
 % images after the last object in (2)
 % (ii) Creating another image by (ii) should create another object setting with 
 %  buttons that perform (i). Subtracting an image should remove the associated
 %  objects measured against it.
+%
+% Anne 3-31-09: I think it's actually ok to assume that the person wants to measure
+% every image/object pair; in other words, I don't think we need to ask
+% them to specify particular objects for particular images. This will make
+% the interface simpler even if it means the person measures more than they
+% really want to. They can always use separate modules if they really want
+% to limit which pairs they measure. Does that make sense?
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

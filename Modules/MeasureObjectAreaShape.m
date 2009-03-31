@@ -128,10 +128,10 @@ function handles = MeasureObjectAreaShape(handles, varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) What object do you want to measure? (ObjectNameList{1})
-% (2) Would you like to calculate the Zernike features for this object? (ZernikeChoice)
+% (1) Which objects do you want to make area and shape measurements? (ObjectNameList{1})
+% (2) Would you also like to calculate the Zernike shape features for this object? (ZernikeChoice)
 %
-% (i) A button should be added that lets the user add/substract objects for (1).
+% (i) A button should be added that lets the user add/subtract objects for (1).
 % (ii) If Zernike calculation has been improved to the point where it is fast
 % enough, then remove (2).
 

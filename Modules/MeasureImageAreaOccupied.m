@@ -119,11 +119,22 @@ function handles = MeasureImageAreaOccupied(handles,varargin)
 % that it should simply ask for an object previously created by
 % IDPrimAuto and measure the area occcupied by that object. The settings
 % would then be:
-% (1) What is the name of the object in which you want to measure the image area?
-% (2) What do you want to call the output binary image showing the object area occupied? (StainName)
+% (1) For which objects do you want to measure the area in the image that is occupied by those objects?
+% (2) What do you want to call the black/white output image showing the area occupied by those objects? (StainName)
 %
-% If we want to keep the original format, it might be nice to have the 
-% option of importing settings from a previous IDPrimAuto module.
+% Anne 3-31-09: Great idea to interact smarter with IdPrimAuto. While in
+% theory we could perhaps just add "do you want to measure the entire area
+% occupied by the objects?" to IdPrimAuto, I don't think that most people
+% would realize that they should go looking to measure AreaOccupied in
+% IdPrimAuto. Therefore, I like the idea of having this be a separate
+% module but advising the user to use the IdPrimAuto first. We do, however,
+% need to advise the user that they don't have to find individual objects
+% with IdPrimAuto. Perhaps something like, "To measure the area of an image
+% that is occupied by a stain/fluorescent signal (regardless of whether
+% individual objects are present), use the IdPrimAuto module with the "No
+% declumping" options selected." Although in general we try to refrain from
+% putting too much instruction in the questions themselves, this is such a
+% short simple module I think it would be ok to add this sentence after Q1.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

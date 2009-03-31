@@ -401,16 +401,21 @@ class SaveImages(cpm.CPModule):
                 orig_pathname = measurements.get_current_measurement('Image',
                                                               path_name_feature)
                 # Get the part of the path that's different from the root
-                key = 'Pathname%s'%(self.file_image_name)
-                root = workspace.image_set.legacy_fields[key]
-                if orig_pathname[:len(root)] != root:
-                    raise ValueError("File pathname (%s) did not match root(%s)"%(orig_pathname,root))
-                pathname = os.path.join(pathname,orig_pathname[len(root)+1:])
+                #key = 'Pathname%s'%(self.file_image_name)
+                #root = workspace.image_set.legacy_fields[key]
+                #if orig_pathname[:len(root)] != root:
+                #    raise ValueError("File pathname (%s) did not match root(%s)"%(orig_pathname,root))
+                #pathname = os.path.join(pathname,orig_pathname[len(root)+1:])
+                pathname = os.path.join(pathname, orig_pathname)
                 
         elif self.pathname_choice == PC_WITH_IMAGE:
             path_name_feature = 'PathName_%s'%(self.file_image_name)
             pathname = measurements.get_current_measurement('Image',
                                                             path_name_feature)
+            # Add the root to the pathname to recover the original name
+            key = 'Pathname%s'%(self.file_image_name)
+            root = workspace.image_set.legacy_fields[key]
+            pathname = os.path.join(root,pathname)            
         else:
             raise NotImplementedError(("Unknown pathname mechanism: %s"%
                                        (self.pathname_choice)))

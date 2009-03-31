@@ -21,14 +21,17 @@ import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
 import cellprofiler.cpimage as I
+import cellprofiler.objects as cpo
+import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
+import cellprofiler.workspace as W
 
 class testLoadImages(unittest.TestCase):
     def test_00_00init(self):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number,1,"LoadImages' version number has changed")
+        self.assertEqual(LI.LoadImages().variable_revision_number,2,"LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
@@ -36,8 +39,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
+        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list, None)
@@ -57,7 +60,7 @@ class testLoadImages(unittest.TestCase):
             ii = i+1
             if i:
                 l.add_imagecb()
-            idx = l.SLOT_FIRST_IMAGE+l.SLOT_IMAGE_FIELD_COUNT * i 
+            idx = l.SLOT_FIRST_IMAGE_V2+l.SLOT_IMAGE_FIELD_COUNT * i 
             l.settings()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
             l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
         image_set_list = I.ImageSetList()
@@ -76,8 +79,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
-        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
+        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list,None)
@@ -158,8 +161,8 @@ class testLoadImages(unittest.TestCase):
         load_images = LI.LoadImages()
         load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = LI.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = filename
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][LI.FD_COMMON_TEXT].value = filename
+        load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
         load_images.location.value = LI.DIR_OTHER
         load_images.location_other.value = path
         load_images.module_num = 1
@@ -193,8 +196,8 @@ class testLoadImages(unittest.TestCase):
         load_images = LI.LoadImages()
         load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = LI.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = filename
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][LI.FD_COMMON_TEXT].value = filename
+        load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
         load_images.location.value = LI.DIR_OTHER
         load_images.location_other.value = path
         load_images.module_num = 1
@@ -228,8 +231,8 @@ class testLoadImages(unittest.TestCase):
         load_images = LI.LoadImages()
         load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = LI.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = filename
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][LI.FD_COMMON_TEXT].value = filename
+        load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
         load_images.location.value = LI.DIR_OTHER
         load_images.location_other.value = path
         load_images.module_num = 1
@@ -249,6 +252,234 @@ class testLoadImages(unittest.TestCase):
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
         pipeline.run()
+    
+    def test_06_01_file_metadata(self):
+        """Test file metadata on two sets of two files
+        
+        """
+        directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.tif_8_1)
+        filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w2_[59784AC1-6A66-44DE-A87E-E4BDC1A33A54].tif"
+                     ]
+        for filename in filenames:
+            fd = open(os.path.join(directory, filename),"wb")
+            fd.write(data)
+            fd.close()
+        try:
+            load_images = LI.LoadImages()
+            load_images.add_imagecb()
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_REGEXP
+            load_images.location.value = LI.DIR_OTHER
+            load_images.location_other.value = directory
+            load_images.group_by_metadata.value = True
+            load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+            load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
+            load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[0][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            image_set_list = I.ImageSetList()
+            load_images.prepare_run(pipeline, image_set_list, None)
+            self.assertEqual(image_set_list.count(),2)
+            image_set = image_set_list.get_image_set(0)
+            self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+                             filenames[0])
+            self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+                             filenames[1])
+            m = measurements.Measurements()
+            w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                            image_set_list)
+            load_images.run(w)
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
+                             "MMD-ControlSet-plateA-2008-08-06")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
+                             "A")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_col"),
+                             "12")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
+                             "1")
+            image_set = image_set_list.get_image_set(1)
+            self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+                             filenames[2])
+            self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+                             filenames[3])
+            m = measurements.Measurements()
+            w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                            image_set_list)
+            load_images.run(w)
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
+                             "MMD-ControlSet-plateA-2008-08-06")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
+                             "A")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_col"),
+                             "12")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
+                             "2")
+        finally:
+            for filename in filenames:
+                os.remove(os.path.join(directory,filename))
+            os.rmdir(directory)
+    
+    def test_06_02_path_metadata(self):
+        """Test recovery of path metadata"""
+        directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.tif_8_1)
+        path_and_file = [("MMD-ControlSet-plateA-2008-08-06_A12_s1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE]","w1.tif"),
+                         ("MMD-ControlSet-plateA-2008-08-06_A12_s1_[EFBB8532-9A90-4040-8974-477FE1E0F3CA]","w2.tif"),
+                         ("MMD-ControlSet-plateA-2008-08-06_A12_s2_[138B5A19-2515-4D46-9AB7-F70CE4D56631]","w1.tif"),
+                         ("MMD-ControlSet-plateA-2008-08-06_A12_s2_[59784AC1-6A66-44DE-A87E-E4BDC1A33A54]","w2.tif")
+                         ]
+        for path,filename in path_and_file:
+            os.mkdir(os.path.join(directory,path))
+            fd = open(os.path.join(directory, path,filename),"wb")
+            fd.write(data)
+            fd.close()
+        try:
+            load_images = LI.LoadImages()
+            load_images.add_imagecb()
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.descend_subdirectories.value = True
+            load_images.match_method.value = LI.MS_EXACT_MATCH
+            load_images.location.value = LI.DIR_OTHER
+            load_images.location_other.value = directory
+            load_images.group_by_metadata.value = True
+            load_images.images[0][LI.FD_COMMON_TEXT].value = "w1.tif"
+            load_images.images[1][LI.FD_COMMON_TEXT].value = "w2.tif"
+            load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+            load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
+            load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_PATH
+            load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_PATH
+            load_images.images[0][LI.FD_PATH_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
+            load_images.images[1][LI.FD_PATH_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
+            load_images.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            image_set_list = I.ImageSetList()
+            load_images.prepare_run(pipeline, image_set_list, None)
+            self.assertEqual(image_set_list.count(),2)
+            image_set = image_set_list.get_image_set(0)
+            self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+                             os.path.join(*path_and_file[0]))
+            self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+                             os.path.join(*path_and_file[1]))
+            m = measurements.Measurements()
+            w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                            image_set_list)
+            load_images.run(w)
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
+                             "MMD-ControlSet-plateA-2008-08-06")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
+                             "A")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_col"),
+                             "12")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
+                             "1")
+            image_set = image_set_list.get_image_set(1)
+            self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+                             os.path.join(*path_and_file[2]))
+            self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+                             os.path.join(*path_and_file[3]))
+            m = measurements.Measurements()
+            w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                            image_set_list)
+            load_images.run(w)
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
+                             "MMD-ControlSet-plateA-2008-08-06")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
+                             "A")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_well_col"),
+                             "12")
+            self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
+                             "2")
+        finally:
+            for path, filename in path_and_file:
+                os.remove(os.path.join(directory,path,filename))
+                os.rmdir(os.path.join(directory,path))
+            os.rmdir(directory)
+    
+    def test_06_03_missing_image(self):
+        """Test expected failure when an image is missing from the set"""
+        directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.tif_8_1)
+        filename = "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
+        fd = open(os.path.join(directory, filename),"wb")
+        fd.write(data)
+        fd.close()
+        try:
+            load_images = LI.LoadImages()
+            load_images.add_imagecb()
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_REGEXP
+            load_images.location.value = LI.DIR_OTHER
+            load_images.location_other.value = directory
+            load_images.group_by_metadata.value = True
+            load_images.check_images.value = True
+            load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+            load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
+            load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[0][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            image_set_list = I.ImageSetList()
+            self.assertRaises(ValueError, load_images.prepare_run, pipeline, 
+                              image_set_list, None)
+        finally:
+            os.remove(os.path.join(directory, filename))
+            os.rmdir(directory)
+    def test_06_04_conflict(self):
+        """Test expected failure when two images have the same metadata"""
+        directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.tif_8_1)
+        filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
+                     "MMD-ControlSet-plateA-2008-08-06_A12_s2_w2_[59784AC1-6A66-44DE-A87E-E4BDC1A33A54].tif"
+                     ]
+        for filename in filenames:
+            fd = open(os.path.join(directory, filename),"wb")
+            fd.write(data)
+            fd.close()
+        try:
+            load_images = LI.LoadImages()
+            load_images.add_imagecb()
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_REGEXP
+            load_images.location.value = LI.DIR_OTHER
+            load_images.location_other.value = directory
+            load_images.group_by_metadata.value = True
+            load_images.images[0][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_COMMON_TEXT].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+            load_images.images[1][LI.FD_IMAGE_NAME].value = "Channel2"
+            load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[0][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w1_"
+            load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
+            load_images.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            image_set_list = I.ImageSetList()
+            self.assertRaises(ValueError,load_images.prepare_run, pipeline, 
+                              image_set_list, None)
+        finally:
+            for filename in filenames:
+                os.remove(os.path.join(directory,filename))
+            os.rmdir(directory)
 
 if __name__=="main":
     unittest.main()

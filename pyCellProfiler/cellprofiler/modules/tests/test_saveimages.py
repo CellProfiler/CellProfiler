@@ -59,8 +59,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -110,8 +110,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -164,8 +164,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -210,8 +210,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -264,8 +264,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -319,8 +319,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -378,8 +378,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -436,8 +436,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()
@@ -491,8 +491,8 @@ class TestSaveImages(unittest.TestCase):
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images_common_text[0].value = '.tif'
-        load_images.image_names[0].value = 'Orig'
+        load_images.images[0][cpm_li.FD_COMMON_TEXT].value = '.tif'
+        load_images.images[0][cpm_li.FD_IMAGE_NAME].value = 'Orig'
         load_images.module_num = 1
         
         apply_threshold = cpm_a.ApplyThreshold()

@@ -12,8 +12,11 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import cgi
 import os
 import re
+import wx
+import wx.html
 
 import PIL.Image
 import numpy
@@ -23,6 +26,7 @@ import uuid
 
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
+import cellprofiler.measurements as cpm
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 
@@ -48,6 +52,25 @@ DIR_OTHER = 'Elsewhere...'
 SB_GRAYSCALE = 'grayscale'
 SB_BINARY = 'binary'
 
+FD_KEY = "Key"
+FD_COMMON_TEXT = "CommonText"
+FD_ORDER_POSITION = "OrderPosition"
+FD_IMAGE_NAME = "ImageName"
+FD_REMOVE_IMAGE = "RemoveImage"
+FD_METADATA_CHOICE = "MetadataChoice"
+FD_FILE_METADATA = "FileMetadata"
+FD_PATH_METADATA = "PathMetadata"
+
+# The metadata choices:
+# M_NONE - don't extract metadata
+# M_FILE_NAME - extract metadata from the file name
+# M_PATH_NAME - extract metadata from the subdirectory path
+# M_BOTH      - extract metadata from both the file name and path
+M_NONE      = "None"
+M_FILE_NAME = "File name"
+M_PATH      = "Path"
+M_BOTH      = "Both"
+
 def default_cpimage_name(index):
     # the usual suspects
     names = ['DNA', 'Actin', 'Protein']
@@ -69,14 +92,10 @@ class LoadImages(cpmodule.CPModule):
         self.order_group_size = cps.Integer('How many images are there in each group?', 3)
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
         self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
-     
-        # Settings for each CPimage
-        self.image_keys = [ uuid.uuid1() ]
-        self.images_common_text = [cps.Text('Type the text that these images have in common', 'DAPI')]
-        self.images_order_position = [cps.Integer('What is the position of this image in each group', 1)]
-        self.image_names = [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(0))]
-        self.remove_images = [cps.DoSomething('Remove this image...','Remove', self.remove_imagecb, self.image_keys[0])]
-        
+        self.group_by_metadata = cps.Binary('Do you want to group image sets by metadata?',True)
+        # Add the first image to the images list
+        self.images = []
+        self.add_imagecb()
         # Add another image
         self.add_image = cps.DoSomething('Add another image...','Add', self.add_imagecb)
         
@@ -87,22 +106,28 @@ class LoadImages(cpmodule.CPModule):
 
     def add_imagecb(self):
             'Adds another image to the settings'
-            img_index = len(self.images_order_position)
+            img_index = len(self.images)
             new_uuid = uuid.uuid1()
-            self.image_keys += [ new_uuid ]
-            self.images_common_text += [cps.Text('Type the text that these images have in common', '')]
-            self.images_order_position += [cps.Integer('What is the position of this image in each group', img_index+1)]
-            self.image_names += [cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', default_cpimage_name(img_index))]
-            self.remove_images += [cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)]
+            fd = { FD_KEY:new_uuid,
+                   FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', ''),
+                   FD_ORDER_POSITION:cps.Integer('What is the position of this image in each group', img_index+1),
+                   FD_IMAGE_NAME:cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', 
+                                                           default_cpimage_name(img_index)),
+                   FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subdirectory path or both?',
+                                                 [M_NONE, M_FILE_NAME, 
+                                                  M_PATH, M_BOTH]),
+                   FD_FILE_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the file name:',
+                                                    '^(?P<Plate>.+)_(?P<WellRow>[A-P])(?P<WellColumn>[0-9]{1,2})_(?P<Site>[0-9])'),
+                   FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subdirectory path:',
+                                              '(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})'),
+                   FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
+                   }
+            self.images.append(fd)
 
     def remove_imagecb(self, id):
             'Remove an image from the settings'
-            index = self.image_keys.index(id)
-            del self.image_keys[index]
-            del self.images_common_text[index]
-            del self.images_order_position[index]
-            del self.image_names[index]
-            del self.remove_images[index]
+            index = [fd[FD_KEY] for fd in self.images].index(id)
+            del self.images[index]
 
     def visible_settings(self):
         varlist = [self.file_types, self.match_method]
@@ -112,17 +137,25 @@ class LoadImages(cpmodule.CPModule):
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
         
-        if len(self.images_common_text) > 1:
+        if len(self.images) > 1:
             varlist += [self.check_images]
+            varlist += [self.group_by_metadata]
         
         # per image settings
         if self.match_method != MS_ORDER:
-            for ctext, imname, rm in zip(self.images_common_text, self.image_names, self.remove_images):
-                varlist += [ctext, imname, rm]
+            file_kwd = FD_COMMON_TEXT
         else:
-            for pos, imname, rm in zip(self.images_order_position, self.image_names, self.remove_images):
-                varlist += [pos, imname, rm]
-                
+            file_kwd = FD_ORDER_POSITION
+        
+        for fd in self.images:
+            varlist += [fd[file_kwd], 
+                        fd[FD_IMAGE_NAME],
+                        fd[FD_METADATA_CHOICE]]
+            if fd[FD_METADATA_CHOICE].value in (M_FILE_NAME, M_BOTH):
+                varlist.append(fd[FD_FILE_METADATA])
+            if fd[FD_METADATA_CHOICE].value in (M_PATH, M_BOTH):
+                varlist.append(fd[FD_PATH_METADATA])
+            varlist.append(fd[FD_REMOVE_IMAGE])
         varlist += [self.add_image]
         varlist += [self.location]
         if self.location == DIR_OTHER:
@@ -140,15 +173,20 @@ class LoadImages(cpmodule.CPModule):
     SLOT_LOCATION = 5
     SLOT_LOCATION_OTHER = 6
     SLOT_CHECK_IMAGES = 7
-    SLOT_FIRST_IMAGE = 8
+    SLOT_FIRST_IMAGE_V1 = 8
+    SLOT_GROUP_BY_METADATA = 8
+    SLOT_FIRST_IMAGE_V2 = 9
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
     SLOT_OFFSET_ORDER_POSITION = 2
-    SLOT_IMAGE_FIELD_COUNT = 3
+    SLOT_OFFSET_METADATA_CHOICE = 3
+    SLOT_OFFSET_FILE_METADATA = 4
+    SLOT_OFFSET_PATH_METADATA = 5
+    SLOT_IMAGE_FIELD_COUNT = 6
     def settings(self):
         """Return the settings array in a consistent order"""
-        varlist = range(self.SLOT_FIRST_IMAGE + \
-                        self.SLOT_IMAGE_FIELD_COUNT * len(self.image_names))
+        varlist = range(self.SLOT_FIRST_IMAGE_V2 + \
+                        self.SLOT_IMAGE_FIELD_COUNT * len(self.images))
         varlist[self.SLOT_FILE_TYPE]              = self.file_types
         varlist[self.SLOT_MATCH_METHOD]           = self.match_method
         varlist[self.SLOT_ORDER_GROUP_SIZE]       = self.order_group_size
@@ -157,14 +195,21 @@ class LoadImages(cpmodule.CPModule):
         varlist[self.SLOT_LOCATION]               = self.location
         varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
         varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
-        for i in range(len(self.image_names)):
-            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
+        varlist[self.SLOT_GROUP_BY_METADATA]      = self.group_by_metadata
+        for i in range(len(self.images)):
+            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE_V2
             varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
-                self.images_common_text[i]
+                self.images[i][FD_COMMON_TEXT]
             varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
-                self.image_names[i]
+                self.images[i][FD_IMAGE_NAME]
             varlist[ioff+self.SLOT_OFFSET_ORDER_POSITION] = \
-                self.images_order_position[i]
+                self.images[i][FD_ORDER_POSITION]
+            varlist[ioff+self.SLOT_OFFSET_METADATA_CHOICE] = \
+                self.images[i][FD_METADATA_CHOICE]
+            varlist[ioff+self.SLOT_OFFSET_FILE_METADATA] =\
+                self.images[i][FD_FILE_METADATA]
+            varlist[ioff+self.SLOT_OFFSET_PATH_METADATA] =\
+                self.images[i][FD_PATH_METADATA]
         return varlist
     
     def set_setting_values(self,setting_values,variable_revision_number,module_name):
@@ -181,6 +226,10 @@ class LoadImages(cpmodule.CPModule):
         if variable_revision_number == 5 and module_name == 'LoadImages':
             setting_values,variable_revision_number = self.upgrade_5_to_new_1(setting_values)
             module_name = self.module_class()
+        
+        if (variable_revision_number == 1 and 
+            module_name == self.module_class()):
+            setting_values, variable_revision_number = self.upgrade_new_1_to_2(setting_values)
 
         if variable_revision_number != self.variable_revision_number or \
            module_name != self.module_class():
@@ -190,11 +239,11 @@ class LoadImages(cpmodule.CPModule):
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert (len(setting_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
-        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
-        while len(self.image_names) > image_count:
+        assert (len(setting_values) - self.SLOT_FIRST_IMAGE_V2) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT
+        while len(self.images) > image_count:
             self.remove_imagecb(self.image_keys[0])
-        while len(self.image_names) < image_count:
+        while len(self.images) < image_count:
             self.add_imagecb()
         super(LoadImages,self).set_setting_values(setting_values, variable_revision_number, module_name)
     
@@ -236,7 +285,7 @@ class LoadImages(cpmodule.CPModule):
     
     def upgrade_5_to_new_1(self,setting_values):
         """Take the old LoadImages values and put them in the correct slots"""
-        new_values = range(self.SLOT_FIRST_IMAGE)
+        new_values = range(self.SLOT_FIRST_IMAGE_V1)
         new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
         new_values[self.SLOT_MATCH_METHOD]           = setting_values[0]
         new_values[self.SLOT_ORDER_GROUP_SIZE]       = setting_values[9]
@@ -264,7 +313,21 @@ class LoadImages(cpmodule.CPModule):
             new_values.extend([text_to_find,image_name,text_to_find])
         return (new_values,1)
     
-    variable_revision_number = 1
+    def upgrade_new_1_to_2(self, setting_values):
+        """Add the metadata slots to the images"""
+        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
+        new_values.append(cps.NO) # Group by metadata is off
+        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V1)/3):
+            off = self.SLOT_FIRST_IMAGE_V1+i*3
+            new_values.extend([setting_values[off],
+                               setting_values[off+1],
+                               setting_values[off+2],
+                               M_NONE,
+                               "None",
+                               "None"])
+        return (new_values, 2)
+
+    variable_revision_number = 2
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
@@ -281,16 +344,26 @@ class LoadImages(cpmodule.CPModule):
         if self.load_movies():
             self.prepare_run_of_movies(pipeline,image_set_list)
         else:
-            self.prepare_run_of_images(pipeline, image_set_list)
+            self.prepare_run_of_images(pipeline, image_set_list, frame)
         return True
     
-    def prepare_run_of_images(self, pipeline, image_set_list):
+    def prepare_run_of_images(self, pipeline, image_set_list, frame):
         """Set up image providers for image files"""
         files = self.collect_files()
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
         
-        #Deal out the image filenames to a list of lists.
+        if self.group_by_metadata.value and len(self.get_metadata_tags()):
+            self.organize_by_metadata(pipeline, image_set_list, files, frame)
+        else:
+            self.organize_by_order(pipeline, image_set_list, files)
+        for name in self.image_name_vars():
+            image_set_list.legacy_fields['Pathname%s'%(name.value)]=self.image_directory()
+
+    def organize_by_order(self, pipeline, image_set_list, files):
+        """Organize each kind of file by their lexical order
+        
+        """
         image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for pathname,image_index in files:
@@ -306,9 +379,228 @@ class LoadImages(cpmodule.CPModule):
             image_set = image_set_list.get_image_set(i)
             providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
             image_set.providers.extend(providers)
-        for name in image_names:
-            image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
     
+    def organize_by_metadata(self, pipeline, image_set_list, files, frame):
+        """Organize each kind of file by metadata
+        
+        """
+        #
+        # Distribute files according to metadata tags. Each image_name
+        # potentially has a subset of the total list of tags. For images
+        # without the complete list of tags, we give the image a wildcard
+        # for the metadata item that matches everything.
+        #
+        tags = self.get_metadata_tags()
+        #
+        # files_by_image_name holds one list of files for each image name index
+        #
+        files_by_image_name = [[] for i in range(len(self.images))]
+        for file,i in files:
+            files_by_image_name[i].append(os.path.split(file))
+        #
+        # Create a monster dictionary tree for each image describing the
+        # metadata for each tag. Give a file a metadata value of None
+        # if it has no value for a given metadata tag
+        #
+        d = [{} for i in range(len(self.images))]
+        conflicts = []
+        for i in range(len(self.images)):
+            fd = self.images[i]
+            for path, filename in files_by_image_name[i]:
+                metadata = self.get_filename_metadata(fd, filename, path)
+                parent = d[i]
+                for tag in tags[:-1]:
+                    value = metadata.get(tag)
+                    if parent.has_key(value):
+                        child = parent[value]
+                    else:
+                        child = {}
+                        parent[value] = child
+                    parent = child
+                    last_value = value
+                tag = tags[-1]
+                value = metadata.get(tag)
+                if parent.has_key(value):
+                    # There's already a match to this metadata
+                    conflict = [fd, parent[value], (path,filename)]
+                    conflicts.append(conflict)
+                else:
+                    parent[value] = (path, filename)
+        image_sets = self.get_image_sets(d)
+        missing_images = [image_set for image_set in image_sets
+                          if None in image_set[1]]
+        image_sets = [image_set for image_set in image_sets
+                      if not None in image_set[1]]
+        #
+        # Handle errors, raising an exception if the user wants to check images
+        #
+        if len(conflicts) or len(missing_images):
+            if frame:
+                self.report_errors(conflicts, missing_images, frame)
+            if self.check_images.value:
+                message=""
+                if len(conflicts):
+                    message +="Conflicts found:\n" 
+                    for conflict in conflicts:
+                        metadata = self.get_filename_metadata(conflict[0], 
+                                                              conflict[1][1], 
+                                                              conflict[1][0])
+                        message+=("Metadata: %s, First path: %s, First filename: %s, Second path: %s, Second filename: %s\n"%
+                                  (str(metadata), conflict[1][0],conflict[1][1],
+                                   conflict[2][0],conflict[2][1]))
+                if len(missing_images):
+                    message += "Missing images:\n"
+                    for mi in missing_images:
+                        for i in range(len(self.images)):
+                            fd = self.images[i]
+                            if mi[1][i] is None:
+                                message += ("%s: missing " %
+                                            (fd[FD_IMAGE_NAME].value))
+                            else:
+                                message += ("%s: path=%s, file=%s" %
+                                            (fd[FD_IMAGE_NAME].value,
+                                             mi[1][i][0],mi[1][i][1]))
+                raise ValueError(message)
+        root = self.image_directory()
+        for image_set in image_sets:
+            keys = {}
+            for tag,value in zip(tags,image_set[0]):
+                keys[tag] = value
+            cpimageset = image_set_list.get_image_set(keys)
+            for i in range(len(self.images)):
+                path = os.path.join(image_set[1][i][0],image_set[1][i][1])
+                provider = LoadImagesImageProvider(self.images[i][FD_IMAGE_NAME].value,
+                                                   root,path)
+                cpimageset.providers.append(provider)
+    
+    def get_image_sets(self, d):
+        """Get image sets from a dictionary tree
+        
+        d - one dictionary tree per image.
+        returns a list of tuples. The first element contains a tuple of
+        metadata values and the second element contains a list of
+        (path,filename) tuples for each image (or are None for errors where 
+        there is no metadata match).
+        """
+        
+        if not any([isinstance(dd,dict) for dd in d]):
+            # This is a leaf if no elements are dictionaries
+            return [(tuple(), d)]
+        #
+        # Get each represented value for this slot
+        #
+        values = set()
+        for dd in d:
+            if not dd is None:
+                values.update(dd.keys())
+        result = []
+        for value in sorted(values):
+            subgroup = tuple((dd and dd.has_key(None) and dd[None]) or # wildcard metadata
+                             (dd and dd.get(value)) or                 # fetch subvalue or None if missing
+                             None                                      # metadata is missing
+                             for dd in d)
+            subsets = self.get_image_sets(subgroup)
+            for subset in subsets:
+                # prepend the current key to the tuple of keys and 
+                # duplicate the filename tuple
+                subset = ((value,)+subset[0], subset[1])
+                result.append(subset)
+        return result
+
+    def report_errors(self, conflicts, missing_images, frame):
+        """Create an error report window
+        
+        conflicts: 3-tuple of file dictionary, first path/file and second path/file
+                   for two images with the same metadata
+        missing_images: two-tuple of metadata keys and the file tuples
+                        where at least one of the file tuples is None indicating
+                        a missing image
+        frame: the parent for the error report
+        """
+        my_frame = wx.Frame(frame, title="Load images: Error report",
+                            size=(600,800),
+                            pos =(frame.Position[0],
+                                  frame.Position[1]+frame.Size[1]))
+        my_frame.Icon = frame.Icon
+        panel = wx.Panel(my_frame)
+        uber_sizer = wx.BoxSizer()
+        my_frame.SetSizer(uber_sizer)
+        uber_sizer.Add(panel,1,wx.EXPAND)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        panel.SetSizer(sizer)
+        font = wx.Font(16,wx.FONTFAMILY_SWISS,wx.FONTSTYLE_NORMAL,
+                       wx.FONTWEIGHT_BOLD)
+        tags = self.get_metadata_tags()
+        tag_ct = len(tags)
+        tables = []
+        if len(conflicts):
+            title = wx.StaticText(panel,
+                                  label="Conflicts (two files with same metadata)")
+            title.Font = font
+            sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
+            table = wx.ListCtrl(panel,style=wx.LC_REPORT)
+            tables.append(table)
+            sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
+            for tag, index in zip(tags,range(tag_ct)):
+                table.InsertColumn(index,tag)
+            table.InsertColumn(index+1,"First path")
+            table.InsertColumn(index+2,"First file name")
+            table.InsertColumn(index+3,"Second path")
+            table.InsertColumn(index+4,"Second file name")
+            for conflict in conflicts:
+                metadata = self.get_filename_metadata(conflict[0], 
+                                                      conflict[1][1], 
+                                                      conflict[1][0])
+                row = [metadata.get(tag) or "-" for tag in tags]
+                row.extend([conflict[1][0],conflict[1][1],
+                            conflict[2][0],conflict[2][1]])
+                table.Append(row)
+
+        if len(missing_images):
+            title = wx.StaticText(panel,
+                                  label="Missing images")
+            title.Font = font
+            sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
+            table = wx.ListCtrl(panel,style=wx.LC_REPORT)
+            tables.append(table)
+            sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
+            for tag, index in zip(tags,range(tag_ct)):
+                table.InsertColumn(index,tag)
+            for fd,index in zip(self.images,range(len(self.images))):
+                table.InsertColumn(index*2+tag_ct,
+                                   "%s path"%(fd[FD_IMAGE_NAME].value))
+                table.InsertColumn(index*2+1+tag_ct,
+                                   "%s filename"%(fd[FD_IMAGE_NAME].value))
+            for metadata,files_and_paths in missing_images:
+                row = list(metadata)
+                for file_and_path in files_and_paths:
+                    if file_and_path is None:
+                        row.extend(["missing","missing"])
+                    else:
+                        row.extend(file_and_path)
+                table.Append(row)
+        best_total_width = 0
+        for table in tables:
+            total_width = 0
+            dc=wx.ClientDC(table)
+            dc.Font = table.Font
+            try:
+                for col in range(table.ColumnCount):
+                    text = table.GetColumn(col).Text
+                    width = dc.GetTextExtent(text)[0]
+                    for row in range(table.ItemCount):
+                        text = table.GetItem(row,col).Text
+                        width = max(width, dc.GetTextExtent(text)[0])
+                    width += 16
+                    table.SetColumnWidth(col, width)
+                    total_width += width+4
+            finally:
+                dc.Destroy()
+            best_total_width = max(best_total_width, total_width)
+        table.SetMinSize((best_total_width, table.GetMinHeight()))
+        my_frame.Fit()
+        my_frame.Show()
+        
     def prepare_run_of_movies(self, pipeline, image_set_list):
         """Set up image providers for movie files"""
         files = self.collect_files()
@@ -345,20 +637,57 @@ class LoadImages(cpmodule.CPModule):
         """Run the module - add the measurements
         
         """
-        statistics = [("Image name","Path","Filename")]
-        for provider in workspace.image_set.providers:
-            if isinstance(provider,LoadImagesImageProvider):
-                filename = provider.get_filename()
-                path = provider.get_pathname()
-                name = provider.name
-                workspace.measurements.add_measurement('Image','FileName_'+name, filename)
-                workspace.measurements.add_measurement('Image','PathName_'+name, path)
-                statistics.append((name, path, filename))
+        header = ["Image name","Path","Filename"]
+        ratio = [1.0,3.0,2.0]
+        tags = self.get_metadata_tags()
+        ratio += [1.0 for tag in tags]
+        ratio = [x / sum(ratio) for x in ratio]
+        header += tags 
+        statistics = [header]
+        m = workspace.measurements
+        for fd in self.images:
+            provider = workspace.image_set.get_image_provider(fd[FD_IMAGE_NAME].value)
+            path, filename = os.path.split(provider.get_filename())
+            name = provider.name
+            row = [name, path, filename]
+            metadata = self.get_filename_metadata(fd, filename, path)
+            m.add_measurement('Image','FileName_'+name, filename)
+            m.add_measurement('Image','PathName_'+name, path)
+            for key in metadata:
+                measurement = 'Metadata_%s'%(key)
+                if not m.has_current_measurements('Image',measurement):
+                    m.add_measurement('Image',measurement,metadata[key])
+                elif metadata[key] != m.get_current_measurement('Image',measurement):
+                    raise ValueError("Image set has conflicting %s metadata: %s vs %s"%
+                                     (key, metadata[key], 
+                                      m.get_current_measurement('Image',measurement)))
+            for tag in tags:
+                if metadata.has_key(tag):
+                    row.append(metadata[tag])
+                else:
+                    row.append("")
+            statistics.append(row)
         if workspace.frame:
             figure = workspace.create_or_find_figure(title="Load images, image set #%d"%(workspace.measurements.image_set_number+1),
                                                      subplots=(1,1))
-            figure.subplot_table(0,0,statistics,ratio=[.25,.5,.25])
+            figure.subplot_table(0,0,statistics,ratio=ratio)
 
+    def get_filename_metadata(self, fd, filename, path):
+        """Get the filename and path metadata for a given image
+        
+        fd - file/image dictionary
+        filename - filename to be parsed
+        path - path to be parsed
+        """
+        metadata = {}
+        if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_FILE_NAME):
+            metadata.update(cpm.extract_metadata(fd[FD_FILE_METADATA].value,
+                                                 filename))
+        if fd[FD_METADATA_CHOICE].value in (M_BOTH, M_PATH):
+            metadata.update(cpm.extract_metadata(fd[FD_PATH_METADATA].value,
+                                                 path))
+        return metadata
+        
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES):
@@ -370,7 +699,27 @@ class LoadImages(cpmodule.CPModule):
             print "Found %d frames"%(frame_count)
             return frame_count
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
-            
+    
+    def get_metadata_tags(self, fd=None):
+        """Find the metadata tags for the indexed image
+
+        fd - an image file directory from self.images
+        """
+        if not fd:
+            s = set()
+            for fd in self.images:
+                s.update(self.get_metadata_tags(fd))
+            tags = list(s)
+            tags.sort()
+            return tags
+        
+        tags = []
+        if fd[FD_METADATA_CHOICE] in (M_FILE_NAME, M_BOTH):
+            tags += cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
+        if fd[FD_METADATA_CHOICE] in (M_PATH, M_BOTH):
+            tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+        return tags
+    
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
@@ -385,7 +734,9 @@ class LoadImages(cpmodule.CPModule):
         category - return measurements made in this category
         """
         if object_name == 'Image':
-            return ['FileName','PathName']
+            result = ['FileName','PathName']
+            result += self.get_metadata_tags()
+            return result
         return []
     
     def get_measurement_images(self,pipeline,object_name,category,measurement):
@@ -461,12 +812,12 @@ class LoadImages(cpmodule.CPModule):
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        return self.image_names
+        return [fd[FD_IMAGE_NAME] for fd in self.images]
         
     def text_to_find_vars(self):
         """Return the list of values in the image name field (the name that later modules see)
         """
-        return self.images_common_text
+        return [fd[FD_COMMON_TEXT] for fd in self.images]
     
     def text_to_exclude(self):
         """Return the text to match against the file name to exclude it from the set
@@ -516,7 +867,9 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         if img.mode=='I;16':
             # 16-bit image
             imgdata = numpy.array(img.getdata(),numpy.uint16)
-            img = imgdata.reshape(img.size)
+            img_size = list(img.size)
+            img_size.reverse()
+            img = imgdata.reshape(img_size)
             img = img.astype(float) / 65535.0
         else:
             img = matplotlib.image.pil_to_array(img)

@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy
+import re
 
 class Measurements(object):
     """Represents measurements made on images and objects
@@ -68,7 +69,7 @@ class Measurements(object):
             if isinstance(data,unicode):
                 data = str(data)
             if isinstance(data,str):
-                a = numpy.ndarray((1,1),dtype='S%d'%(len(data)))
+                a = numpy.ndarray((1,1),dtype='S%d'%(max(len(data),1)))
                 a[0,0]=data
             self.__dictionary[object_name][feature_name][self.image_set_number] = data
     
@@ -117,3 +118,69 @@ class Measurements(object):
         assert self.__dictionary[object_name].has_key(feature_name),"No measurements for %s.%s"%(object_name,feature_name)
         return self.__dictionary[object_name][feature_name]
     
+    def apply_metadata(self, pattern):
+        """Apply metadata from the current measurements to a pattern
+        
+        pattern - a regexp-like pattern that specifies how to insert
+                  metadata into a string. Each token has the form:
+                  "\(?<METADATA_TAG>\)" (matlab-style) or
+                  "\g<METADATA_TAG>" (Python-style)
+        image_name - name of image associated with the metadata (or None
+                     if metadata is not associated with an image)
+        returns a string with the metadata tags replaced by the metadata
+        """
+        result = ''
+        while True:
+            m = re.search('\\(\\?[<](.+?)[>]\\)', pattern)
+            if not m:
+                m = re.search('\\g[<](.+?)[>]', pattern)
+                if not m:
+                    break
+            result += pattern[:m.start()]
+            measurement = 'Metadata_'+m.groups()[0]
+            result += self.get_current_measurement("Image", measurement)
+            pattern = pattern[m.end():]
+        result += pattern
+        return result
+
+def find_metadata_tokens(pattern):
+    """Return a list of strings which are the metadata token names in a pattern
+    
+    pattern - a regexp-like pattern that specifies how to find
+              metadata in a string. Each token has the form:
+              "(?<METADATA_TAG>...match-exp...)" (matlab-style) or
+              "\g<METADATA_TAG>" (Python-style replace)
+              "(?P<METADATA_TAG>...match-exp..)" (Python-style search)
+    """ 
+    result = []
+    while True:
+        m = re.search('\\(\\?[<](.+?)[>]', pattern)
+        if not m:
+            m = re.search('\\\\g[<](.+?)[>]', pattern)
+            if not m:
+                m = re.search('\\(\\?P[<](.+?)[>]', pattern)
+                if not m:
+                    break
+        result.append(m.groups()[0])
+        pattern = pattern[m.end():]
+    return result
+
+def extract_metadata(pattern, text):
+    """Return a dictionary of metadata extracted from the text
+
+    pattern - a regexp that specifies how to find
+              metadata in a string. Each token has the form:
+              "\(?<METADATA_TAG>...match-exp...\)" (matlab-style) or
+              "\(?P<METADATA_TAG>...match-exp...\)" (Python-style)
+    text - text to be searched
+    
+    We do a little fixup in here to change Matlab searches to Python ones
+    before executing.
+    """
+    # Convert Matlab to Python
+    pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',pattern)
+    match = re.search(pattern, text)
+    if match:
+        return match.groupdict()
+    else:
+        return {}

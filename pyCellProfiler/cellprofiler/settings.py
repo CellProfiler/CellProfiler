@@ -104,6 +104,12 @@ class Text(Setting):
     def __init__(self,text,value):
         super(Text,self).__init__(text,value)
 
+class RegexpText(Setting):
+    """A setting with a regexp button on the side
+    """
+    def __init__(self,text,value):
+        super(RegexpText,self).__init__(text,value)
+
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """

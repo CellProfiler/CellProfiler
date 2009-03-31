@@ -210,17 +210,7 @@ See also LoadImages.
         result = {}
         for file_setting in self.file_settings:
             file_pattern = file_setting[FD_FILE_NAME].value
-            file_name = ''
-            while True:
-                m = re.search('\\(\\?[<](.+?)[>]\\)', file_pattern)
-                if not m:
-                    break
-                file_name += file_pattern[:m.start()]
-                measurement = 'Metadata_'+m.groups()[0]
-                file_name += workspace.measurements.get_current_measurement("Image",
-                                                                            measurement)
-                file_pattern = file_pattern[m.end():]
-            file_name += file_pattern
+            file_name = workspace.measurements.apply_metadata(file_pattern)
             result[file_setting[FD_IMAGE_NAME].value] = file_name
                 
         return result

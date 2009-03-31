@@ -15,6 +15,7 @@ import wx
 import wx.grid
 import cellprofiler.pipeline
 import cellprofiler.settings
+from regexp_editor import edit_regexp
 
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
@@ -60,6 +61,12 @@ def text_control_name(v):
     The text control name is built using the setting's key
     """
     return "%s_text"%(str(v.key()))
+
+def button_control_name(v):
+    """Return the name of a setting's button
+    v - the setting
+    """
+    return "%s_button"%(str(v.key()))
 
 def edit_control_name(v):
     """Return the name of a setting's edit control
@@ -184,7 +191,7 @@ class ModuleView:
                                                 name=text_name)
                 if control:
                     control.Show()
-                sizer.Add(static_text,1,wx.EXPAND|wx.ALL,2)
+                sizer.Add(static_text,3,wx.EXPAND|wx.ALL,2)
                 self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.settings.Binary):
                     control = self.make_binary_control(v,control_name,control)
@@ -220,9 +227,11 @@ class ModuleView:
                     control = self.make_unbounded_range_control(v, control)
                 elif isinstance(v, cellprofiler.settings.Coordinates):
                     control = self.make_coordinates_control(v,control)
+                elif isinstance(v, cellprofiler.settings.RegexpText):
+                    control = self.make_regexp_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
-                sizer.Add(control,0,wx.EXPAND|wx.ALL,2)
+                sizer.Add(control,1,wx.EXPAND|wx.ALL,2)
                 self.__controls.append(control)
             self.__module_panel.SetSizer(sizer)
             self.__module_panel.Layout()
@@ -283,6 +292,39 @@ class ModuleView:
             self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
         return control
     
+    def make_regexp_control(self, v, control):
+        """Make a textbox control + regular expression button"""
+        if not control:
+            panel = wx.Panel(self.__module_panel,
+                             -1,
+                             name=edit_control_name(v))
+            control = panel
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            panel.SetSizer(sizer)
+            text_ctrl = wx.TextCtrl(panel, -1, str(v.value),
+                                    name=text_control_name(v))
+            sizer.Add(text_ctrl,1,wx.EXPAND|wx.RIGHT,1)
+            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND,wx.ART_TOOLBAR,(16,16))
+            bitmap_button = wx.BitmapButton(panel, bitmap=bitmap,
+                                            name=button_control_name(v))
+            sizer.Add(bitmap_button,0,wx.EXPAND)
+            def on_cell_change(event, setting = v, control=text_ctrl):
+                self.__on_cell_change(event, setting,control)
+                
+            def on_button_pressed(event, setting = v, control = text_ctrl):
+                new_value = edit_regexp(panel, control.Value, 
+                                        "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif")
+                if new_value:
+                    control.Value = new_value
+                    self.__on_cell_change(event, setting,control)
+                
+            self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, text_ctrl)
+            self.__module_panel.Bind(wx.EVT_BUTTON, on_button_pressed, bitmap_button)
+        else:
+            text_control = control.FindWindowByName(text_control_name(v))
+            text_control.Value = v.value
+        return control
+     
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:
@@ -593,6 +635,8 @@ class ModuleSizer(wx.PySizer):
         width = size[0]
         edit_size = self.calc_edit_size()
         edit_width = edit_size[0] # the width of the edit controls portion
+        if edit_width * 4 < width:
+            edit_width = width/4
         text_width = max([width-edit_width,self.__min_text_width])
         #
         # Change all static text controls to wrap at the text width. Then

@@ -24,6 +24,7 @@ import matplotlib.figure
 import matplotlib.backends.backend_wx
 
 import cellprofiler.preferences
+from cellprofiler.modules.loadimages import LoadImagesImageProvider
 
 
 class DirectoryView(object):
@@ -117,8 +118,8 @@ class ImageFrame(wx.Frame):
         if image != None:
             self.__image = image
         else:
-            pil_image = PIL.Image.open(filename)
-            self.__image = matplotlib.image.pil_to_array(pil_image)
+            lip = LoadImagesImageProvider("dummy", "", filename)
+            self.__image = lip.provide_image(None).pixel_data
         sizer = wx.BoxSizer()
         self.__figure= matplotlib.figure.Figure()
         self.__axes = self.__figure.add_subplot(111)

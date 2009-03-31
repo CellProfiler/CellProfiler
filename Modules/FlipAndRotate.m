@@ -44,6 +44,26 @@ function handles = FlipAndRotate(handles,varargin)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Settings for PyCP
+% Vars 3&4 could be combined to say: How do you want to flip the image?
+% (choice1) Left to right
+% (choice2) Top to bottom
+% (choice3) Left to right, then top to bottom
+% (choice4) Top to bottom, then left to right
+
+% if choices 3& 4 should even be allowed.  I suppose right now you could do
+% choice3 by selecting 'yes' for both vars 3&4?  It should be clear what is
+% happening and in what order, so I think one variable question is better
+% for the flipping options.
+
+% I think in general the rotation options make sense, though it will be
+% nice in python to have them context-dependent so vars 8, 9 and 10 will only pop up if
+% you select coordinates, var 8 will only pop up if you select mouse, and
+% variable 11 will only pop up if you select angle.
+
+
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

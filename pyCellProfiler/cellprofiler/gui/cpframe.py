@@ -64,6 +64,7 @@ class CPFrame(wx.Frame):
         self.__layout_logo()
         self.__do_layout()
         self.__error_listeners = []
+        self.Bind(wx.EVT_SIZE,self.__on_size,self)
  
     def __set_properties(self):
         self.SetTitle("CellProfiler")
@@ -185,6 +186,9 @@ class CPFrame(wx.Frame):
     
     def __set_icon(self):
         self.SetIcon(get_icon())
+    
+    def __on_size(self, event):
+        self.Layout()
  
     def display_error(self,message,error):
         """Displays an exception in a standardized way

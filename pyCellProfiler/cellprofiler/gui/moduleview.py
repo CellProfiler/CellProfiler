@@ -628,6 +628,19 @@ class ModuleSizer(wx.PySizer):
             width = max(width,size[0])
         return wx.Size(width,height)
     
+    def calc_max_text_width(self):
+        width = self.__min_text_width
+        for i in range(0,self.__rows):
+            item = self.GetItem(self.idx(0,i))
+            control = item.GetWindow()
+            assert isinstance(control,wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
+            text = control.GetLabel()
+            text = text.replace('\n',' ')
+            ctrl_width = control.GetTextExtent(text)[0]
+            ctrl_width += 2* item.GetBorder()
+            width = max(width, ctrl_width)
+        return width
+    
     def RecalcSizes(self):
         """Recalculate the sizes of our items, resizing the text boxes as we go  
         """
@@ -635,7 +648,10 @@ class ModuleSizer(wx.PySizer):
         width = size[0]
         edit_size = self.calc_edit_size()
         edit_width = edit_size[0] # the width of the edit controls portion
-        if edit_width * 4 < width:
+        max_text_width = self.calc_max_text_width()
+        if edit_width + max_text_width < width:
+            edit_width = width - max_text_width
+        elif edit_width * 4 < width:
             edit_width = width/4
         text_width = max([width-edit_width,self.__min_text_width])
         #
@@ -653,9 +669,12 @@ class ModuleSizer(wx.PySizer):
             control = text_item.GetWindow()
             assert isinstance(control,wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
             text = control.GetLabel()
-            text = text.replace('\n',' ')
-            control.SetLabel(text)
-            control.Wrap(inner_text_width)
+            if (text_width > self.__min_text_width and
+                (text.find('\n') != -1 or
+                 control.GetTextExtent(text)[0] > inner_text_width)):
+                text = text.replace('\n',' ')
+                control.SetLabel(text)
+                control.Wrap(inner_text_width)
             item_heights = [text_item.CalcMin()[1],edit_item.CalcMin()[1]]
             for j in range(0,self.__cols):
                 item_size = wx.Size(widths[j],item_heights[j])

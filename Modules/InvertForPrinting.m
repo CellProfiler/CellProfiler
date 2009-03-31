@@ -27,6 +27,12 @@ function handles = InvertForPrinting(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Settings for PyCP
+% I don't see anything wrong with the settings.. the only thing I can think
+% of is perhaps this could be combined with another module? It seems very
+% specific.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

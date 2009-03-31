@@ -43,21 +43,19 @@ function handles = MeasureCorrelation(handles,varargin)
 % A button should be added that lets the user add/subtract images, but with
 % the first 2 images always required/always visible (having the first two
 % shown by default will make it clear that they have to choose a minimum of
-% two.
+% two.)
 %
-% (2) Within which objects would you like to measure intensity correlations? (Intensity correlations will automatically be measured across the entire input images) (ObjectName{1})
-% [note: I added the word 'also' here; it implies that measuring
-% whole-image correlations is default, which I think is our intent - that
-% is, is there any reason to first ask the user whether they want to measure
-% whole-image correlations vs. per-object ones? Or just assume that
-% whole-image is a 'yes' (since it doesn't take that much time, presumably)
-% and ask about per-object here in (2)?
+% (2) Within which objects would you like to measure intensity correlations? (ObjectName{1})
+% One of the options in the dropdown menu should be "Measure correlations across entire image".
+%
+% [note: the other possibility here is to assume that measuring whole-image
+% correlations will happen automatically (since it doesn't take that much
+% time, presumably) and make question (2) more obviously ask "Would you
+% ALSO like to measure within objects"? With a default to a "Do not measure
+% correlations within objects" option.]
 % 
 % (i) A button should be added that lets the user add/subtract additional
-% objects.
-% (ii) Setting (2) should default to a "Do not measure correlations within objects" option.
-% (iii) A button should be added after (2) that lets the user add/subtract
-% images (and more asociated objects)
+% objects and images.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

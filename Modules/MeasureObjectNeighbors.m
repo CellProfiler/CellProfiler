@@ -391,7 +391,7 @@ drawnow
 %%% incompatible with the Convert To Image module which expects a label
 %%% matrix starting at zero.
 if ~strcmpi(GrayscaleNeighborsName,'Do not use')
-    handles.Pipeline.(GrayscaleNeighborsName) = ImageOfNeighbors;
+    handles = CPaddimages(handles,GrayscaleNeighborsName,ImageOfNeighbors);
 end
 
 %%% Saves the objects colored by number of neighbors to the handles 
@@ -401,5 +401,5 @@ end
 %%% neighbors, plus one. This makes the objects compatible with the Convert
 %%% To Image module.
 if ~strcmpi(ColoredNeighborsName,'Do not use')
-    handles.Pipeline.(['Segmented',ColoredNeighborsName]) = ImageOfNeighbors + 1;
+    handles = CPaddimages(handles,['Segmented',ColoredNeighborsName],ImageOfNeighbors+1);
 end

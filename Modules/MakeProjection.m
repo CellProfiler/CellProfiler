@@ -123,7 +123,7 @@ if strncmpi(SourceIsLoadedOrPipeline, 'L',1) && handles.Current.SetBeingAnalyzed
     return
 end
 
-ReadyFlag = 'Not Ready';
+ReadyFlag = 0;
 if strcmpi(ProjectionType,'Average')
     try
         if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
@@ -229,4 +229,4 @@ handles = CPaddimages(handles,ProjectionImageName,ProjectionImage);
 %%% Saves the ready flag to the handles structure so it can be used by
 %%% subsequent modules.
 fieldname = [ProjectionImageName,'ReadyFlag'];
-handles.Pipeline.(fieldname) = ReadyFlag;
+handles = CPaddimages(handles,fieldname,ReadyFlag);

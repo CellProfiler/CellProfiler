@@ -49,7 +49,7 @@ end
 
 %%% Checks whether the image to be analyzed exists in the handles
 %%% structure.
-if ~isfield(handles.Pipeline, ImageName)
+if ~CPisimageinpipeline(handles, ImageName) %~isfield(handles.Pipeline, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -59,7 +59,14 @@ if ~isfield(handles.Pipeline, ImageName)
     error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module.'])
 end
 %%% Reads the image.
-Image = handles.Pipeline.(ImageName);
+if ~isfield(handles.Pipeline,'ImageGroupFields')
+    % If no image groups, retrieve from the handles.Pipeline structure
+    Image = handles.Pipeline.(ImageName);
+else
+    % If no image groups, retrieve from the appropriate
+    % handles.Pipeline.GroupFileList structure
+    Image = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(ImageName);
+end
 
 if ScaleFlag == 1
     if max(Image(:)) > 1 || min(Image(:)) < 0

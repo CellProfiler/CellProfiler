@@ -13,4 +13,8 @@ function ispresent = CPisimageinpipeline(handles, fieldname)
 %
 % $Revision$
 
-ispresent = isfield(handles.Pipeline,fieldname);
+if ~isfield(handles.Pipeline,'ImageGroupFields')
+    ispresent = isfield(handles.Pipeline,fieldname);
+else
+    ispresent = isfield(handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID},fieldname);
+end

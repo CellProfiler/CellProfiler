@@ -314,8 +314,9 @@ class Pipeline:
         root = {'handles':numpy.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
         for key,value in handles.iteritems():
             root['handles'][key][0,0]=value
-        scipy.io.matlab.mio.savemat(filename,root,format='5',long_field_names=True)
         
+        scipy.io.matlab.mio.savemat(filename,root,format='5',
+                                    long_field_names=True)
     
     def load_pipeline_into_matlab(self, image_set=None, object_set=None, measurements=None):
         """Load the pipeline into the Matlab singleton and return the handles structure
@@ -481,13 +482,13 @@ class Pipeline:
                 if module.module_name != 'Restart':
                     measurements.add_measurement('Image',
                                                  module_error_measurement,
-                                                 failure);
+                                                 numpy.array([failure]));
                     delta = t1-t0
                     delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
                                  float(delta.microseconds) / 1000. / 1000.)
                     measurements.add_measurement('Image',
                                                  execution_time_measurement,
-                                                 delta_sec)
+                                                 numpy.array([delta_sec]))
                 yield measurements
             first_set = False
             image_set_list.purge_image_set(measurements.image_set_number)

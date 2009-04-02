@@ -21,7 +21,7 @@ import wx.html
 import PIL.Image
 import numpy
 import matplotlib.image
-import scipy.io.mio
+import scipy.io.matlab.mio
 import uuid
 
 import cellprofiler.cpmodule as cpmodule
@@ -652,7 +652,8 @@ class LoadImages(cpmodule.CPModule):
             row = [name, path, filename]
             metadata = self.get_filename_metadata(fd, filename, path)
             m.add_measurement('Image','FileName_'+name, filename)
-            m.add_measurement('Image','PathName_'+name, path)
+            full_path = os.path.join(self.image_directory(),path)
+            m.add_measurement('Image','PathName_'+name, full_path)
             for key in metadata:
                 measurement = 'Metadata_%s'%(key)
                 if not m.has_current_measurements('Image',measurement):
@@ -856,7 +857,7 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         """Load an image from a pathname
         """
         if self.__filename.endswith(".mat"):
-            imgdata = scipy.io.mio.loadmat(self.get_full_name())
+            imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name())
             return cpimage.Image(imgdata["Image"])
         img = PIL.Image.open(self.get_full_name())
         # There's an apparent bug in the PIL library that causes

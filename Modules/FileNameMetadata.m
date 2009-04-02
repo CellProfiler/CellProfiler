@@ -40,6 +40,30 @@ function handles=FileNameMetadata(handles, varargin)
 %  8. "(?<WellCol>" Name the captured field, "WellCol"
 %  9. "[0-9]+"      Capture as many digits as follow
 %
+% When entering fields for the pathname, because slashs are platform-
+% dependdent and are escape characters in regexp, use a vertical line ('|')
+% to separate the direcrories, like this:
+%   (?<rootdir>)|(?<subdir1>)|(?<subdir2>)....
+% For instance, if an experimental run is given a unique directory name,
+% the following expression will capture the directory name from the path:
+%   .*|(?<Run>.*)$
+% This captures the immediate directory containing the image file in the 
+% token "Run", ignoring earlier directories in the path.
+%
+% If you want to group the images according to a set of tokens, enter the
+% fields here, separated by commas. Type "Do not use" to ignore.
+% If you want to group image files by a particular regexp token field,
+% enter the fields (not the tokens) you want to group by
+% here. For example, using the above examples, entering "Run, Plate" will
+% create groups containing images that share the same Run and the same
+% Plate fields. This is especially useful if you want to group all plates 
+% together for an illumination correction calculation, rather than running
+% the correction pipeline on each directory containing a plate separately.
+%
+% To use the grouping functionality, you must place this module immediately
+% after any LoadImage modules and before any subsequent modules that might
+% make use of tokens.
+%
 % See also LoadImages module for regular expression format
 
 % CellProfiler is distributed under the GNU General Public License.
@@ -77,6 +101,7 @@ drawnow
 %textVAR01 = What did you call the image?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
+ImageName = CPreplacemetadata(handles,ImageName);
 %inputtypeVAR01 = popupmenu
 
 %textVAR02 = For the filename, enter the regular expression to use to capture the fields. Type "Do not use" to ignore.
@@ -101,6 +126,15 @@ if ~strcmpi(RegularExpressionPathname,'Do not use')
     PathFieldNames = [PathFieldNames{:}];
 else
     PathFieldNames = [];
+end
+
+%textVAR04 = If you want to group the images according to a set of tokens, enter the fields here, separated by commas. Type "Do not use" to ignore.
+%defaultVAR04 = Do not use
+FieldsToGroupBy = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+if ~strcmpi(FieldsToGroupBy, 'Do not use'),
+    FieldsToGroupBy = strtrim(strread(FieldsToGroupBy,'%s','delimiter',','));
+else
+    FieldsToGroupBy = [];
 end
 
 %%%%%%%%%%%%%%%%
@@ -131,11 +165,15 @@ if nargin > 1
     return;
 end
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%
 %%% ANALYSIS %%%
 %%%%%%%%%%%%%%%%
+if find(strcmp(handles.Settings.ModuleNames,'LoadImages'),1,'last') > find(strcmp(handles.Settings.ModuleNames,ModuleName),1,'first')
+    error(['Image processing was canceled in the ', ModuleName,' module. ',ModuleName,' must be placed immediately after the last LoadImage module and before any subsequent modules that may make use of tokens.']);
+end
+
 FileNameField = ['FileName_',ImageName];
 
 if ~isfield(handles.Measurements,'Image')
@@ -146,7 +184,7 @@ if ~isfield(handles.Measurements.Image,FileNameField)
 end
 
 SetIndex = handles.Current.SetBeingAnalyzed;
-FileOrPathName = [handles.Measurements.Image.(['PathName_',ImageName]){SetIndex} filesep handles.Measurements.Image.(FileNameField){SetIndex}];
+FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetIndex}, handles.Measurements.Image.(FileNameField){SetIndex});
 [PathName,FileName] = fileparts(FileOrPathName);
 
 Metadata = [];
@@ -179,6 +217,162 @@ FieldNames = [PathFieldNames,FileFieldNames];
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
     Metadata.Well = [Metadata.WellRow Metadata.WellColumn];
     FieldNames{length(FieldNames)+1} = 'Well';
+end
+
+% Place current token values in handles.Pipeline
+for i = 1:length(FieldNames)
+    if isempty(Metadata.(FieldNames{i}))
+        value = ''; 
+    else
+        value = Metadata.(FieldNames{i});
+    end
+    handles.Pipeline.CurrentMetadata.(FieldNames{i}) = value;
+end
+    
+% If groups are being defined, set up the handles.Pipeline structure
+% appropriately 
+if ~isempty(FieldsToGroupBy)
+    if handles.Current.SetBeingAnalyzed == 1 
+        % Find the strings corresponding to metadata fields
+        % Some caution is needed here because during image confirmation, some
+        % of the fields may be ''. So I need to check all the FileLists since
+        % at least one of them will have all files represented
+        % TODO: This is not true if only 1 channel is present, so I need to
+        % correct that
+        prefix = 'FileList';
+        fn = fieldnames(handles.Pipeline);
+        AllImageNames = strrep(fn(strncmp(fn,prefix,length(prefix))),prefix,'');
+        [IndivPathnames,IndivFileNames] = deal(cell(1,length(AllImageNames)));
+        for i = 1:length(AllImageNames)
+            % Construct full path/filename so we can properly split it
+            % apart
+            f = handles.Pipeline.(['FileList',AllImageNames{i}]);
+            p = repmat({[handles.Pipeline.(['Pathname',AllImageNames{i}]),filesep]},[1 length(f)]); % Append slash to take care of cases where file is empty
+            [IndivPathnames{i},IndivFileNames{i}] = cellfun(@fileparts,cellfun(@fullfile,p,f,'UniformOutput',false),'UniformOutput',false);
+            IndivPathnames{i}(cellfun(@isempty,f)) = {''};
+        end
+
+        % Assign the path metadata an ID number
+        if ~isempty(PathFieldNames)
+            s1 = cell(1,length(AllImageNames));
+            for i = 1:length(AllImageNames)
+                s1{i} = regexp(IndivPathnames{i},RegularExpressionPathname,'names','once');
+            end
+            s1 = cat(1,s1{:})';
+            idx = reshape(~cellfun(@isempty,s1(:)),size(s1));
+            s1 = cat(1,s1{:,find(all(idx,1),1,'first')});
+            PathFieldsToGroupBy = FieldsToGroupBy(ismember(FieldsToGroupBy,PathFieldNames));
+            path_idstr = cell(size(s1,1),length(PathFieldsToGroupBy));
+            [path_idstr{:}] = deal('');
+            PathID = zeros(size(s1,1),length(PathFieldsToGroupBy));
+            for i = 1:length(PathFieldsToGroupBy),
+                path_idstr(:,i) = cellstr(strvcat(s1(:).(PathFieldsToGroupBy{i})));
+                [ignore,idx,PathID(:,i)] = group2index(path_idstr(:,i));
+            end
+        end
+
+        % Assign the file metadata an ID number
+        if ~isempty(FileFieldNames)
+            s2 = cell(1,length(AllImageNames));
+            for i = 1:length(AllImageNames)
+                s2{i} = regexp(IndivFileNames{i},RegularExpressionFilename,'names','once');
+            end
+            s2 = cat(1,s2{:})';
+            idx = reshape(~cellfun(@isempty,s2(:)),size(s2));
+            s2 = cat(1,s2{:,find(all(idx,1),1,'first')});
+            FileFieldsToGroupBy = FieldsToGroupBy(ismember(FieldsToGroupBy,FileFieldNames));
+            file_idstr = cell(size(s2,1),length(PathFieldsToGroupBy));
+            [file_idstr{:}] = deal('');
+            FileID = zeros(size(s2,1),length(PathFieldsToGroupBy));
+            for i = 1:length(FileFieldsToGroupBy),
+                file_idstr(:,i) = cellstr(cat(1,s2(:).(FileFieldsToGroupBy{i})));
+                [ignore,idx,FileID(:,i)] = group2index(file_idstr(:,i));
+            end
+        end
+
+        % Determine the valid combinations of the path/file fields
+        [ignore,idx] = unique([PathID FileID],'rows');
+        PathFileIDs = [path_idstr(idx,:) file_idstr(idx,:)];
+
+        % Pull the filelist into separate structures, one for each unique
+        % combination
+        for i = 1:size(PathFileIDs,1)
+            idx = all(ismember([path_idstr file_idstr],PathFileIDs(i,:)),2);
+            for j = 1:length(AllImageNames),
+                handles.Pipeline.GroupFileList{i}.(['FileList',AllImageNames{j}]) = handles.Pipeline.(['FileList',AllImageNames{j}])(idx);
+                handles.Pipeline.GroupFileList{i}.(['Pathname',AllImageNames{j}]) = handles.Pipeline.(['Pathname',AllImageNames{j}]);
+            end
+            handles.Pipeline.GroupFileList{i}.Fields = PathFileIDs(i,~all(cellfun(@isempty,PathFileIDs),1));
+            handles.Pipeline.GroupFileList{i}.SetBeingAnalyzed = 1;
+            handles.Pipeline.GroupFileList{i}.NumberOfImageSets = length(handles.Pipeline.GroupFileList{i}.(['FileList',AllImageNames{1}]));
+        end
+        PathFileIDs(:,all(cellfun(@isempty,PathFileIDs),1)) = [];
+        handles.Pipeline.GroupIDs = PathFileIDs;
+
+        % Since LoadImages and FileNameMetadata are separated, the initial
+        % images are saved to handles.Pipeline before this module gets to group
+        % them. So copy the images from LoadImages into the grouping structure
+        % (CPaddimages will take of this for all other cycles)
+        idxID = cell(1,length(FieldsToGroupBy));
+        for i = 1:length(FieldsToGroupBy)
+            idxID{i} = Metadata.(FieldsToGroupBy{i});
+        end
+        idx = find(all(ismember(handles.Pipeline.GroupIDs,idxID),2));
+        for i = 1:length(AllImageNames)
+            handles.Pipeline.GroupFileList{idx}.(AllImageNames{i}) = handles.Pipeline.(AllImageNames{i});
+        end
+
+        handles.Pipeline.CurrentImageGroupID = idx;
+        handles.Pipeline.ImageGroupFields = FieldsToGroupBy;
+    else
+        % If grouping fields have been created, set the current group
+        % number (This will not be true until FileNameMetadata has
+        % been processed once)
+        idxID = cell(1,length(handles.Pipeline.ImageGroupFields));
+        for i = 1:length(handles.Pipeline.ImageGroupFields)
+            idxID{i} = handles.Pipeline.CurrentMetadata.(handles.Pipeline.ImageGroupFields{i});
+        end
+        newImageGroupID = find(all(ismember(handles.Pipeline.GroupIDs,idxID),2));
+
+        % Determine the current image being used within the group. 
+        % NB: An unfortunate side-effect separating of LoadImages and 
+        % FileNameMetadata is that if the ImageGroupID changes, LoadImages has
+        % already placed the images in the old ImageGroupID. So I need to
+        % import the images here.
+        if newImageGroupID ~= handles.Pipeline.CurrentImageGroupID,
+            handles.Pipeline.GroupFileList{newImageGroupID}.SetBeingAnalyzed = 1;
+            prefix = 'FileList';
+            fn = fieldnames(handles.Pipeline);
+            AllImageNames = strrep(fn(strncmp(fn,prefix,length(prefix))),prefix,'');
+            for j = 1:length(AllImageNames),
+                    handles.Pipeline.GroupFileList{newImageGroupID}.(AllImageNames{j}) = ...
+                        handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(AllImageNames{j});
+            end
+            handles.Pipeline.CurrentImageGroupID = newImageGroupID;
+        else
+            % I think I should be able to just incrememt SetBeingAnalyzed,
+            % but to be safe I'm going to check the filenames
+            idx = handles.Pipeline.CurrentImageGroupID;
+            if ~isempty(handles.Pipeline.(['Filename',ImageName]){end})
+                handles.Pipeline.GroupFileList{idx}.SetBeingAnalyzed = ...
+                    find(ismember(handles.Pipeline.GroupFileList{idx}.(['FileList',ImageName]),handles.Pipeline.(['Filename',ImageName])(end)));
+            else    % Unless the filename is empty. Then just increment
+                handles.Pipeline.GroupFileList{idx}.SetBeingAnalyzed = handles.Pipeline.GroupFileList{idx}.SetBeingAnalyzed + 1;
+            end
+        end
+    end
+
+    % A final check, in case the filename is '': If image groups exist, fill in
+    % as much as the metadata as possible from the group definition
+    if isempty(handles.Pipeline.(['Filename',ImageName]){end})
+        for i = 1:length(FieldNames)
+            handles.Pipeline.CurrentMetadata.(FieldNames{i}) = '';  % To clear any erroneous metadata
+        end
+        idx = handles.Pipeline.CurrentImageGroupID;
+        for i = 1:length(handles.Pipeline.ImageGroupFields)
+            handles.Pipeline.CurrentMetadata.(handles.Pipeline.ImageGroupFields{i}) = handles.Pipeline.GroupFileList{idx}.Fields{i};
+        end
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -231,5 +425,44 @@ for i = 1:length(FieldNames)
     else
         value = Metadata.(FieldNames{i});
     end
-    handles = CPaddmeasurements(handles, 'Image', ['Metadata_',FieldNames{i}],value);
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Metadata',FieldNames{i},ImageName),value);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBFUNCTION - GROUP2INDEX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Create index vector from a grouping variable. Taken from GRP2IDX in the
+% Stats toolbox
+function [b,i,j] = group2index(s)
+% Same as UNIQUE but orders result:
+%    if iscell(s), preserve original order
+%    otherwise use numeric order
+
+s = s(:);
+s = s(end:-1:1);
+[b,i,j] = unique(s);     % b=unique group names
+i = length(s) + 1 - i; % make sure this is the first instance
+isort = i;  
+if (~iscell(s))  
+   if (any(isnan(b)))  % remove multiple NaNs; put one at the end
+      nans = isnan(b);
+      b = [b(~nans); NaN];
+      x = find(isnan(s));
+      i = [i(~nans); x(1)];
+      j(isnan(s)) = length(b);
+   end
+   isort = b;          % sort based on numeric values
+   if any(isnan(isort))
+      isort(isnan(isort)) = max(isort) + 1;
+   end
+end
+
+[is, f] = sort(isort); % sort according to the right criterion
+b = b(f,:);
+
+[fs, ff] = sort(f);    % rearrange j also
+j = ff(j);
+j = j(end:-1:1);
+if (~iscell(b))        % make sure b is a cell array of strings
+   b = cellstr(strjust(num2str(b), 'left'));
 end

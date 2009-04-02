@@ -406,6 +406,12 @@ if strcmp(CurrentModuleName, 'FileNameMetadata')
         SavedVarRevNum = 3;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 3      % New 4th argument at the end
+        Settings.VariableValues{ModuleNum-Skipped,4} = 'Do not use';
+        SavedVarRevNum = 4;
+        IsModuleModified = true;
+    end
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

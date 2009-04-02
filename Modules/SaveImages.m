@@ -227,7 +227,14 @@ CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+end
 
 if strcmpi(ColorMap,'Default') == 1
     ColorMap = handles.Preferences.IntensityColorMap;
@@ -248,7 +255,7 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
         if strcmp(handles.Settings.VariableValues{TileModuleNum(tilecount), 3}, ImageName) %if saving one of the tiled images
             if ~strcmpi(SaveWhen, 'Last cycle')  %then test if saving on every cycle or first cycle
                 SaveWhen='Last cycle';
-                if SetBeingAnalyzed == handles.Current.NumberOfImageSets    %if current cycle is last cycle
+                if SetBeingAnalyzed == NumberOfImageSets    %if current cycle is last cycle
                     CPwarndlg(['In the ', ModuleName, ' module, CellProfiler has detected that you are trying to save the tiled image "', ImageName, '" on "', handles.Settings.VariableValues{CurrentModuleNum,8}, '". Because the full tiled image is made only after the final cycle, such a setting will result in an error. To prevent an error from occurring, CellProfiler has saved "', ImageName, '" after the last cycle.'], 'Warning')
                 end
             end
@@ -257,10 +264,10 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
     end
 end
 
-if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == handles.Current.NumberOfImageSets
+if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == NumberOfImageSets
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
-        FileName = DigitString(handles.Current.NumberOfImageSets,SetBeingAnalyzed);
+        FileName = DigitString(NumberOfImageSets,SetBeingAnalyzed);
         %%% If the user has selected to use the same base name for all the new file
         %%% names (used for movies).
     elseif strncmpi(ImageFileName,'=',1)
@@ -268,13 +275,20 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             ' module because you have entered one or more spaces in the text box for the filename of the image.'])
         
         % Substitute Metadata tokens if found
-        ImageFileName = CPreplacemetadata(handles,ImageFileName,SetBeingAnalyzed);
+        ImageFileName = CPreplacemetadata(handles,ImageFileName);
                
         FileName = ImageFileName(2:end);
     else
         try
-            FileName = handles.Measurements.Image.(['FileName_', ImageFileName]);
-            if iscell(FileName), FileName = FileName{SetBeingAnalyzed}; end
+            if ~isImageGroups
+                FileName = handles.Pipeline.(['FileList',ImageFileName]){SetBeingAnalyzed};
+            else
+                FileName = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageFileName]){SetBeingAnalyzed};
+            end
+            if iscell(FileName), FileName = char(FileName); end
+            if isempty(FileName), % Image is missing
+                % TODO: Need to figure out what to do here
+            end
             [ignore,FileName] = fileparts(FileName);    % Drop old extension
         catch
             % If the user has selected an image name that is not
@@ -287,7 +301,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     end
 
     if strcmpi(Appendage,'N')
-        FileName = [FileName DigitString(handles.Current.NumberOfImageSets,SetBeingAnalyzed)];
+        FileName = [FileName DigitString(NumberOfImageSets,SetBeingAnalyzed)];
     else
         if ~strcmpi(Appendage,'Do not use')
             Spaces = isspace(Appendage);
@@ -295,7 +309,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
                 error(['Image processing was canceled in the ', ModuleName, ' module because you have entered one or more spaces in the box of text for the filename of the image.'])
             end
             % Substitute Metadata tokens if found
-            Appendage = CPreplacemetadata(handles,Appendage,SetBeingAnalyzed);
+            Appendage = CPreplacemetadata(handles,Appendage);
             
             FileName = [FileName Appendage];
         end
@@ -303,7 +317,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     FileName = [FileName '.' FileFormat];
     
-    FileDirectory = CPreplacemetadata(handles,FileDirectory,SetBeingAnalyzed);
+    FileDirectory = CPreplacemetadata(handles,FileDirectory);
     if strncmp(FileDirectory,'.',1)
         PathName = fullfile(handles.Current.DefaultOutputDirectory, strrep(strrep(FileDirectory(2:end),'/',filesep),'\',filesep),'');
     elseif strncmp(FileDirectory, '&', 1)
@@ -351,7 +365,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
 
     %%% However
     if ~strcmpi(FileFormat,'fig')
-        if ~isfield(handles.Pipeline, ImageName)
+        if ~CPisimageinpipeline(handles,ImageName)
             %%% Checks if this might be a number, intended to save an
             %%% entire figure.
             if ~isempty(str2double(ImageName));
@@ -406,7 +420,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         %%% If setting up for a batch run, some filenames may be
         %%% overwritten. Warn the user this could occur and urge them to
         %%% check their settings
-        if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (handles.Current.SetBeingAnalyzed == 1)  && ~isfield(handles.Current, 'BatchInfo'),
+        if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (SetBeingAnalyzed == 1)  && ~isfield(handles.Current, 'BatchInfo'),
             CPwarndlg(['You are setting up for a batch run but you have selected that any existing images with the same name should not be overwritten without confirming. When running on the cluster, there is no way to confirm overwriting since no dialog boxes are allowed. Check your overwriting settings in ',ModuleName,'.']);
         %%% If during a batch run we run into a file that could be
         %%% overwritten, terminate unconditionally with an error (since we
@@ -502,7 +516,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         if SetBeingAnalyzed == 1
             %%% Preallocates the variable which signficantly speeds processing
             %%% time.
-            handles.Pipeline.(fieldname)(handles.Current.NumberOfImageSets) = struct('colormap',[],'cdata',[]);
+            handles.Pipeline.(fieldname)(NumberOfImageSets) = struct('colormap',[],'cdata',[]);
         end
         Movie = handles.Pipeline.(fieldname);
         
@@ -534,12 +548,12 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         %%% time to save the movie file.
         TimeToSave = 0;
         if MovieIsNumber == 1
-            if rem(SetBeingAnalyzed,MovieSavingIncrement) == 0 || SetBeingAnalyzed == handles.Current.NumberOfImageSets
+            if rem(SetBeingAnalyzed,MovieSavingIncrement) == 0 || SetBeingAnalyzed == NumberOfImageSets
                 TimeToSave = 1;
             end
         else
             if strncmpi(SaveMovieWhen,'L',1)
-                if SetBeingAnalyzed == handles.Current.NumberOfImageSets
+                if SetBeingAnalyzed == NumberOfImageSets
                     TimeToSave = 1;
                 end
             end

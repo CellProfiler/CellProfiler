@@ -813,6 +813,7 @@ for n = 1:length(ImageName)
             %%% batch.
             fieldname = ['Filename', ImageName{n}];
             handles.Pipeline.(fieldname)(SetBeingAnalyzed) = CurrentFileName;
+            
             handles = CPaddimages(handles,ImageName{n},LoadedImage);
         catch
             CPerrorImread(ModuleName, n);
@@ -882,7 +883,7 @@ if strcmp(ImageOrMovie,'Image')
     uniqueImageSize = unique(cat(1,uniqueImageSize{:}),'rows');
     if any(MissingFileIdx)
         if size(uniqueImageSize,1) ~= 1,
-            CPerror('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
+            CPerrordlg('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
         else
             % If there are siblings, create a zero matrix with the same size
             % in place of the missing file

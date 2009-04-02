@@ -167,7 +167,7 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
 % Substitute filename metadata tokens into TablePrefix (if found) and
 % checks if the prefix is valid
-TablePrefix = CPreplacemetadata(handles,TablePrefix,handles.Current.SetBeingAnalyzed);
+TablePrefix = CPreplacemetadata(handles,TablePrefix);
 
 if ~strcmp(TablePrefix,'Do not use')
     % Try to enusre prefix validity by removing whitespaces and hyphens

@@ -16,9 +16,21 @@ function [handles, OutputImage, ReadyFlag, MaskImage] = CPaverageimages(handles,
 %
 % $Revision$
 
-ReadyFlag = 'NotReady';
+ReadyFlag = 0;
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+% Set up variables depending on image grouping or not
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
+end
 
-if strcmpi(Mode,'DoNow') == 1
+if strcmpi(Mode,'DoNow')
     %%% Retrieves the path where the images are stored from the
     %%% handles structure.
     fieldname = ['Pathname', ImageName];
@@ -28,7 +40,13 @@ if strcmpi(Mode,'DoNow') == 1
     %%% Retrieves the list of filenames where the images are stored
     %%% from the handles structure.
     fieldname = ['FileList', ImageName];
-    try FileList = handles.Pipeline.(fieldname);
+    try 
+        if ~isImageGroups,
+            FileList = handles.Pipeline.(fieldname);
+        else
+            FileList = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(fieldname);
+        end
+        FileList(cellfun(@isempty,FileList)) = [];  % Get rid of empty names
     catch
         error(['Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) could not find the input image. CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the CPaverageimages subfunction.'])
     end
@@ -50,7 +68,7 @@ if strcmpi(Mode,'DoNow') == 1
     drawnow
     TimeStart = clock;
     NumberOfImages = length(FileList);
-    for i=2:length(FileList)
+    for i = 2:length(FileList)
         OrigImage = fullfile(Pathname,char(FileList(i)));
         %%% Checks that the original image is two-dimensional (i.e.
         %%% not a color image), which would disrupt several of the
@@ -78,7 +96,7 @@ if strcmpi(Mode,'DoNow') == 1
     waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
     OutputImage = TotalImage / length(FileList);
     MaskImage = ones(size(OutputImage));
-    ReadyFlag = 'Ready';
+    ReadyFlag = 1;
 
 elseif strcmpi(Mode,'Accumulate') == 1
     %%% In Pipeline (cycling) mode, each time through the image sets,
@@ -87,13 +105,13 @@ elseif strcmpi(Mode,'Accumulate') == 1
     %%% variable.
     fieldname = ['', ImageName];
     mask_fieldname = ['CropMask', ImageName];
-    has_mask = isfield(handles.Pipeline,mask_fieldname);
+    has_mask = CPisimageinpipeline(handles, mask_fieldname);
     %%% Performs certain error-checking and initializing functions the
     %%% first time throught the image set.
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == StartingImageSet
         %%% Checks whether the image to be analyzed exists in the
         %%% handles structure.
-        if isfield(handles.Pipeline, ImageName)==0,
+        if ~CPisimageinpipeline(handles, ImageName),
             %%% If the image is not there, an error message is
             %%% produced.  The error is not displayed: The error
             %%% function halts the current function and returns
@@ -130,9 +148,9 @@ elseif strcmpi(Mode,'Accumulate') == 1
         MaskImage = MaskCountImage > 0;
         OutputImage = OutputImage./max(MaskCountImage,1);
         handles = CPaddimages(handles,MaskCountImageName,MaskCountImage);
-        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+        if SetBeingAnalyzed == NumberOfImageSets
             %%% Divides by the total number of images in order to average.
-            ReadyFlag = 'Ready';
+            ReadyFlag = 1;
         end
     else
         %%% Adds the current image to it.
@@ -141,11 +159,19 @@ elseif strcmpi(Mode,'Accumulate') == 1
         %%% If the last image set has just been processed, indicate that
         %%% the projection image is ready.
         MaskImage = ones(size(OutputImage));
-        if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-            %%% Divides by the total number of images in order to average.
-            OutputImage = OutputImage/handles.Current.NumberOfImageSets;
+        if SetBeingAnalyzed == NumberOfImageSets
+            %%% Divides by the total number of images in order to average. 
+            %%% Check whether any of the images are blank by looking at the
+            %%% FileList
+            if ~isImageGroups,
+                CurrentFileList = handles.Pipeline.(['FileList',ImageName]);
+            else
+                CurrentFileList = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageName]);
+            end
+            NumberOfActualImages = sum(~cellfun(@isempty,CurrentFileList));
+            OutputImage = OutputImage/NumberOfActualImages;
             MaskImage = ones(size(OutputImage));
-            ReadyFlag = 'Ready';
+            ReadyFlag = 1;
         end
     end
     %%% Saves the updated projection image to the handles structure.

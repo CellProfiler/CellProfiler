@@ -166,12 +166,13 @@ if ~any(strcmp(OldPathname, '.'))
     end
     
     % Replaces \ with / in all image filenames (only relevant for PCs)
+    % (a) handles.Pipelines
     Fieldnames = fieldnames(handles.Pipeline);
     FileListFieldNames = Fieldnames(strncmp(Fieldnames, 'FileList', 8));
     for i = 1:length(FileListFieldNames)
         if ndims(handles.Pipeline.(FileListFieldNames{i})) == 2
-            %% Assumed to be FLEX file, with filename in the 1st row of
-            %% cell array
+            % Assumed to be FLEX file, with filename in the 1st row of
+            % cell array
             for j = 1:size(handles.Pipeline.(FileListFieldNames{i}),2)
                 handles.Pipeline.(FileListFieldNames{i}){1,j} = strrep(handles.Pipeline.(FileListFieldNames{i}){1,j},'\','/');
             end
@@ -179,7 +180,25 @@ if ~any(strcmp(OldPathname, '.'))
             handles.Pipeline.(FileListFieldNames{i}) = strrep(handles.Pipeline.(FileListFieldNames{i}),'\','/');
         end
     end
-
+    % (b) handles.Pipelines.GroupFileList (if it exists)
+    if isfield(handles.Pipeline,'ImageGroupFields')
+        for i = 1:length(handles.Pipeline.GroupFileList)
+            Fieldnames = fieldnames(handles.Pipeline.GroupFileList{i});
+            FileListFieldNames = Fieldnames(strncmp(Fieldnames, 'FileList', 8));
+            for j = 1:length(FileListFieldNames)
+                if ndims(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j})) == 2
+                    % Assumed to be FLEX file, with filename in the 1st row of
+                    % cell array
+                    for k = 1:size(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{i}),2)
+                        handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}){1,k} = strrep(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}){1,k},'\','/');
+                    end
+                else
+                    handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}) = strrep(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}),'\','/');
+                end
+            end
+        end
+    end
+    
     % Deal with input paths that have already been saved to the handles
     % (a) handles.Pipelines
     Fieldnames = fieldnames(handles.Pipeline);
@@ -188,7 +207,18 @@ if ~any(strcmp(OldPathname, '.'))
         handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
         handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{2},NewPathname{2}),'\','/');
     end
-    % (b) handles.Measurements.Image
+    % (b) handles.Pipelines.GroupFileList (if it exists)
+    if isfield(handles.Pipeline,'ImageGroupFields')
+        for i = 1:length(handles.Pipeline.GroupFileList)
+            Fieldnames = fieldnames(handles.Pipeline.GroupFileList{i});
+            PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
+            for j = 1:length(PathFieldnames),
+                handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{1},NewPathname{1}),'\','/');
+                handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{2},NewPathname{2}),'\','/');
+            end
+        end
+    end
+    % (c) handles.Measurements.Image
     Fieldnames = fieldnames(handles.Measurements.Image);
     PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
     for i = 1:length(PathFieldnames),

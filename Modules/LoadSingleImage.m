@@ -130,7 +130,14 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 drawnow;
 
 %%% Determines which cycle is being analyzed.
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+end
 
 % Remove unused TextToFind and ImageName entries
 idx = strcmp(TextToFind,'Do not use') | strcmp(ImageName,'Do not use');
@@ -140,7 +147,7 @@ ImageName = ImageName(~idx);
 % Substitute Metadata tokens into TextToFind (if found)
 doTokensExist = false;
 for n = 1:length(ImageName)
-    [TextToFind{n},anytokensfound] = CPreplacemetadata(handles,TextToFind{n},SetBeingAnalyzed);
+    [TextToFind{n},anytokensfound] = CPreplacemetadata(handles,TextToFind{n});
     doTokensExist =  doTokensExist || anytokensfound;
 end
 
@@ -240,7 +247,7 @@ if doFirstCycleOnly || doTokensExist,
         % Since there's no need to re-load the same image multiple times,
         % replicate the filename/pathname measurement the neccesary number of 
         % times here
-        for m = 1:handles.Current.NumberOfImageSets,
+        for m = 1:NumberOfImageSets,
             for n = 1:length(ImageName),
                 handles = CPaddmeasurements(handles, 'Image', ['FileName_', ImageName{n}], TextToFind{n}, m);
                 handles = CPaddmeasurements(handles, 'Image', ['PathName_', ImageName{n}], Pathname, m);

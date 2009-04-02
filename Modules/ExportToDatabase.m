@@ -183,6 +183,8 @@ end
 %textVAR04 = What prefix should be used to name the SQL files?
 %defaultVAR04 = SQL_
 FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+% Substitute filename metadata tokens into FilePrefix (if found)
+FilePrefix = CPreplacemetadata(handles,FilePrefix);
 
 %pathnametextVAR05 = Enter the directory where the SQL files are to be saved.  Type period (.) to use the default output folder.
 %defaultVAR05 = .

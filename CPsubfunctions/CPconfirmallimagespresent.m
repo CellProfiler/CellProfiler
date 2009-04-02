@@ -380,7 +380,7 @@ for n = 1:size(FlaggedFilenames,1)
     isImageCorrupt = false(1,length(FlaggedFileList));
     for k = 1:length(FlaggedFileList),
         try
-            CPimread([handles.Pipeline.(['Pathname',FileListFieldnames{channel}(length(FileListPrefix)+1:end)]),FlaggedFileList{k}]);
+            CPimread(fullfile(handles.Pipeline.(['Pathname',FileListFieldnames{channel}(length(FileListPrefix)+1:end)]),FlaggedFileList{k}));
         catch
             isImageCorrupt(k) = true;
         end

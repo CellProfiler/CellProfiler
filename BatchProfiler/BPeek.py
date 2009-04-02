@@ -1,4 +1,4 @@
-#!/broad/tools/apps/Python-2.5.2/bin/python
+#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/development/python-2.6.sh
 #
 # Run bpeek on the indicated job #
 #

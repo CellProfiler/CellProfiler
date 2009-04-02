@@ -1,4 +1,4 @@
-#!/broad/tools/apps/Python-2.5.2/bin/python
+#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/development/python-2.6.sh
 # This is a CGI script that begins to start a batch on the clusters
 # Functionality:
 #   Parse the posted fields:
@@ -102,10 +102,10 @@ def CheckParameters(my_batch):
             return 'The %s, "%s", must be writeable'%(dir_key,writeable[dir_key])
     if not os.path.exists(txt_output):
         os.mkdir(txt_output)
-        os.chmod(txt_output,0666)
+        os.chmod(txt_output,0777)
     if not os.path.exists(status):
         os.mkdir(status)
-        os.chmod(status,0666)
+        os.chmod(status,0777)
 
 def SendMail(recipient,body):
     if os.name != 'nt':

@@ -1,10 +1,11 @@
-#!/broad/tools/apps/Python-2.5.2/bin/python
+#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/development/python-2.6.sh
 #
 # View a batch from the database, with some options to re-execute it
 #
 import cgitb
 cgitb.enable()
 import RunBatch
+import sql_jobs
 import StyleSheet
 import cgi
 import os
@@ -119,25 +120,62 @@ else:
                      value='Fix file permissions' />"""
     print "</form>"
     print "</div>"
+    print "</div>"
     #
-    # Upload to database button
+    # Upload to database table
     #
     sql_files = []
     for filename in os.listdir(my_batch["data_dir"]):
         if filename.upper().endswith(".SQL"):
             sql_files.append(filename)
     if len(sql_files):
+        print "<div style='clear:both; padding-top:10px'>"
+        print "<h2>Database scripts</h2>"
+        print "<table class='run_table'><tr><th>Script file</th><th>Action</th><th>Last job id</th><th>Status</th><th>Run time</th><th>Output</th></tr>"
         for filename in sql_files:
-            print "<div style='position:relative; float:top'>"
-            print "<form action='UploadToDatabase.py' method='POST'>"
-            print "<input type='hidden' name='sql_script' value='%s' />"%(filename)
-            print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
-            print """<input type='submit'
-                             value='Run database script %(filename)s?'
-                             onclick='confirm("Are you sure you want to upload to the database using %(filename)s?"' />"""%(globals())
-            print "</form>"
-            print "</div>"
-    print "</div>"
+            if filename.startswith('batch_'):
+                continue
+            job_id = sql_jobs.sql_file_job_id(batch_id, filename)
+            print "<tr><td>%s</td>"%(filename)
+            print "<td>"
+            run_button = True
+            output_file = filename[:-3]+'out'
+            if not job_id is None:
+                status = sql_jobs.sql_job_status(job_id)
+                if status in ('PEND','PSUSP','RUN'):
+                    # A kill button for jobs that are killable
+                    print "<form action ='KillJobs.py' method='POST' target='KillJob'>"
+                    print "<input type='hidden' name='job_id' value='%s' />"%(job_id)
+                    print """<input type='submit' value='Kill'
+                                    onclick='confirm("Are you sure you want to kill the database upload?")' />"""
+                    run_button = False
+            if run_button:
+                print "<form action='UploadToDatabase.py' method='POST'>"
+                print "<input type='hidden' name='sql_script' value='%s' />"%(filename)
+                print "<input type='hidden' name='output_file' value='%s' />"%(output_file)
+                print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
+                print """<input type='submit'
+                                 value='Run'
+                                 onclick='confirm("Are you sure you want to upload to the database using %(filename)s?")' />"""%(globals())
+                print "</form>"
+            print "</td>"
+            if job_id is None:
+                print "<td colspan='4'>not run</td>"
+            else:
+                run_time = sql_jobs.sql_job_run_time(job_id)
+                print "<td>%s</td><td>%s</td>"%(job_id,status)
+                if run_time is None:
+                    print "<td>-</td>"
+                    if status == 'RUN':
+                        print "<td><a href='BPeek.py?job_id=%(job_id)d'>job output</a></td>"%(globals())
+                    else:
+                        print "<td>-</td>"
+                else:
+                    print "<td>%d sec</td>"%(run_time.seconds)
+                    print "<td><a href='ViewTextFile.py?file_name=%(output_file)s'>%(output_file)s</a></td>"%(globals())
+            print "</tr>"
+        print "</table>"
+        print "</div>"
     #
     # The big table
     #

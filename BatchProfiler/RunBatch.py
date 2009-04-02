@@ -6,7 +6,14 @@ import subprocess
 import os
 import re
 
-connection = MySQLdb.Connect(host="imgdb01", db="batchprofiler", user="cpadmin", passwd="cPus3r")
+batchprofiler_host = "imgdb01"
+batchprofiler_db = "batchprofiler"
+batchprofiler_user = "cpadmin"
+batchprofiler_password = "cPus3r"
+connection = MySQLdb.Connect(host = batchprofiler_host,
+                             db=batchprofiler_db,
+                             user=batchprofiler_user,
+                             passwd=batchprofiler_password)
 
 def SetEnvironment(my_batch):
     orig_PATH = os.environ['PATH']

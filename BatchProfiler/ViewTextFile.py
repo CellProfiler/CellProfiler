@@ -15,7 +15,7 @@ if cgi.FieldStorage().has_key("run_id"):
     my_batch,my_run = RunBatch.LoadRun(run_id)
     text_file_path = RunBatch.RunTextFilePath(my_batch,my_run);
 else:
-    text_file_path = cgi.FieldStorage()["file_name"]
+    text_file_path = cgi.FieldStorage()["file_name"].value
 #
 # This is a temporary work-around because files get created
 # with the wrong permissions

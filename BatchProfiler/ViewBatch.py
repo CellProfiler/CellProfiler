@@ -140,6 +140,7 @@ else:
             print "<td>"
             run_button = True
             output_file = filename[:-3]+'out'
+            output_path = os.path.join(my_batch["data_dir"],output_file)
             if not job_id is None:
                 status = sql_jobs.sql_job_status(job_id)
                 if status in ('PEND','PSUSP','RUN'):
@@ -152,7 +153,7 @@ else:
             if run_button:
                 print "<form action='UploadToDatabase.py' method='POST'>"
                 print "<input type='hidden' name='sql_script' value='%s' />"%(filename)
-                print "<input type='hidden' name='output_file' value='%s' />"%(output_file)
+                print "<input type='hidden' name='output_file' value='%s' />"%(output_path)
                 print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
                 print """<input type='submit'
                                  value='Run'
@@ -166,13 +167,14 @@ else:
                 print "<td>%s</td><td>%s</td>"%(job_id,status)
                 if run_time is None:
                     print "<td>-</td>"
-                    if status == 'RUN':
-                        print "<td><a href='BPeek.py?job_id=%(job_id)d'>job output</a></td>"%(globals())
-                    else:
-                        print "<td>-</td>"
                 else:
                     print "<td>%d sec</td>"%(run_time.seconds)
-                    print "<td><a href='ViewTextFile.py?file_name=%(output_file)s'>%(output_file)s</a></td>"%(globals())
+                if status in ('DONE','EXIT'):
+                    print "<td><a href='ViewTextFile.py?file_name=%(output_path)s'>%(output_file)s</a></td>"%(globals())
+                elif status == 'RUN':
+                    print "<td><a href='BPeek.py?job_id=%(job_id)d'>job output</a></td>"%(globals())
+                else:
+                    print "<td>-</td>"
             print "</tr>"
         print "</table>"
         print "</div>"

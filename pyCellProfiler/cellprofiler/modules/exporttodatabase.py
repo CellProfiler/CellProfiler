@@ -30,7 +30,8 @@ DB_ORACLE = "Oracle"
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV= "StDev"
-AGG_NAMES = [AGG_MEAN,AGG_STD_DEV]
+AGG_MEDIAN = "Median"
+AGG_NAMES = [AGG_MEAN, AGG_MEDIAN, AGG_STD_DEV]
 
 class ExportToDatabase(cpm.CPModule):
     """% SHORT DESCRIPTION:
@@ -423,10 +424,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                         #
                         # Compute the mean and standard deviation
                         #
-                        mean_feature_name = '%s_%s_%s'%(AGG_MEAN,object_name, feature)
+                        mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
+                                                         feature)
                         mean = values.mean()
                         image_row[per_image[mean_feature_name]] = mean
-                        stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,object_name, feature)
+                        median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
+                                                          object_name, feature)
+                        median = np.median(values)
+                        image_row[per_image[median_feature_name]] = median
+                        stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
+                                                         object_name, feature)
                         stdev = values.std()
                         image_row[per_image[stdev_feature_name]] = stdev
                 for row in range(max_count):

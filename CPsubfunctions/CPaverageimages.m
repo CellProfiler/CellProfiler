@@ -53,7 +53,8 @@ if strcmpi(Mode,'DoNow')
     %%% Calculates the mean image. Initializes the variable.
     TotalImage = CPimread(fullfile(Pathname,char(FileList(1))));
     %%% Waitbar shows the percentage of image sets remaining.
-    WaitbarHandle = waitbar(0,'');
+    delete(findobj(allchild(0),'tag',mfilename));
+    WaitbarHandle = CPwaitbar(0,'','tag',mfilename);
     %%% Obtains the screen size and determines where the wait bar will
     %%% be displayed.
     [ScreenWidth,ScreenHeight] = CPscreensize;
@@ -61,11 +62,8 @@ if strcmpi(Mode,'DoNow')
     BottomOfMsgBox = max(PotentialBottom);
     OldPos = get(WaitbarHandle,'position');
     PositionMsgBox = [250 BottomOfMsgBox OldPos(3) 90];
-    set(WaitbarHandle,'color',[.7 .7 .9]);
-    userData.Application = 'CellProfiler';
-    set(WaitbarHandle,'UserData',userData);
-    set(WaitbarHandle, 'Position', PositionMsgBox)
-    drawnow
+    set(WaitbarHandle, 'position', PositionMsgBox);
+    drawnow;
     TimeStart = clock;
     NumberOfImages = length(FileList);
     for i = 2:length(FileList)
@@ -84,7 +82,7 @@ if strcmpi(Mode,'DoNow')
         TimeRemaining = round(TimePerSet*ImagesRemaining);
         WaitbarText = {'Calculating the average image.'; 'Subsequent image sets will be processed';'more quickly than the first image set.'; ['Seconds remaining: ', num2str(TimeRemaining),]};
         WaitbarText = char(WaitbarText);
-        waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
+        CPwaitbar(i/NumberOfImages, WaitbarHandle, WaitbarText);
         drawnow
     end
     if length(FileList) == 1
@@ -93,10 +91,11 @@ if strcmpi(Mode,'DoNow')
     end
     WaitbarText = {'Calculations of the average image are finished.'; 'Subsequent image sets will be processed';'more quickly than the first image set.';['Seconds consumed: ',num2str(TimeSoFar),]};
     WaitbarText = char(WaitbarText);
-    waitbar(i/NumberOfImages, WaitbarHandle, WaitbarText)
+    CPwaitbar(i/NumberOfImages, WaitbarHandle, WaitbarText);
     OutputImage = TotalImage / length(FileList);
     MaskImage = ones(size(OutputImage));
     ReadyFlag = 1;
+    delete(findobj(allchild(0),'tag',mfilename));
 
 elseif strcmpi(Mode,'Accumulate') == 1
     %%% In Pipeline (cycling) mode, each time through the image sets,

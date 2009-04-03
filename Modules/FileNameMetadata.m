@@ -269,6 +269,10 @@ if ~isempty(FieldsToGroupBy)
                 path_idstr(:,i) = cellstr(strvcat(s1(:).(PathFieldsToGroupBy{i})));
                 [ignore,idx,PathID(:,i)] = group2index(path_idstr(:,i));
             end
+        else
+            path_idstr = cell(length(handles.Pipeline.([prefix,ImageName])),1);
+            [path_idstr{:}] = deal('');
+            PathID = [];
         end
 
         % Assign the file metadata an ID number
@@ -281,13 +285,17 @@ if ~isempty(FieldsToGroupBy)
             idx = reshape(~cellfun(@isempty,s2(:)),size(s2));
             s2 = cat(1,s2{:,find(all(idx,1),1,'first')});
             FileFieldsToGroupBy = FieldsToGroupBy(ismember(FieldsToGroupBy,FileFieldNames));
-            file_idstr = cell(size(s2,1),length(PathFieldsToGroupBy));
+            file_idstr = cell(size(s2,1),length(FileFieldsToGroupBy));
             [file_idstr{:}] = deal('');
-            FileID = zeros(size(s2,1),length(PathFieldsToGroupBy));
+            FileID = zeros(size(s2,1),length(FileFieldsToGroupBy));
             for i = 1:length(FileFieldsToGroupBy),
                 file_idstr(:,i) = cellstr(cat(1,s2(:).(FileFieldsToGroupBy{i})));
                 [ignore,idx,FileID(:,i)] = group2index(file_idstr(:,i));
             end
+        else
+            file_idstr = cell(length(handles.Pipeline.([prefix,ImageName])),1);
+            [file_idstr{:}] = deal('');
+            FileID = [];
         end
 
         % Determine the valid combinations of the path/file fields

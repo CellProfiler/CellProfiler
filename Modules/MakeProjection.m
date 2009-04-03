@@ -168,7 +168,7 @@ elseif strcmpi(ProjectionType, 'Maximum')
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 %%% Checks whether the image to be analyzed exists in the
                 %%% handles structure.
-                if isfield(handles.Pipeline, ImageName)==0,
+                if ~CPisimageinpipeline(handles, ImageName)
                     error(['Image processing was cancelled because CellProfiler could not find the input image.  CellProfiler expected to find an image named "',ImageName,'" but that image has not been created by the pipeline.  Please adjust your pipeline to produce the image "',ImageName,''])
                 end
                 %%%First Image

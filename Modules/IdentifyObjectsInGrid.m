@@ -113,9 +113,18 @@ FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    StartingImageSet = handles.Current.StartingImageSet;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    StartingImageSet = handles.Current.StartingImageSet;
+end
+
 %%% Retrieves the grid, created by the DefineGrid module.
 try
-    Grid = handles.Pipeline.(['Grid_' GridName]);
+    Grid = CPretrieveimage(handles,['Grid_' GridName],ModuleName);
 catch
     error(['Image processing was canceled in the ', ModuleName, ' module because it is unable to find the grid you specified, ', GridName, '.  Make sure you properly defined it using the Define Grid module earlier.']);
 end
@@ -159,7 +168,7 @@ end
 if strcmp(FailedGridChoice,'Any Previous') || strcmp(FailedGridChoice,'The First')
     %%% Any of these conditions means the grid doesn't make sense.
     if (2*radius > YDiv) || (2*radius > XDiv) || (VertLinesX(1,1) < 0) || (HorizLinesY(1,1) < 0)
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        if SetBeingAnalyzed == StartingImageSet
             error(['Image processing was canceled in the ', ModuleName, ' module because the grid you have designed is not working, please check the pipeline.']);
         else
             if strcmp(FailedGridChoice,'The First')
@@ -334,7 +343,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == StartingImageSet
         CPresizefigure(FinalLabelMatrixImage,'TwoByOne',ThisModuleFigureNumber)
     end
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);

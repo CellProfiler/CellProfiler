@@ -230,6 +230,15 @@ FailedGridChoice = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    StartingImageSet = handles.Current.StartingImageSet;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    StartingImageSet = handles.Current.StartingImageSet;
+end
+
 %%% The image to display is retrieved from the handles.
 if strcmp(AutoOrManual,'Automatic')
 %%% For automatic mode, the previously identified objects are
@@ -244,8 +253,8 @@ end
 %%% If we are in 'Once' mode and this is not the first image cycle,
 %%% then we only need to retrieve values from the handles structure
 %%% rather than calculating/asking the user for the values.
-if strncmp(EachOrOnce,'Once',4) && handles.Current.SetBeingAnalyzed ~= 1
-    GridInfo = handles.Pipeline.(['Grid_' GridName]);
+if strncmp(EachOrOnce,'Once',4) && SetBeingAnalyzed ~= 1
+    GridInfo = CPretrieveimage(handles,['Grid_' GridName],ModuleName);
     XLocationOfLowestXSpot = GridInfo.XLocationOfLowestXSpot;
     YLocationOfLowestYSpot = GridInfo.YLocationOfLowestYSpot;
     XSpacing = GridInfo.XSpacing;
@@ -476,7 +485,7 @@ if any(findobj == ThisModuleFigureNumber)
     FigHandle = CPfigure(handles,'Image',ThisModuleFigureNumber);
     %%% Usually this image should be fairly large, so we are pretending it's a
     %%% 2x2 figure window rather than 1x1.
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
     [hImage,hAx]=CPimagesc(OrigImage,handles,ThisModuleFigureNumber);

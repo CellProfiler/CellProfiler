@@ -83,73 +83,73 @@ ClearMemory = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %textVAR03 = If yes, which images would you like to remain in memory?
 %choiceVAR03 = Do not use
 %infotypeVAR03 = imagegroup
-ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ImageNameList{1} = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
 %textVAR04 =
 %choiceVAR04 = Do not use
 %infotypeVAR04 = imagegroup
-ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR04 = popupmenu
 
 %textVAR05 =
 %choiceVAR05 = Do not use
 %infotypeVAR05 = imagegroup
-ImageNameList{2} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
+ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu
 
 %textVAR06 =
 %choiceVAR06 = Do not use
 %infotypeVAR06 = imagegroup
-ImageNameList{3} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+ImageNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 =
 %choiceVAR07 = Do not use
 %infotypeVAR07 = imagegroup
-ImageNameList{4} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 =
 %choiceVAR08 = Do not use
 %infotypeVAR08 = imagegroup
-ImageNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 =
 %choiceVAR09 = Do not use
 %infotypeVAR09 = imagegroup
-ImageNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+ImageNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
 %textVAR10 =
 %choiceVAR10 = Do not use
 %infotypeVAR10 = imagegroup
-ImageNameList{7} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+ImageNameList{8} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %textVAR11 =
 %choiceVAR11 = Do not use
 %infotypeVAR11 = imagegroup
-ImageNameList{8} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+ImageNameList{9} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %inputtypeVAR11 = popupmenu
 
 %textVAR12 =
 %choiceVAR12 = Do not use
 %infotypeVAR12 = imagegroup
-ImageNameList{9} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+ImageNameList{10} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
 %textVAR13 =
 %choiceVAR13 = Do not use
 %infotypeVAR13 = imagegroup
-ImageNameList{10} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
 %textVAR14 =
 %choiceVAR14 = Do not use
 %infotypeVAR14 = imagegroup
-ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+ImageNameList{12} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %inputtypeVAR14 = popupmenu
 
 %%%VariableRevisionNumber = 5
@@ -158,11 +158,27 @@ ImageNameList{11} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+ImageNameList(strcmp(ImageNameList,'Do not use')) = [];
+
 if strcmpi(ClearMemory,'Yes')
     ListOfFields = fieldnames(handles.Pipeline);
     for i = 1:length(ListOfFields)
-        if all(size(handles.Pipeline.(ListOfFields{i}))~=1) && ~any(strcmp(ImageNameList,ListOfFields{i})) && ~iscell(handles.Pipeline.(ListOfFields{i}))
+        if all(size(handles.Pipeline.(ListOfFields{i})) ~= 1) && ...    % As long as the image is not a scalar...
+                ~any(strcmp(ImageNameList,ListOfFields{i})) && ...      % ...is in the list of image fields...
+                ~iscell(handles.Pipeline.(ListOfFields{i}))             % ...and is not a cell (e.g., FileList)
             handles.Pipeline = rmfield(handles.Pipeline,ListOfFields(i));
+        end
+    end
+    isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+    if isImageGroups
+        idx = handles.Pipeline.CurrentImageGroupID;
+        ListOfFields = fieldnames(handles.Pipeline.GroupFileList{idx});
+        for i = 1:length(ListOfFields)
+            if all(size(handles.Pipeline.GroupFileList{idx}.(ListOfFields{i})) ~= 1) && ...    % As long as the image is not a scalar...
+                    ~any(strcmp(ImageNameList,ListOfFields{i})) && ...                       % ...is in the list of image fields...
+                    ~iscell(handles.Pipeline.GroupFileList{idx}.(ListOfFields{i}))                             % ...and is not a cell (e.g., FileList)
+                handles.Pipeline.GroupFileList{idx} = rmfield(handles.Pipeline.GroupFileList{idx},ListOfFields(i));
+            end
         end
     end
 end

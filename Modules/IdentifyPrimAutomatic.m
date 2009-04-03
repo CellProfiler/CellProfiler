@@ -673,7 +673,7 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                 Objects = BinaryInputImage;
             end
             fieldname = ['CropMask', ImageName];
-            if isfield(handles.Pipeline,fieldname)
+            if CPisimageinpipeline(handles, fieldname)
                 %%% Retrieves previously selected cropping mask from handles
                 %%% structure.
                 BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);

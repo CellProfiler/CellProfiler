@@ -75,7 +75,7 @@ end
 
 % Respect previous MaskImage modules
 fieldname = ['CropMask', ImageName];
-if isfield(handles.Pipeline,fieldname)
+if CPisimageinpipeline(handles, fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
     BinaryCropImage = CPretrieveimage(handles,fieldname,ModuleName);

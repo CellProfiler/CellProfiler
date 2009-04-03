@@ -74,7 +74,7 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
 
     %%% Retrieve grid info from previously run module.
-    GridInfo = handles.Pipeline.(['Grid_' GridName]);
+    GridInfo = CPretrieveimage(handles,['Grid_' GridName],ModuleName);
     Rows = GridInfo.Rows;
     Columns = GridInfo.Columns;
     YSpacing = GridInfo.YSpacing;

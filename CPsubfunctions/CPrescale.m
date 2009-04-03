@@ -14,6 +14,8 @@ function [handles,OutputImage] = CPrescale(handles,InputImage,RescaleOption,Meth
 %
 % $Revision$
 
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
+
 if strncmpi(RescaleOption,'N',1) == 1
     OutputImage = InputImage;
 elseif strncmpi(RescaleOption,'S',1) == 1
@@ -102,20 +104,20 @@ elseif strncmpi(RescaleOption,'E',1) == 1
             LowestPixelOrig = double(minPixelValue);
             if FindHighestIntensity,
                 fieldname = ['MaxPixelValue', ImageName];
-                handles.Pipeline.(fieldname) = HighestPixelOrig;
+                handles = CPaddimages(handles,fieldname,HighestPixelOrig);
             end
             if FindLowestIntensity,
                 fieldname = ['MinPixelValue', ImageName];
-                handles.Pipeline.(fieldname) = LowestPixelOrig;
+                handles = CPaddimages(handles,fieldname,LowestPixelOrig);
             end
         else
             if FindHighestIntensity,
                 fieldname = ['MaxPixelValue', ImageName];
-                HighestPixelOrig = handles.Pipeline.(fieldname);
+                HighestPixelOrig = CPretrieveimages(handles,fieldname,ModuleName);
             end
             if FindLowestIntensity,
                 fieldname = ['MinPixelValue',ImageName];
-                LowestPixelOrig = handles.Pipeline.(fieldname);
+                LowestPixelOrig = CPretrieveimages(handles,fieldname,ModuleName);
             end
         end
     end

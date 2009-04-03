@@ -516,9 +516,10 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
         if SetBeingAnalyzed == 1
             %%% Preallocates the variable which signficantly speeds processing
             %%% time.
-            handles.Pipeline.(fieldname)(NumberOfImageSets) = struct('colormap',[],'cdata',[]);
+            Movie(NumberOfImageSets) = struct('colormap',[],'cdata',[]);
+            handles = CPaddimages(handles,fieldname,Movie);
         end
-        Movie = handles.Pipeline.(fieldname);
+        Movie = CPretrieveimage(handles,fieldname); 
         
         %%% Determines whether the image is RGB.
         if size(Image,3) == 3
@@ -536,7 +537,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             Movie(SetBeingAnalyzed).cdata = Image*256;
         end
         %%% Saves the movie to the handles structure.
-        handles.Pipeline.(fieldname) = Movie;
+        handles = CPaddimages(handles,fieldname,Movie);
 
         %%% Saves the Movie under the appropriate file name after the
         %%% appropriate cycle.

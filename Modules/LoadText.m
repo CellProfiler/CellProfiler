@@ -68,6 +68,27 @@ function handles = LoadText(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Variable settings for PyCP
+% For exporting to database, right now ExportToDatabase assumes that
+% anything loaded by load text is actually a number (so its a float) as
+% opposed to a character.  Perhaps in LoadText, we could ask the user what
+% they are loading- characters or numbers- and store this info (in the name
+% of the loaded text? LoadedText_Char vs LoadedText_Float?) so that
+% downstream modules who care can access it.  I'm guessing right now Calc.
+% Stats. assumes you're giving it numbers (doses) but in theory you could
+% group over any treatment and come up with stats for those, I think.
+
+% Getting even more abstract about metadata, Could it be possible to load
+% in your metadata w/ load text modules and have ExportToDatabase create a
+% metadata table? (On the most basic level, it could just assume that
+% whatever you loaded in loadtext is metadata, and created a table linked
+% by image number, just with the loaded text in a separate table)
+
+% I can't think of any other uses of LoadText, other than metadata, but we
+% should think about what users may do with LoadText and keep it flexible
+% for that too.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

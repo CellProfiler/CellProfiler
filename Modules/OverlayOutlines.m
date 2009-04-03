@@ -40,6 +40,18 @@ function handles = OverlayOutlines(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Variable Settings for PyCP
+% I can't find anything to change as far as variables are concerned.  The
+% only thing that comes to me with this module is that users often don't
+% realize they can just name outlines in the Identify modules and save them
+% directly from there- there's actually no need to overlay on a blank
+% image, unless you would like to see it during processing.  For that
+% reason I've sometimes wondered if we should have a different category of
+% modules, 'Display Modules' (right now most of them live in 'Other'),
+% since OverlayOutlines doesn't actually do any image processing; I think
+% it's a little misleading.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

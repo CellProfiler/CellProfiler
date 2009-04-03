@@ -27,6 +27,10 @@ import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 
 class testLoadImages(unittest.TestCase):
+    def error_callback(self, calller, event):
+        if isinstance(event, P.RunExceptionEvent):
+            self.fail(event.error.message)
+
     def test_00_00init(self):
         x=LI.LoadImages()
     
@@ -43,6 +47,7 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         l.prepare_run(pipeline, image_set_list, None)
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
         image_set = image_set_list.get_image_set(0)
@@ -65,6 +70,7 @@ class testLoadImages(unittest.TestCase):
             l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         l.prepare_run(pipeline, image_set_list, None)
         self.assertEqual(image_set_list.count(),1,"Expected one image set, there were %d"%(image_set_list.count()))
         image_set = image_set_list.get_image_set(0)
@@ -107,6 +113,7 @@ class testLoadImages(unittest.TestCase):
     def test_03_02_load_version_4(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
         pipeline = T.load_pipeline(self, data)
+        pipeline.add_listener(self.error_callback)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
         self.assertEqual(module.load_choice(),LI.MS_EXACT_MATCH)
@@ -179,6 +186,7 @@ class testLoadImages(unittest.TestCase):
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
         pipeline.run()
@@ -214,6 +222,7 @@ class testLoadImages(unittest.TestCase):
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
         pipeline.run()
@@ -249,6 +258,48 @@ class testLoadImages(unittest.TestCase):
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
+        pipeline.add_module(load_images)
+        pipeline.add_module(check_image)
+        pipeline.run()
+
+    def test_05_04_load_JPG(self):
+        """Test loading of a .JPG file
+        
+        """
+        data = base64.b64decode(T.jpg_8_1)
+        (matfd,matpath) = tempfile.mkstemp('.jpg')
+        matfh = os.fdopen(matfd,'wb')
+        matfh.write(data)
+        matfh.flush()
+        path,filename = os.path.split(matpath)
+        load_images = LI.LoadImages()
+        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = LI.MS_EXACT_MATCH
+        load_images.images[0][LI.FD_COMMON_TEXT].value = filename
+        load_images.images[0][LI.FD_IMAGE_NAME].value = 'Orig'
+        load_images.location.value = LI.DIR_OTHER
+        load_images.location_other.value = path
+        load_images.module_num = 1
+        outer_self = self
+        class CheckImage(CPM.CPModule):
+            def run(self,workspace):
+                image = workspace.image_set.get_image('Orig',
+                                                      must_be_grayscale=True)
+                pixel_data = image.pixel_data
+                matfh.close()
+                pixel_data = (pixel_data * 255).astype(numpy.uint8)
+                check_data = base64.b64decode(T.raw_8_1)
+                check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
+                # JPEG is lossy, apparently even when you ask for no compression
+                epsilon = 1
+                outer_self.assertTrue(numpy.all(numpy.abs(pixel_data.astype(int) 
+                                                          - check_image.astype(int) <=
+                                                          epsilon)))
+        check_image = CheckImage()
+        check_image.module_num = 2
+        pipeline = P.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
         pipeline.run()
@@ -286,6 +337,7 @@ class testLoadImages(unittest.TestCase):
             load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
             load_images.module_num = 1
             pipeline = P.Pipeline()
+            pipeline.add_listener(self.error_callback)
             pipeline.add_module(load_images)
             image_set_list = I.ImageSetList()
             load_images.prepare_run(pipeline, image_set_list, None)
@@ -362,6 +414,7 @@ class testLoadImages(unittest.TestCase):
             load_images.images[1][LI.FD_PATH_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)"
             load_images.module_num = 1
             pipeline = P.Pipeline()
+            pipeline.add_listener(self.error_callback)
             pipeline.add_module(load_images)
             image_set_list = I.ImageSetList()
             load_images.prepare_run(pipeline, image_set_list, None)
@@ -433,6 +486,7 @@ class testLoadImages(unittest.TestCase):
             load_images.images[1][LI.FD_FILE_METADATA].value = "^(?P<plate>.*?)_(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_s(?P<site>[0-9]+)_w2_"
             load_images.module_num = 1
             pipeline = P.Pipeline()
+            pipeline.add_listener(self.error_callback)
             pipeline.add_module(load_images)
             image_set_list = I.ImageSetList()
             self.assertRaises(ValueError, load_images.prepare_run, pipeline, 
@@ -473,6 +527,7 @@ class testLoadImages(unittest.TestCase):
             load_images.module_num = 1
             pipeline = P.Pipeline()
             pipeline.add_module(load_images)
+            pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
             self.assertRaises(ValueError,load_images.prepare_run, pipeline, 
                               image_set_list, None)

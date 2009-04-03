@@ -252,19 +252,19 @@ class SliderCtl(wx.Panel):
     def get_marker_rect(self):
         y = self.get_mark_y(self.value)
         center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Rect2D(center_x-8,y-4,16,8)
+        return wx.Rect(center_x-8,y-4,16,8)
     
     marker_rect = property(get_marker_rect)
     
     def get_start_point(self):
         y = self.get_mark_y(self.start_value)
         center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Point2D(center_x,y)
+        return wx.Point(center_x,y)
     
     def get_stop_point(self):
         y = self.get_mark_y(self.stop_value)
         center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Point2D(center_x,y)
+        return wx.Point(center_x,y)
     
     def get_groove_rect(self):
         rect = self.GetClientRect()
@@ -283,7 +283,7 @@ class SliderCtl(wx.Panel):
         rect.Deflate(1,1)
         rect = draw_bevel(dc,rect,2,BV_DOWN)
         sep_y = self.get_mark_y(self.value)
-        rtop = wx.Rect2D(rect.Left,rect.Top,rect.width,sep_y-rect.Top)
+        rtop = wx.Rect(rect.Left,rect.Top,rect.width,sep_y-rect.Top)
         dc.Pen = wx.BLACK_PEN
         dc.Brush = wx.GREEN_BRUSH
         dc.DrawRectangle(rtop.x,rtop.y,rtop.width,rtop.height)

@@ -20,6 +20,7 @@ import cellprofiler
 import os
 import re
 import wx
+import sys
 
 __python_root = os.path.split(str(cellprofiler.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
@@ -60,7 +61,14 @@ def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.curdir)
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
-    return default_image_directory
+    if os.path.isdir(default_image_directory):
+        return default_image_directory
+    else:
+        sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
+                         (default_image_directory))
+        default_image_directory = os.path.abspath(os.path.curdir)
+        set_default_image_directory(default_image_directory)
+        return default_image_directory
 
 def set_default_image_directory(path):
     path = str(path)

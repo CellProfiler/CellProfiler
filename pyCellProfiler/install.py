@@ -16,6 +16,7 @@ Website: http://www.cellprofiler.org
 import distutils.core
 import optparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -29,10 +30,11 @@ SCIPY_SPEC       = "scipy>=0.7.0rc2"
 SCIPY            = "scipy-0.7.0rc2.tar.gz"
 CYTHON           = "Cython-0.10.3.zip"
 MATPLOTLIB_SPEC  = "matplotlib>=0.98.5.2"
+MATPLOTLIB       = "matplotlib-0.98.5.2.tar.gz"
 JPYPE            = "JPype-0.5.4.zip"
 MLABWRAP         = "mlabwrap-1.0.tar.gz"
 PYLINT           = "pylint-0.15.2.zip"
-NOSE_SPEC        = "nose>=0.10.4"
+NOSE_SPEC        = "nose"
 NOSEXUNIT_SPEC   = "NoseXUnit"
 LOGILAB_COMMON_SPEC = "logilab-common"
 PIL_SPEC         = "PIL"
@@ -41,6 +43,9 @@ IMAGING          = "Imaging-1.1.6.tar.gz"
 PYFFMPEG         = "pyffmpeg.zip"
 FFMPEG           = "ffmpeg-export-snapshot.tar.bz2"
 DECORATOR        = "decorator"
+ZLIB             = "zlib-1.2.3.tar.gz"
+JPEGLIB          = "jpegsrc.v6b.tar.gz"
+JPEG_PKG         = "jpeg-6b"
 
 default_root = os.path.abspath(os.path.split(__file__)[0])
 
@@ -58,15 +63,38 @@ parser.add_option("-d","--dry-run",dest="dry_run",
 build_path = os.path.join(options.root,"build")
 package_path = os.path.join(options.root,"packages")
 
+def make_string_literal(x):
+    """Return a string literal that evaluates to the argument passed
+    
+    Returns a string suitable for inclusion into a Python script, complete
+    with open and close quotes and escape sequences for any embedded
+    backslashes or quotes.
+    """
+    escaped_x = x.replace("\\","\\\\").replace("'","\\'")
+    return "'%(escaped_x)s'"%(locals())
+
 def windows_check_prerequisites():
     """Make sure we have mingw32, make and some other things available"""
     if options.verbose:
         print "Checking for GCC"
-    if run_command("gcc --version"):
+    try:
+        run_command("gcc --version")
+    except:
         raise EnvironmentError("""Can't find GCC - mingw32 must be installed.
         Please run MinGW-5.1.4.exe, located in the packages directory
         and make sure to install the g++ and g77 compilers as well as
         MinGW make.""")
+    if options.verbose:
+        print "Checking for make"
+    try:
+        run_command("make -v")
+    except:
+        raise EnvironmentError("""Can't find make - Please run MSYS-1.0.10.exe
+located in the packages directory and add the MSYS bin directory to your path""")
+    try:
+        run_command("sh --version")
+    except:
+        raise EnvironmentError("""Can't find sh - MSYS may not be properly installed""")
     distutils_cfg_path = os.path.join(os.path.split(sys.executable)[0],'Lib','distutils','pydistutils.cfg')
     if not os.path.isfile(distutils_cfg_path):
         if options.verbose:
@@ -179,7 +207,8 @@ def install_easy_install(packagespec):
         print "Easy-installing %s"%(packagespec)
     if not options.dry_run:
         run_command("python -m easy_install %s"%(packagespec))
-    
+
+MAKE = "make"
 if os.name == 'nt':
     windows_check_prerequisites()
     BUILD = "build --compiler=mingw32"
@@ -193,6 +222,15 @@ except:
     os.chdir(os.path.join(setup_tools_dir,setup_tools))
     command = "python setup.py %s install"%(BUILD)
     run_command(command)
+    if os.name == 'nt':
+        distutils_cfg_path = os.path.join(os.path.split(sys.executable)[0],'Lib','distutils','pydistutils.cfg')
+        if not os.path.isfile(distutils_cfg_path):
+            if options.verbose:
+                print "Configuring distutils to use mingw32"
+            if not options.dry_run:
+                fid = open(distutils_cfg_path,'w')
+                fid.write("[build_ext]\ncompiler=mingw32\n[build]\ncompiler=mingw32\n")
+                fid.close()
 
 try:
     import Cython
@@ -227,6 +265,58 @@ try:
 except:
     install_easy_install(DECORATOR)
 
+# Can't install PIL if imported "successfully", but later part
+# of script fails, so run it in another Python instance
+script = """
+try:
+    from sys import exit
+    import PIL.Image
+    #make sure that we have PIL installed with the libraries we want
+    ignore = PIL.Image.core.zip_decoder
+    ignore = PIL.Image.core.jpeg_decoder
+    print "Python imaging library installed"
+except:
+    print "Python imaging library not correctly installed"
+    exit(-1)
+    """
+p = subprocess.Popen("python",stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+output = p.communicate(script)
+if p.returncode:
+    if os.name == 'nt':
+        # Build the zip and JPEG packages
+        zip_pkg,zip_dir = unpack_package(ZLIB)
+        zip_path = os.path.join(zip_dir,zip_pkg)
+        os.chdir(zip_path)
+        run_command("sh ./configure")
+        run_command(MAKE)
+        
+        ignore, jpeg_dir = unpack_package(JPEGLIB)
+        jpeg_path = os.path.join(jpeg_dir,JPEG_PKG)
+        os.chdir(jpeg_path)
+        run_command("sh ./configure")
+        run_command(MAKE)
+    pil_pkg,pil_dir = unpack_package(IMAGING)
+    os.chdir(os.path.join(pil_dir,pil_pkg))
+    if os.name == 'nt':
+        # We hack the setup file here to point at the zip and jpeg libraries
+        fd = open('setup.py','r')
+        setup_lines = fd.readlines()
+        fd.close()
+        fd = open('setup.py','w')
+        jpeg_literal_path = make_string_literal(jpeg_path)
+        zlib_literal_path = make_string_literal(zip_path)  
+        for line in setup_lines:
+            if re.search('^JPEG_ROOT\\s*=\\s*None',line):
+                line = ("JPEG_ROOT = (%(jpeg_literal_path)s,%(jpeg_literal_path)s)\n" %
+                        (globals()))
+            elif re.search('^ZLIB_ROOT\\s*=\\s*None',line):
+                line = ("ZLIB_ROOT = (%(zlib_literal_path)s,%(zlib_literal_path)s)\n" % 
+                        (globals()))
+            fd.write(line)
+        fd.close()
+    command = "python setup.py %s install"%(BUILD)
+    run_command(command)
+
 try:
     import numpy
 except:
@@ -249,23 +339,44 @@ except:
         command = "python setup.py %s install"%(BUILD)
         run_command(command)
 
-install_easy_install(MATPLOTLIB_SPEC)
-#
-# Need to install jpype semi-manually because it assumes MSVC build tools
-# and needed mods. Also no easy_install of it.
-#    
 try:
-    import jpype
+    install_easy_install(MATPLOTLIB_SPEC)
 except:
-    if not os.environ.has_key('JAVA_HOME'):
-        if options.verbose:
-            print "Using includes from Java JRE 1.6"
-        os.environ['JAVA_HOME'] = os.path.join(package_path,"java")
-
-    jpype_pkg,jpype_dir = unpack_package(JPYPE)
-    os.chdir(os.path.join(jpype_dir,jpype_pkg))
+    matplotlib_pkg, matplotlib_dir = unpack_package(MATPLOTLIB)
+    os.chdir(os.path.join(matplotlib_dir, matplotlib_pkg))
     command = "python setup.py %s install"%(BUILD)
-    run_command(command)
+    try:
+        run_command(command)
+    except:
+        print """
+-----------------------------------------------------------------------------
+So so sorry - if you're on Windows, please manually install
+matplotlib-0.98.5.2.win32-py2.5.exe from the packages directory or download
+an equivalent for your system from http://sourceforge.net/project/showfiles.php?group_id=80706&package_id=278194&release_id=646644
+Then start the install script again.
+-----------------------------------------------------------------------------
+"""
+        exit(0)
+#
+# Removing support for jpype for now
+#
+if False:
+    #
+    # Need to install jpype semi-manually because it assumes MSVC build tools
+    # and needed mods. Also no easy_install of it.
+    #    
+    try:
+        import jpype
+    except:
+        if not os.environ.has_key('JAVA_HOME'):
+            if options.verbose:
+                print "Using includes from Java JRE 1.6"
+            os.environ['JAVA_HOME'] = os.path.join(package_path,"java")
+    
+        jpype_pkg,jpype_dir = unpack_package(JPYPE)
+        os.chdir(os.path.join(jpype_dir,jpype_pkg))
+        command = "python setup.py %s install"%(BUILD)
+        run_command(command)
 try:
     import mlabwrap
 except:
@@ -291,13 +402,6 @@ except:
 install_easy_install(LOGILAB_COMMON_SPEC)
 install_easy_install(NOSE_SPEC)
 install_easy_install(NOSEXUNIT_SPEC)
-try:
-    import PIL
-except:
-    pil_pkg,pil_dir = unpack_package(IMAGING)
-    os.chdir(os.path.join(pil_dir,pil_pkg))
-    command = "python setup.py %s install"%(BUILD)
-    run_command(command)
 #
 # Install the prebuilt pyffmpeg package for Windows or build ffmpeg
 # for unixishes and setup pyffmpeg
@@ -315,7 +419,7 @@ except:
     else:
         ffmpeg_pkg, ffmpeg_dir = unpack_package(FFMPEG)
         os.chdir(os.path.join(ffmpeg_dir,ffmpeg_pkg))
-        run_command("./configure")
+        run_command("sh ./configure")
         run_command("make")
         run_command("make install")
         os.chdir(pyffmpeg_dir)

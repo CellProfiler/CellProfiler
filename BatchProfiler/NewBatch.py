@@ -25,7 +25,7 @@ import email.mime.text
 import subprocess
 import RunBatch
 import traceback
-from scipy.io.mio import loadmat
+from scipy.io.matlab.mio import loadmat
 
 # # # # # # # # # #
 #
@@ -151,8 +151,8 @@ if form_data.has_key("data_dir"):
             exception = RuntimeError()
             exception.message = error
             raise exception
-        batch_info = loadmat(batch_file)
-        my_batch["num_sets"] = batch_info['handles'].Current.NumberOfImageSets
+        batch_info = loadmat(batch_file,struct_as_record=True)
+        my_batch["num_sets"] = batch_info['handles']['Current'][0,0]['NumberOfImageSets'][0,0][0,0]
         runs = PartitionBatches(my_batch)
         batch_id = RunBatch.CreateBatchRun(my_batch)
         results = RunBatch.RunAll(batch_id)

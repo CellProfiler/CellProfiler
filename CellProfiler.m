@@ -1057,8 +1057,16 @@ end
 
 % Let the user know which module had their empty placeholder setting changed to "Do not use"
 if any(PlaceholderUpdate),
-    str = cell(1+length(find(PlaceholderUpdate)),1);
-    str{1} = 'Note: Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.';
+    h = findobj(allchild(0),'name','LoadPipelines: Some modules updated');
+    if ~isempty(h),
+       str = get(findobj(h,'type','text'),'string');
+       str{end+1} = ' ';
+       str{end+1} = 'Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.';
+       delete(h);
+    else
+        str = cell(1+length(find(PlaceholderUpdate)),1);
+        str{1} = 'Placeholder text for optional/unused entries have been updated to the standardized value "Do not use." Please see the Developer notes under "Settings" for more details.';
+    end
     updated_module_locations = find(PlaceholderUpdate);
     for i = updated_module_locations(:)',
         str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];

@@ -96,9 +96,9 @@ if any(im(:))
     im = im / max(im(:));
 end
 
-%% Set regions outside of CropMasks equal to 0
+% Set regions outside of CropMasks equal to 0
 fieldname = ['CropMask', ImageName];
-if isfield(handles.Pipeline,fieldname)
+if CPisimageinpipeline(handles, fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
     try 

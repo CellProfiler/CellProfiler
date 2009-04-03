@@ -20,6 +20,12 @@ if nargin == 9
     ObjectVar = [];
 end
 
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+end
 
 %%% If we are running the Histogram data tool we do not want to limit the
 %%% threshold with a maximum of 1 or minimum of 0; otherwise we check for
@@ -65,7 +71,7 @@ if strcmp(Threshold,'Set interactively') || strcmp(Threshold,'All') || ~isempty(
     %%% In these cases, don't do anything.
 else
     fieldname = ['CropMask', ImageName];
-    if isfield(handles.Pipeline,fieldname)
+    if CPisimageinpipeline(handles, fieldname)
         %%% Retrieves crop mask from handles structure. In some cases, it
         %%% might be a label matrix, if we are cropping based on objects
         %%% being present, so we make sure the resulting image is of the
@@ -279,7 +285,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     end
 
 elseif strcmp(Threshold,'All')
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == StartingImageSet
         try
             %%% Notifies the user that the first image set will take much
             %%% longer than subsequent sets. Obtains the screen size.
@@ -339,24 +345,24 @@ elseif strcmp(Threshold,'All')
             error(['An error occurred in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2])
         end
         fieldname = ['Threshold', ImageName];
-        handles.Pipeline.(fieldname) = Threshold;
+        handles = CPaddimages(handles,fieldname,Threshold);
     else fieldname = ['Threshold', ImageName];
-        Threshold = handles.Pipeline.(fieldname);
+        Threshold = CPretrieveimages(handles,fieldname,ModuleName);
     end
 elseif strcmp(Threshold,'Set interactively')
     fieldname = ['Threshold',ImageName];
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+    if SetBeingAnalyzed == StartingImageSet
         Threshold = CPthresh_tool(OrigImage(:,:,1));
-        handles.Pipeline.(fieldname) = Threshold;
+        handles = CPaddimages(handles,fieldname,Threshold);
     else
-        Threshold = handles.Pipeline.(fieldname);
+        Threshold = CPretrieveimages(handles,fieldname,ModuleName);
     end
 else
     %%% If the threshold is a number, it means that it was manually entered
     %%% by the user, or that we calculated it in the binary crop image
     %%% section above. Checks that the Threshold parameter has a valid
     %%% value
-    if strcmp(class(Threshold),'char')
+    if ischar(Threshold)
         Threshold = str2double(Threshold);
     end
     if isnan(Threshold) || Threshold > 1 || Threshold < 0 %#ok Ignore MLint

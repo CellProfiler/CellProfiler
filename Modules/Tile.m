@@ -114,12 +114,23 @@ SizeChange = str2double(SizeChange);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
+end
+
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
 
 %%% OK to not use CPretrieveimage here, because we only want to check that
 %%% the images have been loaded; we do not need to retrieve them yet.
-if ~isfield(handles.Pipeline, ImageName)
+if ~CPisimageinpipeline(handles, ImageName)
     %%% If the image is not there, an error message is produced.  The error
     %%% is not displayed: The error function halts the current function and
     %%% returns control to the calling function (the analyze all images
@@ -134,7 +145,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-if handles.Current.SetBeingAnalyzed == 1
+if SetBeingAnalyzed == 1
     %%% Retrieves the path where the images are stored from the handles
     %%% structure.
     fieldname = ['Pathname', OrigImageName];
@@ -180,7 +191,7 @@ if handles.Current.SetBeingAnalyzed == 1
 
     if strcmp(RowOrColumn,'Row')
         if strcmp(MeanderMode,'Yes')
-            for (i=[2:2:NumberRows])
+            for i = 2:2:NumberRows
                 FileList((i-1)*NumberColumns+1:i*NumberColumns) = FileList(i*NumberColumns:-1:(i-1)*NumberColumns+1);
             end
         end
@@ -188,7 +199,7 @@ if handles.Current.SetBeingAnalyzed == 1
         NewFileList = NewFileList';
     elseif strcmp(RowOrColumn,'Column')
         if strcmp(MeanderMode,'Yes')
-            for (i=[2:2:NumberColumns])
+            for i= 2:2:NumberColumns
                 FileList((i-1)*NumberRows+1:i*NumberRows) = FileList(i*NumberRows:-1:(i-1)*NumberRows+1);
             end
         end
@@ -221,6 +232,7 @@ if handles.Current.SetBeingAnalyzed == 1
     TileDataToSave.TiledImage = TiledImage;
 
     %stores data in handles
+    handles = CPaddimages(handles,SmoothedImageName,SmoothedImage);
     handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]) = TileDataToSave;
 end
 
@@ -237,14 +249,14 @@ if SizeChange ~= 1
 end
 
 if strcmp(RowOrColumn,'Column')
-    HorzPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberRows);
-    VertPos = handles.Current.SetBeingAnalyzed - HorzPos*NumberRows-1;
+    HorzPos = floor((SetBeingAnalyzed-1)/NumberRows);
+    VertPos = SetBeingAnalyzed - HorzPos*NumberRows-1;
     if strcmp(MeanderMode,'Yes') && mod(HorzPos,2)==1
         VertPos = NumberRows - VertPos - 1;
     end
 elseif strcmp(RowOrColumn,'Row')
-    VertPos = floor((handles.Current.SetBeingAnalyzed-1)/NumberColumns);
-    HorzPos = handles.Current.SetBeingAnalyzed - VertPos*NumberColumns-1;
+    VertPos = floor((SetBeingAnalyzed-1)/NumberColumns);
+    HorzPos = SetBeingAnalyzed - VertPos*NumberColumns-1;
     if strcmp(MeanderMode,'Yes') && mod(VertPos,2)==1
         HorzPos = NumberColumns - HorzPos-1;
     end
@@ -262,7 +274,7 @@ end
 %%% Memory errors can occur here if the tiled image is too big.
 handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage((ImageHeight*VertPos)+(1:ImageHeight),(ImageWidth*HorzPos)+(1:ImageWidth),:) = CurrentImage(:,:,:);
 
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
+if SetBeingAnalyzed == NumberOfImageSets
 
     %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%
@@ -277,7 +289,7 @@ if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
     if any(findobj == ThisModuleFigureNumber)
         %%% Activates the appropriate figure window.
         CPfigure(handles,'Image',ThisModuleFigureNumber);
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+        if SetBeingAnalyzed == StartingImageSet
             CPresizefigure(handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]).TiledImage,'OneByOne',ThisModuleFigureNumber)
         end
         %%% Displays the image.

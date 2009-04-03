@@ -129,7 +129,7 @@ if strcmpi(ProjectionType,'Average')
         if strncmpi(SourceIsLoadedOrPipeline, 'L',1)
             %%% If we are in Load Images mode, the averaged image is calculated
             %%% the first time the module is run.
-            if  isfield(handles.Pipeline,['Pathname', ImageName]);
+            if CPisimageinpipeline(handles,['Pathname', ImageName]);
                 [handles, ProjectionImage, ReadyFlag,ignore] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore');
             else
                 error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not look up the name of the folder where the ' ImageName ' images were loaded from.  This is most likely because this module is not using images that were loaded directly from the load images module. See help for more details.']);

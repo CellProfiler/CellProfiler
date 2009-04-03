@@ -265,14 +265,14 @@ handles = CPaddimages(handles,['Segmented' TargetName],FinalLabelMatrixImage);
 
 fieldname = ['SmallRemovedSegmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)
+if CPisimageinpipeline(handles, fieldname)
     handles = CPaddimages(handles,['SmallRemovedSegmented' TargetName],...
                             CPretrieveimage(handles,['SmallRemovedSegmented',ObjectName],ModuleName));
 end
 
 fieldname = ['UneditedSegmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)
+if CPisimageinpipeline(handles, fieldname)
     handles = CPaddimages(handles,['UneditedSegmented' TargetName],...
                             CPretrieveimage(handles,['UneditedSegmented',ObjectName],ModuleName));
 end

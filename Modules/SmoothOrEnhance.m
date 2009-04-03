@@ -119,8 +119,8 @@ drawnow
 %%% image, save it to the handles, and display the results.
 if strncmpi(WaitForFlag,'Y',1) == 1
     fieldname = [OrigImageName,'ReadyFlag'];
-    ReadyFlag = handles.Pipeline.(fieldname);
-    if strcmp(ReadyFlag, 'NotReady') == 1
+    ReadyFlag = CPretrieveimages(handles,fieldname,ModuleName);
+    if ~ReadyFlag
         %%% If the projection image is not ready, the module aborts until
         %%% the next cycle.
         ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
@@ -129,12 +129,12 @@ if strncmpi(WaitForFlag,'Y',1) == 1
             title('Results will be shown after the last image cycle only if this window is left open.')
         end
         return
-    elseif strcmp(ReadyFlag, 'Ready') == 1
+    elseif ReadyFlag
         %%% If the smoothed image has already been calculated, the module
         %%% aborts until the next cycle. Otherwise we continue in this
         %%% module and calculate the smoothed image.
-        if isfield(handles.Pipeline, SmoothedImageName) == 1
-            return
+        if CPisimageinpipeline(handles, SmoothedImageName)
+            return;
         end
         %%% If we make it to this point, it is OK to proceed to calculating the smooth
         %%% image, etc.

@@ -142,7 +142,7 @@ Measurements = handles.Measurements.(ObjectName).(FeatureName){SetBeingAnalyzed}
 
 % Checks whether the image exists in the handles structure.
 SegmentedField = ['Segmented', ObjectName];
-if isfield(handles.Pipeline, SegmentedField)
+if CPisimageinpipeline(handles, SegmentedField)
     % Retrieves the label matrix image that contains the segmented objects
     LabelMatrixImage = CPretrieveimage(handles,SegmentedField,ModuleName);
 elseif strcmpi(Category,'Ratio')

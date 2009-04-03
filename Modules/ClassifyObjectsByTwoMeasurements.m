@@ -142,7 +142,7 @@ end
 % Retrieves the label matrix image that contains the segmented objects
 fieldname = ['Segmented', ObjectName];
 % Checks whether the image exists in the handles structure.
-if isfield(handles.Pipeline, fieldname)
+if CPisimageinpipeline(handles, fieldname)
     LabelMatrixImage = CPretrieveimage(handles,fieldname,ModuleName);
 else
     error(['Image processing was canceled in the ', ModuleName, ' module. Prior to running the ', ModuleName, ' module, you must have run a module that generates an image with the objects identified. You specified in the ', ModuleName, ' module that the objects were named ',ObjectName,', which should have produced an image in the handles structure called ', fieldname, '. The ', ModuleName, ' module cannot locate this image.']);

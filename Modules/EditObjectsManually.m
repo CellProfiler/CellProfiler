@@ -76,14 +76,14 @@ SegmentedObjectImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleN
 %%% The following is only relevant for objects identified using
 %%% Identify Primary modules, not Identify Secondary modules.
 fieldname = ['UneditedSegmented',ObjectName];
-if isfield(handles.Pipeline, fieldname)
+if CPisimageinpipeline(handles, fieldname)
     UneditedSegmentedObjectImage = CPretrieveimage(handles,fieldname,ModuleName);
 else
     UneditedSegmentedObjectImage = [];
 end
 
 fieldname = ['SmallRemovedSegmented',ObjectName];
-if isfield(handles.Pipeline, fieldname)
+if CPisimageinpipeline(handles, fieldname)
     SmallRemovedSegmentedObjectImage = CPretrieveimage(handles,fieldname,ModuleName);
 else
     SmallRemovedSegmentedObjectImage = [];

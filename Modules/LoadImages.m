@@ -882,12 +882,26 @@ if strcmp(ImageOrMovie,'Image')
     uniqueImageSize = ImageSizes(~MissingFileIdx);
     uniqueImageSize = unique(cat(1,uniqueImageSize{:}),'rows');
     if any(MissingFileIdx)
-        if size(uniqueImageSize,1) ~= 1,
-            CPerrordlg('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
-        else
+        if size(uniqueImageSize,1) == 1,
             % If there are siblings, create a zero matrix with the same size
             % in place of the missing file
             handles = CPaddimages(handles,ImageName{MissingFileIdx},zeros(uniqueImageSize));
+        else
+            % If there isn't a sibling (both files are missing), look at
+            % a previous (non-empty) image
+            for i = 1:length(ImageName)
+                FileList = handles.Pipeline.(['FileList', ImageName{i}]);
+                SetToExamine = find(~cellfun(@isempty,FileList),1,'first');
+                if ~isempty(SetToExamine)
+                    CurrentFileName = FileList{SetToExamine};
+                    Pathname = handles.Pipeline.(['Pathname', ImageName{i}]);
+                    trialImageSize = size(CPimread(fullfile(Pathname,CurrentFileName)));
+                    handles = CPaddimages(handles,ImageName{i},zeros(trialImageSize));
+                else
+                    % Otherwise, give up and error
+                    CPerrordlg('There are image files missing in the specified directory and the original size of the image cannot be inferred.');
+                end
+            end
         end
     end
 end

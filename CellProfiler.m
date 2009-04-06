@@ -1069,7 +1069,7 @@ if any(PlaceholderUpdate),
     end
     updated_module_locations = find(PlaceholderUpdate);
     for i = updated_module_locations(:)',
-        str{i+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
+        str{end+1} = ['      ',handles.Settings.ModuleNames{i},': Module ',num2str(i,'%02d')];
     end
     str = str(~cellfun('isempty',str));
     CPwarndlg(str,'LoadPipelines: Some modules updated','replace');

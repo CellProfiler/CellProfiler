@@ -20,6 +20,7 @@ import matplotlib.figure
 import matplotlib.pyplot
 import matplotlib.cm
 import numpy
+import re
 import scipy.stats
 import wx
 
@@ -70,124 +71,7 @@ BINARY_IMAGE_VAR                = 22
 
 
 class IdentifyPrimAutomatic(cpmi.Identify):
-    """Identify primary objects as automatically as possible
-    """
-    def create_settings(self):
-        self.set_module_name("IdentifyPrimAutomatic")
-        self.image_name = cps.ImageNameSubscriber('What did you call the images you want to process?')
-        self.object_name = cps.ObjectNameProvider('What do you want to call the objects identified by this module?', 'Nuclei')
-        self.size_range = cps.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
-                                           (10,40),minval=1)
-        self.exclude_size = cps.Binary('Discard objects outside the diameter range?', True)
-        self.merge_objects = cps.Binary('Try to merge too small objects with nearby larger objects?', False)
-        self.exclude_border_objects = cps.Binary('Discard objects touching the border of the image?', True)
-        self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
-                                           [cpmi.TM_OTSU_GLOBAL,cpmi.TM_OTSU_ADAPTIVE,cpmi.TM_OTSU_PER_OBJECT,
-                                            cpmi.TM_MOG_GLOBAL,cpmi.TM_MOG_ADAPTIVE,cpmi.TM_MOG_PER_OBJECT,
-                                            cpmi.TM_BACKGROUND_GLOBAL, cpmi.TM_BACKGROUND_ADAPTIVE, cpmi.TM_BACKGROUND_PER_OBJECT,
-                                            cpmi.TM_ROBUST_BACKGROUND_GLOBAL, cpmi.TM_ROBUST_BACKGROUND_ADAPTIVE, cpmi.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                                            cpmi.TM_RIDLER_CALVARD_GLOBAL, cpmi.TM_RIDLER_CALVARD_ADAPTIVE, cpmi.TM_RIDLER_CALVARD_PER_OBJECT,
-                                            cpmi.TM_KAPUR_GLOBAL,cpmi.TM_KAPUR_ADAPTIVE,cpmi.TM_KAPUR_PER_OBJECT,
-                                            cpmi.TM_MANUAL, cpmi.TM_BINARY_IMAGE,
-                                            cpmi.TM_ALL,cpmi.TM_SET_INTERACTIVELY])
-        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
-        self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
-                                                ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
-        self.unclump_method = cps.Choice('Method to distinguish clumped objects (see help for details):', 
-                                          [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
-        self.watershed_method = cps.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
-                                           [WA_INTENSITY,WA_DISTANCE,WA_NONE])
-        self.automatic_smoothing = cps.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
-        self.smoothing_filter_size = cps.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
-        self.automatic_suppression = cps.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
-        self.maxima_suppression_size = cps.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
-        self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        self.save_outlines = cps.NameProvider('What do you want to call the outlines of the identified objects (optional)?', 'outlinegroup', cellprofiler.settings.DO_NOT_USE)
-        self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
-        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
-        self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
-        self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
-        self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
-
-    def settings(self):
-        return [self.image_name,self.object_name,self.size_range, \
-                self.exclude_size, self.merge_objects, \
-                self.exclude_border_objects, self.threshold_method, \
-                self.threshold_correction_factor, self.threshold_range, \
-                self.object_fraction, self.unclump_method, \
-                self.watershed_method, self.smoothing_filter_size, \
-                self.maxima_suppression_size, self.low_res_maxima, \
-                self.save_outlines, self.fill_holes, self.test_mode, \
-                self.automatic_smoothing, self.automatic_suppression, \
-                self.masking_object, self.manual_threshold, self.binary_image ]
-    
-    def visible_settings(self):
-        vv = [self.image_name,self.object_name,self.size_range, \
-                self.exclude_size, self.merge_objects, \
-                self.exclude_border_objects, self.threshold_method]
-        if self.threshold_method == cpmi.TM_MANUAL:
-            vv += self.manual_threshold
-        elif self.threshold_method == cpmi.TM_BINARY_IMAGE:
-            vv += self.binary_image
-        elif self.threshold_modifier == cpmi.TM_PER_OBJECT:
-            vv += [self.masking_object]
-        if self.threshold_algorithm == cpmi.TM_MOG:
-            vv += [self.object_fraction]
-        if not self.threshold_method in (cpmi.TM_MANUAL, cpmi.TM_BINARY_IMAGE):
-            vv += [ self.threshold_correction_factor, self.threshold_range]
-        vv += [ self.unclump_method ]
-        if self.unclump_method != UN_NONE:
-            vv += [self.watershed_method, self.automatic_smoothing]
-            if not self.automatic_smoothing:
-                vv += [self.smoothing_filter_size]
-            vv += [self.automatic_suppression]
-            if not self.automatic_suppression:
-                vv += [self.maxima_suppression_size]
-            vv += [self.low_res_maxima, self.save_outlines, self.fill_holes]
-            vv += [self.test_mode]
-        return vv
-    
-    def test_valid(self, pipeline):
-        super(IdentifyPrimAutomatic,self).test_valid(pipeline)
-        if self.unclump_method.value in (UN_MANUAL,UN_MANUAL_FOR_ID_SECONDARY):
-            raise cps.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
-
-    def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the settings in the module to upgrade it to its current revision number
-        
-        """
-        if variable_revision_number == 12:
-            # Laplace values removed - propagate setting values to fill the gap
-            for i in range(17,20):
-                self.setting(i-1).value = str(self.setting(i))
-            if str(self.setting(SMOOTHING_SIZE_VAR)) == cps.AUTOMATIC:
-                self.setting(AUTOMATIC_SMOOTHING_VAR).value = cps.YES
-                self.setting(SMOOTHING_SIZE_VAR).value = 10
-            else:
-                self.setting(AUTOMATIC_SMOOTHING_VAR).value = cps.NO
-            variable_revision_number = 13
-        if variable_revision_number == 13:
-            # Added "masking object" - this will just be blank if needed
-            # and will get filled in
-            variable_revision_number = 14
-        if variable_revision_number == 14:
-            # added manual and binary image threshold
-            self.setting(MANUAL_THRESHOLD_VAR).value = 0.0
-            self.setting(BINARY_IMAGE_VAR).value = "None"
-            variable_revision_number = 15
-        if variable_revision_number != self.variable_revision_number:
-            raise ValueError("Unable to rewrite settings from revision # %d"%(variable_revision_number))
-    
-    variable_revision_number = 15
-
-    category =  "Object Processing"
-    
-    def get_help(self):
-        """Return help text for the module
-        
-        """
-        return """This module identifies primary objects (e.g. nuclei) in grayscale images
+    """This module identifies primary objects (e.g. nuclei) in grayscale images
 that show bright objects on a dark background. The module has many
 options which vary in terms of speed and sophistication. The objects that
 are found are displayed with arbitrary colors - the colors do not mean 
@@ -538,16 +422,157 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-  
-    def write_to_handles(self,handles):
-        """Write out the module's state to the handles
-        
-        """
+    variable_revision_number = 1
+
+    category =  "Object Processing"
     
-    def write_to_text(self,file):
-        """Write the module's state, informally, to a text file
-        """
+    def create_settings(self):
+        self.set_module_name("IdentifyPrimAutomatic")
+        self.image_name = cps.ImageNameSubscriber('What did you call the images you want to process?')
+        self.object_name = cps.ObjectNameProvider('What do you want to call the objects identified by this module?', 'Nuclei')
+        self.size_range = cps.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
+                                           (10,40),minval=1)
+        self.exclude_size = cps.Binary('Discard objects outside the diameter range?', True)
+        self.merge_objects = cps.Binary('Try to merge too small objects with nearby larger objects?', False)
+        self.exclude_border_objects = cps.Binary('Discard objects touching the border of the image?', True)
+        self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
+                                           cpmi.TM_METHODS)
+        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
+        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
+        self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
+                                                ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
+        self.unclump_method = cps.Choice('Method to distinguish clumped objects (see help for details):', 
+                                          [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
+        self.watershed_method = cps.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
+                                           [WA_INTENSITY,WA_DISTANCE,WA_NONE])
+        self.automatic_smoothing = cps.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
+        self.smoothing_filter_size = cps.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
+        self.automatic_suppression = cps.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
+        self.maxima_suppression_size = cps.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
+        self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
+        self.should_save_outlines = cps.Binary('Do you want to save outlines?',False)
+        self.save_outlines = cps.NameProvider('What do you want to call the outlines of the identified objects?', 'outlinegroup', cellprofiler.settings.DO_NOT_USE)
+        self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
+        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
+        self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
+        self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
+        self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
+
+    def settings(self):
+        return [self.image_name,self.object_name,self.size_range,
+                self.exclude_size, self.merge_objects,
+                self.exclude_border_objects, self.threshold_method,
+                self.threshold_correction_factor, self.threshold_range,
+                self.object_fraction, self.unclump_method,
+                self.watershed_method, self.smoothing_filter_size,
+                self.maxima_suppression_size, self.low_res_maxima,
+                self.save_outlines, self.fill_holes, 
+                self.automatic_smoothing, self.automatic_suppression,
+                self.manual_threshold, self.binary_image,
+                self.should_save_outlines ]
+    
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
+        """Upgrade the strings in setting_values dependent on saved revision
         
+        """
+        if variable_revision_number == 12 and from_matlab:
+            # Translating from Matlab:
+            #
+            # Variable # 16 (LaplaceValues) removed
+            # Variable # 19 (test mode) removed
+            #
+            # Added automatic smoothing / suppression checkboxes
+            # Added checkbox for setting manual threshold
+            # Added checkbox for thresholding using a binary image
+            # Added checkbox instead of "DO_NOT_USE" for saving outlines
+            new_setting_values = list(setting_values[:18])
+            #
+            # Remove the laplace values setting
+            #
+            del new_setting_values[16]
+            # Automatic smoothing checkbox - replace "Automatic" with
+            # a number
+            if setting_values[SMOOTHING_SIZE_VAR] == cps.AUTOMATIC:
+                new_setting_values += [cps.YES]
+                new_setting_values[SMOOTHING_SIZE_VAR] = '10'
+            else:
+                new_setting_values += [cps.NO]
+            #
+            # Automatic maxima suppression size
+            #
+            if setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] == cps.AUTOMATIC:
+                new_setting_values += [cps.YES]
+                new_setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] = '5'
+            else:
+                new_setting_values += [cps.NO]
+            if not setting_values[THRESHOLD_METHOD_VAR] in cpmi.TM_METHODS:
+                # Try to figure out what the user wants if it's not one of the
+                # pre-selected choices.
+                try:
+                    # If it's a floating point number, then the user
+                    # was trying to type in a manual threshold
+                    ignore = float(setting_values[THRESHOLD_METHOD_VAR])
+                    new_setting_values[THRESHOLD_METHOD_VAR] = cpmi.TM_MANUAL
+                    # Set the manual threshold to be the contents of the
+                    # old threshold method variable and ignore the binary mask
+                    new_setting_values += [setting_values[THRESHOLD_METHOD_VAR],
+                                           cps.DO_NOT_USE]
+                except:
+                    # Otherwise, assume that it's the name of a binary image
+                    new_setting_values[THRESHOLD_METHOD_VAR] = cpmi.TM_BINARY_IMAGE
+                    new_setting_values += [ '0.0',
+                                           setting_values[THRESHOLD_METHOD_VAR]]
+            else:
+                new_setting_values += [ '0.0',
+                                       setting_values[THRESHOLD_METHOD_VAR]]
+            #
+            # Check the "DO_NOT_USE" status of the save outlines variable
+            # to get the value for should_save_outlines
+            #
+            if new_setting_values[SAVE_OUTLINES_VAR] == cps.DO_NOT_USE:
+                new_setting_values += [ cps.NO ]
+                new_setting_values[SAVE_OUTLINES_VAR] = None
+            else:
+                new_setting_values += [ cps.YES ]
+            setting_values = new_setting_values
+            variable_revision_number = 1
+            from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
+            
+    def visible_settings(self):
+        vv = [self.image_name,self.object_name,self.size_range, \
+                self.exclude_size, self.merge_objects, \
+                self.exclude_border_objects, self.threshold_method]
+        if self.threshold_method == cpmi.TM_MANUAL:
+            vv += self.manual_threshold
+        elif self.threshold_method == cpmi.TM_BINARY_IMAGE:
+            vv += self.binary_image
+        if self.threshold_algorithm == cpmi.TM_MOG:
+            vv += [self.object_fraction]
+        if not self.threshold_method in (cpmi.TM_MANUAL, cpmi.TM_BINARY_IMAGE):
+            vv += [ self.threshold_correction_factor, self.threshold_range]
+        vv += [ self.unclump_method ]
+        if self.unclump_method != UN_NONE:
+            vv += [self.watershed_method, self.automatic_smoothing]
+            if not self.automatic_smoothing:
+                vv += [self.smoothing_filter_size]
+            vv += [self.automatic_suppression]
+            if not self.automatic_suppression:
+                vv += [self.maxima_suppression_size]
+            vv += [self.low_res_maxima]
+        vv += [self.should_save_outlines]
+        if self.should_save_outlines.value:
+            vv += [self.save_outlines]
+        vv += [self.fill_holes]
+        return vv
+    
+    def test_valid(self, pipeline):
+        super(IdentifyPrimAutomatic,self).test_valid(pipeline)
+        if self.unclump_method.value in (UN_MANUAL,UN_MANUAL_FOR_ID_SECONDARY):
+            raise cps.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
+  
+  
     def run(self,workspace):
         """Run the module
         
@@ -568,8 +593,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # Get a threshold to use for labeling
         #
         if self.threshold_modifier == cpmi.TM_PER_OBJECT:
-            masking_objects = \
-                workspace.object_set.get_objects(self.masking_object.value)
+            masking_objects = image.labels
         else:
             masking_objects = None
         if self.threshold_method == cpmi.TM_BINARY_IMAGE:

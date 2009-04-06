@@ -58,12 +58,21 @@ TM_GLOBAL                       = "Global"
 TM_ADAPTIVE                     = "Adaptive"
 TM_PER_OBJECT                   = "PerObject"
 
+TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
+               TM_MOG_GLOBAL, TM_MOG_ADAPTIVE, TM_MOG_PER_OBJECT,
+               TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
+               TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
+               TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
+               TM_KAPUR_GLOBAL, TM_KAPUR_ADAPTIVE, TM_KAPUR_PER_OBJECT,
+               TM_MANUAL, TM_BINARY_IMAGE,
+               TM_ALL, TM_SET_INTERACTIVELY]
+
 class Identify(cellprofiler.cpmodule.CPModule):
-    def get_threshold(self, image, mask, objects):
+    def get_threshold(self, image, mask, labels):
         """Compute the threshold using whichever algorithm was selected by the user
         image - image to threshold
         mask  - ignore pixels whose mask value is false
-        objects - labels that restrict thresholding to within the object boundary
+        labels - labels matrix that restricts thresholding to within the object boundary
         returns: threshold to use (possibly an array) and global threshold
         """
         if self.threshold_method == TM_MANUAL:
@@ -74,7 +83,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         elif self.threshold_modifier == TM_ADAPTIVE:
             local_threshold = self.get_adaptive_threshold(image, mask, global_threshold)
         elif self.threshold_modifier == TM_PER_OBJECT:
-            local_threshold = self.get_per_object_threshold(image, mask, objects, global_threshold)
+            local_threshold = self.get_per_object_threshold(image, mask, labels,
+                                                            global_threshold)
         else:
             raise NotImplementedError("%s thresholding is not implemented"%(self.threshold_modifier))
         if isinstance(local_threshold, numpy.ndarray):
@@ -154,15 +164,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 thresh_out[i0:i1,j0:j1] = block_threshold
         return thresh_out
     
-    def get_per_object_threshold(self,image,mask,objects,threshold):
+    def get_per_object_threshold(self,image,mask,labels,threshold):
         """Return a matrix giving threshold per pixel calculated per-object
         
         image - image to be thresholded
         mask  - mask out "don't care" pixels
-        objects - a label mask indicating object boundaries
+        labels - a label mask indicating object boundaries
         threshold - the global threshold
         """
-        labels = objects.segmented
         label_extents = scipy.ndimage.find_objects(labels,numpy.max(labels))
         local_threshold = numpy.ones(image.shape,image.dtype)
         for i,extent in zip(range(1,len(label_extents)+1),label_extents):

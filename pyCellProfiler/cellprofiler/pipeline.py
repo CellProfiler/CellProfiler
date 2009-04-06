@@ -238,7 +238,15 @@ class Pipeline:
             idx = module_num-1
             module_name = module_names[0,idx][0]
             module = self.instantiate_module(module_name)
-            module.create_from_handles(handles, module_num)
+            try:
+                module.create_from_handles(handles, module_num)
+            except Exception,instance:
+                traceback.print_exc()
+                event = LoadExceptionEvent(instance,module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return
+                
             self.__modules.append(module)
         self.notify_listeners(PipelineLoadedEvent())
     
@@ -678,6 +686,18 @@ class RunExceptionEvent(AbstractPipelineEvent):
     
     def event_type(self):
         return "Pipeline run exception"
+
+class LoadExceptionEvent(AbstractPipelineEvent):
+    """An exception was caught during pipeline loading
+    
+    """
+    def __init__(self, error, module):
+        self.error     = error
+        self.cancel_run = True
+        self.module    = module
+    
+    def event_type(self):
+        return "Pipeline load exception"
 
 def AddHandlesImages(handles,image_set):
     """Add any images from the handles to the image set

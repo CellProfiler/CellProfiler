@@ -155,6 +155,11 @@ class PipelineController:
             message = "Error while processing %s: %s\nDo you want to stop processing?"%(event.module.module_name,event.error.message)
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
+        elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+            message = ("Error while loading %s: %s\nDo you want to stop processing?"%
+                       (event.module.module_name, event.error.message))
+            if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
+                event.cancel_run = False
             
     def __on_help(self,event):
         print "No help yet"

@@ -27,6 +27,7 @@ import cellprofiler.preferences as cpprefs
 
 INPUT_IMAGE = "input_image"
 CROP_IMAGE = "crop_image"
+CROP_OBJECTS = "crop_objects"
 CROPPING = "cropping"
 OUTPUT_IMAGE = "output_image"
 
@@ -34,7 +35,8 @@ class TestCrop(unittest.TestCase):
     def make_workspace(self, 
                        input_pixels,
                        crop_image = None,
-                       cropping = None ):
+                       cropping = None,
+                       crop_objects = None ):
         """Return a workspace with the given images installed and the crop module"""
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -46,12 +48,18 @@ class TestCrop(unittest.TestCase):
             image_set.add(CROP_IMAGE, cpi.Image(crop_image))
             module.image_mask_source.value = CROP_IMAGE
         if cropping != None:
-            image_set.add(CROPPING, cpi.Image(crop_mask = cropping))
+            image_set.add(CROPPING, cpi.Image(np.zeros(cropping.shape),
+                                              crop_mask = cropping))
             module.cropping_mask_source.value = CROPPING
+        object_set = cpo.ObjectSet()
+        if crop_objects != None:
+            objects = cpo.Objects()
+            objects.segmented = crop_objects
+            object_set.add_objects(objects, CROP_OBJECTS)
         workspace = cpw.Workspace(cpp.Pipeline(),
                                   module,
                                   image_set,
-                                  cpo.ObjectSet(),
+                                  object_set,
                                   cpm.Measurements(),
                                   image_set_list)
         return workspace, module
@@ -283,8 +291,45 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
+    
+    def test_06_01_mask_with_objects(self):
+        np.random.seed()
+        input_image = np.random.uniform(size=(20,10))
+        input_objects = np.zeros((20,10), dtype=int)
+        input_objects[2:7,3:8] = 1
+        input_objects[12:17,3:8] = 2
+        workspace,module = self.make_workspace(input_image,
+                                               crop_objects = input_objects)
+        module.shape.value = cpmc.SH_OBJECTS
+        module.objects_source.value = CROP_OBJECTS
+        module.use_plate_fix.value = False
+        module.remove_rows_and_columns.value = cpmc.RM_NO
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        self.assertTrue(output_image.has_masking_objects)
+        self.assertTrue(np.all(input_objects ==output_image.labels))
+        self.assertTrue(np.all(output_image.mask == (input_objects > 0)))
 
-    def test_06_01_load_matlab_pipeline(self):
+    def test_06_02_crop_with_objects(self):
+        np.random.seed()
+        input_image = np.random.uniform(size=(20,10))
+        input_objects = np.zeros((20,10), dtype=int)
+        input_objects[2:7,3:8] = 1
+        input_objects[12:17,3:8] = 2
+        workspace,module = self.make_workspace(input_image,
+                                               crop_objects = input_objects)
+        module.shape.value = cpmc.SH_OBJECTS
+        module.objects_source.value = CROP_OBJECTS
+        module.remove_rows_and_columns.value = cpmc.RM_EDGES
+        module.use_plate_fix.value = False
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        self.assertTrue(output_image.has_masking_objects)
+        self.assertTrue(np.all(input_objects[2:17,3:8] ==output_image.labels))
+        self.assertTrue(np.all(output_image.mask == (input_objects[2:17,3:8] > 0)))
+        self.assertTrue(np.all(output_image.crop_mask == (input_objects > 0)))
+
+    def test_07_01_load_matlab_pipeline(self):
         u64data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBUdWUgRmViIDI0IDE1OjAzOjMzIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAngIAAHic7VhPb9MwFHe6dH+gqjZ2YIJLjhxKlW4LcKzYVqgEHeqqSRy9xiuW0jjKn6nbp+F7cOHIx+CDcMAuTptY6ZK4kRqqurKenvN+v+f34mc7rQMAfr8EYJvKXdor4F+rcl2JdKZfId/H9sirAhUc8fGftF9DF8MbC11DK0AemLVwvGvfksG9M3v0mZiBhXpwHDWmrReMb5DrXd6GQP74C54g6wo/IBBvoVkf3WEPE5vjOb84OvNLfMFvnXa9Ps+DIuRBpf0wMs7s22BurybkbT9iv8/7AE381xcTOPS1MfSH3xjPuxSeXYGH6ZcuHr2nqc4yjz0Bv8fxH1yE7Eg8afPYEXh2OE8fmZnwVQHP9PPmoNvJ6D8pD2cucZbJA8MXkQfGkzUPae9Txv+FZWHHQ9Lrks3foYWdJ59ZefQUnq0YzxboNAeZ4ngq+Gf6GSGuiW0Y1vf/yFNUvSbVWwe7nl8SfN510efrQqY+DL3VeKvr0vgTXW+8WSE+zz6bhD82Wo1Toxzxt1PwTwQ808+JZhNfCzx+AZDOA52HsUQcRoH4ovKQt45Ouf+y4ZQYTgEnkvEdS85zWVw7BVfU+6zEeCqgR1aD+5iCOxDiZTq2TXyHzQBaGh7D0ewWLpP3rxRdRtyifIVxijJvXTQX8ISyncKXdL8YufDeG0ILJfDlnW/R8S/Dty3whS3kq0RwsvKX+vh3Y7QO8rynpP1iWjQjlwROeXmy8iV9P8z5NLpVIGedecR8ZZUb/6v1v+7ySFm8nzFdBfH9rA3y7xufCDS7kQtAlnNAjfGo0/8aVo0TzxcRV6Has1qtJnPOtxLyksVflTbx+yQNp/LxPy9+PGe/6blWfXwdfAfxdfAKLLYPW5ntN3IjN3Ij11H+BeSfKPE='
         data = base64.b64decode(u64data)
         pipeline = cpp.Pipeline()

@@ -21,18 +21,50 @@ import sys
 
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
+    
+    The secondary attributes:
+    mask - a binary image indicating the points of interest in the image.
+           The mask is the same size as the child image.
+    crop_mask - the binary image used to crop the parent image to the
+                dimensions of the child (this) image. The crop_mask is
+                the same size as the parent image.
+    parent_image - for derived images, the parent that was used to create
+                   this image. This image may inherit attributes from
+                   the parent image, such as the masks used to create the
+                   parent
+    masking_objects - the labels matrix from these objects is used to
+                      mask and crop the parent image to make this image.
+                      The labels are available as mask_labels and crop_labels.
+    
+    Resolution of mask and cropping_mask properties:
+    The Image class looks for the mask and cropping_mask in the following 
+    places:
+    * self: if set using the properties or specified in the initializer
+    * masking_objects: if set using the masking_object property or
+                       specified in the initializer. The crop_mask and
+                       mask are composed of all of the labeled points.
+    * parent_image: if set using the initializer. The child image inherits
+                    the mask and cropping mask of the parent.
+    
+    Otherwise, the image has no mask or cropping mask and all pixels are
+    significant.
     """
-    def __init__(self,image=None,mask=None,crop_mask = None, parent_image=None):
+    def __init__(self,
+                 image=None,
+                 mask=None,
+                 crop_mask = None, 
+                 parent_image=None,
+                 masking_objects = None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
         self.__parent_image = parent_image
         self.__crop_mask = crop_mask
+        self.__masking_objects = masking_objects
         if image!=None:
             self.set_image(image)
         if mask!=None:
             self.set_mask(mask)
-        
         
     def get_image(self):
         """Return the primary image"""
@@ -109,16 +141,54 @@ class Image(object):
         self.__parent_image = parent_image
         
     parent_image = property(get_parent_image, set_parent_image)
+    
+    def get_has_parent_image(self):
+        """True if this image has a defined parent"""
+        return self.__parent_image != None
+    has_parent_image = property(get_has_parent_image)
 
+    def get_masking_objects(self):
+        """The objects used to crop and mask this image"""
+        return self.__masking_objects
+    
+    def set_masking_objects(self, value):
+        self.__masking_objects = value
+    
+    masking_objects = property(get_masking_objects, set_masking_objects)
+    
+    def get_has_masking_objects(self):
+        """True if the image was cropped with objects
+        
+        If this is true, there will also be a valid labels matrix
+        available through the labels property
+        """
+        return self.__masking_objects != None
+    has_masking_objects = property(get_has_masking_objects)
+    
+    def get_labels(self):
+        """Get the segmentation labels from the masking objects
+        
+        returns the "segmented" labels: others are available through
+        the masking_object.
+        """
+        if not self.has_masking_objects:
+            return None
+        return self.crop_image_similarly(self.masking_objects.segmented)
+    labels = property(get_labels)
+    
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
-        if self.__mask == None and self.parent_image != None:
+        if not self.__mask == None:
+            return self.__mask
+        
+        if self.has_masking_objects:
+            return self.crop_image_similarly(self.crop_mask)
+        
+        if self.has_parent_image:
             return self.parent_image.mask
         
-        if self.__mask == None and self.__image != None:
-            self.__mask = numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
-        return self.__mask
+        return numpy.ones(self.__image.shape[0:2],dtype=numpy.bool)
     
     def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
@@ -145,9 +215,18 @@ class Image(object):
     
     def get_crop_mask(self):
         """Return the mask used to crop this image"""
-        if self.__crop_mask == None and self.parent_image != None:
+        if not self.__crop_mask == None:
+            return self.__crop_mask
+        
+        if self.has_masking_objects:
+            return self.masking_objects.segmented != 0
+        
+        if self.has_parent_image:
             return self.parent_image.crop_mask
-        return self.__crop_mask
+        #
+        # If no crop mask, return the mask which should be all ones
+        #
+        return self.mask
     
     def set_crop_mask(self,crop_mask):
         self.__crop_mask = crop_mask

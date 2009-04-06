@@ -638,6 +638,7 @@ if any(findobj == ThisModuleFigureNumber)
                     pos = [posx(1)-0.05 posy(2)+posy(4) posx(3)+0.1 0.04];
                 end
                 bgcolor = get(ThisModuleFigureNumber,'Color');
+                str = cell(1,1);
                 str{1} =        ['Min Value: ' num2str(min(min(FinalIlluminationFunction)))];
                 str{end+1} =    ['Max Value: ' num2str(max(max(FinalIlluminationFunction)))];
                 str{end+1} =    ['Calculation type: ',IntensityChoice];

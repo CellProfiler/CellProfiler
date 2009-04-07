@@ -519,7 +519,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             Movie(NumberOfImageSets) = struct('colormap',[],'cdata',[]);
             handles = CPaddimages(handles,fieldname,Movie);
         end
-        Movie = CPretrieveimage(handles,fieldname); 
+        Movie = CPretrieveimage(handles,fieldname,ModuleName); 
         
         %%% Determines whether the image is RGB.
         if size(Image,3) == 3

@@ -41,6 +41,12 @@ class Measurements(object):
     
     image_set_number = property(get_image_set_number)
     
+    def add_image_measurement(self, feature_name, data):
+        """Add a measurement to the "Image" category
+        
+        """
+        self.add_measurement("Image", feature_name, data)
+        
     def add_measurement(self, object_name, feature_name, data):
         """Add a measurement or, for objects, an array of measurements to the set
         

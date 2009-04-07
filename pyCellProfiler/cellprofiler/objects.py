@@ -132,6 +132,13 @@ class Objects(object):
         
     parent_image = property(get_parent_image, set_parent_image)
     
+    def get_has_parent_image(self):
+        """True if the objects were derived from a parent image
+        
+        """
+        return self.__parent_image != None
+    has_parent_image = property(get_has_parent_image)
+    
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""
         if image.shape == self.segmented.shape:

@@ -182,7 +182,6 @@ class PipelineListView(object):
             text = self.__grid.GetCellValue(i, MODULE_NAME_COLUMN)
             text_width = max(text_width,dc.GetFullTextExtent(text, font)[0])
         self.__grid.SetColSize(MODULE_NAME_COLUMN, text_width+5)
-        self.__panel.GetTopLevelParent().Layout()
 
     def attach_to_pipeline(self,pipeline,controller):
         """Attach the viewer to the pipeline to allow it to listen for changes

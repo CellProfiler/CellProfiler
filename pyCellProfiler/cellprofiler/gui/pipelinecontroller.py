@@ -166,6 +166,7 @@ class PipelineController:
         
     def __on_add_module(self,event):
         self.__add_module_frame.Show()
+        self.__add_module_frame.Raise()
     
     def __get_selected_modules(self):
         return self.__pipeline_list_view.get_selected_modules()

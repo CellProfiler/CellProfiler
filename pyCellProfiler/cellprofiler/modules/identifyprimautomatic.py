@@ -555,10 +555,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         vv += [ self.unclump_method ]
         if self.unclump_method != UN_NONE:
             vv += [self.watershed_method, self.automatic_smoothing]
-            if not self.automatic_smoothing:
+            if not self.automatic_smoothing.value:
                 vv += [self.smoothing_filter_size]
             vv += [self.automatic_suppression]
-            if not self.automatic_suppression:
+            if not self.automatic_suppression.value:
                 vv += [self.maxima_suppression_size]
             vv += [self.low_res_maxima]
         vv += [self.should_save_outlines]
@@ -960,7 +960,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        return ['Threshold','Location','NumberOfMergedObjects']
+        if object_name == 'Image':
+            return ['Threshold','Count']
+        elif object_name == self.object_name.value:
+            return ['Location']
+        return []
       
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
@@ -968,15 +972,21 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
+        if object_name == 'Image' and category == 'Threshold':
+            return ['FinalThreshold','OrigThreshold','WeightedVariance',
+                    'SumOfEntropies']
+        elif object_name == 'Image' and category == 'Count':
+            return [ self.object_name.value ]
+        elif object_name == self.object_name.value:
+            return ['Center_X','Center_Y']
         return []
     
-    def get_measurement_images(self,pipeline,object_name,category,measurement):
-        """Return a list of image names used as a basis for a particular measure
+    def get_measurement_objects(self, pipeline, object_name, category, 
+                                measurement):
+        """Return the objects associated with image measurements
+        
         """
-        return []
-    
-    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
-        """Return a list of scales (eg for texture) at which a measurement was taken
-        """
+        if object_name == 'Image' and category == 'Threshold':
+            return [ self.object_name.value ]
         return []
     

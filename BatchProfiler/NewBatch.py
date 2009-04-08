@@ -15,6 +15,7 @@ import cgitb
 cgitb.enable()
 print "Content-Type: text/html\r"
 print "\r"
+import sys
 import cgi
 import os
 import re
@@ -25,7 +26,7 @@ import email.mime.text
 import subprocess
 import RunBatch
 import traceback
-from scipy.io.matlab.mio import loadmat
+from scipy.io.matlab.mio import mat_reader_factory, loadmat
 
 # # # # # # # # # #
 #
@@ -151,8 +152,15 @@ if form_data.has_key("data_dir"):
             exception = RuntimeError()
             exception.message = error
             raise exception
-        batch_info = loadmat(batch_file,struct_as_record=True)
-        my_batch["num_sets"] = batch_info['handles']['Current'][0,0]['NumberOfImageSets'][0,0][0,0]
+        #
+        # This is somewhat dependent on internals, but we 
+        mrf = mat_reader_factory(batch_file,struct_as_record=True)
+        batch_info = mrf.get_variables(['number_of_image_sets'])
+        if batch_info.has_key('number_of_image_sets'):
+            my_batch["num_sets"] = batch_info['number_of_image_sets'][0,0]
+        else:
+            batch_info=loadmat(batch_file, struct_as_record=True)
+            my_batch["num_sets"] = batch_info['handles']['Current'][0,0]['NumberOfImageSets'][0,0][0,0]
         runs = PartitionBatches(my_batch)
         batch_id = RunBatch.CreateBatchRun(my_batch)
         results = RunBatch.RunAll(batch_id)

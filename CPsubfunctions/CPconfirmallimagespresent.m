@@ -55,10 +55,10 @@ for n = 1:numel(TextToFind)
     token = regexp(TextToFind{n},'\(\?[<](?<token>.+?)[>]','tokens','once');
     if ~isempty(token), namedToken(n)= token; end
     
-    isTokenPresent = isTokenPresent & ~(isempty(unnamedToken(n)) && isempty(namedToken(n)));
+    isTokenPresent = isTokenPresent & ~(isempty(unnamedToken{n}) && isempty(namedToken{n}));
 end
 if ~isTokenPresent   % No tokens are present
-    msg = ['Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate];
+    msg = ['No tokens were found in any of the matching text to specify images. Tokens must be used in all regular expressions in order to check image sets. ',WarningDlgBoxBoilerplate];
     if isBatchSubmission
         warning(msg);
     else

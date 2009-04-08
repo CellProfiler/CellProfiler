@@ -30,6 +30,9 @@ function handles = MeasureTexture(handles,varargin)
 % the scale of texture you are measuring), the texture cannot be measured
 % and will result in a value of NaN (Not a Number) in the output file.
 %
+% A range of texture scales may be specified, as a comma-separated list.
+% Measurements will be generated for all scales specified.
+%
 % Note that texture measurements are affected by the overall intensity of 
 % the object (or image). For example, if Image1 = Image2 + 0.2, then the 
 % texture measurements should be the same for Image1 and Image2. However, 
@@ -184,9 +187,9 @@ ObjectNameList{5} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 ObjectNameList{6} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %inputtypeVAR07 = popupmenu
 
-%textVAR08 = What is the scale of texture?
+%textVAR08 = What is the scale of texture? A list of texture scales can be specified, separated by commas.
 %defaultVAR08 = 3
-ScaleOfTexture = str2double(char(handles.Settings.VariableValues{CurrentModuleNum,8}));
+ScaleOfTexture = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
 %%%%%%%%%%%%%%%%
 %%% FEATURES %%%
@@ -230,302 +233,307 @@ if any(findobj == ThisModuleFigureNumber)
     columns = 1;
 end
 
-%%% START LOOP THROUGH ALL THE OBJECTS
-for ObjectNameListNum = 1:6
-    ObjectName = ObjectNameList{ObjectNameListNum};
-    if strcmp(ObjectName,'Do not use')
-        continue
-    end
+ScaleOfTexture = cellfun(@str2double,strread(ScaleOfTexture,'%s','delimiter',','));
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    %%% Reads (opens) the image you want to analyze and assigns it to a variable,
-    %%% "OrigImage".
-    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
-
-    if ~strcmp(ObjectName,'Image')
-        %%% Retrieves the label matrix image that contains the segmented objects which
-        %%% will be measured with this module.
-        LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
-        %%% For the cases where the label matrix was produced from a cropped
-        %%% image, the sizes of the images will not be equal. So, we crop the
-        %%% LabelMatrix and try again to see if the matrices are then the
-        %%% proper size. Removes Rows and Columns that are completely blank.
-        if any(size(OrigImage) < size(LabelMatrixImage))
-            ColumnTotals = sum(LabelMatrixImage,1);
-            RowTotals = sum(LabelMatrixImage,2)';
-            warning off all
-            ColumnsToDelete = ~logical(ColumnTotals);
-            RowsToDelete = ~logical(RowTotals);
-            warning on all
-            drawnow
-            CroppedLabelMatrix = LabelMatrixImage;
-            CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
-            CroppedLabelMatrix(RowsToDelete,:,:) = [];
-            clear LabelMatrixImage
-            LabelMatrixImage = CroppedLabelMatrix;
-            %%% In case the entire image has been cropped away, we store a single
-            %%% zero pixel for the variable.
-            if isempty(LabelMatrixImage)
-                LabelMatrixImage = 0;
-            end
+% Loop through all the texture scales specified
+for TextureScaleNum = ScaleOfTexture(:)',
+    %%% START LOOP THROUGH ALL THE OBJECTS
+    for ObjectNameListNum = 1:6
+        ObjectName = ObjectNameList{ObjectNameListNum};
+        if strcmp(ObjectName,'Do not use')
+            continue
         end
-        if any(size(OrigImage) ~= size(LabelMatrixImage))
-            error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName,' objects were identified.'])
-        end
-    end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    %%% Initialize measurement structure
-    Haralick = [];
-    HaralickFeatures = {'AngularSecondMoment',...
-        'Contrast',...
-        'Correlation',...
-        'Variance',...
-        'InverseDifferenceMoment',...
-        'SumAverage',...
-        'SumVariance',...
-        'SumEntropy',...
-        'Entropy',...
-        'DifferenceVariance',...
-        'DifferenceEntropy',...
-        'InfoMeas1',...
-        'InfoMeas2'};
-
-    Gabor = [];
-    GaborFeatures    = {'GaborX',...
-        'GaborY'};
-
-    if strcmp(ObjectName,'Image')
-        ObjectCount = 1;
-    else
-        %%% Count objects
-        ObjectCount = max(LabelMatrixImage(:));
-    end
-
-    if ObjectCount > 0 || strcmp(ObjectName,'Image')
-
-        %%% Get Gabor features.
-        %%% The Gabor features are calculated by convolving the entire
-        %%% image with Gabor filters and then extracting the filter output
-        %%% value in the centroids of the objects in LabelMatrixImage
+        %%% Reads (opens) the image you want to analyze and assigns it to a variable,
+        %%% "OrigImage".
+        OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 
         if ~strcmp(ObjectName,'Image')
-            % Adjust size of filter to size of objects in the image
-            % The centroids indicate where we should measure the Gabor
-            % filter output
-            tmp = regionprops(LabelMatrixImage,'Area','Centroid');
-            Areas = cat(1,tmp.Area);
-            MedianArea = median(Areas);
-
-            % Round centroids and find linear index for them.
-            % The centroids are stored in [column,row] order.
-            Centroids = round(cat(1,tmp.Centroid));
-        else
-            MedianArea = size(OrigImage,1)*size(OrigImage,2);
-        end
-
-        sigma = sqrt(MedianArea/pi)/3;  % Set width of filter to a third of the median radius
-
-        % Use Gabor filters with three different frequencies
-        f = 1/(2*ScaleOfTexture);
-
-        % Angle direction, filter along the x-axis and y-axis
-        theta = [0 pi/2];
-
-        if ~strcmp(ObjectName,'Image')
-            % Create kernel coordinates
-            KernelSize = round(2.5*sigma); % The filter size is set somewhat arbitrary
-        else
-            KernelSize = max(size(OrigImage,1)/2,size(OrigImage,2)/2);
-        end
-        [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
-
-        % Apply Gabor filters and store filter outputs in the Centroid pixels
-        GaborFeatureNo = 1;
-        Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
-        for m = 1:length(f)
-            for n = 1:length(theta)
-
-                % Calculate Gabor filter kernel
-                % Scale by 1000 to get measurements in a convenient range
-                g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
-                g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
-
-
-                % Center the Gabor kernel over the centroid and calculate the filter response.
-                if strcmp(ObjectName,'Image')
-                    % Cut patch
-                    p = OrigImage;
-
-                    if size(OrigImage,1) ~= size(g,1)
-                        p = [p;zeros(size(g,1)-size(p,1),size(p,2))];
-                    end
-
-                    if size(OrigImage,2) ~= size(g,2)
-                        p = [p zeros(size(p,1),size(g,2)-size(p,2))];
-                    end
-                    % Calculate the filter output
-                    Gabor(1,GaborFeatureNo) = abs(sum(sum(g.*p)));
-                else
-                    for k = 1:ObjectCount
-                        %%% It's possible for objects not to have any pixels,
-                        %%% particularly tertiary objects (such as cytoplasm from
-                        %%% cells the exact same size as their nucleus).
-                        if Areas(k) == 0,
-                            Gabor(k, GaborFeatureNo) = 0;
-                            continue;
-                        end
-                        
-                        xmin1 = Centroids(k,1)-KernelSize;
-                        xmax1 = Centroids(k,1)+KernelSize;
-                        ymin1 = Centroids(k,2)-KernelSize;
-                        ymax1 = Centroids(k,2)+KernelSize;
-                        xmin2 = max(1,xmin1);
-                        xmax2 = min(size(OrigImage,2),xmax1);
-                        ymin2 = max(1,ymin1);
-                        ymax2 = min(size(OrigImage,1),ymax1);
-
-                        % Cut patch
-                        p = OrigImage(ymin2:ymax2,xmin2:xmax2);
-
-                        % Pad with zeros if necessary to match the filter kernel size
-                        if xmin1 < xmin2
-                            p = [zeros(size(p,1),xmin2 - xmin1) p];
-                        end
-                        if xmax1 > xmax2
-                            p = [p zeros(size(p,1),xmax1 - xmax2)];
-                        end
-
-                        if ymin1 < ymin2
-                            p = [zeros(ymin2 - ymin1,size(p,2));p];
-                        end
-                        if ymax1 > ymax2
-                            p = [p;zeros(ymax1 - ymax2,size(p,2))];
-                        end
-
-                        % Calculate the filter output
-                        Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
-                    end
+            %%% Retrieves the label matrix image that contains the segmented objects which
+            %%% will be measured with this module.
+            LabelMatrixImage = CPretrieveimage(handles,['Segmented', ObjectName],ModuleName,'MustBeGray','DontCheckScale');
+            %%% For the cases where the label matrix was produced from a cropped
+            %%% image, the sizes of the images will not be equal. So, we crop the
+            %%% LabelMatrix and try again to see if the matrices are then the
+            %%% proper size. Removes Rows and Columns that are completely blank.
+            if any(size(OrigImage) < size(LabelMatrixImage))
+                ColumnTotals = sum(LabelMatrixImage,1);
+                RowTotals = sum(LabelMatrixImage,2)';
+                warning off all
+                ColumnsToDelete = ~logical(ColumnTotals);
+                RowsToDelete = ~logical(RowTotals);
+                warning on all
+                drawnow
+                CroppedLabelMatrix = LabelMatrixImage;
+                CroppedLabelMatrix(:,ColumnsToDelete,:) = [];
+                CroppedLabelMatrix(RowsToDelete,:,:) = [];
+                clear LabelMatrixImage
+                LabelMatrixImage = CroppedLabelMatrix;
+                %%% In case the entire image has been cropped away, we store a single
+                %%% zero pixel for the variable.
+                if isempty(LabelMatrixImage)
+                    LabelMatrixImage = 0;
                 end
-                GaborFeatureNo = GaborFeatureNo + 1;
+            end
+            if any(size(OrigImage) ~= size(LabelMatrixImage))
+                error(['Image processing was canceled in the ', ModuleName, ' module. The size of the image you want to measure is not the same as the size of the image from which the ',ObjectName,' objects were identified.'])
             end
         end
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%% MAKE MEASUREMENTS & SAVE TO HANDLES STRUCTURE %%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        %%% Initialize measurement structure
+        Haralick = [];
+        HaralickFeatures = {'AngularSecondMoment',...
+            'Contrast',...
+            'Correlation',...
+            'Variance',...
+            'InverseDifferenceMoment',...
+            'SumAverage',...
+            'SumVariance',...
+            'SumEntropy',...
+            'Entropy',...
+            'DifferenceVariance',...
+            'DifferenceEntropy',...
+            'InfoMeas1',...
+            'InfoMeas2'};
+
+        Gabor = [];
+        GaborFeatures    = {'GaborX',...
+            'GaborY'};
 
         if strcmp(ObjectName,'Image')
-            [m,n] = size(OrigImage);
-            BWim = ones(m,n);
-            %%% Get Haralick features
-            Haralick(1,:) = CalculateHaralick(OrigImage,BWim,ScaleOfTexture);
+            ObjectCount = 1;
         else
-            %%% Get Haralick features.
-            %%% Have to loop over the objects
-            Haralick = zeros(ObjectCount,13);
-            [sr sc] = size(LabelMatrixImage);
-            props = regionprops(LabelMatrixImage,'PixelIdxList');   % Get pixel indexes in a fast way
-            for Object = 1:ObjectCount
-                %%% Cut patch so that we don't have to deal with entire image
-                [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
-                rmax = min(sr,max(r));
-                rmin = max(1,min(r));
-                cmax = min(sc,max(c));
-                cmin = max(1,min(c));
-                BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
-                Greyim = OrigImage(rmin:rmax,cmin:cmax);
+            %%% Count objects
+            ObjectCount = max(LabelMatrixImage(:));
+        end
+
+        if ObjectCount > 0 || strcmp(ObjectName,'Image')
+
+            %%% Get Gabor features.
+            %%% The Gabor features are calculated by convolving the entire
+            %%% image with Gabor filters and then extracting the filter output
+            %%% value in the centroids of the objects in LabelMatrixImage
+
+            if ~strcmp(ObjectName,'Image')
+                % Adjust size of filter to size of objects in the image
+                % The centroids indicate where we should measure the Gabor
+                % filter output
+                tmp = regionprops(LabelMatrixImage,'Area','Centroid');
+                Areas = cat(1,tmp.Area);
+                MedianArea = median(Areas);
+
+                % Round centroids and find linear index for them.
+                % The centroids are stored in [column,row] order.
+                Centroids = round(cat(1,tmp.Centroid));
+            else
+                MedianArea = size(OrigImage,1)*size(OrigImage,2);
+            end
+
+            sigma = sqrt(MedianArea/pi)/3;  % Set width of filter to a third of the median radius
+
+            % Use Gabor filters with three different frequencies
+            f = 1/(2*TextureScaleNum);
+
+            % Angle direction, filter along the x-axis and y-axis
+            theta = [0 pi/2];
+
+            if ~strcmp(ObjectName,'Image')
+                % Create kernel coordinates
+                KernelSize = round(2.5*sigma); % The filter size is set somewhat arbitrary
+            else
+                KernelSize = max(size(OrigImage,1)/2,size(OrigImage,2)/2);
+            end
+            [x,y] = meshgrid(-KernelSize:KernelSize,-KernelSize:KernelSize);
+
+            % Apply Gabor filters and store filter outputs in the Centroid pixels
+            GaborFeatureNo = 1;
+            Gabor = zeros(ObjectCount,length(f)*length(theta));                              % Initialize measurement matrix
+            for m = 1:length(f)
+                for n = 1:length(theta)
+
+                    % Calculate Gabor filter kernel
+                    % Scale by 1000 to get measurements in a convenient range
+                    g = 1000*1/(2*pi*sigma^2)*exp(-(x.^2 + y.^2)/(2*sigma^2)).*exp(2*pi*sqrt(-1)*f(m)*(x*cos(theta(n))+y*sin(theta(n))));
+                    g = g - mean(g(:));           % Important that the filters has DC zero, otherwise they will be sensitive to the intensity of the image
+
+
+                    % Center the Gabor kernel over the centroid and calculate the filter response.
+                    if strcmp(ObjectName,'Image')
+                        % Cut patch
+                        p = OrigImage;
+
+                        if size(OrigImage,1) ~= size(g,1)
+                            p = [p;zeros(size(g,1)-size(p,1),size(p,2))];
+                        end
+
+                        if size(OrigImage,2) ~= size(g,2)
+                            p = [p zeros(size(p,1),size(g,2)-size(p,2))];
+                        end
+                        % Calculate the filter output
+                        Gabor(1,GaborFeatureNo) = abs(sum(sum(g.*p)));
+                    else
+                        for k = 1:ObjectCount
+                            %%% It's possible for objects not to have any pixels,
+                            %%% particularly tertiary objects (such as cytoplasm from
+                            %%% cells the exact same size as their nucleus).
+                            if Areas(k) == 0,
+                                Gabor(k, GaborFeatureNo) = 0;
+                                continue;
+                            end
+
+                            xmin1 = Centroids(k,1)-KernelSize;
+                            xmax1 = Centroids(k,1)+KernelSize;
+                            ymin1 = Centroids(k,2)-KernelSize;
+                            ymax1 = Centroids(k,2)+KernelSize;
+                            xmin2 = max(1,xmin1);
+                            xmax2 = min(size(OrigImage,2),xmax1);
+                            ymin2 = max(1,ymin1);
+                            ymax2 = min(size(OrigImage,1),ymax1);
+
+                            % Cut patch
+                            p = OrigImage(ymin2:ymax2,xmin2:xmax2);
+
+                            % Pad with zeros if necessary to match the filter kernel size
+                            if xmin1 < xmin2
+                                p = [zeros(size(p,1),xmin2 - xmin1) p];
+                            end
+                            if xmax1 > xmax2
+                                p = [p zeros(size(p,1),xmax1 - xmax2)];
+                            end
+
+                            if ymin1 < ymin2
+                                p = [zeros(ymin2 - ymin1,size(p,2));p];
+                            end
+                            if ymax1 > ymax2
+                                p = [p;zeros(ymax1 - ymax2,size(p,2))];
+                            end
+
+                            % Calculate the filter output
+                            Gabor(k,GaborFeatureNo) = abs(sum(sum(g.*p)));
+                        end
+                    end
+                    GaborFeatureNo = GaborFeatureNo + 1;
+                end
+            end
+
+            if strcmp(ObjectName,'Image')
+                [m,n] = size(OrigImage);
+                BWim = ones(m,n);
                 %%% Get Haralick features
-                Haralick(Object,:) = CalculateHaralick(Greyim,BWim,ScaleOfTexture);
+                Haralick(1,:) = CalculateHaralick(OrigImage,BWim,TextureScaleNum);
+            else
+                %%% Get Haralick features.
+                %%% Have to loop over the objects
+                Haralick = zeros(ObjectCount,13);
+                [sr sc] = size(LabelMatrixImage);
+                props = regionprops(LabelMatrixImage,'PixelIdxList');   % Get pixel indexes in a fast way
+                for Object = 1:ObjectCount
+                    %%% Cut patch so that we don't have to deal with entire image
+                    [r,c] = ind2sub([sr sc],props(Object).PixelIdxList);
+                    rmax = min(sr,max(r));
+                    rmin = max(1,min(r));
+                    cmax = min(sc,max(c));
+                    cmin = max(1,min(c));
+                    BWim   = LabelMatrixImage(rmin:rmax,cmin:cmax) == Object;
+                    Greyim = OrigImage(rmin:rmax,cmin:cmax);
+                    %%% Get Haralick features
+                    Haralick(Object,:) = CalculateHaralick(Greyim,BWim,TextureScaleNum);
+                end
             end
+        else
+            Haralick = zeros(0,13);
+            Gabor = zeros(0,2);
         end
-    else
-        Haralick = zeros(0,13);
-        Gabor = zeros(0,2);
-    end
-    %%% Save measurements
-    AllFeatures = cat(2,HaralickFeatures,GaborFeatures);
-    Data = [Haralick Gabor];
-    for FeatureNum = 1:length(AllFeatures)
-        feature_name = CPjoinstrings('Texture',char(AllFeatures{FeatureNum}),ImageName,num2str(ScaleOfTexture));
-        handles = CPaddmeasurements(handles, ObjectName, feature_name, Data(:,FeatureNum));
-    end
-
-    %%% Report measurements
-    FontSize = handles.Preferences.FontSize;
-
-    if any(findobj == ThisModuleFigureNumber);
-        % Remove uicontrols from last cycle
-        delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
-        
-        % This first block writes the same text several times
-        % Header
-
-        if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
-            delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
-            delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+        %%% Save measurements
+        AllFeatures = cat(2,HaralickFeatures,GaborFeatures);
+        Data = [Haralick Gabor];
+        for FeatureNum = 1:length(AllFeatures)
+            feature_name = CPjoinstrings('Texture',char(AllFeatures{FeatureNum}),ImageName,num2str(TextureScaleNum));
+            handles = CPaddmeasurements(handles, ObjectName, feature_name, Data(:,FeatureNum));
         end
 
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
-            'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-            'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', cycle #%d'],handles.Current.SetBeingAnalyzed));
+        %%% Report measurements
+        FontSize = handles.Preferences.FontSize;
 
-        % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-            'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
+        if any(findobj == ThisModuleFigureNumber);
+            % Remove uicontrols from last cycle
+            delete(findobj(ThisModuleFigureNumber,'tag','TextUIControl'));
 
-        % Text for Gabor features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-            'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
-        for k = 1:2
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+            % This first block writes the same text several times
+            % Header
+
+            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                delete(findobj('parent',ThisModuleFigureNumber,'string','R'));
+                delete(findobj('parent',ThisModuleFigureNumber,'string','G'));
+                delete(findobj('parent',ThisModuleFigureNumber,'string','B'));
+            end
+
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0 0.95 1 0.04],...
+                'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
+                'fontsize',FontSize,'fontweight','bold','string',sprintf(['Average texture features for ',ImageName,', cycle #%d'],handles.Current.SetBeingAnalyzed));
+
+            % Number of objects
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.85 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-                'fontsize',FontSize,'string',GaborFeatures{k});
-        end
+                'fontsize',FontSize,'fontweight','bold','string','Number of objects:');
 
-        % Text for Haralick features
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.65 0.3 0.03],...
-            'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-            'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
-        for k = 1:10
-            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.65-0.04*k 0.3 0.03],...
+            % Text for Gabor features
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8 0.3 0.03],...
                 'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
-                'fontsize',FontSize,'string',HaralickFeatures{k});
-        end
-
-        % The name of the object image
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
-            'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
-            'fontsize',FontSize,'fontweight','bold','string',ObjectName);
-
-        % Number of objects
-        uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
-            'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
-            'fontsize',FontSize,'string',num2str(ObjectCount));
-
-        if ObjectCount > 0
-            % Gabor features
+                'fontsize',FontSize,'fontweight','bold','string','Gabor features:');
             for k = 1:2
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.8-0.04*k 0.3 0.03],...
+                    'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
+                    'fontsize',FontSize,'string',GaborFeatures{k});
             end
 
-            % Haralick features
+            % Text for Haralick features
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.65 0.3 0.03],...
+                'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
+                'fontsize',FontSize,'fontweight','bold','string','Haralick features:');
             for k = 1:10
-                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.65-0.04*k 0.2 0.03],...
-                    'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
-                    'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
+                uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.05 0.65-0.04*k 0.3 0.03],...
+                    'HorizontalAlignment','left','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextUIControl',...
+                    'fontsize',FontSize,'string',HaralickFeatures{k});
             end
+
+            % The name of the object image
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.9 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
+                'fontsize',FontSize,'fontweight','bold','string',ObjectName);
+
+            % Number of objects
+            uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.85 0.2 0.03],...
+                'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
+                'fontsize',FontSize,'string',num2str(ObjectCount));
+
+            if ObjectCount > 0
+                % Gabor features
+                for k = 1:2
+                    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.8-0.04*k 0.2 0.03],...
+                        'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
+                        'fontsize',FontSize,'string',sprintf('%0.2f',mean(Gabor(:,k))));
+                end
+
+                % Haralick features
+                for k = 1:10
+                    uicontrol(ThisModuleFigureNumber,'style','text','units','normalized', 'position', [0.35+0.2*(columns-1) 0.65-0.04*k 0.2 0.03],...
+                        'HorizontalAlignment','center','BackgroundColor',[.7 .7 .9],'fontname','Helvetica','tag','TextEachObjUIControl',...
+                        'fontsize',FontSize,'string',sprintf('%0.2f',mean(Haralick(:,k))));
+                end
+            end
+            % This variable is used to write results in the correct column
+            % and to determine the correct window size
+            columns = columns + 1;
         end
-        % This variable is used to write results in the correct column
-        % and to determine the correct window size
-        columns = columns + 1;
     end
 end
 drawnow

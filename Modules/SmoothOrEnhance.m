@@ -56,6 +56,41 @@ function handles = SmoothOrEnhance(handles)
 %
 % $Revision$
 
+% Variable Settings for PyCP
+% Var 3: I think since we give them a choice, we should say 'Please choose
+% the smoothing method..." rather than "Enter the smoothing method.." since
+% you can't actually enter anything.
+%
+% Vars 4 & 5: I've always thought it's odd how we let them specify an
+% object size but then also let them specify a filter, which overrides
+% it.  This variable should be context dependent, so if the user selects
+% fit polynomial, it should not appear.  I think maybe it is best to just
+% combine these with a statement like, "Please enter an object size.  This
+% will be used as the filter size." and leave automatic as an option, or
+% some similar wording so it's clear at least whats going on.
+
+% I'm confused about variable 6; Why would you need to do that if the
+% illum. cxn modules have smoothing in them?  I can't think of any other
+% case where you would have an image resulting from processing multiple
+% cycles other than an average or projected image; and the illum cxn module
+% allows you to smooth an averaged image.  So I guess this allows for the
+% case of (1)Making a max. projection (2)Filtering or smoothing that
+% resulting image in some way.  seems like there should be a better way...?
+% Or CellProfiler should be smarter in knowing when an image has finished
+% processing...
+
+% Vars 7&8: should be context-dependent and only show up if you pick Smooth
+% keeping edges.  
+% For Var7, I've never understood what 'preserved objects' are.
+% For Var8, I dont like the idea of 0.0 being equivalent to 'calculate from
+% the image'.  This could be asked in a better way like, 'What is the
+% intensity step that indicates an edge, in intensity units?' (we can just
+% divide this number to get the intensity-based radius) and have 'Calculate
+% from Image' be an option.
+
+
+
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

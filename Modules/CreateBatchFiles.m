@@ -239,9 +239,13 @@ handles = CPaddmeasurements(handles,'Image',CPjoinstrings('ModuleError',[CPtwodi
 % Python can't load function pointers
 handles = rmfield(handles, 'FunctionHandles');
 
+% The website just needs the # of image sets, so we make a global
+% variable here to save
+number_of_image_sets = handles.Current.NumberOfImageSets; %#ok<NASGU>
+
 % Saves the altered handles in a file which the user will feed to
 % the remote machines.
-save(PathAndFileName, 'handles');
+save(PathAndFileName, 'handles','number_of_image_sets');
 
 % Reverts to the preserved handles.  (Probably not necessary, but simpler.)
 handles = PreservedHandles;

@@ -27,6 +27,7 @@ from maskimage import MaskImage
 from measureimageareaoccupied import MeasureImageAreaOccupied
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
+from measuretexture import MeasureTexture
 from saveimages import SaveImages
 
 def get_module_classes():
@@ -46,6 +47,7 @@ def get_module_classes():
             MeasureImageAreaOccupied,
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
+            MeasureTexture,
             SaveImages ]
 
 def get_module_substitutions():
@@ -68,6 +70,7 @@ def get_module_substitutions():
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
+            "MeasureTexture": MeasureTexture,
             "SaveImages": SaveImages
             }
     

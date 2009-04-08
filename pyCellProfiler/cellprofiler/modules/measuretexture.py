@@ -12,9 +12,15 @@ import scipy.ndimage as scind
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result
+from cellprofiler.cpmath.haralick import haralick
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
+
+"""The "name" slot in the object group dictionary entry"""
+OG_NAME = 'name'
+"""The "remove"slot in the object group dictionary entry"""
+OG_REMOVE = 'remove'
 
 F_HARALICK = """AngularSecondMoment Contrast Correlation Variance 
 InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
@@ -110,13 +116,16 @@ class MeasureTexture(cpm.CPModule):
         for object_group in self.object_groups:
             self.run_on_objects(object_group[OG_NAME].value, workspace)
     
-    def run_on_objects(self,object_name, workspace):
+    def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
-        
-        for name, value in zip(F_HARALICK, haralick(image, objects.segmented,
-                                                    self.scale)):
+        image = objects.get_parent_image()
+        print "Computing haralick..."
+        for name, value in zip(F_HARALICK, haralick(image.pixel_data,
+                                                    objects.segmented,
+                                                    self.scale.value)):
             self.record_measurement(workspace, object_name, name, value)
+        print "done"
 
     def record_measurement(self, workspace,  
                            object_name, feature_name, result):

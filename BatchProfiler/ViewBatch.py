@@ -164,6 +164,7 @@ else:
                 print "<option value='broad'>Broad</option>"
                 print "<option value='long'>Long</option>"
                 print "<option value='priority'>Priority</option>"
+                print "</select>"
                 print "</span>"
                 print "</form>"
             print "</td>"

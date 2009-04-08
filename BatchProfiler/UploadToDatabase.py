@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/development/python-2.6.sh
+#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
 #
 # Upload .CSV files to the database
 #

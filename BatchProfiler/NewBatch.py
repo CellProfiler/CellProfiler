@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/development/python-2.6.sh
+#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
 # This is a CGI script that begins to start a batch on the clusters
 # Functionality:
 #   Parse the posted fields:

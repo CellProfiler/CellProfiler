@@ -398,29 +398,25 @@ if strcmp(EachOrAll,'All')
                     % without causing an error on the first cycle.
                     handles = CPaddimages(handles,IlluminationImageName,...
                         zeros(size(blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero))));
+                    handles = CPaddimages(handles,'NumberOfActualImages',0);
                 end
                 % Retrieves the existing illumination image, as accumulated so far.
                 SumMiniIlluminationImage = CPretrieveimage(handles,IlluminationImageName,ModuleName);
+                NumberOfActualImages = CPretrieveimage(handles,'NumberOfActualImages',ModuleName);
                 
                 % Adds the current image to it unless it's all 0's (i.e, file is empty)
                 if ~all(OrigImage(:) == 0)
                     SumMiniIlluminationImage = SumMiniIlluminationImage + blkproc(padarray(OrigImage,[RowsToAdd ColumnsToAdd],'replicate','post'),[BestBlockSize(1) BestBlockSize(2)],@minnotzero);
+                    NumberOfActualImages = NumberOfActualImages + 1;
                 end
                 handles = CPaddimages(handles,IlluminationImageName,SumMiniIlluminationImage);
+                handles = CPaddimages(handles,'NumberOfActualImages',NumberOfActualImages);
                 
                 % If the last cycle has just been processed, indicate that
                 % the projection image is ready.
                 if SetBeingAnalyzed == NumberOfImageSets
                     % Divides by the total number of images in order to
-                    % average. Check whether any of the images are blank by
-                    % looking at the FileList
-                    if ~isImageGroups,
-                        FileList = handles.Pipeline.(['FileList',ImageName]);
-                    else
-                        FileList = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageName]);
-                    end
-                    FileList(cellfun(@isempty,FileList)) = [];
-                    NumberOfActualImages = length(FileList);
+                    % average. 
                     MiniIlluminationImage = SumMiniIlluminationImage / NumberOfActualImages;
                     % The coarse estimate is then expanded in size so that it is the same
                     % size as the original image. Bilinear interpolation is used to ensure the

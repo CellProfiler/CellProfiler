@@ -123,10 +123,11 @@ elseif strcmpi(Mode,'Accumulate') == 1
         end
         %%% Retrieves the current image.
         OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
-        %%% Creates the empty variable so it can be retrieved later
+        %%% Creates the empty variables so it can be retrieved later
         %%% without causing an error on the first image set.
         handles = CPaddimages(handles,  ProjectionImageName,zeros(size(OrigImage)),...
-                                        MaskCountImageName,zeros(size(OrigImage)));
+                                        MaskCountImageName,zeros(size(OrigImage)),...
+                                        'NumberOfActualImages',0);
     end
     %%% Retrieves the current image.
     OrigImage = CPretrieveimage(handles,fieldname,ModuleName);
@@ -139,13 +140,19 @@ elseif strcmpi(Mode,'Accumulate') == 1
     %%% Retrieves the existing projection image, as accumulated so
     %%% far.
     ProjectedImage = CPretrieveimage(handles,ProjectionImageName,ModuleName);
+    %%% Retrieves the current number of images analyzed
+    NumberOfActualImages = CPretrieveimage(handles,'NumberOfActualImages',ModuleName);
+    
     if has_mask
         mask = CPretrieveimage(handles,mask_fieldname,ModuleName); 
+        
         OutputImage = ProjectedImage + OrigImage .* mask;
         MaskCountImage = CPretrieveimage(handles,MaskCountImageName,ModuleName);
         MaskCountImage = MaskCountImage + mask;
         MaskImage = MaskCountImage > 0;
+        NumberOfActualImages = NumberOfActualImages + 1;
         OutputImage = OutputImage./max(MaskCountImage,1);
+        
         handles = CPaddimages(handles,MaskCountImageName,MaskCountImage);
         if SetBeingAnalyzed == NumberOfImageSets
             %%% Divides by the total number of images in order to average.
@@ -154,25 +161,20 @@ elseif strcmpi(Mode,'Accumulate') == 1
     else
         %%% Adds the current image to it.
         OutputImage = ProjectedImage + OrigImage;
-
+        NumberOfActualImages = NumberOfActualImages + 1;
+        
         %%% If the last image set has just been processed, indicate that
         %%% the projection image is ready.
         MaskImage = ones(size(OutputImage));
         if SetBeingAnalyzed == NumberOfImageSets
-            %%% Divides by the total number of images in order to average. 
-            %%% Check whether any of the images are blank by looking at the
-            %%% FileList
-            if ~isImageGroups,
-                CurrentFileList = handles.Pipeline.(['FileList',ImageName]);
-            else
-                CurrentFileList = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageName]);
-            end
-            NumberOfActualImages = sum(~cellfun(@isempty,CurrentFileList));
+            %%% Divides by the total number of images in order to average.
             OutputImage = OutputImage/NumberOfActualImages;
             MaskImage = ones(size(OutputImage));
             ReadyFlag = 1;
         end
     end
+    
     %%% Saves the updated projection image to the handles structure.
     handles = CPaddimages(handles,ProjectionImageName,OutputImage);
+    handles = CPaddimages(handles,'NumberOfActualImages',NumberOfActualImages);
 end

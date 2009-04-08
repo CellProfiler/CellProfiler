@@ -155,9 +155,16 @@ else:
                 print "<input type='hidden' name='sql_script' value='%s' />"%(filename)
                 print "<input type='hidden' name='output_file' value='%s' />"%(output_path)
                 print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
+                print "<span style='white-space:nowrap'>"
                 print """<input type='submit'
                                  value='Run'
                                  onclick='confirm("Are you sure you want to upload to the database using %(filename)s?")' />"""%(globals())
+                print "&nbsp;Queue:<select name='queue'>"
+                print "<option value='short'>Short</option>"
+                print "<option value='broad'>Broad</option>"
+                print "<option value='long'>Long</option>"
+                print "<option value='priority'>Priority</option>"
+                print "</span>"
                 print "</form>"
             print "</td>"
             if job_id is None:

@@ -149,6 +149,8 @@ def sql_job_status(job_id):
     if status is None:
         # Job didn't report to database and isn't visible
         return "UNKNOWN"
+    if not status.has_key("STAT"):
+        return "UNKNOWN"
     return status["STAT"]
 
 def sql_job_run_time(job_id):

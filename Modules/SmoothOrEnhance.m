@@ -4,7 +4,7 @@ function handles = SmoothOrEnhance(handles)
 % Category: Image Processing
 %
 % SHORT DESCRIPTION:
-% Smooths (blurs) images.
+% Smooths (blurs) or enhances (sharpens) images.
 % *************************************************************************
 %
 % Settings:
@@ -35,8 +35,9 @@ function handles = SmoothOrEnhance(handles)
 % Jiawen Chen.
 %
 % Special note on saving images: If you want to save the smoothed image to
-% use it for later analysis, you should save the smoothed image in '.mat'
-% format to prevent degradation of the data.
+% your computer to use it for later sessions in CellProfiler, you should
+% save the smoothed image in '.mat' format to prevent degradation of the
+% data.
 %
 % Technical note on the median filtering method: the artifact width is
 % divided by two to obtain the radius of a disk-shaped structuring element
@@ -57,9 +58,14 @@ function handles = SmoothOrEnhance(handles)
 % $Revision$
 
 % Variable Settings for PyCP
-% Var 3: I think since we give them a choice, we should say 'Please choose
-% the smoothing method..." rather than "Enter the smoothing method.." since
-% you can't actually enter anything.
+%
+% SEE ALSO: notes in the FindEdges module.
+%
+% Var 3: should re-word to be "What type of filtering would you like to
+% perform?" It's understandable to use the word "filtering" rather than "smoothing or
+% enhancing", right? I think it's still ok to leave the name of the module
+% as SmoothOrEnhance though. We should change the input/output image
+% questions to say "filter" rather than "smooth" also.
 %
 % Vars 4 & 5: I've always thought it's odd how we let them specify an
 % object size but then also let them specify a filter, which overrides
@@ -78,6 +84,17 @@ function handles = SmoothOrEnhance(handles)
 % resulting image in some way.  seems like there should be a better way...?
 % Or CellProfiler should be smarter in knowing when an image has finished
 % processing...
+% Note from Anne: I agree it's confusing. It's handy if you
+% want to try multiple smoothing settings in an illumination correction
+% pipeline (so you would put several Smooth modules in and save the result
+% of each one so that you can compare them later).
+% But perhaps this question needs to stay as
+% is?  I'm not sure whether the new image grouping situation will solve
+% this issue. With variable 6, this module is essentially trying to let you do a
+% complicated pipeline where some modules of the pipeline are executed once per
+% cycle and others are executed once for the whole run. This functionality
+% might be replaced by the new image grouping... or it might break it!  I'm
+% not really sure.
 
 % Vars 7&8: should be context-dependent and only show up if you pick Smooth
 % keeping edges.  
@@ -88,7 +105,7 @@ function handles = SmoothOrEnhance(handles)
 % divide this number to get the intensity-based radius) and have 'Calculate
 % from Image' be an option.
 
-
+% Anne 4-9-09: The help for this module is quite out of date!
 
 
 %%%%%%%%%%%%%%%%%

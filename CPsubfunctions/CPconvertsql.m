@@ -116,13 +116,17 @@ if (FirstSet == 1)
             end
         end
 
-        %add columns for mean and stddev for per_object_names
+        %add columns for mean, median and stddev for per_object_names
         for j=per_object_names,
             fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
         end
-
+        
         for k=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', k{1}]));
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', k{1}]));
+        end
+        
+        for l=per_object_names,
+            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', l{1}]));
         end
 
         fprintf(fmain, ');\n\n');
@@ -175,13 +179,18 @@ if (FirstSet == 1)
             end
         end
 
-        %add columns for mean and stddev for per_object_names
+        %add columns for mean, median and stddev for per_object_names
         for j=per_object_names,
             p=p+1;
             fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
         end
+        
+        for k=per_object_names,
+            p=p+1;
+            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        end
 
-        for h=per_object_names,
+        for l=per_object_names,
             p=p+1;
             fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
         end
@@ -229,7 +238,12 @@ if (FirstSet == 1)
         for m=per_object_names
             p=p+1;
             fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Stdev_', m{1}]);
+            fprintf(fcol, ',%s\n', ['Median_', m{1}]);
+        end
+        for n=per_object_names
+            p=p+1;
+            fprintf(fcol, '%s', ['col', num2str(p)]);
+            fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
         end
 
         p=p+1;
@@ -424,10 +438,12 @@ for img_idx = FirstSet:LastSet
 
     end %%% loop over object types
 
-    %print mean, stdev for all measurements per image
+    %print mean, median, stdev for all measurements per image
     formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
     if size(perobjectvals_mean,1)==1
-        fprintf(fimage,',');
+        fprintf(fimage,',');    %% MEAN
+        fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
+        fprintf(fimage,',');    %% MEDIAN
         fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
         for i= 1:size(perobjectvals_mean,2),
             fprintf(fimage,',0'); %ignore NaN
@@ -436,8 +452,12 @@ for img_idx = FirstSet:LastSet
         fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
         fprintf(fimage,',');
+        fprintf(fimage,formatstr,(CPnanmedian(perobjectvals_mean))); % ignore NaN
+        fprintf(fimage,',');
         fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
     else % write zeros if there are no measurements
+        fprintf(fimage,',');
+        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
         fprintf(fimage,',');
         fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
         fprintf(fimage,',');

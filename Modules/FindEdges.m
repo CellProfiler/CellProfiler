@@ -101,6 +101,21 @@ function handles = FindEdges(handles)
 % Roberts- var 8
 % LoG- var 10
 % Canny- vars 10&11
+%
+% Anne 4-9-09: We should consider whether this module should be combined
+% with other types of filters. In other words, do we want nearly every
+% filter available in CP to be in one module, with the first setting being
+% a choice between "enhance edges", "enhance bright round speckles", etc.?
+% This would encompass the SmoothOrEnhance module (and maybe DICtransform?), though I'm not sure what
+% name to give the final super-module. 
+%
+% Also, it seems that this module should output grayscale images only, leaving the
+% task of turning grayscale to binary to IdentifyPrimAutomatic (or
+% ApplyThreshold) which has many options. Otherwise we need to replicate
+% those options within this module and it's a little confusing. I think
+% most of these built-in MATLAB functions for finding edges spit out binary
+% only although they provide some parameters to tweak how the grayscale is
+% turned to binary.
 
 drawnow
 

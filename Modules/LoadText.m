@@ -78,16 +78,26 @@ function handles = LoadText(handles)
 % downstream modules who care can access it.  I'm guessing right now Calc.
 % Stats. assumes you're giving it numbers (doses) but in theory you could
 % group over any treatment and come up with stats for those, I think.
-
+%
 % Getting even more abstract about metadata, Could it be possible to load
 % in your metadata w/ load text modules and have ExportToDatabase create a
 % metadata table? (On the most basic level, it could just assume that
 % whatever you loaded in loadtext is metadata, and created a table linked
 % by image number, just with the loaded text in a separate table)
-
+%
 % I can't think of any other uses of LoadText, other than metadata, but we
 % should think about what users may do with LoadText and keep it flexible
 % for that too.
+%
+% Anne 4-9-09: I think perhaps this module should be LoadData instead of
+% LoadText, since the latter implies that numbers can't be loaded. I agree
+% with what Kate says above; overall this module should allow you to
+% import a text file but also a tab delimited and comma delimited file. I'm
+% not sure how best to handle the number vs. character issue - the options
+% are asking the user, figuring it out ourselves, or requiring that the
+% user put a label at the top of each column indicating numbers or
+% characters.  See also the AddData data tool and Calculate Statistics
+% (which relies on the input from this module).
 
 drawnow
 

@@ -44,7 +44,7 @@ function handles = MeasureRadialDistribution(handles,varargin)
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) What did you call the image from which you want to measure the intentsity distribution? (ImageName)
+% (1) What did you call the image from which you want to measure the intensity distribution? (ImageName)
 % (2) What did you call the objects from which you want to measure the intensity distribution? (MainObjects)
 % (3) What objects do you want to use as centers? (use "Do not use" to use distance-based centers) (CenterObjects)
 % (4) How many bins do you want to use to store the distribution? (BinCount)
@@ -54,6 +54,14 @@ function handles = MeasureRadialDistribution(handles,varargin)
 % (ii) A button should be added after (4) allowing the user to add more 
 % images, associated objects, and binning to specify other object radial
 % distributions.
+%
+% Anne 4-9-09: Can we add these features to MeasureObjectIntensity? I think
+% it would only add a few options. At the very least we should rename this
+% module to MeasureObjectIntensityDistributions. But that's just awkward. 
+%
+% We also need to re-word Variable 4. I think it's saying how many
+% concentric rings do you want to divide the object into (?).
+
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -63,7 +71,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the image for which you want to measure the intentsity distribution?
+%textVAR01 = What did you call the image for which you want to measure the intensity distribution?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu

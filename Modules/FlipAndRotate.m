@@ -62,7 +62,24 @@ function handles = FlipAndRotate(handles,varargin)
 % you select coordinates, var 8 will only pop up if you select mouse, and
 % variable 11 will only pop up if you select angle.
 
-
+% Anne 4-9-09: It sounds like variable three should actually be "What
+% transformation do you want to perform?", with the choice of "Flip" or
+% "Rotate" and the next question would be "left/right" or "top/bottom" if
+% they picked Flip and then all the rotate options if they picked rotate.
+%
+% It's a judgment call on how to handle it if the user wants to do multiple operations (like
+% what Kate described above "left to right, then top to bottom"). (1) the
+% user could be required to add another FlipRotate module into the pipeline if they
+% want multiple operations (this is sort of our original intention for how
+% CP would work), (2) we could have a button where they are allowed to add
+% an additional flip/rotate operation. I think it's fairly rare that
+% someone wants to do multiple operations so I guess I'd vote for (1).
+%
+% When allowing the user to rotate by an angle we should
+% provide some options like 90 degrees clockwise, 90 degrees
+% counterclockwise, ..., other. The rotation methods are a little bit
+% obscurely named, so we should clarify. "Mouse" could become "Click landmark
+% points with mouse" (at least, that's what I recall as its meaning).
 
 drawnow
 

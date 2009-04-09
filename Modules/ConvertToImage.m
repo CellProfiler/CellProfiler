@@ -40,9 +40,17 @@ function handles = ConvertToImage(handles)
 %
 % $Revision$
 
+% Variable settings for PyCp
+% Var4 should be context-dependent and only appear if the user selects
+% 'color' as their option.
+% 
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

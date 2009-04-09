@@ -96,10 +96,10 @@ FindMeanMeasurements = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 drawnow
 
 % Do we want to calculate mean measurements?
-wantMeanMeasurements = strcmpni(FindMeanMeasurements,'y',1);
+wantMeanMeasurements = strncmpi(FindMeanMeasurements,'y',1);
 
 % Do we want to calculate minimum distances?
-wantMinDistances = strcmpni(FindParentChildDistances,'y',1);
+wantMinDistances = strncmpi(FindParentChildDistances,'y',1);
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.

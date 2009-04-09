@@ -32,17 +32,16 @@ function handles = Resize(handles)
 % You can either enter a resizing factor, or enter the desired pixel size.
 % A good reorg of Vars 3&4 would be : 
 % How do you want to resize the image?
-% choice1: Enter the resizing factor
-% choice2: Enter the final image size in pixels
+% choice1: Enter a resizing factor
+% choice2: Enter a desired final image size in pixels
 % ...and depending on which the user chooses, only that input box (resize
 % facotr or final image size) will display.
 % 
 % There should be some explanation of the interpolation methods available,
 % though since we won't be using matlabs imresize, I guess we can wait on
 % writing that.
-
-
-
+%
+% Anne 4-9-09: the above sounds fine to me.
 
 drawnow
 

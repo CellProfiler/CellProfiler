@@ -32,6 +32,26 @@ function handles = InvertForPrinting(handles)
 % I don't see anything wrong with the settings.. the only thing I can think
 % of is perhaps this could be combined with another module? It seems very
 % specific.
+%
+% Anne 4-9-09: The rewording should match other modules "What did you call
+% the red channel?" (and 'None' should be the default). But I agree that this
+% module could be merged into GrayToColor, by having a special option for
+% this InvertForPrinting option, and then context-dependent variables from
+% there.
+%
+% We should also provide this functionality to be performed on a color
+% image directly (whereas here you do the transformation on three
+% grayscales to produce three other grayscales). I'm not sure where that
+% could go because we don't have any modules for doing a color
+% transformation on a color image. Perhaps a new module "TransformColor"
+% which could also do things like convert CMYK to RGB?  I'm not sure that
+% makes sense - just throwing out ideas. But anyway, if this functionality
+% was in a module that allowed an input RGB image and produced the color
+% inverted-for-printing image, then we wouldn't even need the ability to
+% run this on grayscale images separately.
+%
+% I think the help is completely wrong because it says it works on color
+% images but it seems to take 3 grayscales as input.
 
 drawnow
 

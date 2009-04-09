@@ -50,18 +50,24 @@ function handles = SpeedUpCellProfiler(handles)
 % MBray 2009_03_27: Comments on variables for pyCP upgrade
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
-% (1) Output files will be saved every Nth cycle (1,2,3...). What value of 
-%   N do want to use? Note: The output file is always saved after the first
-%   or last cycle is processed, regardless of N. (SaveWhen)
-% (2) Which image(s) do you want to remain in memory?
-% (3) What image(s) do you want to remove from memory?
+% (1) Output files are normally saved every cycle, which can be
+%   time-consuming. Here you can choose to only save output files every Nth
+%   cycle. What value of N do want to use? Note: The output file is always saved after the first
+%   or last cycle is processed, regardless of N. (SaveWhen) Options in the
+%   dropdown menu should be 1, 2, 5, 10, other (so they can type in an
+%   integer), first and last cycle only.
+% (2) Do you want to clear images from memory during this module?
+%       options: (2a) Yes, clear all images except for those that I specify
+%                (2b) Yes, clear only the particular images I specify
+%                (2c) No, do not clear any images from memory
+%       If yes for 2a: Which image(s) do you want to remain in memory for use by downstream modules?
+%       If yes for 2b: What image(s) do you want to remove from memory?
 %
 % (i) A button should be added that lets the user add/subtract images for
-%   (1) and (2)
+%   (2a and b)
 % (ii) A user may want to remove a large set of images and leave only a 
-% few, or remove only a few images and leave a large set. Options (2) and (3)
-% give the user flexibility to choose which they want to do with the least
-% number of images.
+% few, or remove only a few images and leave a large set. Options (2a and
+% b) give the user flexibility to choose.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -70,11 +76,11 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Output files should be saved every Nth cycle (1,2,3,...). Note: the output file is always saved after the first or last cycle is processed, no matter what is entered here.
+%textVAR01 = Output files will be saved every Nth cycle (1,2,3,...). Note: the output file is always saved after the first or last cycle is complete, no matter what is entered here.
 %defaultVAR01 = 1
 SaveWhen = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 
-%textVAR02 = Do you want to clear the memory (may not be compatible with some modules)?
+%textVAR02 = Do you want to clear the memory during this module? Note: this may not be compatible with some downstream modules.
 %choiceVAR02 = Yes
 %choiceVAR02 = No
 ClearMemory = char(handles.Settings.VariableValues{CurrentModuleNum,2});

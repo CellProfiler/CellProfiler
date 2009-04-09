@@ -433,7 +433,7 @@ for i = 1:length(FieldNames)
     else
         value = Metadata.(FieldNames{i});
     end
-    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Metadata',FieldNames{i},ImageName),value);
+    handles = CPaddmeasurements(handles, 'Image', CPjoinstrings('Metadata',FieldNames{i}),value);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

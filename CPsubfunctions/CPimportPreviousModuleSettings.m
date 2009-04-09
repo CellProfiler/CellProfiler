@@ -429,3 +429,17 @@ if strcmp(CurrentModuleName, 'GrayToColor')
         IsModuleModified = true;
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to Relate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Relate')
+    if SavedVarRevNum == 2      % Relate got two new arguments (args 3 and 5). The original arg 3 is now arg 4.
+        Settings.VariableValues(ModuleNum-Skipped,3:4) = Settings.VariableValues(ModuleNum-Skipped,4:-1:3);
+        Settings.VariableInfoTypes(ModuleNum-Skipped,3:4) = Settings.VariableInfoTypes(ModuleNum-Skipped,4:-1:3);
+        Settings.VariableValues(ModuleNum-Skipped,[3 5]) = deal({'No'});
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
+        SavedVarRevNum = 3;
+        IsModuleModified = true;
+    end
+end

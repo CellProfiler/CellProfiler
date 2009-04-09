@@ -12,9 +12,10 @@ function FeatureName = CPgetfeaturenamesfromnumbers(handles,ObjectName,Category,
 %          Image can be can be a string (Image) or Numeric (Texture)
 %
 % where we are finding FeatureName from
-%  handles.Measurements.ObjectName.Category_FeatureName (for Non-image/non-texture) OR
-%  handles.Measurements.ObjectName.Category_FeatureName_Image (for Image) OR
-%  handles.Measurements.ObjectName.Category_FeatureName_Image_SizeScale (for Texture, RadialDistribution and ImageQuality)
+%	handles.Measurements.ObjectName.Category_FeatureName (for Non-image/non-texture) OR
+%	handles.Measurements.ObjectName.Category_FeatureName_Image (for Image) OR
+%	handles.Measurements.ObjectName.Category_FeatureName_Image_SizeScale (for Texture, RadialDistribution and ImageQuality)
+%   handles.Measurements.ObjectName.Category_FeatureName_Objectname/Image_SizeScale (for Relate)
 
 % $Revision$
 
@@ -32,6 +33,13 @@ end
 % Parse inputs
 if ~exist('Image','var'), Image = ''; end
 if ~exist('SizeScale','var'), SizeScale = ''; end
+
+% If Category is 'Mean', then this came from the Relate module and the true
+% fieldname comes after the 'Mean_<objectname> prefix and follows the same
+% naming conventions
+if strcmp(Category,'Mean')
+    % TODO: Need to fill this in at some point.
+end
 
 % These should have no SizeScale or Image specified
 if strcmp(Category,'AreaShape') || ...

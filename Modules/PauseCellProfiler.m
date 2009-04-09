@@ -19,7 +19,15 @@ function handles = PauseCellProfiler(handles)
 % $Revision$
 
 % MBray 2009_03_20: Comments on variables for pyCP upgrade
-% If debugging/history is implimented in pyCP, this module will probably be removed. 
+% If debugging/history is implemented in pyCP, this module will probably be
+% removed. 
+% Anne 4-9-09: Anne votes that we should keep this module. It is
+% pretty simple, and the person might want to save the pausing in the
+% pipeline itself (for re-loading later) whereas debugging marks are
+% session-specific. It might be rare that someone really uses this module
+% but it doesn't hurt to make it available because it doesn't clutter very
+% much and has a clear purpose/name.
+
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

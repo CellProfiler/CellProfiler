@@ -12,7 +12,8 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 %
 % $Revision$
 
-features_not_to_be_exported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
+FeaturesNotToBeExported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
+ObjectFeaturesNotToBeAveraged = {'Mean_'};
 
 per_image_names = {};
 per_object_names = {};
@@ -48,7 +49,7 @@ for ObjectCell = ObjectNames,
         
         %%% Certain features are not exported
         if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
-                features_not_to_be_exported, ...
+                FeaturesNotToBeExported, ...
                 'UniformOutput', false)))
             continue
         end
@@ -77,7 +78,7 @@ for fld=fieldnames(handles.Pipeline)',
         end
     end
 end
-%% Pad length since we don't know the true max length will be across all cycles 
+% Pad length since we don't know the true max length will be across all cycles 
 PadLength = 20;
 FileNameWidth = FileNameWidth + PadLength;
 
@@ -88,7 +89,7 @@ for fld=fieldnames(handles.Pipeline)',
         PathNameWidth = max(PathNameWidth, length(handles.Pipeline.(fld{1})));
     end
 end
-%% Pad length since we don't know the true max length will be across all cycles 
+% Pad length since we don't know the true max length will be across all cycles 
 PathNameWidth = PathNameWidth + PadLength;
 
 MetadataNameWidth = PathNameWidth;
@@ -117,16 +118,22 @@ if (FirstSet == 1)
         end
 
         %add columns for mean, median and stddev for per_object_names
-        for j=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
+        for j = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
+            end
         end
         
-        for k=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', k{1}]));
+        for k = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', k{1}]));
+            end
         end
         
-        for l=per_object_names,
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', l{1}]));
+        for l = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', l{1}]));
+            end
         end
 
         fprintf(fmain, ');\n\n');
@@ -180,19 +187,25 @@ if (FirstSet == 1)
         end
 
         %add columns for mean, median and stddev for per_object_names
-        for j=per_object_names,
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for j = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
         
-        for k=per_object_names,
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for k = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
-        for l=per_object_names,
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        for l = per_object_names,
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
         fprintf(fsetup, ');\n');
@@ -224,29 +237,35 @@ if (FirstSet == 1)
         fprintf(fcol,'%s','col1');
         fprintf(fcol,',%s\n','ImageNumber');
 
-        p=1;
-        for k=per_image_names
-            p=p+1;
+        p = 1;
+        for k = per_image_names
+            p = p+1;
             fprintf(fcol, '%s', ['col', num2str(p)] );
             fprintf(fcol, ',%s\n', k{1} );
         end
-        for l=per_object_names
-            p=p+1;
-            fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
+        for l = per_object_names
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                p = p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
+            end
         end
-        for m=per_object_names
-            p=p+1;
-            fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Median_', m{1}]);
+        for m = per_object_names
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,m{1}))
+                p = p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', ['Median_', m{1}]);
+            end
         end
-        for n=per_object_names
-            p=p+1;
-            fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
+        for n = per_object_names
+            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,n{1}))
+                p = p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
+            end
         end
 
-        p=p+1;
+        p = p+1;
         if PrimKeyPosition ~= p
             error('STOP!');
         end
@@ -343,8 +362,9 @@ for img_idx = FirstSet:LastSet
     fprintf(fimage, '%d', img_idx);
     objectbaserow = size(perobjectvals, 1);
     objectbasecol = 2;
+    objectbasemeancol = 2;
     numobj = 0;
-    maxnumobj=0;
+    maxnumobj = 0;
 
     feature_idx = 1;
 
@@ -364,7 +384,7 @@ for img_idx = FirstSet:LastSet
             
             %%% Certain features are not exported
             if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
-                        features_not_to_be_exported, ...
+                        FeaturesNotToBeExported, ...
                         'UniformOutput', false)))
                 continue
             end
@@ -419,14 +439,21 @@ for img_idx = FirstSet:LastSet
                     maxnumobj = numobj;
                 end
 
-                %%% Add the values into the output 
+                %%% Add the values into the per-object output and shift
+                %%% right
                 if numobj > 0,
                     perobjectvals((objectbaserow+1):(objectbaserow+numobj), (objectbasecol+1)) = vals;
                 end
-                perobjectvals_mean(1:numobj, (objectbasecol-2+1)) = vals;
-
-                %%% shift right
                 objectbasecol = objectbasecol + 1;
+                
+                %%% Add the values into the per-image output and shift
+                %%% right
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged, FeatureName)),
+                    perobjectvals_mean(1:numobj, (objectbasemeancol-2+1)) = vals;
+                    objectbasemeancol = objectbasemeancol + 1;
+                end
+                
+                
             end
         end %%% loop over features
 

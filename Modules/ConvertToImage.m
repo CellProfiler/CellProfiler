@@ -44,6 +44,21 @@ function handles = ConvertToImage(handles)
 % Var4 should be context-dependent and only appear if the user selects
 % 'color' as their option.
 % 
+% Anne 4-9-09: We should consider why this module exists at all... the user
+% can't be expected to understand the difference between a label matrix and
+% a regular image, so this module has always been a bit confusing. Perhaps
+% we should work to identify those points where
+% the difference matters and coach the user better. For example, if you
+% want SaveImages to save objects as a TIF formatted image, it will break
+% if you just feed it objects. Perhaps SaveImages should allow objects as
+% input and have these options here to let you convert them to the colors
+% you want?  It's also worth considering that
+% IdentifyPrim allows you to save outlines within the identify module itself. It
+% seems that we should be consistent and also allow saving a
+% colored/gray/binary output of the objects within Identify modules, or perhaps even better,
+% extract BOTH functionalities (outlines and colored objects) into a
+% separate module? I'm really not sure what to do. Keep in mind that
+% whatever we decide will affect the OverlayOutlines module.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

@@ -69,6 +69,8 @@ function handles = OverlayOutlines(handles)
 % for example, right now it says "for color images" choose the outline
 % color. We should make sure that color outlines work even if the user has
 % chosen a grayscale image to put the outlines onto.
+%
+% See also the ConvertToImage module for some relevant discussion.
 
 drawnow
 

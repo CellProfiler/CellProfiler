@@ -49,6 +49,13 @@ function handles = LabelImages(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Update for PyCP: we think the functionality of this module might be added to
+% FilenameMetaData (which itself actually needs a new name).
+%
+% Maybe someday allow starting from the last well (e.g. H12 for 96 well,
+% P24 or whatever for 384 well).
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
@@ -77,8 +84,6 @@ RowOrColumn = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %textVAR04 = How many images cycles are associated with each well, if there are multiple fields of view per well?
 %defaultVAR04 = 1
 ImageCyclesPerWell = str2num(handles.Settings.VariableValues{CurrentModuleNum,4});
-
-%%% Maybe someday allow starting from the last well (e.g. H12 for 96 well, P24 or whatever for 384 well).
 
 %%%VariableRevisionNumber = 1
 

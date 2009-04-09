@@ -51,6 +51,24 @@ function handles = OverlayOutlines(handles)
 % modules, 'Display Modules' (right now most of them live in 'Other'),
 % since OverlayOutlines doesn't actually do any image processing; I think
 % it's a little misleading.
+%
+% Anne 4-9-09: I agree that this module could go into a new Display
+% category and that the other modules in the Other category that begin with
+% "Display" could be moved. I suppose we still want to keep the "Display"
+% prefix in their names even though they will be in a new Display category.
+% This module could be DisplayOutlines rather than OverlayOutlines. See the
+% PyCP settings wiki for more discussion of this.
+%
+% I'm not sure how to handle the situation where users are confused,
+% thinking they must overlay outlines with this module in order to save the
+% outlines. I guess there isn't really much harm in them doing so...
+% perhaps we could focus on just making it more obvious in Identify modules
+% how to 'save' the outlines (to the handles structure) for later use.
+%
+% Re: color: we should make sure that the module handles things properly;
+% for example, right now it says "for color images" choose the outline
+% color. We should make sure that color outlines work even if the user has
+% chosen a grayscale image to put the outlines onto.
 
 drawnow
 
@@ -67,7 +85,7 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 OutlineName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = Would you like to set the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format? Note: if you chose to display on a Blank image, this will default to Max possible.
+%textVAR03 = Would you like the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format? Note: if you chose to display on a Blank image, this will default to Max possible.
 %choiceVAR03 = Max of image
 %choiceVAR03 = Max possible
 MaxType = char(handles.Settings.VariableValues{CurrentModuleNum,3});

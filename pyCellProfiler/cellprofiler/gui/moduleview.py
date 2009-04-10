@@ -183,6 +183,7 @@ class ModuleView:
                 control      = self.__module_panel.FindWindowByName(control_name)
                 if static_text:
                     static_text.Show()
+                    static_text.Label = encode_label(v.text)
                 else:
                     static_text = wx.StaticText(self.__module_panel,
                                                 -1,

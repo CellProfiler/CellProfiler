@@ -24,14 +24,10 @@ import sys
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
+from cellprofiler.measurements import AGG_NAMES
 
 DB_MYSQL = "MySQL"
 DB_ORACLE = "Oracle"
-
-AGG_MEAN = "Mean"
-AGG_STD_DEV= "StDev"
-AGG_MEDIAN = "Median"
-AGG_NAMES = [AGG_MEAN, AGG_MEDIAN, AGG_STD_DEV]
 
 class ExportToDatabase(cpm.CPModule):
     """% SHORT DESCRIPTION:
@@ -377,6 +373,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
             image_row[per_image['ImageNumber']] = image_number
             #
             # Fill in the image table
+            #
+            #
+            # The individual feature measurements
+            #
             max_count = 0
             for feature in measurements.get_feature_names('Image'):
                 if self.ignore_feature(measurements, 'Image', feature):
@@ -400,11 +400,20 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                             image_row[per_image[feature_name]] = 0
             else:
                 #
+                # The aggregate measurements
+                #
+                agg_dict = measurements.compute_aggregate_measurements(i)
+                for feature_name in agg_dict.keys():
+                    image_row[per_image[feature_name]] = agg_dict[feature_name]
+                #
                 # Allocate an array for the per_object values
                 #
                 object_rows = np.zeros((max_count,per_object_cols))
                 object_rows[:,per_object['ImageNumber']] = image_number
                 object_rows[:,per_object['ObjectNumber']] = np.array(range(max_count))+1
+                #
+                # Loop through the objects, collecting their values
+                #
                 for object_name in measurements.get_object_names():
                     if object_name == 'Image':
                         continue
@@ -421,21 +430,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                             sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
                             values = values[:max_count]
                         object_rows[:nvalues,per_object[feature_name]] = values
-                        #
-                        # Compute the mean and standard deviation
-                        #
-                        mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
-                                                         feature)
-                        mean = values.mean()
-                        image_row[per_image[mean_feature_name]] = mean
-                        median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
-                                                          object_name, feature)
-                        median = np.median(values)
-                        image_row[per_image[median_feature_name]] = median
-                        stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
-                                                         object_name, feature)
-                        stdev = values.std()
-                        image_row[per_image[stdev_feature_name]] = stdev
                 for row in range(max_count):
                     csv_per_object.writerow(object_rows[row,:])
             csv_per_image.writerow(image_row)

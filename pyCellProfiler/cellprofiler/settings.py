@@ -51,7 +51,10 @@ class Setting(object):
         """
         return self.__text
     
-    text = property(get_text)
+    def set_text(self, value):
+        self.__text = value
+    
+    text = property(get_text, set_text)
     
     def get_value(self):
         """The string contents of the setting"""

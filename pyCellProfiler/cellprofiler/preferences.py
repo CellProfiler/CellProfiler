@@ -166,3 +166,23 @@ def add_output_file_name_listener(listener):
 def remove_output_file_name_listener(listener):
     __output_filename_listeners.remove(listener)
 
+def get_absolute_path(path):
+    """Convert a path into an absolute path using the path conventions
+    
+    If a path starts with "./", then make the path relative to the
+    default output directory.
+    If a path starts with "&/", then make the path relative to the
+    default image directory.
+    If a "path" has no path component then make the path relative to
+    the default output directory.
+    """
+    if (path.startswith("."+os.path.sep) or
+        ("altsep" in os.path.__all__ and path.startswith("."+os.path.altsep))):
+        return os.path.join(get_default_output_directory(), path[2:])
+    elif (path.startswith("&"+os.path.sep) or
+          ("altsep" in os.path.__all__ and path.startswith("&"+os.path.altsep))):
+        return os.path.join(get_default_image_directory(), path[2:])
+    elif len(os.path.split(path)) == 0:
+        return os.path.join(get_default_output_directory(), path)
+    else:
+        return os.path.abspath(path)

@@ -20,6 +20,7 @@ import scipy.io.matlab.mio
 import wx
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
 
@@ -31,6 +32,13 @@ IF_MOVIE       = "Movie"
 FN_FROM_IMAGE  = "From image filename"
 FN_SEQUENTIAL  = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
+SINGLE_NAME_TEXT = "What is the single file name?"
+FN_WITH_METADATA = "Name with metadata"
+METADATA_NAME_TEXT = ("""What is the file name? (Example metadata substitution: """
+                      """Illum_\g<plate>_\g<well_row>\g<well_column>" produces"""
+                      """ "Illum_XG45_A01" for plate="XG45", well_row="A" """
+                      """and well_column="01".)""")
+SEQUENTIAL_NUMBER_TEXT = "What is the file prefix for sequentially numbered files?"
 FF_BMP         = "bmp"
 FF_GIF         = "gif"
 FF_HDF         = "hdf"
@@ -51,6 +59,7 @@ FF_MAT         = "mat"
 PC_DEFAULT     = "Default output directory"
 PC_WITH_IMAGE  = "Same directory as image"
 PC_CUSTOM      = "Custom"
+PC_WITH_METADATA = "Custom with metadata"
 WS_EVERY_CYCLE = "Every cycle"
 WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE  = "Last cycle"
@@ -89,6 +98,37 @@ class SaveImages(cpm.CPModule):
   In addition, this module can be used to save a figure or save images as
   frames of a movie.
 
+  How do you want to construct file names?
+  There are four choices here:
+  * From image filename - the file name will be the same as that of the image
+    that you choose via the "What images do you want to use for the file 
+    prefix?" setting plus whatever text you have entered in the "Enter text to
+    append to the image name:" setting.
+  * Sequential numbers - The filenames will consist of the file name prefix
+    with a number, starting with 1, appended.
+  * Single file name - Each image will be output to the file specified in
+    the setting: "What is the prefix you want to use for the single file name?"
+    Usually you will want to save on every cycle only in order to update
+    this file as processing continues - the file is overwritten on each cycle.
+  * Name with metadata - The filenames are constructed using the metadata
+    associated with an image set in LoadImages or LoadText. The name of
+    the metadata to substitute is included in a special tag format embedded
+    in your file specification. Tags have the form, /g<metadata-tag> where
+    metadata-tag is the name of your tag.
+
+  Where do you want to store the file?
+  This setting lets you control the directory used to store the file. The
+  choices are:
+  * Default output directory
+  * Same directory as image - the file will be stored in the directory of the
+    images from this image set
+  * Custom - the file will be stored in a customizable directory. You can
+    prefix the directory name with "." to make the root directory the default
+    output directory or "&" to make the root directory the default image
+    directory.
+  * Custom with metadata - the file will be stored in a customizable directory
+    with metadata substitution (see "Name with metadata" above)
+
   Update file names within CellProfiler:
   This setting stores file and path name data in handles.Pipeline 
   as well as a Per_image measurement.  This is useful when exporting to a
@@ -106,15 +146,6 @@ class SaveImages(cpm.CPModule):
   files. Because this function is rarely needed and may introduce
   complications, the default answer is "No".
  
-  Do you want to create the input image subdirectory structure in the  
-  output directory?
-  If the input images are located in subdirectories (such that you used 
-  "Analyze all subfolders within the selected folder" in LoadImages), you 
-  can re-create the subdirectory structure in the output directory. Note:
-  This option can only be applied if you specified an original image for the
-  filename prefix above, and not with "N" or "=DesiredFilename" options.
-  Otherwise, all images will be saved in the output directory.
-  
   Special notes for saving in movie format (avi):
   The movie will be saved after the last cycle is processed. You have the
   option to also save the movie periodically during image processing, so
@@ -151,12 +182,12 @@ class SaveImages(cpm.CPModule):
         self.image_name  = cps.ImageNameSubscriber("What did you call the images you want to save?","None")
         self.figure_name = cps.FigureSubscriber("What figure do you want to save?","None")
         self.file_name_method = cps.Choice("How do you want to construct file names?",
-                                           [FN_FROM_IMAGE,FN_SEQUENTIAL,FN_SINGLE_NAME],
+                                           [FN_FROM_IMAGE,FN_SEQUENTIAL,
+                                            FN_SINGLE_NAME, FN_WITH_METADATA],
                                            FN_FROM_IMAGE)
         self.file_image_name = cps.FileImageNameSubscriber("What images do you want to use for the file prefix?",
                                                            "None")
-        self.single_file_name = cps.Text("What is the prefix you want to use for the single file name?",
-                                         "OrigBlue")
+        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue")
         self.file_name_suffix = cps.Text("Enter text to append to the image name:",cps.DO_NOT_USE)
         self.file_format = cps.Choice("What file format do you want to use to save images?",
                                       [FF_BMP,FF_GIF,FF_HDF,FF_JPG,FF_JPEG,
@@ -164,7 +195,8 @@ class SaveImages(cpm.CPModule):
                                        FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
                                        FF_AVI,FF_MAT],FF_BMP)
         self.pathname_choice = cps.Choice("Where do you want to store the file?",
-                                          [PC_DEFAULT,PC_WITH_IMAGE,PC_CUSTOM],
+                                          [PC_DEFAULT,PC_WITH_IMAGE,
+                                           PC_CUSTOM, PC_WITH_METADATA],
                                           PC_DEFAULT)
         self.movie_pathname_choice = cps.Choice("Where do you want to store the file?",
                                           [PC_DEFAULT,PC_CUSTOM],
@@ -223,15 +255,23 @@ class SaveImages(cpm.CPModule):
                 new_setting_values.extend([FN_SINGLE_NAME,setting_values[1][1:],
                                            setting_values[1][1:]])
             else:
-                new_setting_values.extend([FN_FROM_IMAGE, setting_values[1],
-                                           setting_values[1]])
+                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                    new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
+                                               setting_values[1]])
+                else:
+                    new_setting_values.extend([FN_FROM_IMAGE, setting_values[1],
+                                               setting_values[1]])
             new_setting_values.extend(setting_values[2:4])
             if setting_values[4] == '.':
                 new_setting_values.extend([PC_DEFAULT, "None"])
             elif setting_values[4] == '&':
                 new_setting_values.extend([PC_WITH_IMAGE, "None"])
             else:
-                new_setting_values.extend([PC_CUSTOM, setting_values[4]])
+                if len(cellprofiler.measurements.find_metadata_tokens(setting_values[1])):
+                    new_setting_values.extend([PC_WITH_METADATA,
+                                               setting_values[4]])
+                else:
+                    new_setting_values.extend([PC_CUSTOM, setting_values[4]])
             new_setting_values.extend(setting_values[5:11])
             new_setting_values.extend(setting_values[12:])
             setting_values = new_setting_values
@@ -248,16 +288,23 @@ class SaveImages(cpm.CPModule):
             else:
                 result.append(self.figure_name)
             result.append(self.file_name_method)
-            if self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL):
+            if self.file_name_method == FN_FROM_IMAGE:
                 result.append(self.file_image_name)
                 result.append(self.file_name_suffix)
+            elif self.file_name_method == FN_SEQUENTIAL:
+                self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
+                result.append(self.single_file_name)
             elif self.file_name_method == FN_SINGLE_NAME:
+                self.single_file_name.text = SINGLE_NAME_TEXT
+                result.append(self.single_file_name)
+            elif self.file_name_method == FN_WITH_METADATA:
+                self.single_file_name.text = METADATA_NAME_TEXT
                 result.append(self.single_file_name)
             else:
                 raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
             result.append(self.file_format)
             result.append(self.pathname_choice)
-            if self.pathname_choice == PC_CUSTOM:
+            if self.pathname_choice.value in (PC_CUSTOM, PC_WITH_METADATA):
                 result.append(self.pathname)
             if self.file_format != FF_MAT:
                 result.append(self.bit_depth)
@@ -266,7 +313,7 @@ class SaveImages(cpm.CPModule):
                 self.file_format != FF_MAT):
                 result.append(self.rescale)
                 result.append(self.colormap)
-            if self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL):
+            if self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL,FN_WITH_METADATA):
                 result.append(self.update_file_names)
                 result.append(self.create_subdirectories)
         else:
@@ -343,6 +390,9 @@ class SaveImages(cpm.CPModule):
             pixels = image.crop_mask.astype(int)*255
             
         filename = self.get_filename(workspace)
+        path=os.path.split(filename)[0]
+        if len(path) and not os.path.isdir(path):
+            os.makedirs(path)
         if pixels.ndim == 3 and pixels.shape[2] == 4:
             mode = 'RGBA'
         elif pixels.ndim == 3:
@@ -375,37 +425,37 @@ class SaveImages(cpm.CPModule):
         measurements=workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
             filename = self.single_file_name.value
+        elif self.file_name_method == FN_WITH_METADATA:
+            filename = self.single_file_name.value
+            filename = workspace.measurements.apply_metadata(filename)
+        elif self.file_name_method == FN_SEQUENTIAL:
+            filename = self.single_file_name.value
+            filename = '%s%d'%(filename,measurements.image_set_number+1)
         else:
             file_name_feature = 'FileName_%s'%(self.file_image_name)
             filename = measurements.get_current_measurement('Image',
                                                             file_name_feature)
             filename = os.path.splitext(filename)[0]
-            if self.file_name_method == FN_SEQUENTIAL:
-                filename = '%s%d'%(filename,measurements.image_set_number+1)
             if self.file_name_suffix != cps.DO_NOT_USE:
                 filename += str(self.file_name_suffix)
         filename = "%s.%s"%(filename,self.file_format.value)
         
-        if self.pathname_choice in (PC_DEFAULT, PC_CUSTOM):
+        if self.pathname_choice.value in (PC_DEFAULT, PC_CUSTOM, PC_WITH_METADATA):
             if self.pathname_choice == PC_DEFAULT:
                 pathname = cpp.get_default_output_directory()
             else:
                 pathname = str(self.pathname)
+                if self.pathname_choice == PC_WITH_METADATA:
+                    pathname = workspace.measurements.apply_metadata(pathname)
                 if pathname[:2]=='.'+os.path.sep:
                     pathname = os.path.join(cpp.get_default_output_directory(),
                                             pathname[2:])
-            if (self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL) and
+            if (self.file_name_method in (FN_FROM_IMAGE,FN_SEQUENTIAL,FN_WITH_METADATA) and
                 self.create_subdirectories.value):
                 # Get the subdirectory name
                 path_name_feature = 'PathName_%s'%(self.file_image_name)
                 orig_pathname = measurements.get_current_measurement('Image',
                                                               path_name_feature)
-                # Get the part of the path that's different from the root
-                #key = 'Pathname%s'%(self.file_image_name)
-                #root = workspace.image_set.legacy_fields[key]
-                #if orig_pathname[:len(root)] != root:
-                #    raise ValueError("File pathname (%s) did not match root(%s)"%(orig_pathname,root))
-                #pathname = os.path.join(pathname,orig_pathname[len(root)+1:])
                 pathname = os.path.join(pathname, orig_pathname)
                 
         elif self.pathname_choice == PC_WITH_IMAGE:

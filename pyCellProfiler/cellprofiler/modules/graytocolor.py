@@ -185,25 +185,25 @@ See also ColorToGray.
             title = "Gray to color #%d"%(self.module_num)
             my_frame = workspace.create_or_find_figure(title,(2,2))
             if self.red_image_name.is_blank:
-                my_frame.subplot(0,0).visible = False
+                my_frame.subplot(0,0).set_visible(False)
             else:
-                my_frame.subplot(0,0).visible = True
+                my_frame.subplot(0,0).set_visible(True)
                 my_frame.subplot_imshow_grayscale(0,0,red_pixel_data,
                                                   title=self.red_image_name.value)
             if self.green_image_name.is_blank:
-                my_frame.subplot(1,0).visible = False
+                my_frame.subplot(1,0).set_visible(False)
             else:
-                my_frame.subplot(1,0).visible = True
+                my_frame.subplot(1,0).set_visible(True)
                 my_frame.subplot_imshow_grayscale(1,0,green_pixel_data,
                                                   title=self.green_image_name.value)
             if self.blue_image_name.is_blank:
-                my_frame.subplot(0,1).visible = False
+                my_frame.subplot(0,1).set_visible(False)
             else:
-                my_frame.subplot(0,1).visible = True
+                my_frame.subplot(0,1).set_visible(True)
                 my_frame.subplot_imshow_grayscale(0,1,blue_pixel_data,
                                                   title=self.blue_image_name.value)
-            my_frame.subplot_imshow(1,1,rgb_pixel_data,
-                                    title=self.rgb_image_name.value)
+            my_frame.subplot_imshow_color(1,1,rgb_pixel_data,
+                                          title=self.rgb_image_name.value)
         ##############
         # Save image #
         ##############

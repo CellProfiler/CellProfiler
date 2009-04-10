@@ -17,6 +17,7 @@ from correctillumination_calculate import CorrectIllumination_Calculate
 from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
 from exporttodatabase import ExportToDatabase
+from exporttoexcel import ExportToExcel
 from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
@@ -37,6 +38,7 @@ def get_module_classes():
             CorrectIllumination_Apply,
             Crop,
             ExportToDatabase,
+            ExportToExcel,
             GrayToColor,
             IdentifyPrimAutomatic,
             IdentifySecondary,
@@ -60,6 +62,7 @@ def get_module_substitutions():
             "CorrectIllumination_Apply":CorrectIllumination_Apply,
             "Crop": Crop,
             "ExportToDatabase": ExportToDatabase,
+            "ExportToExcel": ExportToExcel,
             "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,

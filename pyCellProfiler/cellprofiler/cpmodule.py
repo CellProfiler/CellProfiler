@@ -411,6 +411,26 @@ class CPModule(object):
         """
         return []
     
+    def get_measurement_objects(self, pipeline, object_name, category, 
+                                measurement):
+        """Return a list of secondary object names used as a basis for a particular measure
+        
+        object_name - either "Image" or the name of the primary object
+        category - the category being measured, for instance "Threshold"
+        measurement - the name of the measurement being done
+        
+        Some modules output image-wide aggregate measurements in addition to
+        object measurements. These must be stored using the "Image" object name
+        in order to save a single value. A module can override
+        get_measurement_objects to tell the user about the object name in
+        those situations.
+        
+        In addition, some modules may make use of two segmentations, for instance
+        when measuring the total value of secondary objects related to primary
+        ones. This mechanism can be used to identify the secondary objects used.
+        """ 
+        return []
+    
     def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """

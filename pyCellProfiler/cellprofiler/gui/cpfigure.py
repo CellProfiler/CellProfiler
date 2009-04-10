@@ -224,6 +224,22 @@ class CPFigureFrame(wx.Frame):
         if title != None:
             self.set_subplot_title(title, x, y)
     
+    def subplot_imshow_color(self, x, y, image, title, clear=True, 
+                             normalize=True):
+        if clear:
+            self.clear_subplot(x, y)
+        if normalize:
+            for i in range(3):
+                im_min = numpy.min(image[:,:,i])
+                im_max = numpy.max(image[:,:,i])
+                if im_min != im_max:
+                    image[:,:,i] -= im_min
+                    image[:,:,i] /= (im_max - im_min)
+        subplot = self.subplot(x,y)
+        subplot.imshow(image)
+        if title != None:
+            self.set_subplot_title(title, x, y)
+    
     def subplot_imshow_labels(self, x,y,labels, title=None, clear=True):
         labels = renumber_labels_for_display(labels)
         self.subplot_imshow(x,y,labels,title,clear,matplotlib.cm.jet)

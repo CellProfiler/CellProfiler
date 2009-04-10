@@ -32,6 +32,7 @@ basename = [OutfilePrefix,int2str(FirstSet),'_',int2str(LastSet)];
 
 %%% Extract the object types to write (e.g., Image, Nuclei, ...).  The transpose allows looping below.
 ObjectNames = fieldnames(handles.Measurements)';
+ObjectsToOmitFromPerImageTable = [];
 
 for ObjectCell = ObjectNames,
     % why matlab, why?
@@ -58,6 +59,7 @@ for ObjectCell = ObjectNames,
             per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
         else
             per_object_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)));
+            ObjectsToOmitFromPerImageTable(end+1) = any(strmatch(ObjectFeaturesNotToBeAveraged,FeatureName));
         end
     end %end of loop over feature names
 end %end of loop over object names
@@ -118,21 +120,21 @@ if (FirstSet == 1)
         end
 
         %add columns for mean, median and stddev for per_object_names
-        for j = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', j{1}]));
+        for j = 1:length(per_object_names),
+            if ~ObjectsToOmitFromPerImageTable(j)
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
             end
         end
         
-        for k = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', k{1}]));
+        for k = 1:length(per_object_names),
+            if ~ObjectsToOmitFromPerImageTable(k)
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', per_object_names{k}]));
             end
         end
         
-        for l = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', l{1}]));
+        for l = 1:length(per_object_names),
+            if ~ObjectsToOmitFromPerImageTable(l)
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
             end
         end
 
@@ -176,7 +178,7 @@ if (FirstSet == 1)
 
         p=1;
         for i = per_image_names,
-            p=p+1;
+            p = p+1;
             if strfind(i{1}, 'Filename')
                 fprintf(fsetup, ',\n%s VARCHAR2(%d)', ['col',num2str(p)], FileNameWidth);
             elseif  strfind(i{1}, 'Path'),

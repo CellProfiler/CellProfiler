@@ -74,13 +74,15 @@ CellProfilerDataFileNames = Files(selection);
 
 %%% Ask for database name and name of SQL script, should probably use some
 %%% sort of drop down menue for type of database
-answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix'},'Export SQL',1,{'Default','SQL_','MySQL','Do not use'});
+answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix','Calculate per-image means? (Y/N)','Calculate per-image standard deviations? (Y/N)','Calculate per-image medians? (Y/N)'},'Export SQL',1,{'Default','SQL_','MySQL','Do not use','Y','Y','Y'});
 if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
 DatabaseType = answer(3);
 TablePrefix = char(answer(4));
-if isempty(DatabaseName) | isempty(SQLScriptFileName)
+StatisticsCalculated = {'Mean','Standard deviation','Median'};
+StatisticsCalculated = StatisticsCalculated([strncmpi(char(answer{5}),'y',1),strncmpi(char(answer{6}),'y',1),strncmpi(char(answer{7}),'y',1)]);
+if isempty(DatabaseName) || isempty(SQLScriptFileName)
     error('A database name and an SQL script name must be specified!');
     return
 end
@@ -113,7 +115,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     filename = CellProfilerDataFileNames{FileNo};
     index = strfind(filename,'.');
     if ~isempty(index)
-        filename = [filename(1:index-1)];%,everything before . will be kept
+        filename = filename(1:index-1);%,everything before . will be kept
     end
 
     for ObjectTypeNo = 1:length(ObjectTypes)    % Loop over the objects
@@ -143,7 +145,7 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     
    %was originally
    %CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
-    CPconvertsql(handles, DataPath, SQLScriptFileName, DatabaseName,TablePrefix,FirstSet, LastSet, DatabaseType);
+    CPconvertsql(handles, DataPath, SQLScriptFileName, DatabaseName,TablePrefix,FirstSet, LastSet, DatabaseType, StatisticsCalculated);
    % from ExportToDataBase
    %CPconvertsql(handles, DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
 

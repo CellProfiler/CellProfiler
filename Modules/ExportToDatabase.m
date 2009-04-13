@@ -190,15 +190,42 @@ FilePrefix = CPreplacemetadata(handles,FilePrefix);
 %defaultVAR05 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Do you want to create a CellProfiler Analyst properties file?
-%choiceVAR06 = Yes - Both V1.0 and V2.0 format
-%choiceVAR06 = Yes - V1.0 format
-%choiceVAR06 = Yes - V2.0 format
-%choiceVAR06 = No
-WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,6});
+%textVAR06 = Which per-image statistics do you want to be calculated?  Select "Do not use" to omit.
+%choiceVAR06 = Mean
+%choiceVAR06 = Standard deviation
+%choiceVAR06 = Median
+%choiceVAR06 = Do not use
+%defaultVAR06 = Mean
+StatisticsCalculated{1} = char(handles.Settings.VariableValues{CurrentModuleNum,6});
 %inputtypeVAR06 = popupmenu
 
-%%%VariableRevisionNumber = 6
+%textVAR07 = 
+%choiceVAR07 = Mean
+%choiceVAR07 = Standard deviation
+%choiceVAR07 = Median
+%choiceVAR07 = Do not use
+%defaultVAR07 = Standard deviation
+StatisticsCalculated{2} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
+%inputtypeVAR07 = popupmenu
+
+%textVAR08 = 
+%choiceVAR08 = Mean
+%choiceVAR08 = Standard deviation
+%choiceVAR08 = Median
+%choiceVAR08 = Do not use
+%defaultVAR08 = Median
+StatisticsCalculated{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+%inputtypeVAR08 = popupmenu
+
+%textVAR09 = Do you want to create a CellProfiler Analyst properties file?
+%choiceVAR09 = Yes - Both V1.0 and V2.0 format
+%choiceVAR09 = Yes - V1.0 format
+%choiceVAR09 = Yes - V2.0 format
+%choiceVAR09 = No
+WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%inputtypeVAR09 = popupmenu
+
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -226,6 +253,8 @@ if strncmp(DataPath, '.',1)
         DataPath = fullfile(handles.Current.DefaultOutputDirectory,DataPath(2:end));
     end
 end
+
+StatisticsCalculated(strcmp(StatisticsCalculated,'Do not use')) = [];
 
 % Two possibilities: we're at the end of the pipeline in an
 % interactive session, or we're in the middle of batch processing.
@@ -255,7 +284,7 @@ if DoWriteSQL || DoWriteCPAPropertiesFile
 end
 
 if DoWriteSQL,
-    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
+    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType,StatisticsCalculated);
 end
 
 if DoWriteCPAPropertiesFile,

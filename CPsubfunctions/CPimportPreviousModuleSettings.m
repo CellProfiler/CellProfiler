@@ -152,6 +152,15 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         SavedVarRevNum = 6;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 6      % Ask if user wants aggregate statistics, move CPA setting to bottom
+        Settings.VariableValues{ModuleNum-Skipped,9} = Settings.VariableValues{ModuleNum-Skipped,6};
+        Settings.VariableValues{ModuleNum-Skipped,6} = 'Mean';
+        Settings.VariableValues{ModuleNum-Skipped,7} = 'Standard deviation';
+        Settings.VariableValues{ModuleNum-Skipped,8} = 'Median';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 3;
+        SavedVarRevNum = 7;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

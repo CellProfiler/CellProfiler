@@ -1,4 +1,4 @@
-function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice)
+function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice,StatisticsCalculated)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -14,6 +14,10 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 
 FeaturesNotToBeExported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
 ObjectFeaturesNotToBeAveraged = {'Mean_'};
+
+wantMeanCalculated = any(strcmpi(StatisticsCalculated,'mean'));
+wantStdDevCalculated = any(strcmpi(StatisticsCalculated,'standard deviation'));
+wantMedianCalculated = any(strcmpi(StatisticsCalculated,'median'));
 
 per_image_names = {};
 per_object_names = {};
@@ -120,21 +124,27 @@ if (FirstSet == 1)
         end
 
         %add columns for mean, median and stddev for per_object_names
-        for j = 1:length(per_object_names),
-            if ~ObjectsToOmitFromPerImageTable(j)
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
+        if wantMeanCalculated
+            for j = 1:length(per_object_names),
+                if ~ObjectsToOmitFromPerImageTable(j)
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
+                end
             end
         end
         
-        for k = 1:length(per_object_names),
-            if ~ObjectsToOmitFromPerImageTable(k)
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', per_object_names{k}]));
+        if wantMedianCalculated
+            for k = 1:length(per_object_names),
+                if ~ObjectsToOmitFromPerImageTable(k)
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', per_object_names{k}]));
+                end
             end
         end
         
-        for l = 1:length(per_object_names),
-            if ~ObjectsToOmitFromPerImageTable(l)
-                fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
+        if wantStdDevCalculated
+            for l = 1:length(per_object_names),
+                if ~ObjectsToOmitFromPerImageTable(l)
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
+                end
             end
         end
 
@@ -189,24 +199,30 @@ if (FirstSet == 1)
         end
 
         %add columns for mean, median and stddev for per_object_names
-        for j = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
-                p = p+1;
-                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        if wantMeanCalculated
+            for j = per_object_names,
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
+                    p = p+1;
+                    fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+                end
             end
         end
         
-        for k = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
-                p = p+1;
-                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        if wantMedianCalculated
+            for k = per_object_names,
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
+                    p = p+1;
+                    fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+                end
             end
         end
 
-        for l = per_object_names,
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
-                p = p+1;
-                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        if wantStdDevCalculated
+            for l = per_object_names,
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                    p = p+1;
+                    fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+                end
             end
         end
 
@@ -245,26 +261,32 @@ if (FirstSet == 1)
             fprintf(fcol, '%s', ['col', num2str(p)] );
             fprintf(fcol, ',%s\n', k{1} );
         end
-        for l = per_object_names
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
-                p = p+1;
-                fprintf(fcol, '%s', ['col', num2str(p)]);
-                fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
+        if wantMeanCalculated
+            for l = per_object_names
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                    p = p+1;
+                    fprintf(fcol, '%s', ['col', num2str(p)]);
+                    fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
+                end
             end
         end
-        for m = per_object_names
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,m{1}))
-                p = p+1;
-                fprintf(fcol, '%s', ['col', num2str(p)]);
-                fprintf(fcol, ',%s\n', ['Median_', m{1}]);
+        if wantMedianCalculated
+            for m = per_object_names
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,m{1}))
+                    p = p+1;
+                    fprintf(fcol, '%s', ['col', num2str(p)]);
+                    fprintf(fcol, ',%s\n', ['Median_', m{1}]);
+                end
             end
         end
-        for n = per_object_names
-            if ~any(strmatch(ObjectFeaturesNotToBeAveraged,n{1}))
-                p = p+1;
-                fprintf(fcol, '%s', ['col', num2str(p)]);
-                fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
-            end
+        if wantStdDevCalculated
+                for n = per_object_names
+                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,n{1}))
+                    p = p+1;
+                    fprintf(fcol, '%s', ['col', num2str(p)]);
+                    fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
+                end
+                end
         end
 
         p = p+1;
@@ -467,32 +489,52 @@ for img_idx = FirstSet:LastSet
 
     end %%% loop over object types
 
-    %print mean, median, stdev for all measurements per image
-    formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
-    if size(perobjectvals_mean,1)==1
-        fprintf(fimage,',');    %% MEAN
-        fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
-        fprintf(fimage,',');    %% MEDIAN
-        fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
-        for i= 1:size(perobjectvals_mean,2),
-            fprintf(fimage,',0'); %ignore NaN
+    % Print mean, median, stdev for all measurements per image
+    if (wantMeanCalculated || wantMedianCalculated || wantStdDevCalculated)
+        formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
+        if size(perobjectvals_mean,1)==1
+            if wantMeanCalculated
+                fprintf(fimage,',');    %% MEAN
+                fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
+            end
+            if wantMedianCalculated
+                fprintf(fimage,',');    %% MEDIAN
+                fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
+            end
+            if wantStdDevCalculated
+                for i = 1:size(perobjectvals_mean,2),
+                    fprintf(fimage,',0'); %ignore NaN
+                end
+            end
+        elseif size(perobjectvals_mean, 1) > 0,  
+            if wantMeanCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
+            end
+            if wantMedianCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,(CPnanmedian(perobjectvals_mean))); % ignore NaN
+            end
+            if wantStdDevCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
+            end
+        else % write zeros if there are no measurements
+            if wantStdDevCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+            end
+            if wantMedianCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+            end
+            if wantStdDevCalculated
+                fprintf(fimage,',');
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+            end
         end
-    elseif size(perobjectvals_mean, 1) > 0,  
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,(CPnanmedian(perobjectvals_mean))); % ignore NaN
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
-    else % write zeros if there are no measurements
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
-        fprintf(fimage,',');
-        fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+        fprintf(fimage,'\n');
     end
-    fprintf(fimage,'\n');
 end
 
 % The number of per-object value columns should be the number of per-object

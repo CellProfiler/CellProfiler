@@ -533,8 +533,8 @@ for img_idx = FirstSet:LastSet
                 fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
             end
         end
-        fprintf(fimage,'\n');
     end
+    fprintf(fimage,'\n');
 end
 
 % The number of per-object value columns should be the number of per-object

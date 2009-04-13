@@ -24,6 +24,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
 import identify as cpmi
+import cellprofiler.cpmath.threshold as cpthresh
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
@@ -186,14 +187,14 @@ See also Identify primary modules.
         self.image_name = cps.ImageNameSubscriber("What did you call the images to be used to find the edges of the secondary objects? For DISTANCE - N, this will not affect object identification, only the final display.",
                                                   "None")
         self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
-                                           [cpmi.TM_OTSU_GLOBAL,cpmi.TM_OTSU_ADAPTIVE,cpmi.TM_OTSU_PER_OBJECT,
-                                            cpmi.TM_MOG_GLOBAL,cpmi.TM_MOG_ADAPTIVE,cpmi.TM_MOG_PER_OBJECT,
-                                            cpmi.TM_BACKGROUND_GLOBAL, cpmi.TM_BACKGROUND_ADAPTIVE, cpmi.TM_BACKGROUND_PER_OBJECT,
-                                            cpmi.TM_ROBUST_BACKGROUND_GLOBAL, cpmi.TM_ROBUST_BACKGROUND_ADAPTIVE, cpmi.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                                            cpmi.TM_RIDLER_CALVARD_GLOBAL, cpmi.TM_RIDLER_CALVARD_ADAPTIVE, cpmi.TM_RIDLER_CALVARD_PER_OBJECT,
-                                            cpmi.TM_KAPUR_GLOBAL,cpmi.TM_KAPUR_ADAPTIVE,cpmi.TM_KAPUR_PER_OBJECT,
-                                            cpmi.TM_MANUAL, cpmi.TM_BINARY_IMAGE,
-                                            cpmi.TM_ALL,cpmi.TM_SET_INTERACTIVELY])
+                                           [cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_OTSU_ADAPTIVE,cpthresh.TM_OTSU_PER_OBJECT,
+                                            cpthresh.TM_MOG_GLOBAL,cpthresh.TM_MOG_ADAPTIVE,cpthresh.TM_MOG_PER_OBJECT,
+                                            cpthresh.TM_BACKGROUND_GLOBAL, cpthresh.TM_BACKGROUND_ADAPTIVE, cpthresh.TM_BACKGROUND_PER_OBJECT,
+                                            cpthresh.TM_ROBUST_BACKGROUND_GLOBAL, cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE, cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
+                                            cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE, cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,
+                                            cpthresh.TM_KAPUR_GLOBAL,cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
+                                            cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE,
+                                            cpthresh.TM_ALL,cpthresh.TM_SET_INTERACTIVELY])
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
         self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
         self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
@@ -220,9 +221,9 @@ See also Identify primary modules.
                  self.method, self.image_name]
         if self.method != M_DISTANCE_N:
             result.append(self.threshold_method)
-            if self.threshold_method == cpmi.TM_MANUAL:
+            if self.threshold_method == cpthresh.TM_MANUAL:
                 result.append(self.manual_threshold)
-            elif self.threshold_method == cpmi.TM_BINARY_IMAGE:
+            elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
                 result.append(self.binary_image)
             else:
                 result.extend([self.threshold_correction_factor,
@@ -253,24 +254,24 @@ See also Identify primary modules.
             new_setting_values = list(setting_values) 
             if setting_values[4].isdigit():
                 # User entered manual threshold
-                new_setting_values[4] = cpmi.TM_MANUAL
+                new_setting_values[4] = cpthresh.TM_MANUAL
                 new_setting_values.append(setting_values[4])
                 new_setting_values.append(cps.DO_NOT_USE)
             elif (not setting_values[4] in 
-                  (cpmi.TM_OTSU_GLOBAL,cpmi.TM_OTSU_ADAPTIVE,
-                   cpmi.TM_OTSU_PER_OBJECT,cpmi.TM_MOG_GLOBAL,
-                   cpmi.TM_MOG_ADAPTIVE,cpmi.TM_MOG_PER_OBJECT,
-                   cpmi.TM_BACKGROUND_GLOBAL,cpmi.TM_BACKGROUND_ADAPTIVE,
-                   cpmi.TM_BACKGROUND_PER_OBJECT,cpmi.TM_ROBUST_BACKGROUND,
-                   cpmi.TM_ROBUST_BACKGROUND_GLOBAL,
-                   cpmi.TM_ROBUST_BACKGROUND_ADAPTIVE,
-                   cpmi.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                   cpmi.TM_RIDLER_CALVARD_GLOBAL,cpmi.TM_RIDLER_CALVARD_ADAPTIVE,
-                   cpmi.TM_RIDLER_CALVARD_PER_OBJECT,cpmi.TM_KAPUR_GLOBAL,
-                   cpmi.TM_KAPUR_ADAPTIVE,cpmi.TM_KAPUR_PER_OBJECT,
-                   cpmi.TM_ALL,cpmi.TM_SET_INTERACTIVELY)):
+                  (cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_OTSU_ADAPTIVE,
+                   cpthresh.TM_OTSU_PER_OBJECT,cpthresh.TM_MOG_GLOBAL,
+                   cpthresh.TM_MOG_ADAPTIVE,cpthresh.TM_MOG_PER_OBJECT,
+                   cpthresh.TM_BACKGROUND_GLOBAL,cpthresh.TM_BACKGROUND_ADAPTIVE,
+                   cpthresh.TM_BACKGROUND_PER_OBJECT,cpthresh.TM_ROBUST_BACKGROUND,
+                   cpthresh.TM_ROBUST_BACKGROUND_GLOBAL,
+                   cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE,
+                   cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
+                   cpthresh.TM_RIDLER_CALVARD_GLOBAL,cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
+                   cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,cpthresh.TM_KAPUR_GLOBAL,
+                   cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
+                   cpthresh.TM_ALL,cpthresh.TM_SET_INTERACTIVELY)):
                 # User entered an image name -  guess
-                new_setting_values[4] = cpmi.TM_BINARY_IMAGE
+                new_setting_values[4] = cpthresh.TM_BINARY_IMAGE
                 new_setting_values.append('0')
                 new_setting_values.append(setting_values[4])
             else:
@@ -297,7 +298,7 @@ See also Identify primary modules.
         objects = workspace.object_set.get_objects(self.primary_objects.value)
         if self.method == M_DISTANCE_N:
             has_threshold = False
-        elif self.threshold_method == cpmi.TM_BINARY_IMAGE:
+        elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(self.binary_image.value,
                                                          must_be_binary = True)
             local_threshold = numpy.ones(img.shape)
@@ -439,11 +440,11 @@ See also Identify primary modules.
                                          'Threshold_OrigThreshold_%s'%(objname),
                                          np.array([global_threshold],
                                                       dtype=float))
-            wv = cpmi.weighted_variance(img, mask, local_threshold)
+            wv = cpthresh.weighted_variance(img, mask, local_threshold)
             measurements.add_measurement('Image',
                                          'Threshold_WeightedVariance_%s'%(objname),
                                          np.array([wv],dtype=float))
-            entropies = cpmi.sum_of_entropies(img, mask, local_threshold)
+            entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
             measurements.add_measurement('Image',
                                          'Threshold_SumOfEntropies_%s'%(objname),
                                          np.array([entropies],dtype=float))

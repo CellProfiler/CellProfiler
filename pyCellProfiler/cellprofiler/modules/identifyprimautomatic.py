@@ -37,6 +37,7 @@ from cellprofiler.cpmath.smooth import smooth_with_noise
 import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
+import cellprofiler.cpmath.threshold as cpthresh
 
 IMAGE_NAME_VAR                  = 1
 OBJECT_NAME_VAR                 = 2
@@ -436,7 +437,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.merge_objects = cps.Binary('Try to merge too small objects with nearby larger objects?', False)
         self.exclude_border_objects = cps.Binary('Discard objects touching the border of the image?', True)
         self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
-                                           cpmi.TM_METHODS)
+                                           cpthresh.TM_METHODS)
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
         self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
         self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
@@ -506,21 +507,21 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 new_setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] = '5'
             else:
                 new_setting_values += [cps.NO]
-            if not setting_values[THRESHOLD_METHOD_VAR] in cpmi.TM_METHODS:
+            if not setting_values[THRESHOLD_METHOD_VAR] in cpthresh.TM_METHODS:
                 # Try to figure out what the user wants if it's not one of the
                 # pre-selected choices.
                 try:
                     # If it's a floating point number, then the user
                     # was trying to type in a manual threshold
                     ignore = float(setting_values[THRESHOLD_METHOD_VAR])
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpmi.TM_MANUAL
+                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_MANUAL
                     # Set the manual threshold to be the contents of the
                     # old threshold method variable and ignore the binary mask
                     new_setting_values += [setting_values[THRESHOLD_METHOD_VAR],
                                            cps.DO_NOT_USE]
                 except:
                     # Otherwise, assume that it's the name of a binary image
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpmi.TM_BINARY_IMAGE
+                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_BINARY_IMAGE
                     new_setting_values += [ '0.0',
                                            setting_values[THRESHOLD_METHOD_VAR]]
             else:
@@ -544,13 +545,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         vv = [self.image_name,self.object_name,self.size_range, \
                 self.exclude_size, self.merge_objects, \
                 self.exclude_border_objects, self.threshold_method]
-        if self.threshold_method == cpmi.TM_MANUAL:
+        if self.threshold_method == cpthresh.TM_MANUAL:
             vv += self.manual_threshold
-        elif self.threshold_method == cpmi.TM_BINARY_IMAGE:
+        elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
             vv += self.binary_image
-        if self.threshold_algorithm == cpmi.TM_MOG:
+        if self.threshold_algorithm == cpthresh.TM_MOG:
             vv += [self.object_fraction]
-        if not self.threshold_method in (cpmi.TM_MANUAL, cpmi.TM_BINARY_IMAGE):
+        if not self.threshold_method in (cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE):
             vv += [ self.threshold_correction_factor, self.threshold_range]
         vv += [ self.unclump_method ]
         if self.unclump_method != UN_NONE:
@@ -592,11 +593,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         # Get a threshold to use for labeling
         #
-        if self.threshold_modifier == cpmi.TM_PER_OBJECT:
+        if self.threshold_modifier == cpthresh.TM_PER_OBJECT:
             masking_objects = image.labels
         else:
             masking_objects = None
-        if self.threshold_method == cpmi.TM_BINARY_IMAGE:
+        if self.threshold_method == cpthresh.TM_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(self.binary_image.value,
                                                          must_be_binary = True)
             local_threshold = numpy.ones(img.shape)
@@ -665,7 +666,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         measurements = workspace.measurements
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
-        if self.threshold_modifier == cpmi.TM_GLOBAL:
+        if self.threshold_modifier == cpthresh.TM_GLOBAL:
             # The local threshold is a single number
             assert(not isinstance(local_threshold,numpy.ndarray))
             ave_threshold = local_threshold
@@ -680,11 +681,11 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                      'Threshold_OrigThreshold_%s'%(objname),
                                      numpy.array([global_threshold],
                                                   dtype=float))
-        wv = cpmi.weighted_variance(img, mask, local_threshold)
+        wv = cpthresh.weighted_variance(img, mask, local_threshold)
         measurements.add_measurement('Image',
                                      'Threshold_WeightedVariance_%s'%(objname),
                                      numpy.array([wv],dtype=float))
-        entropies = cpmi.sum_of_entropies(img, mask, local_threshold)
+        entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
         measurements.add_measurement('Image',
                                      'Threshold_SumOfEntropies_%s'%(objname),
                                      numpy.array([entropies],dtype=float))

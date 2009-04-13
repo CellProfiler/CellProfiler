@@ -39,36 +39,36 @@ import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 import cellprofiler.cpmath.threshold as cpthresh
 
-IMAGE_NAME_VAR                  = 1
-OBJECT_NAME_VAR                 = 2
-SIZE_RANGE_VAR                  = 3
-EXCLUDE_SIZE_VAR                = 4
-MERGE_CHOICE_VAR                = 5
-EXCLUDE_BORDER_OBJECTS_VAR      = 6
-THRESHOLD_METHOD_VAR            = 7
-THRESHOLD_CORRECTION_VAR        = 8
-THRESHOLD_RANGE_VAR             = 9
-OBJECT_FRACTION_VAR             = 10
-UNCLUMP_METHOD_VAR              = 11
+IMAGE_NAME_VAR                  = 0
+OBJECT_NAME_VAR                 = 1
+SIZE_RANGE_VAR                  = 2
+EXCLUDE_SIZE_VAR                = 3
+MERGE_CHOICE_VAR                = 4
+EXCLUDE_BORDER_OBJECTS_VAR      = 5
+THRESHOLD_METHOD_VAR            = 6
+THRESHOLD_CORRECTION_VAR        = 7
+THRESHOLD_RANGE_VAR             = 8
+OBJECT_FRACTION_VAR             = 9
+UNCLUMP_METHOD_VAR              = 10
 UN_INTENSITY                    = "Intensity"
 UN_SHAPE                        = "Shape"
 UN_MANUAL                       = "Manual"
 UN_MANUAL_FOR_ID_SECONDARY      = "Manual_for_IdSecondary"
 UN_NONE                         = "None"
-WATERSHED_VAR                   = 12
+WATERSHED_VAR                   = 11
 WA_INTENSITY                    = "Intensity"
 WA_DISTANCE                     = "Distance"
 WA_NONE                         = "None"
-SMOOTHING_SIZE_VAR              = 13
-MAXIMA_SUPPRESSION_SIZE_VAR     = 14
-LOW_RES_MAXIMA_VAR              = 15
-SAVE_OUTLINES_VAR               = 16
-FILL_HOLES_OPTION_VAR           = 17
-TEST_MODE_VAR                   = 18
-AUTOMATIC_SMOOTHING_VAR         = 19
-AUTOMATIC_MAXIMA_SUPPRESSION    = 20
-MANUAL_THRESHOLD_VAR            = 21
-BINARY_IMAGE_VAR                = 22
+SMOOTHING_SIZE_VAR              = 12
+MAXIMA_SUPPRESSION_SIZE_VAR     = 13
+LOW_RES_MAXIMA_VAR              = 14
+SAVE_OUTLINES_VAR               = 15
+FILL_HOLES_OPTION_VAR           = 16
+TEST_MODE_VAR                   = 17
+AUTOMATIC_SMOOTHING_VAR         = 18
+AUTOMATIC_MAXIMA_SUPPRESSION    = 19
+MANUAL_THRESHOLD_VAR            = 20
+BINARY_IMAGE_VAR                = 21
 
 
 class IdentifyPrimAutomatic(cpmi.Identify):
@@ -528,12 +528,18 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 new_setting_values += [ '0.0',
                                        setting_values[THRESHOLD_METHOD_VAR]]
             #
+            # The object fraction is stored as a percent in Matlab (sometimes)
+            #
+            m = re.match("([0-9.])%",setting_values[OBJECT_FRACTION_VAR])
+            if m:
+                setting_values[OBJECT_FRACTION_VAR] = str(float(m.groups()[0]) / 100.0)
+            #
             # Check the "DO_NOT_USE" status of the save outlines variable
             # to get the value for should_save_outlines
             #
             if new_setting_values[SAVE_OUTLINES_VAR] == cps.DO_NOT_USE:
                 new_setting_values += [ cps.NO ]
-                new_setting_values[SAVE_OUTLINES_VAR] = None
+                new_setting_values[SAVE_OUTLINES_VAR] = "None"
             else:
                 new_setting_values += [ cps.YES ]
             setting_values = new_setting_values

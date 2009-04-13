@@ -202,13 +202,19 @@ class IntegerRange(Setting):
         """The minimum value of the range"""
         return self.value[0]
     
-    min = property(get_min)
+    def set_min(self, value):
+        self.set_value((value, self.max))
+        
+    min = property(get_min, set_min)
     
     def get_max(self):
         """The maximum value of the range"""
         return self.value[1]
     
-    max = property(get_max)
+    def set_max(self, value):
+        self.set_value((self.min, value))
+        
+    max = property(get_max, set_max)
     
     def test_valid(self, pipeline):
         values = str(self).split(',')
@@ -472,13 +478,19 @@ class FloatRange(Setting):
         """The minimum value of the range"""
         return self.value[0]
     
-    min = property(get_min)
+    def set_min(self, value):
+        self.set_value((value, self.max))
+        
+    min = property(get_min, set_min)
     
     def get_max(self):
         """The maximum value of the range"""
         return self.value[1]
     
-    max = property(get_max) 
+    def set_max(self, value):
+        self.set_value((self.min, value))
+        
+    max = property(get_max, set_max)
     
     def test_valid(self, pipeline):
         values = str(self).split(',')

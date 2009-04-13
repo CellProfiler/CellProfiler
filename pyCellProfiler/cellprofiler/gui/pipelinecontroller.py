@@ -40,7 +40,8 @@ class PipelineController:
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         self.__setting_errors = {}
-        self.__running_pipeline = None 
+        self.__running_pipeline = None
+        self.__inside_running_pipeline = False 
         self.__pipeline_measurements = None
         self.__debug_image_set_list = None
         self.__debug_measurements = None
@@ -313,7 +314,8 @@ class PipelineController:
         self.__movie_viewer.slider.value = 0
     
     def on_idle(self,event):
-        if self.__running_pipeline:
+        if self.__running_pipeline and not self.__inside_running_pipeline:
+            self.__inside_running_pipeline = True
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 event.RequestMore()
@@ -323,6 +325,8 @@ class PipelineController:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
+            finally:
+                self.__inside_running_pipeline = False
 
 
     def get_output_file_path(self):

@@ -17,6 +17,7 @@ import csv
 import numpy as np
 import os
 import uuid
+import wx
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -44,7 +45,7 @@ OG_FILE_NAME = "FileName"
 OG_REMOVE_BUTTON = "RemoveButton"
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 4
+SETTING_OG_OFFSET = 6
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -123,6 +124,8 @@ named, "XZ29_A01.csv".
         self.prepend_output_filename = cps.Binary("Do you want to prepend the output file name to the data file names? This can be useful if you want to run a pipeline multiple times without overwriting the old results.", True)
         self.add_metadata = cps.Binary("Do you want to add image metadata columns to your object data?",False)
         self.add_indexes = cps.Binary("Do you want to add an image set number column to your image data and image set number and object number columns to your object data?", False)
+        self.excel_limits = cps.Binary("Do you want to limit output to what is allowed in Excel?", False)
+        self.pick_columns = cps.Binary("Do you want to pick the columns to output?", False)
         self.object_groups = []
         self.add_object_group()
         self.add_button = cps.DoSomething("Add a new data source.", "Add",
@@ -165,19 +168,28 @@ named, "XZ29_A01.csv".
         """Adjust the setting values based on the version that saved them
         
         """
+        if variable_revision_number == 1 and from_matlab:
+            # Added create subdirectories questeion
+            setting_values = list(setting_values)
+            setting_values.append(cps.NO)
+            variable_revision_number = 2
         if variable_revision_number == 2 and from_matlab:
             wants_subdirectories = (setting_values[8] == cps.YES)
-            object_names = [x for x in setting_values
+            object_names = [x for x in setting_values[:-1]
                             if x != cps.DO_NOT_USE]
-            setting_values = [ DELIMETER_TAB, cps.YES, cps.NO, cps.NO ]
+            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
+                              cps.NO, cps.NO ]
             for name in object_names:
                 setting_values.extend([name, cps.NO, "%s.csv"%(name)])
             variable_revision_number = 1
             from_matlab = False
+        return setting_values, variable_revision_number, from_matlab
 
     def settings(self):
         """Return the settings in the order used when storing """
-        result = [self.delimiter, self.prepend_output_filename]
+        result = [self.delimiter, self.prepend_output_filename,
+                  self.add_metadata, self.add_indexes,
+                  self.excel_limits, self.pick_columns]
         for group in self.object_groups:
             result += [group[OG_OBJECT_NAME], group[OG_PREVIOUS_FILE],
                        group[OG_FILE_NAME]]
@@ -185,12 +197,14 @@ named, "XZ29_A01.csv".
 
     def visible_settings(self):
         """Return the settings as seen by the user"""
-        result = [self.delimiter, self.prepend_output_filename]
+        result = [self.delimiter, self.prepend_output_filename,
+                  self.add_metadata, self.add_indexes,
+                  self.excel_limits, self.pick_columns]
         previous_group = None
         for group in self.object_groups:
             result += [group[OG_OBJECT_NAME]]
             if is_object_group(group):
-                if ((not previous_group is none) and
+                if ((not previous_group is None) and
                     is_object_group(previous_group)):
                     #
                     # Show the previous-group button if there was a previous
@@ -332,20 +346,26 @@ named, "XZ29_A01.csv".
             image_features = m.get_feature_names(IMAGE)
             if self.add_indexes.value:
                 image_features.insert(0, IMAGE_NUMBER)
-            image_features_len = len(image_features)
             for index in image_set_indexes:
                 agg_measurements = m.compute_aggregate_measurements(index)
                 if index == image_set_indexes[0]:
                     ordered_agg_names = list(agg_measurements.keys())
                     ordered_agg_names.sort()
                     image_features += ordered_agg_names
+                    image_features.sort()
+                    image_features = self.user_filter_columns(workspace.frame,
+                                                              "Image CSV file columns",
+                                                              image_features)
+                    if image_features is None:
+                        return
                     writer.writerow(image_features)
-                row = [ m.get_measurement(IMAGE, feature_name, index)
-                       if feature_name != IMAGE_NUMBER
-                       else index+1
-                       for feature_name in image_features[:image_features_len]]
-                row += [agg_measurements[feature_name]
-                        for feature_name in image_features[image_features_len:]]
+                row = [ index+1
+                       if feature_name == IMAGE_NUMBER
+                       else agg_measurements[feature_name]
+                       if agg_measurements.has_key(feature_name)
+                       else m.get_measurement(IMAGE, feature_name, index)
+                       for feature_name in image_features]
+                row = [ x if np.isscalar(x) else x[0] for x in row]
                 writer.writerow(row)
         finally:
             fd.close()
@@ -372,12 +392,20 @@ named, "XZ29_A01.csv".
                 features += [(IMAGE, IMAGE_NUMBER),
                              (object_names[0], OBJECT_NUMBER)]
             if self.add_metadata.value:
-                features += [(IMAGE, name) 
-                             for name in m.get_feature_names(IMAGE)
-                             if name.startswith("Metadata_")]
+                mdfeatures = [(IMAGE, name) 
+                              for name in m.get_feature_names(IMAGE)
+                              if name.startswith("Metadata_")]
+                mdfeatures.sort()
+                features += mdfeatures
             for object_name in object_names:
-                features += [(object_name, feature_name)
+                ofeatures = [(object_name, feature_name)
                              for feature_name in m.get_feature_names(object_name)]
+                ofeatures.sort()
+                features += ofeatures
+            features = self.user_filter_columns(workspace.frame,
+                                                "Select columns for %s"%(file_name),
+                                                ["%s:%s"%x for x in features])
+            features = [x.split(':') for x in features]
             #
             # We write the object names in the first row of headers if there are
             # multiple objects. Otherwise, we just write the feature names
@@ -406,6 +434,54 @@ named, "XZ29_A01.csv".
                     writer.writerow(row)
         finally:
             fd.close()
+    
+    def user_filter_columns(self, frame, title, columns):
+        """Display a user interface for column selection"""
+        if (frame is None or
+            (self.pick_columns.value == False and
+            (self.excel_limits.value == False or len(columns) < 256))):
+            return columns
+        
+        dlg = wx.Dialog(frame,title = title,
+                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        dlg.SetSizer(sizer)
+        list_box = wx.CheckListBox(dlg, choices=columns)
+        list_box.SetChecked(range(len(columns)))
+        sizer.Add(list_box,1,wx.EXPAND|wx.ALL,3)
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(sub_sizer,0,wx.EXPAND)
+        count_text = wx.StaticText(dlg,label="%d columns selected"%len(columns))
+        sub_sizer.Add(count_text,0,wx.EXPAND|wx.ALL,3)
+        select_all_button = wx.Button(dlg, label="All")
+        sub_sizer.Add(select_all_button, 0, wx.ALIGN_LEFT|wx.ALL,3)
+        select_none_button = wx.Button(dlg, label="None")
+        sub_sizer.Add(select_none_button, 0, wx.ALIGN_LEFT|wx.ALL,3)
+        def check_all(event):
+            for i in range(len(columns)):
+                list_box.Check(i, True)
+            recount(event)
+        def uncheck_all(event):
+            for i in range(len(columns)):
+                list_box.Check(i, False)
+            recount(event)
+        def recount(event):
+            count = 0
+            for i in range(len(columns)):
+                if list_box.IsChecked(i):
+                    count += 1
+            count_text.Label = "%d columns selected"%(count)
+        dlg.Bind(wx.EVT_BUTTON, check_all, select_all_button)
+        dlg.Bind(wx.EVT_BUTTON, uncheck_all, select_none_button)
+        dlg.Bind(wx.EVT_CHECKLISTBOX, recount, list_box)
+        button_sizer = wx.StdDialogButtonSizer()
+        button_sizer.AddButton(wx.Button(dlg,wx.ID_OK))
+        button_sizer.AddButton(wx.Button(dlg,wx.ID_CANCEL))
+        button_sizer.Realize()
+        sizer.Add(button_sizer,0,wx.EXPAND|wx.ALL,3)
+        if dlg.ShowModal() == wx.ID_OK:
+            return [columns[i] for i in range(len(columns))
+                    if list_box.IsChecked(i)] 
             
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""

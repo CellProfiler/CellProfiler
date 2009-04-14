@@ -193,7 +193,7 @@ if ~any(strcmp(OldPathname, '.'))
                 if ndims(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j})) == 2
                     % Assumed to be FLEX file, with filename in the 1st row of
                     % cell array
-                    for k = 1:size(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{i}),2)
+                    for k = 1:size(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}),2)
                         handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}){1,k} = strrep(handles.Pipeline.GroupFileList{i}.(FileListFieldNames{j}){1,k},'\','/');
                     end
                 else

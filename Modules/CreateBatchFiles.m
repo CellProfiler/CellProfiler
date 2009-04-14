@@ -14,13 +14,17 @@ function handles = CreateBatchFiles(handles)
 %
 % Before using this module, you should read Help -> General Help ->
 % Batch Processing. That help file also will instruct you on how to
-% actually run the batch files that are created by this module.
+% run the batch files that are created by this module.
 %
 % Settings:
+% PATH TO BATCH_DATA.MAT FILE:
+% Choose either the Default Output Folder (".") or a path relative to it,
+%   e.g. "./SaveToThisFolder"
+%
 % Other Paths: The last two settings allow changing the paths between
-% local and cluster computers. For example, when starting with a PC
-% computer and going to a Linux machine, the path may be the same
-% except the first notation:
+% local and cluster computers. For example, when starting with a local PC
+% computer and setting a batch to run on a Linux-based cluster, 
+% the path may be essentially the same except the first notation:
 %
 % PC:    \\remoteserver1\cluster\project
 % Linux: /remoteserver2/cluster/project

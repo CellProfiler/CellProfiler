@@ -200,8 +200,8 @@ StatisticsCalculated{1} = char(handles.Settings.VariableValues{CurrentModuleNum,
 %inputtypeVAR06 = popupmenu
 
 %textVAR07 = 
-%choiceVAR07 = Mean
 %choiceVAR07 = Standard deviation
+%choiceVAR07 = Mean
 %choiceVAR07 = Median
 %choiceVAR07 = Do not use
 %defaultVAR07 = Standard deviation
@@ -209,9 +209,9 @@ StatisticsCalculated{2} = char(handles.Settings.VariableValues{CurrentModuleNum,
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 = 
-%choiceVAR08 = Mean
-%choiceVAR08 = Standard deviation
 %choiceVAR08 = Median
+%choiceVAR08 = Standard deviation
+%choiceVAR08 = Mean
 %choiceVAR08 = Do not use
 %defaultVAR08 = Median
 StatisticsCalculated{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});

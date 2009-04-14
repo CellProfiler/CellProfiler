@@ -289,7 +289,7 @@ if ~isempty(FieldsToGroupBy)
             [file_idstr{:}] = deal('');
             FileID = zeros(size(s2,1),length(FileFieldsToGroupBy));
             for i = 1:length(FileFieldsToGroupBy),
-                file_idstr(:,i) = cellstr(cat(1,s2(:).(FileFieldsToGroupBy{i})));
+                file_idstr(:,i) = cellstr(strvcat(s2(:).(FileFieldsToGroupBy{i})));
                 [ignore,idx,FileID(:,i)] = group2index(file_idstr(:,i));
             end
         else

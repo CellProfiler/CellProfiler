@@ -381,8 +381,12 @@ end
 
 perobjectvals = [];
 
-for img_idx = FirstSet:LastSet
-    perobjectvals_mean=[];
+for img_idx = FirstSet:LastSet  
+    % perobjectvals_aggregate: Holds the values that are going to be aggregated per-image
+    perobjectvals_aggregate = []; 
+   % perobjectvals_aggregate_isobj: Indexes which values are valid from
+   %    an image; non-valid values are excluded from stats later
+    perobjectvals_aggregate_isobj = logical([]); 
     fprintf(fimage, '%d', img_idx);
     objectbaserow = size(perobjectvals, 1);
     objectbasecol = 2;
@@ -473,7 +477,8 @@ for img_idx = FirstSet:LastSet
                 %%% Add the values into the per-image output and shift
                 %%% right
                 if ~any(strmatch(ObjectFeaturesNotToBeAveraged, FeatureName)),
-                    perobjectvals_mean(1:numobj, (objectbasemeancol-2+1)) = vals;
+                    perobjectvals_aggregate(1:numobj, (objectbasemeancol-2+1)) = vals;
+                    perobjectvals_aggregate_isobj(1:numobj, (objectbasemeancol-2+1)) = true;
                     objectbasemeancol = objectbasemeancol + 1;
                 end
                 
@@ -491,46 +496,56 @@ for img_idx = FirstSet:LastSet
 
     % Print mean, median, stdev for all measurements per image
     if (wantMeanCalculated || wantMedianCalculated || wantStdDevCalculated)
-        formatstr = ['%g' repmat(',%g',1,size(perobjectvals_mean,2)-1)];
-        if size(perobjectvals_mean,1)==1
+        formatstr = ['%g' repmat(',%g',1,size(perobjectvals_aggregate,2)-1)];
+        if size(perobjectvals_aggregate,1)==1
             if wantMeanCalculated
                 fprintf(fimage,',');    %% MEAN
-                fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
+                fprintf(fimage,formatstr,perobjectvals_aggregate); % ignore NaN
             end
             if wantMedianCalculated
                 fprintf(fimage,',');    %% MEDIAN
-                fprintf(fimage,formatstr,perobjectvals_mean); % ignore NaN
+                fprintf(fimage,formatstr,perobjectvals_aggregate); % ignore NaN
             end
             if wantStdDevCalculated
-                for i = 1:size(perobjectvals_mean,2),
+                for i = 1:size(perobjectvals_aggregate,2),
                     fprintf(fimage,',0'); %ignore NaN
                 end
             end
-        elseif size(perobjectvals_mean, 1) > 0,  
+        elseif size(perobjectvals_aggregate, 1) > 0,  
+            % Ignore NaNs in aggregate measurements
+            warning('off','MATLAB:divideByZero');
+            perobjectvals_aggregate(perobjectvals_aggregate_isobj == 0) = NaN;
             if wantMeanCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,(CPnanmean(perobjectvals_mean))); % ignore NaN
+                aggregate_vals = CPnanmean(perobjectvals_aggregate);
+                aggregate_vals(isnan(aggregate_vals)) = 0;
+                fprintf(fimage,formatstr,aggregate_vals);
             end
             if wantMedianCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,(CPnanmedian(perobjectvals_mean))); % ignore NaN
+                aggregate_vals = CPnanmedian(perobjectvals_aggregate);
+                aggregate_vals(isnan(aggregate_vals)) = 0;
+                fprintf(fimage,formatstr,aggregate_vals);
             end
             if wantStdDevCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,(CPnanstd(perobjectvals_mean)));%ignore NaN
+                aggregate_vals = CPnanstd(perobjectvals_aggregate);
+                aggregate_vals(isnan(aggregate_vals)) = 0;
+                fprintf(fimage,formatstr,aggregate_vals);
             end
-        else % write zeros if there are no measurements
+            warning('on','MATLAB:divideByZero');
+        else % Write zeros if there are no measurements
             if wantStdDevCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
             end
             if wantMedianCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
             end
             if wantStdDevCalculated
                 fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_mean, 2)));
+                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
             end
         end
     end

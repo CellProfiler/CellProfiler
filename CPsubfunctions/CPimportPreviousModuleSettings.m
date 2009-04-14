@@ -161,6 +161,16 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         SavedVarRevNum = 7;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 7      % Add 'Which objects do you want to export?" and move CPA setting to bottom
+        Settings.VariableValues{ModuleNum-Skipped,13} = Settings.VariableValues{ModuleNum-Skipped,9};
+        Settings.VariableValues{ModuleNum-Skipped,9} = 'Image';
+        Settings.VariableValues{ModuleNum-Skipped,10} = 'Do not use';
+        Settings.VariableValues{ModuleNum-Skipped,11} = 'Do not use';
+        Settings.VariableValues{ModuleNum-Skipped,12} = 'Do not use';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 4;
+        SavedVarRevNum = 8;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

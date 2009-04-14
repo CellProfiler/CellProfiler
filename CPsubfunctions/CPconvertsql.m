@@ -1,4 +1,4 @@
-function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice,StatisticsCalculated)
+function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice,StatisticsCalculated,ObjectsToBeExported)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -35,10 +35,10 @@ end
 basename = [OutfilePrefix,int2str(FirstSet),'_',int2str(LastSet)];
 
 %%% Extract the object types to write (e.g., Image, Nuclei, ...).  The transpose allows looping below.
-ObjectNames = fieldnames(handles.Measurements)';
+ObjectsToBeExported = ObjectsToBeExported(isfield(handles.Measurements,ObjectsToBeExported));
 ObjectsToOmitFromPerImageTable = [];
 
-for ObjectCell = ObjectNames,
+for ObjectCell = ObjectsToBeExported,
     % why matlab, why?
     ObjectName = ObjectCell{1};
 
@@ -396,7 +396,7 @@ for img_idx = FirstSet:LastSet
 
     feature_idx = 1;
 
-    for ObjectCell = ObjectNames,
+    for ObjectCell = ObjectsToBeExported,
         % why matlab, why?
         ObjectName = ObjectCell{1};
 

@@ -217,15 +217,43 @@ StatisticsCalculated{2} = char(handles.Settings.VariableValues{CurrentModuleNum,
 StatisticsCalculated{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Do you want to create a CellProfiler Analyst properties file?
-%choiceVAR09 = Yes - Both V1.0 and V2.0 format
-%choiceVAR09 = Yes - V1.0 format
-%choiceVAR09 = Yes - V2.0 format
-%choiceVAR09 = No
-WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+%textVAR09 = Which objects do you want to export?
+%infotypeVAR09 = objectgroup
+%choiceVAR09 = Image
+%choiceVAR09 = Do not use
+ObjectsToBeExported{1} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 %inputtypeVAR09 = popupmenu
 
-%%%VariableRevisionNumber = 7
+%textVAR10 =
+%infotypeVAR10 = objectgroup
+%choiceVAR10 = Do not use
+%choiceVAR10 = Image
+ObjectsToBeExported{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+%inputtypeVAR10 = popupmenu
+
+%textVAR11 =
+%infotypeVAR11 = objectgroup
+%choiceVAR11 = Do not use
+%choiceVAR11 = Image
+ObjectsToBeExported{3} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+%inputtypeVAR11 = popupmenu
+
+%textVAR12 =
+%infotypeVAR12 = objectgroup
+%choiceVAR12 = Do not use
+%choiceVAR12 = Image
+ObjectsToBeExported{4} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+%inputtypeVAR12 = popupmenu
+
+%textVAR13 = Do you want to create a CellProfiler Analyst properties file?
+%choiceVAR13 = Yes - Both V1.0 and V2.0 format
+%choiceVAR13 = Yes - V1.0 format
+%choiceVAR13 = Yes - V2.0 format
+%choiceVAR13 = No
+WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%inputtypeVAR13 = popupmenu
+
+%%%VariableRevisionNumber = 8
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -255,6 +283,10 @@ if strncmp(DataPath, '.',1)
 end
 
 StatisticsCalculated(strcmp(StatisticsCalculated,'Do not use')) = [];
+ObjectsToBeExported(strcmp(ObjectsToBeExported,'Do not use')) = [];
+
+ObjectsToBeExported = unique(ObjectsToBeExported);
+StatisticsCalculated = unique(StatisticsCalculated);
 
 % Two possibilities: we're at the end of the pipeline in an
 % interactive session, or we're in the middle of batch processing.
@@ -284,7 +316,7 @@ if DoWriteSQL || DoWriteCPAPropertiesFile
 end
 
 if DoWriteSQL,
-    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType,StatisticsCalculated);
+    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType,StatisticsCalculated,ObjectsToBeExported);
 end
 
 if DoWriteCPAPropertiesFile,

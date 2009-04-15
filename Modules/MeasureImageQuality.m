@@ -121,6 +121,11 @@ function handles = MeasureImageQuality(handles,varargin)
 % (ii) A range of N values should be allowable for (2) so additional
 % modules are not needed
 % (iii) The prompt for (4b) should appear only if the user selects 'yes' to (4a) 
+% (iv) Another nice feature would be to test several thresholding methods
+% for each image. The reason is that I may not know which thresholding
+% method I might want to use right away, so seeing the results from several
+% of them might be helpful. This means that the thresholding method might
+% need to be part of the measurement name as well.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

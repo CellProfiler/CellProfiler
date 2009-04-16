@@ -70,6 +70,12 @@ function handles = OverlayOutlines(handles)
 % color. We should make sure that color outlines work even if the user has
 % chosen a grayscale image to put the outlines onto.
 %
+%
+% MBray 2009_04_16: Comments on variables for pyCP upgrade
+% A button should sbe added that lets the user add/subtract outlines to 
+% overlay. Right now, we have to string multiple modules together to create
+% pictures with multiple outlines in different colors.
+%
 % See also the ConvertToImage module for some relevant discussion.
 
 drawnow

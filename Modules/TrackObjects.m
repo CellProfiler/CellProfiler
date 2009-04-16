@@ -571,7 +571,10 @@ if CollectStatistics
                     Lifetime(:));
     % This is a special case: The lifetime for an object is known only
     % after the cycle where it disappeared, so I need to transfer the
-    % lifetime measurements back one cycle, unless we're at the end
+    % lifetime-related measurements back one cycle, unless we're at the end
+    % NOTE: If the measurement names are changed here, they need to be
+    % altered in Relate since they need to be excluded from per-parent
+    % measurements
     if SetBeingAnalyzed > 1 && SetBeingAnalyzed ~= NumberOfImageSets, 
         handles.Measurements.(ObjectName).(IntegratedDistanceMeasurementName){SetBeingAnalyzed-1} = ...
             handles.Measurements.(ObjectName).(IntegratedDistanceMeasurementName){SetBeingAnalyzed}; 

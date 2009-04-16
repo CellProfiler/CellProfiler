@@ -197,6 +197,12 @@ if wantMeanMeasurements
     % which finds the mean measurements of all the subObjects that relate to each parent object
     MeasurementFieldnames = fieldnames(handles.Measurements.(SubObjectName))';
 
+    % Some measurments need to be excluded from the per-parent mean calculation
+    ExcludedMeasurementsPrefixes = {'SubObjectFlag',...                                             % Child flags, which are a single scalar value (Relate)
+        'Parent_','Children_',...                                                                   % Object lists and per-parent counts (CPRelateobjects)
+        'Mean_',...                                                                                 % Per-parent mean measurments already calculated (Relate)
+        'TrackObjects_Linearity_','TrackObjects_IntegratedDistance_','TrackObjects_Lifetime_'};     % Measurements which are calculated retrospectively (TrackObjects)
+    
     if isfield(handles.Measurements.(SubObjectName),['Parent_',ParentName{1}])
         % Why is test line here? Isn't this always the case?  Or is it in case Relate is called twice?- Ray 2007-08-09
         if length(handles.Measurements.(SubObjectName).(CPjoinstrings('Parent_',ParentName{1}))) >= handles.Current.SetBeingAnalyzed
@@ -204,9 +210,9 @@ if wantMeanMeasurements
             MeasurementFeatures = fieldnames(handles.Measurements.(SubObjectName));
             for i = 1:length(MeasurementFeatures)
                 Fieldname = MeasurementFieldnames{i};
-                if strcmp(Fieldname, 'SubObjectFlag') || ...
-                        strncmp(Fieldname, 'Parent_', length('Parent_')) || strncmp(Fieldname, 'Children_', length('Children_')) || ...
-                        strncmp(Fieldname, 'Mean', length('Mean'))
+                if any(cell2mat(cellfun(@strncmp,   repmat({Fieldname},[1 length(ExcludedMeasurementsPrefixes)]),...
+                                                    ExcludedMeasurementsPrefixes,...
+                                                    num2cell(cellfun(@length,ExcludedMeasurementsPrefixes)),'UniformOutput',false)))
                     continue;
                 end
                 Measurements = handles.Measurements.(SubObjectName).(Fieldname){handles.Current.SetBeingAnalyzed};

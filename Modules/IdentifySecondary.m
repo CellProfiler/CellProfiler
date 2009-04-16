@@ -64,11 +64,10 @@ function handles = IdentifySecondary(handles)
 % Select automatic thresholding method or enter an absolute threshold:
 %    The threshold affects the stringency of the lines between the objects
 % and the background. See the help for the IdentifyPrimAutomatic module for
-% a complete description of the options. Note that Per object options are
-% not available for IdentifySecondary because the Per object method relies
-% on identifying objects *smaller* than the primary objects, whereas
-% secondary objects are always *larger* than their corresponding primary
-% objects.
+% a complete description of the options. Per object methods may be used for
+% cases where the secondary object is completely contained within a
+% second primary object, perhaps making a per-object threshold preferable
+% for determining the secondary object boudanries.
 %
 % Threshold correction factor:
 % When the threshold is calculated automatically, it may consistently be

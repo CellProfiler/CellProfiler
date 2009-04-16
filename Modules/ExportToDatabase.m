@@ -245,15 +245,36 @@ ObjectsToBeExported{3} = char(handles.Settings.VariableValues{CurrentModuleNum,1
 ObjectsToBeExported{4} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%textVAR13 = Do you want to create a CellProfiler Analyst properties file?
-%choiceVAR13 = Yes - Both V1.0 and V2.0 format
-%choiceVAR13 = Yes - V1.0 format
-%choiceVAR13 = Yes - V2.0 format
-%choiceVAR13 = No
-WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+%textVAR13 =
+%infotypeVAR13 = objectgroup
+%choiceVAR13 = Do not use
+%choiceVAR13 = Image
+ObjectsToBeExported{5} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %inputtypeVAR13 = popupmenu
 
-%%%VariableRevisionNumber = 8
+%textVAR14 =
+%infotypeVAR14 = objectgroup
+%choiceVAR14 = Do not use
+%choiceVAR14 = Image
+ObjectsToBeExported{6} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
+
+%textVAR15 =
+%infotypeVAR15 = objectgroup
+%choiceVAR15 = Do not use
+%choiceVAR15 = Image
+ObjectsToBeExported{7} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+%inputtypeVAR15 = popupmenu
+
+%textVAR16 = Do you want to create a CellProfiler Analyst properties file?
+%choiceVAR16 = Yes - Both V1.0 and V2.0 format
+%choiceVAR16 = Yes - V1.0 format
+%choiceVAR16 = Yes - V2.0 format
+%choiceVAR16 = No
+WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%inputtypeVAR16 = popupmenu
+
+%%%VariableRevisionNumber = 9
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%

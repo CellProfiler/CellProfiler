@@ -296,7 +296,7 @@ for i = 1:length(ObjectNameList)
 
         if strcmp(ZernikeChoice,'Yes')
             % Get the Zernike features
-            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage,ObjectName);
 
             % Save Zernike measurements
             for j=1:length(ZernikeFeatures)
@@ -315,7 +315,7 @@ for i = 1:length(ObjectNameList)
             % Here, just getting the feaure names out; I don't care about the
             % values, and the subfunction doesn't error if the label matrix is
             % empty
-            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage);
+            [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage,ObjectName);
             for j = 1:length(ZernikeFeatures)
                 handles = CPaddmeasurements(handles, ObjectName, ...
                     ZernikeFeatures{j}, []);
@@ -413,7 +413,7 @@ end
 %%% Subfunction for calculating Zernike
 %%%
 
-function [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage)
+function [Zernike, ZernikeFeatures] = calculate_zernike(LabelMatrixImage,ObjectName)
 NumObjects = max(LabelMatrixImage(:));
 % Get index for Zernike functions
 Zernikeindex = [];

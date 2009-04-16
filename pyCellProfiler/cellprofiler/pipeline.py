@@ -26,7 +26,7 @@ from cellprofiler.matlab.cputils import s_cell_fun,make_cell_struct_dtype
 from cellprofiler.matlab.cputils import load_into_matlab,get_int_from_matlab
 from cellprofiler.matlab.cputils import encapsulate_strings_in_arrays
 import cellprofiler.cpimage
-import cellprofiler.measurements
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
 
@@ -206,6 +206,8 @@ def add_all_measurements(handles, measurements):
     npy_measurements = numpy.ndarray((1,1),dtype=measurements_dtype)
     handles[MEASUREMENTS]=npy_measurements
     for object_name in measurements.get_object_names():
+        if object_name == cpmeas.EXPERIMENT:
+            continue
         object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
         object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
@@ -216,6 +218,14 @@ def add_all_measurements(handles, measurements):
                 data = measurements.get_current_measurement(object_name,feature_name)
                 if data != None:
                     feature_measurements[0,i] = data
+    if cpmeas.EXPERIMENT in measurements.object_names:
+        object_dtype = make_cell_struct_dtype(measurements.get_feature_names(cpmeas.EXPERIMENT))
+        experiment_measurements = numpy.ndarray((1,1), dtype=object_dtype)
+        npy_measurements[cpmeas.EXPERIMENT][0,0] = experiment_measurements
+        for feature_name in measurements.get_feature_names(cpmeas.EXPERIMENT):
+            feature_measurements = numpy.ndarray((1,1),dtype='object')
+            feature_measurements[0,0] = measurements.get_experiment_measurement(feature_name)
+            experiment_measurements[feature_name][0,0] = feature_measurements
 
 class Pipeline:
     """A pipeline represents the modules that a user has put together
@@ -448,7 +458,7 @@ class Pipeline:
         if image_set_list == None:
             return
             
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         first_set = True
         matlab_initialized = False
         while first_set or \
@@ -500,7 +510,8 @@ class Pipeline:
                 yield measurements
             first_set = False
             image_set_list.purge_image_set(measurements.image_set_number)
-    
+        self.post_run(measurements, image_set_list, frame)
+        
     def prepare_run(self, frame):
         """Do "prepare_run" on each module to initialize the image_set_list
         
@@ -519,6 +530,31 @@ class Pipeline:
                 if event.cancel_run:
                     return None
         return image_set_list
+    
+    def post_run(self, measurements, image_set_list, frame):
+        """Do "post_run" on each module to perform aggregation tasks
+        
+        measurements - the measurements for the run
+        image_set_list - the image set list for the run
+        frame - the topmost frame window or None if no GUI
+        """
+        for module in self.modules():
+            workspace = cpw.Workspace(self,
+                                      module,
+                                      None,
+                                      None,
+                                      measurements,
+                                      image_set_list,
+                                      frame)
+            workspace.refresh()
+            try:
+                module.post_run(workspace)
+            except Exception, instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance, module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return
 
     def set_matlab_path(self):
         matlab = get_matlab_instance()
@@ -828,7 +864,7 @@ def matlab_run(handles):
     pipeline.create_from_handles(handles)
     image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    measurements = cellprofiler.measurements.Measurements()
+    measurements = cpmeas.Measurements()
     object_set = cellprofiler.objects.ObjectSet()
     #
     # Get the values for the current image_set, making believe this is the first image set

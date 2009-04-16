@@ -147,6 +147,11 @@ class Measurements(object):
         assert self.__dictionary[object_name].has_key(feature_name),"No measurements for %s.%s"%(object_name,feature_name)
         return self.__dictionary[object_name][feature_name]
     
+    def get_experiment_measurement(self, feature_name):
+        """Retrieve an experiment-wide measurement
+        """
+        return self.get_all_measurements(EXPERIMENT, feature_name)
+    
     def apply_metadata(self, pattern, image_set_number=None):
         """Apply metadata from the current measurements to a pattern
         

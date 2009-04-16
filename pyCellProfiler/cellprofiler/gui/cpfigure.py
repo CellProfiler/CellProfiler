@@ -254,7 +254,8 @@ class CPFigureFrame(wx.Frame):
     def subplot_table(self, x, y, statistics, 
                       ratio = (.6, .4),
                       loc = 'center',
-                      cellLoc = 'left'):
+                      cellLoc = 'left',
+                      clear = True):
         """Put a table into a subplot
         
         x,y - subplot's column and row
@@ -264,6 +265,9 @@ class CPFigureFrame(wx.Frame):
         loc   - placement of the table within the axes
         cellLoc - alignment of text within cells
         """
+        if clear:
+            self.clear_subplot(x, y)
+            
         table_axes = self.subplot(x, y)
         table = table_axes.table(cellText=statistics,
                                  colWidths=ratio,

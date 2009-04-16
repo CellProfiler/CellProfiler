@@ -67,6 +67,10 @@ TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
                TM_MANUAL, TM_BINARY_IMAGE,
                TM_ALL, TM_SET_INTERACTIVELY]
 
+TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
+                     TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 
+                     TM_KAPUR_GLOBAL ]
+
 def get_threshold(threshold_method, threshold_modifier, image, 
                   mask=None, labels = None,
                   threshold_range_min = None, threshold_range_max = None,
@@ -145,9 +149,8 @@ def get_global_threshold(threshold_method, image, mask = None,
                          object_fraction = 0.2):
     """Compute a single threshold over the whole image"""
     if threshold_method == TM_OTSU:
-        return otsu(image if mask is None else image[mask],
-                    threshold_range_min,
-                    threshold_range_max)
+        return get_otsu_threshold(image, mask, threshold_range_min,
+                                  threshold_range_max)
     elif threshold_method == TM_MOG:
         return get_mog_threshold(image, mask, object_fraction)
     elif threshold_method == TM_BACKGROUND:
@@ -243,6 +246,18 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
         local_threshold[extent][label_mask] = per_object_threshold
     return local_threshold
 
+def get_otsu_threshold(image, mask = None, threshold_range_min = None,
+                       threshold_range_max = None):
+    if not mask is None:
+        image = image[mask]
+        if len(image) == 0:
+            return 1
+    else:
+        image = np.array(image.flat)
+    return otsu(image,
+                threshold_range_min,
+                threshold_range_max)
+        
 def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     """Compute a background using a mixture of gaussians
     
@@ -263,7 +278,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     pixels based on the probability of an object pixel 'pObject' given by
     the user.        
     """
-    cropped_image = image if mask is None else image[mask]
+    cropped_image = np.array(image.flat) if mask is None else image[mask]
     pixel_count = np.product(cropped_image.shape)
     max_count   = 512**2 # maximum # of pixels analyzed
     #
@@ -368,7 +383,7 @@ def get_background_threshold(image, mask = None):
     The threshold is calculated by calculating the mode and multiplying by
     2 (an arbitrary empirical factor). The user will presumably adjust the
     multiplication factor as needed."""
-    cropped_image = image if mask is None else image[mask]
+    cropped_image = np.array(image.flat) if mask is None else image[mask]
     if np.product(cropped_image.shape)==0:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):
@@ -392,7 +407,7 @@ def get_robust_background_threshold(image, mask = None):
        of the remaining image. The threshold is then set at 2 (empirical
        value) standard deviations above the mean.""" 
 
-    cropped_image = image if mask is None else image[mask]
+    cropped_image = np.array(image.flat) if mask is None else image[mask]
     if np.product(cropped_image.shape)<3:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):
@@ -413,7 +428,7 @@ def get_ridler_calvard_threshold(image, mask = None):
     by T. Ridler and S. Calvard, in IEEE Transactions on Systems, Man and
     Cybernetics, vol. 8, no. 8, August 1978.
     """
-    cropped_image = image if mask is None else image[mask]
+    cropped_image = np.array(image.flat) if mask is None else image[mask]
     if np.product(cropped_image.shape)<3:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):
@@ -443,7 +458,7 @@ def get_ridler_calvard_threshold(image, mask = None):
 
 def get_kapur_threshold(image, mask=None):
     """The Kapur, Sahoo, & Wong method of thresholding, adapted to log-space."""
-    cropped_image = image if mask is None else image[mask]
+    cropped_image = np.array(image.flat) if mask is None else image[mask]
     if np.product(cropped_image.shape)<3:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):

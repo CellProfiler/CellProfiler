@@ -26,8 +26,7 @@ def smooth_with_noise(image, bits):
     
     np.random.seed(0)
     r = np.random.normal(size=image.shape)
-    image_copy = image.copy()
-    image_copy[image_copy==0]= pow(2.0,-bits)
+    image_copy = np.clip(image, pow(2.0,-bits), 1)
     result = np.exp(np.log(image_copy)+ 0.5*r *
                        (-np.log2(image_copy)/bits))
     result[result>1] = 1

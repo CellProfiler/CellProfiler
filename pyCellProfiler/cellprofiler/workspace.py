@@ -155,3 +155,9 @@ class Workspace(object):
         return self.__module
     
     module = property(get_module)
+    
+    @property
+    def is_last_image_set(self):
+        return (self.measurements.image_set_number ==
+                self.image_set_list.count()-1)
+        

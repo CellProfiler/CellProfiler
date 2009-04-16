@@ -59,7 +59,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         fd = open(path,"r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -89,7 +89,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -121,7 +121,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -156,7 +156,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         file_name = cpprefs.get_output_file_name()[:-4]+"my_file.csv"
         path = os.path.join(self.output_dir,file_name)
         self.assertTrue(os.path.isfile(path),"Could not find file %s"%path)
@@ -190,7 +190,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -216,19 +216,18 @@ class TestExportToExcel(unittest.TestCase):
         image_sets = [image_set_list.get_image_set(i)
                       for i in range(2)]
         for i in range(2):
-            object_set = cpo.ObjectSet()
+            if i:
+                m.next_image_set()
             for j in range(3):
                 m.add_image_measurement("measurement_%d"%(j), "%d:%d"%(i,j))
-            workspace = cpw.Workspace(cpp.Pipeline(),
-                                      module,
-                                      image_sets[i],
-                                      object_set,
-                                      m,
-                                      image_set_list)
-            module.run(workspace)
-            if i == 0:
-                self.assertFalse(os.path.isfile(path))
-                m.next_image_set()
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_sets[i],
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -268,7 +267,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -306,7 +305,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -355,7 +354,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -411,7 +410,7 @@ class TestExportToExcel(unittest.TestCase):
                                   m,
                                   image_set_list)
         for i in range(4):
-            module.run(workspace)
+            module.post_run(workspace)
         for file_name,value_indexes in (("foo.csv",(0,3)),
                                         ("bar.csv",(1,2))):
             path = os.path.join(self.output_dir, file_name)
@@ -458,7 +457,7 @@ class TestExportToExcel(unittest.TestCase):
                                   m,
                                   image_set_list)
         for i in range(4):
-            module.run(workspace)
+            module.post_run(workspace)
         for file_name,value_indexes in (("foo.csv",(0,3)),
                                         ("bar.csv",(1,2))):
             path = os.path.join(self.output_dir, file_name)
@@ -504,7 +503,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -553,7 +552,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -597,7 +596,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -648,7 +647,7 @@ class TestExportToExcel(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        module.run(workspace)
+        module.post_run(workspace)
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)

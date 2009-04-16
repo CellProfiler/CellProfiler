@@ -127,6 +127,12 @@ class FilenameText(Text):
 
 class Integer(Text):
     """A setting that allows only integer input
+    
+    Initializer:
+    text - explanatory text for setting
+    value - default value
+    minval - minimum allowed value defaults to no minimum
+    maxval - maximum allowed value defaults to no maximum
     """
     def __init__(self,text,value=0,minval=None, maxval=None):
         super(Integer,self).__init__(text,str(value))

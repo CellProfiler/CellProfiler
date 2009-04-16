@@ -382,14 +382,21 @@ class CPModule(object):
     def run(self,workspace):
         """Run the module (abstract method)
         
-        pipeline     - instance of CellProfiler.Pipeline for this run
         workspace    - The workspace contains
+            pipeline     - instance of CellProfiler.Pipeline for this run
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
         """
-        raise(NotImplementedError("Please implement the Run method to do whatever your module does, or use the MatlabModule class for Matlab modules"));
+        pass
+    
+    def post_run(self, workspace):
+        """Do post-processing after the run completes
+        
+        workspace - the workspace at the end of the run
+        """
+        pass
 
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces

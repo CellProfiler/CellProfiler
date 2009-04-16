@@ -240,14 +240,7 @@ named, "XZ29_A01.csv".
         else:
             return self.delimiter.value
     
-    def run(self, workspace):
-        #
-        # only run on last cycle
-        #
-        if (workspace.measurements.image_set_number <
-            workspace.image_set_list.count()-1):
-            return
-        
+    def post_run(self, workspace):
         object_names = []
         #
         # Loop, collecting names of objects that get included in the same file
@@ -318,7 +311,7 @@ named, "XZ29_A01.csv".
         workspace - the workspace that has the measurements
         """
         file_name = self.make_full_filename(file_name)
-        fd = open(file_name,"w")
+        fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             m = workspace.measurements
@@ -339,7 +332,7 @@ named, "XZ29_A01.csv".
         """
         file_name = self.make_full_filename(file_name, workspace,
                                             image_set_indexes[0])
-        fd = open(file_name,"w")
+        fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             m = workspace.measurements
@@ -365,7 +358,9 @@ named, "XZ29_A01.csv".
                        if agg_measurements.has_key(feature_name)
                        else m.get_measurement(IMAGE, feature_name, index)
                        for feature_name in image_features]
-                row = [ x if np.isscalar(x) else x[0] for x in row]
+                row = ['' if x is None
+                       else x if np.isscalar(x) 
+                       else x[0] for x in row]
                 writer.writerow(row)
         finally:
             fd.close()
@@ -383,7 +378,7 @@ named, "XZ29_A01.csv".
         """
         file_name = self.make_full_filename(file_name, workspace,
                                             image_set_indexes[0])
-        fd = open(file_name,"w")
+        fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             m = workspace.measurements

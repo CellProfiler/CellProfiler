@@ -104,6 +104,53 @@ function handles = DefineGrid(handles)
 %
 % $Revision$
 
+% Variable Settings for PyCP
+% Vars 03 & 04 can be combined into
+% For numbering purposes, where is the first spot?
+% (popupmenu with the following choices; defaults to top left)
+% top left
+% top right
+% bottom left
+% bottom right
+%
+% Var07: How would you like to define the grid?
+% automatically, based on previously identified objects (-> var08 pops up)
+% manually (-> var09 appears)
+% 
+% and it would be great if all the post-var09 variables were context
+% dependant as well, which would reduce the clutter on this module and also
+% eliminate all the 'for COORDINATES + MOUSE' etc.
+%
+% display Var10 - 'What is the original image on which to mark the grid?'-
+% only if the user has selected manual; and later ask them 'What would you
+% like to call an RGB image..' (Var15) and if they enter anything other
+% than 'Do not use' ask them 'Which image do you want to use as the
+% original?'. Asking it for both purposes in Var10 is confusing as is.
+%
+% It would be great if Var11 could be displayed in the following way:
+% What is the distance from the control spot to the top left spot in the
+% grid?
+% X:[0][pixels]  *where the 0 is in an edit box that they can type the # of
+% pixels & 'pixels' is a popup with 'pixels' & 'spot units' being the two
+% choices
+% Y:[0][pixels]
+%
+% Var13, similarly:
+% What is the spacing etween columns (X) and rows (Y)?
+% X: [0] pixels
+% Y: [0] pixels  *same as above, although we don't give them a pixels vs
+% spot units choice, so pixels is just text so its clear what they're
+% entering
+%
+% Var14 could be simply;
+% Where is the center of the control spot?
+% X: []
+% Y: []
+
+
+
+
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

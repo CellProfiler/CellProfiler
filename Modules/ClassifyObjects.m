@@ -76,7 +76,7 @@ function handles = ClassifyObjects(handles)
 % measurement) names instead of 1,2,3.
 % Vars04&05 - should be context dependent and only appear if the user
 % selects those features.
-% Var07 is pretty confusing; It would be nice to have separate variables
+% Var06 & 07 is pretty confusing - It would be nice to have separate variables
 % for (1)evenly spaced (2) custom-defined and (3) above or below a single
 % threshold.  If the user selects 'evenly spaced' in Var06, boxes for them
 % to input 'Number of Bins' 'Lower Limit' and 'Upper Limit' should appear;
@@ -93,14 +93,9 @@ function handles = ClassifyObjects(handles)
 % not sure how feasible this is to implement; I think it's more intuitive
 % to enter comma separated names than to enter "number of bins,lower limit,
 % etc" so leaving it as is would be ok.  
-% Var09- when we say 'color-coded' we mean, the blue objects are one class,
-% the red objects are another..etc? I wonder if there is a better way to
-% phrase this since all the terminology in the variables refers to bins and
-% classes and sounds like you're making a histogram and then you get a
-% color coded image out at the end?  According to 'Features measured' (see
-% above in Help) this is the recorded measurement.. or at least, the name
-% of the recorded measurement so it could be a little clearer what's going
-% on.
+% Var09: change to: "Downstream in the pipeline, do you want to use the
+% image where each object is color-coded according to its class?" (Yes/no,
+% and if yes then ask what do you want to call that image?)
 
 drawnow
 
@@ -144,7 +139,7 @@ BinSpecifications = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %defaultVAR08 = Do not use
 Labels = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 
-%textVAR09 = What do you want to call the resulting color-coded image?
+%textVAR09 = What do you want to call the image where each object is color-coded according to its class?
 %defaultVAR09 = Do not use
 %infotypeVAR09 = imagegroup indep
 SaveColoredObjects = char(handles.Settings.VariableValues{CurrentModuleNum,9});

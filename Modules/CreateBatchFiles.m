@@ -62,11 +62,16 @@ function handles = CreateBatchFiles(handles)
 % $Revision$
 
 % Notes for pyCP:
-% The First setting stays the same.
+% The First setting stays the same, except that perhaps the "Use . to specify
+% default" is replaced with some GUI element that lets you choose "Use
+% default output folder" from a dropdown menu rather than typing an arbitrary period.
 %
 % The second and third settings are translations from local-to-cluster nomenclature.
-% They are notorious for tripping up users, so clarification would be useful.
-% They have 1 or 2 inputs, for default image and ouput folders, but this 
+% They are notorious for tripping up users, so clarification would be
+% useful. First thing is that we should ask whether the local and cluster
+% machines use the same pathnames (or something like that) and skip the
+% rest if the answer is Yes.
+% The questions have 1 or 2 inputs, for default image and ouput folders, but this 
 % should be more explicit.  And it's possible that more than 2 translations 
 % could be necessary (if images were on two different servers and the output was
 % on a third), so there should be no limitation on the number of translations.  

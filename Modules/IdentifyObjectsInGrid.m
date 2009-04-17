@@ -60,6 +60,31 @@ function handles = IdentifyObjectsInGrid(handles)
 %
 % $Revision$
 
+
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% (1) What did you call the grid previously defined? (GridName)
+% (2) What do you want to call the objects identified by this module?
+% (NewObjectName)
+% (3a) Would you like the objects to be defined as rectangles that fill the 
+% grid element, circles within the grid at forced locations, circles within
+% the grid at their natural locations, or objects that retain their natural
+% shape? The last two options are based on objects previously identified (Shape)
+% (3b) (Show if any of "Circle" options selected) How do you want to calculate the 
+%   diameter of each grid object in pixels? "Automatic" calculates the diameter
+%   as the average diameter of previously identified objects (Automatic or 
+%   User-specfied)
+% (3bi) (Show if "User-specified" selected) What diameter do you want to the
+%   grid objects to have? (Diameter)
+% (3c) (Show if "Natural shape", "Circle natural location", or "Circle" option 
+% with an automatically calculated diameter) What did you call the objects 
+% that you previously identified? (OldObjectName)
+% (4) What do you want to call the outlines of the identified objects? Use 
+% "Do not use" to ignore. (SaveOutlines)
+% (5a) If the attempt to create a grid fails in this cycle, would you like 
+%   to replace it with a prior successful grid? (Yes/No)
+% (5b) (Show if "Yes" to above) Which grid would you like to use? (Most
+% recent, First successful)
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

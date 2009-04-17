@@ -51,6 +51,18 @@ function handles = Relate(handles)
 %
 % $Revision$
 
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% (1) Which objects do you want as the children (i.e, sub-objects)?
+% (SubObjectName)
+% (2) Which objects do you want as the parents? (ParentName{1})
+% (3a) Do you want to find minimum distances of each child to its parent?
+% (FindParentChildDistances)
+% (3b) (Show if 'Yes' to above) What other object do you want to find 
+%   distances to? There can only be one of these objects per parent object.
+%   (ParentName{2})
+% (4) Do you want to generate per-parent means for all child measurements?
+% (FindMeanMeasurements)
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
@@ -80,7 +92,7 @@ FindParentChildDistances = char(handles.Settings.VariableValues{CurrentModuleNum
 %inputtypeVAR04 = popupmenu
 ParentName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
-%textVAR05 = Do you want to generate mean child measurements for all parents?
+%textVAR05 = Do you want to generate per-parent means for all child measurements?
 %choiceVAR05 = No
 %choiceVAR05 = Yes
 %inputtypeVAR05 = popupmenu

@@ -72,7 +72,8 @@ class MeasureTexture(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def prepare_to_set_values(self,setting_values):
-        """Adjust the number of object groups based on the number of setting_values"""
+        """Adjust the number of object groups based on the number of
+        setting_values"""
         object_group_count = len(setting_values)-1
         while len(self.object_groups) > object_group_count:
             self.remove_object_cb(object_group_count)
@@ -129,7 +130,8 @@ class MeasureTexture(cpm.CPModule):
 
     def record_measurement(self, workspace,  
                            object_name, feature_name, result):
-        """Record the result of a measurement in the workspace's measurements"""
+        """Record the result of a measurement in the workspace's
+        measurements"""
         data = fixup_scipy_ndimage_result(result)
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(TEXTURE, feature_name), 

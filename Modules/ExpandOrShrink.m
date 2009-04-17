@@ -48,9 +48,25 @@ function handles = ExpandOrShrink(handles)
 %
 % $Revision$
 
+% Variable settings for PyCP 
+% For Var05, I think the choices should be:
+% 'Shrink objects to a point'
+% 'Expand objects til touching'
+% 'Add partial dividing lines between touching objects'
+% 'Expand objects by specified number of pixels: [edit box for #]
+% 'Shrink objects by specified number of pixels: [edit box for #]
+%
+% & eliminate Var04 (change wording of var05 to something like 'How do you want to shrink or expand your objects?').  
+% In general I think it's best to let the options be
+% very specific rather than having the actual variable question be long and
+% explicative and requiring the user input several variables.
+% 
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

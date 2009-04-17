@@ -56,12 +56,7 @@ function handles = FilterByObjectMeasurement(handles)
 % (1) What do you want to call the filtered objects? (TargetName)
 % (2) Which object would you like to filter by, or if using a Ratio, what 
 %   is the numerator object? (ObjectName)
-% (3a) What category of measurement do you want to use (MeasurementCategory)
-% (3b) What feature do you want to use? (MeasurementFeature)
-% (3c) (If the answer to (3b) involves a scale) What scale was used to 
-%      calculate the feature? (SizeScale) 
-%      (If the answer to (3b) involves an image) What image was used to
-%      calculate the feature? (ImageName)
+% (3) What measurement do you want to use (MeasurementCategory/MeasurementFeature/SizeScale,ImageName)
 % (4a) What is the minimum value of the measurement? (MinValue1)
 % (4b) What is the maxmimum value of the measurement? (MaxValue1)
 % (5) What additional object do you want to receive the same labels as the

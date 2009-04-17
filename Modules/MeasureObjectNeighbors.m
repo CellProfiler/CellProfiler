@@ -79,18 +79,38 @@ function handles = MeasureObjectNeighbors(handles,varargin)
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
 % (1) What did you call the objects whose neighbors you want to measure? (ObjectName)
-% (2) Within what distance (in pixels) are objects to be considered 
-%   neighbors? Enter 0 if you want to expand objects until they contact all 
-%   neighbors. (NeighborDistance)
-% (3a) Which output images to you want to save? (Dropdown box of 
-%   NumberOfNeighbors/PercentTouching)
-% (3b) What name do you want to give the output image?
+%   [If convenient, have + buttons so the user can add more than one object
+%   type. But then you have to synch up the output image question below to each
+%   image, so perhaps this is a pain]
 %
-% (i) Options for (3): (a) Number of neighbors, (b) Percent touching
-% (ii) In order to avoid the issue of making sure the output image is
-% suitble for SaveImages/ConvertToImage, there should be a tag which
+% (2) Within what distance (in pixels) are objects to be considered 
+%   neighbors? 
+%    [Note: the user should enter an integer here, but with two special
+%    cases available (perhaps via a dropdown menu?): (a) Only count as
+%    neighbors if objects are directly touching. (b) Expand all objects
+%    until they touch others, then count neighbors as those directly
+%    touching. (NeighborDistance)]
+%
+% (3) Downstream in the pipeline, do you want to use the image colored
+% according to the number of neighbors ? (Yes/no)
+%    If yes, "What do you want to call the image colored according to the
+%    number of neighbors?"
+%
+% (4) Downstream in the pipeline, do you want to use the image colored
+% according to the percentage of each object's border that touches
+% neighbors? (Yes/no)
+%    If yes, "What do you want to call the image colored according to the
+%    percentage touching?"
+%
+% Note: In order to avoid the issue of making sure the output image is
+% suitable for SaveImages/ConvertToImage, there should be a tag which
 % identifies it as a label matrix vs. grayscale, so that other modules can
 % handle it properly.
+%
+% Also, a general display module that we don't have right now stems from
+% (3) and (4): can our ShowDataOnImage module (which currently shows
+% numerical data superimposed on an image) also have the option to colorize
+% objects based on a particular measurement?
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%

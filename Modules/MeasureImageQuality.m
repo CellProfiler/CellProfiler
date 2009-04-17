@@ -4,12 +4,12 @@ function handles = MeasureImageQuality(handles,varargin)
 % Category: Measurement
 %
 % SHORT DESCRIPTION:
-% Measures the percentage of pixels in the image that are saturated and
-% measures blur (poor focus). 
+% Measures features that indicate image quality.
 % *************************************************************************
 %
-% This module replaces the module previously known as Image Saturation and
-% Blur.
+% Measures features that indicate image quality, such as the percentage of
+% pixels in the image that are saturated and measurements of blur (poor
+% focus).
 %
 % Features measured:      Feature Number:
 % FocusScore           |         1
@@ -90,6 +90,10 @@ function handles = MeasureImageQuality(handles,varargin)
 % 
 % Suggested Threshold:
 % Orig: 0.0022854
+%
+%
+% Note: This module replaces the outdated "MeasureImageSaturationAndBlur".
+%
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

@@ -35,6 +35,24 @@ function handles = EditObjectsManually(handles)
 %
 % $Revision$
 
+% Variable Settings for PyCP
+% It seems a litte odd that it's called 'Edit Objects Manually' but we
+% refer to everything in the module as 'filter', rather than 'edit'.  I
+% think filter actually makes a little more sense, since you're not really
+% 'editing' the objects, (I would think cutting an object in half would be editing it)
+% you're removing some of the objects.  
+% I think the variables are pretty straightforward, but since this is
+% really a UI-based module (the user input comes from the window that pops
+% up, not so much from what they enter here) I had some comments on the UI:
+% 
+% The 'Objects to Keep' and 'Objects to Remove' displays are not labelled.
+% they should be.
+% Additional text should be added to the UI to instruct the user about what
+% to do:
+% "Drag objects from the 'Objects to Keep' display to the 'Objects to
+% Remove' display.  When you have selected all the objects you would like
+% to remove from this image, press continue."
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

@@ -62,6 +62,23 @@ function handles = Exclude(handles)
 %
 % $Revision$
 
+
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% (1) What did you call the object you want to filter? (ObjectName)
+% (2) Which object defines the region outside of which exclusion should 
+%   occur? (MaskRegionName)
+% (3) What do you want to call the objects that remain after exclusion?
+%   (RemainingObjectName)
+% (4) For the remaining objects, do you want to retain their original
+%   object label or renumber them consecutively? (Renumber)
+% (5) What do you want to call the outlines of the remaining objects? Type
+%   "Do not use" to ignore. (SaveOutlines)
+% (6a) Should objects partially overlapping with the exclusion region be 
+%   removed? (RemoveOverlapping)
+% (6b) (If "Yes" to above) What is the minimum percentage of the object 
+%   that should be overlapping in order to exclude it?
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

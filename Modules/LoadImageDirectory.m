@@ -88,7 +88,14 @@ drawnow
 % number of channels, etc only appeared to the user if they select 'yes'
 % for 'Do you want to check for a QCFlag' instead of being qualified by
 % 'this is only used for qcflag = YES' at the end.
-
+%
+% Mbray 2009_04_17: Variable comments
+% I think this module is two in one, a combination of LoadImages and
+% MakeProjection. The functionality which allows groups of images to be
+% created should be part of LoadImages, and the ability to aggregate images
+% should be part of MakeProjection. The one unique function it can add is 
+% the QC flag portion, which might be part of LoadImages? In any case, this
+% module should probably disappear.
 
 %textVAR01 = Enter the pathname to the folders containing images:
 %defaultVAR01 = .

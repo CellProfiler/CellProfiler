@@ -35,48 +35,33 @@ STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
 SETTINGS_PER_GROUP = 7
 class MeasureImageQuality(cpm.CPModule):
     '''SHORT DESCRIPTION:
-Measures the percentage of pixels in the image that are saturated and
-measures blur (poor focus). 
+Measures features that indicate image quality.
 *************************************************************************
 
-This module replaces the module previously known as Image Saturation and
-Blur.
+This module measures features that indicate image quality. This includes the
+percentage of pixels in the image that are saturated. Measurements of blur 
+(poor focus) are also calculated.
 
 Features measured:   
 FocusScore           a measure of the intensity variance across image
 LocalFocusScore      a measure of the intensity variance between image parts
 PercentSaturation    percent of pixels with a value of 1
-PercentMaximal       percent of pixels at the maximum pixel value
+PercentMaximal       percent of pixels at the maximum intensity value
 Threshold            calculated threshold for image
 
-Lastly, the following measurements are placed in the Experiment category: 
-MeanThreshold 
-MedianThreshold
-StdevThreshold
+More about Saturation and PercentMaximal: Saturation means that 
+the pixel's intensity value is equal to the maximum possible intensity value 
+for that image type). Sometimes images have undergone some kind of transform-
+ation such that no pixels ever reach the maximum possible intensity value of 
+the image type. For this reason, the percentage of pixels at that *individual*
+image's maximum intensity value is also calculated. Given noise in images, 
+this should typically be a low percentage but if the images were saturated
+during imaging, a higher than usual PercentMaximal will be observed.
 
-Please note that these Experiment measurements are calculated once the
-pipeline has run through all of the cycles consecutively. It will not
-produce a result for a batch run, since the cycles are processed
-independently from each other.
-
-The percentage of pixels that are saturated is calculated and stored as a
-measurement in the output file. 'Saturated' means that the pixel's
-intensity value is equal to the maximum possible intensity value for that
-image type.
-
-Because the saturated pixels may not reach to the maximum possible
-intensity value of the image type for some reasons such as CCDs saturate
-before 255 in graylevel, we also calculate the percentage of the maximal
-intensity value.  Even though we may capture the maximal intensity
-percentage of 'dark' images, the maximal percentage is mostly very minimal or
-ignorable. So, PercentMaximal is another good indicator for saturation
-detection.
-
-The module can also measure blur by calculating a focus score (higher =
-better focus). This calculation takes much longer than the saturation
-checking, so it is optional. We are calculating the focus using the
-normalized variance. We used this algorithm because it was ranked best in
-this paper:
+More about Blur: The module can also measure blur by calculating a focus score
+(higher = better focus). This calculation is slow, so it is optional. The score 
+is calculated using the normalized variance. We used this algorithm because it
+was ranked best in this paper:
 Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
    Selecting the optimals focus algorithm." Microscopy Research and
    Technique 65:139-149 (2004)
@@ -89,7 +74,7 @@ FocusScore{ImageNumber} = ...
    sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);
 
 The above score is to measure a relative score given a focus setting of 
-a certain microscope. Using this, one can calibrrate the microscope's
+a certain microscope. Using this, one can calibrate the microscope's
 focus setting. However it doesn't necessarily tell you how well an image
 was focused when taken. That means these scores obtained from many different
 images probably taken in different situations and with different cell
@@ -155,14 +140,14 @@ fraction in the question, "What fraction of the image is composed of objects?"
         class ImageGroup(object):
             def __init__(self, image_groups):
                 self.__key = uuid.uuid4() 
-                self.__image_name = cps.ImageNameSubscriber("What grayscale image would you like to use to measure image quality?","None")
-                self.__check_blur = cps.Binary("Would you like to check for blur on this image?",
+                self.__image_name = cps.ImageNameSubscriber("What did you call the grayscale images whose quality you want to measure?","None")
+                self.__check_blur = cps.Binary("Would you like to check for blur?",
                                                True)
-                self.__window_size = cps.Integer("The local focus score is measured within an NxN pixel window applied to the image. What value of N would you like to use? A suggested value is twice the average object diameter.",
+                self.__window_size = cps.Integer("The local focus score is measured within an NxN pixel window applied to the image. What value of N would you like to use? A suggested value is twice the typical object diameter.",
                                                  20, minval =1)
-                self.__check_saturation = cps.Binary("Would you like to check for saturation on this image?",
+                self.__check_saturation = cps.Binary("Would you like to check for saturation?",
                                                      True)
-                self.__calculate_threshold = cps.Binary("Would you like to calculate a suggested threshold for this image?",
+                self.__calculate_threshold = cps.Binary("Would you like to calculate a suggested threshold?",
                                                         True)
                 self.__threshold_method = cps.Choice("What thresholding method would you like to use?",
                                                      cpthresh.TM_GLOBAL_METHODS,

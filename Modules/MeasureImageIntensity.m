@@ -52,17 +52,26 @@ function handles = MeasureImageIntensity(handles,varargin)
 %
 % $Revision$
 
-% MBray 2009_03_20: Comments on variables for pyCP upgrade
+% MBray 2009_03_20 (and Anne 4-17-09): Comments on variables for pyCP upgrade
 %
-% Recommended variable order (setting, followed by current variable in MATLAB CP)
+% Recommended variable order
 % This module should be able to measure the intensity of objects previously
 % identified. So the settings should be:
-% (1) What did you call the images you want to measure from? (ImageName)
-% (2a) What did you call the objects that you want to measure from? Select "Do not use" to ignore. 
-% (2b) What is the lower and upper intensity threshold with which to ignore pixels (LowThreshold,HighThreshold)
-% (3) For an object above the upper threshold, how many pixels around the object should also be excluded? (ExpansionDistance)
+% (1) What did you call the images whose intensity you want to measure?
+%      Have a + button to add additional images
 %
-% (i) (2b) is shown if (2a) if the user selects "Do not use"
+% (2) Do you want to measure intensity only from areas of the image that
+% contain objects you've identified? Note: to measure the intensity of
+% *each* individual object, use the Measure Object Intensity module.
+%     (2a) If yes, ask for an object name, and possibly have + buttons to
+%     add additional object names
+%
+% We should get rid of the options "Ignore pixels above or below an intensity
+% threshold" and rely on the person using the ApplyThreshold module. We can
+% also eliminate the "Exclude pixels within this many pixels of an excluded
+% bright object" option because the person can use ExpandOrShrink (and this
+% was for one particular project years ago and is unlikely ever used).
+
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -72,7 +81,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = What did you call the images you want to process?
+%textVAR01 = What did you call the images whose intensity you want to measure?
 %infotypeVAR01 = imagegroup
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR01 = popupmenu

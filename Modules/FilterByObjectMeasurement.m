@@ -72,8 +72,13 @@ function handles = FilterByObjectMeasurement(handles)
 % (i) The Measurements for the filtered objects should be inherited from
 % the original objects, otherwise the user must add the same modules again 
 % to obtain  measurements which already exist.
-% (ii) The Measurement category/feature/image/scale settings in (3a,b,c) 
-% should only be shown if the measurement hierarchy requires it.
+% (ii) Setting (3): Ideally, the Measurement category/feature/image/scale 
+% settings should be drop-downs that fill in the appropriate
+% category/feature/image/scale names based on (a) the hierarchy specific
+% to the measurement type (i.e, features unique to Intensity, AreaShape,
+% etc) and (b) whether a prior Measurement module actually took the 
+% measurements (i.e, don't show all possible features for a measurement, 
+% only those for which we actually have values).
 % (iii) Buttons are needed after setting (4) to let the user add/subtract 
 % additional Measurements to measure against. The filtered objects should 
 % be those that satisfy all constraints simultaneously.

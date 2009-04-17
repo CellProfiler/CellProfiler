@@ -67,14 +67,14 @@ function handles = ClassifyObjectsByTwoMeasurements(handles)
 %   Classification histogram)
 % (7b) What do you want to call this panel? (SaveColoredObjects)
 %
-% (i) Ideally, the Measurement category/feature/image/scale settings in
-% (2,3) should be drop-downs that fill in the appropriate
-% category/feature/image/scale names based on (1) the hierarchy specific
+% (i) Setting (2,3): Ideally, the Measurement category/feature/image/scale 
+% settings should be drop-downs that fill in the appropriate
+% category/feature/image/scale names based on (a) the hierarchy specific
 % to the measurement type (i.e, features unique to Intensity, AreaShape,
-% etc) and (2) whether a prior Measurement module actually took the 
+% etc) and (b) whether a prior Measurement module actually took the 
 % measurements (i.e, don't show all possible features for a measurement, 
 % only those for which we actually have values)
-% (ii) Setting (6) should have defaults of "LowLow", "LowHigh", "HighLow",
+% (ii) Setting (6): Should have defaults of "LowLow", "LowHigh", "HighLow",
 % and "HighHigh"
 % (iii) The Classification histogram is currently a set of four bars, one 
 % for each class. Would this be better served by a 3D bar chart, the 1st

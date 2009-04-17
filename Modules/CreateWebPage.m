@@ -67,6 +67,36 @@ function handles = CreateWebPage(handles)
 %
 % $Revision$
 
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% (1) What did you call the full-size images that you want to include on the
+% webpage? (OrigImage)
+% (2) What did you call the thumbnail images you want to use to link to the 
+% full-size images? Select "Do not use" to ignore. (ThumbImage)
+% (3) Do you want to create the webpage (HTML file) before or after
+% processing all images? (CreateBA)
+% (4) What do you want to call the resulting webpage file? The '.html' 
+%   file extension will be added automatically. (FileName)
+% (5) Will you have the webpage HTML file in the same folder or one level
+% above the images? (DirectoryOption)
+% (6) What is the webpage title, which will be displayed at the top of the 
+%   browser window? (PageTitle)
+% (7) What do you want the webpage background color to be? For custom 
+% colors, provide the html color code (e.g. #00FF00). (BGColor)
+% (8) How many columns of images do you want? (ThumbCols)
+% (9) What is the table border width, in pixels? (TableBorderWidth)
+% (10) What is the table border color? For custom colors, provide the html 
+%   color code (e.g. #00FF00) (TableBorderColor)
+% (11) What is the spacing between images, in pixels? (ThumbSpacing)
+% (12) What is the image border width, in pixels? (ThumbBorderWidth)
+% (13) Do you want to open a new browser window when clicking on a 
+%   thumbnail? (CreateNewWindow)
+% (14) If you want the webpage to have a link to a zipped file which 
+%   contains all of the full-size images, what is the filename. The '.zip' 
+%   file extension will be added automatically. (ZipFileName)
+%
+% Setting (4): The .htm vs. .html distinction is probably no longer
+% neccesary. Metadata tokens should be permitted here as well.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

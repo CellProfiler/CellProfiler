@@ -39,6 +39,27 @@ function handles = IdentifyPrimManual(handles)
 %
 % $Revision$
 
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% (1) Which images do you want to use for manual object identification?
+% (ImageName)
+% (2) What do you want to call the objects identified by this module?
+% (ObjectName)
+% (3) What do you want to call the outlines of the identified objects? Type
+% "Do not use" to ignore. (SaveOutlines)
+%
+% (i) Since this is an interactive module, the user should be able to do the
+% following:
+% (i) Zoom in/out and pan around the image
+% (ii) Add points with the mouse and undo point selection (either the most
+% recent point or the last N points (perhaps with a keyboard shortcut)
+% (iii) A key or mouse-click combo to end the selection for the current
+% object
+% (iv) A key or mouse-click combo to end object selection for the current
+% image
+% (ii) The user-specified outline should be refined so that the pixelated
+% outline is continguous. This needs to be done for SaveOutlines anyway,
+% but it should be the default
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

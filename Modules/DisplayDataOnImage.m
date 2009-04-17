@@ -31,6 +31,25 @@ function handles = DisplayDataOnImage(handles)
 %
 % $Revision$
 
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+%
+% (1) Which object would you like to use for the data, or if using a Ratio, what is the numerator object?
+% (2) Which measurements would you like to use?
+%   (Category/FeatureNbr/ImageName/SizeScale)
+% (3) Which image do you want to display the data on? (DisplayImage)
+% (4) What color do you want the text displayed in?
+% (5) What do you want to call the image with data superimposed? (DataImage)
+% (6) At what DPI resolution do you want the generated image captured? (DPIToSave)
+% (7) What elements from the figure do you want to save? (SavedImageContents)
+%
+% Setting (2): Ideally, the Measurement category/feature/image/scale settings in
+% (3) should be drop-downs that fill in the appropriate
+% category/feature/image/scale names based on (a) the hierarchy specific
+% to the measurement type (i.e, features unique to Intensity, AreaShape,
+% etc) and (b) whether a prior Measurement module actually took the 
+% measurements (i.e, don't show all possible features for a measurement, 
+% only those for which we actually have values).
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

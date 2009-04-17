@@ -138,6 +138,31 @@ function handles = ExportToDatabase(handles)
 %
 % $Revision$
 
+% MBray 2009_04_17: Comments on variables for pyCP upgrade
+% (1a) What type of database do you want to use? (DatabaseType)
+% (1b) (Shown if "MySQL" is selected above) What is the name of the database to use?
+% (2) What prefix do you want to name the per-image and per-object tables 
+% in the database? Type "Do not use" to ignore. Metadata token may also be 
+% used. An underscore will be added to the end of the prefix automatically.
+% (3) What prefix should be used to name the SQL files? (FilePrefix)
+% (4) What directory do you want the SQL files to be saved? Type period
+% (.) to use the default output folder. (DataPath)
+% (5) Which per-image statistics do you want to calculate?  Select "Do not
+% use" to omit. (StatisticsCalculated)
+% (6) Which objects do you want to export? (ObjectsToBeExported)
+% (7) Do you want to create a CellProfiler Analyst properties file?
+% (WriteProperties)
+%
+% (i) Setting (2): The user should be able to use metadata tokens as well
+% (ii) Seting (4): Metadata tokens should be permitted here in order to 
+% create  subdirectories. Subdirecrtories should be created automatically 
+% if needed.
+% (iii) Setting (5): The selections should be Mean, Median and Standard deviation.
+% It should start with one popup, with a button to add/subtract more
+% statistics popups, with a max of three (for all the stats)
+% (iv) Setting (6): A button should be added that lets the user add/subtract 
+% objects
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
@@ -190,7 +215,7 @@ FilePrefix = CPreplacemetadata(handles,FilePrefix);
 %defaultVAR05 = .
 DataPath = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%textVAR06 = Which per-image statistics do you want to be calculated?  Select "Do not use" to omit.
+%textVAR06 = Which per-image statistics do you want to be calculate?  Select "Do not use" to omit.
 %choiceVAR06 = Mean
 %choiceVAR06 = Standard deviation
 %choiceVAR06 = Median

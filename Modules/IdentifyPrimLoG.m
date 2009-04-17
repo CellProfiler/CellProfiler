@@ -22,6 +22,8 @@ function handles = IdentifyPrimLoG(handles)
 % the center of the object; the IdentifySecondary module can be used
 % to fill out the object based on this center point.
 %
+% SETTINGS:
+%
 % The radius parameter should be set to the approximate radius of the
 % objects of interest.  The algorithm is not very sensitive to this
 % parameter.
@@ -37,6 +39,8 @@ function handles = IdentifyPrimLoG(handles)
 % setting as a starting point for manual threshold input adjustment.  
 % If the thresold is too high, objects will be lost; 
 % if it is too low, spurious objects will be found.
+%
+% ALGORITHM DETAILS:
 %
 % The module works by convolving the image with the Laplacian of
 % Gaussian (LoG) kernel.  This is equivalent to convolving with the
@@ -54,6 +58,41 @@ function handles = IdentifyPrimLoG(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Notes for PyCP
+%
+% FROM CP ToDo:
+% Anne 2008_01_30: Merge IdentifyPrimaryLoG into the regular IdentifyPrimAutomatic module. 
+% In particular, be sure that the help describes under what conditions the different options 
+% are useful. Think carefully about how to add the variable that is LoG-specific to the module.
+%
+% Anne 2008_05_12: Describe what the LoG is doing - we think that we are looking for 
+% minima (or maxima) of the LoG which makes it a maxima-minima finder of the original image, 
+% whereas many people look for zero crossings of the LoG which would be using it as an edge 
+% detector. Is that right?
+%
+% David 2009_04_17:  As the above older comments say, this module should be integrated into
+% IDPrimAuto.  However, this ID module is different than other primary segmentation modules
+% in that it only finds the center pixel of objects and must utilize a subsequent IDSecondary 
+% after to grow objects.  So we either:
+% (1) Treat LoG as a special thresholding method that only ouputs single pixel objects
+% or
+% (2) Treat LoG as a declumping method.  In this case, another thresholding method would define 
+% foreground/background, and LoG would find single pixels within the foreground.
+% 
+% In either case, we would need to decide whether we automatically apply a watershed/propagation
+% after the initial single-pixel finding method.  I prefer (2) above and would opt for
+% automatically propagating the single-pixels within the foreground objects, since that is almost 
+% always done anyway, and would save the step of adding an IDSecondary.
+%
+% Settings:
+% The first two settings map obviously.
+% The diameter parameter is only single, so that if LoG is chosen, one of the diameter boxes 
+% should gray-out.
+% The threshold parameter is very sensitive, and the user was blind to what this should be at first,
+% so the 'Automatic' threshold was added recently to use Otsu to guess.  This functionality would be
+% equivalent to the 'Automatic' setting in the existing declumping settings.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

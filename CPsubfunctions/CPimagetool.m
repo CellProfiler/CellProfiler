@@ -6,6 +6,9 @@ function CPimagetool(varargin)
 % help is contained in a file called ImageToolWindow in the image tools
 % folder.
 
+% Notes for pyCP: 
+% See the comments in ImageToolWindow
+
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
 %

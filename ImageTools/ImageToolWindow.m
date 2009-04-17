@@ -64,6 +64,25 @@ function ImageToolWindow(handles)
 
 % $Revision$
 
+% Notes for pyCP:
+% David 2009_04_17: All of these fnctions (as with all ImageTools)
+% should be preferable moved to a toolbar that all images automatically display.
+%
+% SETTINGS:
+% Open in a New Window: Only useful for multiple subplots and its toolbar
+%   button should be grayed out if the module only has a single subplot displayed.
+% Show Intensity Histogram: Display a new window as done currently
+% Measure Length: In Matlab, imdistline has replaced this functionality.
+%   Note that in Matlab, imtool has the functionality of Measure Length 
+%   as well as the ShowOrHidePixelData Tool.  I liked the functionality of 
+%   the old pixval since pointing gave you the coordinates and click-hold let
+%   you get distance information.
+% Change Colormap: Should be a drop-down menu in toolbar
+% Ssve To Workspace: Not sure this is relevant in python?  Useful in debug mode?
+% Save to Hard Drive: Similar functionality to now would be fine (opens a GUI
+%   with a number of format settings)
+% No Cancel button would be necessary if we put these functions into a toolbar.
+
 % This function itself is simply a menu item in the CellProfiler Image Tools
 % menu which informs the user that more tools can be accessed by clicking
 % on an individual image within a figure window. Its help is accessible via

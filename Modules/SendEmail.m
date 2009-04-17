@@ -37,6 +37,26 @@ function handles = SendEmail(handles)
 %
 % $Revision$
 
+% Variable settings for PyCP
+% I don't really understand why there is a 'to' and a 'from' for the email
+% addresses, don't you always want to send the updates to yourself? Though
+% I suppose you could also send them to another colleague as well.  Also..
+% isn't the incoming and outgoing mail server different?? Maybe this
+% confusion is all just my lack of understanding the magic of email, not
+% the variables actually being confusing.
+
+% Vars 04 & 05 could be:
+% Send an email after:
+% choice1: The first cycle is completed
+% choice2: The last cycle is completed
+% choice3: Send an email after a cycle I specify
+% choice4: Send an email every Nth cycle
+% as long as multiple selections are poss. (since someone could
+% thoertically want some combination of these?)
+% If they pick choice 3 and/or 4, then they would get text boxes asking for the cycle #
+% Ideally instead of an arbitrary # of text boxes, the user could just
+% click on a box that says 'Specify another cycle number'
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

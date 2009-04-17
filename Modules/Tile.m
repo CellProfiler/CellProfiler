@@ -46,6 +46,39 @@ function handles = Tile(handles)
 %
 % $Revision$
 
+% For Vars01 & 02, it is unclear if we are allowing them to tile images
+% that have been processed or not (since we ask them what they were called
+% when they were originally loaded). Since we throw this error:
+%
+% error(['Image processing was canceled in the ', ModuleName, ' module because 
+% it must be run using images straight from a Load Images module (i.e. the images 
+% cannot have been altered by other image processing modules). This is because this 
+% module needs all of the images before tiling them. One solution is to process the
+% entire batch of images using the image 
+% analysis modules preceding this module and save the resulting images to the hard drive, 
+% then start a new stage of processing from this module onward.'])  
+%
+% That makes me think that there is no reason that Vars01 & 02 should be
+% different, and we should make it clearer that this is how the module
+% works.  Unless we do something magic with image grouping in PyCP.
+
+% I can't think of a much better way to get the user info than vars04-09
+% except perhaps a question like, 'My first image should be placed in
+% the_______ of the tiled image' and the popup in the blank has the choices
+% top left
+% bottom left
+% top right
+% bottome right
+%.. with top left as the default since I think it's rare this wouldn't be
+%the case.
+% Var06 is a little confusing in the wording ('first two images') I think
+% it might be better to say something like 'Would you like to tile in rows or
+% columns?'; it also matches the phrasing of 'Would you like to tile in
+% meander mode?' so it's clear this is how the images are being laid out in
+% the final tiled image.
+
+
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

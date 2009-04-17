@@ -59,6 +59,49 @@ function handles = ClassifyObjects(handles)
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
+% Variable settings for PyCP
+% Classifying based on a ratio is a little confusing as it stands.  In the
+% above 'TODO: IS THE FOLLOWING STILL...?', I *think* it is referring to
+% the feature number assigned to a ratio.  But the author of the comment
+% seems unsure if this is true, and it's a little unclear what it's
+% referring to.  Additionally in Var01, entering the numerator object could
+% be ambiguous- I'm not sure how this case is currently handled (maybe by
+% the confusing feature number?)
+% Var02- feature type as a popup menu, with only the valid measurements
+% available (those you have actually measured) seems fine.
+% Var03 - feature name in a popup would be best; again only ones you've
+% actually measured.  I think this would help in the disambiguation of the
+% ratio issue if the user had to choose between the actual ratio (or
+% measurement) names instead of 1,2,3.
+% Vars04&05 - should be context dependent and only appear if the user
+% selects those features.
+% Var07 is pretty confusing; It would be nice to have separate variables
+% for (1)evenly spaced (2) custom-defined and (3) above or below a single
+% threshold.  If the user selects 'evenly spaced' in Var06, boxes for them
+% to input 'Number of Bins' 'Lower Limit' and 'Upper Limit' should appear;
+% I think the way it is now all in one box is pretty confusing.  I don't
+% know if its possible to have this work the same way for 'Custom', since
+% the number of middle bins is user-defined, but perhaps in the gui the
+% user could click a button to 'Add another custom bin'.  For 'single
+% threshold', just one box should appear for them to input 'Single
+% Threshold'.  
+% Var08 - for naming each class, it seems like now we don't do any checking
+% up front if the user has even entered the correct number of names.  What
+% would be great is if their defined limits or custom classes worked out to
+% x bins, x boxes would show up for them to type in the class names.  I"m
+% not sure how feasible this is to implement; I think it's more intuitive
+% to enter comma separated names than to enter "number of bins,lower limit,
+% etc" so leaving it as is would be ok.  
+% Var09- when we say 'color-coded' we mean, the blue objects are one class,
+% the red objects are another..etc? I wonder if there is a better way to
+% phrase this since all the terminology in the variables refers to bins and
+% classes and sounds like you're making a histogram and then you get a
+% color coded image out at the end?  According to 'Features measured' (see
+% above in Help) this is the recorded measurement.. or at least, the name
+% of the recorded measurement so it could be a little clearer what's going
+% on.
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

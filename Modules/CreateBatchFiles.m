@@ -61,6 +61,27 @@ function handles = CreateBatchFiles(handles)
 %
 % $Revision$
 
+% Notes for pyCP:
+% The First setting stays the same.
+%
+% The second and third settings are translations from local-to-cluster nomenclature.
+% They are notorious for tripping up users, so clarification would be useful.
+% They have 1 or 2 inputs, for default image and ouput folders, but this 
+% should be more explicit.  And it's possible that more than 2 translations 
+% could be necessary (if images were on two different servers and the output was
+% on a third), so there should be no limitation on the number of translations.  
+% It would be nice if initially two boxes were presented
+% on the left and right that were labeled LOCAL ROOT PATH and CLUSTER ROOT PATH.  A button 
+% labeled "Do you want to add another set of paths?", if clicked, would display another pair 
+% of text boxes below the first set, to be filled in.  
+% Further, it would be good (if possible) to show an example fully-constructed 
+% path as the user types in the root path. 
+% Maybe pie-in-the-sky, but a test mode would be really cool, 
+% to make a simple (webserver?) call to see if the cluster's path existed, 
+% which would head off a lot of errors.  We should also prevent PC users from 
+% entering UNC paths ('\\...') and stick to mapped drives (or pick one), since 
+% we don't want to map all possible network naming schemes. 
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%

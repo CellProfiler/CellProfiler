@@ -445,6 +445,19 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 
 %%% At the end of the image set, calculate the mean, median, and stdev
 %%% for the entire image set.
+
+% If creating batch files, warn that this module only works if the jobs are
+% submitted as one batch
+if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles') && ~isfield(handles.Current, 'BatchInfo'),
+    msg = ['You are creating batch file(s) for a cluster run. Please note that ',mfilename,...
+        ' can only work on the cluster if the jobs are submitted as a single batch, since measurements cannot be compiled from multiple batches.'];
+    if isfield(handles.Current, 'BatchInfo'),
+        warning(msg);   % If a batch run, print to text (no dialogs allowed)
+    else
+        CPwarndlg(msg); % If on local machine, create dialog box with the warning
+    end
+end
+
 if SetBeingAnalyzed == TotalNumberOfImageSets
         for ImageNumber = 1:length(NameImageToThresh),
             Threshold = handles.Measurements.Image.(CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize)));

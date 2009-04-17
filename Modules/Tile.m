@@ -46,6 +46,7 @@ function handles = Tile(handles)
 %
 % $Revision$
 
+% Comments for PyCP:
 % For Vars01 & 02, it is unclear if we are allowing them to tile images
 % that have been processed or not (since we ask them what they were called
 % when they were originally loaded). Since we throw this error:
@@ -61,6 +62,13 @@ function handles = Tile(handles)
 % That makes me think that there is no reason that Vars01 & 02 should be
 % different, and we should make it clearer that this is how the module
 % works.  Unless we do something magic with image grouping in PyCP.
+%
+% Anne 4-17-09: This module was originally designed to work like
+% CorrectIllumCalculate, when it goes through the entire image set and does
+% something during the first cycle. So, yes, this whole module's
+% functionality should be changed so that you CAN do other image processing
+% modules prior to this one in a pipeline, and every cycle just adds an
+% image to the big tiled image.
 
 % I can't think of a much better way to get the user info than vars04-09
 % except perhaps a question like, 'My first image should be placed in
@@ -72,11 +80,19 @@ function handles = Tile(handles)
 %.. with top left as the default since I think it's rare this wouldn't be
 %the case.
 % Var06 is a little confusing in the wording ('first two images') I think
-% it might be better to say something like 'Would you like to tile in rows or
-% columns?'; it also matches the phrasing of 'Would you like to tile in
+% it might be better to say something like 'Would you like to the tiling to begin with a row or
+% a column?'; it also matches the phrasing of 'Would you like to tile in
 % meander mode?' so it's clear this is how the images are being laid out in
 % the final tiled image.
-
+%
+% Anne 4-17-09: If we are going to make this module function on a per-cycle
+% basis like most modules, then we could readily remove the last setting
+% "resize" because they can put a resize module in. We should add to the
+% help for this module that if you are running into memory issues, try
+% using a Resize module prior to Tile.
+%
+% See also the PyCP wiki notes about the PlaceAdjacent module perhaps being
+% merged with this module.
 
 
 %%%%%%%%%%%%%%%%%

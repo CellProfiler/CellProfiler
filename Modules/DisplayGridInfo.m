@@ -28,9 +28,17 @@ function handles = DisplayGridInfo(handles)
 %
 % $Revision$
 
+% Variable Settings for PyCP
+% It seems a little unneccesary that Vars03,04 &05 all be displayed if the
+% user only has one item of text to display (which seems the default case),
+% so it would be great if only Var03 displayed, but the user could click
+% 'Add text to display in blue' and 'Add text to display in green'.
+% Otherwise this seems a fairly straightforward module.
+
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
 %%%%%%%%%%%%%%%%%
+
 drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);

@@ -12,7 +12,7 @@ import scipy.ndimage as scind
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result
-from cellprofiler.cpmath.haralick import haralick
+from cellprofiler.cpmath.haralick import Haralick
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -122,9 +122,9 @@ class MeasureTexture(cpm.CPModule):
         objects = workspace.get_objects(object_name)
         image = objects.get_parent_image()
         print "Computing haralick..."
-        for name, value in zip(F_HARALICK, haralick(image.pixel_data,
+        for name, value in zip(F_HARALICK, Haralick(image.pixel_data,
                                                     objects.segmented,
-                                                    self.scale.value)):
+                                                    self.scale.value).all()):
             self.record_measurement(workspace, object_name, name, value)
         print "done"
 

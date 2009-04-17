@@ -7,7 +7,9 @@ function handles = MeasureImageGranularity(handles,varargin)
 % This module measures the image granularity as described by Ilya Ravkin.
 % *************************************************************************
 %
-% Image granularity can be useful to measure particular assays.
+% Image granularity can be useful to measure particular assays, in
+% particular the "Transfluor" assay which depends on cellular
+% texture/smoothness.
 %
 % Features measured:      Feature Number:
 % GS1                 |        1
@@ -27,12 +29,46 @@ function handles = MeasureImageGranularity(handles,varargin)
 % GS15                |        15
 % GS16                |        16
 %
+% Settings for this module:
 %
-% Subsample Size:
-% Subsampling of the image for background removal, given as fraction
+% Subsampling size: Only a subsample of the image is processed, to speed up
+% the calculation. Increasing the fraction will increase the accuracy but
+% will require more processing time. Images are typically of higher
+% resolution than is required for this step, so the default is to subsample
+% 25% of the image. For low-resolution images, increase the subsampling
+% fraction and for high-resolution images, decrease the subsampling
+% fraction. More detail: The subsampling fraction is to compensate for the
+% usually oversampled images; at least they are oversampled in both
+% Transfluor library image sets. See
+% http://www.ravkin.net/presentations/Statistical%20properties%20of%20algor
+% ith ms%20for%20analysis%20of%20cell%20images.pdf slides 27-31, 49-50.
+% Subsampling by 1/4 reduces computation time by (1/4)^3 because the size
+% of the image is (1/4)^2 of original and length of granular spectrum can
+% be 1/4 of original. Moreover, the results were actually a little better
+% with subsampling, which is probably because with subsampling the
+% individual granular spectrum components can be used as features, whereas
+% without subsampling a feature should be a sum of several adjacent
+% granular spectrum components. The recommendation on the numerical value
+% can't be given in advance; an analysis like in the above reference is
+% required before running the whole set.
 %
-% Structuring Element Size:
-% Radius of structuring element (in subsampled image)
+% Subsample fraction: Background removal is just to remove low frequency in
+% the image. Any method can be used. We subtract a highly open image. To do
+% it fast we subsample the image first. The subsampling fraction is usually
+% [0.125 - 0.25].  This is highly empirical. The significance of background
+% removal in the context of granulometry is only in that image volume at
+% certain thickness is normalized by total volume, which depends on how the
+% background was removed.
+%
+% Structuring element size: Radius of the structuring element (in
+% subsampled image). Radius of structuring element after subsampling is
+% usually [6-16]. It is better to think of this radius in the original
+% image scale and then to multiply by subsampling fraction. In the original
+% image scale it should be [30-60]. This is highly empirical.
+%
+% Granular Spectrum Length (default = 16): Needs a trial run to see which
+% Granular Spectrum Length yields informative measurements.
+%
 %
 % References for Granular Spectrum:
 % J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
@@ -68,8 +104,16 @@ function handles = MeasureImageGranularity(handles,varargin)
 % Recommended variable order: Unchanged from current variables/settings in
 % MATLAB CP)
 %
-% The help on this section needs to be greatly clarified as to what the
-% various features mean.
+% Anne recommends changing fractions to percentages, if that seems
+% reasonable to you.
+%
+% Sounds also like we should extract out the background removal step from
+% this module, since this can be done in a more controlled way with
+% CorrectIllumCalculate. But I'm not sure the impact that would have on the
+% algorithm. David can help test any alterations we make with his SBS test
+% images, where the Z' factor has been calculated using this method of
+% measuring granularity.  The help for this module is from Ilya Ravkin and
+% could use more explanation.
 
 %%%%%%%%%%%%%%%%%
 %%% VARIABLES %%%
@@ -79,7 +123,7 @@ drawnow
 
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
-%textVAR01 = Which image would you like to measure?
+%textVAR01 = What did you call the image whose granularity you would like to measure?
 %infotypeVAR01 = imagegroup
 %inputtypeVAR01 = popupmenu
 ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});

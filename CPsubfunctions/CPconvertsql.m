@@ -13,7 +13,7 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 % $Revision$
 
 FeaturesNotToBeExported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
-ObjectFeaturesNotToBeAveraged = {'Mean_'};
+ObjectFeaturesNotToBeAveraged = {}; %{'Mean_'};
 
 wantMeanCalculated = any(strcmpi(StatisticsCalculated,'mean'));
 wantStdDevCalculated = any(strcmpi(StatisticsCalculated,'standard deviation'));
@@ -63,7 +63,7 @@ for ObjectCell = ObjectsToBeExported,
             per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
         else
             per_object_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)));
-            ObjectsToOmitFromPerImageTable(end+1) = any(strmatch(ObjectFeaturesNotToBeAveraged,FeatureName));
+            ObjectsToOmitFromPerImageTable(end+1) = any(strmatch(FeatureName,ObjectFeaturesNotToBeAveraged));
         end
     end %end of loop over feature names
 end %end of loop over object names
@@ -201,7 +201,7 @@ if (FirstSet == 1)
         %add columns for mean, median and stddev for per_object_names
         if wantMeanCalculated
             for j = per_object_names,
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,j{1}))
+                if ~any(strmatch(j{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
                 end
@@ -210,7 +210,7 @@ if (FirstSet == 1)
         
         if wantMedianCalculated
             for k = per_object_names,
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,k{1}))
+                if ~any(strmatch(k{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
                 end
@@ -219,7 +219,7 @@ if (FirstSet == 1)
 
         if wantStdDevCalculated
             for l = per_object_names,
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                if ~any(strmatch(l{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
                 end
@@ -263,7 +263,7 @@ if (FirstSet == 1)
         end
         if wantMeanCalculated
             for l = per_object_names
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,l{1}))
+                if ~any(strmatch(l{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fcol, '%s', ['col', num2str(p)]);
                     fprintf(fcol, ',%s\n', ['Mean_', l{1}]);
@@ -272,7 +272,7 @@ if (FirstSet == 1)
         end
         if wantMedianCalculated
             for m = per_object_names
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,m{1}))
+                if ~any(strmatch(m{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fcol, '%s', ['col', num2str(p)]);
                     fprintf(fcol, ',%s\n', ['Median_', m{1}]);
@@ -281,7 +281,7 @@ if (FirstSet == 1)
         end
         if wantStdDevCalculated
                 for n = per_object_names
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged,n{1}))
+                if ~any(strmatch(n{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fcol, '%s', ['col', num2str(p)]);
                     fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
@@ -476,7 +476,7 @@ for img_idx = FirstSet:LastSet
                 
                 %%% Add the values into the per-image output and shift
                 %%% right
-                if ~any(strmatch(ObjectFeaturesNotToBeAveraged, FeatureName)),
+                if ~any(strmatch(FeatureName,ObjectFeaturesNotToBeAveraged)),
                     perobjectvals_aggregate(1:numobj, (objectbasemeancol-2+1)) = vals;
                     perobjectvals_aggregate_isobj(1:numobj, (objectbasemeancol-2+1)) = true;
                     objectbasemeancol = objectbasemeancol + 1;

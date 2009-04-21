@@ -18,6 +18,7 @@ from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
 from exporttodatabase import ExportToDatabase
 from exporttoexcel import ExportToExcel
+from filterbyobjectmeasurement import FilterByObjectMeasurement
 from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
@@ -40,6 +41,7 @@ def get_module_classes():
             Crop,
             ExportToDatabase,
             ExportToExcel,
+            FilterByObjectMeasurement,
             GrayToColor,
             IdentifyPrimAutomatic,
             IdentifySecondary,
@@ -65,10 +67,12 @@ def get_module_substitutions():
             "Crop": Crop,
             "ExportToDatabase": ExportToDatabase,
             "ExportToExcel": ExportToExcel,
+            "FilterByObjectMeasurement": FilterByObjectMeasurement,
             "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
+            "KeepLargestObject":FilterByObjectMeasurement,
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,
             "MaskImage": MaskImage,

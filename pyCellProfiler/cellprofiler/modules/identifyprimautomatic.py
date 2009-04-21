@@ -984,7 +984,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                     'SumOfEntropies']
         elif object_name == 'Image' and category == 'Count':
             return [ self.object_name.value ]
-        elif object_name == self.object_name.value:
+        elif object_name == self.object_name.value and category == 'Location':
             return ['Center_X','Center_Y']
         return []
     

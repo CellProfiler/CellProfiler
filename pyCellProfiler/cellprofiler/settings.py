@@ -761,6 +761,188 @@ class DoSomething(Setting):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
 
+class Measurement(Setting):
+    '''A measurement done on a class of objects (or Experiment or Image)
+    
+    A measurement represents a fully-qualified name of a measurement taken
+    on an object. Measurements have categories and feature names and
+    may or may not have a secondary image (for instance, the image used
+    to measure an intensity), secondary object (for instance, the parent
+    object when relating two classes of objects or the object name when
+    aggregating object measurements over an image) or scale.
+    '''
+    def __init__(self, text, object_fn, value = None):
+        '''Construct the measurement category subscriber setting
+        
+        text - Explanatory text that appears to the side of the setting
+        object_fn - a function that returns the measured object when called
+        value - the initial value of the setting
+        '''
+        super(Measurement, self).__init__(text, value)
+        self.__object_fn = object_fn
+    
+    def construct_value(self, category, feature_name, image_name, scale):
+        '''Construct a value that might represent a partially complete value'''
+        if category is None:
+            value='None'
+        elif feature_name is None:
+            value = category
+        else:
+            parts = [category, feature_name]
+            if not image_name is None:
+                parts.append(image_name)
+            if not scale is None:
+                parts.append(scale)
+            value = '_'.join(parts)
+        return value
+        
+    def get_category_choices(self, pipeline):
+        '''Find the categories of measurements available from the object '''
+        object_name = self.__object_fn()
+        categories = set()
+        for module in pipeline.modules():
+            if self in module.settings():
+                break
+            categories.update(module.get_categories(pipeline, object_name))
+        result = list(categories)
+        result.sort()
+        return result
+    
+    def get_category(self, pipeline):
+        '''Return the currently chosen category'''
+        categories = self.get_category_choices(pipeline)
+        for category in categories:
+            if self.value.startswith(category+'_'):
+                return category
+        return None
+    
+    def get_feature_name_choices(self, pipeline):
+        '''Find the feature name choices available for the chosen category'''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        if category is None:
+            return []
+        feature_names = set()
+        for module in pipeline.modules():
+            if self in module.settings():
+                break
+            feature_names.update(module.get_measurements(pipeline, object_name,
+                                                         category))
+        result = list(feature_names)
+        result.sort()
+        return result
+    
+    def get_feature_name(self, pipeline):
+        '''Return the currently selected feature name'''
+        category = self.get_category(pipeline)
+        if category is None:
+            return None
+        feature_names = self.get_feature_name_choices(pipeline)
+        for feature_name in feature_names:
+            head = '_'.join((category, feature_name))
+            if (self.value.startswith(head+'_') or
+                self.value == head):
+                return feature_name
+        return None
+    
+    def get_image_name_choices(self, pipeline):
+        '''Find the secondary image name choices available for a feature
+        
+        A measurement can still be valid, even if there are no available
+        image name choices. The UI should not offer image name choices
+        if no choices are returned.
+        '''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        feature_name = self.get_feature_name(pipeline)
+        if category is None or feature_name is None:
+            return []
+        image_names = set()
+        for module in pipeline.modules():
+            if self in module.settings():
+                break
+            image_names.update(module.get_measurement_images(pipeline,
+                                                             object_name,
+                                                             category,
+                                                             feature_name))
+        result = list(image_names)
+        result.sort()
+        return result
+    
+    def get_image_name(self, pipeline):
+        '''Return the currently chosen image name'''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        if category is None:
+            return None
+        feature_name = self.get_feature_name(pipeline)
+        if feature_name is None:
+            return None
+        image_names = self.get_image_name_choices(pipeline)
+        for image_name in image_names:
+            head = '_'.join((category, feature_name, image_name))
+            if (self.value.startswith(head+'_') or
+                self.value == head):
+                return image_name
+        return None
+    
+    def get_scale_choices(self, pipeline):
+        '''Return the measured scales for the currently chosen measurement
+        
+        The setting may still be valid, even though there are no scale choices.
+        In this case, the UI should not offer the user a scale choice.
+        '''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        feature_name = self.get_feature_name(pipeline)
+        image_name = self.get_image_name(pipeline)
+        if category is None or feature_name is None:
+            return []
+        scales = set()
+        for module in pipeline.modules():
+            if self in module.settings():
+                break
+            scales.update(module.get_measurement_scales(pipeline,
+                                                        object_name,
+                                                        category,
+                                                        feature_name,
+                                                        image_name))
+        result = list(scales)
+        result.sort()
+        return result
+        
+    def get_scale(self, pipeline):
+        '''Return the currently chosen scale'''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        feature_name = self.get_feature_name(pipeline)
+        image_name = self.get_image_name(pipeline)
+        if category is None or feature_name is None:
+            return None
+        if image_name is None:
+            head = '_'.join((category, feature_name))
+        else:
+            head = '_'.join((category, feature_name, image_name))
+        for scale in self.get_scale_choices(pipeline):
+            if self.value == '_'.join((head, scale)):
+                return scale
+        return None 
+    
+    def test_valid(self, pipeline):
+        if self.get_category(pipeline) is None:
+            raise ValidationError("%s has an unavailable measurement category" %
+                                  self.value, self)
+        if self.get_feature_name(pipeline) is None:
+            raise ValidationError("%s has an unmeasured feature name" %
+                                  self.value, self)
+        if (self.get_image_name(pipeline) is None and
+            len(self.get_image_name_choices(pipeline))):
+            raise ValidationError("%s has an unavailable image name" %
+                                  self.value, self)
+        if self.get_scale(pipeline) and len(self.get_scale_choices(pipeline)):
+            raise ValidationError("%s has an unavailable scale" %
+                                  self.value, self)
+
 class ChangeSettingEvent(object):
     """Abstract class representing either the event that a setting will be
     changed or has been changed

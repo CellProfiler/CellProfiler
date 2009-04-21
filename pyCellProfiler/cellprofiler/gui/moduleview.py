@@ -108,6 +108,46 @@ def y_control_name(v):
     """
     return "%s_y"%(str(v.key()))
 
+def category_control_name(v):
+    '''For measurements, return the control that sets the measurement category
+    
+    v - the setting
+    '''
+    return "%s_category"%(str(v.key()))
+
+def category_text_control_name(v):
+    return "%s_category_text"%(str(v.key()))
+
+def feature_control_name(v):
+    '''For measurements, return the control that sets the feature name
+
+    v - the setting
+    '''
+    return "%s_feature"%(str(v.key()))
+
+def feature_text_control_name(v):
+    return "%s_feature_text"%(str(v.key()))
+
+def image_control_name(v):
+    '''For measurements, return the control that sets the image name
+
+    v - the setting
+    '''
+    return "%s_image"%(str(v.key()))
+
+def image_text_control_name(v):
+    return "%s_image_text"%(str(v.key()))
+
+def scale_control_name(v):
+    '''For measurements, return the control that sets the measurement scale
+
+    v - the setting
+    '''
+    return "%s_scale"%(str(v.key()))
+
+def scale_text_ctrl_name(v):
+    return "%s_scale_text"%(str(v.key()))
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -230,6 +270,8 @@ class ModuleView:
                     control = self.make_coordinates_control(v,control)
                 elif isinstance(v, cellprofiler.settings.RegexpText):
                     control = self.make_regexp_control(v, control)
+                elif isinstance(v, cellprofiler.settings.Measurement):
+                    control = self.make_measurement_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control,1,wx.EXPAND|wx.ALL,2)
@@ -501,6 +543,123 @@ class ModuleView:
             if y_ctrl.Value != str(v.y):
                 y_ctrl.Value = str(v.y)
             
+        return panel
+    
+    def make_measurement_control(self, v, panel):
+        '''Make a composite measurement control
+        
+        The measurement control has the following parts:
+        Category - a measurement category like AreaShape or Intensity
+        Feature name - the feature being measured or algorithm applied
+        Image name - an optional image that was used to compute the measurement
+        Scale - an optional scale, generally in pixels, that controls the size
+                of the measured features.
+        '''
+        
+        if not panel:
+            panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            panel.SetSizer(sizer)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(sub_sizer,0,wx.ALIGN_LEFT)
+            category_text_ctrl = wx.StaticText(panel,label='Category:',
+                                               name = category_text_control_name(v))
+            sub_sizer.Add(category_text_ctrl,0, wx.EXPAND|wx.ALL,2)
+            category_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
+                                        name=category_control_name(v))
+            sub_sizer.Add(category_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(sub_sizer, 0 , wx.ALIGN_LEFT)
+            feature_text_ctrl = wx.StaticText(panel, label='Measurement:',
+                                              name= feature_text_control_name(v))
+            sub_sizer.Add(feature_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
+            feature_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
+                                       name=feature_control_name(v))
+            sub_sizer.Add(feature_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
+            image_text_ctrl = wx.StaticText(panel, label='Image:',
+                                            name = image_text_control_name(v))
+            sub_sizer.Add(image_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
+            image_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
+                                     name=image_control_name(v))
+            sub_sizer.Add(image_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
+            scale_text_ctrl = wx.StaticText(panel, label='Scale:',
+                                            name = scale_text_ctrl_name(v))
+            sub_sizer.Add(scale_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
+            scale_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
+                                     name=scale_control_name(v))
+            sub_sizer.Add(scale_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            max_width = 0
+            for sub_sizer_item in sizer.GetChildren():
+                static = sub_sizer_item.Sizer.GetChildren()[0].Window
+                max_width = max(max_width,static.Size.width)
+            for sub_sizer_item in sizer.GetChildren():
+                static = sub_sizer_item.Sizer.GetChildren()[0].Window
+                static.Size = wx.Size(max_width,static.Size.height)
+                static.SetSizeHints(max_width, -1, max_width)
+            #
+            # Bind all controls to the function that constructs a value
+            # out of the parts
+            #
+            def on_change(event, v=v, category_ctrl = category_ctrl,
+                          feature_ctrl = feature_ctrl,
+                          image_ctrl = image_ctrl,
+                          scale_ctrl = scale_ctrl):
+                '''Reconstruct the measurement value if anything changes'''
+                def value_of(ctrl):
+                    return ctrl.Value if len(ctrl.Strings) else None
+                value = v.construct_value(value_of(category_ctrl),
+                                          value_of(feature_ctrl),
+                                          value_of(image_ctrl),
+                                          value_of(scale_ctrl))
+                setting_edited_event = SettingEditedEvent(v,value,event)
+                self.notify(setting_edited_event)
+                self.reset_view()
+            
+            for ctrl in (category_ctrl, feature_ctrl, image_ctrl, scale_ctrl):
+                panel.Bind(wx.EVT_COMBOBOX, on_change, ctrl)
+        else:
+            category_ctrl = panel.FindWindowByName(category_control_name(v))
+            category_text_ctrl = panel.FindWindowByName(category_text_control_name(v))
+            feature_ctrl = panel.FindWindowByName(feature_control_name(v))
+            feature_text_ctrl = panel.FindWindowByName(feature_text_control_name(v))
+            image_ctrl = panel.FindWindowByName(image_control_name(v))
+            image_text_ctrl = panel.FindWindowByName(image_text_control_name(v))
+            scale_ctrl = panel.FindWindowByName(scale_control_name(v))
+            scale_text_ctrl = panel.FindWindowByName(scale_text_ctrl_name(v))
+        category = v.get_category(self.__pipeline)
+        categories = v.get_category_choices(self.__pipeline)
+        feature_name = v.get_feature_name(self.__pipeline)
+        feature_names = v.get_feature_name_choices(self.__pipeline)
+        image_name = v.get_image_name(self.__pipeline)
+        image_names = v.get_image_name_choices(self.__pipeline)
+        scale = v.get_scale(self.__pipeline)
+        scales = v.get_scale_choices(self.__pipeline)
+        def set_up_combobox(ctrl, text_ctrl, choices, value, always_show=False):
+            if len(choices):
+                if not (len(ctrl.Strings) == len(choices) and
+                        all([x==y for x,y in zip(ctrl.Strings,choices)])):
+                    ctrl.Clear()
+                    ctrl.AppendItems(choices)
+                if (not value is None) and ctrl.Value != value:
+                    ctrl.Value = value
+                ctrl.Show()
+                text_ctrl.Show()
+            elif always_show:
+                ctrl.Clear()
+                ctrl.Value = "No measurements available"
+            else:
+                ctrl.Hide()
+                text_ctrl.Hide()
+        set_up_combobox(category_ctrl, category_text_ctrl, categories, 
+                        category, True)
+        set_up_combobox(feature_ctrl, feature_text_ctrl, 
+                        feature_names, feature_name)
+        set_up_combobox(image_ctrl, image_text_ctrl, image_names, image_name)
+        set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel
     
     def add_listener(self,listener):

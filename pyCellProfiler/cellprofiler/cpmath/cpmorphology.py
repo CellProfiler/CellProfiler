@@ -832,7 +832,7 @@ def ellipse_from_second_moments(image, labels, indexes):
     c = m[0,2] / m[0,0] - jc**2
     
     theta = np.arctan2(b,c-a) / 2
-    temp = np.sqrt(4*b**2+(a-c)**2)
+    temp = np.sqrt(b**2+(a-c)**2)
     #
     # If you do a linear regression of the circles from 1 to 50 radius
     # in Matlab, the resultant values fit a line with slope=.9975 and

@@ -721,35 +721,6 @@ class LoadImages(cpmodule.CPModule):
             tags += cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
         return tags
     
-    def get_categories(self,pipeline, object_name):
-        """Return the categories of measurements that this module produces
-        
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        """
-        return ['Image']
-      
-    def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces
-        
-        object_name - return measurements made on this object (or 'Image' for image measurements)
-        category - return measurements made in this category
-        """
-        if object_name == 'Image':
-            result = ['FileName','PathName']
-            result += self.get_metadata_tags()
-            return result
-        return []
-    
-    def get_measurement_images(self,pipeline,object_name,category,measurement):
-        """Return a list of image names used as a basis for a particular measure
-        """
-        return []
-    
-    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
-        """Return a list of scales (eg for texture) at which a measurement was taken
-        """
-        return []
-    
     category = "File Processing"
 
     

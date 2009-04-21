@@ -81,8 +81,8 @@ ImageName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 MainObjects = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %inputtypeVAR02 = popupmenu
 
-%textVAR03 = What objects do you want to use as centers (use "None" to use distance-based centers)?
-%choiceVAR03 = None
+%textVAR03 = What objects do you want to use as centers (use "Do not use" to use distance-based centers)?
+%choiceVAR03 = Do not use
 %infotypeVAR03 = objectgroup
 CenterObjects = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu

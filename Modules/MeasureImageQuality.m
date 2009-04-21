@@ -455,7 +455,7 @@ if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateB
     if isfield(handles.Current, 'BatchInfo'),
         warning(msg);   % If a batch run, print to text (no dialogs allowed)
     else
-        CPwarndlg(msg); % If on local machine, create dialog box with the warning
+        CPwarndlg(msg,ModuleName,'replace'); % If on local machine, create dialog box with the warning
     end
 end
 

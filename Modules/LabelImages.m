@@ -55,6 +55,12 @@ function handles = LabelImages(handles)
 %
 % Maybe someday allow starting from the last well (e.g. H12 for 96 well,
 % P24 or whatever for 384 well).
+%
+% MBray 2009_04_21: Comments on variables for pyCP upgrade
+%
+% Some configurations may exceed the alphabetic naming convention (e.g,
+% 1536-well plates, 5600-spot RNAi slides) so we may need additional
+% options for these cases.
 
 drawnow
 
@@ -113,10 +119,10 @@ PlateNumber = ceil(SetBeingAnalyzed/NumberOfCyclesPerPlate);
 %%% from 1 to NumberOfCyclesPerPlate. 
 CurrentLinearWellIndex = rem(SetBeingAnalyzed-1,PlateNumber*NumberOfCyclesPerPlate)+1;
 
-%% Get Position Numbers
+% Get Position Numbers
 SiteNumber = rem(CurrentLinearWellIndex-1,ImageCyclesPerWell)+1;
 
-%% Transpose for 'B01' direction
+% Transpose for 'B01' direction
 if strcmp(RowOrColumn,'A02')
     ColumnNumber = rem(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)-1,numColumns)+1;
     RowNumber = ceil(ceil(CurrentLinearWellIndex/ImageCyclesPerWell)/(numColumns));
@@ -127,7 +133,7 @@ else
     CPerrordlg('RowOrColumn is invalid.')
 end
 
-%% Get Position Characters
+% Get Position Characters
 ColumnText = CPtwodigitstring(ColumnNumber);
 SiteText = CPtwodigitstring(SiteNumber);
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

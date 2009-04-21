@@ -170,6 +170,7 @@ def RunOne(my_batch,run):
     x["write_data_yes"]=(my_batch["write_data"]!=0 and "yes") or "no"
     cmd=["bsub",
          "-q","%(queue)s"%(x),
+         "-R",'"rusage[neon_io=4]"',
          "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
          "%(cpcluster)s/CPCluster.py"%(x),
          "%(data_dir)s/Batch_data.mat"%(x),

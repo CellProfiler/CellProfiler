@@ -794,14 +794,14 @@ class Measurement(Setting):
             if not scale is None:
                 parts.append(scale)
             value = '_'.join(parts)
-        return value
+        return str(value)
         
     def get_category_choices(self, pipeline):
         '''Find the categories of measurements available from the object '''
         object_name = self.__object_fn()
         categories = set()
         for module in pipeline.modules():
-            if self in module.settings():
+            if self.key() in [x.key() for x in module.settings()]:
                 break
             categories.update(module.get_categories(pipeline, object_name))
         result = list(categories)
@@ -812,7 +812,8 @@ class Measurement(Setting):
         '''Return the currently chosen category'''
         categories = self.get_category_choices(pipeline)
         for category in categories:
-            if self.value.startswith(category+'_'):
+            if (self.value.startswith(category+'_') or
+                self.value == category):
                 return category
         return None
     
@@ -824,7 +825,7 @@ class Measurement(Setting):
             return []
         feature_names = set()
         for module in pipeline.modules():
-            if self in module.settings():
+            if self.key() in [x.key() for x in module.settings()]:
                 break
             feature_names.update(module.get_measurements(pipeline, object_name,
                                                          category))
@@ -859,7 +860,7 @@ class Measurement(Setting):
             return []
         image_names = set()
         for module in pipeline.modules():
-            if self in module.settings():
+            if self.key() in [x.key() for x in module.settings()]:
                 break
             image_names.update(module.get_measurement_images(pipeline,
                                                              object_name,
@@ -900,7 +901,7 @@ class Measurement(Setting):
             return []
         scales = set()
         for module in pipeline.modules():
-            if self in module.settings():
+            if self.key() in [x.key() for x in module.settings()]:
                 break
             scales.update(module.get_measurement_scales(pipeline,
                                                         object_name,

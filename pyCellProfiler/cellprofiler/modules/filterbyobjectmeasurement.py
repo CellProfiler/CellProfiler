@@ -43,7 +43,7 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 8
+FIXED_SETTING_COUNT = 11
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
@@ -137,6 +137,7 @@ Press this button to add another object to the list of ones to be relabeled.
 See also MeasureObjectAreaShape, MeasureObjectIntensity, MeasureTexture,
 MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
     '''
+
     category = "Object Processing"
     variable_revision_number = 1
     
@@ -150,7 +151,10 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
                                            "AreaShape_Area")
         self.filter_choice = cps.Choice('How do you want to filter objects?',
                                         FI_ALL, FI_LIMITS)
-        self.limits = cps.FloatRange('Enter the minimum and maximum acceptable values for the measurement:')
+        self.wants_minimum = cps.Binary('Do you want a minimum acceptable value for the measurement?', True)
+        self.min_limit = cps.Float('Enter the minimum acceptable value for the measurement:',0)
+        self.wants_maximum = cps.Binary('Do you want a maximum acceptable value for the measurement?', True)
+        self.max_limit = cps.Float('Enter the maximum acceptable value for the measurement:',1)
         self.enclosing_object_name = cps.ObjectNameSubscriber('What did you call the objects that contain the filtered objects?',
                                                               'None')
         self.wants_outlines = cps.Binary('Do you want to save outlines for the filtered image?', False)
@@ -245,14 +249,66 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
                       name.
         from_matlab - true if file was saved by Matlab CP
         '''
-        if module_name == 'KeepLargestObject':
-            pass
+        if (module_name == 'KeepLargestObject' and from_matlab
+            and variable_revision_number == 1):
+            #
+            # This is a specialized case:
+            # The filtering method is FI_MAXIMAL_PER_OBJECT to pick out
+            # the largest. The measurement is AreaShape_Area.
+            # The slots are as follows:
+            # 0 - the source objects name
+            # 1 - the enclosing objects name
+            # 2 - the target objects name 
+            setting_values = [ setting_values[1],
+                              setting_values[2],
+                              "AreaShape_Area",
+                              FI_MAXIMAL_PER_OBJECT,
+                              setting_values[0],
+                              cps.YES, "0", cps.YES, "1",
+                              cps.NO, "None" ]
+            from_matlab = False
+            variable_revision_number = 1
+            module_name = self.module_name
+        if (module_name == 'FilterByObjectMeasurement' and from_matlab and
+            variable_revision_number == 6):
+            # The measurement may not be correct here - it will display
+            # as an error, though
+            measurement = '_'.join((setting_values[2],setting_values[3]))
+            if setting_values[6] == 'No minimum':
+                wants_minimum = cps.NO
+                min_limit = "0"
+            else:
+                wants_minimum = cps.YES
+                min_limit = setting_values[6]
+            if setting_values[7] == 'No maximum':
+                wants_maximum = cps.NO
+                max_limit = "1"
+            else:
+                wants_maximum = cps.YES
+                max_limit = setting_values[7]
+            if setting_values[8] == cps.DO_NOT_USE:
+                wants_outlines = cps.NO
+                outlines_name = "None"
+            else:
+                wants_outlines = cps.YES
+                outlines_name = setting_values[8]
+                
+            setting_values = [setting_values[0], setting_values[1],
+                              measurement, FI_LIMITS, "None", 
+                              wants_minimum, min_limit,
+                              wants_maximum, max_limit,
+                              wants_outlines, outlines_name]
+            from_matlab = False
+            variable_revision_number = 1 
+                                  
         return setting_values, variable_revision_number, from_matlab
 
     def settings(self):
         result =[self.target_name, self.object_name, self.measurement,
                  self.filter_choice, self.enclosing_object_name,
-                 self.limits, self.wants_outlines, self.outlines_name]
+                 self.wants_minimum, self.min_limit,
+                 self.wants_maximum, self.max_limit,
+                  self.wants_outlines, self.outlines_name]
         for x in self.additional_objects:
             result += x.settings()
         return result
@@ -264,7 +320,12 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
                                         FI_MAXIMAL_PER_OBJECT):
             result.append(self.enclosing_object_name)
         elif self.filter_choice == FI_LIMITS:
-            result.append(self.limits)
+            result.append(self.wants_minimum)
+            if self.wants_minimum.value:
+                result.append(self.min_limit)
+            result.append(self.wants_maximum)
+            if self.wants_maximum.value:
+                result.append(self.max_limit)
         result.append(self.wants_outlines)
         if self.wants_outlines.value:
             result.append(self.outlines_name)
@@ -272,6 +333,15 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
             result += x.visible_settings()
         result += [self.additional_object_button]
         return result
+
+    def test_valid(self, pipeline):
+        '''Make sure that the user has selected some limits when filtering'''
+        if (self.filter_choice == FI_LIMITS and
+            self.wants_minimum.value == False and
+            self.wants_maximum.value == False):
+            raise cps.ValidationError('Please enter a minimum and/or maximum limit for your measurement',
+                                      self.wants_minimum)
+        super(FilterByObjectMeasurement,self).test_valid(pipeline)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''
@@ -464,9 +534,18 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
         src_name = self.object_name.value
         values = workspace.measurements.get_current_measurement(src_name,
                                                                 measurement)
-        low_limit = self.limits.min
-        high_limit = self.limits.max
-        indexes = np.argwhere(np.logical_and(values >= low_limit,
-                                             values <= high_limit))[:,0]
+        low_limit = self.min_limit.value
+        high_limit = self.max_limit.value
+        if self.wants_minimum.value:
+            if self.wants_maximum.value:
+                hits = np.logical_and(values >= low_limit,
+                                      values <= high_limit)
+            else:
+                hits = values >= low_limit
+        elif self.wants_maximum.value:
+            hits = values <= high_limit
+        else:
+            hits = np.ones(values.shape,bool)
+        indexes = np.argwhere(hits)[:,0] 
         indexes = indexes + 1
         return indexes

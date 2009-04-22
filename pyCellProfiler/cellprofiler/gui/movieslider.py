@@ -278,7 +278,7 @@ class SliderCtl(wx.Panel):
         rect = self.groove_rect
         rect.Inflate(0,1)
         dc.Pen = wx.BLACK_PEN
-        dc.Brush = wx.NullBrush
+        dc.Brush = wx.WHITE_BRUSH
         dc.DrawRectangle(rect.Left,rect.Top,rect.width,rect.height)
         rect.Deflate(1,1)
         rect = draw_bevel(dc,rect,2,BV_DOWN)
@@ -287,7 +287,7 @@ class SliderCtl(wx.Panel):
         dc.Pen = wx.BLACK_PEN
         dc.Brush = wx.GREEN_BRUSH
         dc.DrawRectangle(rtop.x,rtop.y,rtop.width,rtop.height)
-        dc.Brush = wx.NullBrush
+        dc.Brush = wx.WHITE_BRUSH
         dc.DrawRectangle(rect.Left, sep_y, rect.width, rect.Bottom-sep_y)
 
     def draw_marker(self,dc):

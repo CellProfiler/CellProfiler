@@ -303,6 +303,7 @@ class PipelineListView(object):
         self.__adjust_rows()
     
     def __on_item_selected(self,event):
+        print "Item selected"
         if self.__module_view:
             selections = self.get_selected_modules()
             if len(selections):

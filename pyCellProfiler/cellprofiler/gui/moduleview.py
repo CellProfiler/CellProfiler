@@ -746,11 +746,15 @@ class ModuleView:
         TO_DO: optimize this so that only things that have changed IRL change in the GUI
         """
         focus_control = wx.Window.FindFocus()
-        focus_name = focus_control.GetName()
+        if not focus_control is None:
+            focus_name = focus_control.GetName()
+        else:
+            focus_name = None
         self.set_selection(self.__module.module_num)
-        focus_control = self.module_panel.FindWindowByName(focus_name)
-        if focus_control:
-            focus_control.SetFocus()
+        if focus_name:
+            focus_control = self.module_panel.FindWindowByName(focus_name)
+            if focus_control:
+                focus_control.SetFocus()
         
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the setting edit controls

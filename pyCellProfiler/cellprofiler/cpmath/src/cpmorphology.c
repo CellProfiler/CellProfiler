@@ -166,7 +166,7 @@ cpmaximum(PyObject *self, PyObject *args)
      for (j=0;j<height;j++) {
           for (i=0;i<width;i++,imdata++) {
                char *strptr = strdata;
-               double value = - INFINITY;
+               double value = - 1000000; /* was INFINITY but Unix doesn't like */
                if (i-xoff < 0 ||
                    j-yoff < 0 ||
                    i+strwidth-xoff >= width ||

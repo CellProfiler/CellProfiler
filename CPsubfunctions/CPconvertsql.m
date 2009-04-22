@@ -36,7 +36,7 @@ basename = [OutfilePrefix,int2str(FirstSet),'_',int2str(LastSet)];
 
 %%% Extract the object types to write (e.g., Image, Nuclei, ...).  The transpose allows looping below.
 if any(strcmpi(ObjectsToBeExported,'all objects'))
-    ObjectsToBeExported = fieldnames(handles.Measurements);
+    ObjectsToBeExported = fieldnames(handles.Measurements); ObjectsToBeExported = ObjectsToBeExported(:)';
 else
     ObjectsToBeExported = ObjectsToBeExported(isfield(handles.Measurements,ObjectsToBeExported));
 end

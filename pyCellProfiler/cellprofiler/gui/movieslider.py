@@ -68,8 +68,9 @@ class SliderCtl(wx.Panel):
         self.__start_value = start_value
         self.__stop_value = stop_value
         self.value_names = value_names
-        self.Bind(wx.EVT_PAINT, self.on_paint, self)
-        self.Bind(wx.EVT_ERASE_BACKGROUND, self.on_erase_background, self)
+        self.BackgroundColourColour = wx.RED
+        wx.EVT_PAINT(self, self.on_paint)
+        wx.EVT_ERASE_BACKGROUND(self, self.on_erase_background)
         self.Bind(wx.EVT_SIZE, self.on_size, self)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down, self)
         self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
@@ -317,7 +318,7 @@ class SliderCtl(wx.Panel):
             
     def on_erase_background(self, event):
         pass
-        
+            
     def make_bitmap_button(self, data):
         stream = StringIO.StringIO(data)
         image  = wx.ImageFromStream(stream)

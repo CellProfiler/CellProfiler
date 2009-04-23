@@ -380,7 +380,12 @@ if any(findobj == ThisModuleFigureNumber)
     CPimagesc(ImageOfNeighbors,handles,hAx);
     axis(hAx,'image');
     colormap(hAx,handles.Preferences.LabelColorMap);
-    colorbar('EastOutside','peer',hAx);
+    cbar_handle = colorbar('EastOutside','peer',hAx);
+    
+    %% Ensure that colorbar minimum is >=0
+    ylim = get(cbar_handle,'YLim');
+    set(cbar_handle,'YLim',[max([ylim(1) 0]) ylim(2)])
+    
     title(hAx,[ObjectName,' colored by number of neighbors']);
 
     if (NeighborDistance == 0),
@@ -394,8 +399,13 @@ if any(findobj == ThisModuleFigureNumber)
 	CPimagesc(ImageOfPercentTouching,handles,hAx);
 	axis(hAx,'image');
 	colormap(hAx,handles.Preferences.LabelColorMap)
-	colorbar('EastOutside','peer',hAx)
-	title(hAx,[ObjectName,' colored by percent touching'])
+	cbar_handle = colorbar('EastOutside','peer',hAx);
+    
+	%% Ensure that colorbar minimum is >=0
+    ylim = get(cbar_handle,'YLim');
+    set(cbar_handle,'YLim',[max([ylim(1) 0]) ylim(2)])
+    
+    title(hAx,[ObjectName,' colored by percent touching'])
 
 end
 

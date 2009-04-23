@@ -194,7 +194,14 @@ MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %infotypeVAR11 = imagegroup indep
 MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%%%VariableRevisionNumber = 4
+%textVAR12 = Do you want the output images cropped according to the smallest input image? If so, the shited images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
+%choiceVAR12 = No
+%choiceVAR12 = Yes
+wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,12});
+wantImagesCropped = strncmpi(wantImagesCropped,'y',1);
+%infotypeVAR12 = popupmenu
+
+%%%VariableRevisionNumber = 5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -240,7 +247,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
-% Are all images are the same size? If not take the minimum size and warn the user
+% Are all images are the same size? If not take the minimum size and warn
+% the user
 
 if AreThereThreeInputImages, 
     M = [M1 M2 M3];
@@ -252,18 +260,25 @@ else
     P = [P1 P2];
 end
 
-Mmin = min(M);
-Nmin = min(N);
-Pmin = min(P);
-if any(diff(M)) || any(diff(N)) || any(diff(P))
-    if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size']))
-        CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size'],'replace');
-    end    
+if wantImagesCropped
+    Mmin = min(M);
+    Nmin = min(N);
+    Pmin = min(P);
+%     if any(diff(M)) || any(diff(N)) || any(diff(P))
+%         if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size']))
+%             CPwarndlg(['The images loaded into ' ModuleName ' which is number ' num2str(CurrentModuleNum) ' are not all the same size. The images will be cropped to the minimum dimension of (' num2str(Mmin) ', ' num2str(Nmin) ', ' num2str(Pmin) ').'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': 3 Images not all same size'],'replace');
+%         end    
+%     end
+
+    ModifiedImage1 = Image1(1:Mmin,1:Nmin,1:Pmin);
+    ModifiedImage2 = Image2(1:Mmin,1:Nmin,1:Pmin);
+    if AreThereThreeInputImages, ModifiedImage3 = Image3(1:Mmin,1:Nmin,1:Pmin); end
+else
+    ModifiedImage1 = Image1;
+    ModifiedImage2 = Image2;
+    if AreThereThreeInputImages, ModifiedImage3 = Image3; end
 end
-CroppedImage1 = Image1(1:Mmin,1:Nmin,1:Pmin);
-CroppedImage2 = Image2(1:Mmin,1:Nmin,1:Pmin);
-if AreThereThreeInputImages, CroppedImage3 = Image3(1:Mmin,1:Nmin,1:Pmin); end 
-    
+
 % If there are color images, let the user know that the color image will be
 % converted into grayscale for alignment
 if any(P > 1)
@@ -275,32 +290,32 @@ end
 % Aligns images 1 and 2 (see subfunctions at the end of the module). The 
 % nice thing about imtransform is that it works on 2-D and 3-D images 
 % (i.e., grayscale and RGB) with the same arguments
-[tx12, ty12] = autoalign(   sum(CroppedImage1,3)/sum(max(max(CroppedImage1))), ...
-                            sum(CroppedImage2,3)/sum(max(max(CroppedImage2))), AlignMethod);
+[tx12, ty12] = autoalign(   sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1))), ...
+                            sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2))), AlignMethod);
 Results = ['(Image 1 vs 2: DX ', num2str(tx12), ', DY ', num2str(ty12),')'];
 
 tform = maketform('affine',[1 0 ; 0 1; -tx12 -ty12]);
-AlignedImage1 = CroppedImage1;
-AlignedImage2 = imtransform(CroppedImage2,tform,'xdata',[1 size(CroppedImage2,2)],'ydata',[1 size(CroppedImage2,1)]);
+AlignedImage1 = ModifiedImage1;
+AlignedImage2 = imtransform(ModifiedImage2,tform,'xdata',[1 size(ModifiedImage2,2)],'ydata',[1 size(ModifiedImage2,1)]);
 
 % If there is a 3rd input image, align image 3 with the newly-aligned image 2
 if AreThereThreeInputImages, 
-    NotYetAlignedImage3 = imtransform(Image3,tform,'xdata',[1 size(CroppedImage3,2)],'ydata',[1 size(CroppedImage3,1)]);
+    NotYetAlignedImage3 = imtransform(Image3,tform,'xdata',[1 size(ModifiedImage3,2)],'ydata',[1 size(ModifiedImage3,1)]);
 
     [tx23, ty23] = autoalign(   sum(AlignedImage2,3)/sum(max(max(AlignedImage2))), ...
                                 sum(NotYetAlignedImage3,3)/sum(max(max(NotYetAlignedImage3))), AlignMethod);
     Results = [ '(Image 1 vs 2: DX ', num2str(tx23),', DY ', num2str(ty23), ') ',...
                 '(Image 2 vs 3: DX ', num2str(tx23),', DY ', num2str(ty23),')'];
     tform = maketform('affine',[1 0 ; 0 1; tx23 ty23]);
-    AlignedImage3 = imtransform(NotYetAlignedImage3,tform,'xdata',[1 size(CroppedImage3,2)],'ydata',[1 size(CroppedImage3,1)]);
+    AlignedImage3 = imtransform(NotYetAlignedImage3,tform,'xdata',[1 size(ModifiedImage3,2)],'ydata',[1 size(ModifiedImage3,1)]);
 end
     
 % Apply this transformation to other images if desired
 if ~strcmpi(MoreImage1Name,'Do not use')
-    MoreAlignedImage1 = imtransform(MoreImage1,tform,'xdata',[1 size(CroppedImage1,2)],'ydata',[1 size(CroppedImage1,1)]);
+    MoreAlignedImage1 = imtransform(MoreImage1,tform,'xdata',[1 size(MoreImage1,2)],'ydata',[1 size(MoreImage1,1)]);
 end
 if ~strcmpi(MoreImage2Name,'Do not use')
-    MoreAlignedImage2 = imtransform(MoreImage2,tform,'xdata',[1 size(CroppedImage1,2)],'ydata',[1 size(CroppedImage1,1)]);
+    MoreAlignedImage2 = imtransform(MoreImage2,tform,'xdata',[1 size(MoreImage2,2)],'ydata',[1 size(MoreImage2,1)]);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -313,9 +328,9 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     % For three input images
     if AreThereThreeInputImages,
-        OriginalRGB(:,:,1) = sum(CroppedImage3,3)/sum(max(max(CroppedImage3)));
-        OriginalRGB(:,:,2) = sum(CroppedImage2,3)/sum(max(max(CroppedImage2)));
-        OriginalRGB(:,:,3) = sum(CroppedImage1,3)/sum(max(max(CroppedImage1)));
+        OriginalRGB(:,:,1) = sum(ModifiedImage3,3)/sum(max(max(ModifiedImage3)));
+        OriginalRGB(:,:,2) = sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2)));
+        OriginalRGB(:,:,3) = sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1)));
         AlignedRGB(:,:,1) = sum(AlignedImage3,3)/sum(max(max(AlignedImage3)));
         AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(AlignedImage2)));
         AlignedRGB(:,:,3) = sum(AlignedImage1,3)/sum(max(max(AlignedImage1)));
@@ -323,10 +338,10 @@ if any(findobj == ThisModuleFigureNumber)
     else
         % Note that the size is recalculated in case images were
         % cropped to be the same size.
-        [M1 N1 P1] = size(CroppedImage1);
+        [M1 N1 P1] = size(ModifiedImage1);
         OriginalRGB(:,:,1) = zeros(M1,N1);
-        OriginalRGB(:,:,2) = sum(CroppedImage2,3)/sum(max(max(CroppedImage2)));
-        OriginalRGB(:,:,3) = sum(CroppedImage1,3)/sum(max(max(CroppedImage1)));
+        OriginalRGB(:,:,2) = sum(ModifiedImage2,3)/sum(max(max(ModifiedImage2)));
+        OriginalRGB(:,:,3) = sum(ModifiedImage1,3)/sum(max(max(ModifiedImage1)));
         [aM1, aN1, aP1] = size(AlignedImage1);
         AlignedRGB(:,:,1) = zeros(aM1,aN1);
         AlignedRGB(:,:,2) = sum(AlignedImage2,3)/sum(max(max(Image2)));

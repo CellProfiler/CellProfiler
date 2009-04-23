@@ -405,6 +405,16 @@ if strcmp(CurrentModuleName, 'ExportToExcel')
         SavedVarRevNum = 2;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 2      % Replacing the last argument with a different one, and adding one more
+        % Specifiy which directory to save in. Default to output directory
+        Settings.VariableValues{ModuleNum-Skipped,9} = '.';
+        % Specify file prefix
+        Settings.VariableValues{ModuleNum-Skipped,10} = 'Do not use';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 3;
+        IsModuleModified = true;
+    end
+    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -466,6 +476,19 @@ if strcmp(CurrentModuleName, 'Relate')
         Settings.VariableValues(ModuleNum-Skipped,[3 5]) = deal({'No'});
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
         SavedVarRevNum = 3;
+        IsModuleModified = true;
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to Align
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'Align')
+    if SavedVarRevNum == 4      % Relate got one new arguments at the end.
+        Settings.VariableValues{ModuleNum-Skipped,12} = 'No';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,12} = [];
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 5;
         IsModuleModified = true;
     end
 end

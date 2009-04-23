@@ -304,6 +304,7 @@ if ~isempty(FieldsToGroupBy)
 
         % Pull the filelist into separate structures, one for each unique
         % combination
+        handles.Pipeline.GroupFileListIDs = zeros(1,length(FileID));
         for i = 1:size(PathFileIDs,1)
             idx = all(ismember([path_idstr file_idstr],PathFileIDs(i,:)),2);
             for j = 1:length(AllImageNames),
@@ -313,6 +314,7 @@ if ~isempty(FieldsToGroupBy)
             handles.Pipeline.GroupFileList{i}.Fields = PathFileIDs(i,~all(cellfun(@isempty,PathFileIDs),1));
             handles.Pipeline.GroupFileList{i}.SetBeingAnalyzed = 1;
             handles.Pipeline.GroupFileList{i}.NumberOfImageSets = length(handles.Pipeline.GroupFileList{i}.(['FileList',AllImageNames{1}]));
+            handles.Pipeline.GroupFileListIDs(idx) = i;
         end
         PathFileIDs(:,all(cellfun(@isempty,PathFileIDs),1)) = [];
         handles.Pipeline.GroupIDs = PathFileIDs;

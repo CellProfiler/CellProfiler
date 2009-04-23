@@ -144,6 +144,7 @@ ExportInfo.ObjectNames = [];
 ExportInfo.MeasurementFilename = [];
 ExportInfo.ProcessInfoFilename = [];
 ExportInfo.Cancelled = [];
+ExportInfo.isBatchRun = 0;
 
 % The fontsize is stored in the 'UserData' property of the main MATLAB window
 GUIhandles = guidata(gcbo);

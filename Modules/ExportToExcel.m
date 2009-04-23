@@ -18,11 +18,15 @@ function handles = ExportToExcel(handles)
 %
 % Settings:
 %
-% Do you want to create the input image subdirectory structure in the  
-% output directory?
-% If the input images are located in subdirectories (such that you used 
-% "Analyze all subfolders within the selected folder" in LoadImages), you 
-% can re-create the subdirectory structure in the default output directory.
+% Enter the directory where the Excel files are to be saved. 
+% If you used the FileNameMetadata module, metadata tokens may be used 
+% here. If the directory does not exist, it will be created.
+%
+% What prefix should be used to name the Excel files? 
+% Here you can choose what to prepend to the output file. If you choose 
+% "Do not use", the output filename will be prepended. If you choose
+% a prefix, the file will become PREFIX_<ObjectName>.xls. If you used 
+% FileNameMetadata, metadata tokens may be used here.
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -138,25 +142,22 @@ Object{7} = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 Object{8} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Do you want to create subdirectories in the default output directory to match the input image directory structure?
-%choiceVAR09 = No
-%choiceVAR09 = Yes
-CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,9});
-%inputtypeVAR09 = popupmenu
+%pathnametextVAR09 = Enter the directory where the Excel files are to be saved. Type period (.) to use the default output folder or ampersand (&) for the default input folder. If a FileNameMetadata module was used, metadata tokens may be used here. If this directory does not exist, it will be created automatically.
+%defaultVAR09 = .
+FileDirectory = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 2
+%textVAR10 = What prefix should be used to name the Excel files? An underscore will be added to the end of the prefix automatically. Metadata tokens may be used here. Use "Do not use" to prepend the Output filename to the file.
+%defaultVAR10 = Do not use
+FilePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%%%VariableRevisionNumber = 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
-tmp = {};
-for n = 1:8
-    if ~strcmp(Object{n}, 'Do not use')
-        tmp{end+1} = Object{n};
-    end
-end
-Object = tmp;
+
+Object(strcmp(Object,'Do not use')) = [];
 
 % If creating batch files, warn that this module only works if the jobs are
 % submitted as one batch
@@ -175,72 +176,77 @@ end
 if ~isfield(handles.Current, 'BatchInfo'),
     handles.Pipeline.OutputFileName = get(handles.OutputFileNameEditBox,'string');
 end
-        
-if handles.Current.SetBeingAnalyzed == handles.Current.NumberOfImageSets
-    RawPathname = handles.Current.DefaultOutputDirectory;
+
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+else
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+end
+
+if SetBeingAnalyzed == NumberOfImageSets
+    
+    FileDirectory = CPreplacemetadata(handles,FileDirectory);
+    if strncmp(FileDirectory,'.',1)
+        PathName = fullfile(handles.Current.DefaultOutputDirectory, strrep(strrep(FileDirectory(2:end),'/',filesep),'\',filesep),'');
+    elseif strncmp(FileDirectory, '&', 1)
+        PathName = handles.Measurements.Image.(['PathName_', ImageFileName]);
+        if iscell(PathName), PathName = PathName{SetBeingAnalyzed}; end
+    else
+        PathName = FileDirectory;
+    end
+    
+    if ~isdir(PathName)
+        [success,ignore,ignore] = mkdir(PathName);
+        if ~success
+            error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
+        end
+    end
     ExportInfo.ObjectNames = unique(Object);
     ExportInfo.MeasurementExtension = '.xls';
-    ExportInfo.MeasurementFilename = handles.Pipeline.OutputFileName;
+    % Substitute filename metadata tokens into FilePrefix (if found)
+    if strcmpi(FilePrefix,'Do not use')
+        ExportInfo.MeasurementFilename = handles.Pipeline.OutputFileName;
+    else
+        ExportInfo.MeasurementFilename = CPreplacemetadata(handles,FilePrefix);
+    end
     ExportInfo.IgnoreNaN = 1;
     ExportInfo.SwapRowsColumnInfo = 'No';
     ExportInfo.DataParameter = 'mean';
-    
-    % If the user wants to add subdirectories, alter the output path accordingly
-    if strncmpi(CreateSubdirectories,'y',1)
-        fn = fieldnames(handles.Measurements.Image);
-        % We will be pulling the pathname list from handles.Pipeline but we 
-        % need an object to reference first. We obtain this from
-        % handles.Measurement.Image
-        % ASSUMPTION: The needed object was created by LoadImages/LoadSingleImage
-        % which (a) produces a field with 'FileName_' at the beginning and 
-        % (b) the first such field is sufficient (i.e, all other image 
-        % objects come from this directory tree as well)
-        prefix = 'FileName_';
-        idx = find(~cellfun(@isempty,regexp(fn,['^',prefix])),1);
-        ImageFileName = fn{idx}((length(prefix)+1):end);
-        
-        % Pull the input filelist from handles.Pipeline and parse for
-        % subdirs
-        fn = handles.Pipeline.(['FileList', ImageFileName]);
-        PathStr = cellfun(@fileparts,fn,'UniformOutput',false);
-        uniquePathStr = unique(PathStr);
-        
-        % Process each subdir
-        for i = 1:length(uniquePathStr),
-            SubDir = uniquePathStr{i};
-            SubRawPathName = fullfile(RawPathname, SubDir,'');
-            if ~isdir(SubRawPathName),    % If the directory doesn't already exist, create it
-                success = mkdir(SubRawPathName);
-                if ~success, error(['Image processing was canceled in the ', ModuleName, ' module because the specified subdirectory "', SubRawPathName, '" could not be created.']); end
-            end
+    ExportInfo.isBatchRun = isfield(handles.Current, 'BatchInfo');
 
-            % Extract only those Measurements for the current subdirectory
-            idx = strcmp(PathStr,uniquePathStr{i});
-            handles_MeasurementsOnly.Measurements = handles.Measurements;
-            ObjectName = fieldnames(handles_MeasurementsOnly.Measurements);
-            for j = 1:length(ObjectName),
-                if ~strcmp(ObjectName{j}, 'Experiment')
-                    FeatureName = fieldnames(handles_MeasurementsOnly.Measurements.(ObjectName{j}));
-                    for k = 1:length(FeatureName),
-                        if isempty(regexp(FeatureName{k},[ModuleName,'$'],'once'))
-                            handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
-                        else
-                            % The ModuleError field for ExportToExcel hasn't
-                            % filled in the last element yet, so we have to
-                            % fill it in ourselves
-                            handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k}) = repmat({0},[1 length(find(idx))]);
-                        end
+    % If the user wants to export based on a group, group the measurements
+    if isImageGroups
+        % Get the relevant indices for the filelist
+        idx = handles.Pipeline.GroupFileListIDs == handles.Pipeline.CurrentImageGroupID;
+        idx = idx(1:handles.Current.SetBeingAnalyzed);  % Truncate to appropriate length
+        
+        % Extract only those Measurements for the current group
+        handles_MeasurementsOnly.Measurements = handles.Measurements;
+        ObjectName = fieldnames(handles_MeasurementsOnly.Measurements);
+        for j = 1:length(ObjectName),
+            if ~strcmp(ObjectName{j}, 'Experiment')
+                FeatureName = fieldnames(handles_MeasurementsOnly.Measurements.(ObjectName{j}));
+                for k = 1:length(FeatureName),
+                    if isempty(regexp(FeatureName{k},[ModuleName,'$'],'once'))
+                        handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
+                    else
+                        % The ModuleError field for ExportToExcel hasn't
+                        % filled in the last element yet, so we have to
+                        % fill it in ourselves
+                        handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k}) = repmat({0},[1 length(find(idx))]);
                     end
                 end
             end
-            % Write the Measurement subset out
-            CPwritemeasurements(handles_MeasurementsOnly,ExportInfo,SubRawPathName);
         end
+        % Write the Measurement subset out
+        CPwritemeasurements(handles_MeasurementsOnly,ExportInfo,PathName);
     else
         % Export the whole thing
-        CPwritemeasurements(handles,ExportInfo,RawPathname);
+        CPwritemeasurements(handles,ExportInfo,PathName);
     end
-    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

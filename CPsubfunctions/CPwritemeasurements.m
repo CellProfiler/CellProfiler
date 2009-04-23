@@ -14,7 +14,7 @@ function CPwritemeasurements(handles,ExportInfo,RawPathname)
 % $Revision$
 
 %%% Get the handle to the waitbar and update the text in the waitbar
-isBatchRun = isfield(handles.Current, 'BatchInfo');
+isBatchRun = ExportInfo.isBatchRun;
 if ~isBatchRun, waitbarhandle = CPwaitbar(0,''); end
 
 %%% Detect and try to deal with old-style measurements

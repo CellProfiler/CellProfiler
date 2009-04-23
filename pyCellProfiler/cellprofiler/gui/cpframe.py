@@ -14,7 +14,6 @@ __version__="$Revision$"
 
 import os
 import wx
-import wx.lib.inspection
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
 from cellprofiler.gui import get_icon, get_cp_bitmap
@@ -119,7 +118,11 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,enable)
         
     def __on_widget_inspector(self, evt):
-        wx.lib.inspection.InspectionTool().Show()
+        try:
+            import wx.lib.inspection
+            wx.lib.inspection.InspectionTool().Show()
+        except:
+            wx.MessageBox("Inspection tool is not available on this platform")
 
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()

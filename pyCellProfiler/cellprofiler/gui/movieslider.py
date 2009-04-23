@@ -19,7 +19,6 @@ __version__="$Revision$"
 import math
 import StringIO
 import wx
-import wx.lib.inspection
 
 from cellprofiler.gui import draw_bevel, BV_DOWN
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
@@ -439,6 +438,7 @@ class MovieSlider(wx.Panel):
         return button
 
 if __name__ == "__main__":
+    import wx.lib.inspection
     class MyFrame(wx.Frame):
         def __init__(self):
             wx.Frame.__init__(self, None, title="Movie slider demo",

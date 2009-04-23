@@ -285,7 +285,7 @@ if ~isempty(strfind(Threshold,'Global')) || ~isempty(strfind(Threshold,'Adaptive
     end
 
 elseif strcmp(Threshold,'All')
-    if SetBeingAnalyzed == StartingImageSet
+    if SetBeingAnalyzed == handles.Current.StartingImageSet,
         try
             %%% Notifies the user that the first image set will take much
             %%% longer than subsequent sets. Obtains the screen size.

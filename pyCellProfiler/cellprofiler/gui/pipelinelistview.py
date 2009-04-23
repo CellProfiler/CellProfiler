@@ -166,9 +166,7 @@ class PipelineListView(object):
         name_attrs = wx.grid.GridCellAttr()
         name_attrs.SetReadOnly(True)
         grid.SetColAttr(MODULE_NAME_COLUMN, name_attrs)
-        grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, 
-                  self.__on_grid_left_click, grid)
-        grid.Bind(cpgrid.EVT_GRID_BUTTON, self.__on_grid_button, grid)
+        wx.grid.EVT_GRID_CELL_LEFT_CLICK(grid, self.__on_grid_left_click)
         wx.EVT_IDLE(panel,self.on_idle)
         
     def __set_min_width(self):
@@ -237,9 +235,6 @@ class PipelineListView(object):
         if event.Col == MODULE_NAME_COLUMN:
             self.select_one_module(event.Row+1)
             #event.Skip()
-    
-    def __on_grid_button(self, event):
-        pass
     
     def __on_pipeline_loaded(self,pipeline,event):
         """Repopulate the list view after the pipeline loads

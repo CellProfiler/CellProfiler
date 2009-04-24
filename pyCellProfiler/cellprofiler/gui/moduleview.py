@@ -219,8 +219,8 @@ class ModuleView:
             if self.__sizer is None:
                 self.__sizer = ModuleSizer(len(settings), 2)
                 self.module_panel.SetSizer(self.__sizer)
-            elif not reselecting:
-                self.__sizer.Reset(len(settings), 2)
+            else:
+                self.__sizer.Reset(len(settings), 2, False)
             sizer    = self.__sizer
             if reselecting:
                 self.hide_settings()
@@ -239,9 +239,9 @@ class ModuleView:
                                                 encode_label(v.text),
                                                 style=wx.ALIGN_RIGHT,
                                                 name=text_name)
+                sizer.Add(static_text,3,wx.EXPAND|wx.ALL,2)
                 if control:
                     control.Show()
-                sizer.Add(static_text,3,wx.EXPAND|wx.ALL,2)
                 self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.settings.Binary):
                     control = self.make_binary_control(v,control_name,control)
@@ -778,24 +778,25 @@ class ModuleSizer(wx.PySizer):
         self.__cols = cols
         self.__min_text_width = 150
     
-    def Reset(self, rows, cols=2):
-        windows = []
-        for j in range(self.__rows):
-            for i in range(self.__cols):
-                item = self.GetItem(self.idx(i,j))
-                if item is None:
-                    print "Missing item"
-                if item.IsWindow():
-                    window = item.GetWindow()
-                    if isinstance(window, wx.Window):
-                        windows.append(window)
-        for window in windows:
-            window.Hide()
-            window.Destroy()
+    def Reset(self, rows, cols=2, destroy_windows=True):
+        if destroy_windows:
+            windows = []
+            for j in range(self.__rows):
+                for i in range(self.__cols):
+                    item = self.GetItem(self.idx(i,j))
+                    if item is None:
+                        print "Missing item"
+                    if item.IsWindow():
+                        window = item.GetWindow()
+                        if isinstance(window, wx.Window):
+                            windows.append(window)
+            for window in windows:
+                window.Hide()
+                window.Destroy()
         self.Clear(False)    
         self.__rows = rows
         self.__cols = cols
-
+    
     def CalcMin(self):
         """Calculate the minimum from the edit controls
         """
@@ -815,6 +816,8 @@ class ModuleSizer(wx.PySizer):
         height = 0
         width  = 0
         for i in range(0,self.__rows):
+            if len(self.Children) <= self.idx(1,i):
+                break
             item = self.GetItem(self.idx(1,i))
             size = item.CalcMin()
             height += size[1]
@@ -824,6 +827,8 @@ class ModuleSizer(wx.PySizer):
     def calc_max_text_width(self):
         width = self.__min_text_width
         for i in range(0,self.__rows):
+            if len(self.Children) <= self.idx(0,i):
+                break
             item = self.GetItem(self.idx(0,i))
             control = item.GetWindow()
             assert isinstance(control,wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))

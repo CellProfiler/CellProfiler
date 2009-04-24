@@ -27,6 +27,7 @@ from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
 from maskimage import MaskImage
 from measureimageareaoccupied import MeasureImageAreaOccupied
+from measureimageintensity import MeasureImageIntensity
 from measureimagequality import MeasureImageQuality
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
@@ -50,6 +51,7 @@ def get_module_classes():
             LoadSingleImage,
             MaskImage,
             MeasureImageAreaOccupied,
+            MeasureImageIntensity,
             MeasureImageQuality,
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
@@ -77,6 +79,7 @@ def get_module_substitutions():
             "LoadSingleImage":LoadSingleImage,
             "MaskImage": MaskImage,
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,
+            "MeasureImageIntensity": MeasureImageIntensity,
             "MeasureImageQuality": MeasureImageQuality,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,

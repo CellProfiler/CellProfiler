@@ -194,7 +194,7 @@ MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %infotypeVAR11 = imagegroup indep
 MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Do you want the output images cropped according to the smallest input image? If so, the shited images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
+%textVAR12 = Do you want the output images cropped according to the smallest input image? If so, the shifted images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
 %choiceVAR12 = No
 %choiceVAR12 = Yes
 wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,12});

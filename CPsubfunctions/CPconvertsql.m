@@ -81,9 +81,10 @@ end %end of loop over object names
 
 % set a reasonable minimum
 FileNameWidth = 128;
-for fld=fieldnames(handles.Pipeline)',
-    if strfind(fld{1}, 'FileList'),
-        for str=handles.Pipeline.(fld{1}),
+prefix = 'FileList';
+for fld = fieldnames(handles.Pipeline)',
+    if strncmp(fld{1},prefix,length(prefix)),
+        for str = handles.Pipeline.(fld{1}),
             FileNameWidth = max(FileNameWidth, length(str{1}));
         end
     end
@@ -94,8 +95,9 @@ FileNameWidth = FileNameWidth + PadLength;
 
 % set a reasonable minimum
 PathNameWidth = 128;
-for fld=fieldnames(handles.Pipeline)',
-    if strfind(fld{1}, 'Pathname'),
+prefix = 'Pathname';
+for fld = fieldnames(handles.Pipeline)',
+    if strncmp(fld{1},prefix,length(prefix)),
         PathNameWidth = max(PathNameWidth, length(handles.Pipeline.(fld{1})));
     end
 end

@@ -127,7 +127,7 @@ class SliderCtl(wx.Panel):
             raise ValueError("Value %d is more than minimum (= %d)"%(new_value, self.max_value))
         if self.__stop_value == new_value:
             return
-        if new_value == self.__start_value:
+        if new_value == self.__start_value and new_value > 0:
             self.start_value = new_value-1
         self.__stop_value = new_value
         self.Refresh()
@@ -238,6 +238,8 @@ class SliderCtl(wx.Panel):
     
     def get_mark_distance(self):
         total_height = self.groove_rect.height
+        if self.min_value == self.max_value:
+            return float(total_height)
         return float(total_height) / float(self.max_value - self.min_value)
     mark_distance = property(get_mark_distance)
 

@@ -172,6 +172,8 @@ class ModuleView:
         self.__listeners = []
         self.__value_listeners = []
         self.__module = None
+        self.__sizer = None
+        self.__module_panel.SetVirtualSizeWH(0,0)
         self.__module_panel.SetupScrolling()
         wx.EVT_IDLE(module_panel,self.on_idle)
 
@@ -194,8 +196,8 @@ class ModuleView:
             for listener in self.__value_listeners:
                 listener['notifier'].remove_listener(listener['listener'])
             self.__value_listeners = []
-            self.__module_panel.DestroyChildren()
             self.__module = None
+            self.__sizer.Reset(0,2)
     
     def hide_settings(self):
         for child in self.__module_panel.Children:
@@ -205,16 +207,23 @@ class ModuleView:
         """Initialize the controls in the view to the settings of the module"""
         self.module_panel.Freeze()
         try:
-            if self.__module and self.__module.module_num == module_num:
-                self.hide_settings()
-            else:
+            reselecting         = (self.__module and
+                                   self.__module.module_num == module_num)
+            if not reselecting:
                 self.clear_selection()
             self.__module       = self.__pipeline.module(module_num)
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            settings           = self.__module.visible_settings()
-            sizer               = ModuleSizer(len(settings),2)
+            settings            = self.__module.visible_settings()
+            if self.__sizer is None:
+                self.__sizer = ModuleSizer(len(settings), 2)
+                self.module_panel.SetSizer(self.__sizer)
+            elif not reselecting:
+                self.__sizer.Reset(len(settings), 2)
+            sizer    = self.__sizer
+            if reselecting:
+                self.hide_settings()
             
             for v,i in zip(settings, range(0,len(settings))):
                 control_name = edit_control_name(v)
@@ -276,10 +285,10 @@ class ModuleView:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control,1,wx.EXPAND|wx.ALL,2)
                 self.__controls.append(control)
-            self.__module_panel.SetSizer(sizer)
             self.__module_panel.Layout()
         finally:
             self.module_panel.Thaw()
+            self.module_panel.Refresh()
     
     def make_binary_control(self,v,control_name, control):
         """Make a checkbox control for a Binary setting"""
@@ -768,10 +777,30 @@ class ModuleSizer(wx.PySizer):
         self.__rows = rows
         self.__cols = cols
         self.__min_text_width = 150
+    
+    def Reset(self, rows, cols=2):
+        windows = []
+        for j in range(self.__rows):
+            for i in range(self.__cols):
+                item = self.GetItem(self.idx(i,j))
+                if item is None:
+                    print "Missing item"
+                if item.IsWindow():
+                    window = item.GetWindow()
+                    if isinstance(window, wx.Window):
+                        windows.append(window)
+        for window in windows:
+            window.Hide()
+            window.Destroy()
+        self.Clear(False)    
+        self.__rows = rows
+        self.__cols = cols
 
     def CalcMin(self):
         """Calculate the minimum from the edit controls
         """
+        if self.__rows * self.__cols == 0:
+            return wx.Size(0,0)
         size = self.calc_edit_size()
         height = 0
         for j in range(0,self.__rows):
@@ -808,8 +837,10 @@ class ModuleSizer(wx.PySizer):
     def RecalcSizes(self):
         """Recalculate the sizes of our items, resizing the text boxes as we go  
         """
+        if self.__rows * self.__cols == 0:
+            return
         size = self.GetSize()
-        width = size[0]
+        width = size[0]-20
         edit_size = self.calc_edit_size()
         edit_width = edit_size[0] # the width of the edit controls portion
         max_text_width = self.calc_max_text_width()
@@ -846,8 +877,7 @@ class ModuleSizer(wx.PySizer):
                 item_location = panel.CalcScrolledPosition(item_location)
                 items[j].SetDimension(item_location, item_size)
             height += max(item_heights)
-        if height > panel.GetVirtualSize()[1]:
-            panel.SetVirtualSizeWH(panel.GetVirtualSize()[0],height+20)
+        panel.SetVirtualSizeWH(width,height+20)
 
     def coords(self,idx):
         """Return the column/row coordinates of an indexed item

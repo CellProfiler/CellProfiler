@@ -199,7 +199,7 @@ MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11
 %choiceVAR12 = Yes
 wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 wantImagesCropped = strncmpi(wantImagesCropped,'y',1);
-%infotypeVAR12 = popupmenu
+%inputtypeVAR12 = popupmenu
 
 %%%VariableRevisionNumber = 5
 

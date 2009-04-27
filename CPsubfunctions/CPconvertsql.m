@@ -12,7 +12,9 @@ function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,L
 %
 % $Revision$
 
-FeaturesNotToBeExported = {'Description_', 'ModuleError_', 'TimeElapsed_'};
+%%% Some objects are not exported
+ObjectsNotToBeExported = {'Experiment', 'Neighbors'};
+FeaturesNotToBeExported = {'Description_', 'ModuleError_', 'TimeElapsed_','SubObjectFlag'};
 ObjectFeaturesNotToBeAveraged = {}; %{'Mean_'};
 
 wantMeanCalculated = any(strcmpi(StatisticsCalculated,'mean'));
@@ -46,8 +48,8 @@ for ObjectCell = ObjectsToBeExported,
     % why matlab, why?
     ObjectName = ObjectCell{1};
 
-    %%% Some objects are not exported: experiments, subobjects, neighbors
-    if any(strcmp(ObjectName, {'Experiment', 'Neighbors'})) || isfield(handles.Measurements.(ObjectName), 'SubObjectFlag'),
+    %%% Some objects are not exported
+    if any(strcmp(ObjectName, ObjectsNotToBeExported)),
         continue;
     end
     
@@ -406,8 +408,8 @@ for img_idx = FirstSet:LastSet
         % why matlab, why?
         ObjectName = ObjectCell{1};
 
-        %%% Some objects are not exported: experiments, subobjects, neighbors
-        if any(strcmp(ObjectName, {'Experiment', 'Neighbors'})) || isfield(handles.Measurements.(ObjectName), 'SubObjectFlag'),
+        %%% Some objects are not exported
+        if any(strcmp(ObjectName, ObjectsNotToBeExported)),
             continue;
         end
 

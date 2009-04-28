@@ -4830,7 +4830,7 @@ else
         if isdeployed
             for i = 1:length(handles.Current.ModulesFilenames)
                 if strmatch(ModuleName,handles.Current.ModulesFilenames{i},'exact')
-                    Option = i;
+                    Option = i - 1; % Account for index mismatch between ModulesHelp and ModulesFilenames
                     break
                 end
             end
@@ -5366,7 +5366,7 @@ if isdeployed
     handles = guidata(findobj('tag','figure1'));
     for i = 1:length(handles.Current.ModulesFilenames)
         if strmatch(filename,handles.Current.ModulesFilenames{i},'exact')
-            Option = i;
+            Option = i - 1; % ModulesFilename has a heading entry and ModulesHelp does not
             break
         end
     end

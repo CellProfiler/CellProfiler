@@ -196,21 +196,25 @@ end
 %%% IMAGE ANALYSIS %%%
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
-%% Do Filtering
+% Do Filtering
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
 for i = 1:numel(Filter)
     FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
 end
-%% Renumber Objects
+
+% Renumber Objects
 x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
 x(x(:,2) > 0,2) = 1:sum(x(:,2) > 0);
 LookUpColumn = x(:,2);
 
 FinalLabelMatrixImage = LookUpColumn(FinalLabelMatrixImage+1);
 
-%%%% Find outlines
-LogicalOutlines = bwperim(FinalLabelMatrixImage);
+%%%% Find outlines (should work for both primary and secondary objects)
+MaxFilteredImage = ordfilt2(FinalLabelMatrixImage,9,ones(3,3),'symmetric');
+IntensityOutlines = FinalLabelMatrixImage - MaxFilteredImage;
+LogicalOutlines = logical(IntensityOutlines);
+%LogicalOutlines = bwperim(FinalLabelMatrixImage);
 
 %%% Determines the grayscale intensity to use for the cell outlines.
 LineIntensity = max(OrigImage(:));

@@ -351,7 +351,7 @@ elseif strcmp(Threshold,'All')
     end
 elseif strcmp(Threshold,'Set interactively')
     fieldname = ['Threshold',ImageName];
-    if SetBeingAnalyzed == StartingImageSet
+    if SetBeingAnalyzed == handles.Current.StartingImageSet
         Threshold = CPthresh_tool(OrigImage(:,:,1));
         handles = CPaddimages(handles,fieldname,Threshold);
     else

@@ -44,7 +44,7 @@ function handles = TrackObjects(handles,varargin)
 % the features measured by that module. Additional details such as the 
 % image that the measurements originated from and the scale used as
 % specified below if neccesary.
-
+%
 % Neighborhood:
 % This indicates the region (in pixels) within which objects in the
 % next frame are to be compared. To determine pixel distances, you can look

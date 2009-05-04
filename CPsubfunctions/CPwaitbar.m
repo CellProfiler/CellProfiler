@@ -6,8 +6,7 @@ function fout = CPwaitbar(varargin)
 
 % $Revision$
 
-v = ver('matlab');
-is2008b = strcmp(v.Version,'7.7');
+is2008b = str2num(strrep(strtok(version),'.','')) > 760324;
 if is2008b && nargin > 2,  % Updating previously created waitbar
     fin = varargin{2};
     userData = get(fin,'userdata');

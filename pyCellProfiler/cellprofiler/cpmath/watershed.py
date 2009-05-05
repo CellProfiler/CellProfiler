@@ -179,7 +179,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
     image = pad(image)
     markers = pad(markers)
 
-    c_image = rank_order(image).astype(numpy.int32)
+    c_image = rank_order(image)[0].astype(numpy.int32)
     c_markers = numpy.ascontiguousarray(markers,dtype=numpy.int32)
     if c_markers.ndim!=c_image.ndim:
         raise ValueError,\

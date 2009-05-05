@@ -29,7 +29,13 @@ def configuration():
                   Extension(name="_propagate",
                             sources=["_propagate.pyx", "heap.pxi"],
                             include_dirs=['src']+[get_include()],
-                            extra_compile_args=['-O3'])
+                            extra_compile_args=['-O3']),
+                  Extension(name="_filter",
+                            sources=["_filter.pyx"],
+                            include_dirs=['src']+[get_include()],
+                            extra_compile_args=['-g'],
+                            debug=True,
+                            extra_link_args=['-g'])
                   ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",

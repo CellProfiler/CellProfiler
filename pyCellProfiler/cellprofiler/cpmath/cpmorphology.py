@@ -10,7 +10,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision: 1 "
+__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage
@@ -1210,3 +1210,57 @@ def block(shape, block_shape):
     labels = i * block_shape[0] + j
     indexes = np.array(range(np.product(block_shape)))
     return labels, indexes
+
+def white_tophat(image, radius, mask=None):
+    '''White tophat filter an image using a circular structuring element
+    
+    image - image in question
+    radius - radius of the circular structuring element
+    mask  - mask of significant pixels in the image. Points outside of
+            the mask will not participate in the morphological operations
+    '''
+    #
+    # Subtract the opening to get the tophat
+    #
+    final_image = image - opening(image, radius, mask) 
+    #
+    # Paint the masked pixels into the final image
+    #
+    if not mask is None:
+        not_mask = np.logical_not(mask)
+        final_image[not_mask] = image[not_mask]
+    return final_image
+
+def opening(image, radius, mask=None):
+    '''Do a morphological opening
+    
+    image - pixel image to operate on
+    radius - use a structuring element with the given radius
+    mask - if present, only use unmasked pixels for operations
+    '''
+    strel = strel_disk(radius)==1
+    strel_size = (radius*2+1,radius*2+1)
+    #
+    # First, do a grey_erosion with masked pixels = 1 so they don't participate
+    #
+    big_image = np.ones(np.array(image.shape)+radius*2)
+    big_image[radius:-radius,radius:-radius] = image
+    if not mask is None:
+        not_mask = np.logical_not(mask)
+        big_image[radius:-radius,radius:-radius][not_mask] = 1
+    processed_image = scipy.ndimage.grey_erosion(big_image,
+                                                 footprint=strel)
+    #
+    # Then do a grey_dilation with masked pixels = 0 so they don't participate
+    #
+    big_image[:,:] = 0
+    big_image[radius:-radius,radius:-radius] =\
+        processed_image[radius:-radius,radius:-radius]
+    if not mask is None:
+        big_image[radius:-radius,radius:-radius][not_mask] = 0
+    scipy.ndimage.grey_dilation(big_image, footprint = strel,
+                                output=processed_image)
+    final_image = processed_image[radius:-radius,radius:-radius]
+    if not mask is None:
+        final_image[not_mask] = image[not_mask]
+    return final_image

@@ -153,7 +153,6 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.illumination_image_name.value = "OutputImage"
         module.rescale_option.value = cps.YES
         module.dilate_objects.value = False
-        sys.stderr.write("TO_DO: Median filter does not respect masks\n")
         
         for ea in (calc.EA_EACH, calc.EA_ALL):
             module.each_or_all.value = ea
@@ -161,7 +160,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 module.intensity_choice = intensity_choice
                 for smoothing_method \
                  in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
-                     calc.SM_GAUSSIAN_FILTER, # calc.SM_MEDIAN_FILTER, 
+                     calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
                      calc.SM_TO_AVERAGE):
                     module.smoothing_method.value = smoothing_method
                     for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 

@@ -25,6 +25,7 @@ import cellprofiler.preferences as cpp
 import cellprofiler.cpmath.cpmorphology as cpmm
 from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
+from cellprofiler.cpmath.filter import median_filter
 
 IC_REGULAR         = "Regular"
 IC_BACKGROUND      = "Background"
@@ -502,11 +503,8 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
             output_pixels = smooth_with_function_and_mask(pixel_data, fn,
                                                           image.mask)
         elif self.smoothing_method == SM_MEDIAN_FILTER:
-            # IMG-78
-            # TO-DO - make median filter obey mask
-            # TO-DO - make median filter use a circular structuring element
             filter_sigma = max(1, int(sigma+.5))
-            output_pixels = scind.median_filter(pixel_data, filter_sigma)
+            output_pixels = median_filter(pixel_data, image.mask, filter_sigma)
         elif self.smoothing_method == SM_TO_AVERAGE:
             if image.has_mask:
                 mean = np.mean(pixel_data[image.mask])

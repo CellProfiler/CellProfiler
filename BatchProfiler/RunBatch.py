@@ -170,7 +170,6 @@ def RunOne(my_batch,run):
     x["write_data_yes"]=(my_batch["write_data"]!=0 and "yes") or "no"
     cmd=["bsub",
          "-q","%(queue)s"%(x),
-         "-R",'"rusage[neon_io=3]"',
          "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
          "%(cpcluster)s/CPCluster.py"%(x),
          "%(data_dir)s/Batch_data.mat"%(x),
@@ -182,7 +181,7 @@ def RunOne(my_batch,run):
          "%(timeout)d"%(x)]
     cmd = ' '.join(cmd)
     old_environ = SetEnvironment(my_batch)
-    p=os.popen(". /broad/lsf/conf/profile.lsf;"+cmd,'r')
+    p=os.popen(". /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
     output=p.read()
     exit_code=p.close()
     RestoreEnvironment(old_environ)

@@ -478,6 +478,11 @@ if strcmp(CurrentModuleName, 'Relate')
         SavedVarRevNum = 3;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 3      % Argument 3 has been changed
+        Settings.VariableValues{ModuleNum-Skipped,3} = 'Do not use';
+        SavedVarRevNum = 4;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

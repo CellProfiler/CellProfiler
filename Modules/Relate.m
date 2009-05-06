@@ -80,9 +80,11 @@ SubObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,1});
 %inputtypeVAR02 = popupmenu
 ParentName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
-%textVAR03 = Do you want to find minimum distances of each child to its parent?
-%choiceVAR03 = No
-%choiceVAR03 = Yes
+%textVAR03 = Do you want to calculate distances of each child to its parent, and if so, what kind?
+%choiceVAR03 = Do not use
+%choiceVAR03 = Centroid
+%choiceVAR03 = Minimum
+%choiceVAR03 = Both
 %inputtypeVAR03 = popupmenu
 FindParentChildDistances = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
@@ -100,7 +102,7 @@ FindMeanMeasurements = char(handles.Settings.VariableValues{CurrentModuleNum,5})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%VariableRevisionNumber = 3
+%%%VariableRevisionNumber = 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS %%%
@@ -111,7 +113,11 @@ drawnow
 wantMeanMeasurements = strncmpi(FindMeanMeasurements,'y',1);
 
 % Do we want to calculate minimum distances?
-wantMinDistances = strncmpi(FindParentChildDistances,'y',1);
+wantDistancesCalculated = ~strcmp(FindParentChildDistances,'Do not use');
+if wantDistancesCalculated
+    wantMinimumDistances = any(strncmpi(FindParentChildDistances,{'m','b'},1));
+    wantCenteredDistances = any(strncmpi(FindParentChildDistances,{'c','b'},1));
+end
 
 %%% Retrieves the label matrix image that contains the edited primary
 %%% segmented objects.
@@ -155,36 +161,56 @@ drawnow
     SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
 handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
 
-if wantMinDistances
+if wantDistancesCalculated
     % Save Distance 'Features'
-
-    % Calcuate the smallest distance from each Child to their Parent
-    % If no parent exists, then Distance = NaN
-
     if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
-
         for thisParent = ParentName %% Will need to change if we add more StepParents
-            % Calculate perimeters for all parents simultaneously
-            DistTransAll = CPlabelperim((CPretrieveimage(handles,['Segmented' thisParent{1}],ModuleName)));
-            Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
             if max(ParentsOfChildren) > 0,
-                for iParentsOfChildren = 1:max(ParentsOfChildren)
-                    % Calculate distance transform to perimeter of Parent objects
-                    DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
+                if wantMinimumDistances
+                    % Calcuate the smallest distance from each Child to their Parent
+                    % If no parent exists, then Distance = NaN
+                
+                    % Calculate perimeters for all parents simultaneously
+                    DistTransAll = CPlabelperim((CPretrieveimage(handles,['Segmented' thisParent{1}],ModuleName)));
+                    Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
+                    for iParentsOfChildren = 1:max(ParentsOfChildren)
+                        % Calculate distance transform to perimeter of Parent objects
+                        DistTrans = (bwdist(DistTransAll == iParentsOfChildren));
 
-                    % Get location of each child object
-                    ChList = find(ParentsOfChildren == iParentsOfChildren);
-                    ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
-                    ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
-                    roundedChLocX = round(ChildrenLocationsX);
-                    roundedChLocY= round(ChildrenLocationsY);
-                    idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
-                    Dist = DistTrans(idx);
-                    Dists(ChList) = Dist;
+                        % Get location of each child object
+                        ChList = find(ParentsOfChildren == iParentsOfChildren);
+                        ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
+                        ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
+                        roundedChLocX = round(ChildrenLocationsX);
+                        roundedChLocY= round(ChildrenLocationsY);
+                        idx = sub2ind(size(DistTrans),roundedChLocY(:,1), roundedChLocX(:,1));
+                        Dist = DistTrans(idx);
+                        Dists(ChList) = Dist;
+                    end
+                    handles = CPaddmeasurements(handles,SubObjectName,['MinimumDistance_' thisParent{1}], Dists);
                 end
-                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], Dists);
+                if wantCenteredDistances
+                    % Calcuate the centroid-to-centroid distance from each Child to their Parent
+                    Dists = zeros(max(SubObjectLabelMatrix(:)), 1);
+                    for iParentsOfChildren = 1:max(ParentsOfChildren)
+                        ChList = find(ParentsOfChildren == iParentsOfChildren);
+                        ChildrenLocationsX = handles.Measurements.(SubObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed}(ChList,:);
+                        ChildrenLocationsY = handles.Measurements.(SubObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed}(ChList,:);
+                        ParentLocationsX = handles.Measurements.(thisParent{1}).Location_Center_X{handles.Current.SetBeingAnalyzed}(iParentsOfChildren,:);
+                        ParentLocationsY = handles.Measurements.(thisParent{1}).Location_Center_Y{handles.Current.SetBeingAnalyzed}(iParentsOfChildren,:);
+                        ParentLocationsX = repmat(ParentLocationsX,[length(ChildrenLocationsX) 1]);
+                        ParentLocationsY = repmat(ParentLocationsY,[length(ChildrenLocationsY) 1]);
+                        Dists(ChList) = sqrt((ChildrenLocationsX - ParentLocationsX).^2 + (ChildrenLocationsY - ParentLocationsY).^2);
+                    end
+                    handles = CPaddmeasurements(handles,SubObjectName,['CenteredDistance_' thisParent{1}], Dists);
+                end
             else
-                handles = CPaddmeasurements(handles,SubObjectName,['Distance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
+                if wantMinimumDistances
+                    handles = CPaddmeasurements(handles,SubObjectName,['MinimumDistance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
+                end
+                if wantMinimumDistances
+                    handles = CPaddmeasurements(handles,SubObjectName,['CenteredDistance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
+                end
             end
         end
     else

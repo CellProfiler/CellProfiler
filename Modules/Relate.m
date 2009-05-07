@@ -1,4 +1,4 @@
-function handles = Relate(handles)
+function handles = Relate(handles,varargin)
 
 % Help for the Relate module:
 % Category: Object Processing
@@ -100,7 +100,35 @@ ParentName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 %inputtypeVAR05 = popupmenu
 FindMeanMeasurements = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%
+%%% FEATURES  %%%
+%%%%%%%%%%%%%%%%%
+
+if nargin > 1 
+    switch varargin{1}
+%feature:categories
+        case 'categories'
+            if nargin == 1 || ismember(varargin{2},{SubObjectName})
+                result = { 'Distance','NormDistance' };
+            else
+                result = {};
+            end
+
+%feature:measurements
+        case 'measurements'
+            if ismember(varargin{2},{SubObjectName}) && any(strcmp(varargin{3},{'Distance','NormDistance'}))
+                result = {'Minimum','Centroid'};
+            else
+                result = {};
+            end
+        otherwise
+            error(['Unhandled category: ',varargin{1}]);
+    end
+    handles = result;
+    return;
+end
+
 
 %%%VariableRevisionNumber = 4
 
@@ -162,6 +190,7 @@ drawnow
 handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
 
 if wantDistancesCalculated
+    DistancePrefix = 'Distance';
     % Save Distance 'Features'
     if isfield(handles.Measurements.(SubObjectName),'Location_Center_X')
         for thisParent = ParentName %% Will need to change if we add more StepParents
@@ -187,7 +216,7 @@ if wantDistancesCalculated
                         Dist = DistTrans(idx);
                         Dists(ChList) = Dist;
                     end
-                    handles = CPaddmeasurements(handles,SubObjectName,['MinimumDistance_' thisParent{1}], Dists);
+                    handles = CPaddmeasurements(handles,SubObjectName,CPjoinstrings(DistancePrefix,'Minimum',thisParent{1}),Dists);
                 end
                 if wantCenteredDistances
                     % Calcuate the centroid-to-centroid distance from each Child to their Parent
@@ -202,14 +231,14 @@ if wantDistancesCalculated
                         ParentLocationsY = repmat(ParentLocationsY,[length(ChildrenLocationsY) 1]);
                         Dists(ChList) = sqrt((ChildrenLocationsX - ParentLocationsX).^2 + (ChildrenLocationsY - ParentLocationsY).^2);
                     end
-                    handles = CPaddmeasurements(handles,SubObjectName,['CenteredDistance_' thisParent{1}], Dists);
+                    handles = CPaddmeasurements(handles,SubObjectName,CPjoinstrings(DistancePrefix,'Centroid',thisParent{1}), Dists);
                 end
             else
                 if wantMinimumDistances
-                    handles = CPaddmeasurements(handles,SubObjectName,['MinimumDistance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
+                    handles = CPaddmeasurements(handles,SubObjectName,CPjoinstrings(DistancePrefix,'Minimum',thisParent{1}), nan(max(length(NumberOfChildren),1), 1));
                 end
                 if wantMinimumDistances
-                    handles = CPaddmeasurements(handles,SubObjectName,['CenteredDistance_' thisParent{1}], nan(max(length(NumberOfChildren),1), 1));
+                    handles = CPaddmeasurements(handles,SubObjectName,CPjoinstrings(DistancePrefix,'Centroid',thisParent{1}), nan(max(length(NumberOfChildren),1), 1));
                 end
             end
         end
@@ -220,13 +249,25 @@ if wantDistancesCalculated
     % Calculate normalized distances
     % All distances are relative to the *first* parent.
     if length(ParentName) > 1
-        FirstParentDist =   handles.Measurements.(SubObjectName).(['Distance_',ParentName{1}]){handles.Current.SetBeingAnalyzed};
-        OtherObjDist =      handles.Measurements.(SubObjectName).(['Distance_',ParentName{2}]){handles.Current.SetBeingAnalyzed};
-        NormDist = FirstParentDist ./ sum([FirstParentDist OtherObjDist],2);
-        NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent)
+        NormDistancePrefix = 'NormDistance';
+        if wantCenteredDistances
+            FirstParentDist =   handles.Measurements.(SubObjectName).(CPjoinstrings(NormDistancePrefix,'Centroid',thisParent{1})){handles.Current.SetBeingAnalyzed};
+            OtherObjDist =      handles.Measurements.(SubObjectName).(CPjoinstrings(NormDistancePrefix,'Centroid',thisParent{2})){handles.Current.SetBeingAnalyzed};
+            NormDist = FirstParentDist ./ sum([FirstParentDist OtherObjDist],2);
+            NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent)
 
-        % Save normalized distances
-        handles = CPaddmeasurements(handles,SubObjectName, ['NormDistance_',ParentName{1}],NormDist);
+            % Save normalized distances
+            handles = CPaddmeasurements(handles,SubObjectName, CPjoinstrings(NormDistancePrefix,'Centroid',ParentName{1}),NormDist);
+        end
+        if wantMinimumDistances
+            FirstParentDist =   handles.Measurements.(SubObjectName).(CPjoinstrings(NormDistancePrefix,'Minimum',thisParent{1})){handles.Current.SetBeingAnalyzed};
+            OtherObjDist =      handles.Measurements.(SubObjectName).(CPjoinstrings(NormDistancePrefix,'Minimum',thisParent{2})){handles.Current.SetBeingAnalyzed};
+            NormDist = FirstParentDist ./ sum([FirstParentDist OtherObjDist],2);
+            NormDist(isnan(NormDist)) = 0;  %% In case sum(Dist,2) == 0 for any reason (no parents/child, or child touching either parent)
+
+            % Save normalized distances
+            handles = CPaddmeasurements(handles,SubObjectName, CPjoinstrings(NormDistancePrefix,'Minimum',ParentName{1}),NormDist);
+        end
     end
 end
 

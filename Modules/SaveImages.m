@@ -201,7 +201,7 @@ ColorMap = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 %defaultVAR12 = Do not use
 OptionalParameters = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 
-%textVAR13 = Update file names within CellProfiler? See help for details.
+%textVAR13 = (If "Every cycle" chosen for When To Save) Update file names within CellProfiler? See help for details.
 %choiceVAR13 = No
 %choiceVAR13 = Yes
 UpdateFileOrNot = char(handles.Settings.VariableValues{CurrentModuleNum,13});
@@ -399,14 +399,22 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     %%% Creates the fields that the LoadImages module normally creates when
     %%% loading images.
     if strcmpi(UpdateFileOrNot,'Yes')
-        %%% Stores file and path name data in handles.Pipeline.
-        handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
-        handles.Pipeline.(['Pathname',ImageName]) = PathName;
+        if strcmpi(SaveWhen,'Every cycle')
+            %%% Stores file and path name data in handles.Pipeline.
+            handles.Pipeline.(['FileList',ImageName])(SetBeingAnalyzed) = {FileName};
+            handles.Pipeline.(['Pathname',ImageName]) = PathName;
 
-        handles = CPaddmeasurements(handles, 'Image', ...
-				    ['FileName_', ImageName], FileName);
-        handles = CPaddmeasurements(handles, 'Image', ...
-				    ['PathName_', ImageName], PathName);
+            handles = CPaddmeasurements(handles, 'Image', ...
+                        ['FileName_', ImageName], FileName);
+            handles = CPaddmeasurements(handles, 'Image', ...
+                        ['PathName_', ImageName], PathName);
+        else
+            if strcmp(handles.Settings.ModuleNames{end},'CreateBatchFiles') && (SetBeingAnalyzed == 1)  && ~isfield(handles.Current, 'BatchInfo')
+                CPwarndlg('To save the image to the pipeline, you must select "Every cycle" for "At what point in the pipeline do you want to save the image?". To prevent an error from occurring, this setting will be ignored.', ['Warning in ',ModuleName],'replace');
+            else
+                warning('To save the image to the pipeline, you must select "Every cycle" for "At what point in the pipeline do you want to save the image?". To prevent an error from occurring, this setting will be ignored.');
+            end
+        end
     end
 
     FileAndPathName = fullfile(PathName, FileName);

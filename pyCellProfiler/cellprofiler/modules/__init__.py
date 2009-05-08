@@ -33,6 +33,7 @@ from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
 from measuretexture import MeasureTexture
 from saveimages import SaveImages
+from smooth import Smooth
 
 def get_module_classes():
     return [ApplyThreshold,
@@ -56,7 +57,8 @@ def get_module_classes():
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
             MeasureTexture,
-            SaveImages ]
+            SaveImages,
+            Smooth ]
 
 def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
@@ -84,7 +86,8 @@ def get_module_substitutions():
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
             "MeasureTexture": MeasureTexture,
-            "SaveImages": SaveImages
+            "SaveImages": SaveImages,
+            "SmoothOrEnhance": Smooth
             }
     
 

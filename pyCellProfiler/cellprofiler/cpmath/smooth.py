@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
+import scipy.linalg
 
 def smooth_with_noise(image, bits):
     """Smooth the image with a per-pixel random multiplier
@@ -76,3 +77,22 @@ def circular_gaussian_kernel(sd,radius):
     #
     kernel = kernel / np.sum(kernel)
     return kernel
+
+def fit_polynomial(pixel_data, mask):
+    '''Return an "image" which is a polynomial fit to the pixel data
+    
+    Fit the image to the polynomial Ax**2+By**2+Cxy+Dx+Ey+F
+    '''
+    mask = np.logical_and(mask,pixel_data > 0)
+    if not np.any(mask):
+        return pixel_data
+    x,y = np.mgrid[0:pixel_data.shape[0],0:pixel_data.shape[1]]
+    x2 = x*x
+    y2 = y*y
+    xy = x*y
+    o  = np.ones(pixel_data.shape)
+    a = np.array([x[mask],y[mask],x2[mask],y2[mask],xy[mask],o[mask]])
+    coeffs = scipy.linalg.lstsq(a.transpose(),pixel_data[mask])[0]
+    output_pixels = np.sum([coeff * index for coeff, index in
+                            zip(coeffs, [x,y,x2,y2,xy,o])],0)
+    return output_pixels

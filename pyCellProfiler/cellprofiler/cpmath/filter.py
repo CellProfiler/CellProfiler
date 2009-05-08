@@ -164,6 +164,8 @@ def bilateral_filter(image, mask, sigma_spatial, sigma_range,
     if sampling_range is None:
         sampling_range = sigma_range / 2.0
     
+    if np.all(np.logical_not(mask)):
+        return image
     masked_image = image[mask]
     image_min = np.min(masked_image)
     image_max = np.max(masked_image)
@@ -176,9 +178,9 @@ def bilateral_filter(image, mask, sigma_spatial, sigma_range,
     #
     ds_sigma_spatial = sigma_spatial / sampling_spatial
     ds_sigma_range   = sigma_range / sampling_range
-    ds_i_limit       = int(image.shape[0] / sampling_spatial) + 1
-    ds_j_limit       = int(image.shape[1] / sampling_spatial) + 1
-    ds_z_limit       = int(image_delta / sampling_range) + 1
+    ds_i_limit       = int(image.shape[0] / sampling_spatial) + 2
+    ds_j_limit       = int(image.shape[1] / sampling_spatial) + 2
+    ds_z_limit       = int(image_delta / sampling_range) + 2
     
     grid_data    = np.zeros((ds_i_limit, ds_j_limit, ds_z_limit))
     grid_weights = np.zeros((ds_i_limit, ds_j_limit, ds_z_limit))

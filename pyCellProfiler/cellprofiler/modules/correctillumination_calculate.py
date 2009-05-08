@@ -25,6 +25,7 @@ import cellprofiler.preferences as cpp
 import cellprofiler.cpmath.cpmorphology as cpmm
 from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
+from cellprofiler.cpmath.smooth import fit_polynomial
 from cellprofiler.cpmath.filter import median_filter
 
 IC_REGULAR         = "Regular"
@@ -479,18 +480,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
         pixel_data = image.pixel_data
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
-            mask = np.logical_and(image.mask,pixel_data > 0)
-            if not np.any(mask):
-                return image
-            x,y = np.mgrid[0:pixel_data.shape[0],0:pixel_data.shape[1]]
-            x2 = x*x
-            y2 = y*y
-            xy = x*y
-            o  = np.ones(pixel_data.shape)
-            a = np.array([x[mask],y[mask],x2[mask],y2[mask],xy[mask],o[mask]])
-            coeffs = scipy.linalg.lstsq(a.transpose(),pixel_data[mask])[0]
-            output_pixels = np.sum([coeff * index for coeff, index in
-                                    zip(coeffs, [x,y,x2,y2,xy,o])],0)
+            output_pixels = fit_polynomial(pixel_data, image.mask) 
         elif self.smoothing_method == SM_GAUSSIAN_FILTER:
             #
             # Smoothing with the mask is good, even if there's no mask

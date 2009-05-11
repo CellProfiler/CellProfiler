@@ -254,7 +254,7 @@ end
 
 %%% Reads the images.
 Images = cell(1,length(Functions)+1);
-Images{1} = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
+Images{1} = CPretrieveimage(handles,ImageName,ModuleName,'MustBeBinary','CheckScale');
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%% IMAGE ANALYSIS %%%

@@ -16,6 +16,7 @@ from colortogray import ColorToGray
 from correctillumination_calculate import CorrectIllumination_Calculate
 from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
+from enhanceorsuppressspeckles import EnhanceOrSuppressSpeckles
 from exporttodatabase import ExportToDatabase
 from exporttoexcel import ExportToExcel
 from filterbyobjectmeasurement import FilterByObjectMeasurement
@@ -41,6 +42,7 @@ def get_module_classes():
             CorrectIllumination_Calculate,
             CorrectIllumination_Apply,
             Crop,
+            EnhanceOrSuppressSpeckles,
             ExportToDatabase,
             ExportToExcel,
             FilterByObjectMeasurement,

@@ -831,19 +831,26 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name())
             return cpimage.Image(imgdata["Image"])
         img = PIL.Image.open(self.get_full_name())
-        # There's an apparent bug in the PIL library that causes
-        # images to be loaded upside-down. At best, load and save have opposite
-        # orientations; in other words, if you load an image and then save it
-        # the resulting saved image will be upside-down
-        img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
         if img.mode=='I;16':
             # 16-bit image
-            imgdata = numpy.array(img.getdata(),numpy.uint16)
+            # deal with the endianness explicitly... I'm not sure
+            # why PIL doesn't get this right.
+            imgdata = numpy.fromstring(img.tostring(),numpy.uint8)
+            imgdata.shape=(int(imgdata.shape[0]/2),2)
+            imgdata = imgdata.astype(numpy.uint16)
+            hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
+            imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
             img_size = list(img.size)
             img_size.reverse()
-            img = imgdata.reshape(img_size)
-            img = img.astype(float) / 65535.0
+            new_img = imgdata.reshape(img_size)
+            # The magic # for maximum sample value is 281
+            img = new_img.astype(float) / img.tag[281][0] 
         else:
+            # There's an apparent bug in the PIL library that causes
+            # images to be loaded upside-down. At best, load and save have opposite
+            # orientations; in other words, if you load an image and then save it
+            # the resulting saved image will be upside-down
+            img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
             img = matplotlib.image.pil_to_array(img)
         return cpimage.Image(img)
     

@@ -262,19 +262,38 @@ def RunOutFilePath(batch,run):
     return "%(data_dir)s/status/"%(batch)+RunOutFile(run)
 
 def GetJobStatus(job_id):
-    p=os.popen(". /broad/lsf/conf/profile.lsf;bjobs %d"%(job_id),"r")
-    fields=p.readline()
-    if not re.match("Job <[0-9]+> is not found",fields):
+    '''Get the status of a single job or a sequence of jobs on imageweb'''
+    if isinstance(job_id, basestring) or getattr(job_id, '__iter__', False):
+        result = {}
+        for i in job_id:
+            result[i] = {}
+        p=os.popen(". /broad/lsf/conf/profile.lsf;bjobs -w -u imageweb")
+        fields = p.readline().strip()
+        if fields.startswith('No unfinished'):
+            return result
         fields = fields.split()
+        for line in p.readlines():
+            line = line.strip()
+            values = line.split()
+            id = int(values[0])
+            for field,value in zip(fields,values):
+                if result.has_key(id):
+                    result[id][field] = value
+        return result
     else:
+        p=os.popen(". /broad/lsf/conf/profile.lsf;bjobs %d"%(job_id),"r")
+        fields=p.readline()
+        if not re.match("Job <[0-9]+> is not found",fields):
+            fields = fields.split()
+        else:
+            p.close()
+            return
+        values=p.readline().split()
         p.close()
-        return
-    values=p.readline().split()
-    p.close()
-    result = {}
-    for i in range(len(fields)):
-        result[fields[i]]=values[i]
-    return result
+        result = {}
+        for i in range(len(fields)):
+            result[fields[i]]=values[i]
+        return result
 
 def GetCPUTime(batch, run):
     try:

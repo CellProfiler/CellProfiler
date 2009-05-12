@@ -19,6 +19,9 @@ batch_id = int(form["batch_id"].value)
 my_batch = RunBatch.LoadBatch(batch_id)
 jobs_by_state = {}
 
+job_ids = [run["job_id"] for run in my_batch["runs"]]
+job_dictionary = RunBatch.GetJobStatus(job_ids)
+           
 for run in my_batch["runs"]:
     stat  = "Unknown"
     if os.path.isfile(RunBatch.RunDoneFilePath(my_batch,run)):
@@ -26,7 +29,7 @@ for run in my_batch["runs"]:
     elif run["job_id"]==None:
         pass
     else :
-        job_status = RunBatch.GetJobStatus(run["job_id"])
+        job_status = job_dictionary(run["job_id"])
         if job_status and job_status.has_key("STAT"):
             stat = job_status["STAT"]
     run["status"]=stat;

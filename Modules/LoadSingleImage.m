@@ -174,7 +174,7 @@ if doFirstCycleOnly || doTokensExist,
         else
             Pathname = fullfile(handles.Current.DefaultOutputDirectory,strrep(strrep(Pathname(2:end),'/',filesep),'\',filesep),'');
         end
-    else CPwarndlg('It is advisable to use RELATIVE path names, i.e. begin your path with either ''.'' or ''&''')
+    else CPwarndlg('It is advisable to use RELATIVE path names, i.e. begin your path with either ''.'' or ''&''',[ModuleName,': Pathname warning'],'replace');
     end
 
     SpecifiedPathname = Pathname;

@@ -4692,8 +4692,16 @@ else
                         end
                         handles.Pipeline = tempPipe;
                     end
-                    try eval(['save ''',fullfile(handles.Current.DefaultOutputDirectory, ...
-                            get(handles.OutputFileNameEditBox,'string')), ''' ''handles'';'])
+                    try 
+                        % Save the output file
+                        [msg_orig,id_orig] = lastwarn;
+                        save(fullfile(handles.Current.DefaultOutputDirectory,get(handles.OutputFileNameEditBox,'string')),'handles');
+                        [msg_new,id_new] = lastwarn;
+                        % Check if the save was skipped due to large size.
+                        % If so, save with v7.3 switch
+                        if ~strcmp(id_orig,id_new) && ~isempty(strfind(msg_new,'use the -v7.3 switch'))
+                            save(fullfile(handles.Current.DefaultOutputDirectory,get(handles.OutputFileNameEditBox,'string')),'handles','-v7.3');
+                        end
                     catch CPerrordlg('There was an error saving the output file. Please check whether you have permission and space to write to that location.');
                         break;
                     end

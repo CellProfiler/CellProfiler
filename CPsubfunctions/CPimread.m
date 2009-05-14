@@ -20,7 +20,7 @@ function LoadedImage = CPimread(CurrentFileName, flex_idx)
 
 if nargin == 0 %returns the vaild image extensions
     formats = imformats;
-    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'} {'raw'},{'flex'}]; %LoadedImage is not a image here, but rather a set
+    LoadedImage = [cat(2, formats.ext) {'dib'} {'mat'} {'fig'} {'zvi'} {'raw'},{'flex'},{'c01'}]; %LoadedImage is not a image here, but rather a set
     return
 elseif nargin == 1,
     % The following lines make sure that all directory separation
@@ -33,7 +33,7 @@ elseif nargin == 1,
     
     
     
-    if strcmp('.DIB', upper(ext)),
+    if strcmpi('.DIB', ext),
         %%% Opens this non-Matlab readable file format.  Compare to
         %%% Matlab Central file id 11096, which does the same thing.
 	%%% The DIB (Device Independent Bitmap) format is a format %%
@@ -83,7 +83,7 @@ elseif nargin == 1,
 	  LoadedImage(:,:,c) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
 	end
         fclose(fid);
-    elseif strcmp('.RAW',upper(ext)),
+    elseif strcmpi('.RAW',ext),
         fid = fopen(CurrentFileName,'r');
         if (fid == -1),
             error(['The file ', CurrentFileName, ' could not be opened. CellProfiler attempted to open it in RAW file format.']);
@@ -108,14 +108,14 @@ elseif nargin == 1,
 	  LoadedImage(:,:,1) = reshape(Data, [Width Height])' / (2^BitDepth - 1);
     fclose(fid);
     
-    elseif strcmp('.MAT',upper(ext))
+    elseif strcmpi('.MAT',ext)
         load(CurrentFileName);
         if exist('Image','var')
             LoadedImage = Image;
         else
             error('Was unable to load the image.  This could be because the .mat file specified is not a proper image file');
         end
-    elseif strcmp('.ZVI',upper(ext))
+    elseif strcmpi('.ZVI',ext)
         try
             % Read (open) the image you want to analyze and assign it to a variable,
             % "LoadedImage".
@@ -124,12 +124,30 @@ elseif nargin == 1,
         catch
             error(['Image processing was canceled because the module could not load the image "', CurrentFileName, '" in directory "', pwd,'".  The error message was "', lasterr, '"'])
         end
-    elseif strcmp('.FLEX',upper(ext))
+    elseif strcmpi('.FLEX',ext)
         CPwarndlg('Flex files support is still under development.  The image displayed is likely only the first image within the file')
         % TODO: Display subplots of all images within one flex file (can
         % happen when image double-clicked in main GUI)
         % For now, we will just disaply the first image...
         LoadedImage = im2double(imread(CurrentFileName));
+    elseif strcmpi('.C01',ext)
+        if isdeployed
+            pathstr = fullfile(ctfroot,'CPsubfunctions');
+        else
+            pathstr = fullfile(fileparts(which('CellProfiler')),'CPsubfunctions');
+        end
+        warning('off','MATLAB:Java:DuplicateClass');
+        warning('off','MATLAB:javaclasspath:jarAlreadySpecified');
+        javaaddpath(pathstr);
+        warning('on','MATLAB:Java:DuplicateClass');
+        warning('on','MATLAB:javaclasspath:jarAlreadySpecified');
+        c = CPcellomicsdata(CurrentFileName);
+        if c.nbits == 16
+            element_type = 'uint16';
+        else
+            element_type = 'uint8';
+        end;
+        LoadedImage = im2double(reshape(typecast(c.buffer,element_type),c.width,c.height));
     else
         try
             if IsGenePix(CurrentFileName)

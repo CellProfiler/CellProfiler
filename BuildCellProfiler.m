@@ -95,10 +95,10 @@ switch lower(usage),
         if str2double(version_info.Version) >= 7.6, %Must include -C to produce separate CTF file
             if ispc  % Add icon to argument list
                mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
-                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg' -M './IconForWindows.res';
+                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg' -a './CPsubfunctions/CPcellomicsdata.class' -M './IconForWindows.res';
            else
                mcc -m -C CellProfiler -I ./Modules -I ./DataTools -I ./ImageTools ...
-                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg';
+                 -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg' -a './CPsubfunctions/CPcellomicsdata.class';
            end
         else
             error('You need to have MATLAB version 7.6 (2008a) or above to run this command.')
@@ -208,7 +208,7 @@ switch lower(usage),
         % Compile
         disp('Building CPCluster.m....');
         mcc -C -R -nodisplay -m CPCluster.m -I ./Modules -I ./DataTools -I ./ImageTools ...
-            -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg'
+            -I ./CPsubfunctions -I ./Help -a './CPsubfunctions/CPsplash.jpg' -a './CPsubfunctions/CPcellomicsdata.class'
         disp('Finished building');
 
         % Extract the CTF archive (without running the executable)

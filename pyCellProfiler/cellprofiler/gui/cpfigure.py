@@ -224,7 +224,7 @@ class CPFigureFrame(wx.Frame):
         if title != None:
             self.set_subplot_title(title, x, y)
     
-    def subplot_imshow_color(self, x, y, image, title, clear=True, 
+    def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
                              normalize=True):
         if clear:
             self.clear_subplot(x, y)

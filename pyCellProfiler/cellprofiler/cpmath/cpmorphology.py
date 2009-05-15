@@ -16,7 +16,8 @@ import numpy as np
 import scipy.ndimage
 import scipy.sparse
 import _cpmorphology
-from outline import outline 
+from outline import outline
+from rankorder import rank_order 
 
 def fill_labeled_holes(image):
     """Fill holes in objects in a labeled image
@@ -1264,3 +1265,94 @@ def opening(image, radius, mask=None):
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image
+
+def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
+    '''Return a binary mask containing only points that are regional maxima
+    
+    image     - image to be transformed
+    mask      - mask of relevant pixels
+    structure - binary structure giving the neighborhood and connectivity
+                in which to search for maxima. Default is 8-connected.
+    ties_are_ok - if this is true, then adjacent points of the same magnitude
+                  are rated as maxima. 
+    
+    Find locations for which all neighbors as defined by the structure have
+    lower values. The algorithm selects only one of a set of adjacent locations
+    with identical values, first using a distance transform to find the
+    innermost location, then, among equals, selected randomly.
+    
+    A location cannot be a local maximum if it is touching the edge or a
+    masked pixel.
+    '''
+    if not ties_are_ok:
+        #
+        # Get an an initial pass with the ties.
+        #
+        result = regional_maximum(image, mask, structure, True)
+        if not np.any(result):
+            return result
+        distance = scipy.ndimage.distance_transform_edt(result)
+        #
+        # Rank-order the distances and then add a randomizing factor
+        # to break ties for pixels equidistant from the background.
+        # Pick the best value within a contiguous region
+        #
+        labels, label_count = scipy.ndimage.label(result, 
+                                                  scipy.ndimage.generate_binary_structure(2,2))
+        np.random.seed(0)
+        ro_distance = rank_order(distance)[0].astype(float)
+        count = np.product(ro_distance.shape)
+        ro_distance.flat += (np.random.permutation(count).astype(float) / 
+                             float(count))
+        positions = scipy.ndimage.maximum_position(ro_distance, labels,
+                                                   np.arange(label_count)+1)
+        positions = np.array(positions)
+        result = np.zeros(image.shape, bool)
+        if positions.ndim == 1:
+            result[positions[0],positions[1]] = True
+        else:
+            result[positions[:,0],positions[:,1]] = True
+        return result
+    result = np.ones(image.shape,bool)
+    if structure == None:
+        structure = scipy.ndimage.generate_binary_structure(image.ndim, 
+                                                            image.ndim)
+    #
+    # The edges of the image are losers because they are touching undefined
+    # points. Construct a big mask that represents the edges.
+    #
+    big_mask = np.zeros(np.array(image.shape) + np.array(structure.shape), bool)
+    structure_half_shape = np.array(structure.shape)/2
+    big_mask[structure_half_shape[0]:structure_half_shape[0]+image.shape[0],
+             structure_half_shape[1]:structure_half_shape[1]+image.shape[1]]=\
+        mask if not mask is None else True
+    for i in range(structure.shape[0]):
+        off_i = i-structure_half_shape[0]
+        for j in range(structure.shape[1]):
+            if i == structure_half_shape[0] and j == structure_half_shape[1]:
+                continue
+            off_j = j-structure_half_shape[1]
+            if structure[i,j]:
+                result = np.logical_and(result, big_mask[i:i+image.shape[0],
+                                                         j:j+image.shape[1]])
+                #
+                # Get the boundaries of the source image and the offset
+                # image so we can make similarly shaped, but offset slices
+                #
+                src_i_min = max(0,-off_i)
+                src_i_max = min(image.shape[0], image.shape[0]-off_i)
+                off_i_min = max(0,off_i)
+                off_i_max = min(image.shape[0], image.shape[0]+off_i)
+                src_j_min = max(0,-off_j)
+                src_j_max = min(image.shape[1], image.shape[1]-off_j)
+                off_j_min = max(0,off_j)
+                off_j_max = min(image.shape[1], image.shape[1]+off_j)
+                min_mask = (image[src_i_min:src_i_max,
+                                  src_j_min:src_j_max] <
+                            image[off_i_min:off_i_max,
+                                  off_j_min:off_j_max])
+                result[src_i_min:src_i_max,
+                       src_j_min:src_j_max][min_mask] = False
+    return result
+
+    

@@ -508,7 +508,7 @@ class FloatRange(Setting):
             try:
                 float(value)
             except ValueError:
-                raise ValidationError("%s is not in decimal format"%(value))
+                raise ValidationError("%s is not in decimal format"%(value),self)
         if self.__minval and self.__minval > self.min:
             raise ValidationError("%f can't be less than %f"%(self.min,self.__minval),self)
         if self.__maxval and self.__maxval < self.max:

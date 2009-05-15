@@ -22,7 +22,9 @@ cdef extern from "Python.h":
 cdef extern from "numpy/arrayobject.h":
     ctypedef class numpy.ndarray [object PyArrayObject]:
         cdef char *data
+        cdef Py_intptr_t *strides
     cdef void import_array()
+    cdef int  PyArray_ITEMSIZE(np.ndarray)
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
@@ -779,3 +781,68 @@ def median_filter(np.ndarray[dtype=np.uint8_t, ndim=2, negative_indices=False, m
                        <np.uint8_t *>mask.data, 
                        <np.uint8_t *>output.data):
         raise MemoryError('Failed to allocate scratchpad memory')
+
+@cython.boundscheck(False)
+def masked_convolution(np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=False, mode='c'] data,
+                       np.ndarray[dtype=np.uint8_t, ndim=2, negative_indices=False, mode='c'] mask,
+                       np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=False, mode='c'] kernel):
+    """Convolution respecting a mask
+
+    data - a 2d array containing the image data
+    mask - a mask of relevant points.
+    kernel - a square convolution kernel of odd dimension
+    """
+    cdef:
+        np.float64_t *pkernel
+        np.float64_t *pimage
+        np.uint8_t   *pmask
+        np.float64_t *poutput
+        int          kernel_stride
+        int          image_stride
+        int          mask_stride
+        int          mask_offset
+        int          kernel_width
+        int          kernel_half_width
+        int          i,j,ik,jk
+        int          istride,mstride,kstride
+        np.float64_t accumulator
+        np.ndarray[dtype=np.uint8_t, ndim=2, negative_indices=False, mode='c'] big_mask
+        np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=False, mode='c'] output
+
+    assert kernel.shape[0] % 2 == 1, "Kernel shape must be odd"
+    assert kernel.shape[0]==kernel.shape[1], "Kernel must be square"
+    assert mask.shape[0]==data.shape[0]
+    assert mask.shape[1]==data.shape[1]
+    kernel_width = kernel.shape[0]
+    kernel_half_width = kernel_width / 2
+    big_mask = np.zeros((data.shape[0]+kernel_width, data.shape[1]+kernel_width), np.uint8)
+    output   = np.zeros((data.shape[0],data.shape[1]), data.dtype)
+    big_mask[kernel_half_width:kernel_half_width+data.shape[0],
+             kernel_half_width:kernel_half_width+data.shape[1]] = mask
+    #
+    # stride in number of elements across the i direction
+    #
+    istride = data.strides[0] / PyArray_ITEMSIZE(data)
+    mstride = big_mask.strides[0] / PyArray_ITEMSIZE(big_mask)
+    kstride = kernel.strides[0] / PyArray_ITEMSIZE(kernel)
+    #
+    # pointers to data. pmask is offset to point at the 0,0 element
+    # pkernel is offset to point at the middle of the kernel
+    #
+    pmask   = <np.uint8_t *>(big_mask.data + kernel_half_width *
+                             (big_mask.strides[0] + big_mask.strides[1]))
+    pimage  = <np.float64_t *>(data.data)
+    pkernel = <np.float64_t *>(kernel.data)+(kstride+1) * kernel_half_width
+    poutput = <np.float64_t *>(output.data)
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            if pmask[i*mstride+j] == 0:
+                continue
+            accumulator = 0
+            for ik in range(-kernel_half_width,kernel_half_width+1):
+                for jk in range(-kernel_half_width,kernel_half_width+1):
+                    if pmask[(i+ik)*mstride+j+jk] != 0:
+                        accumulator += (pkernel[ik*kstride+jk] *
+                                        pimage[(i+ik)*istride+j+jk])
+            poutput[i*istride+j] = accumulator
+    return output

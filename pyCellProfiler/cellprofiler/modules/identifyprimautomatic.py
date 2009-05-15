@@ -19,7 +19,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.figure
 import matplotlib.pyplot
 import matplotlib.cm
-import numpy
+import numpy as np
 import re
 import scipy.stats
 import wx
@@ -32,6 +32,8 @@ import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
 from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
+from cellprofiler.cpmath.cpmorphology import regional_maximum
+from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.smooth import smooth_with_noise
 import cellprofiler.cpmath.outline
@@ -52,8 +54,7 @@ OBJECT_FRACTION_VAR             = 9
 UNCLUMP_METHOD_VAR              = 10
 UN_INTENSITY                    = "Intensity"
 UN_SHAPE                        = "Shape"
-UN_MANUAL                       = "Manual"
-UN_MANUAL_FOR_ID_SECONDARY      = "Manual_for_IdSecondary"
+UN_LOG                          = "Laplacian of Gaussian"
 UN_NONE                         = "None"
 WATERSHED_VAR                   = 11
 WA_INTENSITY                    = "Intensity"
@@ -423,7 +424,7 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     category =  "Object Processing"
     
@@ -443,7 +444,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
                                                 ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
         self.unclump_method = cps.Choice('Method to distinguish clumped objects (see help for details):', 
-                                          [UN_INTENSITY, UN_SHAPE, UN_MANUAL, UN_MANUAL_FOR_ID_SECONDARY, UN_NONE])
+                                          [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE])
         self.watershed_method = cps.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
                                            [WA_INTENSITY,WA_DISTANCE,WA_NONE])
         self.automatic_smoothing = cps.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
@@ -458,6 +459,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
         self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
         self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
+        self.wants_automatic_log_threshold = cps.Binary('Do you want to calculate the Laplacian of Gaussian threshold automatically?',True)
+        self.manual_log_threshold = cps.Float('What is the Laplacian of Gaussian threshold?',.5, 0, 1)
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range,
@@ -470,7 +473,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 self.save_outlines, self.fill_holes, 
                 self.automatic_smoothing, self.automatic_suppression,
                 self.manual_threshold, self.binary_image,
-                self.should_save_outlines ]
+                self.should_save_outlines,
+                self.wants_automatic_log_threshold,
+                self.manual_log_threshold ]
     
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -545,6 +550,12 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             setting_values = new_setting_values
             variable_revision_number = 1
             from_matlab = False
+        if (not from_matlab) and variable_revision_number == 1:
+            # Added LOG method
+            setting_values = list(setting_values)
+            setting_values += [ cps.YES, ".5" ]
+            variable_revision_number = 2
+             
         return setting_values, variable_revision_number, from_matlab
             
     def visible_settings(self):
@@ -561,6 +572,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             vv += [ self.threshold_correction_factor, self.threshold_range]
         vv += [ self.unclump_method ]
         if self.unclump_method != UN_NONE:
+            if self.unclump_method == UN_LOG:
+                vv += [self.wants_automatic_log_threshold]
+                if not self.wants_automatic_log_threshold.value:
+                    vv += [self.manual_log_threshold]
             vv += [self.watershed_method, self.automatic_smoothing]
             if not self.automatic_smoothing.value:
                 vv += [self.smoothing_filter_size]
@@ -574,12 +589,6 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         vv += [self.fill_holes]
         return vv
     
-    def test_valid(self, pipeline):
-        super(IdentifyPrimAutomatic,self).test_valid(pipeline)
-        if self.unclump_method.value in (UN_MANUAL,UN_MANUAL_FOR_ID_SECONDARY):
-            raise cps.ValidationError('"%s" is not yet implemented'%s(self.unclump_method.value))
-  
-  
     def run(self,workspace):
         """Run the module
         
@@ -589,6 +598,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
         """
+        self.workspace_saved_for_debugging_take_this_out_please=workspace 
         #
         # Retrieve the relevant image and mask
         #
@@ -606,7 +616,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         if self.threshold_method == cpthresh.TM_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(self.binary_image.value,
                                                          must_be_binary = True)
-            local_threshold = numpy.ones(img.shape)
+            local_threshold = np.ones(img.shape)
             local_threshold[binary_image.pixel_data] = 0
             global_threshold = otsu(img[mask],
                         self.threshold_range.min,
@@ -615,9 +625,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             local_threshold,global_threshold = self.get_threshold(img, mask,
                                                               masking_objects)
         blurred_image = self.smooth_image(img,mask,1)
-        binary_image = numpy.logical_and((blurred_image >= local_threshold),mask)
+        binary_image = np.logical_and((blurred_image >= local_threshold),mask)
         labeled_image,object_count = scipy.ndimage.label(binary_image,
-                                                         numpy.ones((3,3),bool))
+                                                         np.ones((3,3),bool))
         #
         # Fill holes if appropriate
         #
@@ -645,15 +655,15 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 areas = scipy.ndimage.histogram(labeled_image,1,object_count+1,object_count)
                 areas.sort()
                 low_diameter  = (math.sqrt(float(areas[object_count/10]))*2/
-                                 numpy.pi)
+                                 np.pi)
                 high_diameter = (math.sqrt(float(areas[object_count*9/10]))*2/
-                                 numpy.pi)
+                                 np.pi)
                 statistics.append(["10th pctile diameter",
                                    "%.1f pixels"%(low_diameter)])
                 statistics.append(["90th pctile diameter",
                                    "%.1f pixels"%(high_diameter)])
-                object_area = numpy.sum(labeled_image > 0)
-                total_area  = numpy.product(labeled_image.shape[:2])
+                object_area = np.sum(labeled_image > 0)
+                total_area  = np.product(labeled_image.shape[:2])
                 statistics.append(["Area covered by objects",
                                    "%.1f %%"%(100.0*float(object_area)/
                                               float(total_area))])
@@ -674,27 +684,27 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                            objname, object_count)
         if self.threshold_modifier == cpthresh.TM_GLOBAL:
             # The local threshold is a single number
-            assert(not isinstance(local_threshold,numpy.ndarray))
+            assert(not isinstance(local_threshold,np.ndarray))
             ave_threshold = local_threshold
         else:
             # The local threshold is an array
             ave_threshold = local_threshold.mean()
         measurements.add_measurement('Image',
                                      'Threshold_FinalThreshold_%s'%(objname),
-                                     numpy.array([ave_threshold],
+                                     np.array([ave_threshold],
                                                  dtype=float))
         measurements.add_measurement('Image',
                                      'Threshold_OrigThreshold_%s'%(objname),
-                                     numpy.array([global_threshold],
+                                     np.array([global_threshold],
                                                   dtype=float))
         wv = cpthresh.weighted_variance(img, mask, local_threshold)
         measurements.add_measurement('Image',
                                      'Threshold_WeightedVariance_%s'%(objname),
-                                     numpy.array([wv],dtype=float))
+                                     np.array([wv],dtype=float))
         entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
         measurements.add_measurement('Image',
                                      'Threshold_SumOfEntropies_%s'%(objname),
-                                     numpy.array([entropies],dtype=float))
+                                     np.array([entropies],dtype=float))
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
@@ -752,7 +762,57 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 maxima_suppression_size = self.maxima_suppression_size.value
         maxima_mask = strel_disk(maxima_suppression_size)
         distance_transformed_image = None
-        if self.unclump_method == UN_INTENSITY:
+        if self.unclump_method == UN_LOG:
+            diameter = (self.size_range.max+self.size_range.min)/2
+            sigma = float(diameter) / 2.35
+            #
+            # Shrink the image to save processing time
+            #
+            figure = self.workspace_saved_for_debugging_take_this_out_please.create_or_find_figure(subplots=(2,3),window_name='debugging')
+            figure.subplot_imshow_grayscale(0,0,image,"original")
+            if image_resize_factor < 1.0:
+                shrunken = True
+                shrunken_shape = (np.array(image.shape) * image_resize_factor+1).astype(int)
+                i_j = np.mgrid[0:shrunken_shape[0],0:shrunken_shape[1]].astype(float) / image_resize_factor
+                simage = scipy.ndimage.map_coordinates(image, i_j)
+                smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
+                diameter = diameter * image_resize_factor + 1
+                sigma = sigma * image_resize_factor
+                figure.subplot_imshow_grayscale(0,1,simage,"shrunken")
+            else:
+                shrunken = False
+                simage = image
+                smask = mask
+            normalized_image = 1 - stretch(simage, smask)
+            
+            log_image = laplacian_of_gaussian(normalized_image, smask, 
+                                              diameter * 3/2, sigma)
+            figure.subplot_imshow_grayscale(1,0,log_image,"LoG shrunken")
+            if shrunken:
+                i_j = (np.mgrid[0:image.shape[0],
+                                0:image.shape[1]].astype(float) * 
+                       image_resize_factor)
+                log_image = scipy.ndimage.map_coordinates(log_image, i_j)
+            log_image = stretch(log_image, mask)
+            if self.wants_automatic_log_threshold.value:
+                log_threshold = otsu(log_image[mask], 0, 1, 256)
+            else:
+                log_threshold = self.manual_log_threshold.value
+            log_image[log_image < log_threshold] = log_threshold
+            log_image -= log_threshold
+            figure.subplot_imshow_grayscale(1,1,log_image,"Expanded LoG")
+            maxima_image = self.get_maxima(log_image, labeled_image,
+                                           maxima_mask, image_resize_factor)
+            dilated_image = scipy.ndimage.binary_dilation(maxima_image > 0, iterations=6)
+            figure.subplot_imshow_bw(0,2,dilated_image, "maxima")
+            color_image = np.zeros((image.shape[0],image.shape[1],3))
+            color_image[:,:,2] = stretch(image)
+            color_image[:,:,1] = stretch(log_image)
+            color_image[:,:,0] = dilated_image
+            color_image[:,:,1][dilated_image] = 0
+            color_image[:,:,2][dilated_image] = 0
+            figure.subplot_imshow_color(1,2,color_image)
+        elif self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
             maxima_image = blurred_image.copy()
             maxima_image[maxima_image < threshold] = 0
@@ -764,9 +824,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             distance_transformed_image =\
                 scipy.ndimage.distance_transform_edt(labeled_image>0)
             # randomize the distance slightly to get unique maxima
-            numpy.random.seed(0)
+            np.random.seed(0)
             distance_transformed_image +=\
-                numpy.random.uniform(0,.001,distance_transformed_image.shape)
+                np.random.uniform(0,.001,distance_transformed_image.shape)
             maxima_image = self.get_maxima(distance_transformed_image,
                                            labeled_image,
                                            maxima_mask,
@@ -783,7 +843,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 distance_transformed_image =\
                     scipy.ndimage.distance_transform_edt(labeled_image>0)
             watershed_image = -distance_transformed_image
-            watershed_image = watershed_image - numpy.min(watershed_image)
+            watershed_image = watershed_image - np.min(watershed_image)
         else:
             raise NotImplementedError("Watershed method %s is not implemented"%(self.watershed_method.value))
         #
@@ -795,8 +855,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # yields fair boundaries when markers compete for pixels.
         #
         labeled_maxima,object_count = \
-            scipy.ndimage.label(maxima_image>0,numpy.ones((3,3),bool))
-        markers = numpy.zeros(watershed_image.shape,numpy.int16)
+            scipy.ndimage.label(maxima_image>0,np.ones((3,3),bool))
+        markers = np.zeros(watershed_image.shape,np.int16)
         markers[labeled_maxima>0]=-labeled_maxima[labeled_maxima>0]
         #
         # Some labels have only one marker in them, some have multiple and
@@ -804,7 +864,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         # 
         watershed_boundaries = watershed(watershed_image,
                                          markers,
-                                         numpy.ones((3,3),bool),
+                                         np.ones((3,3),bool),
                                          mask=labeled_image!=0)
         watershed_boundaries = -watershed_boundaries
         
@@ -812,9 +872,10 @@ objects (e.g. SmallRemovedSegmented Nuclei).
 
     def get_maxima(self,image,labeled_image,maxima_mask,image_resize_factor):
         if image_resize_factor < 1.0:
-            resized_image = scipy.ndimage.zoom(image,
-                                               image_resize_factor,
-                                               order=2)
+            shape = np.array(image.shape) * image_resize_factor
+            i_j = (np.mgrid[0:shape[0],0:shape[1]].astype(float) / 
+                   image_resize_factor)
+            resized_image = scipy.ndimage.map_coordinates(image, i_j)
         else:
             resized_image = image.copy()
         #
@@ -824,18 +885,25 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         maximum_filtered_image = scipy.ndimage.maximum_filter(maxima_image,
                                                               footprint=maxima_mask)
         maxima_image[resized_image < maximum_filtered_image] = 0
+        #
+        # Get rid of the "maxima" that are really large areas of zero
+        #
+        maxima_image[resized_image == 0] = 0
+        binary_maxima_image = maxima_image > 0
         if image_resize_factor < 1.0:
             inverse_resize_factor = float(image.shape[0]) / float(maxima_image.shape[0])
-            maxima_image = scipy.ndimage.zoom(maxima_image,
-                                              inverse_resize_factor,order=2)
-            assert(maxima_image.shape[0] == image.shape[0])
-            assert(maxima_image.shape[1] == image.shape[1])
+            i_j = (np.mgrid[0:image.shape[0],
+                               0:image.shape[1]].astype(float) / 
+                   inverse_resize_factor)
+            binary_maxima_image = scipy.ndimage.map_coordinates(binary_maxima_image.astype(float), i_j) > .5
+            maxima_image = scipy.ndimage.map_coordinates(maxima_image, i_j)
+            assert(binary_maxima_image.shape[0] == image.shape[0])
+            assert(binary_maxima_image.shape[1] == image.shape[1])
         
         # Erode blobs of touching maxima to a single point
         
-        binary_maxima_image = maxima_image > 0
         shrunk_image = binary_shrink(binary_maxima_image)
-        maxima_image[numpy.logical_not(shrunk_image)]=0
+        maxima_image[np.logical_not(shrunk_image)]=0
         maxima_image[labeled_image==0]=0
         return maxima_image
     
@@ -849,12 +917,12 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         """
         unedited_labels = labeled_image.copy()
         if self.exclude_size.value and object_count > 0:
-            areas = scipy.ndimage.measurements.sum(numpy.ones(labeled_image.shape),
+            areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
                                                    range(0,object_count+1))
-            areas = numpy.array(areas,dtype=int)
-            min_allowed_area = numpy.pi * self.size_range.min * self.size_range.min
-            max_allowed_area = numpy.pi * self.size_range.max * self.size_range.max
+            areas = np.array(areas,dtype=int)
+            min_allowed_area = np.pi * self.size_range.min * self.size_range.min
+            max_allowed_area = np.pi * self.size_range.max * self.size_range.max
             # area_image has the area of the object at every pixel within the object
             area_image = areas[labeled_image]
             labeled_image[area_image < min_allowed_area] = 0
@@ -875,16 +943,16 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             border_labels.extend(labeled_image[:,0])
             border_labels.extend(labeled_image[labeled_image.shape[0]-1,:])
             border_labels.extend(labeled_image[:,labeled_image.shape[1]-1])
-            border_labels = numpy.array(border_labels)
+            border_labels = np.array(border_labels)
             #
             # the following histogram has a value > 0 for any object
             # with a border pixel
             #
-            histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
+            histogram = scipy.sparse.coo_matrix((np.ones(border_labels.shape),
                                                  (border_labels,
-                                                  numpy.zeros(border_labels.shape))),
-                                                 shape=(numpy.max(labeled_image)+1,1)).todense()
-            histogram = numpy.array(histogram).flatten()
+                                                  np.zeros(border_labels.shape))),
+                                                 shape=(np.max(labeled_image)+1,1)).todense()
+            histogram = np.array(histogram).flatten()
             if any(histogram[1:] > 0):
                 histogram_image = histogram[labeled_image]
                 labeled_image[histogram_image > 0] = 0
@@ -896,15 +964,15 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 # The operation below gets the mask pixels that are on the border of the mask
                 # The erosion turns all pixels touching an edge to zero. The not of this
                 # is the border + formerly masked-out pixels.
-                mask_border = numpy.logical_not(scipy.ndimage.binary_erosion(image.mask))
-                mask_border = numpy.logical_and(mask_border,image.mask)
+                mask_border = np.logical_not(scipy.ndimage.binary_erosion(image.mask))
+                mask_border = np.logical_and(mask_border,image.mask)
                 border_labels = labeled_image[mask_border]
                 border_labels = border_labels.flatten()
-                histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
+                histogram = scipy.sparse.coo_matrix((np.ones(border_labels.shape),
                                                      (border_labels,
-                                                      numpy.zeros(border_labels.shape))),
-                                                      shape=(numpy.max(labeled_image)+1,1)).todense()
-                histogram = numpy.array(histogram).flatten()
+                                                      np.zeros(border_labels.shape))),
+                                                      shape=(np.max(labeled_image)+1,1)).todense()
+                histogram = np.array(histogram).flatten()
                 if any(histogram[1:] > 0):
                     histogram_image = histogram[labeled_image]
                     labeled_image[histogram_image > 0] = 0
@@ -930,7 +998,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                        self.object_name.value)
 
         if image.pixel_data.ndim == 2:
-            outline_img = numpy.ndarray(shape=(image.pixel_data.shape[0],
+            outline_img = np.ndarray(shape=(image.pixel_data.shape[0],
                                                image.pixel_data.shape[1],3))
             outline_img[:,:,0] = image.pixel_data 
             outline_img[:,:,1] = image.pixel_data

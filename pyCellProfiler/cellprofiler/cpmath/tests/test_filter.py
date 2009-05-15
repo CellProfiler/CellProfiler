@@ -832,3 +832,23 @@ class TestBilateralFilter(unittest.TestCase):
         result = F.bilateral_filter(image, np.ones(image.shape, bool),
                                     10, .1, 20, .2)
         self.assertTrue(np.max(np.abs(result-expected)) < .1)
+
+class TestLaplacianOfGaussian(unittest.TestCase):
+    def test_00_00_zeros(self):
+        result = F.laplacian_of_gaussian(np.zeros((10,10)), None, 9, 3)
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_zeros_mask(self):
+        result = F.laplacian_of_gaussian(np.zeros((10,10)), 
+                                         np.zeros((10,10),bool), 9, 3)
+        self.assertTrue(np.all(result==0))
+
+    def test_01_01_ring(self):
+        '''The LoG should have its lowest value in the center of the ring'''
+        i,j = np.mgrid[-20:21,-20:21].astype(float)
+        # A ring of radius 3, more or less
+        image = (np.abs(i**2+j**2 - 3) < 2).astype(float)
+        result = F.laplacian_of_gaussian(image, None, 9, 3)
+        self.assertTrue((np.argmin(result) % 41, int(np.argmin(result)/41)) ==
+                        (20,20))
+        

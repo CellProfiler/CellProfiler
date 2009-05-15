@@ -844,7 +844,12 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             img_size.reverse()
             new_img = imgdata.reshape(img_size)
             # The magic # for maximum sample value is 281
-            img = new_img.astype(float) / img.tag[281][0] 
+            if img.tag.has_key(281):
+                img = new_img.astype(float) / img.tag[281][0]
+            elif numpy.max(new_img) < 4096:
+                img = new_img.astype(float) / 4095.
+            else:
+                img = new_img.astype(float) / 65535.
         else:
             # There's an apparent bug in the PIL library that causes
             # images to be loaded upside-down. At best, load and save have opposite

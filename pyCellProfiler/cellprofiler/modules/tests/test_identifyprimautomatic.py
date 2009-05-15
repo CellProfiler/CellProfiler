@@ -123,8 +123,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_01_11_unclump_method(self):
         x = ID.IdentifyPrimAutomatic()
         self.assertEqual(x.unclump_method.value, ID.UN_INTENSITY, "Default should be intensity, was %s"%(x.unclump_method))
-        x.setting(ID.UNCLUMP_METHOD_VAR+1).set_value(ID.UN_MANUAL)
-        self.assertEqual(x.unclump_method.value, ID.UN_MANUAL)
+        x.setting(ID.UNCLUMP_METHOD_VAR+1).set_value(ID.UN_LOG)
+        self.assertEqual(x.unclump_method.value, ID.UN_LOG)
 
     def test_01_12_watershed_method(self):
         x = ID.IdentifyPrimAutomatic()

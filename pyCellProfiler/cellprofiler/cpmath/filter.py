@@ -233,3 +233,40 @@ def bilateral_filter(image, mask, sigma_spatial, sigma_range,
     image_copy[mask] = map_coordinates(normalized_blurred_grid, dijz,
                                        order = 1)
     return image_copy
+
+def laplacian_of_gaussian(image, mask, size, sigma):
+    '''Perform the Laplacian of Gaussian transform on the image
+    
+    image - 2-d image array
+    mask  - binary mask of significant pixels
+    size  - length of side of square kernel to use
+    sigma - standard deviation of the Gaussian
+    '''
+    half_size = size/2
+    i,j = np.mgrid[-half_size:half_size+1, 
+                   -half_size:half_size+1].astype(float) / float(sigma)
+    distance = (i**2 + j**2)/2
+    gaussian = np.exp(-distance)
+    #
+    # Normalize the Gaussian
+    #
+    gaussian = gaussian / np.sum(gaussian)
+
+    log = (distance - 1) * gaussian
+    #
+    # Normalize the kernel to have a sum of zero
+    #
+    log = log - np.mean(log)
+    output = convolve(image, log, mode='constant', cval=100.0)
+    if mask is None:
+        mask = np.ones(image.shape,np.uint8)
+    else:
+        mask = np.array(mask, np.uint8)
+    output = masked_convolution(image, mask, log)
+    output[mask==0] = image[mask==0]
+    return output
+
+def masked_convolution(data, mask, kernel):
+    data = np.ascontiguousarray(data, np.float64)
+    kernel = np.ascontiguousarray(kernel, np.float64)
+    return _filter.masked_convolution(data, mask, kernel)

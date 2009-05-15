@@ -1512,5 +1512,51 @@ class TestWhiteTophat(unittest.TestCase):
         result = morph.white_tophat(image, 1, mask)
         self.assertTrue(np.all(result==0))
     
+class TestRegionalMaximum(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''An array of all zeros has a regional maximum of its center'''
+        result = morph.regional_maximum(np.zeros((11,11)))
+        self.assertEqual(np.sum(result),1)
+        self.assertTrue(result[5,5])
     
+    def test_00_01_zeros_with_mask(self):
+        result = morph.regional_maximum(np.zeros((10,10)),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_single_maximum(self):
+        '''Test that the regional maximum of a gradient from 5,5 is 5,5'''
+        #
+        # Create a gradient of distance from the point 5,5 in an 11x11 array
+        #
+        i,j = np.mgrid[-5:6,-5:6].astype(float) / 5
+        image = 1 - i**2 - j**2
+        result = morph.regional_maximum(image)
+        self.assertTrue(result[5,5])
+        self.assertTrue(np.all(result[image != np.max(image)]==False))
+    
+    def test_01_02_two_maxima(self):
+        '''Test an image with two maxima'''
+        i,j = np.mgrid[-5:6,-5:6].astype(float) / 5
+        half_image = 1 - i**2 - j**2
+        image = np.zeros((11,22))
+        image[:,:11]=half_image
+        image[:,11:]=half_image
+        result = morph.regional_maximum(image)
+        self.assertTrue(result[5,5])
+        self.assertTrue(result[5,-6])
+        self.assertTrue(np.all(result[image != np.max(image)]==False))
+    
+    def test_02_01_mask(self):
+        '''Test that a mask eliminates one of the maxima'''
+        i,j = np.mgrid[-5:6,-5:6].astype(float) / 5
+        half_image = 1 - i**2 - j**2
+        image = np.zeros((11,22))
+        image[:,:11]=half_image
+        image[:,11:]=half_image
+        mask = np.ones(image.shape, bool)
+        mask[4,5] = False
+        result = morph.regional_maximum(image,mask)
+        self.assertFalse(result[5,5])
+        self.assertTrue(result[5,-6])
+        self.assertTrue(np.all(result[image != np.max(image)]==False))
         

@@ -29,27 +29,26 @@ for MinStrLen = MinStrLenInit:-1:1
     if length(TruncatedName) <= namelengthmax
         if length(TruncatedName) ~= length(FeatureName)
             msgboxtitle = 'Truncation of feature name';
-            h = findobj(allchild(0),'name',msgboxtitle);
-            if isempty(h)
-                h = CPwarndlg({['The following feature names have exceeded Matlab''s ' num2str(namelengthmax) ' character limit.'],...
+            
+            hdl_dlg = findobj(allchild(0),'name',msgboxtitle);
+            if isempty(hdl_dlg)
+                warningtextstr = {['The following feature names have exceeded Matlab''s ' num2str(namelengthmax) ' character limit.'],...
                                 'The original feature name is shown, followed by the truncated name.',...
                                 'It is possible this will confuse post-hoc analyses, so you might avoid this by shortening this feature name within Cellprofiler.',...
                                 ' ',...
-                                [FeatureName,': ',TruncatedName]},msgboxtitle);
-                
-                set(h,'visible','off');
+                                [FeatureName,': ',TruncatedName]};
+                hdl_dlg = CPwarndlg(warningtextstr,msgboxtitle,'replace');
+                hdl_text = findobj(hdl_dlg,'type','text','-depth',inf);
+                set(hdl_text,'visible','off','units','normalized'); 
+                p = get(hdl_text,'extent');
+                uicontrol('parent',hdl_dlg,'style','edit','string',warningtextstr,'tag',msgboxtitle,...
+                    'units','normalized','position',[p(1:2) 1-p(1) p(4)],'enable','inactive','max',1.001,'min',0);
             else
-                hdl_text = get(findobj(h,'type','text','-depth',inf),'string');
-                hdl_text{end+1} = [FeatureName,': ',TruncatedName];
-                delete(h);
-                h = CPwarndlg(hdl_text,msgboxtitle);
-                set(h,'visible','off');
+                hdl_uitext = findobj(hdl_dlg,'tag',msgboxtitle);
+                warningtextstr = get(hdl_uitext,'string');
+                warningtextstr{end+1} = [FeatureName,': ',TruncatedName];
+                set(hdl_uitext,'string',warningtextstr);
             end
-            % Indent the last line with the truncated name
-            hdl_text = get(findobj(h,'type','text','-depth',inf),'string');
-            hdl_text{end} = ['  ',TruncatedName];
-            set(findobj(h,'type','text','-depth',inf),'string',hdl_text);
-            set(h,'visible','on');
         end
         return
     end

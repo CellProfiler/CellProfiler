@@ -4,7 +4,7 @@
 
 clear
 
-%%% CHOOSE ONE SECTION BELOW
+%%% CHOOSE ONE SECTION BELOW %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%% JEN PAN images
 % strel_size = 4;
@@ -16,12 +16,30 @@ clear
 %%%% 
 
 %%%% JEN PAN images from 2008-05-09
+% strel_size = 4;
+% PathRoot = '/Volumes/Image08/hcs/';
+% PathName = 'JenPan/ADSAPlate0423-1-4x/2008-05-09/8069';
+% OutputPathRoot = '/Volumes/imaging_analysis/2008_04_15_Lithium_Neurons_JenPan/image08_ADSAPlate0423-1-4x_8069/';
+% OutputPathName = PathName;
+% search_string = '.*_s[0-9]_w[0-9][a-zA-Z0-9].*.tif';
+%%%% 
+
+%%%% JEN PAN images analyzed 2009-05-11 : SERVER
+% strel_size = 4;
+% PathRoot = '/Volumes/psych_neuro/people/jpan/Jen_Pan_dendrite_Li/';
+% PathName = '080716/plate 2';
+% OutputPathRoot = '/Volumes/imaging_analysis/2008_04_15_Lithium_Neurons_JenPan/';
+% OutputPathName = [PathName '_pre_processed_with_tophat_minus_bottomhat_size4'];
+% search_string = '.*_[B-G][0-9][0-9].*.TIF'; %% Rows A and H are empty
+%%%% 
+
+%%%% JEN PAN images analyzed 2009-05-11 : LOCAL
 strel_size = 4;
-PathRoot = '/Volumes/Image08/hcs/';
-PathName = 'JenPan/ADSAPlate0423-1-4x/2008-05-09/8069';
-OutputPathRoot = '/Volumes/imaging_analysis/2008_04_15_Lithium_Neurons_JenPan/image08_ADSAPlate0423-1-4x_8069/';
-OutputPathName = PathName;
-search_string = '.*_s[0-9]_w[0-9][a-zA-Z0-9].*.tif';
+PathRoot = '/Users/dlogan/Projects/2008_04_15_Lithium_Neurons_JenPan/images/';
+PathName = '080716/plate 2';
+OutputPathRoot = '/Users/dlogan/Projects/2008_04_15_Lithium_Neurons_JenPan/images/';
+OutputPathName = [PathName '_pre_processed_with_tophat_minus_bottomhat_size4'];
+search_string = '.*_[B-G][0-9][0-9].*.TIF'; %% Rows A and H are empty
 %%%% 
 
 
@@ -33,7 +51,9 @@ search_string = '.*_s[0-9]_w[0-9][a-zA-Z0-9].*.tif';
 % OutputPathName = '/preprocessed';
 % search_string = '^LK.*[A-Z][0-9][0-9].TIF';
 %%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% MAIN
 SE = strel('disk',strel_size);
 
 Files = dir([PathRoot PathName]);
@@ -52,8 +72,11 @@ for i = length(Good):-1:1
 
     J = imsubtract(imadd(I,imtophat(I,SE)), imbothat(I,SE));
     colormap(gray)
-    
+
     [foo,OutputFileBase] = fileparts(Good{i});
+    if ~exist([OutputPathRoot OutputPathName],'dir')
+        mkdir([OutputPathRoot OutputPathName])
+    end
     imwrite(J,fullfile([OutputPathRoot OutputPathName],[OutputFileBase '.png']),'png')
-    
+
 end

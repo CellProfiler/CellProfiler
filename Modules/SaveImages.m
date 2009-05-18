@@ -381,7 +381,7 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
             % Warn the users that the value is being changed.
             % Outside 0-1 RangeWarning Box
             if isempty(findobj('Tag',['Msgbox_' ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range']))
-                CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range'],'replace');
+                CPwarndlg(['The images you have loaded in the ', ModuleName, ' module are outside the 0-1 range, and you may be losing data.  Note, however that Illumination Functions are often in the range 1 to Inf, and in this case the warning can be ignored.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Outside 0-1 Range'],'replace');
             end
         end
 

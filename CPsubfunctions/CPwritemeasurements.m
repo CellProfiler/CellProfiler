@@ -186,7 +186,7 @@ for Object = 1:length(ExportInfo.ObjectNames)
         %%% Some measurements might not exist for all objects, so we need to bring them to full size
         if length(FieldValues) > length(ImageOffsets),
             if strncmp(fieldname, 'LoadedText', length('LoadedText')),
-                append = '  The AddData data tool can be used to reload the data if necessary.';
+                append = '  The AddData data tool can be used to reload the data if necessary.  Also note that there are exceptions to this, such as DisplayGridInfo, in which case you do not expect there to be a one-to-one cycle-to-LoadText entry mapping.  In these cases, please ignore this warning.';
             else
                 append = '';
             end

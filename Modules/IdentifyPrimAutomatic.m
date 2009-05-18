@@ -1199,11 +1199,19 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
 	    handles = CPaddmeasurements(handles, 'Image', ...
 					['Threshold_FinalThreshold_', ObjectName], ...
 					Threshold);
-        if strcmp(ThresholdModifier,'PerObject')
+         if strcmp(ThresholdModifier,'PerObject')
             %%% If per-object, add the threshold as an object measurement
             [UniqueLabels,LabelIndices]=unique(Objects);
-            ThresholdsPerObjectsIncludingZero = OrigThreshold(LabelIndices);
-            ThresholdsPerObjects = ThresholdsPerObjectsIncludingZero(2:end);
+            if UniqueLabels == 0
+                % if there aren't any primary objects, OrigThreshold will
+                % be set to 1 with len 1; this arbitrarily lets us save the
+                % value, despite the fact that we didnt find any
+                % 'per-objects' either.
+                ThresholdsPerObjects = OrigThreshold(1);
+            else
+                ThresholdsPerObjectsIncludingZero = OrigThreshold(LabelIndices);
+                ThresholdsPerObjects = ThresholdsPerObjectsIncludingZero(2:end);
+            end
             handles = CPaddmeasurements ...
                 (handles, ObjectName,'Threshold_PerObject',ThresholdsPerObjects);
         end

@@ -16,7 +16,10 @@ import numpy as np
 import _filter
 from rankorder import rank_order
 from scipy.ndimage import map_coordinates
-from scipy.ndimage import convolve
+from scipy.ndimage import convolve, correlate1d, gaussian_filter
+from scipy.ndimage import binary_dilation, binary_erosion
+from scipy.ndimage import generate_binary_structure
+from smooth import smooth_with_function_and_mask
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -270,3 +273,170 @@ def masked_convolution(data, mask, kernel):
     data = np.ascontiguousarray(data, np.float64)
     kernel = np.ascontiguousarray(kernel, np.float64)
     return _filter.masked_convolution(data, mask, kernel)
+
+def canny(image, mask, sigma, low_threshold, high_threshold):
+    '''Edge filter an image using the Canny algorithm.
+    
+    sigma - the standard deviation of the Gaussian used
+    low_threshold - threshold for edges that connect to high-threshold
+                    edges
+    high_threshold - threshold of a high-threshold edge
+    
+    Canny, J., A Computational Approach To Edge Detection, IEEE Trans. 
+    Pattern Analysis and Machine Intelligence, 8:679-714, 1986
+    
+    William Green's Canny tutorial
+    http://www.pages.drexel.edu/~weg22/can_tut.html
+    '''
+    #
+    # The steps involved:
+    #
+    # * Smooth using the Gaussian with sigma above.
+    #
+    # * Apply the horizontal and vertical Sobel operators to get the gradients
+    #   within the image. The edge strength is the sum of the magnitudes
+    #   of the gradients in each direction.
+    #
+    # * Find the normal to the edge at each point using the arctangent of the
+    #   ratio of the Y sobel over the X sobel - pragmatically, we can
+    #   look at the signs of X and Y and the relative magnitude of X vs Y
+    #   to sort the points into 4 categories: horizontal, vertical,
+    #   diagonal and antidiagonal.
+    #
+    # * Look in the normal and reverse directions to see if the values
+    #   in either of those directions are greater than the point in question.
+    #   Use interpolation to get a mix of points instead of picking the one
+    #   that's the closest to the normal.
+    #
+    # * Label all points above the high threshold as edges.
+    # * Recursively label any point above the low threshold that is 8-connected
+    #   to a labeled point as an edge.
+    #
+    # Regarding masks, any point touching a masked point will have a gradient
+    # that is "infected" by the masked point, so it's enough to erode the
+    # mask by one and then mask the output. We also mask out the border points
+    # because who knows what lies beyond the edge of the image?
+    #
+    fsmooth = lambda x: gaussian_filter(x, sigma, mode='constant')
+    smoothed = smooth_with_function_and_mask(image, fsmooth, mask)
+    jsobel = convolve(smoothed, [[-1,0,1],[-2,0,2],[-1,0,1]])
+    isobel = convolve(smoothed, [[-1,-2,-1],[0,0,0],[1,2,1]])
+    abs_isobel = np.abs(isobel)
+    abs_jsobel = np.abs(jsobel)
+    magnitude = np.sqrt(isobel*isobel + jsobel*jsobel)
+    #
+    # Make the eroded mask. Setting the border value to zero will wipe
+    # out the image edges for us.
+    #
+    s = generate_binary_structure(2,2)
+    emask = binary_erosion(mask, s, border_value = 0)
+    emask = np.logical_and(emask, magnitude > 0)
+    #
+    #--------- Find local maxima --------------
+    #
+    # Assign each point to have a normal of 0-45 degrees, 45-90 degrees,
+    # 90-135 degrees and 135-180 degrees.
+    #
+    local_maxima = np.zeros(image.shape,bool)
+    #----- 0 to 45 degrees ------
+    pts_plus = np.logical_and(isobel >= 0, 
+                              np.logical_and(jsobel >= 0, 
+                                             abs_isobel >= abs_jsobel))
+    pts_minus = np.logical_and(isobel <= 0,
+                               np.logical_and(jsobel <= 0,
+                                              abs_isobel >= abs_jsobel))
+    pts = np.logical_or(pts_plus, pts_minus)
+    pts = np.logical_and(emask, pts)
+    # Get the magnitudes shifted left to make a matrix of the points to the
+    # right of pts. Similarly, shift left and down to get the points to the
+    # top right of pts.
+    c1 = magnitude[1:,:][pts[:-1,:]]
+    c2 = magnitude[1:,1:][pts[:-1,:-1]]
+    m  = magnitude[pts]
+    w  = abs_jsobel[pts] / abs_isobel[pts]
+    c_plus  = c2 * w + c1 * (1-w) < m
+    c1 = magnitude[:-1,:][pts[1:,:]]
+    c2 = magnitude[:-1,:-1][pts[1:,1:]]
+    c_minus =  c2 * w + c1 * (1-w) < m
+    local_maxima[pts] = np.logical_and(c_plus, c_minus)
+    #----- 45 to 90 degrees ------
+    # Mix diagonal and vertical
+    #
+    pts_plus = np.logical_and(isobel >= 0, 
+                              np.logical_and(jsobel >= 0, 
+                                             abs_isobel <= abs_jsobel))
+    pts_minus = np.logical_and(isobel <= 0,
+                               np.logical_and(jsobel <= 0, 
+                                              abs_isobel <= abs_jsobel))
+    pts = np.logical_or(pts_plus, pts_minus)
+    pts = np.logical_and(emask, pts)
+    c1 = magnitude[:,1:][pts[:,:-1]]
+    c2 = magnitude[1:,1:][pts[:-1,:-1]]
+    m  = magnitude[pts]
+    w  = abs_isobel[pts] / abs_jsobel[pts]
+    c_plus  = c2 * w + c1 * (1-w) < m
+    c1 = magnitude[:,:-1][pts[:,1:]]
+    c2 = magnitude[:-1,:-1][pts[1:,1:]]
+    c_minus =  c2 * w + c1 * (1-w) < m
+    local_maxima[pts] = np.logical_and(c_plus, c_minus)
+    #----- 90 to 135 degrees ------
+    # Mix anti-diagonal and vertical
+    #
+    pts_plus = np.logical_and(isobel <= 0, 
+                              np.logical_and(jsobel >= 0, 
+                                             abs_isobel <= abs_jsobel))
+    pts_minus = np.logical_and(isobel >= 0,
+                               np.logical_and(jsobel <= 0, 
+                                              abs_isobel <= abs_jsobel))
+    pts = np.logical_or(pts_plus, pts_minus)
+    pts = np.logical_and(emask, pts)
+    c1a = magnitude[:,1:][pts[:,:-1]]
+    c2a = magnitude[:-1,1:][pts[1:,:-1]]
+    m  = magnitude[pts]
+    w  = abs_isobel[pts] / abs_jsobel[pts]
+    c_plus  = c2a * w + c1a * (1.0-w) < m
+    c1 = magnitude[:,:-1][pts[:,1:]]
+    c2 = magnitude[1:,:-1][pts[:-1,1:]]
+    c_minus =  c2 * w + c1 * (1.0-w) < m
+    cc = np.logical_and(c_plus,c_minus)
+    local_maxima[pts] = np.logical_and(c_plus, c_minus)
+    #----- 135 to 180 degrees ------
+    # Mix anti-diagonal and anti-horizontal
+    #
+    pts_plus = np.logical_and(isobel <= 0, 
+                              np.logical_and(jsobel >= 0, 
+                                             abs_isobel >= abs_jsobel))
+    pts_minus = np.logical_and(isobel >= 0,
+                               np.logical_and(jsobel <= 0, 
+                                              abs_isobel >= abs_jsobel))
+    pts = np.logical_or(pts_plus, pts_minus)
+    pts = np.logical_and(emask, pts)
+    c1 = magnitude[:-1,:][pts[1:,:]]
+    c2 = magnitude[:-1,1:][pts[1:,:-1]]
+    m  = magnitude[pts]
+    w  = abs_jsobel[pts] / abs_isobel[pts]
+    c_plus  = c2 * w + c1 * (1-w) < m
+    c1 = magnitude[1:,:][pts[:-1,:]]
+    c2 = magnitude[1:,:-1][pts[:-1,1:]]
+    c_minus =  c2 * w + c1 * (1-w) < m
+    local_maxima[pts] = np.logical_and(c_plus, c_minus)
+    #
+    #---- Create two masks at the two thresholds.
+    #
+    high_mask = np.logical_and(local_maxima, magnitude >= high_threshold)
+    low_mask  = np.logical_and(local_maxima, magnitude >= low_threshold)
+    #
+    #---- Apply successive rounds of dilation and masking until the
+    #     high_mask doesn't change. This is equivalent to extending
+    #     the list of edge pixels to adjacent pixels that are above the
+    #     low threshold.
+    #
+    dilation_mask = np.zeros(high_mask.shape, bool)
+    while True:
+        binary_dilation(high_mask, s, output=dilation_mask)
+        new_high_mask = np.logical_and(dilation_mask, low_mask)
+        if np.all(high_mask == new_high_mask):
+            break
+        high_mask = new_high_mask
+    return high_mask
+

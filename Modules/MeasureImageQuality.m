@@ -451,7 +451,7 @@ TotalNumberOfImageSets = handles.Current.NumberOfImageSets;
 % submitted as one batch
 if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles') && ~isfield(handles.Current, 'BatchInfo'),
     msg = ['You are creating batch file(s) for a cluster run. Please note that ',mfilename,...
-        ' can only calculate meaningful experiment-wide measurements on a cluster if the jobs are submitted as a single batch, since measurements cannot be compiled across multiple batches. If you are running multiple bathces, note that the experiment-wide measurements reported from this module will be calculated across the LAST batch to be processed, not from the entire experiment.'];
+        ' can only calculate meaningful experiment-wide measurements on a cluster if the jobs are submitted as a single batch, since measurements cannot be compiled across multiple batches. If you are running multiple batches, note that the experiment-wide measurements reported from this module will be calculated across the LAST batch to be processed, not from the entire experiment.'];
     if isfield(handles.Current, 'BatchInfo'),
         warning(msg);   % If a batch run, print to text (no dialogs allowed)
     else

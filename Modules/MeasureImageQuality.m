@@ -536,7 +536,8 @@ if any(findobj == ThisModuleFigureNumber)
     for ImageNumber = 1:length(NameImageToThresh)
         if ~isempty(NameImageToThresh{ImageNumber})
             try DisplayText = strvcat(DisplayText, ... %#ok We want to ignore MLint error checking for this line.
-                    [NameImageToThresh{ImageNumber}, ':    ', num2str(handles.Measurements.Image.(CPjoinstrings(ModuleName,'Threshold',NameImageToThresh{ImageNumber})){1})]);%#ok We want to ignore MLint error checking for this line.
+                    [NameImageToThresh{ImageNumber}, ':    ', num2str(handles.Measurements.Image.(CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize))){1})]);%#ok We want to ignore MLint error checking for this line.
+%                                                                                    feature_name = CPjoinstrings(MeasurementPrefix,'Threshold',NameImageToThresh{ImageNumber},num2str(WindowSize));
             end
         end
     end

@@ -9,14 +9,49 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-
+import sys
+import os
+root = os.path.split(__file__)[0]
+if len(root) == 0:
+    root = os.curdir
+root = os.path.abspath(root)
+site_packages = os.path.join(root, 'site-packages')
+if os.path.exists(site_packages) and os.path.isdir(site_packages):
+    import site
+    site.addsitedir(site_packages)
 import optparse
 import wx
-
-from cellprofiler.cellprofilerapp import CellProfilerApp
-from cellprofiler.pipeline import Pipeline
-import cellprofiler.preferences as cpprefs
-import cellprofiler.gui.cpframe as cpgframe 
+import subprocess
+#
+# Try importing once without compiling, then try compiling several
+# different ways.
+#
+try:
+    from cellprofiler.cellprofilerapp import CellProfilerApp
+    from cellprofiler.pipeline import Pipeline
+    import cellprofiler.preferences as cpprefs
+    import cellprofiler.gui.cpframe as cpgframe
+except ImportError:
+    compile_scripts = [os.path.join('cellprofiler','cpmath','setup.py')]
+    current_directory = os.curdir
+    for compile_script in compile_scripts:
+        script_path, script_file = os.path.split(compile_script)
+        os.chdir(os.path.join(root,script_path))
+        if sys.platform == 'win32':
+            p = subprocess.Popen(["python",
+                                  script_file,
+                                  "build_ext","-i",
+                                  "--compiler=mingw32"])
+        else:            
+            p = subprocess.Popen(["python",
+                                  script_file,
+                                  "build_ext","-i"])
+        p.communicate()
+    os.chdir(current_directory)
+    from cellprofiler.cellprofilerapp import CellProfilerApp
+    from cellprofiler.pipeline import Pipeline
+    import cellprofiler.preferences as cpprefs
+    import cellprofiler.gui.cpframe as cpgframe
 
 usage = """usage: %prog [options] [<measurement-file>])
      where <measurement-file> is the optional filename for measurement output

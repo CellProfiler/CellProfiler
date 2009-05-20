@@ -24,8 +24,12 @@ function handles=SubmitBatch(handles)
 % queue      -  one of the bsub queues. see
 % http://iwww.broad.mit.edu/itsystems/lsf_clusters.html#whatqueues
 %              for details.
+% project    - the name of the project (for tracking resource usage
+%              on the cluster)
 % write_data - whether or not to write the Batch_##_to_##_OUT.mat files.
 % batch_size - # of image sets per bsub submission.
+% memory_limit - # of MB of memory to be reserved for each batch on
+%              the cluster. Default is 2000 MB
 % cpcluster  - the revision # of the version of CPCluster to use. This
 %              should correspond to the #### part of a directory like
 %              /imaging/analysis/CPCluster/####.
@@ -49,8 +53,13 @@ function handles=SubmitBatch(handles)
         if info.WriteData== 1
             write_data='Y';
         end;
-        url=sprintf('http://%s/batchprofiler/cgi-bin/NewBatch.py?email=%s&queue=%s&data_dir=%s&write_data=%s&batch_size=%d&timeout=%f&cpcluster=%s',...
-            info.Server,info.Email,info.Queue,info.DataDir,write_data,info.BatchSize,info.Timeout,info.CPCluster);
+        url=sprintf(['http://%s/batchprofiler/cgi-bin/development/NewBatch.py' ...
+                     '?email=%s&queue=%s&data_dir=%s&write_data=%s' ...
+                     '&batch_size=%d&timeout=%f&cpcluster=%s'...
+                     '&project=%s&memory_limit=%f'],...
+                    info.Server,info.Email,info.Queue,info.DataDir,...
+                    write_data,info.BatchSize,info.Timeout,...
+                    info.CPCluster, info.Project, info.MemoryLimit);
         result=urlread(url);
         web(strcat('text://',result));
     end;
@@ -107,6 +116,7 @@ else
 end;
 SubmitInfo.Email = [];
 SubmitInfo.Queue = 'broad';
+SubmitInfo.Project = [];
 SubmitInfo.Server = 'imageweb.broad.mit.edu';
 try
     if isdeployed
@@ -120,6 +130,7 @@ end
 SubmitInfo.CPCluster = num2str(svn_ver_char);
 
 SubmitInfo.BatchSize = 10;
+SubmitInfo.MemoryLimit = 2000;
 SubmitInfo.Timeout = 30;
 SubmitInfo.WriteData = 1;
 
@@ -178,6 +189,12 @@ line = line - uiheight;
 uitext(SBh, 'Queue',[colstart(1) line colwidth(1) textheight]);
 QueueCtl=uiedit(SBh, SubmitInfo.Queue,[colstart(2) line 200 editheight]);
 %
+% Project
+%
+line = line - uiheight;
+uitext(SBh, 'Project',[colstart(1) line colwidth(1) textheight]);
+ProjectCtl=uiedit(SBh, SubmitInfo.Project, [colstart(2) line 200 editheight]);
+%
 % Server
 %
 line = line -  uiheight;
@@ -195,6 +212,12 @@ CPClusterCtl=uiedit(SBh, SubmitInfo.CPCluster, [colstart(2) line 100 editheight]
 line = line - uiheight;
 uitext(SBh, 'Batch size',[colstart(1) line colwidth(1) textheight]);
 BatchSizeCtl=uiedit(SBh, SubmitInfo.BatchSize,[colstart(2) line 100 editheight]);
+%
+% Memory limit
+%
+line = line - uiheight;
+uitext(SBh, 'Memory limit (MB)',[colstart(1) line colwidth(1) textheight]);
+MemoryLimitCtl=uiedit(SBh, SubmitInfo.MemoryLimit, [colstart(2) line 100 editheight]);
 %
 % Timeout
 %
@@ -231,9 +254,11 @@ if get(SBh,'Userdata') == 1,     % The user pressed the Submit button
     SubmitInfo.DataDir = unix_dir;
     SubmitInfo.Email = get(EmailCtl,'String');
     SubmitInfo.Queue = get(QueueCtl,'String');
+    SubmitInfo.Project = get(ProjectCtl,'String');
     SubmitInfo.Server = get(ServerCtl,'String');
     SubmitInfo.Timeout = str2double(get(TimeoutCtl,'String'));
     SubmitInfo.BatchSize = str2double(get(BatchSizeCtl,'String'));
+    SubmitInfo.MemoryLimit = str2double(get(MemoryLimitCtl,'String'));
     SubmitInfo.CPCluster = get(CPClusterCtl,'String');
     SubmitInfo.WriteData = get(WriteDataCtl,'Value');
 end

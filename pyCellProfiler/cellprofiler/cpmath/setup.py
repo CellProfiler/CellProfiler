@@ -13,9 +13,15 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 from distutils.core import setup,Extension
-from Cython.Distutils import build_ext
-from numpy import get_include
 import os
+try:
+    from Cython.Distutils import build_ext
+    from numpy import get_include
+except ImportError:
+    import site
+    site.addsitedir('../../site-packages')
+    from Cython.Distutils import build_ext
+    from numpy import get_include
 
 def configuration():
     extensions = [Extension(name="_cpmorphology",

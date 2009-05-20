@@ -281,7 +281,6 @@ if SetBeingAnalyzed == 1
     TileDataToSave.TiledImage = TiledImage;
 
     %stores data in handles
-    handles = CPaddimages(handles,SmoothedImageName,SmoothedImage);
     handles.Pipeline.TileData.(['Module' handles.Current.CurrentModuleNumber]) = TileDataToSave;
 end
 

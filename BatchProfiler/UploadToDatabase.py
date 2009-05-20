@@ -23,6 +23,8 @@ my_batch = RunBatch.LoadBatch(batch_id)
 re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(image|object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z0-9_]+)\s")
 re_ignore_line = re.compile("SHOW WARNINGS;")
 table_lines = []
+image_prefix = None
+object_prefix = None
 sql_script_file = open(my_batch["data_dir"]+os.sep+sql_script,"r")
 try:
     for line in sql_script_file:
@@ -45,9 +47,12 @@ object_files = []
 for file_name in os.listdir(my_batch["data_dir"]):
     match = re_file_name.search(file_name)
     if match:
-        if match.groups(1)[0] == image_prefix and match.groups(1)[1] == 'image':
+        if (image_prefix and match.groups(1)[0] == image_prefix 
+            and match.groups(1)[1] == 'image'):
             image_files.append(file_name)
-        elif match.groups(1)[0] == object_prefix and match.groups(1)[1] == 'object':
+        elif (object_prefix and 
+              match.groups(1)[0] == object_prefix and 
+              match.groups(1)[1] == 'object'):
             object_files.append(file_name)
 
 batch_script = my_batch["data_dir"]+os.sep+"batch_"+sql_script
@@ -101,9 +106,11 @@ for line, index in zip(lines,range(line_count)):
         print "</div>"
 print "</tt>"
 if queue is None:
-    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file)
+    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file,
+                                   project=my_batch["project"])
 else:
-    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file, queue)
+    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file, queue,
+                                   my_batch["project"])
     
 print "<h2>SQL script submitted to cluster as job # %s"%(job_id)
 print "</body>"

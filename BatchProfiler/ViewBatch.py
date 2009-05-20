@@ -29,7 +29,7 @@ for run in my_batch["runs"]:
     elif run["job_id"]==None:
         pass
     else :
-        job_status = job_dictionary(run["job_id"])
+        job_status = job_dictionary[run["job_id"]]
         if job_status and job_status.has_key("STAT"):
             stat = job_status["STAT"]
     run["status"]=stat;

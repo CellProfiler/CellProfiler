@@ -58,8 +58,11 @@ def CreateBatchRecord(my_batch):
     """
     cursor = connection.cursor()
     cmd = """
-    insert into batch (batch_id, email, data_dir, queue, batch_size, write_data, timeout,cpcluster)
-    values (null,'%(email)s','%(data_dir)s','%(queue)s',%(batch_size)d,%(write_data)d,%(timeout)f,'%(cpcluster)s')"""%(my_batch)
+    insert into batch (batch_id, email, data_dir, queue, batch_size, 
+                       write_data, timeout,cpcluster,project,memory_limit)
+    values (null,'%(email)s','%(data_dir)s','%(queue)s',%(batch_size)d,
+            %(write_data)d,%(timeout)f,'%(cpcluster)s','%(project)s',
+            %(memory_limit)f)"""%(my_batch)
     cursor.execute(cmd)
     cursor = connection.cursor()
     cursor.execute("select last_insert_id()")
@@ -100,20 +103,22 @@ def LoadBatch(batch_id):
     
     Return the batch with the given batch ID and the associated runs
     """
-    sql = "select email,data_dir,queue,batch_size,write_data,timeout,cpcluster from batch where batch_id=%d"%(batch_id)
+    sql = "select email,data_dir,queue,batch_size,write_data,timeout,cpcluster,project,memory_limit from batch where batch_id=%d"%(batch_id)
     cursor = connection.cursor()
     cursor.execute(sql)
     row = cursor.fetchone()
     cursor.close()
     my_batch= {
-        "batch_id":   batch_id,
-        "email":      row[0],
-        "data_dir":   row[1],
-        "queue":      row[2],
-        "batch_size": int(row[3]),
-        "write_data": int(row[4]),
-        "timeout":    float(row[5]),
-        "cpcluster":  row[6]
+        "batch_id":     batch_id,
+        "email":        row[0],
+        "data_dir":     row[1],
+        "queue":        row[2],
+        "batch_size":   int(row[3]),
+        "write_data":   int(row[4]),
+        "timeout":      float(row[5]),
+        "cpcluster":    row[6],
+        "project":      row[7],
+        "memory_limit": float(row[8])
         }
     cursor = connection.cursor()
     cursor.execute("""
@@ -168,8 +173,13 @@ def RunOne(my_batch,run):
     x=my_batch.copy()
     x.update(run)
     x["write_data_yes"]=(my_batch["write_data"]!=0 and "yes") or "no"
+    x["memory_limit_kb"]=int(my_batch["memory_limit"]*1000)
     cmd=["bsub",
          "-q","%(queue)s"%(x),
+         "-M","%(memory_limit_kb)d"%(x),
+         "-P","%(project)s"%(x),
+         "-g","/imaging/batch/%(batch_id)d"%(x),
+         "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
          "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
          "%(cpcluster)s/CPCluster.py"%(x),
          "%(data_dir)s/Batch_data.mat"%(x),

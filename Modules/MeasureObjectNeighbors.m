@@ -382,28 +382,32 @@ if any(findobj == ThisModuleFigureNumber)
     colormap(hAx,handles.Preferences.LabelColorMap);
     cbar_handle = colorbar('EastOutside','peer',hAx);
     
-    %% Ensure that colorbar minimum is >=0
+    % Ensure that colorbar minimum is >=0, if possible
     ylim = get(cbar_handle,'YLim');
-    set(cbar_handle,'YLim',[max([ylim(1) 0]) ylim(2)])
+    clim = [max([ylim(1) 0]) ylim(2)];
+    if diff(clim) <= 0, clim = ylim; end
+    set(cbar_handle,'YLim',clim)
     
     title(hAx,[ObjectName,' colored by number of neighbors']);
 
     if (NeighborDistance == 0),
-        hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
+        hAx = subplot(2,2,3,'Parent',ThisModuleFigureNumber);
         CPimagesc(CPlabel2rgb(handles, DilatedLabels), handles,hAx);
         axis(hAx,'image');
         title(hAx,['Fully expanded ' ObjectName]);
     end
 
-    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+    hAx = subplot(2,2,4,'Parent',ThisModuleFigureNumber);
 	CPimagesc(ImageOfPercentTouching,handles,hAx);
 	axis(hAx,'image');
 	colormap(hAx,handles.Preferences.LabelColorMap)
 	cbar_handle = colorbar('EastOutside','peer',hAx);
     
-	%% Ensure that colorbar minimum is >=0
+	% Ensure that colorbar minimum is >=0, if possible
     ylim = get(cbar_handle,'YLim');
-    set(cbar_handle,'YLim',[max([ylim(1) 0]) ylim(2)])
+    clim = [max([ylim(1) 0]) ylim(2)];
+    if diff(clim) <= 0, clim = ylim; end
+    set(cbar_handle,'YLim',clim)
     
     title(hAx,[ObjectName,' colored by percent touching'])
 

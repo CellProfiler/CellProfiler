@@ -187,7 +187,12 @@ drawnow
 
 [handles,NumberOfChildren,ParentsOfChildren] = CPrelateobjects(handles,SubObjectName,ParentName{1},...
     SubObjectLabelMatrix,ParentObjectLabelMatrix,ModuleName);
-handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
+try
+    handles = CPaddmeasurements(handles,SubObjectName,'SubObjectFlag',1);
+catch
+    % Not sure if a warning needs to be here
+    %CPwarndlg(['The object ',SubObjectName,' has already been made a child of another object.'],[ModuleName,': Warning'],'replace')
+end
 
 if wantDistancesCalculated
     DistancePrefix = 'Distance';

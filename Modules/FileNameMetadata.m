@@ -217,6 +217,13 @@ FieldNames = [PathFieldNames,FileFieldNames];
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
     Metadata.Well = [Metadata.WellRow Metadata.WellColumn];
     FieldNames{length(FieldNames)+1} = 'Well';
+    % Add 'Well' to available metadata list if needed later
+    if any(strcmp(FileFieldNames,'WellRow')) || any(strcmp(FileFieldNames,'WellColumn'))
+        FileFieldNames{length(FileFieldNames)+1} = 'Well';
+    end
+    if any(strcmp(PathFieldNames,'WellRow')) || any(strcmp(PathFieldNames,'WellColumn'))
+        PathFieldNames{length(PathFieldNames)+1} = 'Well';
+    end
 end
 
 % Place current token values in handles.Pipeline

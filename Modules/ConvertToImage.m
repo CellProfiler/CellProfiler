@@ -121,7 +121,7 @@ drawnow
 LabelMatrixImage = CPretrieveimage(handles,['Segmented',ObjectName],ModuleName);
 
 if strcmp(ImageMode,'Binary (black & white)')
-    Image = double(LabelMatrixImage ~= 0);
+    Image = logical(LabelMatrixImage ~= 0);
 elseif strcmp(ImageMode,'Grayscale')
     warning off Matlab:DivideByZero
     Image = double(LabelMatrixImage / max(max(LabelMatrixImage)));

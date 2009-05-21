@@ -13,7 +13,7 @@ function [handles,FileNames] = CPretrievemediafilenames(handles, Pathname, TextT
 % $Revision$ 
 
 if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
-    SelectDirType = CPquestdlg('Do you want to select directories using a dialog box, or entering a text list of directories?','Choose Image Subfolder','Dialog','Text','Cancel','Dialog');
+    SelectDirType = CPquestdlg('Do you want to select directories using a dialog box, or entering a text list of directories from a string or a file?','Choose Image Subfolder','Dialog','Text','Cancel','Dialog');
     switch SelectDirType
         case 'Dialog'
             idx = 1;
@@ -66,11 +66,22 @@ if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
                     CPmsgbox(['The directory list you entered was saved as ',[OutputFilename OutputExtension],' in the Default Output directory. Use this file if you want to process the same folders using the Text directory selection option']);
             end
         case 'Text'
-            Directories = CPinputdlg(['Enter the text string with the directories. Each path should be separated with a "',pathsep,'"'],'Enter Image Subfolders');
-            if isempty(Directories)
-                error('Processing was stopped because the user chose Cancel or entered no text.');
+            SelectTextType = CPquestdlg('Do you want to enter a text string of directories or select a text file?','Choose Image Subfolder','String','File','Cancel','String');
+    
+            switch lower(SelectTextType)
+                case 'string'
+                Directories = CPinputdlg(['Enter the text string with the directories. Each path should be separated with a "',pathsep,'"'],'Enter Image Subfolders');
+                if isempty(Directories)
+                    error('Processing was stopped because the user chose Cancel or entered no text.');
+                end
+                Directories = strread(Directories{:},'%s','delimiter',['',pathsep,'']);
+            case 'file'
+                [f,p] = uigetfile('*.txt','Pick a text file to load the directories',handles.Current.DefaultOutputDirectory);
+                if isempty(f)
+                    error('Processing was stopped because the user chose Cancel or did not select a file.');
+                end
+                Directories = textread(fullfile(p,f),'%s','delimiter',['',pathsep,'']);
             end
-            Directories = strread(Directories{:},'%s','delimiter',['',pathsep,'']);
         case 'Cancel'
             error('Processing was stopped because the user chose Cancel');
     end

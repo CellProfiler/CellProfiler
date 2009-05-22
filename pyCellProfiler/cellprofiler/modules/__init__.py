@@ -20,6 +20,7 @@ from enhanceorsuppressspeckles import EnhanceOrSuppressSpeckles
 from exporttodatabase import ExportToDatabase
 from exporttoexcel import ExportToExcel
 from filterbyobjectmeasurement import FilterByObjectMeasurement
+from findedges import FindEdges
 from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
@@ -45,6 +46,7 @@ def get_module_classes():
             EnhanceOrSuppressSpeckles,
             ExportToDatabase,
             ExportToExcel,
+            FindEdges,
             FilterByObjectMeasurement,
             GrayToColor,
             IdentifyPrimAutomatic,
@@ -73,6 +75,7 @@ def get_module_substitutions():
             "Crop": Crop,
             "ExportToDatabase": ExportToDatabase,
             "ExportToExcel": ExportToExcel,
+            "FindEdges": FindEdges,
             "FilterByObjectMeasurement": FilterByObjectMeasurement,
             "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,

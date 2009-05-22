@@ -19,6 +19,11 @@ import numpy
 import math
 import sys
 
+from struct import unpack
+from zlib import decompress
+from StringIO import StringIO
+from numpy import fromstring, uint8, uint16
+
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
     
@@ -546,3 +551,50 @@ class ImageSetList(object):
     
     legacy_fields = property(get_legacy_fields)
     
+
+def readc01(fname):
+    '''Read a Cellomics file into an array
+    
+    fname - the name of the file
+    '''
+    def readint(f):
+        return unpack("<l", f.read(4))[0]
+    
+    def readshort(f):
+        return unpack("<h", f.read(2))[0]
+    
+    f = open(fname, "rb")
+    
+    # verify it's a c01 format, and skip the first four bytes
+    assert readint(f) == 16 << 24
+
+    # decompress
+    g = StringIO(decompress(f.read()))
+    
+    # skip four bytes
+    g.seek(4, 1)
+    
+    x = readint(g)
+    y = readint(g)
+    
+    nplanes = readshort(g)
+    nbits = readshort(g)
+
+    compression = readint(g)
+    assert compression == 0, "can't read compressed pixel data"
+    
+    # skip 4 bytes
+    g.seek(4, 1)
+
+    pixelwidth = readint(g)
+    pixelheight = readint(g)
+    colors = readint(g)
+    colors_important = readint(g)
+
+    # skip 12 bytes
+    g.seek(12, 1)
+
+
+    data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
+    return data.reshape(x, y).T
+

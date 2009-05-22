@@ -440,3 +440,163 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
         high_mask = new_high_mask
     return high_mask
 
+def roberts(image, mask=None):
+    '''Find edges using the Roberts algorithm
+    
+    image - the image to process
+    mask  - mask of relevant points
+    
+    The algorithm returns the magnitude of the output of the two Roberts
+    convolution kernels.
+    
+    The following is the canonical citation for the algorithm:
+    L. Roberts Machine Perception of 3-D Solids, Optical and 
+    Electro-optical Information Processing, MIT Press 1965.
+    
+    The following website has a tutorial on the algorithm:
+    http://homepages.inf.ed.ac.uk/rbf/HIPR2/roberts.htm
+    '''
+    result = np.zeros(image.shape)
+    #
+    # Four quadrants and two convolutions:
+    #
+    # q0,0 | q0,1    1  |  0  anti-diagonal
+    # q1,0 | q1,1    0  | -1
+    #
+    # q-1,0 | q0,0   0  |  1  diagonal
+    # q-1,1 | q0,1  -1  |  0
+    #
+    # Points near the mask edges and image edges are computed unreliably
+    # so make them zero (no edge) in the result
+    #
+    if mask == None:
+        mask = np.ones(image.shape, bool)
+    big_mask = binary_erosion(mask,
+                              generate_binary_structure(2,2),
+                              border_value = 0)
+    result[big_mask==False] = 0
+    q00   = image[:,:][big_mask]
+    q11   = image[1:,1:][big_mask[:-1,:-1]]
+    qm11  = image[:-1,1:][big_mask[1:,:-1]]
+    diagonal = q00 - qm11
+    anti_diagonal = q00 - q11
+    result[big_mask] = np.sqrt(diagonal*diagonal + anti_diagonal*anti_diagonal)
+    return result
+
+def sobel(image, mask=None):
+    '''Calculate the absolute magnitude Sobel to find the edges
+    
+    image - image to process
+    mask - mask of relevant points
+    
+    Take the square root of the sum of the squares of the horizontal and
+    vertical Sobels to get a magnitude that's somewhat insensitive to
+    direction.
+    
+    Note that scipy's Sobel returns a directional Sobel which isn't
+    useful for edge detection in its raw form.
+    '''
+    return np.sqrt(hsobel(image,mask)**2 + vsobel(image,mask)**2)
+
+def hsobel(image, mask=None):
+    '''Find the horizontal edges of an image using the Sobel transform
+    
+    image - image to process
+    mask  - mask of relevant points
+    
+    We use the following kernel and return the absolute value of the
+    result at each point:
+     1   2   1
+     0   0   0
+    -1  -2  -1
+    '''
+    if mask == None:
+        mask = np.ones(image.shape, bool)
+    big_mask = binary_erosion(mask,
+                              generate_binary_structure(2,2),
+                              border_value = 0)
+    result = np.abs(convolve(image, np.array([[ 1, 2, 1],
+                                              [ 0, 0, 0],
+                                              [-1,-2,-1]]).astype(float)/4.0))
+    result[big_mask==False] = 0
+    return result
+
+def vsobel(image, mask=None):
+    '''Find the vertical edges of an image using the Sobel transform
+    
+    image - image to process
+    mask  - mask of relevant points
+    
+    We use the following kernel and return the absolute value of the
+    result at each point:
+     1   0  -1
+     2   0  -2
+     1   0  -1
+    '''
+    if mask == None:
+        mask = np.ones(image.shape, bool)
+    big_mask = binary_erosion(mask,
+                              generate_binary_structure(2,2),
+                              border_value = 0)
+    result = np.abs(convolve(image, np.array([[ 1, 0,-1],
+                                              [ 2, 0,-2],
+                                              [ 1, 0,-1]]).astype(float)/4.0))
+    result[big_mask==False] = 0
+    return result
+
+def prewitt(image, mask=None):
+    '''Find the edge magnitude using the Prewitt transform
+    
+    image - image to process
+    mask  - mask of relevant points
+    
+    Return the square root of the sum of squares of the horizontal
+    and vertical Prewitt transforms.
+    '''
+    return np.sqrt(hprewitt(image,mask)**2 + vprewitt(image,mask)**2)
+     
+def hprewitt(image, mask=None):
+    '''Find the horizontal edges of an image using the Prewitt transform
+    
+    image - image to process
+    mask  - mask of relevant points
+    
+    We use the following kernel and return the absolute value of the
+    result at each point:
+     1   1   1
+     0   0   0
+    -1  -1  -1
+    '''
+    if mask == None:
+        mask = np.ones(image.shape, bool)
+    big_mask = binary_erosion(mask,
+                              generate_binary_structure(2,2),
+                              border_value = 0)
+    result = np.abs(convolve(image, np.array([[ 1, 1, 1],
+                                              [ 0, 0, 0],
+                                              [-1,-1,-1]]).astype(float)/3.0))
+    result[big_mask==False] = 0
+    return result
+
+def vprewitt(image, mask=None):
+    '''Find the vertical edges of an image using the Prewitt transform
+    
+    image - image to process
+    mask  - mask of relevant points
+    
+    We use the following kernel and return the absolute value of the
+    result at each point:
+     1   0  -1
+     1   0  -1
+     1   0  -1
+    '''
+    if mask == None:
+        mask = np.ones(image.shape, bool)
+    big_mask = binary_erosion(mask,
+                              generate_binary_structure(2,2),
+                              border_value = 0)
+    result = np.abs(convolve(image, np.array([[ 1, 0,-1],
+                                              [ 1, 0,-1],
+                                              [ 1, 0,-1]]).astype(float)/3.0))
+    result[big_mask==False] = 0
+    return result

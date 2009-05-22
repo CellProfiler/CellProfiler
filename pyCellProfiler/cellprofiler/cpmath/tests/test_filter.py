@@ -906,4 +906,234 @@ class TestCanny(unittest.TestCase):
         point_count = np.sum(result)
         self.assertTrue(point_count > 1200)
         self.assertTrue(point_count < 1600)
+
+class TestRoberts(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Roberts on an array of all zeros'''
+        result = F.roberts(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Roberts on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.roberts(np.random.uniform(size=(10,10)), 
+                           np.zeros((10,10),bool))
+        self.assertTrue(np.all(result == 0))
+    
+    def test_01_01(self):
+        '''Roberts on a diagonal edge should recreate the diagonal line'''
         
+        i,j = np.mgrid[0:10,0:10]
+        image = (i >= j).astype(float)
+        result = F.roberts(image)
+        #
+        # Do something a little sketchy to keep from measuring the points
+        # at 0,0 and -1,-1 which are eroded
+        #
+        i[0,0] = 10000
+        i[-1,-1] = 10000
+        self.assertTrue(np.all(result[i==j]==1))
+        self.assertTrue(np.all(result[np.abs(i-j)>1] == 0))
+    
+    def test_01_02(self):
+        '''Roberts on an anti-diagonal edge should recreate the line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i > -j).astype(float)
+        result = F.roberts(image)
+        i[0,-1] = 10000
+        i[-1,0] = 10000
+        self.assertTrue(np.all(result[i==-j]==1))
+        self.assertTrue(np.all(result[np.abs(i+j)>1] == 0))
+    
+class TestSobel(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Sobel on an array of all zeros'''
+        result = F.sobel(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Sobel on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.sobel(np.random.uniform(size=(10,10)), 
+                         np.zeros((10,10),bool))
+        self.assertTrue(np.all(result == 0))
+
+    def test_01_01_horizontal(self):
+        '''Sobel on an edge should be a horizontal line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.sobel(image)
+        # Fudge the eroded points
+        i[np.abs(j)==5] = 10000
+        self.assertTrue(np.all(result[i==0] == 1))
+        self.assertTrue(np.all(result[np.abs(i) > 1] == 0))
+    
+    def test_01_02_vertical(self):
+        '''Sobel on a vertical edge should be a vertical line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.sobel(image)
+        j[np.abs(i)==5] = 10000
+        self.assertTrue(np.all(result[j==0] == 1))
+        self.assertTrue(np.all(result[np.abs(j) > 1] == 0))
+
+class TestHSobel(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Horizontal sobel on an array of all zeros'''
+        result = F.hsobel(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Horizontal Sobel on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.hsobel(np.random.uniform(size=(10,10)), 
+                          np.zeros((10,10),bool))
+        self.assertTrue(np.all(result == 0))
+
+    def test_01_01_horizontal(self):
+        '''Horizontal Sobel on an edge should be a horizontal line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.hsobel(image)
+        # Fudge the eroded points
+        i[np.abs(j)==5] = 10000
+        self.assertTrue(np.all(result[i==0] == 1))
+        self.assertTrue(np.all(result[np.abs(i) > 1] == 0))
+    
+    def test_01_02_vertical(self):
+        '''Horizontal Sobel on a vertical edge should be zero'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.hsobel(image)
+        self.assertTrue(np.all(result == 0))
+
+class TestVSobel(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Vertical sobel on an array of all zeros'''
+        result = F.vsobel(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Vertical Sobel on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.vsobel(np.random.uniform(size=(10,10)), 
+                          np.zeros((10,10),bool))
+        self.assertTrue(np.all(result == 0))
+
+    def test_01_01_vertical(self):
+        '''Vertical Sobel on an edge should be a vertical line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.vsobel(image)
+        # Fudge the eroded points
+        j[np.abs(i)==5] = 10000
+        self.assertTrue(np.all(result[j==0] == 1))
+        self.assertTrue(np.all(result[np.abs(j) > 1] == 0))
+    
+    def test_01_02_horizontal(self):
+        '''vertical Sobel on a horizontal edge should be zero'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.vsobel(image)
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result) < eps))
+
+class TestPrewitt(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Prewitt on an array of all zeros'''
+        result = F.prewitt(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Prewitt on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.prewitt(np.random.uniform(size=(10,10)), 
+                          np.zeros((10,10),bool))
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result) < eps))
+
+    def test_01_01_horizontal(self):
+        '''Prewitt on an edge should be a horizontal line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.prewitt(image)
+        # Fudge the eroded points
+        i[np.abs(j)==5] = 10000
+        eps = .000001
+        self.assertTrue(np.all(result[i==0] == 1))
+        self.assertTrue(np.all(np.abs(result[np.abs(i) > 1]) < eps))
+    
+    def test_01_02_vertical(self):
+        '''Prewitt on a vertical edge should be a vertical line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.prewitt(image)
+        eps = .000001
+        j[np.abs(i)==5] = 10000
+        self.assertTrue(np.all(result[j==0] == 1))
+        self.assertTrue(np.all(np.abs(result[np.abs(j) > 1]) < eps))
+
+class TestHPrewitt(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Horizontal sobel on an array of all zeros'''
+        result = F.hprewitt(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Horizontal prewitt on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.hprewitt(np.random.uniform(size=(10,10)), 
+                          np.zeros((10,10),bool))
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result) < eps))
+
+    def test_01_01_horizontal(self):
+        '''Horizontal prewitt on an edge should be a horizontal line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.hprewitt(image)
+        # Fudge the eroded points
+        i[np.abs(j)==5] = 10000
+        eps = .000001
+        self.assertTrue(np.all(result[i==0] == 1))
+        self.assertTrue(np.all(np.abs(result[np.abs(i) > 1]) < eps))
+    
+    def test_01_02_vertical(self):
+        '''Horizontal prewitt on a vertical edge should be zero'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.hprewitt(image)
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result) < eps))
+
+class TestVPrewitt(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Vertical prewitt on an array of all zeros'''
+        result = F.vprewitt(np.zeros((10,10)), np.ones((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_00_01_mask(self):
+        '''Vertical prewitt on a masked array should be zero'''
+        np.random.seed(0)
+        result = F.vprewitt(np.random.uniform(size=(10,10)), 
+                          np.zeros((10,10),bool))
+        self.assertTrue(np.all(result == 0))
+
+    def test_01_01_vertical(self):
+        '''Vertical prewitt on an edge should be a vertical line'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (j>=0).astype(float)
+        result = F.vprewitt(image)
+        # Fudge the eroded points
+        j[np.abs(i)==5] = 10000
+        self.assertTrue(np.all(result[j==0] == 1))
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result[np.abs(j) > 1]) < eps))
+    
+    def test_01_02_horizontal(self):
+        '''vertical prewitt on a horizontal edge should be zero'''
+        i,j = np.mgrid[-5:6,-5:6]
+        image = (i>=0).astype(float)
+        result = F.vprewitt(image)
+        eps = .000001
+        self.assertTrue(np.all(np.abs(result) < eps))

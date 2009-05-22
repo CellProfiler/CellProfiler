@@ -89,9 +89,16 @@ class Measurements(object):
             else:
                 assert False,"Adding a feature for a second time: %s.%s"%(object_name,feature_name)
         else:
-            assert self.__dictionary.has_key(object_name),"Object %s requested for the first time on pass # %d"%(object_name,self.image_set_number)
-            assert self.__dictionary[object_name].has_key(feature_name),"Feature %s.%s added for the first time on pass # %d"%(object_name,feature_name,self.image_set_number)
-            assert not self.has_current_measurements(object_name, feature_name), "Feature %s.%s has already been set for this image set"%(object_name,feature_name)
+            assert self.__dictionary.has_key(object_name),\
+                   ("Object %s requested for the first time on pass # %d" %
+                    (object_name,self.image_set_number))
+            assert self.__dictionary[object_name].has_key(feature_name),\
+                   ("Feature %s.%s added for the first time on pass # %d" %
+                    (object_name,feature_name,self.image_set_number))
+            assert (self.__can_overwrite or not
+                    self.has_current_measurements(object_name, feature_name)),\
+                   ("Feature %s.%s has already been set for this image set" %
+                    (object_name,feature_name))
             #
             # These are for convenience - wrap measurement in an numpy array to make it a cell
             #

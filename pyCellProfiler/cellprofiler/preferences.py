@@ -177,10 +177,12 @@ def get_absolute_path(path):
     the default output directory.
     """
     if (path.startswith("."+os.path.sep) or
-        ("altsep" in os.path.__all__ and path.startswith("."+os.path.altsep))):
+        ("altsep" in os.path.__all__ and os.path.altsep and
+         path.startswith("."+os.path.altsep))):
         return os.path.join(get_default_output_directory(), path[2:])
     elif (path.startswith("&"+os.path.sep) or
-          ("altsep" in os.path.__all__ and path.startswith("&"+os.path.altsep))):
+          ("altsep" in os.path.__all__ and os.path.altsep and
+           path.startswith("&"+os.path.altsep))):
         return os.path.join(get_default_image_directory(), path[2:])
     elif len(os.path.split(path)[0]) == 0:
         return os.path.join(get_default_output_directory(), path)

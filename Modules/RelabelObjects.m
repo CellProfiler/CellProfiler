@@ -146,15 +146,20 @@ if any(findobj == ThisModuleFigureNumber)
   Relabeled = CPretrieveimage(handles, ['Segmented', RelabeledObjectName], ...
 			      ModuleName);
   vislabel = Relabeled;
-  props = regionprops(Relabeled, {'ConvexImage', 'BoundingBox'});
-  for k=1:length(props)
-    ci = props(k).ConvexImage;
-    bb = props(k).BoundingBox;
-    mask = false(size(Relabeled));
-    mask(bb(2)+0.5:bb(2)+bb(4)-0.5, bb(1)+0.5:bb(1)+bb(3)-0.5) = ci;
-    mask(imerode(mask, strel('disk', 1))) = 0;
-    vislabel(mask) = k;
-  end
+  
+    %% This commented out code effectively adds a convex hull to each object,
+    %% but is unnecessary and adds confusing new information to the displayed output
+    %% since CPlabel2rgb color codes each object (Dlogan 2009-05-29).
+%   props = regionprops(Relabeled, {'ConvexImage', 'BoundingBox'});
+%   for k=1:length(props)
+%     ci = props(k).ConvexImage;
+%     bb = props(k).BoundingBox;
+%     mask = false(size(Relabeled));
+%     mask(bb(2)+0.5:bb(2)+bb(4)-0.5, bb(1)+0.5:bb(1)+bb(3)-0.5) = ci;
+%     mask(imerode(mask, strel('disk', 1))) = 0;
+%     vislabel(mask) = k;
+%   end
+
   RelabeledRGB = CPlabel2rgb(handles, vislabel);
   
   CPfigure(handles,'Image',ThisModuleFigureNumber);

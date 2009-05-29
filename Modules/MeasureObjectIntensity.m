@@ -329,7 +329,7 @@ for i = 1:length(ObjectNameList)
         %%% image.
         mask = (LabelMatrixImage > 0);
         masked_labels = LabelMatrixImage(mask);
-        masked_intensity = OrigImage(mask);
+        masked_intensity = double(OrigImage(mask));
         [x,y] = meshgrid(1:size(LabelMatrixImage,1),1:size(LabelMatrixImage,2));
         masked_x = x(mask);
         masked_y = y(mask);

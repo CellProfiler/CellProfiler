@@ -69,7 +69,7 @@ function handles = RelabelObjects(handles)
 % Var 4 can be reworded: "What is the distance within which objects should
 % be unified?"
 % Var 5 should then be: "If you would also like to use intensities to
-% determine which objects to unify, select the image here:" (and None id
+% determine which objects to unify, select the image here:" (and 'Do not use' is
 % the default option).
 % 
 % We should be careful about using the words "unify" and "merge". I think
@@ -100,9 +100,9 @@ RelabelOption = char(handles.Settings.VariableValues{CurrentModuleNum,3}); %#ok 
 %defaultVAR04 = 0
 DistanceThreshold = str2num(char(handles.Settings.VariableValues{CurrentModuleNum,4})); %#ok Ignore MLint
 
-%textVAR05 = For 'Unify' option, Grayscale image the intensities of which are used to determine whether to merge (optional, see help). Select 'None'if you do not want to use this option.
+%textVAR05 = For 'Unify' option, Grayscale image the intensities of which are used to determine whether to merge (optional, see help). Select 'Do not use' if you do not want to use this option.
 %infotypeVAR05 = imagegroup
-%defaultVAR05 = None
+%defaultVAR05 = Do not use
 GrayscaleImageName = char(handles.Settings.VariableValues{CurrentModuleNum,5});
 %inputtypeVAR05 = popupmenu custom
 
@@ -191,7 +191,7 @@ end
 
 if strcmp(RelabelOption, 'Unify')
 
-    if strcmp(GrayscaleImageName, 'None')
+    if strcmp(GrayscaleImageName, 'Do not use')
     dilated = imdilate(Orig > 0, strel('disk', DistanceThreshold));
     merged = bwlabel(dilated);
     merged(Orig == 0) = 0;

@@ -28,6 +28,10 @@ def configuration():
                             sources=["src/cpmorphology.c"],
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=['-O3']),
+                  Extension(name="_cpmorphology2",
+                            sources=["_cpmorphology2.pyx"],
+                            include_dirs=[get_include()],
+                            extra_compile_args=['-O3']),
                   Extension(name="_watershed",
                             sources=["_watershed.pyx", "heap_watershed.pxi"],
                             include_dirs=['src']+[get_include()],
@@ -39,9 +43,7 @@ def configuration():
                   Extension(name="_filter",
                             sources=["_filter.pyx"],
                             include_dirs=['src']+[get_include()],
-                            extra_compile_args=['-g'],
-                            debug=True,
-                            extra_link_args=['-g'])
+                            extra_compile_args=['-O3'])
                   ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",

@@ -17,7 +17,8 @@ import scipy.ndimage
 import scipy.sparse
 import _cpmorphology
 from outline import outline
-from rankorder import rank_order 
+from rankorder import rank_order
+from _cpmorphology2 import skeletonize_loop 
 
 def fill_labeled_holes(image):
     """Fill holes in objects in a labeled image
@@ -121,6 +122,7 @@ def binary_shrink(image, iterations=-1):
         if np.all(temp==result):
             return result
         result=temp
+    return result
 
 def strel_disk(radius):
     """Create a disk structuring element for morphological operations
@@ -1212,11 +1214,12 @@ def block(shape, block_shape):
     indexes = np.array(range(np.product(block_shape)))
     return labels, indexes
 
-def white_tophat(image, radius, mask=None):
+def white_tophat(image, radius=None, mask=None):
     '''White tophat filter an image using a circular structuring element
     
     image - image in question
-    radius - radius of the circular structuring element
+    radius - radius of the circular structuring element. If no radius, use
+             an 8-connected structuring element.
     mask  - mask of significant pixels in the image. Points outside of
             the mask will not participate in the morphological operations
     '''
@@ -1232,40 +1235,453 @@ def white_tophat(image, radius, mask=None):
         final_image[not_mask] = image[not_mask]
     return final_image
 
-def opening(image, radius, mask=None):
-    '''Do a morphological opening
+def black_tophat(image, radius=None, mask=None):
+    '''Black tophat filter an image using a circular structuring element
     
-    image - pixel image to operate on
-    radius - use a structuring element with the given radius
-    mask - if present, only use unmasked pixels for operations
+    image - image in question
+    radius - radius of the circular structuring element. If no radius, use
+             an 8-connected structuring element.
+    mask  - mask of significant pixels in the image. Points outside of
+            the mask will not participate in the morphological operations
     '''
-    strel = strel_disk(radius)==1
-    strel_size = (radius*2+1,radius*2+1)
     #
-    # First, do a grey_erosion with masked pixels = 1 so they don't participate
+    # Subtract the image from the closing to get the bothat
+    #
+    final_image = closing(image, radius, mask) - image 
+    #
+    # Paint the masked pixels into the final image
+    #
+    if not mask is None:
+        not_mask = np.logical_not(mask)
+        final_image[not_mask] = image[not_mask]
+    return final_image
+
+def grey_erosion(image, radius=None, mask=None):
+    '''Perform a grey erosion with masking'''
+    if radius is None:
+        strel = np.ones((3,3),bool)
+        strel_size = (3,3)
+        radius = 1
+    else:
+        strel = strel_disk(radius)==1
+        strel_size = (radius*2+1,radius*2+1)
+    #
+    # Do a grey_erosion with masked pixels = 1 so they don't participate
     #
     big_image = np.ones(np.array(image.shape)+radius*2)
     big_image[radius:-radius,radius:-radius] = image
     if not mask is None:
         not_mask = np.logical_not(mask)
         big_image[radius:-radius,radius:-radius][not_mask] = 1
-    processed_image = scipy.ndimage.grey_erosion(big_image,
-                                                 footprint=strel)
-    #
-    # Then do a grey_dilation with masked pixels = 0 so they don't participate
-    #
-    big_image[:,:] = 0
-    big_image[radius:-radius,radius:-radius] =\
-        processed_image[radius:-radius,radius:-radius]
-    if not mask is None:
-        big_image[radius:-radius,radius:-radius][not_mask] = 0
-    scipy.ndimage.grey_dilation(big_image, footprint = strel,
-                                output=processed_image)
+    processed_image = scipy.ndimage.grey_erosion(big_image, footprint=strel)
     final_image = processed_image[radius:-radius,radius:-radius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image
 
+def grey_dilation(image, radius=None, mask=None):
+    '''Perform a grey dilation with masking'''
+    if radius is None:
+        strel = np.ones((3,3),bool)
+        strel_size = (3,3)
+        radius = 1
+    else:
+        strel = strel_disk(radius)==1
+        strel_size = (radius*2+1,radius*2+1)
+    #
+    # Do a grey_dilation with masked pixels = 0 so they don't participate
+    #
+    big_image = np.zeros(np.array(image.shape)+radius*2)
+    big_image[radius:-radius,radius:-radius] = image
+    if not mask is None:
+        not_mask = np.logical_not(mask)
+        big_image[radius:-radius,radius:-radius][not_mask] = 0
+    processed_image = scipy.ndimage.grey_dilation(big_image, footprint=strel)
+    final_image = processed_image[radius:-radius,radius:-radius]
+    if not mask is None:
+        final_image[not_mask] = image[not_mask]
+    return final_image
+    
+def opening(image, radius=None, mask=None):
+    '''Do a morphological opening
+    
+    image - pixel image to operate on
+    radius - use a structuring element with the given radius. If no radius,
+             use an 8-connected structuring element.
+    mask - if present, only use unmasked pixels for operations
+    '''
+    eroded_image = grey_erosion(image, radius, mask)
+    return grey_dilation(eroded_image, radius, mask)
+
+def closing(image, radius=None, mask=None):
+    '''Do a morphological closing
+    
+    image - pixel image to operate on
+    radius - use a structuring element with the given radius. If no structuring
+             element, use an 8-connected structuring element.
+    mask - if present, only use unmasked pixels for operations
+    '''
+    dilated_image = grey_dilation(image, radius, mask)
+    return grey_erosion(dilated_image, radius, mask)
+
+def table_lookup(image, table, border_value):
+    '''Perform a morphological transform on an image, directed by its neighbors
+    
+    image - a binary image
+    table - a 512-element table giving the transform of each pixel given
+            the values of that pixel and its 8-connected neighbors.
+    border_value - the value of pixels beyond the border of the image.
+                   This should test as True or False.
+    
+    The pixels are numbered like this:
+    
+    0 1 2
+    3 4 5
+    6 7 8
+    The index at a pixel is the sum of 2**<pixel-number> for pixels
+    that evaluate to true. 
+    '''
+    image = image.astype(bool)
+    #
+    # We accumulate into the indexer to get the index into the table
+    # at each point in the image
+    #
+    indexer = np.zeros(image.shape,int)
+    indexer[1:,1:][image[:-1,:-1]] += 2**0
+    indexer[1:,:][image[:-1,:]]    += 2**1
+    indexer[1:,:-1][image[:-1,1:]] += 2**2
+    
+    indexer[:,1:][image[:,:-1]]    += 2**3
+    indexer[:,:][image[:,:]]       += 2**4
+    indexer[:,:-1][image[:,1:]]    += 2**5
+
+    indexer[:-1,1:][image[1:,:-1]] += 2**6
+    indexer[:-1,:][image[1:,:]]    += 2**7
+    indexer[:-1,:-1][image[1:,1:]] += 2**8
+
+    if border_value:
+        indexer[0,:]   |= 2**0 + 2**1 + 2**2
+        indexer[-1,:]  |= 2**6 + 2**7 + 2**8
+        indexer[:,0]   |= 2**0 + 2**3 + 2**6
+        indexer[:,-1]  |= 2**2 + 2**5 + 2**8
+    return table[indexer]
+
+def pattern_of(index):
+    '''Return the pattern represented by an index value'''
+    return np.array([[index & 2**0,index & 2**1,index & 2**2],
+                     [index & 2**3,index & 2**4,index & 2**5],
+                     [index & 2**6,index & 2**7,index & 2**8]], bool)
+
+def index_of(pattern):
+    '''Return the index of a given pattern'''
+    return (pattern[0,0] * 2**0 + pattern[0,1] * 2**1 + pattern[0,2] * 2**2 +
+            pattern[1,0] * 2**3 + pattern[1,1] * 2**4 + pattern[1,2] * 2**5 +
+            pattern[2,0] * 2**6 + pattern[2,1] * 2**7 + pattern[2,2] * 2**8)
+    
+def make_table(value, pattern, care=np.ones((3,3),bool)):
+    '''Return a table suitable for table_lookup
+    
+    value - set all table entries matching "pattern" to "value", all others
+            to not "value"
+    pattern - a 3x3 boolean array with the pattern to match
+    care    - a 3x3 boolean array where each value is true if the pattern
+              must match at that position and false if we don't care if
+              the pattern matches at that position.
+    '''
+    def fn(index, p,i,j):
+        '''Return true if bit position "p" in index matches pattern'''
+        return ((((index & 2**p) > 0) == pattern[i,j]) or not care[i,j])
+    return np.array([value 
+                     if (fn(i,0,0,0) and fn(i,1,0,1) and fn(i,2,0,2) and
+                         fn(i,3,1,0) and fn(i,4,1,1) and fn(i,5,1,2) and
+                         fn(i,6,2,0) and fn(i,7,2,1) and fn(i,8,2,2))
+                     else not value
+                     for i in range(512)], bool)
+
+'''The table for computing binary bridge'''
+#
+# Either the center is already true or, if you label the pattern,
+# there are two unconnected objects in the pattern
+#
+bridge_table = np.array([pattern_of(index)[1,1] or
+                         scipy.ndimage.label(pattern_of(index),
+                                             np.ones((3,3),bool))[1] > 1
+                         for index in range(512)])
+
+def bridge(image, mask=None):
+    '''Fill in pixels that bridge gaps.
+    
+    1 0 0    1 0 0
+    0 0 0 -> 0 1 0
+    0 0 1    0 0 1
+    '''
+    global bridge_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, bridge_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Keep all pixels (the first make_table) except for isolated ones
+clean_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) &
+               make_table(False, np.array([[0,0,0],[0,1,0],[0,0,0]],bool)))
+def clean(image, mask=None):
+    '''Remove isolated pixels
+    
+    0 0 0     0 0 0
+    0 1 0 ->  0 0 0
+    0 0 0     0 0 0
+    
+    Border pixels and pixels adjoining masks are removed unless one valid
+    neighbor is true.
+    '''
+    global clean_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, clean_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Keep all pixels. Rotate the following pattern 90 degrees four times
+# to 4-connect two pixels that are 8-connected
+diag_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
+              make_table(True, np.array([[0,1,0],
+                                         [1,0,0],
+                                         [0,0,0]]),
+                               np.array([[1,1,0],
+                                         [1,1,0],
+                                         [0,0,0]]))|
+              make_table(True, np.array([[0,1,0],
+                                         [0,0,1],
+                                         [0,0,0]]),
+                               np.array([[0,1,1],
+                                         [0,1,1],
+                                         [0,0,0]]))|
+              make_table(True, np.array([[0,0,0],
+                                         [0,0,1],
+                                         [0,1,0]]),
+                               np.array([[0,0,0],
+                                         [0,1,1],
+                                         [0,1,1]]))|
+              make_table(True, np.array([[0,0,0],
+                                         [1,0,0],
+                                         [0,1,0]]),
+                               np.array([[0,0,0],
+                                         [1,1,0],
+                                         [1,1,0]])))
+                                         
+def diag(image, mask=None):
+    '''4-connect pixels that are 8-connected
+    
+    0 0 0     0 0 ?
+    0 0 1 ->  0 1 1
+    0 1 0     ? 1 ?
+    
+    '''
+    global diag_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, diag_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Fill table - keep all ones. Change a zero surrounded by ones to 1
+fill_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                         np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
+              make_table(True, np.array([[1,1,1],[1,0,1],[1,1,1]],bool)))
+def fill(image, mask=None):
+    '''Fill isolated black pixels
+    
+    1 1 1     1 1 1
+    1 0 1 ->  1 1 1
+    1 1 1     1 1 1
+    '''
+    global fill_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = True
+    result = table_lookup(masked_image, fill_table, True)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Hbreak table - keep all ones except for the hbreak case
+hbreak_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                           np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) & 
+                [i != index_of(np.array([[1,1,1],[0,1,0],[1,1,1]],bool))
+                 for i in range(512)])
+
+def hbreak(image, mask=None):
+    '''Remove horizontal breaks
+    
+    1 1 1     1 1 1
+    0 1 0 ->  0 0 0 (this case only)
+    1 1 1     1 1 1
+    '''
+    global hbreak_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, hbreak_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+life_table = np.array([np.sum(pattern_of(i))==3 or
+                       (pattern_of(i)[1,1] and np.sum(pattern_of(i))==4)
+                       for i in range(512)])
+
+def life(image, mask=None):
+    global life_table
+    return table_lookup(image, life_table, False)
+    
+# Majority table - a pixel is 1 if the sum of it and its neighbors is > 4
+majority_table = np.array([np.sum(pattern_of(i))>4 for i in range(512)])
+def majority(image, mask=None):
+    '''A pixel takes the value of the majority of its neighbors
+    
+    '''
+    global majority_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, majority_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Remove table - a pixel is changed from 1 to 0 if all of its 4-connected
+# neighbors are 1
+remove_table = (make_table(True, 
+                           np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                           np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) &
+               make_table(False, 
+                          np.array([[0,1,0],
+                                    [1,1,1],
+                                    [0,1,0]],bool),
+                          np.array([[0,1,0],
+                                    [1,1,1],
+                                    [0,1,0]],bool)))
+
+def remove(image, mask=None):
+    '''Turn 1 pixels to 0 if their 4-connected neighbors are all 0
+    
+    ? 1 ?     ? 1 ?
+    1 1 1  -> 1 0 1
+    ? 1 ?     ? 1 ?
+    '''
+    global remove_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, remove_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+def skeletonize(image, mask=None,fast=True):
+    '''Skeletonize the image
+    
+    Take the distance transform.
+    Order the 1 points by the distance transform.
+    Remove a point if it has more than 1 neighbor and if removing it
+    does not change the Euler number.
+    '''
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    #
+    # Lookup table - start with only positive pixels.
+    # Keep if # pixels in neighborhood is 2 or less
+    # Keep if removing the pixel results in a different connectivity
+    #
+    table = (make_table(True,np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                        np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) &
+             (np.array([scipy.ndimage.label(pattern_of(index),
+                                            np.ones((3,3),bool))[1] !=
+                        scipy.ndimage.label(pattern_of(index & ~ 2**4),
+                                             np.ones((3,3),bool))[1]
+                        for index in range(512) ]) |
+              np.array([np.sum(pattern_of(index))<3 for index in range(512)])))
+    
+    distance = scipy.ndimage.distance_transform_edt(masked_image)
+    #
+    # The processing order along the edge is critical to the shape of the
+    # resulting skeleton: if you process a corner first, that corner will
+    # be eroded and the skeleton will miss the arm from that corner. Pixels
+    # with fewer neighbors are more "cornery" and should be processed last.
+    #
+    cornerness_table = np.array([9-np.sum(pattern_of(index))
+                                 for index in range(512)])
+    corner_score = table_lookup(masked_image, cornerness_table, False)
+    i,j = np.mgrid[0:image.shape[0],0:image.shape[1]]
+    result=masked_image.copy()
+    distance = distance[result]
+    i = np.ascontiguousarray(i[result],np.int32)
+    j = np.ascontiguousarray(j[result],np.int32)
+    result=np.ascontiguousarray(result,np.uint8)
+    np.random.seed(0)
+    order = np.lexsort((np.random.permutation(np.arange(distance.shape[0])),
+                        corner_score[masked_image],
+                        distance))
+    order = np.ascontiguousarray(order, np.int32)
+    table = np.ascontiguousarray(table, np.uint8)
+    if fast:
+        skeletonize_loop(result, i, j, order, table)
+    else:
+        for index in order:
+            accumulator = 16
+            ii = i[index]
+            jj = j[index]
+            if ii > 0:
+                if jj > 0 and result[ii-1,jj-1]:
+                    accumulator += 1
+                if result[ii-1,jj]:
+                    accumulator += 2
+                if jj < result.shape[1]-1 and result[ii-1,jj+1]:
+                    accumulator += 4
+            if jj > 0 and result[ii,jj-1]:
+                accumulator += 8
+            if jj < result.shape[1]-1 and result[ii,jj+1]:
+                accumulator += 32
+            if ii < result.shape[0]-1:
+                if jj > 0 and result[ii+1,jj-1]:
+                    accumulator += 64
+                if result[ii+1,jj]:
+                    accumulator += 128
+                if jj < result.shape[1]-1 and result[ii+1,jj+1]:
+                    accumulator += 256
+            result[ii,jj] = table[accumulator]
+    
+    result = result.astype(bool)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+ 
 def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     '''Return a binary mask containing only points that are regional maxima
     

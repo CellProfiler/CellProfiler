@@ -22,36 +22,40 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
 import optparse
 import wx
 import subprocess
+import cellprofiler.cpmath.setup
+from distutils.dep_util import newer_group
 #
-# Try importing once without compiling, then try compiling several
-# different ways.
+# Check for dependencies and compile if necessary
 #
-try:
-    from cellprofiler.cellprofilerapp import CellProfilerApp
-    from cellprofiler.pipeline import Pipeline
-    import cellprofiler.preferences as cpprefs
-    import cellprofiler.gui.cpframe as cpgframe
-except ImportError:
-    compile_scripts = [os.path.join('cellprofiler','cpmath','setup.py')]
-    current_directory = os.curdir
-    for compile_script in compile_scripts:
-        script_path, script_file = os.path.split(compile_script)
-        os.chdir(os.path.join(root,script_path))
-        if sys.platform == 'win32':
-            p = subprocess.Popen(["python",
-                                  script_file,
-                                  "build_ext","-i",
-                                  "--compiler=mingw32"])
-        else:            
-            p = subprocess.Popen(["python",
-                                  script_file,
-                                  "build_ext","-i"])
-        p.communicate()
-    os.chdir(current_directory)
-    from cellprofiler.cellprofilerapp import CellProfilerApp
-    from cellprofiler.pipeline import Pipeline
-    import cellprofiler.preferences as cpprefs
-    import cellprofiler.gui.cpframe as cpgframe
+compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
+                    cellprofiler.cpmath.setup)]
+current_directory = os.curdir
+for compile_script,my_module in compile_scripts:
+    script_path, script_file = os.path.split(compile_script)
+    os.chdir(os.path.join(root,script_path))
+    configuration = my_module.configuration()
+    needs_build = False
+    for extension in configuration['ext_modules']:
+        target = extension.name+'.pyd'
+        if newer_group(extension.sources,target):
+            needs_build = True
+    if not needs_build:
+        continue 
+    if sys.platform == 'win32':
+        p = subprocess.Popen(["python",
+                              script_file,
+                              "build_ext","-i",
+                              "--compiler=mingw32"])
+    else:            
+        p = subprocess.Popen(["python",
+                              script_file,
+                              "build_ext","-i"])
+    p.communicate()
+os.chdir(current_directory)
+from cellprofiler.cellprofilerapp import CellProfilerApp
+from cellprofiler.pipeline import Pipeline
+import cellprofiler.preferences as cpprefs
+import cellprofiler.gui.cpframe as cpgframe
 
 usage = """usage: %prog [options] [<measurement-file>])
      where <measurement-file> is the optional filename for measurement output

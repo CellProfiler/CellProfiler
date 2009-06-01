@@ -142,7 +142,7 @@ as to avoid a 'halo' effect.
                                               must_be_grayscale=True)
         pixels = input.pixel_data.copy()
         if self.binary != 'Grayscale':
-            pixels[input.mask] = pixels[input.mask] > self.binary_threshold
+            pixels[input.mask] = pixels[input.mask] > self.binary_threshold.value
         else:
             if self.low.value:
                 pixels[input.mask & (pixels < self.low_threshold.value)] = 0

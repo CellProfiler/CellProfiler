@@ -15,11 +15,13 @@ __version__="$Revision: 1 "
 import numpy as np
 import _filter
 from rankorder import rank_order
-from scipy.ndimage import map_coordinates
+import scipy.ndimage
+from scipy.ndimage import map_coordinates, label
 from scipy.ndimage import convolve, correlate1d, gaussian_filter
 from scipy.ndimage import binary_dilation, binary_erosion
 from scipy.ndimage import generate_binary_structure
 from smooth import smooth_with_function_and_mask
+from cpmorphology import fixup_scipy_ndimage_result
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -354,10 +356,10 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     c2 = magnitude[1:,1:][pts[:-1,:-1]]
     m  = magnitude[pts]
     w  = abs_jsobel[pts] / abs_isobel[pts]
-    c_plus  = c2 * w + c1 * (1-w) < m
+    c_plus  = c2 * w + c1 * (1-w) <= m
     c1 = magnitude[:-1,:][pts[1:,:]]
     c2 = magnitude[:-1,:-1][pts[1:,1:]]
-    c_minus =  c2 * w + c1 * (1-w) < m
+    c_minus =  c2 * w + c1 * (1-w) <= m
     local_maxima[pts] = np.logical_and(c_plus, c_minus)
     #----- 45 to 90 degrees ------
     # Mix diagonal and vertical
@@ -374,10 +376,10 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     c2 = magnitude[1:,1:][pts[:-1,:-1]]
     m  = magnitude[pts]
     w  = abs_isobel[pts] / abs_jsobel[pts]
-    c_plus  = c2 * w + c1 * (1-w) < m
+    c_plus  = c2 * w + c1 * (1-w) <= m
     c1 = magnitude[:,:-1][pts[:,1:]]
     c2 = magnitude[:-1,:-1][pts[1:,1:]]
-    c_minus =  c2 * w + c1 * (1-w) < m
+    c_minus =  c2 * w + c1 * (1-w) <= m
     local_maxima[pts] = np.logical_and(c_plus, c_minus)
     #----- 90 to 135 degrees ------
     # Mix anti-diagonal and vertical
@@ -394,10 +396,10 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     c2a = magnitude[:-1,1:][pts[1:,:-1]]
     m  = magnitude[pts]
     w  = abs_isobel[pts] / abs_jsobel[pts]
-    c_plus  = c2a * w + c1a * (1.0-w) < m
+    c_plus  = c2a * w + c1a * (1.0-w) <= m
     c1 = magnitude[:,:-1][pts[:,1:]]
     c2 = magnitude[1:,:-1][pts[:-1,1:]]
-    c_minus =  c2 * w + c1 * (1.0-w) < m
+    c_minus =  c2 * w + c1 * (1.0-w) <= m
     cc = np.logical_and(c_plus,c_minus)
     local_maxima[pts] = np.logical_and(c_plus, c_minus)
     #----- 135 to 180 degrees ------
@@ -415,10 +417,10 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     c2 = magnitude[:-1,1:][pts[1:,:-1]]
     m  = magnitude[pts]
     w  = abs_jsobel[pts] / abs_isobel[pts]
-    c_plus  = c2 * w + c1 * (1-w) < m
+    c_plus  = c2 * w + c1 * (1-w) <= m
     c1 = magnitude[1:,:][pts[:-1,:]]
     c2 = magnitude[1:,:-1][pts[:-1,1:]]
-    c_minus =  c2 * w + c1 * (1-w) < m
+    c_minus =  c2 * w + c1 * (1-w) <= m
     local_maxima[pts] = np.logical_and(c_plus, c_minus)
     #
     #---- Create two masks at the two thresholds.
@@ -426,19 +428,19 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     high_mask = np.logical_and(local_maxima, magnitude >= high_threshold)
     low_mask  = np.logical_and(local_maxima, magnitude >= low_threshold)
     #
-    #---- Apply successive rounds of dilation and masking until the
-    #     high_mask doesn't change. This is equivalent to extending
-    #     the list of edge pixels to adjacent pixels that are above the
-    #     low threshold.
+    # Segment the low-mask, then only keep low-segments that have
+    # some high_mask component in them 
     #
-    dilation_mask = np.zeros(high_mask.shape, bool)
-    while True:
-        binary_dilation(high_mask, s, output=dilation_mask)
-        new_high_mask = np.logical_and(dilation_mask, low_mask)
-        if np.all(high_mask == new_high_mask):
-            break
-        high_mask = new_high_mask
-    return high_mask
+    labels,count = label(low_mask, np.ndarray((3,3),bool))
+    if count == 0:
+        return low_mask
+    
+    sums = fixup_scipy_ndimage_result(scipy.ndimage.sum(high_mask, labels,
+                                                        np.arange(count)+1))
+    good_label = np.zeros((count+1,),bool)
+    good_label[1:] = sums > 0
+    output_mask = good_label[labels]
+    return output_mask  
 
 def roberts(image, mask=None):
     '''Find edges using the Roberts algorithm

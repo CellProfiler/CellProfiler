@@ -1559,4 +1559,424 @@ class TestRegionalMaximum(unittest.TestCase):
         self.assertFalse(result[5,5])
         self.assertTrue(result[5,-6])
         self.assertTrue(np.all(result[image != np.max(image)]==False))
+
+class TestBlackTophat(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test black tophat on an array of all zeros'''
+        result = morph.black_tophat(np.zeros((10,10)), 1)
+        self.assertTrue(np.all(result==0))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test black tophat on an array that is completely masked'''
+        result = morph.black_tophat(np.zeros((10,10)),1,np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_01_01_single(self):
+        '''Test black tophat of a single minimum'''
+        result = morph.black_tophat(np.array([[.9,.8,.7],
+                                              [.9,.5,.7],
+                                              [.7,.8,.8]]),1)
+        #
+        # The edges should not be affected by the border
+        #
+        expected = np.array([[0,0,.1],[0,.3,.1],[.1,0,0]])
+        self.assertTrue(np.all(np.abs(result - expected)<.00000001))
+    
+    def test_02_01_mask(self):
+        '''Test black tophat with a mask'''
+        image = np.array([[.9, .8, .7],[.9,.5,.7],[.7,.8,.8]])
+        mask = np.array([[1,1,0],[1,1,0],[1,0,1]],bool)
+        expected = np.array([[0,.1,0],[0,.4,0],[.2,0,0]])
+        result = morph.black_tophat(image, 1, mask)
+        self.assertTrue(np.all(np.abs(result[mask]-expected[mask])<.0000001))
+
+class TestClosing(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test closing on an array of all zeros'''
+        result = morph.closing(np.zeros((10,10)), 1)
+        self.assertTrue(np.all(result==0))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test closing on an array that is completely masked'''
+        result = morph.closing(np.zeros((10,10)),1,np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==0))
+    
+    def test_01_01_single(self):
+        '''Test closing of a single minimum'''
+        result = morph.closing(np.array([[.9,.8,.7],
+                                         [.9,.5,.7],
+                                         [.7,.8,.8]]),1)
+        #
+        # The edges should not be affected by the border
+        #
+        expected = np.array([[.9,.8,.8],[.9,.8,.8],[.8,.8,.8]])
+        self.assertTrue(np.all(np.abs(result - expected)<.00000001))
+    
+    def test_02_01_mask(self):
+        '''Test closing with a mask'''
+        image = np.array([[.9, .8, .7],[.9,.5,.7],[.7,.8,.8]])
+        mask = np.array([[1,1,0],[1,1,0],[1,0,1]],bool)
+        expected = np.array([[.9,.9,.7],[.9,.9,.7],[.9,.8,.8]])
+        result = morph.closing(image, 1, mask)
+        self.assertTrue(np.all(np.abs(result[mask]-expected[mask])<.0000001))
+        
+    def test_03_01_8_connected(self):
+        '''Test closing with an 8-connected structuring element'''
+        result = morph.closing(np.array([[.9,.8,.7],
+                                         [.9,.5,.7],
+                                         [.7,.8,.8]]))
+        expected = np.array([[.9,.8,.8],[.9,.8,.8],[.9,.8,.8]])
+        self.assertTrue(np.all(np.abs(result - expected)<.00000001))
+
+class TestBridge(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test bridge on an array of all zeros'''
+        result = morph.bridge(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test bridge on an array that is completely masked'''
+        result = morph.bridge(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_bridge_positive(self):
+        '''Test some typical positive cases of bridging'''
+        image = np.array([[1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0],
+                          [0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1]],bool)
+        expected = np.array([[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0],
+                             [0,1,0,0,0,1,1,1,0,1,1,1,0,0,1,1,1,0,0,1,1,1],
+                             [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,0,0,0,0,1,1]],bool)
+        result = morph.bridge(image)
+        self.assertTrue(np.all(result==expected))
+    
+    def test_01_02_bridge_negative(self):
+        '''Test some typical negative cases of bridging'''
+        image = np.array([[1,1,0,0,0,1,1,0,0,0,0,0,0,0,1,1,1,0,0,1,1,0],
+                          [0,0,1,0,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0,1,0,0],
+                          [0,0,1,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1]],bool)
+
+        expected = np.array([[1,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,1,0,0,1,1,0],
+                             [0,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1],
+                             [0,0,1,0,0,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1]],bool)
+        result = morph.bridge(image)
+        self.assertTrue(np.all(result==expected))
+
+    def test_02_01_bridge_mask(self):
+        '''Test that a masked pixel does not cause a bridge'''
+        image = np.array([[1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0,0],
+                          [0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1]],bool)
+        mask = np.array([[0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         [1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],bool)
+        expected = np.array([[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0],
+                             [0,0,0,0,0,1,1,1,0,1,1,1,0,0,1,1,1,0,0,1,1,1],
+                             [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,0,0,0,0,1,1]],bool)
+        result = morph.bridge(image,mask)
+        self.assertTrue(np.all(result[mask]==expected[mask]))
+
+class TestClean(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test clean on an array of all zeros'''
+        result = morph.clean(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test clean on an array that is completely masked'''
+        result = morph.clean(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_clean_positive(self):
+        '''Test removal of a pixel using clean'''
+        image = np.array([[0,0,0],[0,1,0],[0,0,0]],bool)
+        self.assertTrue(np.all(morph.clean(image) == False))
+    
+    def test_01_02_clean_negative(self):
+        '''Test patterns that should not clean'''
+        image = np.array([[1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,1,0,0,1,1,0],
+                          [0,1,0,0,1,0,1,0,1,1,0,1,0,0,1,0,1,0,0,1,0,0],
+                          [0,0,1,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,1]],bool)
+        self.assertTrue(np.all(image == morph.clean(image)))
+    
+    def test_02_01_clean_edge(self):
+        '''Test that clean removes isolated pixels on the edge of an image'''
+        
+        image = np.array([[1,0,1,0,1],
+                          [0,0,0,0,0],
+                          [1,0,0,0,1],
+                          [0,0,0,0,0],
+                          [1,0,1,0,1]],bool)
+        self.assertTrue(np.all(morph.clean(image) == False))
+        
+    def test_02_02_clean_mask(self):
+        '''Test that clean removes pixels adjoining a mask'''
+        image = np.array([[0,0,0],[1,1,0],[0,0,0]],bool)
+        mask  = np.array([[1,1,1],[0,1,1],[1,1,1]],bool)
+        result= morph.clean(image,mask)
+        self.assertEqual(result[1,1], False)
+
+class TestDiag(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test diag on an array of all zeros'''
+        result = morph.diag(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test diag on an array that is completely masked'''
+        result = morph.diag(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_diag_positive(self):
+        '''Test all cases of diag filling in a pixel'''
+        image = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,1,0,0,1,0,0,0,0,1,0,0],
+                          [0,1,0,0,0,0,1,0,0,1,0,1,0],
+                          [0,0,0,0,0,0,0,0,0,0,1,0,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,1,1,0,0,1,1,0,0,1,1,1,0],
+                             [0,1,1,0,0,1,1,0,0,1,1,1,0],
+                             [0,0,0,0,0,0,0,0,0,1,1,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.diag(image)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_02_diag_negative(self):
+        '''Test patterns that should not diag'''
+        image = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,1,1,0,1,0,0,0,1,0,0,1,1,0,1,0,1,0],
+                          [0,0,1,0,1,1,0,1,1,0,0,1,0,0,1,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        self.assertTrue(np.all(image == morph.diag(image)))
+    
+    def test_02_01_diag_edge(self):
+        '''Test that diag works on edges'''
+        
+        image = np.array([[1,0,0,0,1],
+                          [0,1,0,1,0],
+                          [0,0,0,0,0],
+                          [0,1,0,1,0],
+                          [1,0,0,0,1]],bool)
+        expected = np.array([[1,1,0,1,1],
+                             [1,1,0,1,1],
+                             [0,0,0,0,0],
+                             [1,1,0,1,1],
+                             [1,1,0,1,1]],bool)
+        self.assertTrue(np.all(morph.diag(image) == expected))
+        image = np.array([[0,1,0,1,0],
+                          [1,0,0,0,1],
+                          [0,0,0,0,0],
+                          [1,0,0,0,1],
+                          [0,1,0,1,0]],bool)
+        self.assertTrue(np.all(morph.diag(image) == expected))
+        
+        
+    def test_02_02_diag_mask(self):
+        '''Test that diag connects if one of the pixels is masked'''
+        image = np.array([[0,0,0],
+                          [1,0,0],
+                          [1,1,0]],bool)
+        mask  = np.array([[1,1,1],
+                          [1,1,1],
+                          [0,1,1]],bool)
+        result= morph.diag(image,mask)
+        self.assertEqual(result[1,1], True)
+
+class TestFill(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test fill on an array of all zeros'''
+        result = morph.fill(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test fill on an array that is completely masked'''
+        result = morph.fill(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_fill_positive(self):
+        '''Test addition of a pixel using fill'''
+        image = np.array([[1,1,1],[1,0,1],[1,1,1]],bool)
+        self.assertTrue(np.all(morph.fill(image)))
+    
+    def test_01_02_fill_negative(self):
+        '''Test patterns that should not fill'''
+        image = np.array([[0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,0,0,1],
+                          [1,0,1,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1,1,0,1,1],
+                          [1,1,0,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,0]],bool)
+        self.assertTrue(np.all(image == morph.fill(image)))
+    
+    def test_02_01_fill_edge(self):
+        '''Test that fill fills isolated pixels on an edge'''
+        
+        image = np.array([[0,1,0,1,0],
+                          [1,1,1,1,1],
+                          [0,1,1,1,0],
+                          [1,1,1,1,1],
+                          [0,1,0,1,0]],bool)
+        self.assertTrue(np.all(morph.fill(image) == True))
+        
+    def test_02_02_fill_mask(self):
+        '''Test that fill adds pixels if a neighbor is masked'''
+        image = np.array([[1,1,1],
+                          [0,0,1],
+                          [1,1,1]],bool)
+        mask  = np.array([[1,1,1],
+                          [0,1,1],
+                          [1,1,1]],bool)
+        result= morph.fill(image,mask)
+        self.assertEqual(result[1,1], True)
+
+class TestHBreak(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test hbreak on an array of all zeros'''
+        result = morph.hbreak(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test hbreak on an array that is completely masked'''
+        result = morph.hbreak(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_hbreak_positive(self):
+        '''Test break of a horizontal line'''
+        image = np.array([[1,1,1],
+                          [0,1,0],
+                          [1,1,1]],bool)
+        expected = np.array([[1,1,1],
+                             [0,0,0],
+                             [1,1,1]],bool)
+        self.assertTrue(np.all(morph.hbreak(image)==expected))
+    
+    def test_01_02_hbreak_negative(self):
+        '''Test patterns that should not hbreak'''
+        image = np.array([[0,1,1,0,0,1,0,1,1,0,0,1,1,1,1,1,0,1,1,0,0,1,0],
+                          [0,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1,0,1,1,0,1,1,0],
+                          [0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0]],bool)
+        self.assertTrue(np.all(image == morph.hbreak(image)))
+    
+class TestMajority(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test majority on an array of all zeros'''
+        result = morph.majority(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test majority on an array that is completely masked'''
+        result = morph.majority(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_majority(self):
+        '''Test majority on a random field'''
+        np.random.seed(0)
+        image = np.random.uniform(size=(10,10)) > .5
+        expected = scipy.ndimage.convolve(image.astype(int), np.ones((3,3)), 
+                                          mode='constant', cval=0) > 4.5
+        result = morph.majority(image)
+        self.assertTrue(np.all(result==expected))
+                                        
+class TestRemove(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test remove on an array of all zeros'''
+        result = morph.remove(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test remove on an array that is completely masked'''
+        result = morph.remove(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_remove_positive(self):
+        '''Test removing a pixel'''
+        image = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,1,0,0,0,1,1,0,1,1,1,0],
+                          [0,1,1,1,0,1,1,1,0,1,1,1,0],
+                          [0,0,1,0,0,0,1,0,0,1,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,1,0,0,0,1,1,0,1,1,1,0],
+                             [0,1,0,1,0,1,0,1,0,1,0,1,0],
+                             [0,0,1,0,0,0,1,0,0,1,1,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.remove(image)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_02_remove_negative(self):
+        '''Test patterns that should not diag'''
+        image = np.array([[0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
+                          [0,1,1,0,1,1,0,0,1,0,0,1,1,0,1,0,1,0],
+                          [0,0,1,1,1,1,0,1,1,0,0,1,0,0,1,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]],bool)
+        self.assertTrue(np.all(image == morph.remove(image)))
+    
+    def test_02_01_remove_edge(self):
+        '''Test that remove does nothing'''
+        
+        image = np.array([[1,1,1,1,1],
+                          [1,1,0,1,1],
+                          [1,0,0,0,1],
+                          [1,1,0,1,1],
+                          [1,1,1,1,1]],bool)
+        self.assertTrue(np.all(morph.remove(image) == image))
+        
+    def test_02_02_remove_mask(self):
+        '''Test that a masked pixel does not cause a remove'''
+        image = np.array([[1,1,1],
+                          [1,1,1],
+                          [1,1,1]],bool)
+        mask  = np.array([[1,1,1],
+                          [0,1,1],
+                          [1,1,1]],bool)
+        result= morph.remove(image,mask)
+        self.assertEqual(result[1,1], True)
+
+class TestSkeleton(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test skeletonize on an array of all zeros'''
+        result = morph.skeletonize(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test skeletonize on an array that is completely masked'''
+        result = morph.skeletonize(np.zeros((10,10),bool),
+                                   np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_rectangle(self):
+        '''Test skeletonize on a rectangle'''
+        image = np.zeros((9,15),bool)
+        image[1:-1,1:-1] = True
+        #
+        # The result should be four diagonals from the
+        # corners, meeting in a horizontal line
+        #
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0],
+                             [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+                             [0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+                             [0,0,0,0,1,1,1,1,1,1,1,0,0,0,0],
+                             [0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+                             [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+                             [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.skeletonize(image)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_02_hole(self):
+        '''Test skeletonize on a rectangle with a hole in the middle'''
+        image = np.zeros((9,15),bool)
+        image[1:-1,1:-1] = True
+        image[4,4:-4] = False
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0],
+                             [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                             [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+                             [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+                             [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0],
+                             [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                             [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.skeletonize(image)
+        self.assertTrue(np.all(result == expected))
+         
         

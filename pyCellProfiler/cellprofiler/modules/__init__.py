@@ -34,6 +34,7 @@ from measureimagequality import MeasureImageQuality
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
 from measuretexture import MeasureTexture
+from morph import Morph
 from saveimages import SaveImages
 from smooth import Smooth
 
@@ -61,6 +62,7 @@ def get_module_classes():
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
             MeasureTexture,
+            Morph,
             SaveImages,
             Smooth ]
 
@@ -91,6 +93,7 @@ def get_module_substitutions():
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
             "MeasureTexture": MeasureTexture,
+            "Morph": Morph,
             "SaveImages": SaveImages,
             "SmoothOrEnhance": Smooth
             }

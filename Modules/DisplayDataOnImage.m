@@ -190,7 +190,9 @@ else
     
     %% Put outlines of objects on image
     LabelMatrixObjectImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
-    Outlines = bwperim(LabelMatrixObjectImage);
+    MaxFilteredImage = ordfilt2(LabelMatrixObjectImage,9,ones(3,3),'symmetric');
+    Outlines = LabelMatrixObjectImage - MaxFilteredImage;
+
     OutlinesOnImage = OrigImage;
     OutlinesOnImage(logical(Outlines)) = 1;
     

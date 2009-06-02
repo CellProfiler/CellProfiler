@@ -214,8 +214,12 @@ if isempty(Metadata) && ~isempty(FileFieldNames)
 end
 
 FieldNames = [PathFieldNames,FileFieldNames];
+% if Row and Column exist, create Well from them
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
-    Metadata.Well = [Metadata.WellRow Metadata.WellColumn];
+    % If Column is a number, make sure it's 0-padded
+    lpadcolnum = num2str(str2num(Metadata.WellColumn),'%02d');
+    if isempty(lpadcolnum), lpadcolnum = Metadata.WellColumn; end
+    Metadata.Well = [Metadata.WellRow lpadcolnum];
     FieldNames{length(FieldNames)+1} = 'Well';
     % Add 'Well' to available metadata list if needed later
     if any(strcmp(FileFieldNames,'WellRow')) || any(strcmp(FileFieldNames,'WellColumn'))

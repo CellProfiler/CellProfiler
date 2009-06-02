@@ -13,12 +13,15 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
-import scipy.ndimage
+import scipy.ndimage as scind
 import scipy.sparse
 import _cpmorphology
 from outline import outline
 from rankorder import rank_order
-from _cpmorphology2 import skeletonize_loop 
+from _cpmorphology2 import skeletonize_loop, table_lookup_index 
+
+eight_connect = scind.generate_binary_structure(2, 2)
+four_connect = scind.generate_binary_structure(2,1)
 
 def fill_labeled_holes(image):
     """Fill holes in objects in a labeled image
@@ -46,26 +49,26 @@ def fill_labeled_holes(image):
     * 1 *
     where * is outside background, @ is inside background and 1 is foreground.
     """
-    four_connect = scipy.ndimage.generate_binary_structure(2, 1)
+    global four_connect
     negative_mask = (image == 0)
-    labeled_holes, nholes = scipy.ndimage.label(negative_mask,four_connect)
+    labeled_holes, nholes = scind.label(negative_mask,four_connect)
     high = image.max()+1
     image_with_high_holes = image.copy()
     image_with_high_holes[labeled_holes > 0] = high
-    min_label = scipy.ndimage.minimum_filter(image_with_high_holes,
-                                             footprint=np.ones((3,3),bool),
-                                             mode = 'constant',
-                                             cval = 0)
-    max_label = scipy.ndimage.maximum_filter(image,
-                                             footprint=np.ones((3,3),bool),
-                                             mode = 'constant',
-                                             cval = 0)
-    min_label_per_hole = scipy.ndimage.minimum(min_label,
-                                               labeled_holes,
-                                               range(nholes+1))
-    max_label_per_hole = scipy.ndimage.maximum(max_label,
-                                               labeled_holes,
-                                               range(nholes+1))
+    min_label = scind.minimum_filter(image_with_high_holes,
+                                     footprint=np.ones((3,3),bool),
+                                     mode = 'constant',
+                                     cval = 0)
+    max_label = scind.maximum_filter(image,
+                                     footprint=np.ones((3,3),bool),
+                                     mode = 'constant',
+                                     cval = 0)
+    min_label_per_hole = scind.minimum(min_label,
+                                       labeled_holes,
+                                       range(nholes+1))
+    max_label_per_hole = scind.maximum(max_label,
+                                       labeled_holes,
+                                       range(nholes+1))
     max_label_per_hole = np.array(max_label_per_hole)
     hole_label = np.array(min_label_per_hole)
     hole_label[hole_label != max_label_per_hole] = 0
@@ -79,7 +82,7 @@ def binary_thin(image, strel1, strel2):
     strel1 - the required values of the pixels in order to survive
     strel2 - at each pixel, the complement of strel1 if we care about the value
     """
-    hit_or_miss = scipy.ndimage.binary_hit_or_miss(image, strel1, strel2)
+    hit_or_miss = scind.binary_hit_or_miss(image, strel1, strel2)
     return np.logical_and(image,np.logical_not(hit_or_miss))
 
 def binary_shrink(image, iterations=-1):
@@ -201,7 +204,7 @@ def convex_hull(labels, indexes=None):
     # Reduce the # of points to consider
     #
     outlines = outline(labels)
-    centers  = scipy.ndimage.center_of_mass(outlines,outlines, indexes)
+    centers  = scind.center_of_mass(outlines,outlines, indexes)
     centers = np.array([centers])
     centers.shape=(indexes.shape[0],2) # if max_label = 1, you get 1d array
     #
@@ -457,9 +460,9 @@ def fixup_scipy_ndimage_result(whatever_it_returned):
     scipy.ndimage has the annoying habit of returning a single, bare
     value instead of an array if the indexes passed in are of length 1.
     For instance:
-    scipy.ndimage.maximum(image, labels, [1]) returns a float
+    scind.maximum(image, labels, [1]) returns a float
     but
-    scipy.ndimage.maximum(image, labels, [1,2]) returns a list
+    scind.maximum(image, labels, [1,2]) returns a list
     """
     if getattr(whatever_it_returned,"__getitem__",False):
         return np.array(whatever_it_returned)
@@ -645,8 +648,8 @@ def minimum_enclosing_circle(labels, indexes = None):
         #
         # Now we find the minimum angle per label
         #
-        min_angle = scipy.ndimage.minimum(angle_s0vs1,v_labels,
-                                          labels_to_consider)
+        min_angle = scind.minimum(angle_s0vs1,v_labels,
+                                  labels_to_consider)
         min_angle = fixup_scipy_ndimage_result(min_angle)
         min_angle_per_vertex = min_angle[anti_indexes_to_consider_per_vertex]
         #
@@ -654,17 +657,17 @@ def minimum_enclosing_circle(labels, indexes = None):
         # Use "indexes" instead of labels_to_consider so we get something
         # with the same shape as keep_me
         #
-        min_position = scipy.ndimage.minimum_position(angle_s0vs1,v_labels,
-                                                      indexes)
+        min_position = scind.minimum_position(angle_s0vs1,v_labels,
+                                              indexes)
         min_position = fixup_scipy_ndimage_result(min_position)
         min_position = min_position.flatten()
         #
         # Case 1: minimum angle is obtuse or right. Accept S as the diameter.
         # Case 1a: there are no vertices. Accept S as the diameter.
         #
-        vertex_counts = scipy.ndimage.sum(keep_me_vertices,
-                                          hull[:,0],
-                                          labels_to_consider)
+        vertex_counts = scind.sum(keep_me_vertices,
+                                  hull[:,0],
+                                  labels_to_consider)
         vertex_counts = fixup_scipy_ndimage_result(vertex_counts)
         case_1 = np.logical_or(min_angle >= np.pi / 2,
                                   vertex_counts == 0)
@@ -820,12 +823,12 @@ def ellipse_from_second_moments(image, labels, indexes):
     #
     fix = fixup_scipy_ndimage_result
     m = {}
-    m[0,0] = fix(scipy.ndimage.sum(image,    labels, indexes))
-    m[1,0] = fix(scipy.ndimage.sum(i*image,  labels, indexes))
-    m[0,1] = fix(scipy.ndimage.sum(j*image,  labels, indexes))
-    m[1,1] = fix(scipy.ndimage.sum(i*j*image,labels, indexes))
-    m[2,0] = fix(scipy.ndimage.sum(i*i*image,labels, indexes))
-    m[0,2] = fix(scipy.ndimage.sum(j*j*image,labels, indexes))
+    m[0,0] = fix(scind.sum(image,    labels, indexes))
+    m[1,0] = fix(scind.sum(i*image,  labels, indexes))
+    m[0,1] = fix(scind.sum(j*image,  labels, indexes))
+    m[1,1] = fix(scind.sum(i*j*image,labels, indexes))
+    m[2,0] = fix(scind.sum(i*i*image,labels, indexes))
+    m[0,2] = fix(scind.sum(j*j*image,labels, indexes))
     
     ic = m[1,0] / m[0,0]
     jc = m[0,1] / m[0,0]
@@ -856,12 +859,12 @@ def ellipse_from_second_moments(image, labels, indexes):
 def calculate_extents(labels, indexes):
     """Return the area of each object divided by the area of its bounding box"""
     fix = fixup_scipy_ndimage_result
-    areas = fix(scipy.ndimage.sum(labels,labels,indexes))
+    areas = fix(scind.sum(labels,labels,indexes))
     y,x = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
-    xmin = fix(scipy.ndimage.minimum(x, labels, indexes))
-    xmax = fix(scipy.ndimage.maximum(x, labels, indexes))
-    ymin = fix(scipy.ndimage.minimum(y, labels, indexes))
-    ymax = fix(scipy.ndimage.maximum(y, labels, indexes))
+    xmin = fix(scind.minimum(x, labels, indexes))
+    xmax = fix(scind.maximum(x, labels, indexes))
+    ymin = fix(scind.minimum(y, labels, indexes))
+    ymax = fix(scind.maximum(y, labels, indexes))
     bbareas = (xmax-xmin+1)*(ymax-ymin+1)
     return areas / bbareas
 
@@ -951,8 +954,7 @@ def calculate_perimeters(labels, indexes):
                   labels[ilow+i:iend+i,jlow+j:jend+j])*2**exponent)
             exponent += 1
     pixel_score = __perimeter_scoring[m]
-    return fixup_scipy_ndimage_result(
-        scipy.ndimage.sum(pixel_score, labels, indexes))
+    return fixup_scipy_ndimage_result(scind.sum(pixel_score, labels, indexes))
 
 def calculate_convex_hull_areas(labels,indexes=None):
     """Calulculate the area of the convex hull of each labeled object
@@ -1025,12 +1027,12 @@ def calculate_convex_hull_areas(labels,indexes=None):
     # Find some point within each convex hull.
     #
     within_hull = np.zeros((counts_nd.shape[0],2))
-    within_hull[:,0] = scipy.ndimage.sum(hull_nd[:,1],
-                                         hull_nd[:,0],
-                                         indexes_nd) / counts_nd
-    within_hull[:,1] = scipy.ndimage.sum(hull_nd[:,2],
-                                         hull_nd[:,0],
-                                         indexes_nd) / counts_nd
+    within_hull[:,0] = scind.sum(hull_nd[:,1],
+                                 hull_nd[:,0],
+                                 indexes_nd) / counts_nd
+    within_hull[:,1] = scind.sum(hull_nd[:,2],
+                                 hull_nd[:,0],
+                                 indexes_nd) / counts_nd
     within_hull_per_pixel = within_hull[index_of_label_per_pixel_nd]
     #
     # Now, we do a little, slightly wierd fixup, arguing that the
@@ -1058,9 +1060,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # The convex area is the sum of these triangles
     #
-    result[counts>=3] = scipy.ndimage.sum(area_per_pt_nd,
-                                          hull_nd[:,0],
-                                          indexes_nd)
+    result[counts>=3] = scind.sum(area_per_pt_nd, hull_nd[:,0], indexes_nd)
     return result
 
 def calculate_solidity(labels,indexes=None):
@@ -1069,7 +1069,7 @@ def calculate_solidity(labels,indexes=None):
     labels - a label matrix
     indexes - the indexes of the labels to measure
     """
-    areas = scipy.ndimage.sum(np.ones(labels.shape),labels,indexes)
+    areas = scind.sum(np.ones(labels.shape),labels,indexes)
     convex_hull_areas = calculate_convex_hull_areas(labels, indexes)
     return areas / convex_hull_areas
 
@@ -1148,44 +1148,44 @@ def euler_number(labels, indexes=None):
     # Q1: 1 0 
     #     0 0
     Q1_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),NE00_11)
-    Q1  = fix(scipy.ndimage.sum(Q1_condition, I00, indexes))
+    Q1  = fix(scind.sum(Q1_condition, I00, indexes))
     #     0 1
     #     0 0
     Q1_condition = np.logical_and(np.logical_and(NE01_00, NE01_10),NE01_11)
-    Q1 += fix(scipy.ndimage.sum(Q1_condition, I01, indexes))
+    Q1 += fix(scind.sum(Q1_condition, I01, indexes))
     #     0 0
     #     1 0
     Q1_condition = np.logical_and(np.logical_and(NE10_00, NE10_01),NE10_11)
-    Q1 += fix(scipy.ndimage.sum(Q1_condition, I10, indexes))
+    Q1 += fix(scind.sum(Q1_condition, I10, indexes))
     #     0 0
     #     0 1
     Q1_condition = np.logical_and(np.logical_and(NE11_00, NE11_01),NE11_10)
-    Q1 += fix(scipy.ndimage.sum(Q1_condition, I11, indexes))
+    Q1 += fix(scind.sum(Q1_condition, I11, indexes))
     #
     # Q3: 0 1
     #     1 1
     Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ01_10),EQ01_11)
-    Q3  = fix(scipy.ndimage.sum(Q3_condition, I01, indexes))
+    Q3  = fix(scind.sum(Q3_condition, I01, indexes))
     #     1 0
     #     1 1
     Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ00_10),EQ00_11)
-    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
     #     1 1
     #     1 0
     Q3_condition = np.logical_and(np.logical_and(NE00_11, EQ00_01),EQ00_10)
-    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
     #     1 1
     #     0 1
     Q3_condition = np.logical_and(np.logical_and(NE00_10, EQ00_01),EQ00_11)
-    Q3 += fix(scipy.ndimage.sum(Q3_condition, I00, indexes))
+    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
     # QD: 1 0
     #     0 1
     QD_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),EQ00_11)
-    QD  = fix(scipy.ndimage.sum(QD_condition, I00, indexes))
+    QD  = fix(scind.sum(QD_condition, I00, indexes))
     #     0 1
     #     1 0
     QD_condition = np.logical_and(np.logical_and(NE01_00, NE01_11),EQ01_10)
-    QD  = fix(scipy.ndimage.sum(QD_condition, I01, indexes))
+    QD  = fix(scind.sum(QD_condition, I01, indexes))
     W = (Q1 - Q3 - 2*QD).astype(float)/4.0
     return W
 
@@ -1204,7 +1204,7 @@ def block(shape, block_shape):
     to the image via indexing. For instance:
     
     labels, indexes = block(image.shape, (60,60))
-    minima = scipy.ndimage.minimum(image, labels, indexes)
+    minima = scind.minimum(image, labels, indexes)
     img2 = image - minima[labels]
     """
     i,j = np.mgrid[0:shape[0],0:shape[1]]
@@ -1273,7 +1273,7 @@ def grey_erosion(image, radius=None, mask=None):
     if not mask is None:
         not_mask = np.logical_not(mask)
         big_image[radius:-radius,radius:-radius][not_mask] = 1
-    processed_image = scipy.ndimage.grey_erosion(big_image, footprint=strel)
+    processed_image = scind.grey_erosion(big_image, footprint=strel)
     final_image = processed_image[radius:-radius,radius:-radius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
@@ -1296,7 +1296,7 @@ def grey_dilation(image, radius=None, mask=None):
     if not mask is None:
         not_mask = np.logical_not(mask)
         big_image[radius:-radius,radius:-radius][not_mask] = 0
-    processed_image = scipy.ndimage.grey_dilation(big_image, footprint=strel)
+    processed_image = scind.grey_dilation(big_image, footprint=strel)
     final_image = processed_image[radius:-radius,radius:-radius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
@@ -1341,24 +1341,26 @@ def table_lookup(image, table, border_value):
     The index at a pixel is the sum of 2**<pixel-number> for pixels
     that evaluate to true. 
     '''
-    image = image.astype(bool)
     #
     # We accumulate into the indexer to get the index into the table
     # at each point in the image
     #
-    indexer = np.zeros(image.shape,int)
-    indexer[1:,1:][image[:-1,:-1]] += 2**0
-    indexer[1:,:][image[:-1,:]]    += 2**1
-    indexer[1:,:-1][image[:-1,1:]] += 2**2
+    if image.shape[0] < 3 or image.shape[1] < 3:
+        image = image.astype(bool)
+        indexer = np.zeros(image.shape,int)
+        indexer[1:,1:]   += image[:-1,:-1] * 2**0
+        indexer[1:,:]    += image[:-1,:] * 2**1
+        indexer[1:,:-1]  += image[:-1,1:] * 2**2
+        
+        indexer[:,1:]    += image[:,:-1] * 2**3
+        indexer[:,:]     += image[:,:] * 2**4
+        indexer[:,:-1]   += image[:,1:] * 2**5
     
-    indexer[:,1:][image[:,:-1]]    += 2**3
-    indexer[:,:][image[:,:]]       += 2**4
-    indexer[:,:-1][image[:,1:]]    += 2**5
-
-    indexer[:-1,1:][image[1:,:-1]] += 2**6
-    indexer[:-1,:][image[1:,:]]    += 2**7
-    indexer[:-1,:-1][image[1:,1:]] += 2**8
-
+        indexer[:-1,1:]  += image[1:,:-1] * 2**6
+        indexer[:-1,:]   += image[1:,:] * 2**7
+        indexer[:-1,:-1] += image[1:,1:] * 2**8
+    else:
+        indexer = table_lookup_index(np.ascontiguousarray(image,np.uint8))
     if border_value:
         indexer[0,:]   |= 2**0 + 2**1 + 2**2
         indexer[-1,:]  |= 2**6 + 2**7 + 2**8
@@ -1404,8 +1406,8 @@ def make_table(value, pattern, care=np.ones((3,3),bool)):
 # there are two unconnected objects in the pattern
 #
 bridge_table = np.array([pattern_of(index)[1,1] or
-                         scipy.ndimage.label(pattern_of(index),
-                                             np.ones((3,3),bool))[1] > 1
+                         scind.label(pattern_of(index),
+                                     np.ones((3,3),bool))[1] > 1
                          for index in range(512)])
 
 def bridge(image, mask=None):
@@ -1545,6 +1547,30 @@ def hbreak(image, mask=None):
         result[~mask] = image[~mask]
     return result
 
+# Vbreak table - keep all ones except for the vbreak case
+vbreak_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
+                           np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) & 
+                [i != index_of(np.array([[1,0,1],[1,1,1],[1,0,1]],bool))
+                 for i in range(512)])
+
+def vbreak(image, mask=None):
+    '''Remove horizontal breaks
+    
+    1 1 1     1 1 1
+    0 1 0 ->  0 0 0 (this case only)
+    1 1 1     1 1 1
+    '''
+    global vbreak_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, vbreak_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
 life_table = np.array([np.sum(pattern_of(i))==3 or
                        (pattern_of(i)[1,1] and np.sum(pattern_of(i))==4)
                        for i in range(512)])
@@ -1601,6 +1627,139 @@ def remove(image, mask=None):
         result[~mask] = image[~mask]
     return result
 
+# A spur pixel has only one neighbor
+#
+# We have to remove 1/2 of the spur pixels in pass 1 and
+# 1/2 in pass 2 in order to keep from removing both members
+# of a 2-pixel object. So there are two spur-tables.
+#
+# spur_table_1 removes if the only neighbor is in the top row or left.
+#
+spur_table_1 = np.array([(np.sum(pattern_of(i)) != 2 or
+                          ((i & (2**0 + 2**1 + 2**2 + 2**3)) == 0)) and
+                         (i & 2**4)
+                         for i in range(512)],bool)
+#
+# spur_table_2 removes if the only neighbor is in the bottom row or right.
+#
+spur_table_2 = np.array([(np.sum(pattern_of(i)) != 2 or
+                          ((i & (2**0 + 2**1 + 2**2 + 2**3)) != 0)) and
+                         (i & 2**4)
+                         for i in range(512)],bool)
+
+def spur(image, mask=None):
+    '''Remove spur pixels from an image
+    
+    0 0 0    0 0 0
+    0 1 0 -> 0 0 0
+    0 0 1    0 0 ?
+    '''
+    global spur_table_1,spur_table_2
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, spur_table_1, False)
+    result = table_lookup(result, spur_table_2, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+#
+# The thicken table turns pixels on if they have a neighbor that's on and
+# if adding the pixel does not connect any neighbors
+#
+thicken_table = np.array([scind.label(pattern_of(i), eight_connect)[1] ==
+                          scind.label(pattern_of(i | 16), eight_connect)[1] or
+                          ((i & 16) != 0) for i in range(512)])
+                                      
+def thicken(image, mask=None):
+    '''Thicken the objects in an image where doing so does not connect them
+    
+    0 0 0    ? ? ?
+    0 0 0 -> ? 1 ?
+    0 0 1    ? ? ?
+    
+    1 0 0    ? ? ?
+    0 0 0 -> ? 0 ?
+    0 0 1    ? ? ?
+    '''
+    global thicken_table
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, thicken_table, False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+
+# Thinning tables based on
+# algorithm # 1 described in Guo, "Parallel Thinning with Two
+# Subiteration Algorithms", Communications of the ACM, Vol 32 #3
+# page 359.
+#
+# Neighborhood pixels are numbered like this:
+# p1 p2 p3
+# p8    p4
+# p7 p6 p5
+#
+# A pixel changes from 1 to 0 if
+#
+# 1) labeling its 8-neighborhood finds exactly 1 object
+# 2) min(N1,N2) is either 2 or 3 where 
+#    N1 = (p1 or p2) + (p3 or p4) + (p5 or p6) + (p7 or p8)
+#    N2 = (p2 or p3) + (p4 or p5) + (p6 or p7) + (p8 or p1)
+# 3) for pass 1: (p2 or p3 or not p5) and p4 is false
+#    for pass 2: (p6 or p7 or not p1) and p8 is false
+#
+#
+thin_table = None
+
+def thin(image, mask=None):
+    '''Thin an image to lines, preserving Euler number
+    
+    Implements thinning as described in algorithm # 1 from
+    Guo, "Parallel Thinning with Two Subiteration Algorithms",
+    Communications of the ACM, Vol 32 #3 page 359.
+    '''
+    global thin_table, eight_connect
+    if thin_table is None:
+        thin_table = np.zeros((2,512),bool)
+        for i in range(512):
+            if (i & 16) == 0:
+                # All zeros -> 0
+                continue
+            pat = pattern_of(i & ~ 16)
+            ipat = pat.astype(int)
+            if scind.label(pat, eight_connect)[1] != 1:
+                thin_table[:,i] = True
+                continue
+            n1 = ((ipat[0,0] or ipat[0,1]) + (ipat[0,2] or ipat[1,2])+
+                  (ipat[2,2] or ipat[2,1]) + (ipat[2,0] or ipat[1,0]))
+            n2 = ((ipat[0,1] or ipat[0,2]) + (ipat[1,2] or ipat[2,2])+
+                  (ipat[2,1] or ipat[2,0]) + (ipat[1,0] or ipat[0,0]))
+            if min(n1,n2) not in (2,3):
+                thin_table[:,i] = True
+                continue
+            thin_table[0,i] = ((pat[0,1] or pat[0,2] or not pat[2,2]) and 
+                               pat[1,2])
+            thin_table[1,i] = ((pat[2,1] or pat[2,0] or not pat[0,0]) and
+                               pat[1,0])
+    if mask is None:
+        masked_image = image
+    else:
+        masked_image = image.astype(bool).copy()
+        masked_image[~mask] = False
+    result = table_lookup(masked_image, thin_table[0], False)
+    result = table_lookup(result, thin_table[1], False)
+    if not mask is None:
+        result[~mask] = image[~mask]
+    return result
+        
+
 def skeletonize(image, mask=None,fast=True):
     '''Skeletonize the image
     
@@ -1609,6 +1768,7 @@ def skeletonize(image, mask=None,fast=True):
     Remove a point if it has more than 1 neighbor and if removing it
     does not change the Euler number.
     '''
+    global eight_connect
     if mask is None:
         masked_image = image
     else:
@@ -1621,14 +1781,13 @@ def skeletonize(image, mask=None,fast=True):
     #
     table = (make_table(True,np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                         np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) &
-             (np.array([scipy.ndimage.label(pattern_of(index),
-                                            np.ones((3,3),bool))[1] !=
-                        scipy.ndimage.label(pattern_of(index & ~ 2**4),
-                                             np.ones((3,3),bool))[1]
+             (np.array([scind.label(pattern_of(index), eight_connect)[1] !=
+                        scind.label(pattern_of(index & ~ 2**4),
+                                    eight_connect)[1]
                         for index in range(512) ]) |
               np.array([np.sum(pattern_of(index))<3 for index in range(512)])))
     
-    distance = scipy.ndimage.distance_transform_edt(masked_image)
+    distance = scind.distance_transform_edt(masked_image)
     #
     # The processing order along the edge is critical to the shape of the
     # resulting skeleton: if you process a corner first, that corner will
@@ -1700,6 +1859,7 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     A location cannot be a local maximum if it is touching the edge or a
     masked pixel.
     '''
+    global eight_connect
     if not ties_are_ok:
         #
         # Get an an initial pass with the ties.
@@ -1707,21 +1867,20 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
         result = regional_maximum(image, mask, structure, True)
         if not np.any(result):
             return result
-        distance = scipy.ndimage.distance_transform_edt(result)
+        distance = scind.distance_transform_edt(result)
         #
         # Rank-order the distances and then add a randomizing factor
         # to break ties for pixels equidistant from the background.
         # Pick the best value within a contiguous region
         #
-        labels, label_count = scipy.ndimage.label(result, 
-                                                  scipy.ndimage.generate_binary_structure(2,2))
+        labels, label_count = scind.label(result, eight_connect)
         np.random.seed(0)
         ro_distance = rank_order(distance)[0].astype(float)
         count = np.product(ro_distance.shape)
         ro_distance.flat += (np.random.permutation(count).astype(float) / 
                              float(count))
-        positions = scipy.ndimage.maximum_position(ro_distance, labels,
-                                                   np.arange(label_count)+1)
+        positions = scind.maximum_position(ro_distance, labels,
+                                           np.arange(label_count)+1)
         positions = np.array(positions)
         result = np.zeros(image.shape, bool)
         if positions.ndim == 1:
@@ -1731,8 +1890,7 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
         return result
     result = np.ones(image.shape,bool)
     if structure == None:
-        structure = scipy.ndimage.generate_binary_structure(image.ndim, 
-                                                            image.ndim)
+        structure = scind.generate_binary_structure(image.ndim, image.ndim)
     #
     # The edges of the image are losers because they are touching undefined
     # points. Construct a big mask that represents the edges.
@@ -1771,4 +1929,10 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
                        src_j_min:src_j_max][min_mask] = False
     return result
 
-    
+if __name__=='__main__':
+    import PIL.Image
+    from matplotlib.image import pil_to_array
+    image = pil_to_array(PIL.Image.open('c:/temp/worm_masks/041609vit3gfpA01_w.PNG'))
+    image = image[:,:,0] > 0
+    for i in range(10):
+        thin(image)

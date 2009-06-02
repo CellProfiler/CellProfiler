@@ -292,7 +292,8 @@ class Morph(cpm.CPModule):
             for i in range(6):
                 if setting_values[i*2+2] != cps.DO_NOT_USE:
                     new_setting_values.append(setting_values[i*2+2])
-                    if setting_values[i*2+3] == 1:
+                    if (setting_values[i*2+3].isdigit() and  
+                        int(setting_values[i*2+3])== 1):
                         new_setting_values += [R_ONCE, "1"]
                     elif setting_values[i*2+3].lower() == "inf":
                         new_setting_values += [R_FOREVER,"2"]
@@ -348,9 +349,10 @@ class Morph(cpm.CPModule):
     def run_function(self, function_name, pixel_data, mask):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
-        if function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
-                             F_HBREAK, F_LIFE, F_MAJORITY, F_SHRINK,
-                             F_SKEL,F_SPUR, F_THICKEN, F_THIN, F_VBREAK):
+        if (function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
+                              F_HBREAK, F_LIFE, F_MAJORITY, F_SHRINK,
+                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) and
+            not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
             sys.stderr.write("Warning: converting image to binary for %s\n"%
                              function_name)
@@ -363,7 +365,16 @@ class Morph(cpm.CPModule):
         elif function_name == F_CLEAN:
             return morph.clean(pixel_data, mask)
         elif function_name == F_CLOSE:
-            return morph.closing(image, mask==mask)
+            if is_binary:
+                if mask is None:
+                    return scind.binary_closing(pixel_data,np.ones((3,3),bool))
+                else:
+                    return (scind.binary_closing(pixel_data & mask, 
+                                                 np.ones((3,3),bool)) |
+                            (pixel_data & ~ mask))
+                                                 
+            else:
+                return morph.closing(pixel_data, mask==mask)
         elif function_name == F_DIAG:
             return morph.diag(pixel_data, mask)
         elif function_name == F_DILATE:
@@ -387,13 +398,32 @@ class Morph(cpm.CPModule):
         elif function_name == F_MAJORITY:
             return morph.majority(pixel_data, mask)
         elif function_name == F_OPEN:
-            return morph.opening(pixel_data, mask=mask)
+            if is_binary:
+                if mask is None:
+                    return scind.binary_opening(pixel_data,np.ones((3,3),bool))
+                else:
+                    return (scind.binary_opening(pixel_data & mask, 
+                                                 np.ones((3,3),bool)) |
+                            (pixel_data & ~ mask))
+                                                 
+            else:
+                return morph.opening(pixel_data, mask==mask)
         elif function_name == F_REMOVE:
             return morph.remove(pixel_data, mask)
         elif function_name == F_SHRINK:
             return morph.binary_shrink(pixel_data, 1)
         elif function_name == F_SKEL:
             return morph.skeletonize(pixel_data, mask)
+        elif function_name == F_SPUR:
+            return morph.spur(pixel_data, mask)
+        elif function_name == F_THICKEN:
+            return morph.thicken(pixel_data, mask)
+        elif function_name == F_THIN:
+            return morph.thin(pixel_data, mask)
+        elif function_name == F_TOPHAT:
+            return morph.white_tophat(pixel_data, mask=mask)
+        elif function_name == F_VBREAK:
+            return morph.vbreak(pixel_data, mask)
         else:
             raise NotImplementedError("Unimplemented morphological function: %s" %
                                       function_name)

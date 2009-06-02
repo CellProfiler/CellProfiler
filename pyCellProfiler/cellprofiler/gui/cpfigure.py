@@ -10,7 +10,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__ = "$Revision: 1 "
+__version__ = "$Revision$"
 
 import numpy
 import wx
@@ -166,7 +166,7 @@ class CPFigureFrame(wx.Frame):
                                 old_limits = ((old_x0, old_x1),
                                               (old_y0, old_y1))
                             self.subplots[x,y].set_xlim(x0,x1)
-                            self.subplots[x,y].set_ylim(y0,y1)
+                            self.subplots[x,y].set_ylim(y1,y0)
                             self.zoom_stack.append(old_limits)
                             self.__menu_item_zoom_out.Enable(True)
             self.figure.canvas.draw()
@@ -218,11 +218,12 @@ class CPFigureFrame(wx.Frame):
             self.clear_subplot(x, y)
         subplot = self.subplot(x,y)
         if colormap == None:
-            subplot.imshow(image)
+            result = subplot.imshow(image)
         else:
-            subplot.imshow(image, colormap)
+            result = subplot.imshow(image, colormap)
         if title != None:
             self.set_subplot_title(title, x, y)
+        return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
                              normalize=True):
@@ -236,20 +237,22 @@ class CPFigureFrame(wx.Frame):
                     image[:,:,i] -= im_min
                     image[:,:,i] /= (im_max - im_min)
         subplot = self.subplot(x,y)
-        subplot.imshow(image)
+        result = subplot.imshow(image)
         if title != None:
             self.set_subplot_title(title, x, y)
+        return result
     
     def subplot_imshow_labels(self, x,y,labels, title=None, clear=True):
         labels = renumber_labels_for_display(labels)
-        self.subplot_imshow(x,y,labels,title,clear,matplotlib.cm.jet)
+        return self.subplot_imshow(x,y,labels,title,clear,matplotlib.cm.jet)
     
     def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True):
-        self.subplot_imshow(x, y, image, title, clear, matplotlib.cm.Greys_r)
+        return self.subplot_imshow(x, y, image, title, clear, 
+                                   matplotlib.cm.Greys_r)
     
     def subplot_imshow_bw(self, x,y,image, title=None, clear=True):
-        self.subplot_imshow(x, y, image, title, clear, 
-                            matplotlib.cm.binary_r)
+        return self.subplot_imshow(x, y, image, title, clear, 
+                                   matplotlib.cm.binary_r)
     
     def subplot_table(self, x, y, statistics, 
                       ratio = (.6, .4),

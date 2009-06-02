@@ -1855,6 +1855,36 @@ class TestHBreak(unittest.TestCase):
                           [0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0]],bool)
         self.assertTrue(np.all(image == morph.hbreak(image)))
     
+class TestVBreak(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test vbreak on an array of all zeros'''
+        result = morph.vbreak(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test vbreak on an array that is completely masked'''
+        result = morph.vbreak(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_vbreak_positive(self):
+        '''Test break of a vertical line'''
+        image = np.array([[1,0,1],
+                          [1,1,1],
+                          [1,0,1]],bool)
+        expected = np.array([[1,0,1],
+                             [1,0,1],
+                             [1,0,1]],bool)
+        self.assertTrue(np.all(morph.vbreak(image)==expected))
+    
+    def test_01_02_vbreak_negative(self):
+        '''Test patterns that should not vbreak'''
+        # stolen from hbreak
+        image = np.array([[0,1,1,0,0,1,0,1,1,0,0,1,1,1,1,1,0,1,1,0,0,1,0],
+                          [0,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1,0,1,1,0,1,1,0],
+                          [0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,0,0,0]],bool)
+        image = image.transpose()
+        self.assertTrue(np.all(image == morph.vbreak(image)))
+    
 class TestMajority(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test majority on an array of all zeros'''
@@ -1979,4 +2009,171 @@ class TestSkeleton(unittest.TestCase):
         result = morph.skeletonize(image)
         self.assertTrue(np.all(result == expected))
          
+class TestSpur(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test spur on an array of all zeros'''
+        result = morph.spur(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
         
+    def test_00_01_zeros_masked(self):
+        '''Test spur on an array that is completely masked'''
+        result = morph.spur(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_spur_positive(self):
+        '''Test removing a spur pixel'''
+        image    = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,1,0,0,0,1,0,1,0,0,0],
+                             [0,1,1,1,0,1,0,0,1,0,0,0,1,0,0],
+                             [0,0,0,0,0,1,0,1,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,1,0,0,1,0,0,1,0,0,0,1,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.spur(image)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_02_spur_negative(self):
+        '''Test patterns that should not spur'''
+        image = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,1,1,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0],
+                          [0,0,0,0,1,0,0,1,0,0,0,0,1,0,1,1,1,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        result = morph.spur(image)
+        l,count = scind.label(result,scind.generate_binary_structure(2, 2))
+        self.assertEqual(count, 5)
+        a = np.array(scind.sum(result,l,np.arange(4)+1))
+        self.assertTrue(np.all((a==1) | (a==4)))
+    
+    def test_02_01_spur_edge(self):
+        '''Test that spurs on edges go away'''
+        
+        image = np.array([[1,0,0,1,0,0,1],
+                          [0,1,0,1,0,1,0],
+                          [0,0,1,1,1,0,0],
+                          [1,1,1,1,1,1,1],
+                          [0,0,1,1,1,0,0],
+                          [0,1,0,1,0,1,0],
+                          [1,0,0,1,0,0,1]],bool)
+        expected = np.array([[0,0,0,0,0,0,0],
+                             [0,1,0,1,0,1,0],
+                             [0,0,1,1,1,0,0],
+                             [0,1,1,1,1,1,0],
+                             [0,0,1,1,1,0,0],
+                             [0,1,0,1,0,1,0],
+                             [0,0,0,0,0,0,0]],bool)
+        result = morph.spur(image)
+        self.assertTrue(np.all(result == expected))
+        
+    def test_02_02_spur_mask(self):
+        '''Test that a masked pixel does not prevent a spur remove'''
+        image = np.array([[1,0,0],
+                          [1,1,0],
+                          [0,0,0]],bool)
+        mask  = np.array([[1,1,1],
+                          [0,1,1],
+                          [1,1,1]],bool)
+        result= morph.spur(image,mask)
+        self.assertEqual(result[1,1], False)
+
+class TestThicken(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test thicken on an array of all zeros'''
+        result = morph.thicken(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test thicken on an array that is completely masked'''
+        result = morph.thicken(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_thicken_positive(self):
+        '''Test thickening positive cases'''
+        image    = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,1,0,0,1,0,0,0],
+                             [0,1,1,1,0,0,0,1,0,0,0,0,1,0,0],
+                             [0,0,0,0,0,0,1,0,0,0,0,0,0,1,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],bool)
+        expected = np.array([[0,0,0,0,0,0,0,1,1,1,1,1,1,0,0],
+                             [1,1,1,1,1,0,1,1,1,1,1,1,1,1,0],
+                             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                             [1,1,1,1,1,1,1,1,1,0,0,1,1,1,1],
+                             [0,0,0,0,0,1,1,1,0,0,0,0,1,1,1]],bool)
+        result = morph.thicken(image)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_02_thicken_negative(self):
+        '''Test patterns that should not thicken'''
+        image = np.array([[1,1,0,1],
+                          [0,0,0,0],
+                          [1,1,1,1],
+                          [0,0,0,0],
+                          [1,1,0,1]],bool)
+        result = morph.thicken(image)
+        self.assertTrue(np.all(result==image))
+    
+    def test_02_01_thicken_edge(self):
+        '''Test thickening to the edge'''
+        
+        image = np.zeros((5,5),bool)
+        image[1:-1,1:-1] = True
+        result = morph.thicken(image)
+        self.assertTrue(np.all(result))
+        
+class TestThin(unittest.TestCase):
+    def test_00_00_zeros(self):
+        '''Test thin on an array of all zeros'''
+        result = morph.thin(np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+        
+    def test_00_01_zeros_masked(self):
+        '''Test thin on an array that is completely masked'''
+        result = morph.thin(np.zeros((10,10),bool),np.zeros((10,10),bool))
+        self.assertTrue(np.all(result==False))
+
+class TestTableLookup(unittest.TestCase):
+    def test_01_01_all_centers(self):
+        '''Test table lookup at pixels off of the edge'''
+        image = np.zeros((512*3+2,5),bool)
+        for i in range(512):
+            pattern = morph.pattern_of(i)
+            image[i*3+1:i*3+4,1:4] = pattern
+        table = np.arange(512)
+        index = morph.table_lookup(image, table, False)
+        self.assertTrue(np.all(index[2::3,2] == table))
+    
+    def test_01_02_all_corners(self):
+        '''Test table lookup at the corners of the image'''
+        table = np.arange(512)
+        for p00 in (False,True):
+            for p01 in (False, True):
+                for p10 in (False, True):
+                    for p11 in (False,True):
+                        image = np.array([[False,False,False,False,False,False],
+                                          [False,p00,  p01,  p00,  p01,  False],
+                                          [False,p10,  p11,  p10,  p11,  False],
+                                          [False,p00,  p01,  p00,  p01,  False],
+                                          [False,p10,  p11,  p10,  p11,  False],
+                                          [False,False,False,False,False,False]])
+                        expected = morph.table_lookup(image,table,False)[1:-1,1:-1]
+                        result = morph.table_lookup(image[1:-1,1:-1],table,False)
+                        self.assertTrue(np.all(result==expected),
+                                        "Failure case:\n%7s,%s\n%7s,%s"%
+                                        (p00,p01,p10,p11))
+    
+    def test_01_03_all_edges(self):
+        '''Test table lookup along the edges of the image'''
+        image = np.zeros((32*3+2,6),bool)
+        table = np.arange(512)
+        for i in range(32):
+            pattern = morph.pattern_of(i)
+            image[i*3+1:i*3+4,1:3] = pattern[:,:2]
+            image[i*3+1:i*3+4,3:5] = pattern[:,:2]
+        for im in (image,image.transpose()):
+            expected = morph.table_lookup(im,table,False)[1:-1,1:-1]
+            result = morph.table_lookup(im[1:-1,1:-1],table,False)
+            self.assertTrue(np.all(result==expected))
+         
+                        

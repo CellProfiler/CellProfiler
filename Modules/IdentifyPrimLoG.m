@@ -28,17 +28,22 @@ function handles = IdentifyPrimLoG(handles)
 % objects of interest.  The algorithm is not very sensitive to this
 % parameter.
 %
-% The threshold parameter tells the algorithm how inclusive to be when
+% The threshold parameter informs the algorithm how inclusive to be when
 % looking for objects.  Internally, each potential object is assigned
 % a score that depends on both how bright the object is and how
 % blob-like its shape is.  Only objects that score above the threshold
-% are returned.  The threshold must be determined experimentally, but 
-% the 'Automatic' setting will make a guess using Otsu's thresholding 
-% method on the transformed image.  If you want the threshold to be 
-% consistent across images, then use the threshold found by the 'Automatic'
-% setting as a starting point for manual threshold input adjustment.  
-% If the thresold is too high, objects will be lost; 
-% if it is too low, spurious objects will be found.
+% are returned.  If the thresold is too high, objects will be lost; 
+% if it is too low, spurious objects will be found. The threshold 
+% can be determined experimentally, but the 'Automatic' setting 
+% will make a guess using RobustBackground Global's thresholding 
+% method on the transformed image.  RobustBackground is useful because it
+% makes little assumption of the intensity histogram, and thus 
+% can be protective against out-of-focus or empty images.  If you want the 
+% threshold to be consistent across images, then you can use the threshold found by 
+% the 'Automatic' setting as a starting point for manual threshold input adjustment.
+% Also, if the threshold is consistently high or low, then you can adjust 
+% by a multiplicative correction factor by inserting it after a comma, e.g.
+% "Automatic,1.5". 
 %
 % ALGORITHM DETAILS:
 %
@@ -111,9 +116,9 @@ ObjectName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %defaultVAR03 = 10
 Radius = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 
-%textVAR04 = Score threshold for match.  Enter a number, or leave as 'Automatic'.
+%textVAR04 = Score threshold for match.  Enter a number, leave as 'Automatic', or adjust the Automatic threshold with a multiplicative correction factor (separating comma is necessary), e.g. 'Automatic,1.2'.
 %defaultVAR04 = Automatic
-Threshold = char(handles.Settings.VariableValues{CurrentModuleNum,4});
+ThresholdStr = char(handles.Settings.VariableValues{CurrentModuleNum,4});
 
 %%%VariableRevisionNumber = 1
 
@@ -149,21 +154,39 @@ end
 
 ac = lapofgau(1 - im, Radius);
 
-if strcmpi('Automatic',Threshold)
-    [handles,Threshold] = CPthreshold(handles,'Otsu Global',0.5,'0','1',1,ac,'LoG',ModuleName);
-% elseif strcmpi('Set interactively',Threshold)
-%     Threshold = CPthresh_tool(ac); %% Need to scale better?
-else
-    Threshold = str2double(Threshold);
+% IntermediateImage = ac - min(ac(:));
+% %%% The maximum of the image is brought to 1.
+% ac_scaled = IntermediateImage ./ max(IntermediateImage(:));
+
+ac_min = min(ac(:));
+ac_range = max(ac(:)) - ac_min;
+ac_scaled = (ac - ac_min) ./ ac_range;
+
+if ~isnan(str2double(ThresholdStr))
+    Threshold = str2double(ThresholdStr);
+elseif strcmpi('Automatic',ThresholdStr(1:9))
+    if numel(ThresholdStr) > length('Automatic')
+        assert(strcmp(ThresholdStr(10),','),'A comma must follow ''Automatic'' if a threshold correction factor is used.')
+        Threshold_correction = str2double(ThresholdStr(length('Automatic')+1:end));
+    else
+        Threshold_correction = 1;
+    end
+    [handles,Threshold] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
 end
+
+%% Un-scale threshold
+Threshold = (Threshold .* ac_range) + ac_min;
 
 ac(ac < Threshold) = Threshold;
 ac = ac - Threshold;
-indices = find(imregionalmax(ac));
-maxima = sortrows([indices ac(indices)], -2);
 
 bw = false(size(im));
-bw(maxima(:,1)) = true;
+if any(ac(:))
+    indices = find(imregionalmax(ac));
+    maxima = sortrows([indices ac(indices)], -2);
+    bw(maxima(:,1)) = true;
+end
+
 FinalLabelMatrixImage = bwlabel(bw);
 
 % The dilated mask is used only for visualization.
@@ -188,12 +211,23 @@ if any(findobj == ThisModuleFigureNumber)
   [hImage,hAx] = CPimagesc(visRGB, handles,ThisModuleFigureNumber);
   title(hAx,[ObjectName, ' cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
   
-  uicontrol(h_fig,'units','normalized','position',[.01 .5 .06 .04],'string','off',...
-      'UserData',{OrigImage visRGB},'backgroundcolor',[.7 .7 .9],...
-      'Callback',@CP_OrigNewImage_Callback);
+  ud(1).img = visRGB;
+  ud(2).img = ac_scaled;
+  ud(3).img = OrigImage;
+  ud(1).title = [ObjectName ' , cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+  ud(2).title = ['Laplacian of Gaussian transformed ' ObjectName ', cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+  ud(3).title = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+  uicontrol(h_fig, 'Style', 'popup',...
+                    'String', 'Objects on Original Image|Laplacian of Gaussian Transformed|Input Image',...
+                    'UserData',ud,...
+                    'units','normalized',...
+                    'position',[.01 .95 .25 .04],...
+                    'backgroundcolor',[.7 .7 .9],...
+                    'tag','PopupImage',...
+                    'Callback', @CP_ImagePopupmenu_Callback);
   
   text(0.1,-0.08,...
-      ['Threshold: ' num2str(Threshold)],...
+      ['Threshold: ' num2str(Threshold) ', Number of objects: ' num2str(sum(bw(:)))],...
       'Color','black',...
       'fontsize',handles.Preferences.FontSize,...
       'Units','Normalized',...

@@ -105,7 +105,7 @@ bin_ctrs = [color_range(1):di:color_range(2)];
 FmtSpec = ['%.' num2str(ceil(-log10(di))) 'f'];
 
 %new figure - interactive GUI tool for level segmenting
-h_fig = figure;
+h_fig = CPfigure;
 set(h_fig,'ToolBar','Figure','Color',[0.7,0.7,0.9])
 if nargin>1 && isstr(cmap) && strmatch(lower(cmap),'gray')
   full_map = gray(num_colors);

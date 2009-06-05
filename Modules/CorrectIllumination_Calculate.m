@@ -224,19 +224,59 @@ DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+% Initialize some variables
+isProcessingAll = strcmpi(EachOrAll,'all');
+isProcessingEach = strcmpi(EachOrAll,'each');
+
 % Set up variables depending on image grouping or not
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+
+isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+
 if ~isImageGroups
     SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
     NumberOfImageSets = handles.Current.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 else
-    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
-    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+    if isProcessingAll
+        if isCreatingBatchFile
+            % If (1) 'All' is selected and (2) we are creating a batch file
+            % or we are running on the cluster,
+            % (a) replace the number of cycles with the number of groups, so
+            % each group gets it's own node, (b) do or skip the computation
+            % of the illumination fxn on the 1st cycle (see below), (c) set
+            % the groupID to that saved initially
+            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
+            end
+            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+        elseif  isRunningOnCluster
+            % If (1) 'All' is selected and (2) we are running on the cluster,
+            % (a) replace the number of cycles with the number of groups, so
+            % each group gets it's own node, (b) do the computation of the
+            % illumination fxn on the 1st cycle, (c) set the groupID to 
+            % the current set number, which should be be the group number
+            % at this point
+            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+                handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
+            end
+            CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
+        else
+            % If (1) 'All' is selected and (2) we are running locally,
+            % proceed as normal
+            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+        end
+    elseif isProcessingEach
+        % Proceed as normal
+        CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+    end
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 end
 
-if strcmp(EachOrAll,'Each') && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
+if isProcessingEach && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
     error(['Image processing was canceled in the ', ModuleName, ' module because you must choose Pipeline mode if you are using Each mode.'])
 end
 
@@ -244,7 +284,7 @@ end
 % all of the incoming images from a Load Images module, it will already have been calculated
 % the first time through the cycle. No further calculations are
 % necessary.
-if strcmp(EachOrAll,'All') && SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
+if isProcessingAll && SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
     return
 end
 
@@ -325,66 +365,71 @@ if HasMask
     MaskImage = CPretrieveimage(handles,MaskFieldname,ModuleName);
 end
 
-if strcmp(EachOrAll,'All')
+if isProcessingAll
     try
         if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && SetBeingAnalyzed == 1
-            % The first time the module is run, the averaged image is
-            % calculated.
-            % Notifies the user that the first cycle will take much longer than
-            % subsequent sets.
-            % Obtains the screen size.
-            [ScreenWidth,ScreenHeight] = CPscreensize;
-            PotentialBottom = [0, (ScreenHeight-720)];
-            BottomOfMsgBox = max(PotentialBottom);
-            h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
-            OldPos = get(h,'position');
-            set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
-            drawnow
+            % If creating a batch file, there is no reason for all
+            % the images to be loaded on the first cycle since it's going to
+            % re-run on the cluster anyway
+            if ~isCreatingBatchFile
+                % The first time the module is run, the averaged image is
+                % calculated.
+                % Notifies the user that the first cycle will take much longer than
+                % subsequent sets.
+                % Obtains the screen size.
+                [ScreenWidth,ScreenHeight] = CPscreensize;
+                PotentialBottom = [0, (ScreenHeight-720)];
+                BottomOfMsgBox = max(PotentialBottom);
+                h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
+                OldPos = get(h,'position');
+                set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
+                drawnow
 
-            if strcmp(IntensityChoice,'Regular')
-                [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
-            elseif strcmp(IntensityChoice,'Background')
-                % Retrieves the path where the images are stored from the handles
-                % structure.
-                fieldname = ['Pathname', ImageName];
-                try 
-                    Pathname = handles.Pipeline.(fieldname);
-                catch
-                    error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.']);
+                if strcmp(IntensityChoice,'Regular')
+                    [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
+                elseif strcmp(IntensityChoice,'Background')
+                    % Retrieves the path where the images are stored from the handles
+                    % structure.
+                    fieldname = ['Pathname', ImageName];
+                    try 
+                        Pathname = handles.Pipeline.(fieldname);
+                    catch
+                        error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.']);
+                    end
+                    % Retrieves the list of filenames where the images are stored from the
+                    % handles structure.
+                    fieldname = ['FileList', ImageName];
+                    % Calculates a coarse estimate of the background
+                    % illumination by determining the minimum of each block
+                    % in the image.  If the minimum is zero, it is recorded
+                    % as the minimum non-zero number to prevent divide by
+                    % zero errors later.
+                    [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
+
+                    if ~isImageGroups
+                        FileList = handles.Pipeline.(fieldname);
+                    else
+                        FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
+                    end
+                    FileList(cellfun(@isempty,FileList)) = [];   % Get rid of empty names
+                    LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
+                    SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
+                    for i = 2:length(FileList)
+                        LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
+                        SumMiniIlluminationImage = SumMiniIlluminationImage + ...
+                            blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
+                    end
+                     % Divides by the total number of images in order to
+                    % average.
+                    NumberOfActualImages = length(FileList);
+                    MiniIlluminationImage = SumMiniIlluminationImage / NumberOfActualImages;
+
+                    % The coarse estimate is then expanded in size so that it is the same
+                    % size as the original image. Bilinear interpolation is used to ensure the
+                    % values do not dip below zero.
+                    IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
+                    ReadyFlag = 1;
                 end
-                % Retrieves the list of filenames where the images are stored from the
-                % handles structure.
-                fieldname = ['FileList', ImageName];
-                % Calculates a coarse estimate of the background
-                % illumination by determining the minimum of each block
-                % in the image.  If the minimum is zero, it is recorded
-                % as the minimum non-zero number to prevent divide by
-                % zero errors later.
-                [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
-                
-                if ~isImageGroups
-                    FileList = handles.Pipeline.(fieldname);
-                else
-                    FileList = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(fieldname);
-                end
-                FileList(cellfun(@isempty,FileList)) = [];   % Get rid of empty names
-                LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
-                SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
-                for i = 2:length(FileList)
-                    LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
-                    SumMiniIlluminationImage = SumMiniIlluminationImage + ...
-                        blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
-                end
-                 % Divides by the total number of images in order to
-                % average.
-                NumberOfActualImages = length(FileList);
-                MiniIlluminationImage = SumMiniIlluminationImage / NumberOfActualImages;
-                
-                % The coarse estimate is then expanded in size so that it is the same
-                % size as the original image. Bilinear interpolation is used to ensure the
-                % values do not dip below zero.
-                IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
-                ReadyFlag = 1;
             end
         elseif strcmp(SourceIsLoadedOrPipeline,'Pipeline')
             if strcmp(IntensityChoice,'Regular')
@@ -432,7 +477,7 @@ if strcmp(EachOrAll,'All')
         [ErrorMessage, ErrorMessage2] = lasterr;
         error(['Image processing was canceled in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2]);
     end
-elseif strcmp(EachOrAll,'Each')
+elseif isProcessingEach
     if strcmp(IntensityChoice,'Regular')
         RawImage = OrigImage;
         if HasMask
@@ -588,7 +633,7 @@ if any(findobj == ThisModuleFigureNumber)
         % are in All mode, there is no OrigImage, so we can plot both to
         % the 2,2,1 location.
         ax = cell(1,4);
-        if strcmp(EachOrAll,'All')
+        if isProcessingAll
             ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
             CPimagesc(RawImage,handles,ax{1});
             if ReadyFlag
@@ -601,7 +646,7 @@ if any(findobj == ThisModuleFigureNumber)
             CPimagesc(OrigImage,handles,ax{1});
             str = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
             if isImageGroups
-                str = [str ,' (Group #',num2str(handles.Pipeline.CurrentImageGroupID),', image #',num2str(SetBeingAnalyzed),')'];
+                str = [str ,' (Group #',num2str(CurrentImageGroupID),', image #',num2str(SetBeingAnalyzed),')'];
             end
             title(ax{1},str);
         end
@@ -669,7 +714,7 @@ if any(findobj == ThisModuleFigureNumber)
         CPimagesc(OrigImage,handles,ax{1});
         str = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
         if isImageGroups
-            str = [str ,' (Group #',num2str(handles.Pipeline.CurrentImageGroupID),', image #',num2str(SetBeingAnalyzed),')'];
+            str = [str ,' (Group #',num2str(CurrentImageGroupID),', image #',num2str(SetBeingAnalyzed),')'];
         end
         title(ax{1},str);
         if exist('FinalIlluminationFunction','var') == 1
@@ -757,7 +802,7 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
         % Whether these images exist depends on whether the user has chosen
         % to dilate or smooth the average image.
         if AverageImageSaveFlag == 1
-            if strcmp(EachOrAll,'Each')
+            if isProcessingEach
                 error(['Image processing was canceled in the ', ModuleName, ' module because you attempted to pass along the averaged image, but because you are in Each mode, an averaged image has not been calculated.']);
             end
             try 

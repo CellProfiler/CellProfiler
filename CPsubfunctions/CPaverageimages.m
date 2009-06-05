@@ -19,14 +19,31 @@ function [handles, OutputImage, ReadyFlag, MaskImage] = CPaverageimages(handles,
 ReadyFlag = 0;
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 % Set up variables depending on image grouping or not
+
+isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
 if ~isImageGroups
     SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
     NumberOfImageSets = handles.Current.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 else
-    SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
-    NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.NumberOfImageSets;
+    if strcmpi(Mode,'DoNow')
+        if isCreatingBatchFile
+            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+        elseif isRunningOnCluster
+            CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
+        else
+            % Running locally, no batch: Proceed as normal
+            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+        end
+    elseif strcmpi(Mode,'Accumulate')
+        % Proceed as normal
+        CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+    end
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 end
 
@@ -97,7 +114,7 @@ if strcmpi(Mode,'DoNow')
     ReadyFlag = 1;
     delete(findobj(allchild(0),'tag',mfilename));
 
-elseif strcmpi(Mode,'Accumulate') == 1
+elseif strcmpi(Mode,'Accumulate')
     %%% In Pipeline (cycling) mode, each time through the image sets,
     %%% the image is added to the existing cumulative image. Reads
     %%% (opens) the image you want to analyze and assigns it to a

@@ -249,11 +249,11 @@ else
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
             end
-            CPwarndlg(  {'You are using image grouping to create an illumination function by processing ''All'' images during a batch run. You will need to do the following:';
-                         '  (1) Select ''LoadImages'' for the images that you want to use';
-                         '  (2) Save the functions using SaveImages using ''First cycle'' or ''Each cycle'' as the point in time to save the image'; 
+            CPwarndlg(  {'You are using image grouping to create an illumination function by processing "All" images during a batch run. You will need to do the following:';
+                         '  (1) Select "LoadImages" for the images that you want to use';
+                         '  (2) Save the functions using SaveImages using "First cycle" or "Each cycle" as the point in time to save the image'; 
                          '  (3) Submit the batch using a batch size of 1.';
-                         'Due to the constraints of image grouping, other than saving the resultant functions with SaveImages, other modules cannot be counted on to work properly on the cluster. Please check your pipeline and remove all extraneous modules.'});
+                         'Due to the constraints of image grouping, other than saving the resultant functions with SaveImages, other modules cannot be counted on to work properly on the cluster. Please check your pipeline and remove all extraneous modules.'},[ModuleName,': Required settings for cluster run'],'replace');
         elseif  isRunningOnCluster
             % If (1) 'All' is selected and (2) we are running on the cluster,
             % (a) replace the number of cycles with the number of groups, so
@@ -394,14 +394,8 @@ if isProcessingAll
                 % calculated.
                 % Notifies the user that the first cycle will take much longer than
                 % subsequent sets.
-                % Obtains the screen size.
-                [ScreenWidth,ScreenHeight] = CPscreensize;
-                PotentialBottom = [0, (ScreenHeight-720)];
-                BottomOfMsgBox = max(PotentialBottom);
-                h = CPmsgbox(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
-                OldPos = get(h,'position');
-                set(h, 'Position',[250 BottomOfMsgBox OldPos(3) OldPos(4)]);
-                drawnow
+                CPwarndlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
+                drawnow;
 
                 if strcmp(IntensityChoice,'Regular')
                     [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
@@ -432,7 +426,6 @@ if isProcessingAll
                     FileList(cellfun(@isempty,FileList)) = [];   % Get rid of empty names
                     LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
                     SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
-                    disp([ModuleName,': Reading ',num2str(length(FileList)),' images. SetBeingAnalyzed: ',num2str(SetBeingAnalyzed),' NumberOfImageSets: ',num2str(NumberOfImageSets)]);
                     for i = 2:length(FileList)
                         LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
                         SumMiniIlluminationImage = SumMiniIlluminationImage + ...

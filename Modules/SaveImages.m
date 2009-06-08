@@ -266,9 +266,7 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
         end
     end
 end
-
-disp([ModuleName,': Saving images. SetBeingAnalyzed: ',num2str(SetBeingAnalyzed),' NumberOfImageSets: ',num2str(NumberOfImageSets)]);
-                    
+               
 if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1) || (strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == NumberOfImageSets)
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
@@ -376,7 +374,7 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
                 %%% modules like CorrectIllum_Calculate don't save on the
                 %%% 1st/each cycle even though it's specified. So we give
                 %%% it a pass
-                CPmsgbox(['Since you are using image grouping and creating a batch file, ', ModuleName, ' won''t save the image ',ImageName,' until the cluster run itself.'],[ModuleName,': Notification']);
+                CPwarndlg(['Since you are using image grouping and creating a batch file, ', ModuleName, ' won''t save the specified image until the cluster run itself.'],[ModuleName,': Notification'],'replace');
                 CPclosefigure(handles,CurrentModule)
                 return;
             elseif ~isempty(str2double(ImageName))
@@ -431,7 +429,6 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
     end
 
     FileAndPathName = fullfile(PathName, FileName);
-    disp(FileAndPathName);
     
     if strcmpi(CheckOverwrite,'Yes') && ~strcmpi(FileFormat,'avi')
         %%% Checks whether the new image name is going to overwrite the

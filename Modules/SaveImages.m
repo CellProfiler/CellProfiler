@@ -227,6 +227,9 @@ CreateSubdirectories = char(handles.Settings.VariableValues{CurrentModuleNum,14}
 %%%%%%%%%%%%%%%%%%%%%%%
 drawnow
 
+isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
 if ~isImageGroups
     SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
@@ -264,7 +267,9 @@ if ~isempty(TileModuleNum)      %if Tile Module is loaded
     end
 end
 
-if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1 || strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == NumberOfImageSets
+disp([ModuleName,': Saving images. SetBeingAnalyzed: ',num2str(SetBeingAnalyzed),' NumberOfImageSets: ',num2str(NumberOfImageSets)]);
+                    
+if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBeingAnalyzed == 1) || (strcmpi(SaveWhen,'Last cycle') && SetBeingAnalyzed == NumberOfImageSets)
     %%% If the user has selected sequential numbers for the file names.
     if strcmpi(ImageFileName,'N')
         FileName = DigitString(NumberOfImageSets,SetBeingAnalyzed);
@@ -366,9 +371,17 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     %%% However
     if ~strcmpi(FileFormat,'fig')
         if ~CPisimageinpipeline(handles,ImageName)
-            %%% Checks if this might be a number, intended to save an
-            %%% entire figure.
-            if ~isempty(str2double(ImageName));
+            if isImageGroups && isCreatingBatchFile
+                %%% If we're using grouping and creating a batch file,
+                %%% modules like CorrectIllum_Calculate don't save on the
+                %%% 1st/each cycle even though it's specified. So we give
+                %%% it a pass
+                CPmsgbox(['Since you are using image grouping and creating a batch file, ', ModuleName, ' won''t save the image ',ImageName,' until the cluster run itself.'],[ModuleName,': Notification']);
+                CPclosefigure(handles,CurrentModule)
+                return;
+            elseif ~isempty(str2double(ImageName))
+                %%% Checks if this might be a number, intended to save an
+                %%% entire figure.
                 error(['Image processing was canceled in the ', ModuleName, ' module because CellProfiler could not find the input image. CellProfiler expected to find an image named "', ImageName, '", but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to this ', ModuleName, ' module. If you are trying to save an entire figure, be sure to choose the file format "fig".'])
             else
                 %%% If it's not a number, then this must just be a case of not
@@ -418,7 +431,8 @@ if strcmpi(SaveWhen,'Every cycle') || strcmpi(SaveWhen,'First cycle') && SetBein
     end
 
     FileAndPathName = fullfile(PathName, FileName);
-
+    disp(FileAndPathName);
+    
     if strcmpi(CheckOverwrite,'Yes') && ~strcmpi(FileFormat,'avi')
         %%% Checks whether the new image name is going to overwrite the
         %%% original file. This check is not done here if this is an avi

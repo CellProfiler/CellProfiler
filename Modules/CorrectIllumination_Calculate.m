@@ -245,32 +245,35 @@ else
             % or we are running on the cluster,
             % (a) replace the number of cycles with the number of groups, so
             % each group gets it's own node, (b) do or skip the computation
-            % of the illumination fxn on the 1st cycle (see below), (c) set
-            % the groupID to that saved initially
+            % of the illumination fxn on the 1st cycle (see below)
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
             end
-            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+            CPwarndlg(  {'You are using image grouping to create an illumination function by processing ''All'' images during a batch run. You will need to do the following:';
+                         '  (1) Select ''LoadImages'' for the images that you want to use';
+                         '  (2) Save the functions using SaveImages using ''First cycle'' or ''Each cycle'' as the point in time to save the image'; 
+                         '  (3) Submit the batch using a batch size of 1.';
+                         'Due to the constraints of image grouping, other than saving the resultant functions with SaveImages, other modules cannot be counted on to work properly on the cluster. Please check your pipeline and remove all extraneous modules.'});
         elseif  isRunningOnCluster
             % If (1) 'All' is selected and (2) we are running on the cluster,
             % (a) replace the number of cycles with the number of groups, so
             % each group gets it's own node, (b) do the computation of the
             % illumination fxn on the 1st cycle, (c) set the groupID to 
             % the current set number, which should be be the group number
-            % at this point
+            % at this point (Note: This is an exception to
+            % FileNameMetadata)
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
             end
-            CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
+            handles.Pipeline.CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
         else
             % If (1) 'All' is selected and (2) we are running locally,
             % proceed as normal
-            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
         end
     elseif isProcessingEach
         % Proceed as normal
-        CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
     end
+    CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
     SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
     NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
@@ -325,9 +328,24 @@ if strcmp(SizeOfSmoothingFilter,'Do not use')
     end
 end
 
-% Reads (opens) the image you want to analyze and assigns it to a
-% variable.
-OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+% Reads (opens) the image you want to analyze and assigns it to a variable
+if ~isImageGroups
+    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+else
+    if isProcessingAll && isRunningOnCluster
+        % However, if grouping is being used for a cluster run, each batch
+        % needs access to the proper image for the current group, for the 
+        % current image set. Since we are re-arranging the number of
+        % image sets here, this image must be pulled from the filelist.
+        fieldname = ['Pathname', ImageName];
+        Pathname = handles.Pipeline.(fieldname);
+        fieldname = ['FileList', ImageName];
+        FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
+        OrigImage = CPimread(fullfile(Pathname,FileList{SetBeingAnalyzed}));
+    else
+        OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+    end
+end
 
 if strcmp(IntensityChoice,'Background')
     % Checks whether the chosen block size is larger than the image itself.
@@ -414,6 +432,7 @@ if isProcessingAll
                     FileList(cellfun(@isempty,FileList)) = [];   % Get rid of empty names
                     LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
                     SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
+                    disp([ModuleName,': Reading ',num2str(length(FileList)),' images. SetBeingAnalyzed: ',num2str(SetBeingAnalyzed),' NumberOfImageSets: ',num2str(NumberOfImageSets)]);
                     for i = 2:length(FileList)
                         LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
                         SumMiniIlluminationImage = SumMiniIlluminationImage + ...

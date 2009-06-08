@@ -183,8 +183,23 @@ if ~isfield(handles.Measurements.Image,FileNameField)
     error([ 'Image processing was canceled in the ', ModuleName, ' module. ',ImageName,' has no file name measurement (maybe you did not use LoadImages to create it?)']);
 end
 
-SetIndex = handles.Current.SetBeingAnalyzed;
-FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetIndex}, handles.Measurements.Image.(FileNameField){SetIndex});
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+if ~(isImageGroups && isRunningOnCluster)
+    % Grab the filename/pathname from the Measurements structure
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetBeingAnalyzed}, handles.Measurements.Image.(FileNameField){SetBeingAnalyzed});
+else
+    % If image groups already exist and this is a cluster run, the variable
+    % NumberOfImageSets may have been altered which means that
+    % handles.Current.SetBeingAnalyzed may no longer be accurate and the 
+    % current filename/pathname needs updating. In that case, grab the true
+    % filename/pathname from the GroupFileList structure
+    CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
+    FileOrPathName = fullfile(  handles.Pipeline.GroupFileList{CurrentImageGroupID}.(['Pathname',ImageName]),...
+                                handles.Pipeline.GroupFileList{CurrentImageGroupID}.(['FileList',ImageName]){SetBeingAnalyzed});
+end
 [PathName,FileName] = fileparts(FileOrPathName);
 
 Metadata = [];
@@ -345,6 +360,8 @@ if ~isempty(FieldsToGroupBy)
 
         handles.Pipeline.CurrentImageGroupID = idx;
         handles.Pipeline.ImageGroupFields = FieldsToGroupBy;
+        
+        handles.Current.NumberOfImageGroups = length(handles.Pipeline.GroupFileList);
     else
         % If grouping fields have been created, set the current group
         % number (This will not be true until FileNameMetadata has
@@ -394,6 +411,8 @@ if ~isempty(FieldsToGroupBy)
             handles.Pipeline.CurrentMetadata.(handles.Pipeline.ImageGroupFields{i}) = handles.Pipeline.GroupFileList{idx}.Fields{i};
         end
     end
+else
+    handles.Current.NumberOfImageGroups = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%

@@ -402,7 +402,7 @@ end
 
 %%% Determines which cycle is being analyzed.
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-
+    
 %%% Remove "Do not use" entries from the input,
 %%% i.e., store only valid entries
 idx = strcmp(TextToFind,'Do not use') | strcmp(ImageName,'Do not use');
@@ -734,8 +734,7 @@ if SetBeingAnalyzed == 1
             end
             PreErrorText = cat(2, CharImageName, SpacesArray);
             ErrorText = cat(2, PreErrorText, CharNumberOfFiles);
-            CPmsgbox(ErrorText)
-            error(['Image processing was canceled in the ', ModuleName, ' module because the number of images identified for each image type is not equal.  In the window under this box you will see how many images have been found for each image type.'])
+            CPerrordlg(cat(1,{['Image processing was canceled in the ', ModuleName, ' module because the number of images identified for each image type is not equal. Below is displayed hwo many  images have been found for each image type.']},cellstr(ErrorText)))
         end
         NumberOfImageSets = str2double(UniqueNumbers{1});
         %%% Checks whether another load images module has already recorded a
@@ -748,12 +747,23 @@ if SetBeingAnalyzed == 1
         %%% detected only one cycle, since there is no way to tell whether
         %%% the 1 stored in handles.Current.NumberOfImageSets is the default value or a
         %%% value determined by another image-loading module.
-        if handles.Current.NumberOfImageSets ~= 1;
-            if handles.Current.NumberOfImageSets ~= NumberOfImageSets
+        isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+        isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+        if handles.Current.NumberOfImageSets ~= 1
+            % Check if image grouping is active during a cluster run, since
+            % it may be that handles.Current.NumberOfImageSets has been
+            % altered by modules like CorrectIllumination_Calculate during
+            % batch creation
+            if (handles.Current.NumberOfImageSets ~= NumberOfImageSets) && ~(isImageGroups && isRunningOnCluster)
                 error(['Image processing was canceled in the ', ModuleName, ' module because the number of cycles loaded (', num2str(NumberOfImageSets),') does not equal the number of cycles loaded by another image-loading module (', num2str(handles.Current.NumberOfImageSets), '). Please check the settings.'])
             end
         end
-        handles.Current.NumberOfImageSets = NumberOfImageSets;
+        % If image grouping is active during a cluster run,
+        % handles.Current.NumberOfImageSets has already been set during the
+        % batch setup and may have been altered. If so, leave it as is.
+        if ~(isImageGroups && isRunningOnCluster)
+            handles.Current.NumberOfImageSets = NumberOfImageSets;
+        end
     end
 end
 

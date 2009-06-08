@@ -424,7 +424,7 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     category =  "Object Processing"
     
@@ -461,6 +461,12 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
         self.wants_automatic_log_threshold = cps.Binary('Do you want to calculate the Laplacian of Gaussian threshold automatically?',True)
         self.manual_log_threshold = cps.Float('What is the Laplacian of Gaussian threshold?',.5, 0, 1)
+        self.two_class_otsu = cps.Choice('Does your image have two classes of intensity value or three?',
+                                         [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS])
+        self.use_weighted_variance = cps.Choice('Do you want to minimize the weighted variance or the entropy?',
+                                                [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
+        self.assign_middle_to_foreground = cps.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
+                                                      [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range,
@@ -475,7 +481,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 self.manual_threshold, self.binary_image,
                 self.should_save_outlines,
                 self.wants_automatic_log_threshold,
-                self.manual_log_threshold ]
+                self.manual_log_threshold,
+                self.two_class_otsu, self.use_weighted_variance,
+                self.assign_middle_to_foreground ]
     
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -555,6 +563,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             setting_values = list(setting_values)
             setting_values += [ cps.YES, ".5" ]
             variable_revision_number = 2
+        
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added Otsu options
+            setting_values = list(setting_values)
+            setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
+                               cpmi.O_FOREGROUND]
+            variable_revision_number = 3
              
         return setting_values, variable_revision_number, from_matlab
             
@@ -563,9 +578,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                 self.exclude_size, self.merge_objects, \
                 self.exclude_border_objects, self.threshold_method]
         if self.threshold_method == cpthresh.TM_MANUAL:
-            vv += self.manual_threshold
+            vv += [self.manual_threshold]
         elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
-            vv += self.binary_image
+            vv += [self.binary_image]
+        if self.threshold_algorithm == cpthresh.TM_OTSU:
+            vv += [self.two_class_otsu, self.use_weighted_variance]
+            if self.two_class_otsu == O_THREE_CLASS:
+                vv.append(self.assign_middle_to_foreground)
         if self.threshold_algorithm == cpthresh.TM_MOG:
             vv += [self.object_fraction]
         if not self.threshold_method in (cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE):
@@ -730,7 +749,9 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         #
         edge_array = scipy.ndimage.gaussian_filter(mask.astype(float),
                                                    sigma,mode='constant')
-        return scipy.ndimage.gaussian_filter(image,sigma,mode='constant') / edge_array
+        masked_image = image.copy()
+        masked_image[~mask] = 0
+        return scipy.ndimage.gaussian_filter(masked_image,sigma,mode='constant') / edge_array
     
     def separate_neighboring_objects(self, image, mask, 
                                      labeled_image,object_count,threshold):

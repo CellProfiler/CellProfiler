@@ -385,6 +385,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.image_name.value = "my_image"
         x.threshold_range.min = .7
         x.threshold_range.max = 1
+        x.threshold_correction_factor.value = .95
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
@@ -1042,6 +1043,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = False
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .5
         img = numpy.zeros((10,10))
         img[4,4]=1
         img[5,5]=1
@@ -1149,10 +1152,11 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
     def test_08_02_per_object_otsu_run(self):
         """Test IdentifyPrimAutomatic per object through the Run function"""
         
-        image = numpy.zeros((20,20))
+        image = numpy.ones((20,20))*0.05
         draw_circle(image,(5,5),2,.1)
-        draw_circle(image,(15,15),3,.1)
-        draw_circle(image,(15,15),2,.2)
+        draw_circle(image,(15,15),3,.25)
+        draw_circle(image,(15,15),2,.5)
+        image = add_noise(image, .01)
         labels = numpy.zeros((20,20),int)
         draw_circle(labels,(5,5),3,1)
         draw_circle(labels,(15,15),3,2)
@@ -1165,7 +1169,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set.add("my_image", image)
         object_set = cellprofiler.objects.ObjectSet()
         
-        expected_labels = numpy.zeros((20,20))
+        expected_labels = numpy.zeros((20,20),int)
         draw_circle(expected_labels,(5,5),2,1)
         draw_circle(expected_labels,(15,15),2,2)
         
@@ -1175,6 +1179,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
         x.threshold_method.value = T.TM_OTSU_PER_OBJECT
+        x.threshold_correction_factor.value = 1.05
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
@@ -1334,16 +1339,23 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         count = measurements.get_current_measurement("Image","Count_my_object")
         self.assertEqual(count,2)
 
+def add_noise(img, fraction):
+    '''Add a fractional amount of noise to an image to make it look real'''
+    numpy.random.seed(0)
+    noise = numpy.random.uniform(low=1-fraction/2, high=1+fraction/2,
+                                 size=img.shape)
+    return img * noise
+
 def one_cell_image():
     img = numpy.zeros((25,25))
     draw_circle(img,(10,15),5, .5)
-    return img
+    return add_noise(img,.01)
 
 def two_cell_image():
     img = numpy.zeros((50,50))
     draw_circle(img,(10,35),5, .8)
     draw_circle(img,(30,15),5, .6)
-    return img
+    return add_noise(img,.01)
 
 def fly_image():
     file = os.path.join(cellprofiler.modules.tests.example_images_directory(),

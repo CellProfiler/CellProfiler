@@ -25,7 +25,16 @@ import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.cpmath.smooth import smooth_with_noise
 from cellprofiler.cpmath.threshold import TM_MANUAL, TM_METHODS, get_threshold
+from cellprofiler.cpmath.threshold import TM_GLOBAL
 
+O_TWO_CLASS = 'Two classes'
+O_THREE_CLASS = 'Three classes'
+
+O_WEIGHTED_VARIANCE = 'Weighted variance'
+O_ENTROPY = 'Entropy'
+
+O_FOREGROUND = 'Foreground'
+O_BACKGROUND = 'Background'
 class Identify(cellprofiler.cpmodule.CPModule):
     def get_threshold(self, image, mask, labels):
         """Compute the threshold using whichever algorithm was selected by the user
@@ -45,7 +54,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             threshold_range_min = self.threshold_range.min,
             threshold_range_max = self.threshold_range.max,
             threshold_correction_factor = self.threshold_correction_factor.value,
-            object_fraction = self.object_fraction.value)
+            object_fraction = self.object_fraction.value,
+            two_class_otsu = self.two_class_otsu.value == O_TWO_CLASS,
+            use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,
+            assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND)
     
 
     def get_threshold_modifier(self):
@@ -55,6 +67,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         TM_ADAPTIVE                     = "Adaptive"
         TM_PER_OBJECT                   = "PerObject"
         """
+        if self.threshold_method.value == TM_MANUAL:
+            return TM_GLOBAL 
         parts = self.threshold_method.value.split(' ')
         return parts[1]
     

@@ -25,6 +25,11 @@ from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.settings as cpsetting
 from cellprofiler.gui import cpfigure
+from cellprofiler.modules.identify import Identify, O_BACKGROUND, O_ENTROPY
+from cellprofiler.modules.identify import O_FOREGROUND, O_THREE_CLASS
+from cellprofiler.modules.identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
+from cellprofiler.cpmath.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
+from cellprofiler.cpmath.threshold import TM_PER_OBJECT, TM_BINARY_IMAGE
 
 from cellprofiler.cpmath.cpmorphology import strel_disk
 from scipy.ndimage.morphology import binary_dilation
@@ -34,7 +39,7 @@ SHIFT = "Shift"
 GRAYSCALE = "Grayscale"
 BINARY = "Binary (black and white)"
 
-class ApplyThreshold(CPModule):
+class ApplyThreshold(Identify):
     """Pixel intensity below or above a certain threshold is set to zero.
 
 Settings:
@@ -57,10 +62,12 @@ thresholded region around those bright objects by a certain distance so
 as to avoid a 'halo' effect.
 """
 
-    variable_revision_number = 1
+    variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
+        threshold_methods = [method for method in TM_METHODS
+                             if method != TM_BINARY_IMAGE]
         self.module_name = self.__class__.__name__
         self.image_name = cpsetting.NameSubscriber("Which image do you want to threshold?",
                                                    "imagegroup", "None")
@@ -80,8 +87,21 @@ as to avoid a 'halo' effect.
                                         0.0)
 
         # if binary:
-        self.binary_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one.",
+        self.manual_threshold = cpsetting.Float("Set pixels below this value to zero and set pixels at least this value to one.",
                                                 0.5)
+        self.threshold_method = cpsetting.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".''',
+                                                 threshold_methods)
+        self.threshold_range = cpsetting.FloatRange('Enter the lower and upper bounds for the threshold',(0,1),0,1)
+        self.threshold_correction_factor = cpsetting.Float('Threshold correction factor', 1)
+        self.object_fraction = cpsetting.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
+                                                      ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
+        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("What is the name of the objects to be used for per-object thresholding","None")
+        self.two_class_otsu = cpsetting.Choice('Does your image have two classes of intensity value or three?',
+                                               [O_TWO_CLASS, O_THREE_CLASS])
+        self.use_weighted_variance = cpsetting.Choice('Do you want to minimize the weighted variance or the entropy?',
+                                                [O_WEIGHTED_VARIANCE, O_ENTROPY])
+        self.assign_middle_to_foreground = cpsetting.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
+                                                      [O_FOREGROUND, O_BACKGROUND])
 
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
@@ -93,7 +113,19 @@ as to avoid a 'halo' effect.
             if self.high.value:
                 vv.extend([self.high_threshold, self.dilation])
         else:
-            vv.append(self.binary_threshold)
+            vv.append(self.threshold_method)
+            if self.threshold_method == TM_MANUAL:
+                vv.append(self.manual_threshold)
+            else:
+                vv += [self.threshold_range, self.threshold_correction_factor]
+                if self.threshold_algorithm == TM_MOG:
+                    vv.append(self.object_fraction)
+                if self.threshold_algorithm == TM_OTSU:
+                    vv += [self.two_class_otsu, self.use_weighted_variance]
+                    if self.two_class_otsu == O_THREE_CLASS:
+                        vv.append(self.assign_middle_to_foreground)
+                if self.threshold_modifier == TM_PER_OBJECT:
+                    vv.append(self.enclosing_objects_name)
         return vv
     
     def settings(self):
@@ -101,7 +133,11 @@ as to avoid a 'halo' effect.
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low, self.high, self.low_threshold,
                 self.shift, self.high_threshold, self.dilation,
-                self.binary_threshold]
+                self.threshold_method, self.manual_threshold,
+                self.threshold_range, self.threshold_correction_factor,
+                self.object_fraction, self.enclosing_objects_name,
+                self.two_class_otsu, self.use_weighted_variance,
+                self.assign_middle_to_foreground]
     
     def backwards_compatibilize(self, setting_values,
                                 variable_revision_number, module_name,
@@ -115,17 +151,37 @@ as to avoid a 'halo' effect.
                                 None,
                                 None,
                                 None,
-                                setting_values[5],  # LowThreshold
-                                setting_values[6],  # Shift
-                                setting_values[7],  # HighThreshold
-                                setting_values[8],  # DilationValue
-                                setting_values[9],  # BinaryChoice
+                                setting_values[2],  # LowThreshold
+                                setting_values[3],  # Shift
+                                setting_values[4],  # HighThreshold
+                                setting_values[5],  # DilationValue
+                                TM_MANUAL,          # Manual thresholding
+                                setting_values[6],  # BinaryChoice
+                                "0,1",              # Threshold range
+                                "1",                # Threshold correction factor
+                                ".2",               # Object fraction
+                                "None"              # Enclosing objects name
                                 ]
-            setting_values[2] = setting_values[9] > 0
-            setting_values[3] = LowThreshold > 0
-            setting_values[4] = HighThreshold < 1
-            variable_revision_number = 1
+            setting_values[2] = (BINARY if float(setting_values[10]) > 0
+                                 else GRAYSCALE) # binary flag
+            setting_values[3] = (cpsetting.YES if float(setting_values[5]) > 0
+                                 else cpsetting.NO) # low threshold set
+            setting_values[4] = (cpsetting.YES if float(setting_values[7]) > 0
+                                 else cpsetting.NO) # high threshold set
+            variable_revision_number = 2
             from_matlab = False
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = (setting_values[:9] + 
+                              [TM_MANUAL, setting_values[9], "O,1", "1",
+                               ".2","None"])
+            variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added Otsu options
+            setting_values = list(setting_values)
+            setting_values += [O_TWO_CLASS, O_WEIGHTED_VARIANCE,
+                               O_FOREGROUND]
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab
         
     def run(self,workspace):
@@ -142,12 +198,19 @@ as to avoid a 'halo' effect.
                                               must_be_grayscale=True)
         pixels = input.pixel_data.copy()
         if self.binary != 'Grayscale':
-            pixels[input.mask] = pixels[input.mask] > self.binary_threshold.value
+            if self.threshold_modifier == TM_PER_OBJECT:
+                objects = workspace.object_set.get_objects(self.enclosing_objects_name.value)
+                labels = objects.segmented
+            else:
+                labels = None
+            local_thresh,ignore = self.get_threshold(pixels,input.mask,labels)
+            pixels = ((pixels > local_thresh) & input.mask).astype(float)
         else:
             if self.low.value:
-                pixels[input.mask & (pixels < self.low_threshold.value)] = 0
+                thresholded_pixels = pixels < self.low_threshold.value
+                pixels[input.mask & thresholded_pixels] = 0
                 if self.shift.value:
-                    pixels[input.mask] -= self.low_threshold.value
+                    pixels[input.mask & ~ thresholded_pixels] -= self.low_threshold.value
             if self.high.value:
                 undilated = input.mask & (pixels >= self.high_threshold.value)
                 dilated = binary_dilation(undilated, strel_disk(self.dilation.value), mask=input.mask)

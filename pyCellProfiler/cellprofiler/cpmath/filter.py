@@ -37,6 +37,10 @@ def stretch(image, mask=None):
         minval = np.min(image)
         maxval = np.max(image)
         if minval == maxval:
+            if minval < 0:
+                return np.zeros_like(image)
+            elif minval > 1:
+                return np.ones_like(image)
             return image
         else:
             return (image - minval) / (maxval - minval)
@@ -52,6 +56,15 @@ def stretch(image, mask=None):
         result = image.copy()
         image[mask] = transformed_image
         return image
+
+def unstretch(image, minval, maxval):
+    '''Perform the inverse of stretch, given a stretched image
+    
+    image - an image stretched by stretch or similarly scaled value or values
+    minval - minimum of previously stretched image
+    maxval - maximum of previously stretched image
+    '''
+    return image * (maxval - minval) + minval
 
 def median_filter(data, mask, radius, percent=50):
     '''Masked median filter with octagonal shape

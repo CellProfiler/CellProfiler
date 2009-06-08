@@ -173,7 +173,7 @@ postprocess.
 
 See also Identify primary modules.
     """
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Object Processing"
     
     def create_settings(self):
@@ -193,8 +193,7 @@ See also Identify primary modules.
                                             cpthresh.TM_ROBUST_BACKGROUND_GLOBAL, cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE, cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
                                             cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE, cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,
                                             cpthresh.TM_KAPUR_GLOBAL,cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
-                                            cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE,
-                                            cpthresh.TM_ALL,cpthresh.TM_SET_INTERACTIVELY])
+                                            cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE])
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
         self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
         self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
@@ -205,7 +204,12 @@ See also Identify primary modules.
         self.regularization_factor = cps.Float("Enter the regularization factor (0 to infinity). Larger=distance,0=intensity)",0.05,minval=0)
         self.use_outlines = cps.Binary("Do you want to save outlines of the images?",False)
         self.outlines_name = cps.NameProvider("What do you want to call the outlines?","outlinegroup","SecondaryOutlines")
-        self.test_mode = cps.Binary("Do you want to run in test mode where each method for identifying secondary objects is compared?",False)
+        self.two_class_otsu = cps.Choice('Does your image have two classes of intensity value or three?',
+                                         [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS])
+        self.use_weighted_variance = cps.Choice('Do you want to minimize the weighted variance or the entropy?',
+                                                [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
+        self.assign_middle_to_foreground = cps.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
+                                                      [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
     
     def settings(self):
         return [ self.primary_objects, self.objects_name,   
@@ -213,12 +217,19 @@ See also Identify primary modules.
                  self.threshold_correction_factor, self.threshold_range,
                  self.object_fraction, self.distance_to_dilate, 
                  self.regularization_factor, self.outlines_name,
-                 self.test_mode, self.manual_threshold,
-                 self.binary_image, self.use_outlines]
+                 self.manual_threshold,
+                 self.binary_image, self.use_outlines,
+                 self.two_class_otsu, self.use_weighted_variance,
+                 self.assign_middle_to_foreground ]
     
     def visible_settings(self):
-        result = [self.primary_objects, self.objects_name,  
-                 self.method, self.image_name]
+        result = [self.image_name, self.primary_objects, self.objects_name,  
+                 self.method]
+        if self.threshold_algorithm == cpthresh.TM_OTSU:
+            result+= [self.two_class_otsu, self.use_weighted_variance]
+            if self.two_class_otsu == cpmi.O_THREE_CLASS:
+                result.append(self.assign_middle_to_foreground)
+            
         if self.method != M_DISTANCE_N:
             result.append(self.threshold_method)
             if self.threshold_method == cpthresh.TM_MANUAL:
@@ -235,7 +246,6 @@ See also Identify primary modules.
         result.append(self.use_outlines)
         if self.use_outlines.value:
             result.append(self.outlines_name)
-        result.append(self.test_mode)
         return result
     
     def backwards_compatibilize(self,
@@ -268,8 +278,7 @@ See also Identify primary modules.
                    cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
                    cpthresh.TM_RIDLER_CALVARD_GLOBAL,cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
                    cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,cpthresh.TM_KAPUR_GLOBAL,
-                   cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
-                   cpthresh.TM_ALL,cpthresh.TM_SET_INTERACTIVELY)):
+                   cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT)):
                 # User entered an image name -  guess
                 new_setting_values[4] = cpthresh.TM_BINARY_IMAGE
                 new_setting_values.append('0')
@@ -288,6 +297,13 @@ See also Identify primary modules.
             NotImplementedError("Don't know how to convert Matlab IdentifySecondary revision # %d"%(variable_revision_number))
         if variable_revision_number != self.variable_revision_number:
             NotImplementedError("Don't know how to handle IdentifySecondary revision # %d"%(variable_revision_number))
+        if (not from_matlab) and variable_revision_number == 1:
+            # Removed test mode
+            # added Otsu parameters.
+            setting_values = setting_values[:11]+setting_values[12:]
+            setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
+                               cpmi.O_FOREGROUND]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):

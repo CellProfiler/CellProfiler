@@ -268,7 +268,8 @@ class TestFindEdges(unittest.TestCase):
         i,j = np.mgrid[-20:20,-20:20]
         image = np.logical_and(i > j, i**2+j**2 < 300).astype(float)
         np.random.seed(0)
-        image = image *.5 + np.random.uniform(size=image.shape)*.5
+        image = image *.5 + np.random.uniform(size=image.shape)*.3
+        image = np.ascontiguousarray(image)
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_CANNY
         module.wants_automatic_threshold.value = True
@@ -276,9 +277,8 @@ class TestFindEdges(unittest.TestCase):
         module.wants_automatic_sigma.value = True
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        t1,t2 = otsu3(FIL.sobel(image)) 
-        self.assertTrue(np.all(output.pixel_data ==
-                               FIL.canny(image, np.ones(image.shape,bool),
-                                         1.0, t1, t2)))
+        t1,t2 = otsu3(FIL.sobel(image))
+        result = FIL.canny(image, np.ones(image.shape,bool), 1.0, t1, t2)
+        self.assertTrue(np.all(output.pixel_data == result))
 
         

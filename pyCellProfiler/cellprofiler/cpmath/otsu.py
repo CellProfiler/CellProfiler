@@ -47,43 +47,95 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     assert max_threshold==None or max_threshold >=0
     assert max_threshold==None or max_threshold <=1
     assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
+    def constrain(threshold):
+        if not min_threshold is None and threshold < min_threshold:
+            threshold = min_threshold
+        if not max_threshold is None and threshold > max_threshold:
+            threshold = max_threshold
+        return threshold
     
-    int_data = scipy.ndimage.measurements.histogram(data,0,1,bins)
-    min_bin = (min_threshold and (int(bins * min_threshold)+1)) or 1
-    max_bin = (max_threshold and (int(bins * max_threshold)-1)) or (bins-1)
-    max_score     = 0
-    max_k         = min_bin
-    n_max_k       = 0                          # # of k in a row at max
-    last_was_max  = False                      # True if last k was max 
-    for k in range(min_bin,max_bin):
-        cT = float(np.sum(int_data))        # the count: # of pixels in array
-        c0 = float(np.sum(int_data[:k]))    # the # of pixels in the lower group
-        c1 = float(np.sum(int_data[k:]))    # the # of pixels in the upper group
-        if c0 == 0 or c1 == 0:
-            continue
-        w0 = c0 / cT                           # the probability of a pixel being in the lower group
-        w1 = c1 / cT                           # the probability of a pixel being in the upper group
-        r0 = np.array(range(0,k),dtype=float)    # 0 to k-1 as floats
-        r1 = np.array(range(k,bins),dtype=float) # k to bins-1 as floats
-        u0 = sum(int_data[:k]*r0) / c0              # the average value in the lower group
-        u1 = sum(int_data[k:]*r1) / c1              # the average value in the upper group
-        score = w0*w1*(u1-u0)*(u1-u0)
-        if score > max_score:
-            max_k = k
-            max_score = score
-            n_max_k = 1
-            last_was_max = True
-        elif score == max_score and last_was_max:
-            max_k   += k
-            n_max_k += 1
-        elif last_was_max:
-            last_was_max = False
-    if n_max_k == 0:
-        max_k = min_bin+max_bin-1
-        n_max_k = 2
-    return float(max_k) / float(bins * n_max_k) 
+    data = np.array(data).flatten()
+    if len(data) == 0:
+        return (min_threshold if not min_threshold is None
+                else max_threshold if not max_threshold is None
+                else 0)
+    if bins > len(data):
+        bins = len(data)
+    data.sort()
+    var = running_variance(data)
+    rvar = np.flipud(running_variance(np.flipud(data))) 
+    thresholds = data[1:len(data):len(data)/bins]
+    score_low = (var[0:len(data)-1:len(data)/bins] * 
+                 np.arange(0,len(data)-1,len(data)/bins))
+    score_high = (rvar[1:len(data):len(data)/bins] *
+                  (len(data) - np.arange(1,len(data),len(data)/bins)))
+    scores = score_low + score_high
+    index = np.argwhere(scores == scores.min()).flatten()
+    if len(index)==0:
+        return constrain(thresholds[0])
+    #
+    # Take the average of the thresholds to either side of
+    # the chosen value to get an intermediate in cases where there is
+    # a steep step between the background and foreground
+    index = index[0]
+    if index == 0:
+        index_low = 0
+    else:
+        index_low = index-1
+    if index == len(thresholds)-1:
+        index_high = len(thresholds)-1
+    else:
+        index_high = index+1 
+    return constrain((thresholds[index_low]+thresholds[index_high]) / 2)
 
-def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
+def entropy(data, bins=256):
+    """Compute a threshold using Ray's entropy measurement
+    
+    data           - an array of intensity values between zero and one
+    bins           - we bin the data into this many equally-spaced bins, then pick
+                     the bin index that optimizes the metric
+    """
+    
+    data = np.array(data).flatten()
+    if len(data) == 0:
+        return (min_threshold if not min_threshold is None
+                else max_threshold if not max_threshold is None
+                else 0)
+    if bins > len(data):
+        bins = len(data)
+    data.sort()
+    var = running_variance(data)+1.0/512.0
+    rvar = np.flipud(running_variance(np.flipud(data)))+1.0/512.0 
+    thresholds = data[1:len(data):len(data)/bins]
+    w = np.arange(0,len(data)-1,len(data)/bins)
+    score_low = w * np.log(var[0:len(data)-1:len(data)/bins] *
+                           w * np.sqrt(2*np.pi*np.exp(1)))
+    score_low[np.isnan(score_low)]=0
+    
+    w = len(data) - np.arange(1,len(data),len(data)/bins)
+    score_high = w * np.log(rvar[1:len(data):len(data)/bins] * w *
+                            np.sqrt(2*np.pi*np.exp(1)))
+    score_high[np.isnan(score_high)]=0
+    scores = score_low + score_high
+    index = np.argwhere(scores == scores.min()).flatten()
+    if len(index)==0:
+        return thresholds[0]
+    #
+    # Take the average of the thresholds to either side of
+    # the chosen value to get an intermediate in cases where there is
+    # a steep step between the background and foreground
+    index = index[0]
+    if index == 0:
+        index_low = 0
+    else:
+        index_low = index-1
+    if index == len(thresholds)-1:
+        index_high = len(thresholds)-1
+    else:
+        index_high = index+1 
+    return (thresholds[index_low]+thresholds[index_high]) / 2
+
+def otsu3(data, min_threshold=None, max_threshold=None,bins=128):    
     """Compute a threshold using a 3-category Otsu-like method
     
     data           - an array of intensity values between zero and one
@@ -104,55 +156,128 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     assert max_threshold==None or max_threshold <=1
     assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
     
-    v=data[np.logical_and(np.logical_or(min_threshold==None, 
-                                        data >= min_threshold),
-                          np.logical_or(max_threshold==None,
-                                        data <= max_threshold))]
-    if len(v) == 0:
-        return (0,1)
-    v.sort()
-    cs = v.cumsum()
-    cs2 = (v**2).cumsum()
-    thresholds = v[::len(v)/bins]
-    best = np.inf
-    max_k = [(0,1)]
-    skip = len(v) / bins
-    for tlo in range(1, len(v), skip):
-        for thi in range(tlo + len(v) / bins, len(v), skip):
-            score = (weighted_variance(cs, cs2, 0, tlo) + 
-                     weighted_variance(cs, cs2, tlo, thi) + 
-                     weighted_variance(cs, cs2, thi, len(v) - 1))
-            if score < best:
-                best = score
-                max_k = [(tlo,thi)]
-            elif score == best:
-                max_k.append((tlo,thi))
     #
-    # Find the longest consecutive run of k0 and k1 and take the midpoint
-    # of that run
+    # Compute the running variance and reverse running variance.
+    # 
+    data = np.array(data).flatten()
+    data.sort()
+    var = running_variance(data)
+    rvar = np.flipud(running_variance(np.flipud(data)))
+    bin_len = int(len(data)/bins) 
+    thresholds = data[0:len(data):bin_len]
+    score_low = (var[0:len(data):bin_len] * 
+                 np.arange(0,len(data),bin_len))
+    score_high = (rvar[0:len(data):bin_len] *
+                  (len(data) - np.arange(0,len(data),bin_len)))
     #
-    max_k = np.array(max_k)
-    if max_k.ndim == 1:
-        return (v[max_k[0]],v[max_k[1]])
-    best_k = np.zeros((2,))
-    for j in range(0,2):
-        run_length = 0
-        best_run_length = 0
-        for i in range(max_k.shape[0]):
-            run_length += 1
-            if i == max_k.shape[0]-1 or max_k[i,j]+skip != max_k[i+1,j]:
-                if run_length > best_run_length:
-                    best_k[j] = int((max_k[i,j]+max_k[i-run_length+1,j]) / 2)
-                    best_run_length = run_length
-                run_length = 0
-    return (v[best_k[0]],v[best_k[1]])
+    # Compute the middles
+    #
+    cs = data.cumsum()
+    cs2 = (data**2).cumsum()
+    i,j = np.mgrid[0:score_low.shape[0],0:score_high.shape[0]]*bin_len
+    diff = (j-i).astype(float)
+    w = diff
+    mean = (cs[j] - cs[i]) / diff
+    mean2 = (cs2[j] - cs2[i]) / diff
+    score_middle = w * (mean2 - mean**2)
+    score_middle[i >= j] = np.Inf
+    score = score_low[i*bins/len(data)] + score_middle + score_high[j*bins/len(data)]
+    best_score = np.min(score)
+    best_i_j = np.argwhere(score==best_score)
+    return (thresholds[best_i_j[0,0]],thresholds[best_i_j[0,1]])
+
+def entropy3(data, bins=128):    
+    """Compute a threshold using a 3-category Otsu-like method
+    
+    data           - an array of intensity values between zero and one
+    bins           - we bin the data into this many equally-spaced bins, then pick
+                     the bin index that optimizes the metric
+    
+    We find the maximum weighted variance, breaking the histogram into
+    three pieces.
+    Returns the lower and upper thresholds
+    """
+    #
+    # Compute the running variance and reverse running variance.
+    # 
+    data = np.array(data).flatten()
+    data.sort()
+    var = running_variance(data)+1.0/512.0
+    bin_len = int(len(data)/bins) 
+    thresholds = data[0:len(data):bin_len]
+    score_low = entropy_score(var,bins)
+    
+    rvar = running_variance(np.flipud(data))+1.0/512.0 
+    score_high = np.flipud(entropy_score(rvar,bins))
+    #
+    # Compute the middles
+    #
+    cs = data.cumsum()
+    cs2 = (data**2).cumsum()
+    i,j = np.mgrid[0:score_low.shape[0],0:score_high.shape[0]]*bin_len
+    diff = (j-i).astype(float)
+    w = diff / float(len(data))
+    mean = (cs[j] - cs[i]) / diff
+    mean2 = (cs2[j] - cs2[i]) / diff
+    score_middle = entropy_score(mean2 - mean**2 + 1.0/512.0, bins, w, False)
+    score_middle[(i >= j) | np.isnan(score_middle)] = np.Inf
+    score = score_low[i/bin_len] + score_middle + score_high[j/bin_len]
+    best_score = np.min(score)
+    best_i_j = np.argwhere(score==best_score)
+    return (thresholds[best_i_j[0,0]],thresholds[best_i_j[0,1]])
+
+def entropy_score(var,bins, w=None, decimate=True):
+    '''Compute entropy scores, given a variance and # of bins
+    
+    '''
+    if w is None:
+        n = len(var)
+        w = np.arange(0,n,n/bins) / float(n)
+    if decimate:
+        n = len(var)
+        var = var[0:n:n/bins]
+    score = w * np.log(var * w * np.sqrt(2*np.pi*np.exp(1)))
+    score[np.isnan(score)]=np.Inf
+    return score
+    
 
 def weighted_variance(cs, cs2, lo, hi):
+    if hi == lo:
+        return np.Infinity
     w = (hi - lo) / float(len(cs))
     mean = (cs[hi] - cs[lo]) / (hi - lo)
     mean2 = (cs2[hi] - cs2[lo]) / (hi - lo)
     return w * (mean2 - mean**2)
 
+def otsu_entropy(cs, cs2, lo, hi):
+    if hi == lo:
+        return np.Infinity
+    w = (hi - lo) / float(len(cs))
+    mean = (cs[hi] - cs[lo]) / (hi - lo)
+    mean2 = (cs2[hi] - cs2[lo]) / (hi - lo)
+    return w * (log (w * (mean2 - mean**2) * sqrt(2*np.pi*exp(1))))
+
+def running_variance(x):
+    '''Given a vector x, compute the variance for x[0:i]
+    
+    Thank you http://www.johndcook.com/standard_deviation.html
+    S[i] = S[i-1]+(x[i]-mean[i-1])*(x[i]-mean[i])
+    var(i) = S[i] / (i-1)
+    '''
+    n = len(x)
+    # The mean of x[0:i]
+    m = x.cumsum() / np.arange(1,n+1)
+    # x[i]-mean[i-1] for i=1...
+    x_minus_mprev = x[1:]-m[:-1]
+    # x[i]-mean[i] for i=1...
+    x_minus_m = x[1:]-m[1:]
+    # s for i=1...
+    s = (x_minus_mprev*x_minus_m).cumsum()
+    var = s / np.arange(2,n+1)
+    # Prepend Inf so we have a variance for x[0]
+    return np.hstack(([0],var))
+    
+    
 if __name__=='__main__':
     import PIL.Image
     import wx
@@ -160,14 +285,27 @@ if __name__=='__main__':
     from matplotlib.image import pil_to_array
     import cellprofiler.gui.cpfigure as F
     from cellprofiler.cpmath.filter import stretch
+    from cellprofiler.cpmath.threshold import log_transform, inverse_log_transform
     
     FILE_OPEN = wx.NewId()
+    M_OTSU = wx.NewId()
+    M_ENTROPY = wx.NewId()
+    M_OTSU3 = wx.NewId()
+    M_ENTROPY3 = wx.NewId()
+    M_FAST_OTSU3 = wx.NewId()
+    M_LOG_TRANSFORM = wx.NewId()
     class MyApp(wx.App):
         def OnInit(self):
             wx.InitAllImageHandlers()
             self.frame = F.CPFigureFrame(title="Otsu",subplots=(2,1))
             file_menu = self.frame.MenuBar.Menus[0][0]
             file_menu.Append(FILE_OPEN,"&Open")
+            file_menu.AppendRadioItem(M_OTSU,"Otsu")
+            file_menu.AppendRadioItem(M_ENTROPY,"Entropy")
+            file_menu.AppendRadioItem(M_OTSU3,"Otsu3")
+            file_menu.AppendRadioItem(M_ENTROPY3, "Entropy3")
+            file_menu.AppendRadioItem(M_FAST_OTSU3,"Otsu3 Fast & Messy")
+            file_menu.AppendCheckItem(M_LOG_TRANSFORM, "Log transform")
             wx.EVT_MENU(self.frame,FILE_OPEN,self.on_file_open)
             self.SetTopWindow(self.frame)
             self.frame.Show()
@@ -180,8 +318,26 @@ if __name__=='__main__':
                 if img.ndim == 3:
                     img = img[:,:,0]+img[:,:,1]+img[:,:,2]
                 img = stretch(img.astype(float))
-                self.frame.subplot_imshow_grayscale(0, 0, img)
-                t1, t2 = otsu3(img.flat)
+                lt = self.frame.MenuBar.Menus[0][0].MenuItems[7].IsChecked()
+                if lt:
+                    limg, d = log_transform(img)
+                else:
+                    limg = img
+                self.frame.subplot_imshow_grayscale(0, 0, limg)
+                limg = limg.flatten()
+                menu_items = self.frame.MenuBar.Menus[0][0].MenuItems
+                if menu_items[2].IsChecked():
+                    t1 = t2 = otsu(limg)
+                elif menu_items[3].IsChecked():
+                    t1 = t2 = entropy(limg)
+                elif menu_items[4].IsChecked():
+                    t1, t2 = otsu3slow(limg)
+                elif menu_items[5].IsChecked():
+                    t1, t2 = entropy3(limg)
+                else:
+                    t1, t2 = otsu3(limg)
+                if lt:
+                    t1,t2 = inverse_log_transform(np.array([t1,t2]), d)
                 m1 = img < t1
                 m2 = np.logical_and(img >= t1, img < t2)
                 m3 = img > t2

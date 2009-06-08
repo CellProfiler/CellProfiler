@@ -18,8 +18,9 @@ import numpy as np
 import scipy.ndimage
 import scipy.sparse
 
-from cellprofiler.cpmath.otsu import otsu
+from cellprofiler.cpmath.otsu import otsu, entropy, otsu3, entropy3
 from cellprofiler.cpmath.smooth import smooth_with_noise
+from cellprofiler.cpmath.filter import stretch, unstretch
 
 TM_OTSU                         = "Otsu"
 TM_OTSU_GLOBAL                  = "Otsu Global"
@@ -45,8 +46,6 @@ TM_KAPUR                        = "Kapur"
 TM_KAPUR_GLOBAL                 = "Kapur Global"
 TM_KAPUR_ADAPTIVE               = "Kapur Adaptive"
 TM_KAPUR_PER_OBJECT             = "Kapur PerObject"
-TM_ALL                          = "All"
-TM_SET_INTERACTIVELY            = "Set interactively"
 TM_MANUAL                       = "Manual"
 TM_BINARY_IMAGE                 = "Binary image"
 '''Compute a single threshold for the entire image'''
@@ -64,8 +63,7 @@ TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
                TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
                TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
                TM_KAPUR_GLOBAL, TM_KAPUR_ADAPTIVE, TM_KAPUR_PER_OBJECT,
-               TM_MANUAL, TM_BINARY_IMAGE,
-               TM_ALL, TM_SET_INTERACTIVELY]
+               TM_MANUAL, TM_BINARY_IMAGE]
 
 TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
                      TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 
@@ -75,7 +73,10 @@ def get_threshold(threshold_method, threshold_modifier, image,
                   mask=None, labels = None,
                   threshold_range_min = None, threshold_range_max = None,
                   threshold_correction_factor = 1.0,
-                  object_fraction = 0.2):
+                  object_fraction = 0.2,
+                  two_class_otsu = True,
+                  use_weighted_variance = True,
+                  assign_middle_to_foreground = True):
     """Compute a threshold for an image
     
     threshold_method - one of the TM_ methods above
@@ -109,24 +110,43 @@ def get_threshold(threshold_method, threshold_modifier, image,
     TM_MOG (mixture of Gaussians):
     object_fraction - fraction of image expected to be occupied by objects
         (pixels that are above the threshold)
+    TM_OTSU - We have algorithms derived from Otsu. There is a three-class
+              version of Otsu in addition to the two class. There is also
+              an entropy measure in addition to the weighted variance.
+              two_class_otsu - assume that the distribution represents
+                               two intensity classes if true, three if false.
+              use_weighted_variance - use Otsu's weighted variance if true,
+                                      an entropy measure if false
+              assign_middle_to_foreground - assign pixels in the middle class
+                               in a three-class Otsu to the foreground if true
+                               or the background if false.
     """
     global_threshold = get_global_threshold(threshold_method, image, mask, 
                                             threshold_range_min,
                                             threshold_range_max,
-                                            object_fraction)
+                                            object_fraction,
+                                            two_class_otsu,
+                                            use_weighted_variance,
+                                            assign_middle_to_foreground)
     if threshold_modifier == TM_GLOBAL:
         local_threshold=global_threshold
     elif threshold_modifier == TM_ADAPTIVE:
         local_threshold = get_adaptive_threshold(threshold_method, 
                                                  image, global_threshold,
-                                                 mask, object_fraction)
+                                                 mask, object_fraction,
+                                                 two_class_otsu,
+                                                 use_weighted_variance,
+                                                 assign_middle_to_foreground)
     elif threshold_modifier == TM_PER_OBJECT:
         local_threshold = get_per_object_threshold(threshold_method, image,
                                                    global_threshold,
                                                    mask, labels,
                                                    threshold_range_min,
                                                    threshold_range_max,
-                                                   object_fraction)
+                                                   object_fraction,
+                                                   two_class_otsu,
+                                                   use_weighted_variance,
+                                                   assign_middle_to_foreground)
     else:
         raise NotImplementedError("%s thresholding is not implemented"%(threshold_modifier))
     if isinstance(local_threshold, np.ndarray):
@@ -146,11 +166,17 @@ def get_threshold(threshold_method, threshold_modifier, image,
 
 def get_global_threshold(threshold_method, image, mask = None,
                          threshold_range_min = None, threshold_range_max = None,
-                         object_fraction = 0.2):
+                         object_fraction = 0.2,
+                         two_class_otsu = True,
+                         use_weighted_variance = True,
+                         assign_middle_to_foreground = True):
     """Compute a single threshold over the whole image"""
     if threshold_method == TM_OTSU:
         return get_otsu_threshold(image, mask, threshold_range_min,
-                                  threshold_range_max)
+                                  threshold_range_max,
+                                  two_class_otsu,
+                                  use_weighted_variance,
+                                  assign_middle_to_foreground)
     elif threshold_method == TM_MOG:
         return get_mog_threshold(image, mask, object_fraction)
     elif threshold_method == TM_BACKGROUND:
@@ -166,7 +192,10 @@ def get_global_threshold(threshold_method, image, mask = None,
 
 def get_adaptive_threshold(threshold_method, image, threshold,
                            mask = None,
-                           object_fraction = 0.2):
+                           object_fraction = 0.2,
+                           two_class_otsu = True,
+                           use_weighted_variance = True,
+                           assign_middle_to_foreground = True):
     
     """Given a global threshold, compute a threshold per pixel
     
@@ -210,7 +239,10 @@ def get_adaptive_threshold(threshold_method, image, threshold,
             block_mask = None if mask is None else mask[i0:i1,j0:j1]
             block_threshold = get_global_threshold(threshold_method, 
                                                    block, mask = block_mask,
-                                                   object_fraction = object_fraction)
+                                                   object_fraction = object_fraction,
+                                                   two_class_otsu = two_class_otsu,
+                                                   use_weighted_variance = use_weighted_variance,
+                                                   assign_middle_to_foreground = assign_middle_to_foreground)
             block_threshold = max(block_threshold, min_threshold)
             block_threshold = min(block_threshold, max_threshold)
             thresh_out[i0:i1,j0:j1] = block_threshold
@@ -219,7 +251,10 @@ def get_adaptive_threshold(threshold_method, image, threshold,
 def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
                              threshold_range_min = None,
                              threshold_range_max = None,
-                             object_fraction = 0.2):
+                             object_fraction = 0.2,
+                             two_class_otsu = True,
+                             use_weighted_variance = True,
+                             assign_middle_to_foreground = True):
     """Return a matrix giving threshold per pixel calculated per-object
     
     image - image to be thresholded
@@ -242,21 +277,42 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
                                                     mask = label_mask,
                                                     threshold_range_min = threshold_range_min,
                                                     threshold_range_max = threshold_range_max,
-                                                    object_fraction = object_fraction)
+                                                    object_fraction = object_fraction,
+                                                   two_class_otsu = two_class_otsu,
+                                                   use_weighted_variance = use_weighted_variance,
+                                                   assign_middle_to_foreground = assign_middle_to_foreground)
         local_threshold[extent][label_mask] = per_object_threshold
     return local_threshold
 
 def get_otsu_threshold(image, mask = None, threshold_range_min = None,
-                       threshold_range_max = None):
+                       threshold_range_max = None,
+                       two_class_otsu = True,
+                       use_weighted_variance = True,
+                       assign_middle_to_foreground = True):
     if not mask is None:
         image = image[mask]
         if len(image) == 0:
             return 1
     else:
         image = np.array(image.flat)
-    return otsu(image,
-                threshold_range_min,
-                threshold_range_max)
+    image, d = log_transform(image)
+    if two_class_otsu:
+        if use_weighted_variance:
+            threshold = otsu(image)
+        else:
+            threshold = entropy(image)
+    else:
+        if use_weighted_variance:
+            t1, t2 = otsu3(image)
+        else:
+            t1,t2 = entropy3(image)
+        threshold = t1 if assign_middle_to_foreground else t2  
+    threshold = inverse_log_transform(threshold, d)
+    if not threshold_range_min is None:
+        threshold = max(threshold, threshold_range_min)
+    if not threshold_range_max is None:
+        threshold = min(threshold, threshold_range_max)
+    return threshold
         
 def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     """Compute a background using a mixture of gaussians
@@ -579,3 +635,33 @@ def sum_of_entropies(image, mask, threshold):
     # Compute sum of entropies
     #
     return np.sum(hfg * np.log2(hfg)) + np.sum(hbg*np.log2(hbg))
+
+def log_transform(image):
+    '''Renormalize image intensities to log space
+    
+    Returns a tuple of transformed image and a dictionary to be passed into
+    inverse_log_transform. The minimum and maximum from the dictionary
+    can be applied to an image by the inverse_log_transform to 
+    convert it back to its former intensity values.
+    '''
+    orig_min, orig_max = scipy.ndimage.extrema(image)[:2]
+    #
+    # We add 1/2 bit noise to an 8 bit image to give the log a bottom
+    #
+    limage = image.copy()
+    noise_min = orig_min + (orig_max-orig_min)/256.0+np.finfo(image.dtype).eps
+    limage[limage < noise_min] = noise_min
+    d = { "noise_min":noise_min}
+    limage = np.log(limage)
+    log_min, log_max = scipy.ndimage.extrema(limage)[:2]
+    d["log_min"] = log_min
+    d["log_max"] = log_max
+    return stretch(limage), d
+
+def inverse_log_transform(image, d):
+    '''Convert the values in image back to the scale prior to log_transform
+    
+    image - an image or value or values similarly scaled to image
+    d - object returned by log_transform
+    '''
+    return np.exp(unstretch(image, d["log_min"], d["log_max"]))

@@ -26,7 +26,8 @@ class Workspace(object):
                  measurements,
                  image_set_list,
                  frame=None,
-                 create_new_window = False):
+                 create_new_window = False,
+                 outlines = {}):
         """Workspace constructor
         
         pipeline          - the pipeline of modules being run
@@ -45,7 +46,7 @@ class Workspace(object):
         self.__measurements = measurements
         self.__image_set_list = image_set_list
         self.__frame = frame
-        self.__outlines = {}
+        self.__outlines = outlines
         self.__windows_used = []
         self.__create_new_window = create_new_window
     

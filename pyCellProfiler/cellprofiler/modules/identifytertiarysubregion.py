@@ -61,7 +61,7 @@ See also Identify Primary and Identify Secondary modules.
         self.primary_objects_name = cps.ObjectNameSubscriber("What did you call the smaller identified objects?","None")
         self.subregion_objects_name = cps.ObjectNameProvider("What do you want to call the new subregions?","Cytoplasm")
         self.use_outlines = cps.Binary("Do you want to save the outlines of the identified objects?",False)
-        self.outlines_name = cps.NameProvider("What do you want to call the outlines of the identified objects?","outlinegroup","CytoplasmOutlines") 
+        self.outlines_name = cps.OutlineNameProvider("What do you want to call the outlines of the identified objects?","CytoplasmOutlines") 
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

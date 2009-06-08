@@ -237,6 +237,7 @@ class PipelineController:
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
+        self.__debug_outlines = {}
         if self.__debug_image_set_list == None:
             self.stop_debugging()
             return False
@@ -250,6 +251,7 @@ class PipelineController:
         self.__debug_image_set_list = None
         self.__debug_measurements = None
         self.__debug_object_set = None
+        self.__debug_outlines = None
     
     def on_debug_step(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()
@@ -271,7 +273,8 @@ class PipelineController:
                                       self.__debug_object_set,
                                       self.__debug_measurements,
                                       self.__debug_image_set_list,
-                                      self.__frame)
+                                      self.__frame,
+                                      outlines = self.__debug_outlines)
             module.run(workspace)
             workspace.refresh()
             if module.module_num < len(self.__pipeline.modules()):
@@ -312,6 +315,7 @@ class PipelineController:
         self.__debug_measurements.next_image_set()
         self.__pipeline_list_view.select_one_module(1)
         self.__movie_viewer.slider.value = 0
+        self.__debug_outlines = {}
     
     def on_idle(self,event):
         if self.__running_pipeline and not self.__inside_running_pipeline:

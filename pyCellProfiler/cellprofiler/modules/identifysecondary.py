@@ -203,7 +203,7 @@ See also Identify primary modules.
         self.distance_to_dilate = cps.Integer("Enter the number of pixels by which to expand the primary objects [Positive integer]",10,minval=1)
         self.regularization_factor = cps.Float("Enter the regularization factor (0 to infinity). Larger=distance,0=intensity)",0.05,minval=0)
         self.use_outlines = cps.Binary("Do you want to save outlines of the images?",False)
-        self.outlines_name = cps.NameProvider("What do you want to call the outlines?","outlinegroup","SecondaryOutlines")
+        self.outlines_name = cps.OutlineNameProvider("What do you want to call the outlines?","SecondaryOutlines")
         self.two_class_otsu = cps.Choice('Does your image have two classes of intensity value or three?',
                                          [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS])
         self.use_weighted_variance = cps.Choice('Do you want to minimize the weighted variance or the entropy?',
@@ -225,11 +225,6 @@ See also Identify primary modules.
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
                  self.method]
-        if self.threshold_algorithm == cpthresh.TM_OTSU:
-            result+= [self.two_class_otsu, self.use_weighted_variance]
-            if self.two_class_otsu == cpmi.O_THREE_CLASS:
-                result.append(self.assign_middle_to_foreground)
-            
         if self.method != M_DISTANCE_N:
             result.append(self.threshold_method)
             if self.threshold_method == cpthresh.TM_MANUAL:
@@ -237,6 +232,11 @@ See also Identify primary modules.
             elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
                 result.append(self.binary_image)
             else:
+                if self.threshold_algorithm == cpthresh.TM_OTSU:
+                    result+= [self.two_class_otsu, self.use_weighted_variance]
+                    if self.two_class_otsu == cpmi.O_THREE_CLASS:
+                        result.append(self.assign_middle_to_foreground)
+            
                 result.extend([self.threshold_correction_factor,
                                self.threshold_range, self.object_fraction])
         if self.method in (M_DISTANCE_B,M_DISTANCE_N):

@@ -554,6 +554,12 @@ class ObjectNameProvider(NameProvider):
     def __init__(self,text,value=DO_NOT_USE):
         super(ObjectNameProvider,self).__init__(text,'objectgroup',value)
 
+class OutlineNameProvider(NameProvider):
+    '''A setting that provides an object outline name
+    '''
+    def __init__(self, text, value=DO_NOT_USE):
+        super(OutlineNameProvider,self).__init__(text,'outlinegroup')
+
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
     """
@@ -644,6 +650,13 @@ class ObjectNameSubscriber(NameSubscriber):
                  blank_text = LEAVE_BLANK):
         super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value,
                                                   can_be_blank, blank_text)
+
+class OutlineNameSubscriber(NameSubscriber):
+    '''A setting that provides a list of available object outline names
+    '''
+    def __init__(self, text, value="None", can_be_blank = False, blank_text = LEAVE_BLANK):
+        super(OutlineNameSubscriber, self).__init__(text,'outlinegroup', value,
+                                                    can_be_blank, blank_text)
 
 class FigureSubscriber(Setting):
     """A setting that provides a figure indicator

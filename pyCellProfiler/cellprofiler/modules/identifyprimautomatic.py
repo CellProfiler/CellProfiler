@@ -453,7 +453,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.maxima_suppression_size = cps.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
         self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
         self.should_save_outlines = cps.Binary('Do you want to save outlines?',False)
-        self.save_outlines = cps.NameProvider('What do you want to call the outlines of the identified objects?', 'outlinegroup', cellprofiler.settings.DO_NOT_USE)
+        self.save_outlines = cps.OutlineNameProvider('What do you want to call the outlines of the identified objects?')
         self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
         self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
         self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
@@ -504,7 +504,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             #
             # Remove the laplace values setting
             #
-            del new_setting_values[16]
+            del new_setting_values[15]
             # Automatic smoothing checkbox - replace "Automatic" with
             # a number
             if setting_values[SMOOTHING_SIZE_VAR] == cps.AUTOMATIC:
@@ -583,7 +583,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             vv += [self.binary_image]
         if self.threshold_algorithm == cpthresh.TM_OTSU:
             vv += [self.two_class_otsu, self.use_weighted_variance]
-            if self.two_class_otsu == O_THREE_CLASS:
+            if self.two_class_otsu == cpmi.O_THREE_CLASS:
                 vv.append(self.assign_middle_to_foreground)
         if self.threshold_algorithm == cpthresh.TM_MOG:
             vv += [self.object_fraction]
@@ -735,7 +735,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         cpmi.add_object_location_measurements(workspace.measurements, 
                                               self.object_name.value,
                                               labeled_image)
-        if self.save_outlines != cps.DO_NOT_USE:
+        if self.should_save_outlines.value:
             workspace.add_outline(self.save_outlines.value, outline_image)
     
     def smooth_image(self, image, mask,sigma):

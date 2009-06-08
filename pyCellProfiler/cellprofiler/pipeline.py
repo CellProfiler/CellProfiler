@@ -475,6 +475,7 @@ class Pipeline:
             slot_number = 0
             object_set = cellprofiler.objects.ObjectSet()
             image_set = image_set_list.get_image_set(measurements.image_set_number)
+            outlines = {}
             for module in self.modules():
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
@@ -489,7 +490,8 @@ class Pipeline:
                                               object_set,
                                               measurements,
                                               image_set_list,
-                                              frame)
+                                              frame,
+                                              outlines = outlines)
                     t0 = datetime.datetime.now()
                     module.run(workspace)
                     t1 = datetime.datetime.now()

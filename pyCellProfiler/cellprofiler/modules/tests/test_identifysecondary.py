@@ -17,6 +17,7 @@ import base64
 import numpy as np
 import unittest
 import StringIO
+import zlib
 
 import cellprofiler.modules.identifysecondary as cpmi2
 import cellprofiler.modules.identify as cpmi
@@ -47,6 +48,44 @@ class TestIdentifySecondary(unittest.TestCase):
         self.assertEqual(module.distance_to_dilate.value, 10)
         self.assertEqual(module.regularization_factor.value, 0.05)
     
+    def test_01_02_load_v2(self):
+        data = ('eJztWt1u2zYUlh0nSFZ0a9OLDugNL5suNiQ3xtJgSO3G/fEWu0bjtS'
+                'iKbmMk2uZAk4ZEpXGLAnuUPUYv+zi97CNUdCRLZpVIkeM/QAQI+Rzx'
+                'O38kzxFl1Sutw8ojUCqooF5p5duYINAkkLeZ2dsDlG+DAxNBjgzA6B'
+                '6oMwp+tylQd4FW3Ctpe6UdUFTVB0qylqnVf3Qun+8pyppzXXd61r21'
+                '6tKZQBf0EeIc0461quSUn13+Z6e/hCaGxwS9hMRGlq/C49dom7UG/d'
+                'GtOjNsghqwFxzstIbdO0am9bztAd3bTXyKyBF+jyQXvGEv0Am2MKMu'
+                '3pUvc0d6GZf0ijh8ueXHISPFYcXpdwJ8Mf6Z4o/PhcTtZmD8DZfG1M'
+                'An2LAhAbgHOyMrhDw1Qt7KmLwVpdqoDHG7Ebg1yY61YZx1gvCZ3nIE'
+                '/oaEF72FTnn+8SnUOehBrnevwo4o/KqEF/QBIsSKGb/MGD6j3FeS69'
+                'XU7R1ViRe/axJe0E2T9WEHcmdxDvlJ7agdHv5Zj+m/vH5eO6tvknUX'
+                'hcuO4bJKg8Wz8zxckjg/55YNnhJ2DMkozlH79rYkR9BV1IY24aAmNi'
+                '2oYhPpnJmDmcZdK6jf4dYknNc83IZ7nWX8wvKeWlCHbVtzfwTsmmf8'
+                'wnC5MVxO2K5NYues4yXvH02Nl1/WlXE7BH3QhZQiUpxm3EJwpUnyUj'
+                'kCtyH5Kega5YhamA8CcY6S84MkR9BVBijjwLaQL+eydUmLqT+uH5eN'
+                'o5pwnzQYRZOsz6T6/ovA/SHFSdB/3X3Y/E08aKP9wi9bfwvqlfMo8Y'
+                'K9239TyTffbnmcA0bsHt1/o+YfvP2gbRc/ng0+wg5yyNyKHWd5nn+N'
+                'iTuvHnYjcLuS34IWtr9G0HQd2vm4lRcs52DBuy6v6PKqcOBzJsl/5Q'
+                'hcWN1pvWNAJ9Cy3Cfkada9uPs4SR5/hXCnK45vJ+KgQnXv/DKJP9Oa'
+                'h7A4PGEm6pjMpsb87L4Kfamd4Xl9EeyMU0cWwc4455lFsHN512dpLn'
+                'aWI+y8roznRUG3uiZCgQo1D7sXsR5Nuy5fZT36f/Ny7/tm6efw5aBw'
+                'tB9fTthzFDv+F+ncFzTr9RbQDzA1UH+K8uaZ3xYZV1auZv0ti78pLs'
+                'WluMlx5QAu7v9Cft44S8/TrDebkn5BM5sTTNF3BWKZ4r5o85zWh+XC'
+                'pfsmxaW4NF+muBSX4pYfd5rxcfJ7Kvk9qhj/T0BPWH66p4znJ0HriJ'
+                'C+ycT3h2ahN/xIzioQBo2zr9QKh87PWuCDNaGnH6GnLOkpn6cHG4hy'
+                '3B70TUebzVkPcqwXai636XArHjfp/54X6rWQzqgBzcFI55HHkedtI0'
+                'RfMP5Zh/rpzs0L51ueZ3/+vz5Moi+7kh3qC37fcS0ClwvYJJrAf1Iu'
+                't87uXjDe83FW478B0PjACw==')
+        p = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        p.load(fd)
+        self.assertTrue(len(p.modules())==3)
+        module = p.modules()[2]
+        self.assertEqual(module.threshold_method.value, "Otsu Global")
+        self.assertEqual(module.two_class_otsu.value, cpmi.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance.value,
+                         cpmi.O_WEIGHTED_VARIANCE)
+        
     def test_02_01_zeros_propagation(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()

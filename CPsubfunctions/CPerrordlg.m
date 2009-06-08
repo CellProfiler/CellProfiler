@@ -40,7 +40,7 @@ if isfield(errorinfo, 'stack'),
     end
 end
 
-ErrorCells = {ErrorString};
+if ~iscell(ErrorString), ErrorCells = {ErrorString}; else ErrorCells = ErrorString; end
 
 if size(stack, 1) > 0,
     ErrorCells{end+1} = '';

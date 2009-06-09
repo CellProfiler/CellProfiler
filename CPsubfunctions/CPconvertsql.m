@@ -158,13 +158,15 @@ if (FirstSet == 1)
 
         fprintf(fmain, ');\n\n');
 
-        fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
-        for i = per_object_names
-            fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
+        if ~isempty(per_object_names),
+            fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
+            for i = per_object_names
+                fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
+            end
+
+            fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
         end
-
-        fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
-
+        
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
             msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-image and per-object .CSV files that the cluster job will create.';
             if isfield(handles.Current,'BatchInfo')
@@ -174,13 +176,17 @@ if (FirstSet == 1)
             end
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',OutfilePrefix,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
-            fprintf(fmain, 'SHOW WARNINGS;\n');
+            if ~isempty(per_object_names)
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s1_1_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',OutfilePrefix,TablePrefix);
+                fprintf(fmain, 'SHOW WARNINGS;\n');
+            end
         else
             fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_image.CSV'' REPLACE INTO TABLE %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''';\n',basename,TablePrefix);
             fprintf(fmain, 'SHOW WARNINGS;\n');
-            fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
-            fprintf(fmain, 'SHOW WARNINGS;\n');
+            if ~isempty(per_object_names)
+                fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
+                fprintf(fmain, 'SHOW WARNINGS;\n');
+            end
         end
         fclose(fmain);
     elseif strcmp(SQLchoice,'Oracle')
@@ -237,10 +243,12 @@ if (FirstSet == 1)
         fprintf(fsetup, ');\n');
         p = p+1;
         PrimKeyPosition = p;
-        fprintf(fsetup, 'CREATE TABLE %sPer_Object (col1 NUMBER, %s NUMBER',TablePrefix,['col',num2str(p)]);
-        for i = per_object_names
-            p=p+1;
-            fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+        if ~isempty(per_object_names)
+            fprintf(fsetup, 'CREATE TABLE %sPer_Object (col1 NUMBER, %s NUMBER',TablePrefix,['col',num2str(p)]);
+            for i = per_object_names
+                p = p+1;
+                fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
+            end
         end
 
         fprintf(fsetup, ');\n');
@@ -252,7 +260,9 @@ if (FirstSet == 1)
 
         ffinish = fopen(fullfile(OutDir, [DBname,'_FINISH.SQL']), 'W');
         fprintf(ffinish, 'ALTER TABLE %sPer_Image ADD PRIMARY KEY (col1);\n',TablePrefix);
-        fprintf(ffinish, 'ALTER TABLE %sPer_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
+        if ~isempty(per_object_names)
+            fprintf(ffinish, 'ALTER TABLE %sPer_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
+        end
         fclose(ffinish);
 
         %%%%%%%%%%%%%%%%%%%
@@ -303,13 +313,15 @@ if (FirstSet == 1)
         end
 
         % Per_Object table's colnames
-        fprintf(fcol, '%s', ['col', num2str(p)]);
-        fprintf(fcol, ',%s\n','ObjectNumber');
-
-        for n=per_object_names
-            p=p+1;
+        if ~isempty(per_object_names)
             fprintf(fcol, '%s', ['col', num2str(p)]);
-            fprintf(fcol, ',%s\n', n{1} );
+            fprintf(fcol, ',%s\n','ObjectNumber');
+
+            for n = per_object_names
+                p=p+1;
+                fprintf(fcol, '%s', ['col', num2str(p)]);
+                fprintf(fcol, ',%s\n', n{1} );
+            end
         end
         fclose(fcol);
 
@@ -353,26 +365,28 @@ if (FirstSet == 1)
         %%% OBJECT LOADER %%%
         %%%%%%%%%%%%%%%%%%%%%
 
-        fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
-        fprintf(fobjectloader, 'LOAD DATA\n');
-        if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-object .CSV files that the cluster job will create.';
-            if isfield(handles.Current,'BatchInfo')
-                warning(msg);
+        if ~isempty(per_object_names)
+            fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
+            fprintf(fobjectloader, 'LOAD DATA\n');
+            if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
+                msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-object .CSV files that the cluster job will create.';
+                if isfield(handles.Current,'BatchInfo')
+                    warning(msg);
+                else
+                    CPwarndlg(msg);
+                end
+                fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
             else
-                CPwarndlg(msg);
+                fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
             end
-            fprintf(fobjectloader, 'INFILE %s1_1_object.CSV\n', OutfilePrefix);
-        else
-            fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
-        end
 
-        fprintf(fobjectloader, 'INTO TABLE  %sPer_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
-        for i = PrimKeyPosition:FinalColumnPosition
-            fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
+            fprintf(fobjectloader, 'INTO TABLE  %sPer_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
+            for i = PrimKeyPosition:FinalColumnPosition
+                fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
+            end
+            fprintf(fobjectloader, ')');
+            fclose(fobjectloader);
         end
-        fprintf(fobjectloader, ')');
-        fclose(fobjectloader);
     end
 end
 
@@ -382,9 +396,11 @@ end
 if fimage == -1,
     error(msg);
 end
-[fobject,msg]= fopen(fullfile(OutDir, [basename '_object.CSV']), 'W');
-if fobject == -1,
-    error(msg);
+if ~isempty(per_object_names)
+    [fobject,msg]= fopen(fullfile(OutDir, [basename '_object.CSV']), 'W');
+    if fobject == -1,
+        error(msg);
+    end
 end
 
 perobjectvals = [];
@@ -568,16 +584,20 @@ if ~isempty(perobjectvals) && size(perobjectvals,2) < length(per_object_names) +
     perobjectvals(end,length(per_object_names)+2) = 0;
 end
 
-formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];
-%%% THIS LINE WRITES ENTIRE OBJECT VALS FILE
-%%% if vals{1} is empty skip writting into object file
-if ~iscell(vals) || (iscell(vals) && ~isempty(vals{1}))
-    perobjectvals(~ isfinite(perobjectvals)) = 0;
-    fprintf(fobject, formatstr, perobjectvals');
+if ~isempty(per_object_names)
+    formatstr = ['%g' repmat(',%g',1,size(perobjectvals, 2)-1) '\n'];
+    %%% THIS LINE WRITES ENTIRE OBJECT VALS FILE
+    %%% if vals{1} is empty skip writting into object file
+    if ~iscell(vals) || (iscell(vals) && ~isempty(vals{1}))
+        perobjectvals(~ isfinite(perobjectvals)) = 0;
+        fprintf(fobject, formatstr, perobjectvals');
+    end
 end
 
 fclose(fimage);
-fclose(fobject);
+if ~isempty(per_object_names)
+    fclose(fobject);
+end
 
 function sc=cleanup(s)
 sc = s;

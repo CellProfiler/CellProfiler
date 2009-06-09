@@ -73,9 +73,8 @@ handles.Measurements = struct;
 handles.Preferences = struct;
 handles.Current.NumberOfModules = 0;
 
-global closeFigures openFigures;
-closeFigures = [];
-openFigures = [];
+handles.closeFigures = [];
+handles.openFigures = [];
 
 %%% Determines the startup directory.
 handles.Current.StartupDirectory = pwd;
@@ -1743,18 +1742,16 @@ CPtextpipe(handles,0,0,0);
 %%% when it is over.
 
 function CloseFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-global closeFigures;
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 for i=1:length(ModuleHighlighted),
-    closeFigures(length(closeFigures)+1) = ModuleHighlighted(i);
+    handles.closeFigures(length(handles.closeFigures)+1) = ModuleHighlighted(i);
 end
 guidata(hObject, handles);
 
 function OpenFigureButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-global openFigures;
 ModuleHighlighted = get(handles.ModulePipelineListBox,'Value');
 for i=1:length(ModuleHighlighted),
-    openFigures(length(openFigures)+1) = ModuleHighlighted(i);
+    handles.openFigures(length(handles.openFigures)+1) = ModuleHighlighted(i);
 end
 guidata(hObject, handles);
 
@@ -4098,7 +4095,7 @@ guidata(gcbo, handles);
 
 % --- Executes on button press in AnalyzeImagesButton.
 function AnalyzeImagesButton_Callback(hObject, eventdata, handles) %#ok We want to ignore MLint error checking for this line.
-global closeFigures openFigures;
+
 %%% Checks whether any modules are loaded.
 total = 0; %%% Initial value.
 for i = 1:handles.Current.NumberOfModules;
@@ -4605,8 +4602,8 @@ else
                         break  %% break out of SlotNumber loop
                     end
 
-                    openFig = openFigures;
-                    openFigures = [];
+                    openFig = handles.openFigures;
+                    handles.openFigures = [];
                     for i=1:length(openFig),
                         ModuleNumber = openFig(i);
                         try
@@ -4620,8 +4617,8 @@ else
                         end
                     end
 
-                    closeFig = closeFigures;
-                    closeFigures = [];
+                    closeFig = handles.closeFigures;
+                    handles.closeFigures = [];
                     for i=1:length(closeFig),
                         ModuleNumber = closeFig(i);
                         try

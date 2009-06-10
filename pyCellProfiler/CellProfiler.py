@@ -9,6 +9,8 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+__version__ = "$Revision$"
+
 import sys
 import os
 root = os.path.split(__file__)[0]

@@ -1,8 +1,21 @@
-"""Haralick texture features."""
+"""Haralick texture features.
 
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Developed by the Broad Institute
+Copyright 2003-2009
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+__version__="$Revision: 1 $"
 import numpy as np
 import scipy.ndimage as scind
 from scipy.linalg.basic import toeplitz
+
+from cpmorphology import fixup_scipy_ndimage_result as fix
 
 def minimum(input, labels, index):
     r = scind.minimum(input, labels, index)
@@ -58,11 +71,17 @@ def cooccurrence(quantized_image, labels, scale=3):
     image_a = quantized_image[:, :-scale]
     image_b = quantized_image[:, scale:]
     labels_ab = labels[:, :-scale]
-    equilabel = labels[:, :-scale] == labels[:, scale:]
-    P, bins_P = np.histogramdd([labels_ab[equilabel], image_a[equilabel],
+    equilabel = ((labels[:, :-scale] == labels[:, scale:]) & 
+                 (labels[:,:-scale] > 0))
+        
+    P, bins_P = np.histogramdd([labels_ab[equilabel]-1, image_a[equilabel],
                                 image_b[equilabel]],
                                (nobjects, nlevels, nlevels))
-    return np.array(P, dtype='int32')
+    pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
+                                np.arange(nobjects)+1))
+    pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
+                          (1,nlevels,nlevels))
+    return P.astype(float) / pixel_count.astype(float)
 
 class Haralick(object):
     """
@@ -87,19 +106,21 @@ class Haralick(object):
         normalized = normalized_per_object(image, labels)
         quantized = quantize(normalized, nlevels)
         self.P = cooccurrence(quantized, labels, scale)
-        self.P = np.array(self.P, dtype=float) / self.P.sum()
 
         self.nobjects = labels.max()
         px = self.P.sum(2) # nobjects x nlevels
         py = self.P.sum(1) # nobjects x nlevels
+        self.nlevels = nlevels
         self.levels = np.arange(nlevels)
         self.rlevels = np.tile(self.levels, (self.nobjects, 1))
         self.levels2 = np.arange(2 * nlevels - 1)
         self.rlevels2 = np.tile(self.levels2, (self.nobjects, 1))
         self.mux = ((self.rlevels + 1) * px).sum(1)
+        mux = np.tile(self.mux, (nlevels,1)).transpose()
         self.muy = ((self.rlevels + 1) * py).sum(1)
-        self.sigmax = np.sqrt(((self.rlevels + 1 - self.mux) ** 2 * px).sum(1))
-        self.sigmay = np.sqrt(((self.rlevels + 1 - self.muy) ** 2 * py).sum(1))
+        muy = np.tile(self.muy, (nlevels,1)).transpose()
+        self.sigmax = np.sqrt(((self.rlevels + 1 - mux) ** 2 * px).sum(1))
+        self.sigmay = np.sqrt(((self.rlevels + 1 - muy) ** 2 * py).sum(1))
         eps = np.finfo(float).eps
         self.hx = -(px * np.log(px + eps)).sum(1)
         self.hy = -(py * np.log(py + eps)).sum(1)
@@ -134,10 +155,8 @@ class Haralick(object):
         repeated = np.tile(multiplied[np.newaxis], (self.nobjects, 1, 1))
         summed = (repeated * self.P).sum(2).sum(1)
         h3 = (summed - self.mux * self.muy) / (self.sigmax * self.sigmay)
-        if np.isinf(h3):
-            return 0
-        else:
-            return h3
+        h3[np.isinf(h3)] = 0
+        return h3
 
     def H4(self):
         "Sum of squares: variation."
@@ -157,7 +176,8 @@ class Haralick(object):
 
     def H7(self):
         "Sum variance (error in Haralick's original paper here)."
-        return (((self.rlevels2 + 2) - self.H6()) ** 2 * self.p_xplusy).sum(1)
+        h6 = np.tile(self.H6(), (self.rlevels2.shape[1], 1)).transpose()
+        return (((self.rlevels2 + 2) - h6) ** 2 * self.p_xplusy).sum(1)
 
     def H8(self):
         "Sum entropy."
@@ -172,7 +192,8 @@ class Haralick(object):
     def H10(self):
         "Difference variance."
         c = (self.rlevels * self.p_xminusy).sum(1)
-        e = self.rlevels - np.tile(c[np.newaxis], (self.nobjects,1))
+        c1 = np.tile(c, (self.nlevels,1)).transpose()
+        e = self.rlevels - c1
         return (self.p_xminusy * e ** 2).sum(1)
 
     def H11(self):

@@ -69,6 +69,18 @@ function handles = ExportToDatabase(handles)
 % Per_Object table names. Be careful when choosing the table prefix, since
 % you may unintentionally overwrite existing tables.
 %
+%
+% Do you want to create a Per_Well table?:
+% To create a Per_Well table, you need to have a FileNameMetadata module in
+% your pipeline which extracts the Plate (if applicable) and Well metadata
+% from the filename and/or pathname.  You then need to specify here in
+% ExportToDatabase what these measurements were called (though they are by
+% default Plate & Well, which corresponds to
+% the default in FilenNameMetadata).  If instead you had labeled your
+% 'plate' as <Barcode> in FileNameMetadata, here you would select 'Other'
+% and specify Barcode in response to 'Which measurement
+% uniquely specifies your Plate?'
+%
 % SQL File Prefix: All the CSV files will start with this prefix.
 %
 % Create a CellProfiler Analyst properties file: Generate a template
@@ -292,15 +304,33 @@ ObjectsToBeExported{6} = char(handles.Settings.VariableValues{CurrentModuleNum,1
 ObjectsToBeExported{7} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
 %inputtypeVAR15 = popupmenu
 
-%textVAR16 = Do you want to create a CellProfiler Analyst properties file?
-%choiceVAR16 = Yes - Both V1.0 and V2.0 format
-%choiceVAR16 = Yes - V1.0 format
-%choiceVAR16 = Yes - V2.0 format
+%textVAR16 = Do you want to create a Per_Well table? (NOTE: You must use a FileNameMetaData module to create a Per_Well table; See Help for details.)
 %choiceVAR16 = No
-WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+%choiceVAR16 = Yes
+WritePerWell = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 %inputtypeVAR16 = popupmenu
 
-%%%VariableRevisionNumber = 9
+%textVAR17 = Which measurement uniquely specifies your Plate? (Select 'Do not use' if you only have one plate)
+%choiceVAR17 = Plate
+%choiceVAR17 = Do not use
+PlateMeasurement = char(handles.Settings.VariableValues{CurrentModuleNum,17});
+%inputtypeVAR17 = popupmenu custom
+
+%textVAR18 = Which measurement uniquely specifies your Well? 
+%choiceVAR18 = Well
+%choiceVAR18 = Do not use
+WellMeasurement = char(handles.Settings.VariableValues{CurrentModuleNum,18});
+%inputtypeVAR18 = popupmenu custom
+
+%textVAR19 = Do you want to create a CellProfiler Analyst properties file?
+%choiceVAR19 = Yes - Both V1.0 and V2.0 format
+%choiceVAR19 = Yes - V1.0 format
+%choiceVAR19 = Yes - V2.0 format
+%choiceVAR19 = No
+WriteProperties = char(handles.Settings.VariableValues{CurrentModuleNum,19});
+%inputtypeVAR19 = popupmenu
+
+%%%VariableRevisionNumber = 10
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -346,6 +376,18 @@ else
     LastSet = handles.Current.NumberOfImageSets;
 end
 
+if strcmp(WritePerWell,'Yes') && ~strcmp(PlateMeasurement,'Do not use'),
+    if ~isfield(handles.Measurements.Image,['Metadata_',(PlateMeasurement)]);
+        error(['Image processing was canceled in the ',ModuleName, ' module because you requested to create a Per Well table,but the plate name you specified was invalid. You must use a FileNameMetadata module to create this measurement.']);
+    end
+    if ~isfield(handles.Measurements.Image,['Metadata_',(WellMeasurement)]);
+        error(['Image processing was canceled in the ',ModuleName, ' module because you requested to create a Per Well table,but the well name you specified was invalid. You must use a FileNameMetadata module to create this measurement.']);
+    end
+elseif strcmp(WritePerWell,'Yes') && strcmp(PlateMeasurement,'Do not use')
+    if ~isfield(handles.Measurements.Image,['Metadata_',(WellMeasurement)]);
+        error(['Image processing was canceled in the ',ModuleName, ' module because you requested to create a Per Well table,but the well name you specified was invalid. You must use a FileNameMetadata module to create this measurement.']);
+    end
+end
 DoWriteSQL = (handles.Current.SetBeingAnalyzed == LastSet);
 DoWriteCPAPropertiesFile = strcmpi(WriteProperties(1),'y') & (handles.Current.SetBeingAnalyzed == 1);
 
@@ -363,7 +405,7 @@ if DoWriteSQL || DoWriteCPAPropertiesFile
 end
 
 if DoWriteSQL,
-    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType,StatisticsCalculated,ObjectsToBeExported);
+    CPconvertsql(handles,DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType,StatisticsCalculated,ObjectsToBeExported,WritePerWell,PlateMeasurement,WellMeasurement);
 end
 
 if DoWriteCPAPropertiesFile,

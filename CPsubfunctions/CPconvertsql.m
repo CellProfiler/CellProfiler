@@ -1,4 +1,4 @@
-function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice,StatisticsCalculated,ObjectsToBeExported)
+function CPconvertsql(handles,OutDir,OutfilePrefix,DBname,TablePrefix,FirstSet,LastSet,SQLchoice,StatisticsCalculated,ObjectsToBeExported,WritePerWell,PlateMeasurement,WellMeasurement)
 
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.
@@ -187,6 +187,57 @@ if (FirstSet == 1)
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
             end
+        if strcmp(WritePerWell,'Yes')
+            if ~strcmp(PlateMeasurement,'Do not use')
+                fprintf(fmain,'CREATE TABLE %sPer_Well AS SELECT %s,%s',TablePrefix,['Image_Metadata_',PlateMeasurement],['Image_Metadata_',WellMeasurement]);
+            else
+                fprintf(fmain,'CREATE TABLE %sPer_Well AS SELECT %s',TablePrefix,['Image_Metadata_',WellMeasurement]);
+            end
+            for i = 1:length(per_image_names)
+                if strfind(per_image_names{i}, 'FileName')   
+                    continue
+                elseif strfind(per_image_names{i}, 'Path')
+                    continue
+                elseif strfind(per_image_names{i}, 'Metadata_')
+                    continue
+                elseif strfind(per_image_names{i}, 'LoadedText')
+                    continue
+                else
+                    fprintf(fmain,',\navg(%s)',per_image_names{i});
+                    fprintf(fmain,',\nsum(%s)',per_image_names{i});
+                    fprintf(fmain,',\nstddev(%s)',per_image_names{i});
+                end
+               
+            end
+        
+            if wantMeanCalculated
+                for j = 1:length(per_object_names),
+                    if ~ObjectsToOmitFromPerImageTable(j)
+                        fprintf(fmain, ',\navg(%s)', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
+                    end
+                end
+            end
+            
+            for l = 1:length(per_object_names),
+                if ~ObjectsToOmitFromPerImageTable(l)
+                    fprintf(fmain, ',\nsum(%s)', CPtruncatefeaturename(['Mean_', per_object_names{l}]));
+                end
+            end
+
+            if wantStdDevCalculated
+                for l = 1:length(per_object_names),
+                    if ~ObjectsToOmitFromPerImageTable(l)
+                        fprintf(fmain, ',\nstddev(%s)', CPtruncatefeaturename(['Mean_', per_object_names{l}]));
+                    end
+                end
+            end
+                       
+            if ~strcmp(PlateMeasurement,'Do not use')
+                fprintf(fmain,' FROM %sPer_Image GROUP BY %s,%s;',TablePrefix,['Image_Metadata_',PlateMeasurement],['Image_Metadata_',WellMeasurement]);
+            else
+                fprintf(fmain,' FROM %sPer_Image GROUP BY %s;',TablePrefix,['Image_Metadata_',WellMeasurement]);
+            end
+        end    
         end
         fclose(fmain);
     elseif strcmp(SQLchoice,'Oracle')

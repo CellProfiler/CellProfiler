@@ -28,6 +28,7 @@ from identifytertiarysubregion import IdentifyTertiarySubregion
 from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
 from maskimage import MaskImage
+from measurecorrelation import MeasureCorrelation
 from measureimageareaoccupied import MeasureImageAreaOccupied
 from measureimageintensity import MeasureImageIntensity
 from measureimagequality import MeasureImageQuality
@@ -57,6 +58,7 @@ def get_module_classes():
             LoadImages,
             LoadSingleImage,
             MaskImage,
+            MeasureCorrelation,
             MeasureImageAreaOccupied,
             MeasureImageIntensity,
             MeasureImageQuality,
@@ -89,6 +91,7 @@ def get_module_substitutions():
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,
             "MaskImage": MaskImage,
+            "MeasureCorrelation": MeasureCorrelation,
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,
             "MeasureImageIntensity": MeasureImageIntensity,
             "MeasureImageQuality": MeasureImageQuality,

@@ -8,10 +8,9 @@ function handles = FlagImageForQC(handles)
 % measurement you specify. 
 % *************************************************************************
 %
-% This module adds a measurement in the handles structure under
-% 'Experiment'.  The measurement is a flag that a user can assign if the
-% image fails some quality control measurement he or she specifies.  The
-% vale of the measurement is '1' if the image has failed QC, and '0' if it
+% This module allows the user to assign a flag (a per-image measurement) if
+% an image fails some quality control measurement the user specifies.  The
+% value of the measurement is '1' if the image has failed QC, and '0' if it
 % has passed. The flag can be used in post-processing to filter out images
 % the user does not want to analyze in CP Analyst, for example, or in
 % creating an illumination function (currently, this is only possible using LoadImageDirectory).
@@ -23,11 +22,10 @@ function handles = FlagImageForQC(handles)
 % By default, the measurements you are using to flag an image are
 % measurements from that image.
 % 
-% This module requires the measurements of all prior modules & cycles, so
-% it must be the last in the pipeline, and it will not work if run on a
-% cluster of computers, unless you run all cycles as one batch.
+% This module requires the measurement modules be placed prior to this
+% module in the pipeline.
 % 
-% See also
+% See also FlagImageByMeasurement data tool.
 %
 % CellProfiler is distributed under the GNU General Public License.
 % See the accompanying file LICENSE for details.

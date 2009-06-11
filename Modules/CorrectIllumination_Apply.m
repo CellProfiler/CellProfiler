@@ -126,6 +126,9 @@ else
     ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
     if any(findobj == ThisModuleFigureNumber)
         CPfigure(handles,'Image',ThisModuleFigureNumber);
+        
+        isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+        isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
         if ~isCreatingBatchFile
             title('Results will be shown after the last image cycle only if this window is left open.')
         else

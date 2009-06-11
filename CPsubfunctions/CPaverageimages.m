@@ -20,9 +20,6 @@ ReadyFlag = 0;
 [CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 % Set up variables depending on image grouping or not
 
-isRunningOnCluster = isfield(handles.Current,'BatchInfo');
-isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
-
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
 if ~isImageGroups
     SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;

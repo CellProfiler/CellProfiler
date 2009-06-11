@@ -250,11 +250,7 @@ else
             if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
                 handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
             end
-            CPwarndlg(  {'You are using image grouping to create an illumination function by processing "All" images during a batch run. You will need to do the following:';
-                         '  (1) Select "LoadImages" for the images that you want to use';
-                         '  (2) Save the functions using SaveImages using "First cycle" or "Each cycle" as the point in time to save the image'; 
-                         '  (3) Submit the batch using a batch size of 1.';
-                         'Due to the constraints of image grouping, other than saving the resultant functions with SaveImages, other modules cannot be counted on to work properly on the cluster. Please check your pipeline and remove all extraneous modules.'},[ModuleName,': Required settings for cluster run'],'replace');
+            CPwarndlg('You are using image grouping to create an illumination function by processing "All" images during a batch run. You will need to submit the batch job using a batch size of 1.',[ModuleName,': Required settings for cluster run'],'replace');
         elseif isRunningOnCluster
             % If (1) 'All' is selected and (2) we are running on the cluster,
             % (a) replace the number of cycles with the number of groups, so
@@ -390,8 +386,7 @@ if isProcessingAll
             % the images to be loaded on the first cycle since it's going to
             % re-run on the cluster anyway
             if ~isCreatingBatchFile
-                % The first time the module is run, the averaged image is
-                % calculated.
+                % The first time the module is run, the averaged image is calculated.
                 % Notifies the user that the first cycle will take much longer than
                 % subsequent sets.
                 CPwarndlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
@@ -443,10 +438,18 @@ if isProcessingAll
                     ReadyFlag = 1;
                 end
             else
-                % Set the ReadyFlag to indicate that the illumination is
-                % not ready. 
+                % Set the ReadyFlag to indicate that the illumination
+                % function is not ready but save placeholder images
                 ReadyFlag = 0;
-                
+                if strcmp(IntensityChoice,'Regular')
+                    RawImage = OrigImage;
+                    MaskImage = ones(size(RawImage));
+                elseif strcmp(IntensityChoice,'Background')
+                    IlluminationImage = OrigImage;
+                end
+                CPwarndlg([ 'You are creating an illumination function by processing "All" images from LoadImages during a batch run. ',...
+                            'To save time, the first cycle run on your local machine will not load all the images; however, the cycles run during the batch will do so.',...
+                            'For this setup cycle, the original image is used as the illumination correction function as a placeholder.'],[ModuleName,': Creating a batch file'],'replace');
             end
         elseif strcmp(SourceIsLoadedOrPipeline,'Pipeline')
             if strcmp(IntensityChoice,'Regular')
@@ -526,7 +529,7 @@ else error(['Image processing was canceled in the ', ModuleName, ' module becaus
 end
 
 % Dilates the objects, and/or smooths the RawImage if the user requested.
-if ReadyFlag
+if ReadyFlag || isCreatingBatchFile 
     if strcmp(IntensityChoice,'Regular')
         if (NumericalObjectDilationRadius > 0)
             DilatedImage = CPdilatebinaryobjects(RawImage, NumericalObjectDilationRadius);
@@ -820,7 +823,7 @@ drawnow
 % average image and its flag are saved to the handles structure
 % after every cycle is processed.
 if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && SetBeingAnalyzed == 1)
-    if ReadyFlag
+    if ReadyFlag || isCreatingBatchFile
         handles = CPaddimages(handles,IlluminationImageName,FinalIlluminationFunction);
     end
     fieldname = [IlluminationImageName,'ReadyFlag'];

@@ -112,7 +112,29 @@ OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScal
 
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
-IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
+isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+fieldname = [IllumCorrectFunctionImageName,'ReadyFlag'];
+if CPisimageinpipeline(handles,fieldname)
+    ReadyFlag = CPretrieveimage(handles,fieldname,ModuleName);
+    if ReadyFlag
+        IllumCorrectFunctionImage = CPretrieveimage(handles,IllumCorrectFunctionImageName,ModuleName,'MustBeGray','DontCheckScale',size(OrigImage));
+    else
+        ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
+        if any(findobj == ThisModuleFigureNumber)
+            CPfigure(handles,'Image',ThisModuleFigureNumber);
+            if ~isCreatingBatchFile
+                title('Results will be shown after the last image cycle only if this window is left open.')
+            else
+                title('Results will not be shown since a batch file is being created.');
+            end
+        end
+        return;
+    end
+else
+    error(['Image processing was canceled in the ', ModuleName, ' module because the flag to indicate that the image ',IllumCorrectFunctionImageName,' is not present.']);
+end
+
 
 if strcmp(RescaleOption,'No rescaling') == 1
     MethodSpecificArguments = [];

@@ -89,7 +89,8 @@ function handles = CorrectIllumination_Calculate(handles)
 % without sharp bright or dim regions.  Note that smoothing is a
 % time-consuming process, and fitting a polynomial is fastest but does not
 % allow a very tight fit as compared to the slower median and gaussian 
-% filtering methods. We typically recommend median vs. gaussian because median 
+% filtering methods. We typically recommend median vs. gaussian because
+% median 
 % is less sensitive to outliers, although the results are also slightly 
 % less smooth and the fact that images are in the range of 0 to 1 means that
 % outliers typically will not dominate too strongly anyway. A less commonly
@@ -254,7 +255,7 @@ else
                          '  (2) Save the functions using SaveImages using "First cycle" or "Each cycle" as the point in time to save the image'; 
                          '  (3) Submit the batch using a batch size of 1.';
                          'Due to the constraints of image grouping, other than saving the resultant functions with SaveImages, other modules cannot be counted on to work properly on the cluster. Please check your pipeline and remove all extraneous modules.'},[ModuleName,': Required settings for cluster run'],'replace');
-        elseif  isRunningOnCluster
+        elseif isRunningOnCluster
             % If (1) 'All' is selected and (2) we are running on the cluster,
             % (a) replace the number of cycles with the number of groups, so
             % each group gets it's own node, (b) do the computation of the
@@ -262,10 +263,9 @@ else
             % the current set number, which should be be the group number
             % at this point (Note: This is an exception to
             % FileNameMetadata)
-            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
-            end
-            handles.Pipeline.CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
+            %if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
+            %    handles.Current.NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Current.SetBeingAnalyzed}.NumberOfImageSets;
+            %end
         else
             % If (1) 'All' is selected and (2) we are running locally,
             % proceed as normal
@@ -442,6 +442,11 @@ if isProcessingAll
                     IlluminationImage = imresize(MiniIlluminationImage, size(LoadedImage), 'bilinear');
                     ReadyFlag = 1;
                 end
+            else
+                % Set the ReadyFlag to indicate that the illumination is
+                % not ready. 
+                ReadyFlag = 0;
+                
             end
         elseif strcmp(SourceIsLoadedOrPipeline,'Pipeline')
             if strcmp(IntensityChoice,'Regular')
@@ -500,7 +505,6 @@ elseif isProcessingEach
         end
 
     elseif strcmp(IntensityChoice,'Background')
-
         [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
         % Calculates a coarse estimate of the background
         % illumination by determining the minimum of each block
@@ -647,11 +651,20 @@ if any(findobj == ThisModuleFigureNumber)
         ax = cell(1,4);
         if isProcessingAll
             ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
-            CPimagesc(RawImage,handles,ax{1});
-            if ReadyFlag
-                title(ax{1},'Averaged image');
+            if exist('RawImage','var')
+                CPimagesc(RawImage,handles,ax{1});
+                if ReadyFlag
+                    title(ax{1},'Averaged image');
+                else
+                    title(ax{1},'Averaged image calculated so far');
+                end
             else
-                title(ax{1},'Averaged image calculated so far');
+                CPimagesc(OrigImage,handles,ax{1});
+                str = ['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)];
+                if isImageGroups
+                    str = [str ,' (Group #',num2str(CurrentImageGroupID),', image #',num2str(SetBeingAnalyzed),')'];
+                end
+                title(ax{1},str);
             end
         else
             ax{1} = subplot(2,2,1,'Parent',ThisModuleFigureNumber);
@@ -810,6 +823,8 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
     if ReadyFlag
         handles = CPaddimages(handles,IlluminationImageName,FinalIlluminationFunction);
     end
+    fieldname = [IlluminationImageName,'ReadyFlag'];
+    handles = CPaddimages(handles,fieldname,ReadyFlag);
     if strcmp(IntensityChoice,'Regular')
         % Whether these images exist depends on whether the user has chosen
         % to dilate or smooth the average image.

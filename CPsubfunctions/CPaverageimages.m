@@ -29,19 +29,7 @@ if ~isImageGroups
     NumberOfImageSets = handles.Current.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 else
-    if strcmpi(Mode,'DoNow')
-        if isCreatingBatchFile
-            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
-        elseif isRunningOnCluster
-            CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
-        else
-            % Running locally, no batch: Proceed as normal
-            CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
-        end
-    elseif strcmpi(Mode,'Accumulate')
-        % Proceed as normal
-        CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
-    end
+    CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
     SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
     NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;

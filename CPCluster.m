@@ -2,7 +2,7 @@ function CPCluster(batchfile,StartingSet,EndingSet,OutputFolder,BatchFilePrefix,
 % $Revision$
 
 %%% Must list all CellProfiler modules here
-%% DO NOT CHANGE THE LINE BELOW
+% DO NOT CHANGE THE LINE BELOW
 %%% BuildCellProfiler: INSERT FUNCTIONS HERE
 
 tic
@@ -23,11 +23,23 @@ catch
     warning('Failed to set the preferences directory')
 end
 
-% arguments come in as strings, convert to integer
+% Arguments come in as strings, convert to integer
 StartingSet = str2num(StartingSet);
 EndingSet = str2num(EndingSet);
 
-% this is necessary for some modules (e.g., ExportToDatabase) to work correctly.
+% The following is neccessary for image grouping to work. It assumes that
+% the batch size = 1 (so StartingSet = EndingSet) and the images in a group
+% are in a contiguous order
+if isfield(handles.Pipeline,'ImageGroupFields')
+    [OriginalStartingSet,OriginalEndingSet] = deal(StartingSet,EndingSet);
+    CurrentImageGroupID = StartingSet;
+    ImageIndicesInGroup = handles.Pipeline.GroupFileListIDs == CurrentImageGroupID;
+    StartingSet = find(ImageIndicesInGroup,1,'first');
+    EndingSet = find(ImageIndicesInGroup,1,'last');
+    handles.Current.NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Current.SetBeingAnalyzed}.NumberOfImageSets;
+end
+
+% The following is necessary for some modules (e.g., ExportToDatabase) to work correctly.
 handles.Current.BatchInfo.Start = StartingSet;
 handles.Current.BatchInfo.End = EndingSet;
 
@@ -68,6 +80,13 @@ end
 
 t_tot = toc;
 disp(sprintf('All sets analyzed in %f seconds (%f per image set)', t_tot, t_tot / (EndingSet - StartingSet + 1)));
+
+% If image grouping: Change the starting/ending set indices back so the output files are
+% written with the right numbers, and the Python scripts will recognize
+% that the batch is done
+if isfield(handles.Pipeline,'ImageGroupFields')
+    [StartingSet,EndingSet] = deal(OriginalStartingSet,OriginalEndingSet);
+end
 
 if strcmp(WriteMatFiles, 'yes'),
     handles.Pipeline = [];

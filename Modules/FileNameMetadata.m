@@ -183,23 +183,8 @@ if ~isfield(handles.Measurements.Image,FileNameField)
     error([ 'Image processing was canceled in the ', ModuleName, ' module. ',ImageName,' has no file name measurement (maybe you did not use LoadImages to create it?)']);
 end
 
-isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
-isRunningOnCluster = isfield(handles.Current,'BatchInfo');
-if ~(isImageGroups && isRunningOnCluster)
-    % Grab the filename/pathname from the Measurements structure
-    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-    FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetBeingAnalyzed}, handles.Measurements.Image.(FileNameField){SetBeingAnalyzed});
-else
-    % If image groups already exist and this is a cluster run, the variable
-    % NumberOfImageSets may have been altered which means that
-    % handles.Current.SetBeingAnalyzed may no longer be accurate and the 
-    % current filename/pathname needs updating. In that case, grab the true
-    % filename/pathname from the GroupFileList structure
-    CurrentImageGroupID = handles.Current.SetBeingAnalyzed;
-    SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
-    FileOrPathName = fullfile(  handles.Pipeline.GroupFileList{CurrentImageGroupID}.(['Pathname',ImageName]),...
-                                handles.Pipeline.GroupFileList{CurrentImageGroupID}.(['FileList',ImageName]){SetBeingAnalyzed});
-end
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetBeingAnalyzed}, handles.Measurements.Image.(FileNameField){SetBeingAnalyzed});
 [PathName,FileName] = fileparts(FileOrPathName);
 
 Metadata = [];
@@ -256,7 +241,16 @@ for i = 1:length(FieldNames)
 end
     
 % If groups are being defined, set up the handles.Pipeline structure
-% appropriately 
+% appropriately. The updated structure has the following fields:
+% GroupFileList: One for each group which contains;
+%   SetBeingAnalyzed: The image being analyzed in the group
+%   NumberOfImageSets: The total number of images in the group
+% GroupFileListIDs: A vector the same length of handles.Pipeline.FileList*
+%   where the index corresponds to the group number an image belongs to
+% GroupIDs: 
+% CurrentImageGroupID: Index of the current group being analyzed
+% ImageGroupFields: The metadata used to group the images
+
 if ~isempty(FieldsToGroupBy)
     if handles.Current.SetBeingAnalyzed == 1 
         % Find the strings corresponding to metadata fields

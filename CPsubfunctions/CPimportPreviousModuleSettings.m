@@ -178,6 +178,16 @@ if strcmp(CurrentModuleName, 'ExportToDatabase')
         SavedVarRevNum = 9;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 9  % Added three new arguments for per-well export
+        Settings.VariableValues{ModuleNum-Skipped,19} = Settings.VariableValues{ModuleNum-Skipped,16};
+        Settings.VariableValues{ModuleNum-Skipped,16} = 'No';
+        Settings.VariableValues{ModuleNum-Skipped,17} = 'Do not use';
+        Settings.VariableValues{ModuleNum-Skipped,18} = 'Do not use';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,19} = [];
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 3;
+        SavedVarRevNum = 10;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

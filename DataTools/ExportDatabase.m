@@ -74,7 +74,9 @@ CellProfilerDataFileNames = Files(selection);
 
 %%% Ask for database name and name of SQL script, should probably use some
 %%% sort of drop down menue for type of database
-answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix','Calculate per-image means? (Y/N)','Calculate per-image standard deviations? (Y/N)','Calculate per-image medians? (Y/N)'},'Export SQL',1,{'Default','SQL_','MySQL','Do not use','Y','Y','Y'});
+answer = inputdlg({'Name of Database to use:','SQL script name:','Type of Database to use (Oracle or MySQL)','Table Prefix','Calculate per-image means? (Y/N)','Calculate per-image standard deviations? (Y/N)','Calculate per-image medians? (Y/N)','Create a Per_Well table? (Y/N)','Which token uniquely specifies your Plate  (Type ''Do not use'' if you only have one plate)?','Which token uniquely specifies your Well?'},...
+    'Export SQL',1,...
+    {'Default','SQL_','MySQL','Do not use','Y','Y','Y','N','Plate','Well'});
 if isempty(answer),return;end
 DatabaseName = answer{1};
 SQLScriptFileName = answer{2};%fullfile(DataPath,answer{2});
@@ -86,7 +88,13 @@ if isempty(DatabaseName) || isempty(SQLScriptFileName)
     error('A database name and an SQL script name must be specified!');
     return
 end
-%end
+
+if strcmp(answer{8},'Yes'),
+    WritePerWell = 'Yes';
+else WritePerWell = 'No';
+end
+PlateMeasurement = answer{9};
+WellMeasurement = answer{10};
 
 %check whether have write permission in current dir
 SQLScriptFid = fopen(SQLScriptFileName, 'wt');
@@ -109,17 +117,22 @@ for FileNo = 1:length(CellProfilerDataFileNames)
         return;
     end
 
-    %get the output file's prefix as .sql file's fileprefix, so if mutliple
-    %files are selected the sql files will be named differently, even the
-    %out put files are exactly the same except the file names
+     % Get the output file's prefix as .sql file's fileprefix, so if mutliple
+    % files are selected the sql files will be named differently, even the
+    % output files are exactly the same except the file names
     filename = CellProfilerDataFileNames{FileNo};
     index = strfind(filename,'.');
     if ~isempty(index)
         filename = filename(1:index-1);%,everything before . will be kept
     end
 
-    for ObjectTypeNo = 1:length(ObjectTypes)    % Loop over the objects
+    % Select objects for export
+    [selection,ok] = listdlg('liststring',ObjectTypes,'name','Objects to export',...
+    'PromptString',['Select objects to export from ',filename,'. Use Ctrl+Click or Shift+Click.'],'listsize',[300 500]);
+    if ~ok,return,end
+    ObjectTypes = ObjectTypes(selection);
 
+    for ObjectTypeNo = 1:length(ObjectTypes)    % Loop over the objects
         % Get the object type in a variable for convenience
         ObjectType = ObjectTypes{ObjectTypeNo};
 
@@ -143,12 +156,8 @@ for FileNo = 1:length(CellProfilerDataFileNames)
     % for calling from data tool, no tableprefix is asked from user, leave
     % it as blank
     
-   %was originally
-   %CPconvertsql(handles, DataPath, [filename,SQLScriptFileName], DatabaseName,'',FirstSet, LastSet);
-    CPconvertsql(handles, DataPath, SQLScriptFileName, DatabaseName,TablePrefix,FirstSet, LastSet, DatabaseType, StatisticsCalculated);
-   % from ExportToDataBase
-   %CPconvertsql(handles, DataPath,FilePrefix,DatabaseName,TablePrefix,FirstSet,LastSet,DatabaseType);
-
+   CPconvertsql(handles, DataPath, SQLScriptFileName, DatabaseName,TablePrefix,FirstSet, LastSet, DatabaseType, StatisticsCalculated, ObjectTypes, WritePerWell, PlateMeasurement, WellMeasurement);
+   
 end % End loop over data files
 
 %%% Done, let the user know if this function was called as a data tool and restore the handles structure

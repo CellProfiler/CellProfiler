@@ -74,11 +74,11 @@ function handles = ExportToDatabase(handles)
 % To create a Per_Well table, you need to have a FileNameMetadata module in
 % your pipeline which extracts the Plate (if applicable) and Well metadata
 % from the filename and/or pathname.  You then need to specify here in
-% ExportToDatabase what these measurements were called (though they are by
+% ExportToDatabase what these tokens were called (though they are by
 % default Plate & Well, which corresponds to
 % the default in FilenNameMetadata).  If instead you had labeled your
 % 'plate' as <Barcode> in FileNameMetadata, here you would select 'Other'
-% and specify Barcode in response to 'Which measurement
+% and specify Barcode in response to 'Which token
 % uniquely specifies your Plate?'
 %
 % SQL File Prefix: All the CSV files will start with this prefix.
@@ -310,13 +310,13 @@ ObjectsToBeExported{7} = char(handles.Settings.VariableValues{CurrentModuleNum,1
 WritePerWell = char(handles.Settings.VariableValues{CurrentModuleNum,16});
 %inputtypeVAR16 = popupmenu
 
-%textVAR17 = Which measurement uniquely specifies your Plate? (Select 'Do not use' if you only have one plate)
+%textVAR17 = Which token uniquely specifies your Plate? (Select 'Do not use' if you only have one plate)
 %choiceVAR17 = Plate
 %choiceVAR17 = Do not use
 PlateMeasurement = char(handles.Settings.VariableValues{CurrentModuleNum,17});
 %inputtypeVAR17 = popupmenu custom
 
-%textVAR18 = Which measurement uniquely specifies your Well? 
+%textVAR18 = Which token uniquely specifies your Well? 
 %choiceVAR18 = Well
 %choiceVAR18 = Do not use
 WellMeasurement = char(handles.Settings.VariableValues{CurrentModuleNum,18});

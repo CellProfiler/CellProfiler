@@ -610,17 +610,19 @@ for img_idx = FirstSet:LastSet
             end
             warning('on','MATLAB:divideByZero');
         else % Write zeros if there are no measurements
-            if wantStdDevCalculated
-                fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
-            end
-            if wantMedianCalculated
-                fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
-            end
-            if wantStdDevCalculated
-                fprintf(fimage,',');
-                fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
+            if ~isempty(perobjectvals_aggregate)
+                if wantStdDevCalculated
+                    fprintf(fimage,',');
+                    fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
+                end
+                if wantMedianCalculated
+                    fprintf(fimage,',');
+                    fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
+                end
+                if wantStdDevCalculated
+                    fprintf(fimage,',');
+                    fprintf(fimage,formatstr,zeros(1, size(perobjectvals_aggregate, 2)));
+                end
             end
         end
     end

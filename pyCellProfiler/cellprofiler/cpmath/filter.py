@@ -10,18 +10,18 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision: 1 "
+__version__="$Revision$"
 
 import numpy as np
 import _filter
 from rankorder import rank_order
-import scipy.ndimage
+import scipy.ndimage as scind
 from scipy.ndimage import map_coordinates, label
 from scipy.ndimage import convolve, correlate1d, gaussian_filter
 from scipy.ndimage import binary_dilation, binary_erosion
 from scipy.ndimage import generate_binary_structure
 from smooth import smooth_with_function_and_mask
-from cpmorphology import fixup_scipy_ndimage_result
+from cpmorphology import fixup_scipy_ndimage_result as fix
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -448,8 +448,7 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     if count == 0:
         return low_mask
     
-    sums = fixup_scipy_ndimage_result(scipy.ndimage.sum(high_mask, labels,
-                                                        np.arange(count)+1))
+    sums = fix(scind.sum(high_mask, labels, np.arange(count)+1))
     good_label = np.zeros((count+1,),bool)
     good_label[1:] = sums > 0
     output_mask = good_label[labels]
@@ -615,3 +614,59 @@ def vprewitt(image, mask=None):
                                               [ 1, 0,-1]]).astype(float)/3.0))
     result[big_mask==False] = 0
     return result
+
+def gabor(image, labels, frequency, theta):
+    '''Gabor-filter the objects in an image
+    
+    image - 2-d grayscale image to filter
+    labels - a similarly shaped labels matrix
+    frequency - cycles per trip around the circle
+    theta - angle of the filter. 0 to 2 pi
+    
+    Calculate the Gabor filter centered on the centroids of each object
+    in the image. Summing the resulting image over the labels matrix will
+    yield a texture measure per object.
+    '''
+    #
+    # The code inscribes the X and Y position of each pixel relative to
+    # the centroid of that pixel's object. After that, the Gabor filter
+    # for the image can be calculated per-pixel and the image can be
+    # multiplied by the filter to get the filtered image.
+    #
+    nobjects = np.max(labels)
+    if nobjects == 0:
+        return image
+    centers = scind.center_of_mass(np.ones(labels.shape), labels,
+                                   np.arange(nobjects)+1)
+    if nobjects == 1:
+        centers = np.array([centers])
+    else:
+        centers = np.array(centers)
+    areas = fix(scind.sum(np.ones(image.shape),labels, np.arange(nobjects)+1))
+    mask = labels > 0
+    i,j = np.mgrid[0:image.shape[0],0:image.shape[1]].astype(float)
+    i = i[mask]
+    j = j[mask]
+    image = image[mask]
+    lm = labels[mask] - 1
+    i -= centers[lm,0]
+    j -= centers[lm,1]
+    sigma = np.sqrt(areas/np.pi) / 3.0
+    sigma = sigma[lm]
+    g_exp = 1000.0/(2.0*np.pi*sigma**2) * np.exp(-(i**2 + j**2)/(2*sigma**2))
+    g_angle = 2*np.pi/frequency*(i*np.cos(theta)+j*np.sin(theta))
+    g_cos = g_exp * np.cos(g_angle)
+    g_sin = g_exp * np.sin(g_angle)
+    #
+    # Normalize so that the sum of the filter over each object is zero
+    # and so that there is no bias-value within each object.
+    #
+    g_cos_mean = fix(scind.mean(g_cos,lm, np.arange(nobjects)))
+    i_mean = fix(scind.mean(image, lm, np.arange(nobjects)))
+    i_norm = image - i_mean[lm]
+    g_sin_mean = fix(scind.mean(g_sin,lm, np.arange(nobjects)))
+    g_cos -= g_cos_mean[lm]
+    g_sin -= g_sin_mean[lm]
+    g = np.zeros(mask.shape,dtype=np.complex)
+    g[mask] = i_norm *g_cos+i_norm * g_sin*1j
+    return g

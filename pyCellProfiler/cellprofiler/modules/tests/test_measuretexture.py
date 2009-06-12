@@ -98,35 +98,30 @@ class TestMeasureTexture(unittest.TestCase):
         for scale, expected in zip([x.scale.value 
                                     for x in module.scale_groups],[3,4,5]):
             self.assertEqual(scale, expected)
+        self.assertEqual(module.gabor_angles, 4)
     
     def test_01_02_load_v1(self):
-        data = ('eJztWu9v2kYYPgiJmlWquk7TJvXLfWy6YBlGpiaaUljoNrZAUMNaVV'
-                'XbXcwRbjrfIfucwqpK/bP2cX/S/oT5wA72xcSOCYRUtmSZ9/U99zz3'
-                '+r0fnN2sdQ5rP8EdTYfNWqfYIxTDNkWixy1zDzKxDQ8sjATuQs72YM'
-                'fB8DeHQX0Xlkp7FX2vUoZlXd8F6Y5co3nPveiPAdhwr3fcM+/dWvfs'
-                'XOCU9jEWgrBTex0UwLee/1/3fIEsgk4ofoGog+0phe9vsB7vjAbnt5'
-                'q861DcQmawsHu0HPMEW/ZRzwd6t9tkiOkx+RsrTfCLPcdnxCaceXiv'
-                'ftV7zsuFwivjMPxqGoecEoc193wY8Mvyv4Jp+UJE3L4MlL/v2YR1yR'
-                'npOohCYqLTcxXj5xBT31qovjVQb9US4XIhXA6UPb5qDO6+ol+eHTwU'
-                'xWdDZAhoImH0ZT1PYurZUOqRdssxKCbJ2q3qLyWMl4r7PiGuEMIVwA'
-                '/bFX0evrj4rCvxkXbj8PCPZkK9al68crNqkfmUD+HyoMWT6ZyFq8bg'
-                'NpX4SPtgJPiAItv0/En64zdKPdKu4x5yqIAN2RlhnVjYENwazRX3Zf'
-                'cHDSSL412FV9pHwnbgL5SfIHoex0X1q7R5o8a5pOmpdFaWrFPfLqXS'
-                'uQOSjRt3QPh5SvugjxjDtJxmnNM1vaTiNhScf/i4Te86z3hTjcFF9f'
-                '8GE5jZRIxm8F+nbjVO9Vq7cRt1tzjDafK/pK+mzln9ZtV0Jpmfr6Jz'
-                'jnGhlCRv7yl4aU/mpyNHUMLkonUe/XH8Sef7Zcc97Tp71XSuSh5/iu'
-                'H7HYTzQNpvHz1t/yj/ION97butd9J6iSl9zt/vv64V22+2fM8Bp47J'
-                '9l/rxd03H0rb5Y+TwsfERY6dW4njdWFej1h/XKXd/Ri+J0q7pS21v8'
-                'LI8hpU+bhVlK4mZ6Lv+cqer45GU8+i1oVp8/E68zjJOm0VdC6yfy8y'
-                'ntrOzcSzGqMzKl877zk03PnB9nZUbkJ33P/PqP2gl5ic9uX23pncyG'
-                'IGDtS3anH/QtEv7Z+5hU8t7rDu/PyfHlxt/22Z7Rxv1smGDubnX2Z+'
-                '8ZO/sCHGwiFhXTy4Bh0Z7vPKq89Vd9Q8EegPN6Y7w2W468zzqPc00/'
-                '45GfZvU3szXIZbZVzcOuwBCPdHafPJztmFhVg2LmS4DHc5rgouz/NV'
-                'XZ9muAyX4W4fbpib4tR9KHU/V5b/M8ATNT49BuHxSdoGpnRgcfm9n6'
-                'WZ44/SbI1y1J18FaYduj8bgQ/EJM8ghqeq8FRn8ZAuZoL0RgPLZXME'
-                'N5EghtbwvG3XW/O9Sd5XlBXe8ixeEyPbsbDAQ+FetObE7EzM6Oe2Gc'
-                'EXjH/etb5+uHnp8wYg/Jynz/+/p2n48mu5C+9h78bgCgFNfjv/AVfL'
-                's0eXlPfbuKzy/wP0LZ97')
+        data = ('eJztWk1P2zAYdj9AdEiMcdkkLj5uE0RpB9LgspZ1bJ3oh0bFtNvS1C2eErt'
+                'KHNbutJ+1437OjvsJi9uEJl4gaQptihJhhdfx4+fx69dOeHG90j6rnMBDSY'
+                'b1Snu/hzUEW5rCetTQjyFhe/CtgRSGupCSY3hqYPjRIrBYgvLRsf1zcARLs'
+                'nwE4l2ZWn3Lvv18AcC6fd+wS9Z5tObYGU/h9jliDJO+uQby4JlT/9suF4qB'
+                'lY6GLhTNQuaUwq2vkR5tjwbXj+q0a2mooejexvbVsPQOMsxmzwU6j1t4iLR'
+                'z/AMJQ3CbfUJX2MSUOHinf7H2mpcygZf74c/O1A8ZwQ85u+x66nn7D2DaPh'
+                '/gtyee9tuOjUkXX+GupWgQ60r/WgXv73VIfxtCf9xuGrh/Yruc4+UQfMaHz'
+                '4Ciw1sOwW0LvLy00ZDtvxsqKoO6wtTLKPrXhX643bBUDeGJjrj6Z8W9iujv'
+                'NUEvt4vy3oE8J2+Yvx8JvNyuUkgog5bpLIAo/DlfPznwxY62RcRZ1ofPgga'
+                'Npvcm3LxxFbZOnwp4bldRT7E0Bmt8kcIqNpDKqDGay+9x42VWnASixdmmMG'
+                '5uN5lpwfca7SjauD4O/0FEXNw4uat94PCedYpxIO8V7zUO8j5cHlQrrVocn'
+                'CzJRRG3LuDcy8UVnPtd7C/lEHxBwHO7RhgiJmYjj464+uP6edV0NyiJtZ8X'
+                '5WTqjLK+k6Azyvshrs5ZcOUQnVvAH6/cnrxXmxbTMOEfr8vQvSr+TXUuV6f'
+                '9Hkvkuorz3ZVE/65KHCRVp/helQ6XM+/lEJ1B8dr+TqGqKabpZDCWoTvs77'
+                'qg/MtnhPuXPJ12xRNHREWe/pLm96A8wCk1UN+gFunOz/91xnzXIsc5To7xg'
+                'Q7m519kfNHON6SysXCISRcN7kBHintYcRWmO2i/9cTV0nSnuBT3EHFlcPt6'
+                'DPr/x3QfmWzzqzTeFJfikowL++7aAf71yG06yUj99+G1SuNOcSkuCe+7pH4'
+                '3p7gUl+JWDzfMTHFinknM147zUh6eoP3pJfDvT9xWkaYNDMrPzxmSPj7kZU'
+                'oaVbqTU1bSmf1rzXPgivMMQnjKAk/5Jh7cRYTh3mhg2GwWo7rCsCrVnNqWX'
+                'VtxaznvZQhvSeAt3cSrI8W0DMTQkNk3qT4x2xMzeN4KAXxe/2dt6/Fu4db5'
+                'BsA/z9P5//smDl82lxnzec8NbIbg8h5N7jh/gdni7Pkt7d0xLqr9P5vhZ1k=')
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
@@ -138,9 +133,8 @@ class TestMeasureTexture(unittest.TestCase):
         # scale = 3,4,5
         #
         self.assertTrue(isinstance(module,M.MeasureTexture))
-        self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.image_groups[0].image_name.value, "DNA")
-        self.assertEqual(module.image_groups[1].image_name.value, "Cytoplasm")
+        self.assertEqual(module.image_count.value, 1)
+        self.assertEqual(module.image_groups[0].image_name.value, "OrigBlue")
         
         self.assertEqual(module.object_count.value, 1)
         self.assertEqual(module.object_groups[0].object_name.value, "Nuclei")
@@ -149,6 +143,7 @@ class TestMeasureTexture(unittest.TestCase):
         for scale, expected in zip([x.scale.value 
                                     for x in module.scale_groups],[3,4,5]):
             self.assertEqual(scale, expected)
+        self.assertEqual(module.gabor_angles.value, 3)
     
     def test_02_01_compare_to_matlab(self):
         path = os.path.split(__file__)[0]
@@ -188,3 +183,40 @@ class TestMeasureTexture(unittest.TestCase):
                                         tm_center_y[order_matlab[i]],
                                         tm[order_matlab[i]],
                                         pytm[order_python[i]]))
+    def test_03_01_gabor_null(self):
+        '''Test for no score on a uniform image'''
+        image = np.ones((10,10))*.5
+        labels = np.ones((10,10),int)
+        workspace, module = self.make_workspace(image, labels)
+        module.scale_groups[0].scale.value = 2
+        module.run(workspace)
+        mname = '%s_%s_%s_%d'%(M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
+        m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME, 
+                                                           mname)
+        self.assertEqual(len(m), 1)
+        self.assertAlmostEqual(m[0], 0)
+    
+    def test_03_02_gabor_horizontal(self):
+        '''Compare the Gabor score on the horizontal with the one on the diagonal'''
+        i,j = np.mgrid[0:10,0:10]
+        labels = np.ones((10,10),int)
+        himage = np.cos(np.pi*i)*.5 + .5
+        dimage = np.cos(np.pi*(i-j)/np.sqrt(2)) * .5 + .5
+        def run_me(image, angles):
+            workspace, module = self.make_workspace(image, labels)
+            module.scale_groups[0].scale.value = 2
+            module.gabor_angles.value = angles
+            module.run(workspace)
+            mname = '%s_%s_%s_%d'%(M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
+            m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME, 
+                                                               mname)
+            self.assertEqual(len(m), 1)
+            return m[0]
+        himage_2, himage_4, dimage_2, dimage_4 = [run_me(image, angles)
+                                                  for image, angles in
+                                                  ((himage, 2),(himage,4),
+                                                   (dimage, 2),(dimage,4))]
+        self.assertAlmostEqual(himage_2, himage_4)
+        self.assertAlmostEqual(dimage_2, 0)
+        self.assertNotAlmostEqual(dimage_4,0)
+        

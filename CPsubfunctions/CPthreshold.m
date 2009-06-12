@@ -27,6 +27,9 @@ else
     SetBeingAnalyzed = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.SetBeingAnalyzed;
 end
 
+% Make sure the input image is double precision
+OrigImage = double(OrigImage);
+
 %%% If we are running the Histogram data tool we do not want to limit the
 %%% threshold with a maximum of 1 or minimum of 0; otherwise we check for
 %%% values outside the range here.

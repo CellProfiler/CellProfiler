@@ -265,6 +265,7 @@ TestMode = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %%% Reads (opens) the image you want to analyze and assigns it to a
 %%% variable.
 OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+OrigImage = double(OrigImage);
 
 %%% Retrieves the preliminary label matrix image that contains the primary
 %%% segmented objects which have only been edited to discard objects

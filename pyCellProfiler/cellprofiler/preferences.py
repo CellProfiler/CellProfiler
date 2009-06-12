@@ -56,6 +56,7 @@ TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
 TABLE_FONT_SIZE = 'TableFontSize'
 PIXEL_SIZE = 'PixelSize'
+COLORMAP = 'Colormap'
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
@@ -188,3 +189,12 @@ def get_absolute_path(path):
         return os.path.join(get_default_output_directory(), path)
     else:
         return os.path.abspath(path)
+
+def get_default_colormap():
+    if not get_config().Exists(COLORMAP):
+        return 'jet'
+    return get_config().Read(COLORMAP)
+
+def set_default_colormap(colormap):
+    get_config().Write(COLORMAP, colormap)
+    

@@ -244,7 +244,8 @@ class CPFigureFrame(wx.Frame):
     
     def subplot_imshow_labels(self, x,y,labels, title=None, clear=True):
         labels = renumber_labels_for_display(labels)
-        return self.subplot_imshow(x,y,labels,title,clear,matplotlib.cm.jet)
+        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        return self.subplot_imshow(x,y,labels,title,clear,cm)
     
     def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True):
         return self.subplot_imshow(x, y, image, title, clear, 

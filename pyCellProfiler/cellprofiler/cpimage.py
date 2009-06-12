@@ -50,7 +50,8 @@ class Image(object):
                        mask are composed of all of the labeled points.
     * parent_image: if set using the initializer. The child image inherits
                     the mask and cropping mask of the parent.
-    
+    * convert: true to try to coerce whatever dtype passed (other than bool
+               or float) to a scaled image.
     Otherwise, the image has no mask or cropping mask and all pixels are
     significant.
     """
@@ -59,7 +60,8 @@ class Image(object):
                  mask=None,
                  crop_mask = None, 
                  parent_image=None,
-                 masking_objects = None):
+                 masking_objects = None,
+                 convert = True):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -67,7 +69,7 @@ class Image(object):
         self.__crop_mask = crop_mask
         self.__masking_objects = masking_objects
         if image!=None:
-            self.set_image(image)
+            self.set_image(image, convert)
         if mask!=None:
             self.set_mask(mask)
         
@@ -75,7 +77,7 @@ class Image(object):
         """Return the primary image"""
         return self.__image
     
-    def set_image(self,image):
+    def set_image(self,image,convert=True):
         """Set the primary image
         
         Convert the image to a numpy array of dtype = numpy.float64.
@@ -86,7 +88,7 @@ class Image(object):
         * logical: save as is (and get if must_be_binary)
         """
         img = numpy.array(image)
-        if img.dtype.name == "bool":
+        if img.dtype.name == "bool" or not convert:
             self.__image = img
             return
         mval  = 0.

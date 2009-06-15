@@ -44,19 +44,26 @@ def cell_profiler_root_directory():
 def python_root_directory():
     return __python_root
 
-def module_directory():
-    return os.path.join(cell_profiler_root_directory(), 'Modules')
-
-def module_extension():
-    return '.m'
-
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
+TABLE_FONT_NAME = 'TableFontName'
 TABLE_FONT_SIZE = 'TableFontSize'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
+MODULEDIRECTORY = 'ModuleDirectory'
+
+def module_directory():
+    if not get_config().Exists(MODULEDIRECTORY):
+        return os.path.join(cell_profiler_root_directory(), 'Modules')
+    return get_config().Read(MODULEDIRECTORY)
+
+def set_module_directory(value):
+    get_config().Write(MODULEDIRECTORY, value)
+
+def module_extension():
+    return '.m'
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
@@ -75,10 +82,7 @@ def set_default_image_directory(path):
     path = str(path)
     get_config().Write(DEFAULT_IMAGE_DIRECTORY,path)
     for listener in __image_directory_listeners:
-        if callable(listener):
-            listener(ImageDirectoryChangedEvent(path))
-        else:
-            listener.Notify(ImageDirectoryChangedEvent(path))
+        listener(DirectoryChangedEvent(path))
 
 __image_directory_listeners = []
 
@@ -94,7 +98,7 @@ def remove_image_directory_listener(listener):
     """
     __image_directory_listeners.remove(listener)
 
-class ImageDirectoryChangedEvent:
+class DirectoryChangedEvent:
     def __init__(self, path):
         self.image_directory = path
 
@@ -109,6 +113,22 @@ def set_default_output_directory(path):
     path=str(path)
     assert os.path.isdir(path),'Default output directory, "%s", is not a directory'%(path)
     get_config().Write(DEFAULT_OUTPUT_DIRECTORY,path)
+    for listener in __output_directory_listeners:
+        listener(DirectoryChangedEvent(path))
+
+__output_directory_listeners = []
+
+def add_output_directory_listener(listener):
+    """Add a listener that will be notified when the output directory changes
+    
+    """
+    __output_directory_listeners.append(listener)
+    
+def remove_output_directory_listener(listener):
+    """Remove a previously-added image directory listener
+    
+    """
+    __output_directory_listeners.remove(listener)
 
 def get_title_font_size():
     if not get_config().Exists(TITLE_FONT_SIZE):
@@ -127,6 +147,14 @@ def get_title_font_name():
 def set_title_font_name(title_font_name):
     get_config().Write(TITLE_FONT_NAME, title_font_name)
 
+def get_table_font_name():
+    if not get_config().Exists(TABLE_FONT_NAME):
+        return "Tahoma"
+    return get_config().Read(TABLE_FONT_NAME)
+
+def set_table_font_name(title_font_name):
+    get_config().Write(TABLE_FONT_NAME, title_font_name)
+    
 def get_table_font_size():
     if not get_config().Exists(TABLE_FONT_SIZE):
         return 9

@@ -281,6 +281,7 @@ class CPFigureFrame(wx.Frame):
         table_axes.set_axis_off()
         table.auto_set_font_size(False)
         table.set_fontsize(cpprefs.get_table_font_size())
+        # table.set_fontfamily(cpprefs.get_table_font_name())
     
 def renumber_labels_for_display(labels):
     """Scramble the label numbers randomly to make the display more discernable

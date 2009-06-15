@@ -23,6 +23,7 @@ from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
+import cellprofiler.gui.preferencesdlg
 import traceback
 import sys
 
@@ -33,6 +34,8 @@ ID_FILE_SAVE_PIPELINE=wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
+
+ID_OPTIONS_PREFERENCES = wx.NewId()
 
 ID_DEBUG_START = wx.NewId()
 ID_DEBUG_STOP = wx.NewId()
@@ -94,6 +97,9 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
         self.__menu_bar.Append(self.__menu_debug,'&Debug')
+        self.__menu_options = wx.Menu()
+        self.__menu_options.Append(ID_OPTIONS_PREFERENCES,"&Preferences","Set global application preferences")
+        self.__menu_bar.Append(self.__menu_options,"&Options")
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
         self.__menu_bar.Append(self.__menu_help,'&Help')
@@ -101,6 +107,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
+        wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
                                                  (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
@@ -124,9 +131,12 @@ class CPFrame(wx.Frame):
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
 
+    def __on_preferences(self, event):
+        dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
+        dlg.show_modal()
+        
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
-        filename = self.__get_icon_filename()
         font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
         bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
         for module in modules:
@@ -136,7 +146,7 @@ class CPFrame(wx.Frame):
             panel.SetBackgroundColour(bgcolor)
             sizer.Add(panel,1,wx.EXPAND)
             helpframe.SetSizer(sizer)
-            statictext = wx.StaticText(panel,-1,module.GetHelp())
+            statictext = wx.StaticText(panel,-1,module.get_help())
             statictext.SetFont(font)
             statictext.SetBackgroundColour(bgcolor)
             sizer = wx.BoxSizer()

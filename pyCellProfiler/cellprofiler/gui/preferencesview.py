@@ -80,6 +80,8 @@ class PreferencesView:
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpOutputFileName.m"),output_filename_help_button)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
         cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cellprofiler.preferences.add_image_directory_listener(self.__on_preferences_image_directory_event)
+        cellprofiler.preferences.add_output_directory_listener(self.__on_preferences_output_directory_event)
 
     def attach_to_pipeline_controller(self,pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.on_analyze_images, self.__analyze_images_button)
@@ -139,3 +141,10 @@ class PreferencesView:
         if self.__output_filename_edit_box.Value != cellprofiler.preferences.get_output_file_name():
             self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
         
+    def __on_preferences_output_directory_event(self,event):
+        if self.__output_edit_box.Value != cellprofiler.preferences.get_default_output_directory():
+            self.__output_edit_box.Value = cellprofiler.preferences.get_default_output_directory()
+    
+    def __on_preferences_image_directory_event(self, event):
+        if self.__image_edit_box.Value != cellprofiler.preferences.get_default_image_directory():
+            self.__image_edit_box.Value = cellprofiler.preferences.get_default_image_directory()

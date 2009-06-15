@@ -226,8 +226,12 @@ DilatedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,13});
 drawnow
 
 % Initialize some variables
-isProcessingAll = strcmpi(EachOrAll,'all');
-isProcessingEach = strcmpi(EachOrAll,'each');
+isProcessingAll = strncmpi(EachOrAll,'a',1);
+isProcessingEach = strncmpi(EachOrAll,'e',1);
+areImagesOriginal = strncmpi(SourceIsLoadedOrPipeline, 'l',1);
+areImagesDerived = strncmpi(SourceIsLoadedOrPipeline, 'p',1);
+usingBackgroundIllumCorr = strncmpi(IntensityChoice,'b',1);
+usingRegularIllumCorr = strncmpi(IntensityChoice,'r',1);
 
 % Set up variables depending on image grouping or not
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
@@ -275,7 +279,7 @@ else
     StartingImageSet = handles.Current.StartingImageSet;
 end
 
-if isProcessingEach && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
+if isProcessingEach && areImagesOriginal
     error(['Image processing was canceled in the ', ModuleName, ' module because you must choose Pipeline mode if you are using Each mode.'])
 end
 
@@ -283,7 +287,7 @@ end
 % all of the incoming images from a Load Images module, it will already have been calculated
 % the first time through the cycle. No further calculations are
 % necessary.
-if isProcessingAll && SetBeingAnalyzed ~= 1 && strcmp(SourceIsLoadedOrPipeline,'Load Images module')
+if isProcessingAll && SetBeingAnalyzed ~= 1 && areImagesOriginal
     return
 end
 
@@ -329,21 +333,28 @@ if ~isImageGroups
     OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
 else
     if isProcessingAll && isRunningOnCluster
-        % However, if grouping is being used for a cluster run, each batch
-        % needs access to the proper image for the current group, for the 
-        % current image set. Since we are re-arranging the number of
-        % image sets here, this image must be pulled from the filelist.
-        fieldname = ['Pathname', ImageName];
-        Pathname = handles.Pipeline.(fieldname);
-        fieldname = ['FileList', ImageName];
-        FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
-        OrigImage = CPimread(fullfile(Pathname,FileList{SetBeingAnalyzed}));
+        if areImagesOriginal
+            % However, if grouping is being used for a cluster run and the
+            % "LoadImages" option is being used, each batch
+            % needs access to the proper image for the current group, for the 
+            % current image set. Since we are re-arranging the number of
+            % image sets here, this image must be pulled from the filelist.
+            fieldname = ['Pathname', ImageName];
+            Pathname = handles.Pipeline.(fieldname);
+            fieldname = ['FileList', ImageName];
+            FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
+            OrigImage = CPimread(fullfile(Pathname,FileList{SetBeingAnalyzed}));
+        elseif areImagesDerived
+            % Otherwise, if "Pipeline" being used, it has already been
+            % derived and we can just request it
+            OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+        end
     else
         OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
     end
 end
 
-if strcmp(IntensityChoice,'Background')
+if usingBackgroundIllumCorr
     % Checks whether the chosen block size is larger than the image itself.
     [m,n] = size(OrigImage);
     MinLengthWidth = min(m,n);
@@ -381,7 +392,7 @@ end
 
 if isProcessingAll
     try
-        if strcmp(SourceIsLoadedOrPipeline, 'Load Images module') == 1 && SetBeingAnalyzed == 1
+        if areImagesOriginal && SetBeingAnalyzed == 1
             % If creating a batch file, there is no reason for all
             % the images to be loaded on the first cycle since it's going to
             % re-run on the cluster anyway
@@ -392,9 +403,9 @@ if isProcessingAll
                 CPwarndlg(['Preliminary calculations are under way for the ', ModuleName, ' module.  Subsequent cycles will be processed more quickly than the first cycle.'],[ModuleName ', ModuleNumber ' num2str(CurrentModuleNum) ': Preliminary calculations'],'replace');
                 drawnow;
 
-                if strcmp(IntensityChoice,'Regular')
+                if usingRegularIllumCorr
                     [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
-                elseif strcmp(IntensityChoice,'Background')
+                elseif usingBackgroundIllumCorr
                     % Retrieves the path where the images are stored from the handles
                     % structure.
                     fieldname = ['Pathname', ImageName];
@@ -441,20 +452,20 @@ if isProcessingAll
                 % Set the ReadyFlag to indicate that the illumination
                 % function is not ready but save placeholder images
                 ReadyFlag = 0;
-                if strcmp(IntensityChoice,'Regular')
+                if usingRegularIllumCorr
                     RawImage = OrigImage;
                     MaskImage = ones(size(RawImage));
-                elseif strcmp(IntensityChoice,'Background')
+                elseif usingBackgroundIllumCorr
                     IlluminationImage = OrigImage;
                 end
                 CPwarndlg([ 'You are creating an illumination function by processing "All" images from LoadImages during a batch run. ',...
                             'To save time, the first cycle run on your local machine will not load all the images; however, the cycles run during the batch will do so.',...
                             'For this setup cycle, the original image is used as the illumination correction function as a placeholder.'],[ModuleName,': Creating a batch file'],'replace');
             end
-        elseif strcmp(SourceIsLoadedOrPipeline,'Pipeline')
-            if strcmp(IntensityChoice,'Regular')
+        elseif areImagesDerived
+            if usingRegularIllumCorr
                 [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'Accumulate', ImageName, AverageImageName,['CropMaskCount',AverageImageName]);
-            elseif strcmp(IntensityChoice,'Background')
+            elseif usingBackgroundIllumCorr
                 % In Pipeline mode, each time through the cycle,
                 % the minimums from the image are added to the existing cumulative image.
                 [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
@@ -498,7 +509,7 @@ if isProcessingAll
         error(['Image processing was canceled in the ', ModuleName, ' module. Matlab says the problem is: ', ErrorMessage, ErrorMessage2]);
     end
 elseif isProcessingEach
-    if strcmp(IntensityChoice,'Regular')
+    if usingRegularIllumCorr
         RawImage = OrigImage;
         if HasMask
             %%% Retrieves previously selected cropping mask from handles
@@ -507,7 +518,7 @@ elseif isProcessingEach
             RawImage = RawImage .* MaskImage;
         end
 
-    elseif strcmp(IntensityChoice,'Background')
+    elseif usingBackgroundIllumCorr
         [BestBlockSize, RowsToAdd, ColumnsToAdd] = CalculateBlockSize(m,n,BlockSize);
         % Calculates a coarse estimate of the background
         % illumination by determining the minimum of each block
@@ -530,7 +541,7 @@ end
 
 % Dilates the objects, and/or smooths the RawImage if the user requested.
 if ReadyFlag || isCreatingBatchFile 
-    if strcmp(IntensityChoice,'Regular')
+    if usingRegularIllumCorr
         if (NumericalObjectDilationRadius > 0)
             DilatedImage = CPdilatebinaryobjects(RawImage, NumericalObjectDilationRadius);
         elseif (NumericalObjectDilationRadius < 0)
@@ -571,7 +582,7 @@ if ReadyFlag || isCreatingBatchFile
         else FinalIlluminationFunction = RawImage;
         end
 
-    elseif strcmp(IntensityChoice,'Background')
+    elseif usingBackgroundIllumCorr
         if ~strcmp(SmoothingMethod,'No smoothing')
             % Smooths the Illumination image, if requested, but saves a raw copy
             % first.
@@ -640,7 +651,7 @@ if any(findobj == ThisModuleFigureNumber)
     if SetBeingAnalyzed == StartingImageSet
         CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    if strcmp(IntensityChoice,'Regular')
+    if usingRegularIllumCorr
         % Whether these images exist depends on whether the images have
         % been calculated yet (if running in pipeline mode, this won't occur
         % until the last cycle is processed).  It also depends on
@@ -734,7 +745,7 @@ if any(findobj == ThisModuleFigureNumber)
                 end
             end
         end
-    elseif strcmp(IntensityChoice,'Background')
+    elseif usingBackgroundIllumCorr
         % A subplot of the figure window is set to display the original
         % image, some intermediate images, and the final corrected image.
         ax = cell(1,4);
@@ -822,13 +833,13 @@ drawnow
 % processed. If running in cycling mode (Pipeline mode), the
 % average image and its flag are saved to the handles structure
 % after every cycle is processed.
-if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipeline, 'Load Images module') && SetBeingAnalyzed == 1)
+if areImagesDerived || (areImagesOriginal && SetBeingAnalyzed == 1)
     if ReadyFlag || isCreatingBatchFile
         handles = CPaddimages(handles,IlluminationImageName,FinalIlluminationFunction);
     end
     fieldname = [IlluminationImageName,'ReadyFlag'];
     handles = CPaddimages(handles,fieldname,ReadyFlag);
-    if strcmp(IntensityChoice,'Regular')
+    if usingRegularIllumCorr
         % Whether these images exist depends on whether the user has chosen
         % to dilate or smooth the average image.
         if AverageImageSaveFlag == 1
@@ -852,7 +863,7 @@ if strcmp(SourceIsLoadedOrPipeline, 'Pipeline') || (strcmp(SourceIsLoadedOrPipel
                 error(['Image processing was canceled in the ', ModuleName, ' module. There was a problem passing along the dilated image. This image can only be passed along if you choose to dilate.']);
             end
         end
-    elseif strcmp(IntensityChoice,'Background')
+    elseif usingBackgroundIllumCorr
         % Whether these images exist depends on whether the user has chosen
         % to smooth the averaged minimums image.
         %if exist('AverageMinimumsImage','var') == 1

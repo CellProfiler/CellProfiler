@@ -456,7 +456,6 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         self.save_outlines = cps.OutlineNameProvider('What do you want to call the outlines of the identified objects?')
         self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
         self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
-        self.masking_object = cps.ObjectNameSubscriber('What are the objects you want to use for per-object thresholding?')
         self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
         self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
         self.wants_automatic_log_threshold = cps.Binary('Do you want to calculate the Laplacian of Gaussian threshold automatically?',True)

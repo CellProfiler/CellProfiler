@@ -83,7 +83,8 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual.
         masked_pixels = orig_image.pixel_data.copy()
         masked_pixels[np.logical_not(mask)] = 0
         masked_image = cpi.Image(masked_pixels,mask=mask,
-                                 parent_image = orig_image)
+                                 parent_image = orig_image,
+                                 masking_objects = objects)
         
         if workspace.frame:
             figure = workspace.create_or_find_figure(subplots=(2,1))

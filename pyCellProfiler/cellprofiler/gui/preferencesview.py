@@ -82,6 +82,12 @@ class PreferencesView:
         cellprofiler.preferences.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cellprofiler.preferences.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cellprofiler.preferences.add_output_directory_listener(self.__on_preferences_output_directory_event)
+        panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
+    
+    def __on_destroy(self, event):
+        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
 
     def attach_to_pipeline_controller(self,pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.on_analyze_images, self.__analyze_images_button)

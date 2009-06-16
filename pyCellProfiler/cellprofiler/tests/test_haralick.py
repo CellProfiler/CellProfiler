@@ -34,8 +34,10 @@ class TestHaralick(unittest.TestCase):
         norm = haralick.normalized_per_object(gray4, labels)
         self.assertTrue((norm == gray).all())
     def test_cooccurrence(self):
-        P = haralick.cooccurrence(gray4, labels, 1)
-        correct = np.array([[[2,2,1,0], [0,2,0,0], [0,0,3,1], [0,0,0,1]]])
+        P,levels = haralick.cooccurrence(gray4, labels, 1)
+        correct = np.array([[[2,2,1,0], [0,2,0,0], [0,0,3,1], [0,0,0,1]]],float)
+        correct = correct / np.sum(correct)
+        self.assertEqual(levels,4)
         self.assertTrue((P == correct).all())
     def test_H1(self):
         h = haralick.Haralick(gray, labels, 1, nlevels=4)

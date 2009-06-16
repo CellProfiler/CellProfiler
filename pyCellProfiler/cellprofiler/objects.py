@@ -10,8 +10,10 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+__version__="$Revision$"
+
 import decorator
-import numpy
+import numpy as np
 import scipy.sparse
 
 @decorator.decorator
@@ -108,7 +110,7 @@ class Objects(object):
                 result[self.__unedited_segmented == self.__segmented] = 0
                 return result
             # If there's only a segmented, then there is no junk.
-            return numpy.zeros(shape=self.__segmented.shape,
+            return np.zeros(shape=self.__segmented.shape,
                                dtype=self.__segmented.dtype)
         return self.__small_removed_segmented
     
@@ -161,24 +163,24 @@ class Objects(object):
         child_labels = children.segmented
         # Apply cropping to the parent if done to the child
         parent_labels  = children.crop_image_similarly(parent_labels)
-        any_parents = numpy.any(parent_labels > 0)
-        any_children = numpy.any(child_labels > 0)
+        any_parents = np.any(parent_labels > 0)
+        any_children = np.any(child_labels > 0)
         if (not any_parents) and (not any_children):
-            return numpy.zeros((0,)),numpy.zeros((0,))
+            return np.zeros((0,)),np.zeros((0,))
         elif (not any_parents):
-            return numpy.zeros((0,)),numpy.zeros((numpy.max(child_labels),))
+            return np.zeros((0,)),np.zeros((np.max(child_labels),))
         elif (not any_children):
-            return numpy.zeros((numpy.max(parent_labels),)), numpy.zeros((0,))
+            return np.zeros((np.max(parent_labels),)), np.zeros((0,))
         #
         # Only look at points that are labeled in parent and child
         #
-        not_zero = numpy.logical_and(parent_labels > 0,
+        not_zero = np.logical_and(parent_labels > 0,
                                      child_labels > 0)
-        not_zero_count = numpy.sum(not_zero)
+        not_zero_count = np.sum(not_zero)
          
-        max_parent = numpy.max(parent_labels)
-        max_child  = numpy.max(child_labels)
-        histogram = scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
+        max_parent = np.max(parent_labels)
+        max_child  = np.max(child_labels)
+        histogram = scipy.sparse.coo_matrix((np.ones((not_zero_count,)),
                                              (parent_labels[not_zero],
                                               child_labels[not_zero])),
                                              shape=(max_parent+1,max_child+1))
@@ -187,25 +189,30 @@ class Objects(object):
         # each column (axis = 1) is a child
         #
         histogram = histogram.toarray()
-        parents_of_children = numpy.argmax(histogram,axis=0)
+        parents_of_children = np.argmax(histogram,axis=0)
         #
         # Create a histogram of # of children per parent
-        poc_histogram = scipy.sparse.coo_matrix((numpy.ones((max_child+1,)),
+        poc_histogram = scipy.sparse.coo_matrix((np.ones((max_child+1,)),
                                                  (parents_of_children,
-                                                  numpy.zeros((max_child+1,),int))),
+                                                  np.zeros((max_child+1,),int))),
                                                  shape=(max_parent+1,1))
         children_per_parent = poc_histogram.toarray().flatten()
         #
-        # Make sure to remove the background elements at index 0
+        # Make sure to remove the background elements at index 0. Also,
+        # there's something screwy about the arrays returned here - you
+        # get "data type not supported" errors unless you reconstruct
+        # the results.
         #
-        return children_per_parent[1:], parents_of_children[1:]
+        children_per_parent = np.array(children_per_parent[1:].tolist(), int)
+        parents_of_children = np.array(parents_of_children[1:].tolist(), int)
+        return children_per_parent, parents_of_children
     
     @memoize_method
     def get_indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
         
         """
-        return numpy.array(range(numpy.max(self.segmented)),int)+1
+        return np.array(range(np.max(self.segmented)),int)+1
     
     indices = property(get_indices)
      
@@ -233,7 +240,7 @@ class Objects(object):
         a center or an area
         """
     
-        return function(numpy.ones(self.segmented.shape),
+        return function(np.ones(self.segmented.shape),
                         self.segmented,
                         self.indices)
     
@@ -261,11 +268,11 @@ def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     assert segmented == None or small_removed_segmented == None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ"%(repr(segmented.shape),repr(small_removed_segmented.shape))
     assert segmented == None or \
            unedited_segmented == None or \
-           numpy.logical_or(segmented == 0,unedited_segmented!=0).all(), \
+           np.logical_or(segmented == 0,unedited_segmented!=0).all(), \
            "Unedited segmented must be labeled if segmented is labeled"
     assert small_removed_segmented == None or \
            unedited_segmented == None or \
-           numpy.logical_or(small_removed_segmented == 0,unedited_segmented!=0).all(), \
+           np.logical_or(small_removed_segmented == 0,unedited_segmented!=0).all(), \
            "Unedited segmented must be labeled if small_removed_segmented is labeled"
     
 

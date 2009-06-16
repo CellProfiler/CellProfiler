@@ -57,7 +57,7 @@ MODULEDIRECTORY = 'ModuleDirectory'
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
-    return get_config().Read(MODULEDIRECTORY)
+    return str(get_config().Read(MODULEDIRECTORY))
 
 def set_module_directory(value):
     get_config().Write(MODULEDIRECTORY, value)

@@ -161,8 +161,12 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     # 
     data = np.array(data).flatten()
     data.sort()
+    if len(data) == 0:
+        return 0
     var = running_variance(data)
     rvar = np.flipud(running_variance(np.flipud(data)))
+    if bins > len(data):
+        bins = len(data)
     bin_len = int(len(data)/bins) 
     thresholds = data[0:len(data):bin_len]
     score_low = (var[0:len(data):bin_len] * 
@@ -202,7 +206,11 @@ def entropy3(data, bins=128):
     # 
     data = np.array(data).flatten()
     data.sort()
+    if len(data) == 0:
+        return 0
     var = running_variance(data)+1.0/512.0
+    if bins > len(data):
+        bins = len(data)
     bin_len = int(len(data)/bins) 
     thresholds = data[0:len(data):bin_len]
     score_low = entropy_score(var,bins)

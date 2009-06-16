@@ -360,9 +360,17 @@ if ~isempty(FieldsToGroupBy)
         % Lastly, in case the groups are not contigiuous in the original
         % FileList, re-order the FileLists to make it so (required for
         % processing in CPCluster)
-        [newIDlist,idx] = sort(handles.Pipeline.GroupFileListIDs);
+        [newIDlist,sortedidx] = sort(handles.Pipeline.GroupFileListIDs);
+        % Since LoadImages is separate from FileNameMetadata, I need to make
+        % sure that the first image is the same in the original and re-ordered
+        % FileLists (since I can't go back and re-load it)
+        if newIDlist(1) ~= handles.Pipeline.GroupFileListIDs(1)
+            idx = cat(2,find(newIDlist == handles.Pipeline.GroupFileListIDs(1)), find(newIDlist ~= handles.Pipeline.GroupFileListIDs(1)));
+            newIDlist = newIDlist(idx);
+            sortedidx = sortedidx(idx);
+        end
         for i = 1:length(AllImageNames)
-            handles.Pipeline.(['FileList',AllImageNames{i}]) = handles.Pipeline.(['FileList',AllImageNames{i}])(idx);
+            handles.Pipeline.(['FileList',AllImageNames{i}]) = handles.Pipeline.(['FileList',AllImageNames{i}])(sortedidx);
         end
         handles.Pipeline.GroupFileListIDs = newIDlist;
     else

@@ -129,7 +129,12 @@ catch
 end
 SubmitInfo.CPCluster = num2str(svn_ver_char);
 
-SubmitInfo.BatchSize = 10;
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if isImageGroups
+    SubmitInfo.BatchSize = 1;
+else
+    SubmitInfo.BatchSize = 10;
+end
 SubmitInfo.MemoryLimit = 2000;
 SubmitInfo.Timeout = 30;
 SubmitInfo.WriteData = 1;

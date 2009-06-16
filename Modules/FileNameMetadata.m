@@ -352,10 +352,19 @@ if ~isempty(FieldsToGroupBy)
             handles.Pipeline.GroupFileList{idx}.(AllImageNames{i}) = handles.Pipeline.(AllImageNames{i});
         end
 
+        % Set a few last variables in handles
         handles.Pipeline.CurrentImageGroupID = idx;
         handles.Pipeline.ImageGroupFields = FieldsToGroupBy;
-        
         handles.Current.NumberOfImageGroups = length(handles.Pipeline.GroupFileList);
+        
+        % Lastly, in case the groups are not contigiuous in the original
+        % FileList, re-order the FileLists to make it so (required for
+        % processing in CPCluster)
+        [newIDlist,idx] = sort(handles.Pipeline.GroupFileListIDs);
+        for i = 1:length(AllImageNames)
+            handles.Pipeline.(['FileList',AllImageNames{i}]) = handles.Pipeline.(['FileList',AllImageNames{i}])(idx);
+        end
+        handles.Pipeline.GroupFileListIDs = newIDlist;
     else
         % If grouping fields have been created, set the current group
         % number (This will not be true until FileNameMetadata has

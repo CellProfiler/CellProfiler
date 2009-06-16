@@ -393,6 +393,13 @@ end
 if isProcessingAll
     try
         if areImagesOriginal && SetBeingAnalyzed == 1
+            % Check if the correct images are being used for this config
+            fieldname = ['Pathname', ImageName];
+            try 
+                Pathname = handles.Pipeline.(fieldname);
+            catch
+                error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.']);
+            end
             % If creating a batch file, there is no reason for all
             % the images to be loaded on the first cycle since it's going to
             % re-run on the cluster anyway
@@ -406,14 +413,6 @@ if isProcessingAll
                 if usingRegularIllumCorr
                     [handles, RawImage, ReadyFlag, MaskImage] = CPaverageimages(handles, 'DoNow', ImageName, 'ignore','ignore2');
                 elseif usingBackgroundIllumCorr
-                    % Retrieves the path where the images are stored from the handles
-                    % structure.
-                    fieldname = ['Pathname', ImageName];
-                    try 
-                        Pathname = handles.Pipeline.(fieldname);
-                    catch
-                        error(['Image processing was canceled in the ', ModuleName, ' module because it uses all the images of one type to calculate the illumination correction. Therefore, the entire set of images to be illumination corrected must exist prior to processing the first cycle through the pipeline. In other words, the ',ModuleName, ' module must be run straight after a Load Images module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this ', ModuleName, ' module onward.']);
-                    end
                     % Retrieves the list of filenames where the images are stored from the
                     % handles structure.
                     fieldname = ['FileList', ImageName];

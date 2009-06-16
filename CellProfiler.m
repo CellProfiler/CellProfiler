@@ -594,8 +594,8 @@ set(handles.OutputFileNameEditBox,'string','DefaultOUT.mat')
 %
 try %#ok<TRYNC>
     CurrentSVNVersion = get_svn_info(handles);
-    WebsiteSVNVersion = urlread('http://www.cellprofiler.org/CPupdate.txt');
-    if str2double(CurrentSVNVersion) < str2double(WebsiteSVNVersion)
+    [WebsiteSVNVersion,success] = urlread('http://www.cellprofiler.org/CPupdate.txt');
+    if success && str2double(CurrentSVNVersion) < str2double(WebsiteSVNVersion)
         CPmsgbox({'A new version of CellProfiler is available at www.cellprofiler.org',...
             sprintf('You are still running version %s. The new one is version %s',CurrentSVNVersion, WebsiteSVNVersion)},...
             sprintf('Upgrade to version %s of CellProfiler',WebsiteSVNVersion));

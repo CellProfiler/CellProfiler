@@ -281,6 +281,12 @@ if ~isempty(FieldsToGroupBy)
             s1 = cat(1,s1{:})';
             idx = reshape(~cellfun(@isempty,s1(:)),size(s1));
             s1 = cat(1,s1{:,find(all(idx,1),1,'first')});
+            % Append Well if WellColumn/WellRow exist
+            if isfield(s1,'WellColumn') && isfield(s1,'WellRow')
+                for i = 1:length(s1)
+                    s1(i).Well = [s1(i).WellRow num2str(str2num(s1(i).WellColumn),'%02d')];
+                end
+            end
             PathFieldsToGroupBy = FieldsToGroupBy(ismember(FieldsToGroupBy,PathFieldNames));
             path_idstr = cell(size(s1,1),length(PathFieldsToGroupBy));
             [path_idstr{:}] = deal('');
@@ -304,6 +310,13 @@ if ~isempty(FieldsToGroupBy)
             s2 = cat(1,s2{:})';
             idx = reshape(~cellfun(@isempty,s2(:)),size(s2));
             s2 = cat(1,s2{:,find(all(idx,1),1,'first')});
+            % Append Well if WellColumn/WellRow exist
+            if isfield(s2,'WellColumn') && isfield(s2,'WellRow')
+                for i = 1:length(s2)
+                    s2(i).Well = [s2(i).WellRow num2str(str2num(s2(i).WellColumn),'%02d')];
+                end
+            end
+            
             FileFieldsToGroupBy = FieldsToGroupBy(ismember(FieldsToGroupBy,FileFieldNames));
             file_idstr = cell(size(s2,1),length(FileFieldsToGroupBy));
             [file_idstr{:}] = deal('');

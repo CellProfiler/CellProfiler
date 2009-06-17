@@ -38,6 +38,9 @@ function handles = LoadSingleImage(handles)
 % folder.  The above also applies for '&' with regards to the default
 % output folder.
 %
+% NOTE: A LoadSingleImage module must be placed downstream of a 
+% LoadImages module in order to work correctly.
+%
 % If more than four single images must be loaded, more than one Load Single
 % Image module can be run sequentially. Running more than one of these
 % modules also allows images to be retrieved from different folders.
@@ -128,6 +131,12 @@ ImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %%% PRELIMINARY CALCULATIONS %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow;
+
+% Make sure this module is placed after any LoadImages modules (since it
+% needs the number of cycles to work properly)
+if find(strcmp(handles.Settings.ModuleNames,'LoadImages'),1) > find(strcmp(handles.Settings.ModuleNames,ModuleName),1,'first')
+    error(['Image processing was canceled in the ', ModuleName,' module. ',ModuleName,' must be placed downstream from a LoadImage module']);
+end
 
 %%% Determines which cycle is being analyzed.
 isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');

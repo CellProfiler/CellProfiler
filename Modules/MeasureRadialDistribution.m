@@ -234,9 +234,9 @@ RadialCV(isnan(RadialCV)) = 0;
 
 %%% Store Measurements
 for k = 1:BinCount,
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
-    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialIntensityDist', 'RadialCV', ImageName, num2str(k)), RadialCV(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'FracAtD', ImageName, num2str(k)), FractionAtDistance(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'MeanFrac', ImageName, num2str(k)), MeanPixelFraction(:, k));
+    handles = CPaddmeasurements(handles, MainObjects, CPjoinstrings('RadialDistribution', 'RadialCV', ImageName, num2str(k)), RadialCV(:, k));
 end
 
 

@@ -11,10 +11,15 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+import matplotlib.cm
+import numpy as np
 import wx
 import wx.grid
+import sys
+
 import cellprofiler.pipeline
 import cellprofiler.settings
+import cellprofiler.preferences
 from regexp_editor import edit_regexp
 
 ERROR_COLOR = wx.RED
@@ -148,6 +153,12 @@ def scale_control_name(v):
 def scale_text_ctrl_name(v):
     return "%s_scale_text"%(str(v.key()))
 
+def combobox_ctrl_name(v):
+    return "%s_combobox"%(str(v.key()))
+
+def colorbar_ctrl_name(v):
+    return "%s_colorbar"%(str(v.key()))
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -245,15 +256,17 @@ class ModuleView:
                 self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.settings.Binary):
                     control = self.make_binary_control(v,control_name,control)
-                elif isinstance(v,cellprofiler.settings.Choice):
-                    control = self.make_choice_control(v, v.get_choices(),
-                                                       control_name, 
-                                                       wx.CB_READONLY,
-                                                       control)
                 elif isinstance(v,cellprofiler.settings.CustomChoice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
+                                                       control)
+                elif isinstance(v,cellprofiler.settings.Colormap):
+                    control = self.make_colormap_control(v, control_name, control)
+                elif isinstance(v,cellprofiler.settings.Choice):
+                    control = self.make_choice_control(v, v.get_choices(),
+                                                       control_name, 
+                                                       wx.CB_READONLY,
                                                        control)
                 elif isinstance(v,cellprofiler.settings.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
@@ -333,6 +346,60 @@ class ModuleView:
             
         return control
     
+    def make_colormap_control(self, v, control_name, control):
+        """Make a combo-box that shows colormap choices
+        v            - the setting
+        choices      - the possible values for the setting
+        control_name - assign this name to the control
+        style        - one of the CB_ styles 
+        """
+        try:
+            if v.value == cellprofiler.settings.DEFAULT:
+                cmap_name = cellprofiler.preferences.get_default_colormap()
+            else:
+                cmap_name = v.value
+            cm = matplotlib.cm.get_cmap(cmap_name)
+            sm = matplotlib.cm.ScalarMappable(cmap=cm)
+            i,j = np.mgrid[0:12,0:128]
+            if cm.N < 128:
+                j = j * int((cm.N+128) / 128)
+            image = (sm.to_rgba(j) * 255).astype(np.uint8)
+            bitmap = wx.BitmapFromBufferRGBA(128,12,image.tostring())
+        except:
+            sys.stderr.write("Failed to create the %s colorbar"%cmap_name)
+            bitmap = None 
+        if not control:
+            control = wx.Panel(self.__module_panel,-1,
+                               name = control_name)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            control.SetSizer(sizer)
+            colorbar = wx.StaticBitmap(control, -1,
+                                       name=colorbar_ctrl_name(v))
+            if not bitmap is None:
+                colorbar.SetBitmap(bitmap)
+            sizer.Add(colorbar,0,wx.EXPAND|wx.BOTTOM, 2)
+            
+            combo = wx.ComboBox(control,-1,v.value,
+                                  choices=v.choices,
+                                  style=wx.CB_READONLY,
+                                  name=combobox_ctrl_name(v))
+            sizer.Add(combo,1,wx.EXPAND)
+            def callback(event, setting=v, control = combo):
+                self.__on_combobox_change(event, setting,combo)
+            self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,combo)
+        else:
+            combo = control.FindWindowByName(combobox_ctrl_name(v))
+            colorbar = control.FindWindowByName(colorbar_ctrl_name(v))
+            old_choices = combo.Items
+            if len(v.choices)!=len(old_choices) or\
+               not all([x==y for x,y in zip(v.choices,old_choices)]):
+                combo.Items = v.choices
+            if combo.Value != v.value:
+                combo.Value = v.value
+            if not bitmap is None:
+                colorbar.SetBitmap(bitmap)
+        return control
+        
     def make_callback_control(self,v,control_name,control):
         """Make a control that calls back using the callback buried in the setting"""
         if not control:

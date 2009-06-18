@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import matplotlib.cm
 import re
 import uuid
 
@@ -20,6 +21,7 @@ AUTOMATIC = "Automatic"
 YES = 'Yes'
 NO = 'No'
 LEAVE_BLANK = 'Leave blank'
+DEFAULT = 'Default'
 
 class Setting(object):
     """A module setting which holds a single string value
@@ -987,6 +989,14 @@ class Measurement(Setting):
             raise ValidationError("%s has an unavailable scale" %
                                   self.value, self)
 
+class Colormap(Choice):
+    '''Represents the choice of a colormap'''
+    def __init__(self, text, value=DEFAULT):
+        names = list(matplotlib.cm.cmapnames)
+        names.sort()
+        choices = [DEFAULT] + names
+        super(Colormap,self).__init__(text, choices, value)
+    
 class ChangeSettingEvent(object):
     """Abstract class representing either the event that a setting will be
     changed or has been changed

@@ -17,6 +17,7 @@ import wx
 import matplotlib
 import matplotlib.cm
 import matplotlib.patches
+import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
 
 from cellprofiler.gui import get_icon
@@ -63,6 +64,7 @@ class CPFigureFrame(wx.Frame):
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
         self.mouse_mode = MODE_NONE
         self.zoom_stack = []
+        self.colorbar = {}
         self.mouse_down = None
         sizer = wx.BoxSizer()
         self.figure = figure= matplotlib.figure.Figure()
@@ -211,18 +213,38 @@ class CPFigureFrame(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        self.subplot(x,y).clear()
+        axes = self.subplot(x,y)
+        axes.clear()
     
-    def subplot_imshow(self, x,y,image, title=None, clear=True, colormap=None):
+    def subplot_imshow(self, x,y,image, title=None, clear=True,
+                       colormap=None, colorbar=False, vmin=None, vmax=None):
+        '''Show an image in a subplot
+        
+        x,y   - show image in this subplot
+        image - image to show
+        title - add this title to the subplot
+        clear - clear the subplot axes before display if true
+        colormap - for a grayscale or labels image, use this colormap
+                   to assign colors to the image
+        colorbar - display a colorbar if true
+        ''' 
         if clear:
             self.clear_subplot(x, y)
         subplot = self.subplot(x,y)
         if colormap == None:
             result = subplot.imshow(image)
         else:
-            result = subplot.imshow(image, colormap)
+            result = subplot.imshow(image, colormap, vmin=vmin, vmax=vmax)
         if title != None:
             self.set_subplot_title(title, x, y)
+        if colorbar:
+            if self.colorbar.has_key(subplot):
+                axc =self.colorbar[subplot]
+            else:
+                axc, kw = matplotlib.colorbar.make_axes(subplot)
+                self.colorbar[subplot] = axc
+            cb = matplotlib.colorbar.Colorbar(axc, result)
+            result.colorbar = cb
         return result
     
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
@@ -296,3 +318,4 @@ def renumber_labels_for_display(labels):
     renumber = numpy.random.permutation(numpy.max(label_copy))
     label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
     return label_copy
+

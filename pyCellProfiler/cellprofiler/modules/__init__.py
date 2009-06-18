@@ -35,6 +35,7 @@ from measureimageintensity import MeasureImageIntensity
 from measureimagequality import MeasureImageQuality
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
+from measureobjectneighbors import MeasureObjectNeighbors
 from measuretexture import MeasureTexture
 from morph import Morph
 from overlay_outlines import OverlayOutlines
@@ -67,6 +68,7 @@ def get_module_classes():
             MeasureImageQuality,
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
+            MeasureObjectNeighbors,
             MeasureTexture,
             Morph,
             OverlayOutlines,
@@ -102,6 +104,7 @@ def get_module_substitutions():
             "MeasureImageQuality": MeasureImageQuality,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
+            "MeasureObjectNeighbors": MeasureObjectNeighbors,
             "MeasureTexture": MeasureTexture,
             "Morph": Morph,
             "OverlayOutlines": OverlayOutlines,

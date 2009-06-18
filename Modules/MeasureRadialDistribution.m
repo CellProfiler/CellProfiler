@@ -149,14 +149,20 @@ if ~strcmp(CenterObjects, 'Do not use'),
 else
     %%% Find the point per object farthest from the edge of the object
     Perimeters = CPlabelperim(LabelMatrixImage);
-    LabelsWOPerimeters=LabelMatrixImage;
-    LabelsWOPerimeters(Perimeters > 0)=0;
-    Distances = bwdist(LabelsWOPerimeters==0)+random('unif',0,.1,size(LabelMatrixImage));
+    LabelsWOPerimeters = LabelMatrixImage;
+    LabelsWOPerimeters(Perimeters > 0) = 0;
+    Distances = bwdist(LabelsWOPerimeters==0) + random('unif',0,.1,size(LabelMatrixImage));
     Points = regionprops(LabelsWOPerimeters,Distances,'PixelValues','PixelList');
     Centroids = zeros(2,max(LabelMatrixImage(:)));
     for k = 1:length(Points)
-        [ignore,index]=max(Points(k).PixelValues);
-        Centroids(:,k)=Points(k).PixelList(index,:);
+        if ~isempty(Points(k).PixelValues)
+            [ignore,index] = max(Points(k).PixelValues);
+            Centroids(:,k) = Points(k).PixelList(index,:);
+        else
+            %%% If no perimeter found, default to centroid
+            props = regionprops(double(LabelMatrixImage == k),'Centroid');
+            Centroids(:,k) = round([props(:).Centroid]);
+        end
     end
     CenterLabels = full(sparse(Centroids(2,:), Centroids(1,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));
 end

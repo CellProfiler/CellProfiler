@@ -317,7 +317,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                 dp = CorrectIlluminationDilatedImageProvider(self.average_image_name,
                                                              output_image_provider)
                 image_set_list.add_provider_to_all_image_sets(dp)
-            if self.is_source_loaded(pipeline):
+            if pipeline.is_source_loaded(self.image_name.value):
                 if frame != None:
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
                                                         "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(image_set_list.count()),
@@ -347,7 +347,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
         if self.each_or_all == EA_ALL:
             output_image_provider = \
                 workspace.image_set.get_image_provider(self.illumination_image_name)
-            if not self.is_source_loaded(workspace.pipeline):
+            if not workplace.pipeline.is_source_loaded(self.image_name.value):
                 #
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
@@ -397,15 +397,6 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                            round(self.smoothing_filter_size(output_image.pixel_data.size),2)])
         figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
 
-    def is_source_loaded(self, pipeline):
-        """True if the image_name is provided by an image file loader"""
-        for module in pipeline.modules():
-            for setting in module.settings():
-                if (isinstance(setting, cps.FileImageNameProvider) and
-                    setting.value == self.image_name.value):
-                    return True
-        return False
-    
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings
         

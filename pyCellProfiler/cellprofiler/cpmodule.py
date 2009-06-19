@@ -455,6 +455,14 @@ class CPModule(object):
     
     def needs_matlab(self):
         return False
+
+    def is_source_loaded(self, image_name):
+        """Return True if this module loads this image name from file."""
+        for setting in self.settings():
+            if (isinstance(setting, cps.FileImageNameProvider) and
+                setting.value == image_name):
+                return True
+        return False
     
 class MatlabModule(CPModule):
     """A matlab module, as from a .m file

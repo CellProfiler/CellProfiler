@@ -667,6 +667,16 @@ class Pipeline:
     def remove_listener(self,listener):
         self.__listeners.remove(listener)
 
+    def is_source_loaded(self, image_name):
+        """Return True if any module in the pipeline claims to be
+        loading this image name from file."""
+        for module in self.modules():
+            if module.is_source_loaded(image_name):
+                return True
+        return False
+        
+
+
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners
     """

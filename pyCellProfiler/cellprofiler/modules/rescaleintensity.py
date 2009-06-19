@@ -92,11 +92,10 @@ See also SubtractBackground.
 
     def create_settings(self):
         self.module_name = self.__class__.__name__
-        self.image_name = cpsetting.NameSubscriber(
-            "Which image do you want to rescale?", "imagegroup", "None")
-        self.rescaled_image_name = cpsetting.NameProvider(
-            "What do you want to call the rescaled image?",
-            "imagegroup", "RescaledBlue")
+        self.image_name = cpsetting.ImageNameSubscriber(
+            "Which image do you want to rescale?", "None")
+        self.rescaled_image_name = cpsetting.ImageNameProvider(
+            "What do you want to call the rescaled image?", "RescaledBlue")
         self.method = cpsetting.Choice(
             "Which rescaling method do you want to use?",
             [METHOD_S, METHOD_E, METHOD_G, METHOD_M, METHOD_T])
@@ -141,9 +140,9 @@ See also SubtractBackground.
             minval=0, maxval=1)
 
         # if METHOD_M:
-        self.other_image = cpsetting.NameSubscriber(
+        self.other_image = cpsetting.ImageNameSubscriber(
             "What did you call the image whose maximum you want the rescaled "
-            "image to match?", "imagegroup", "None")
+            "image to match?", "None")
 
         # if METHOD_T:
         self.text_name = cpsetting.NameSubscriber(
@@ -209,6 +208,43 @@ See also SubtractBackground.
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
+
+    def prepare_run(self, pipeline, image_set_list, frame):
+        if self.method == METHOD_E:
+            if self.low_orig.value == AUTO_ALL or \
+                    self.high_orig.value == AUTO_ALL:
+               if not pipeline.is_source_loaded(self.image_name.value):
+                   raise ValueError, "Values can only be determined "
+               "automatically from all images if the images are loaded "
+               "directly from files (i.e., not preprocessed by other modules)."
+               nimages = image_set_list.count()
+               if frame != None:
+                   progress_dialog = wx.ProgressDialog(
+                       "#%d: RescaleIntensity for %s"%(self.module_num, 
+                                                       self.image_name),
+                       "RescaleIntensity is inspecting %d images to "
+                       "determine values automatically"%(nimages,),
+                       nimages, frame, 
+                       wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
+               for i in range(nimages):
+                    image_set = image_set_list.get_image_set(i)
+                    image = image_set.get_image(self.image_name, cache=False,
+                                                must_be_grayscale=True)
+                    if self.low_orig.value == AUTO_ALL:
+                        low = image.pixel_data[image.mask].min()
+                        if i == 0 or low < self.auto_low_orig:
+                            self.auto_low_orig = low
+                    if self.high_orig.value == AUTO_ALL:
+                        high = image.pixel_data[image.mask].max()
+                        if i == 0 or high > self.auto_high_orig:
+                            self.auto_high_orig = high
+                    if frame != None:
+                        should_continue, skip = progress_dialog.Update(i+1)
+                        if not should_continue:
+                            progress_dialog.EndModal(0)
+                            return False
+        return True
+
         
     def run(self,workspace):
         """Run the module
@@ -227,13 +263,13 @@ See also SubtractBackground.
             pixels = rescale_s(input.pixel_data)
         elif self.method == METHOD_E:
             if self.low_orig.value == AUTO_ALL:
-                raise NotImplementedError
+                low_orig = self.auto_low_orig
             elif self.low_orig.value == AUTO_EACH:
                 low_orig = input.pixel_data[input.mask].min()
             else:
                 low_orig = self.low_orig_manual.value
             if self.high_orig.value == AUTO_ALL:
-                raise NotImplementedError
+                high_orig = self.auto_high_orig
             elif self.high_orig.value == AUTO_EACH:
                 high_orig = input.pixel_data[input.mask].max()
             else:
@@ -260,7 +296,8 @@ See also SubtractBackground.
                                   colormap=matplotlib.cm.Greys_r,
                                   colorbar=True),
             figure.subplot_imshow(1, 0, output.pixel_data, 
-                                  "Rescaled image: " +self.rescaled_image_name,
+                                  "Rescaled image: " + \
+                                      self.rescaled_image_name.value,
                                   colormap=matplotlib.cm.Greys_r,
                                   colorbar=True)
 

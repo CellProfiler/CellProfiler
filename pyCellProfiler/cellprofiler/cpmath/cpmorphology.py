@@ -1930,9 +1930,9 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     return result
 
 if __name__=='__main__':
-    import PIL.Image
+    import Image as PILImage
     from matplotlib.image import pil_to_array
-    image = pil_to_array(PIL.Image.open('c:/temp/worm_masks/041609vit3gfpA01_w.PNG'))
+    image = pil_to_array(PILImage.open('c:/temp/worm_masks/041609vit3gfpA01_w.PNG'))
     image = image[:,:,0] > 0
     for i in range(10):
         thin(image)

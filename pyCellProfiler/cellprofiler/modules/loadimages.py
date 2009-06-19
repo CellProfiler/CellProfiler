@@ -18,7 +18,7 @@ import re
 import wx
 import wx.html
 
-import PIL.Image
+import Image as PILImage
 import numpy
 import matplotlib.image
 import scipy.io.matlab.mio
@@ -829,7 +829,7 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         if self.__filename.endswith(".mat"):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name())
             return cpimage.Image(imgdata["Image"])
-        img = PIL.Image.open(self.get_full_name())
+        img = PILImage.open(self.get_full_name())
         if img.mode=='I;16':
             # 16-bit image
             # deal with the endianness explicitly... I'm not sure
@@ -854,7 +854,7 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             # images to be loaded upside-down. At best, load and save have opposite
             # orientations; in other words, if you load an image and then save it
             # the resulting saved image will be upside-down
-            img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
+            img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
             img = matplotlib.image.pil_to_array(img)
         return cpimage.Image(img)
     
@@ -897,7 +897,7 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
         # images to be loaded upside-down. At best, load and save have opposite
         # orientations; in other words, if you load an image and then save it
         # the resulting saved image will be upside-down
-        img = img.transpose(PIL.Image.FLIP_TOP_BOTTOM)
+        img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
         if img.mode=='I;16':
             # 16-bit image
             imgdata = numpy.array(img.getdata(),numpy.uint16)

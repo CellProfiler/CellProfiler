@@ -31,4 +31,4 @@ cellprofiler/cpmath/_filter.pyd: cellprofiler/cpmath/_filter.pyx
 	python cellprofiler/cpmath/setup.py build_ext -i --compiler=$(PYTHON_COMPILER)
 
 tests:
-	python -m nose.core --with-nosexunit --core-target=target/xml-report $(TEST_MODULES)
+	python -m nose.core --exe --with-nosexunit --core-target=target/xml-report $(TEST_MODULES)

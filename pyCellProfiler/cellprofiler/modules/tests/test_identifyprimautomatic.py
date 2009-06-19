@@ -16,7 +16,7 @@ import os
 import base64
 import unittest
 import numpy
-import PIL.Image
+import Image as PILImage
 import scipy.ndimage
 import tempfile
 import StringIO
@@ -1433,7 +1433,7 @@ def two_cell_image():
 def fly_image():
     file = os.path.join(cellprofiler.modules.tests.example_images_directory(),
                         'ExampleFlyImages','01_POS002_D.TIF')
-    img = numpy.asarray(PIL.Image.open(file))
+    img = numpy.asarray(PILImage.open(file))
     img = img.astype(float) / 255.0
     return img
     

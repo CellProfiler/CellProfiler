@@ -15,7 +15,7 @@ __version__="$Revision$"
 import matplotlib.image
 import numpy
 import os
-import PIL.Image
+import Image as PILImage
 import unittest
 import base64
 import tempfile
@@ -356,14 +356,14 @@ class TestSaveImages(unittest.TestCase):
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        pil = PIL.Image.open(img1_out_filename)
+        pil = PILImage.open(img1_out_filename)
         data = matplotlib.image.pil_to_array(pil)
-        pil = PIL.Image.open(img1_filename)
+        pil = PILImage.open(img1_filename)
         expected_data = matplotlib.image.pil_to_array(pil) 
         self.assertTrue(numpy.all(data==expected_data))
-        pil = PIL.Image.open(img2_out_filename)
+        pil = PILImage.open(img2_out_filename)
         data = matplotlib.image.pil_to_array(pil)
-        pil = PIL.Image.open(img2_filename)
+        pil = PILImage.open(img2_filename)
         expected_data = matplotlib.image.pil_to_array(pil) 
         self.assertTrue(numpy.all(data==expected_data))
 

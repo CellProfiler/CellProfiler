@@ -97,7 +97,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
         
     def __set_icon(self):
-        filename=os.path.join(cellprofiler.preferences.python_root_directory(),'CellProfilerIcon.png')
+        filename=os.path.join(cellprofiler.preferences.resources_root_directory(),'CellProfilerIcon.png')
         icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
         
@@ -112,8 +112,11 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
             
-        files = [x for x in os.listdir(cellprofiler.preferences.module_directory())
-                 if os.path.splitext(x)[1] == cellprofiler.preferences.module_extension()]
+        if os.access(cellprofiler.preferences.module_directory(), os.R_OK):
+            files = [x for x in os.listdir(cellprofiler.preferences.module_directory())
+                     if os.path.splitext(x)[1] == cellprofiler.preferences.module_extension()]
+        else:
+            files = []
         files.sort()
         for file in files:
             module_path = os.path.join(cellprofiler.preferences.module_directory(),file)

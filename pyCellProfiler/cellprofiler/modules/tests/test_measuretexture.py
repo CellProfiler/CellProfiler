@@ -16,7 +16,7 @@ import base64
 from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import PIL.Image
+import Image as PILImage
 from scipy.io.matlab import loadmat
 import scipy.ndimage as scind
 from StringIO import StringIO
@@ -148,13 +148,13 @@ class TestMeasureTexture(unittest.TestCase):
     def test_02_01_compare_to_matlab(self):
         path = os.path.split(__file__)[0]
         mask_file = os.path.join(path, 'Channel2-01-A-01Mask.png')
-        mask = pil_to_array(PIL.Image.open(mask_file))
+        mask = pil_to_array(PILImage.open(mask_file))
         mask = np.flipud(mask)
         texture_measurements = loadmat(os.path.join(path,'texturemeasurements.mat'), struct_as_record=True)
         texture_measurements = texture_measurements['m'][0,0]
         image_file = os.path.join(example_images_directory(), 
                                   'ExampleSBSImages', 'Channel1-01-A-01.tif')
-        image = pil_to_array(PIL.Image.open(image_file))
+        image = pil_to_array(PILImage.open(image_file))
         image = np.flipud(image[:,:,0])
         labels,count = scind.label(mask.astype(bool),np.ones((3,3),bool))
         centers = scind.center_of_mass(np.ones(labels.shape), labels, 

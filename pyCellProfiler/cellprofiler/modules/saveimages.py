@@ -15,7 +15,7 @@ __version__="$Revision$"
 import matplotlib
 import numpy
 import os
-import PIL.Image
+import Image as PILImage
 import scipy.io.matlab.mio
 import wx
 
@@ -412,7 +412,7 @@ class SaveImages(cpm.CPModule):
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
-            pil = PIL.Image.fromarray(pixels,mode)
+            pil = PILImage.fromarray(pixels,mode)
             if self.overwrite_check.value and os.path.isfile(filename):
                 over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
                                      "Warning: overwriting file", wx.YES_NO)

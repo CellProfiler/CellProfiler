@@ -363,9 +363,12 @@ class Pipeline:
     def build_matlab_handles(self, image_set = None, object_set = None, measurements=None):
         handles = self.save_to_handles()
         image_tools_dir = os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools')
-        image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
-                       for filename in os.listdir(image_tools_dir)
-                       if os.path.splitext(filename)[1] == '.m']
+        if os.access(image_tools_dir, os.R_OK):
+            image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
+                           for filename in os.listdir(image_tools_dir)
+                           if os.path.splitext(filename)[1] == '.m']
+        else:
+            image_tools = []
         image_tools.insert(0,'Image tools')
         npy_image_tools = numpy.ndarray((1,len(image_tools)),dtype=numpy.dtype('object'))
         for tool,idx in zip(image_tools,range(0,len(image_tools))):

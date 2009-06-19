@@ -50,6 +50,14 @@ def cell_profiler_root_directory():
 def python_root_directory():
     return __python_root
 
+def resources_root_directory():
+    if hasattr(sys, 'frozen'):
+        # On Mac, the application runs in CellProfiler2.0.app/Contents/Resources.
+        # Not sure where this should be on PC.
+        return '.'
+    else:
+        return __python_root
+
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'

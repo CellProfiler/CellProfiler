@@ -17,7 +17,6 @@ import sys
 import wx
 
 import scipy.io.matlab
-import PIL.Image
 import matplotlib
 import matplotlib.image
 import matplotlib.figure

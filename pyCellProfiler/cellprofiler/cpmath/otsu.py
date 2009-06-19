@@ -287,7 +287,7 @@ def running_variance(x):
     
     
 if __name__=='__main__':
-    import PIL.Image
+    import Image as PILImage
     import wx
     import os
     from matplotlib.image import pil_to_array
@@ -322,7 +322,7 @@ if __name__=='__main__':
         def on_file_open(self, event):
             dlg = wx.FileDialog(self.frame,style=wx.FD_OPEN)
             if dlg.ShowModal() == wx.ID_OK:
-                img = pil_to_array(PIL.Image.open(os.path.join(dlg.GetDirectory(),dlg.GetFilename())))
+                img = pil_to_array(PILImage.open(os.path.join(dlg.GetDirectory(),dlg.GetFilename())))
                 if img.ndim == 3:
                     img = img[:,:,0]+img[:,:,1]+img[:,:,2]
                 img = stretch(img.astype(float))

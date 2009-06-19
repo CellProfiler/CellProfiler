@@ -18,6 +18,7 @@ import wx
 import cellprofiler.preferences
 import cellprofiler.modules
 import cellprofiler.cpmodule
+from cellprofiler.gui import get_icon
 
 class AddModuleFrame(wx.Frame):
     """The window frame that lets you add modules to a pipeline
@@ -97,8 +98,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
         
     def __set_icon(self):
-        filename=os.path.join(cellprofiler.preferences.resources_root_directory(),'CellProfilerIcon.png')
-        icon = wx.Icon(filename,wx.BITMAP_TYPE_PNG)
+        icon = get_icon()
         self.SetIcon(icon)
         
     def __get_module_files(self):

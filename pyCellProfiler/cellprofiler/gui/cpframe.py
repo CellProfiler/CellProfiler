@@ -67,6 +67,12 @@ class CPFrame(wx.Frame):
         self.__do_layout()
         self.__error_listeners = []
         self.Bind(wx.EVT_SIZE,self.__on_size,self)
+        self.tbicon = wx.TaskBarIcon()
+        self.tbicon.SetIcon(get_icon(), "CellProfiler2.0")
+
+    def OnClose(self, event):
+        self.tbicon.Destroy()
+        self.Destroy()
  
     def __set_properties(self):
         self.SetTitle("CellProfiler")
@@ -190,8 +196,8 @@ class CPFrame(wx.Frame):
 
     def __layout_logo(self):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        image = get_cp_bitmap()
-        logopic = wx.StaticBitmap(self.__logo_panel,-1,image)
+        bitmap = get_cp_bitmap(52)
+        logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         logotext = wx.StaticText(self.__logo_panel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
         sizer.AddMany([(logopic,0,wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL,5),
                        (logotext,1,wx.EXPAND)])

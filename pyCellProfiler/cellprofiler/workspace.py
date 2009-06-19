@@ -67,6 +67,10 @@ class Workspace(object):
         """The image set is the set of images currently being processed
         """
         return self.__image_set
+    
+    def set_image_set_for_testing_only(self, image_set_number):
+        self.__image_set = self.image_set_list.get_image_set(image_set_number)
+        
     image_set = property(get_image_set)
     
     def get_image_set_list(self):

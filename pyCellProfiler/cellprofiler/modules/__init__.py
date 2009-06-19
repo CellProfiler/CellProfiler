@@ -28,6 +28,7 @@ from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
 from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
+from loadtext import LoadText
 from maskimage import MaskImage
 from measurecorrelation import MeasureCorrelation
 from measureimageareaoccupied import MeasureImageAreaOccupied
@@ -61,6 +62,7 @@ def get_module_classes():
             IdentifyTertiarySubregion,
             LoadImages,
             LoadSingleImage,
+            LoadText,
             MaskImage,
             MeasureCorrelation,
             MeasureImageAreaOccupied,
@@ -97,6 +99,7 @@ def get_module_substitutions():
             "KeepLargestObject":FilterByObjectMeasurement,
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,
+            "LoadText":LoadText,
             "MaskImage": MaskImage,
             "MeasureCorrelation": MeasureCorrelation,
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,

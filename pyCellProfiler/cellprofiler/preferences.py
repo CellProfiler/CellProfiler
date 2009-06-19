@@ -22,6 +22,12 @@ import re
 import wx
 import sys
 
+'''get_absolute_path - mode = output. Assume "." is the default output dir'''
+ABSPATH_OUTPUT = 'abspath_output'
+
+'''get_absolute_path - mode = image. Assume "." is the default image dir'''
+ABSPATH_IMAGE = 'abspath_image'
+
 __python_root = os.path.split(str(cellprofiler.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
 
@@ -195,7 +201,7 @@ def add_output_file_name_listener(listener):
 def remove_output_file_name_listener(listener):
     __output_filename_listeners.remove(listener)
 
-def get_absolute_path(path):
+def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     """Convert a path into an absolute path using the path conventions
     
     If a path starts with "./", then make the path relative to the
@@ -205,13 +211,22 @@ def get_absolute_path(path):
     If a "path" has no path component then make the path relative to
     the default output directory.
     """
-    if (path.startswith("."+os.path.sep) or
+    if abspath_mode == ABSPATH_OUTPUT:
+        osep = '.'
+        isep = '&'
+    elif abspath_mode == ABSPATH_IMAGE:
+        osep = '&'
+        isep = '.'
+    else:
+        raise ValueError("Unknown abspath mode: %s"%abspath_mode)
+        
+    if (path.startswith(osep+os.path.sep) or
         ("altsep" in os.path.__all__ and os.path.altsep and
-         path.startswith("."+os.path.altsep))):
+         path.startswith(osep+os.path.altsep))):
         return os.path.join(get_default_output_directory(), path[2:])
-    elif (path.startswith("&"+os.path.sep) or
+    elif (path.startswith(isep+os.path.sep) or
           ("altsep" in os.path.__all__ and os.path.altsep and
-           path.startswith("&"+os.path.altsep))):
+           path.startswith(isep+os.path.altsep))):
         return os.path.join(get_default_image_directory(), path[2:])
     elif len(os.path.split(path)[0]) == 0:
         return os.path.join(get_default_output_directory(), path)

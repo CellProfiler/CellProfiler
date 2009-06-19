@@ -251,6 +251,16 @@ class CPModule(object):
     def validate_module(self,pipeline):
         pass
     
+    def get_name_providers(self, group):
+        '''Return a list of name providers supplied by the module for this group
+        
+        group - a group supported by a subclass of NameProvider
+        
+        This routine returns additional providers beyond those that
+        are provided by the module's provider settings.
+        '''
+        return []
+    
     def setting_annotations(self,key):
         """Return annotations for the setting with the given number
         

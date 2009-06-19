@@ -127,6 +127,13 @@ class Measurements(object):
         """Return true if a particular object has a particular feature"""
         return self.__dictionary[object_name].has_key(feature_name)
     
+    def get_current_image_measurement(self, feature_name):
+        '''Return the value for the named image measurement
+        
+        feature_name - the name of the measurement feature to be returned
+        '''
+        return self.get_current_measurement(IMAGE, feature_name)
+    
     def get_current_measurement(self,object_name,feature_name):
         """Return the value for the named measurement for the current image set
         object_name  - the name of the objects being measured or "Image"

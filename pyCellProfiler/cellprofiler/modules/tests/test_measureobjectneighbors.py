@@ -162,6 +162,17 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         workspace, module = self.make_workspace(labels,
                                                 M.D_EXPAND, 5)
         module.run(workspace)
+        self.assertEqual(tuple(module.get_categories(None, OBJECTS_NAME)),
+                         ("Neighbors",))
+        self.assertEqual(tuple(module.get_measurements(None, OBJECTS_NAME,
+                                                       "Neighbors")),
+                         tuple(M.M_ALL))
+        self.assertEqual(tuple(module.get_measurement_scales(None,
+                                                             OBJECTS_NAME,
+                                                             "Neighbors",
+                                                             "NumberOfNeighbors",
+                                                             None)),
+                         ("Expanded",))
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Expanded")
@@ -202,6 +213,12 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         module.run(workspace)
+        self.assertEqual(tuple(module.get_measurement_scales(None,
+                                                             OBJECTS_NAME,
+                                                             "Neighbors",
+                                                             "NumberOfNeighbors",
+                                                             None)),
+                         ("Adjacent",))
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Adjacent")
@@ -243,6 +260,12 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 4)
         module.run(workspace)
+        self.assertEqual(tuple(module.get_measurement_scales(None,
+                                                             OBJECTS_NAME,
+                                                             "Neighbors",
+                                                             "NumberOfNeighbors",
+                                                             None)),
+                         ("4",))
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_4")

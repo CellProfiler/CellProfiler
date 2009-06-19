@@ -27,6 +27,26 @@ D_EXPAND   = 'Expand until adjacent'
 D_WITHIN   = 'Within a specified distance'
 D_ALL = [D_ADJACENT, D_EXPAND, D_WITHIN]
 
+M_NUMBER_OF_NEIGHBORS = 'NumberOfNeighbors'
+M_PERCENT_TOUCHING = 'PercentTouching'
+M_FIRST_CLOSEST_OBJECT_NUMBER = 'FirstClosestObjectNumber'
+M_FIRST_CLOSEST_X_VECTOR = 'FirstClosestXVector'
+M_FIRST_CLOSEST_Y_VECTOR = 'FirstClosestYVector'
+M_SECOND_CLOSEST_OBJECT_NUMBER = 'SecondClosestObjectNumber'
+M_SECOND_CLOSEST_X_VECTOR ='SecondClosestXVector'
+M_SECOND_CLOSEST_Y_VECTOR ='SecondClosestYVector'
+M_ANGLE_BETWEEN_NEIGHBORS = 'AngleBetweenNeighbors'
+M_ALL = [M_NUMBER_OF_NEIGHBORS, M_PERCENT_TOUCHING, 
+         M_FIRST_CLOSEST_OBJECT_NUMBER, M_FIRST_CLOSEST_X_VECTOR,
+         M_FIRST_CLOSEST_Y_VECTOR, M_SECOND_CLOSEST_OBJECT_NUMBER,
+         M_SECOND_CLOSEST_X_VECTOR, M_SECOND_CLOSEST_Y_VECTOR,
+         M_ANGLE_BETWEEN_NEIGHBORS]
+
+C_NEIGHBORS = 'Neighbors'
+
+S_EXPANDED = 'Expanded'
+S_ADJACENT = 'Adjacent'
+
 class MeasureObjectNeighbors(cpm.CPModule):
     '''SHORT DESCRIPTION:
     Calculates how many neighbors each object has.
@@ -172,13 +192,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # foreground pixel. Assign label to label for foreground.
             labels = labels[i,j]
             distance = 1 # dilate once to make touching edges overlap
-            scale = 'Expanded'
+            scale = S_EXPANDED
         elif self.distance_method == D_WITHIN:
             distance = self.distance.value
             scale = str(distance)
         elif self.distance_method == D_ADJACENT:
             distance = 1
-            scale = "Adjacent"
+            scale = S_ADJACENT
         else:
             raise ValueError("Unknown distance method: %s" %
                              self.distance_method.value)
@@ -271,17 +291,17 @@ class MeasureObjectNeighbors(cpm.CPModule):
         #
         m = workspace.measurements
         for feature_name, data in \
-            (('NumberOfNeighbors', neighbor_count),
-             ('PercentTouching', percent_touching),
-             ('FirstClosestObjectNumber', first_object_number),
-             ('FirstClosestXVector', first_x_vector),
-             ('FirstClosestYVector', first_y_vector),
-             ('SecondClosestObjectNumber', second_object_number),
-             ('SecondClosestXVector', second_x_vector),
-             ('SecondClosestYVector', second_y_vector),
-             ('AngleBetweenNeighbors', angle)):
+            ((M_NUMBER_OF_NEIGHBORS, neighbor_count),
+             (M_PERCENT_TOUCHING, percent_touching),
+             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
+             (M_FIRST_CLOSEST_X_VECTOR, first_x_vector),
+             (M_FIRST_CLOSEST_Y_VECTOR, first_y_vector),
+             (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
+             (M_SECOND_CLOSEST_X_VECTOR, second_x_vector),
+             (M_SECOND_CLOSEST_Y_VECTOR, second_y_vector),
+             (M_ANGLE_BETWEEN_NEIGHBORS, angle)):
             m.add_measurement(self.object_name.value,
-                              'Neighbors_%s_%s'%(feature_name, scale),
+                              '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),
                               data)
         #
         # Calculate the two heatmap images
@@ -339,16 +359,30 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                              self.object_name.value)
     
     def get_categories(self, pipeline, object_name):
-        return cpm.CPModule.get_categories(self, pipeline, object_name)
+        if object_name == self.object_name:
+            return [C_NEIGHBORS]
+        return []
 
 
     def get_measurements(self, pipeline, object_name, category):
-        return cpm.CPModule.get_measurements(self, pipeline, object_name, category)
-
+        if object_name == self.object_name and category == C_NEIGHBORS:
+            return M_ALL
+        return []
 
     def get_measurement_scales(self, pipeline, object_name, category, measurement, image_name):
-        return cpm.CPModule.get_measurement_scales(self, pipeline, object_name, category, measurement, image_name)
-
+        if (object_name == self.object_name and category == C_NEIGHBORS and
+            measurement in M_ALL):
+            if self.distance_method == D_EXPAND:
+                return [S_EXPANDED]
+            elif self.distance_method == D_ADJACENT:
+                return [S_ADJACENT]
+            elif self.distance_method == D_WITHIN:
+                return [str(self.distance.value)]
+            else:
+                raise ValueError("Unknown distance method: %s"%
+                                 self.distance_method.value)
+        return []
+    
 def get_colormap(name):
     '''Get colormap, accounting for possible request for default'''
     if name == cps.DEFAULT:

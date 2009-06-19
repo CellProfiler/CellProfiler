@@ -619,7 +619,7 @@ class NameSubscriber(Setting):
         if self.__can_be_blank:
             choices.append(self.__blank_text)
         for module in pipeline.modules():
-            module_choices = []
+            module_choices = module.get_name_providers(self.group)
             for setting in module.visible_settings():
                 if setting.key() == self.key():
                     return choices

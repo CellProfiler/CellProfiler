@@ -24,6 +24,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.measurements import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
+from cellprofiler.preferences import ABSPATH_OUTPUT
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
@@ -296,7 +297,8 @@ named, "XZ29_A01.csv".
         if not image_set_index is None:
             file_name = workspace.measurements.apply_metadata(file_name,
                                                               image_set_index)
-        file_name = get_absolute_path(file_name)
+        file_name = get_absolute_path(file_name,
+                                      abspath_mode = ABSPATH_OUTPUT)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)

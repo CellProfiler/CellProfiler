@@ -777,9 +777,8 @@ class LoadImages(cpmodule.CPModule):
             return preferences.get_default_image_directory()
         elif self.location == DIR_DEFAULT_OUTPUT:
             return preferences.get_default_output_directory()
-        elif self.location_other.value[0] == '.':
-            return os.path.join(preferences.get_default_image_directory(),self.location_other.value[1:])
-        return self.location_other.value
+        else:
+            return preferences.get_absolute_path(self.location_other.value)
     
     def image_name_vars(self):
         """Return the list of values in the image name field (the name that later modules see)

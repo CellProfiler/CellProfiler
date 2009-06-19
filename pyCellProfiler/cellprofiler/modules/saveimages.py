@@ -234,6 +234,15 @@ class SaveImages(cpm.CPModule):
         """Adjust the setting values to be backwards-compatible with old versions
         
         """
+        if from_matlab and variable_revision_number == 12:
+            # self.create_subdirectories.value is already False by default.
+            variable_revision_number = 13
+        if from_matlab and variable_revision_number == 13:
+            new_setting_values = list(setting_values)
+            for i in [3, 12]:
+                if setting_values[i] == '\\':
+                    new_setting_values[i] == cps.DO_NOT_USE
+            variable_revision_number = 14
         if from_matlab and variable_revision_number == 14:
             new_setting_values = []
             if setting_values[0].isdigit():

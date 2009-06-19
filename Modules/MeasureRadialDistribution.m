@@ -100,7 +100,7 @@ if nargin > 1
 %feature:categories
         case 'categories'
             if nargin == 1 || strcmp(varargin{2},MainObjects)
-                result = { 'RadialIntensityDist' };
+                result = { 'RadialDistribution' };
             else
                 result = {};
             end
@@ -108,7 +108,7 @@ if nargin > 1
         case 'measurements'
             result = {};
             if nargin >= 3 &&...
-                strcmp(varargin{3},'RadialIntensityDist') &&...
+                strcmp(varargin{3},'RadialDistribution') &&...
                 strcmp(varargin{2},MainObjects)
                 result = { 'FracAtD','MeanFrac','RadialCV' };
             end

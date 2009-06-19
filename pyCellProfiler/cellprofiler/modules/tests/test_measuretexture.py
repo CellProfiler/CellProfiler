@@ -183,6 +183,26 @@ class TestMeasureTexture(unittest.TestCase):
                                         tm_center_y[order_matlab[i]],
                                         tm[order_matlab[i]],
                                         pytm[order_python[i]]))
+        image_measurements =\
+        (('Texture_AngularSecondMoment_Cytoplasm_3', 0.5412),
+         ('Texture_Contrast_Cytoplasm_3',0.1505),
+         ('Texture_Correlation_Cytoplasm_3', 0.7740),
+         ('Texture_Variance_Cytoplasm_3', 0.3330),
+         ('Texture_InverseDifferenceMoment_Cytoplasm_3',0.9321),
+         ('Texture_SumAverage_Cytoplasm_3',2.5684),
+         ('Texture_SumVariance_Cytoplasm_3',1.1814),
+         ('Texture_SumEntropy_Cytoplasm_3',0.9540),
+         ('Texture_Entropy_Cytoplasm_3',1.0677),
+         ('Texture_DifferenceVariance_Cytoplasm_3',0.1314),
+         ('Texture_DifferenceEntropy_Cytoplasm_3',0.4147),
+         ('Texture_InfoMeas1_Cytoplasm_3',-0.4236),
+         ('Texture_InfoMeas2_Cytoplasm_3',0.6609))
+        for feature_name, value in image_measurements:
+            pytm = m.get_current_image_measurement(feature_name)
+            self.assertAlmostEqual(pytm, value,3,
+                                   "%s failed. Python=%f, Matlab=%f" %
+                                   (feature_name, pytm, value))
+            
     def test_03_01_gabor_null(self):
         '''Test for no score on a uniform image'''
         image = np.ones((10,10))*.5

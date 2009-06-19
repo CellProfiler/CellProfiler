@@ -20,6 +20,7 @@ import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.haralick import Haralick
 from cellprofiler.cpmath.filter import gabor
@@ -309,10 +310,12 @@ class MeasureTexture(cpm.CPModule):
         statistics = [["Image","Object","Measurement","Scale", "Value"]]
         for image_group in self.image_groups:
             image_name = image_group.image_name.value
-            for object_group in self.object_groups:
-                object_name = object_group.object_name.value
-                for scale_group in self.scale_groups:
-                    scale = scale_group.scale.value
+            for scale_group in self.scale_groups:
+                scale = scale_group.scale.value
+                statistics += self.run_image(image_name, scale, workspace)
+                statistics += self.run_image_gabor(image_name, scale, workspace)
+                for object_group in self.object_groups:
+                    object_name = object_group.object_name.value
                     statistics += self.run_one(image_name, 
                                                object_name,
                                                scale, workspace)
@@ -343,7 +346,26 @@ class MeasureTexture(cpm.CPModule):
                                                   name, 
                                                   value)
         return statistics
-    
+
+    def run_image(self, image_name, scale, workspace):
+        '''Run measurements on image'''
+        statistics = []
+        image = workspace.image_set.get_image(image_name,
+                                              must_be_grayscale=True)
+        pixel_data = image.pixel_data
+        image_labels = np.ones(pixel_data.shape, int)
+        if image.has_mask:
+            image_labels[~ image.mask] = 0
+        for name, value in zip(F_HARALICK, Haralick(pixel_data,
+                                                    image_labels,
+                                                    scale).all()):
+            statistics += self.record_image_measurement(workspace, 
+                                                        image_name, 
+                                                        scale,
+                                                        name, 
+                                                        value)
+        return statistics
+        
     def run_one_gabor(self, image_name, object_name, scale, workspace):
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
@@ -373,6 +395,28 @@ class MeasureTexture(cpm.CPModule):
                                              best_score)
         return statistics
             
+    def run_image_gabor(self, image_name, scale, workspace):
+        image = workspace.image_set.get_image(image_name,
+                                              must_be_grayscale=True)
+        pixel_data = image.pixel_data
+        labels = np.ones(pixel_data.shape, int)
+        if image.has_mask:
+            labels[~image.mask] = 0
+        best_score = 0
+        for angle in range(self.gabor_angles.value):
+            theta = np.pi * angle / self.gabor_angles.value
+            g = gabor(pixel_data, labels, scale, theta)
+            score_r = np.sum(g.real)
+            score_i = np.sum(g.imag)
+            score = np.sqrt(score_r**2+score_i**2)
+            best_score = max(best_score, score)
+        statistics = self.record_image_measurement(workspace, 
+                                                   image_name, 
+                                                   scale,
+                                                   F_GABOR, 
+                                                   best_score)
+        return statistics
+
     def record_measurement(self, workspace,  
                            image_name, object_name, scale,
                            feature_name, result):
@@ -392,4 +436,20 @@ class MeasureTexture(cpm.CPModule):
                                                   ("mean",np.mean),
                                                   ("median",np.median),
                                                   ("std dev",np.std))]
+        return statistics
+
+    def record_image_measurement(self, workspace,  
+                                 image_name, scale,
+                                 feature_name, result):
+        """Record the result of a measurement in the workspace's
+        measurements"""
+        if not np.isfinite(result):
+            result = 0
+        workspace.measurements.add_image_measurement("%s_%s_%s_%d"%
+                                                     (TEXTURE, feature_name,
+                                                      image_name, scale), 
+                                                     result)
+        statistics = [[image_name, "-", 
+                       feature_name, scale, 
+                       "%.2f"%(result)]]
         return statistics

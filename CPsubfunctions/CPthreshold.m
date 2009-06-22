@@ -661,7 +661,7 @@ end
 
 
 function level = RobustBackground(im,handles,ImageName,pObject)
-%%% The threshold is calculated by trimming the top and bottom 25% of
+%%% The threshold is calculated by trimming the top and bottom 5% of
 %%% pixels off the image, then calculating the mean and standard deviation
 %%% of the remaining image. The threshold is then set at 2 (empirical
 %%% value) standard deviations above the mean. 

@@ -145,8 +145,9 @@ fieldname = ['CropMask', ImageName];
 if CPisimageinpipeline(handles, fieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
+    PreviousCropMask = CPretrieveimage(handles,fieldname,ModuleName);
     try 
-        im(~CPretrieveimage(handles,fieldname,ModuleName)) = 0;
+        im(~PreviousCropMask) = 0;
     catch
         error('The image in which you want to identify objects has been cropped, but there was a problem recognizing the cropping pattern.');
     end
@@ -186,6 +187,9 @@ if any(ac(:))
     maxima = sortrows([indices ac(indices)], -2);
     bw(maxima(:,1)) = true;
 end
+
+%% Mask final outcome
+bw = bw & PreviousCropMask;
 
 FinalLabelMatrixImage = bwlabel(bw);
 

@@ -172,14 +172,16 @@ elseif strcmpi('Automatic',ThresholdStr(1:9))
     else
         Threshold_correction = 1;
     end
-    [handles,Threshold] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
+    [handles,Threshold_scaled] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
 end
 
 %% Un-scale threshold
-Threshold = (Threshold .* ac_range) + ac_min;
+Threshold = (Threshold_scaled .* ac_range) + ac_min;
+Threshold(Threshold < 1./(2^12)) = 1./(2^12);
+Threshold(Threshold > 1) = 1;
 
-ac(ac < Threshold) = Threshold;
 ac = ac - Threshold;
+ac(ac < Threshold) = Threshold;
 
 bw = false(size(im));
 if any(ac(:))

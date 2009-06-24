@@ -650,13 +650,22 @@ else
     %% Also handle the case in which there are enough saturated, or zeroed,
     %% pixels that the mode is 0 or 1 (or some other, pinned high value).  
     %% We remove the high and low values from the mode calculation.  
-    %% Robust cutoff arbitrarily set to 1%.
+    %% Robust cutoff arbitrarily set to 2%.
 
     [counts,x] = imhist(im);
-    robust_counts = counts(x<0.99 & x>0.01);
-    robust_x = x(x<0.99 & x>0.01);
+    
+    %% Remove bins with zero counts at the low and high ends of imhist
+    mn = find(counts ~=0,1, 'first');
+    mx = find(counts ~=0,1, 'last');
+    counts_scaled = counts(mn:mx);
+    x_scaled = x(mn:mx);
+    
+    thresh = 0.02;
+    robust_indices = ceil(thresh * length(x_scaled)):ceil((1-thresh) * length(x_scaled));
+    robust_counts = counts_scaled(robust_indices);
+    robust_x = x_scaled(robust_indices);
     [y,i] = max(robust_counts);
-    level = 2.*robust_x(i);
+    level = 2.*x((mn-1)+(robust_indices(1)-1)+i);
 end
 
 

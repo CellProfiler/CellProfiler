@@ -345,6 +345,12 @@ class Morph(cpm.CPModule):
                                          self.image_name.value)
                 figure.subplot_imshow_bw(1,0,pixel_data,
                                          self.output_image_name.value)
+            else:
+                figure.subplot_imshow_grayscale(0,0,image.pixel_data,
+                                                'Original image: %s'%
+                                                self.image_name.value)
+                figure.subplot_imshow_grayscale(1,0,pixel_data,
+                                                self.output_image_name.value)
     
     def run_function(self, function_name, pixel_data, mask):
         '''Apply the function once to the image, returning the result'''

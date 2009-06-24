@@ -215,7 +215,7 @@ as to avoid a 'halo' effect.
                 undilated = input.mask & (pixels >= self.high_threshold.value)
                 dilated = binary_dilation(undilated, strel_disk(self.dilation.value), mask=input.mask)
                 pixels[dilated] = 0
-        output = cpimage.Image(pixels, input.mask)
+        output = cpimage.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name, output)
         if workspace.display:
             figure = workspace.create_or_find_figure(subplots=(1,2))

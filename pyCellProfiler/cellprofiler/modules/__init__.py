@@ -11,6 +11,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+from align import Align
 from applythreshold import ApplyThreshold
 from colortogray import ColorToGray
 from converttoimage import ConvertToImage
@@ -46,7 +47,8 @@ from saveimages import SaveImages
 from smooth import Smooth
 
 def get_module_classes():
-    return [ApplyThreshold,
+    return [Align,
+            ApplyThreshold,
             ColorToGray,
             ConvertToImage,
             CorrectIllumination_Calculate,
@@ -84,7 +86,8 @@ def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
     
     """
-    return {"ApplyThreshold": ApplyThreshold,
+    return {"Align": Align,
+            "ApplyThreshold": ApplyThreshold,
             "ColorToGray":ColorToGray,
             "ConvertToImage":ConvertToImage,
             "CorrectIllumination_Calculate":CorrectIllumination_Calculate,

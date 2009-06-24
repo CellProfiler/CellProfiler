@@ -468,13 +468,19 @@ class SaveImages(cpm.CPModule):
                 pathname = os.path.join(pathname, orig_pathname)
                 
         elif self.pathname_choice == PC_WITH_IMAGE:
-            path_name_feature = 'PathName_%s'%(self.file_image_name)
-            pathname = measurements.get_current_measurement('Image',
-                                                            path_name_feature)
-            # Add the root to the pathname to recover the original name
-            key = 'Pathname%s'%(self.file_image_name)
-            root = workspace.image_set.legacy_fields[key]
-            pathname = os.path.join(root,pathname)            
+            if (self.file_name_method  == FN_FROM_IMAGE):
+                path_name_feature = 'PathName_%s'%(self.file_image_name)
+                pathname = measurements.get_current_measurement('Image',
+                                                                path_name_feature)
+                # Add the root to the pathname to recover the original name
+                key = 'Pathname%s'%(self.file_image_name)
+                root = workspace.image_set.legacy_fields[key]
+                pathname = os.path.join(root,pathname)            
+            else:
+                # Try to use the image's provenance to find some file
+                # that's associated with it.
+                image = workspace.image_set.get_image(self.image_name.value)
+                pathname = image.path_name
         else:
             raise NotImplementedError(("Unknown pathname mechanism: %s"%
                                        (self.pathname_choice)))

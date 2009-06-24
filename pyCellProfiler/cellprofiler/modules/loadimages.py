@@ -856,7 +856,9 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             # the resulting saved image will be upside-down
             img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
             img = matplotlib.image.pil_to_array(img)
-        return cpimage.Image(img)
+        return cpimage.Image(img,
+                             path_name = self.get_pathname(),
+                             file_name = self.get_filename())
     
     def get_name(self):
         return self.__name

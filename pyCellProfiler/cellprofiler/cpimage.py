@@ -40,6 +40,12 @@ class Image(object):
     masking_objects - the labels matrix from these objects is used to
                       mask and crop the parent image to make this image.
                       The labels are available as mask_labels and crop_labels.
+    convert - true to try to coerce whatever dtype passed (other than bool
+               or float) to a scaled image.
+    path_name - the path name to the file holding the image or None
+                for a derived image
+    file_name - the file name of the file holding the image or None for a
+                derived image
     
     Resolution of mask and cropping_mask properties:
     The Image class looks for the mask and cropping_mask in the following 
@@ -50,8 +56,6 @@ class Image(object):
                        mask are composed of all of the labeled points.
     * parent_image: if set using the initializer. The child image inherits
                     the mask and cropping mask of the parent.
-    * convert: true to try to coerce whatever dtype passed (other than bool
-               or float) to a scaled image.
     Otherwise, the image has no mask or cropping mask and all pixels are
     significant.
     """
@@ -61,7 +65,9 @@ class Image(object):
                  crop_mask = None, 
                  parent_image=None,
                  masking_objects = None,
-                 convert = True):
+                 convert = True,
+                 path_name = None,
+                 file_name = None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -72,6 +78,8 @@ class Image(object):
             self.set_image(image, convert)
         if mask!=None:
             self.set_mask(mask)
+        self.__file_name = file_name
+        self.__path_name = path_name
         
     def get_image(self):
         """Return the primary image"""
@@ -257,12 +265,44 @@ class Image(object):
         if self.crop_mask == None:
             raise RuntimeError("Images are of different size and no crop mask available")
         cropped_image = crop_image(image,self.crop_mask)
-        if cropped_image.shape != self.pixel_data.shape:
+        if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
             raise ValueError("Cropped image is not the same size as the reference image: %s vs %s"%
                              (repr(cropped_image.shape),
                               repr(self.pixel_data.shape)))
         return cropped_image
+    
+    def get_file_name(self):
+        '''The name of the file holding this image
+        
+        If the image is derived, then return the file name of the first
+        ancestor that has a file name. Return None if the image does not have 
+        an ancestor or if no ancestor has a file name.
+        '''
+        if not self.__file_name is None:
+            return self.__file_name
+        elif self.has_parent_image:
+            return self.parent_image.file_name
+        else:
+            return None
+    
+    file_name = property(get_file_name)
+    
+    def get_path_name(self):
+        '''The path to the file holding this image
 
+        If the image is derived, then return the path name of the first
+        ancestor that has a path name. Return None if the image does not have 
+        an ancestor or if no ancestor has a file name.
+        '''
+        if not self.__path_name is None:
+            return self.__path_name
+        elif self.has_parent_image:
+            return self.parent_image.path_name
+        else:
+            return None
+    
+    path_name = property(get_path_name)
+    
 def crop_image(image, crop_mask,crop_internal = False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
@@ -304,30 +344,15 @@ class GrayscaleImage(object):
     """
     def __init__(self, image):
         self.__image = image
+
+    def __getattr__(self, name):
+        return getattr(self.__image, name)
     
     def get_pixel_data(self):
         """One 2-d channel of the color image as a numpy array"""
         return self.__image.pixel_data[:,:,0]
     
     pixel_data = property(get_pixel_data)
-    
-    def get_mask(self):
-        return self.__image.get_mask()
-    mask=property(get_mask)
-    
-    def get_has_mask(self):
-        return self.__image.get_has_mask()
-    has_mask=property(get_has_mask)
-    
-    def get_crop_mask(self):
-        return self.__image.crop_mask
-    
-    crop_mask = property(get_crop_mask)
-    
-    def get_parent_image(self):
-        return self.__image.parent_mask
-    
-    parent_image = property(get_parent_image)
     
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""

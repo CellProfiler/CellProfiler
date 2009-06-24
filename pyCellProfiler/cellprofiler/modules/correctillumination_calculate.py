@@ -347,7 +347,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
         if self.each_or_all == EA_ALL:
             output_image_provider = \
                 workspace.image_set.get_image_provider(self.illumination_image_name)
-            if not workplace.pipeline.is_source_loaded(self.image_name.value):
+            if not workspace.pipeline.is_source_loaded(self.image_name.value):
                 #
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.

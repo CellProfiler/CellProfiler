@@ -197,7 +197,7 @@ if ~isempty(PathFieldNames)
     Metadata = cat(1,Metadata, regexp(PathName,RegularExpressionPathname,'names'));
 end
 
-if isempty(Metadata) && ~isempty(PathFieldNames)
+if (isempty(Metadata) && ~isempty(PathFieldNames)) || (~isempty(Metadata) && all(structfun(@isempty,Metadata)))
     error([ 'Image processing was canceled in the ', ModuleName, ' module. The path "',PathName,'" doesn''t match the regular expression "',RegularExpressionPathname,'"']);
 end
 
@@ -209,7 +209,7 @@ if ~isempty(FileFieldNames)
     end
 end
 
-if isempty(Metadata) && ~isempty(FileFieldNames)
+if (isempty(Metadata) && ~isempty(FileFieldNames)) || (~isempty(Metadata) && all(structfun(@isempty,Metadata)))
     error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression "',RegularExpressionFilename,'"']);
 end
 

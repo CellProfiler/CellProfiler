@@ -141,11 +141,11 @@ if any(im(:))
 end
 
 % Set regions outside of CropMasks equal to 0
-fieldname = ['CropMask', ImageName];
-if CPisimageinpipeline(handles, fieldname)
+MaskFieldname = ['CropMask', ImageName];
+if CPisimageinpipeline(handles, MaskFieldname)
     %%% Retrieves previously selected cropping mask from handles
     %%% structure.
-    PreviousCropMask = CPretrieveimage(handles,fieldname,ModuleName);
+    PreviousCropMask = CPretrieveimage(handles,MaskFieldname,ModuleName);
     try 
         im(~PreviousCropMask) = 0;
     catch
@@ -173,10 +173,11 @@ elseif strcmpi('Automatic',ThresholdStr(1:9))
         Threshold_correction = 1;
     end
     [handles,Threshold_scaled] = CPthreshold(handles,'RobustBackground Global',0,'0','1',Threshold_correction,ac_scaled,'LoG',ModuleName);
+
+    %% Un-scale threshold
+    Threshold = (Threshold_scaled .* ac_range) + ac_min;
 end
 
-%% Un-scale threshold
-Threshold = (Threshold_scaled .* ac_range) + ac_min;
 Threshold(Threshold < 1./(2^12)) = 1./(2^12);
 Threshold(Threshold > 1) = 1;
 
@@ -191,7 +192,9 @@ if any(ac(:))
 end
 
 %% Mask final outcome
-bw = bw & PreviousCropMask;
+if exist('PreviousCropMask','var')
+    bw = bw & PreviousCropMask;
+end
 
 FinalLabelMatrixImage = bwlabel(bw);
 

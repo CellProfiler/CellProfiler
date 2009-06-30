@@ -32,21 +32,45 @@ NEIGHBORS = "Neighbors"
 class Measurements(object):
     """Represents measurements made on images and objects
     """
-    def __init__(self, can_overwrite = False):
+    def __init__(self, 
+                 can_overwrite = False, 
+                 image_set_start = None):
         """Create a new measurements collection
         
         can_overwrite - if True, overwriting measurements during operation
                         is allowed. We turn this on for debugging.
+        image_set_start - the index of the first image set in the image set list
+                          or None to start at the beginning
         """
         self.__dictionary = {}
-        self.__image_set_number = 0
+        self.__image_set_number = 0 if image_set_start is None else image_set_start
+        self.__image_set_start = image_set_start
         self.__can_overwrite = can_overwrite
+        self.__is_first_image = True
     
     def next_image_set(self):
         self.__image_set_number+=1
+        self.__is_first_image = False
         for object_features in self.__dictionary.values():
             for measurements in object_features.values():
                 measurements.append(None)
+    
+    @property
+    def is_first_image(self):
+        '''True if this is the first image in the set'''
+        return self.__is_first_image
+    
+    @property
+    def image_set_start_number(self):
+        '''The first image set (one-based) processed by the pipeline'''
+        if self.__image_set_start is None:
+            return 1
+        return self.__image_set_start+1
+    
+    @property
+    def has_image_set_start(self):
+        '''True if the image set has an explicit start'''
+        return not self.__image_set_start is None
     
     def get_image_set_number(self):
         """The image set number ties a bunch of measurements to a particular image set
@@ -54,6 +78,11 @@ class Measurements(object):
         return self.__image_set_number
     
     image_set_number = property(get_image_set_number)
+    
+    @property
+    def image_set_index(self):
+        '''Return the index into the measurements for the current measurement'''
+        return self.__image_set_number - (self.image_set_start_number - 1)
     
     def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category
@@ -78,7 +107,7 @@ class Measurements(object):
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
         """
-        if self.image_set_number == 0:
+        if self.is_first_image:
             if not self.__dictionary.has_key(object_name):
                 self.__dictionary[object_name] = {}
             object_dict = self.__dictionary[object_name]
@@ -91,10 +120,10 @@ class Measurements(object):
         else:
             assert self.__dictionary.has_key(object_name),\
                    ("Object %s requested for the first time on pass # %d" %
-                    (object_name,self.image_set_number))
+                    (object_name,self.image_set_index))
             assert self.__dictionary[object_name].has_key(feature_name),\
                    ("Feature %s.%s added for the first time on pass # %d" %
-                    (object_name,feature_name,self.image_set_number))
+                    (object_name,feature_name,self.image_set_index))
             assert (self.__can_overwrite or not
                     self.has_current_measurements(object_name, feature_name)),\
                    ("Feature %s.%s has already been set for this image set" %
@@ -107,7 +136,7 @@ class Measurements(object):
             if isinstance(data,str):
                 a = np.ndarray((1,1),dtype='S%d'%(max(len(data),1)))
                 a[0,0]=data
-            self.__dictionary[object_name][feature_name][self.image_set_number] = data
+            self.__dictionary[object_name][feature_name][self.image_set_index] = data
     
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
@@ -139,11 +168,11 @@ class Measurements(object):
         object_name  - the name of the objects being measured or "Image"
         feature_name - the name of the measurement feature to be returned 
         """
-        return self.get_all_measurements(object_name,feature_name)[self.image_set_number]
+        return self.get_all_measurements(object_name,feature_name)[self.image_set_index]
     
-    def get_measurement(self,object_name,feature_name,image_set_number):
+    def get_measurement(self,object_name,feature_name,image_set_index):
         """Return the value for the named measurement and indicated image set"""
-        return self.get_all_measurements(object_name,feature_name)[image_set_number]
+        return self.get_all_measurements(object_name,feature_name)[image_set_index]
     
     def has_current_measurements(self,object_name,feature_name):
         """Return true if the value for the named measurement for the current image set has been set
@@ -154,7 +183,7 @@ class Measurements(object):
             return False
         if not self.__dictionary[object_name].has_key(feature_name):
             return False
-        return self.__dictionary[object_name][feature_name][self.image_set_number] != None
+        return self.__dictionary[object_name][feature_name][self.image_set_index] != None
     
     def get_all_measurements(self,object_name,feature_name):
         assert self.__dictionary.has_key(object_name),"No measurements for %s"%(object_name)
@@ -166,7 +195,7 @@ class Measurements(object):
         """
         return self.get_all_measurements(EXPERIMENT, feature_name)
     
-    def apply_metadata(self, pattern, image_set_number=None):
+    def apply_metadata(self, pattern, image_set_index=None):
         """Apply metadata from the current measurements to a pattern
         
         pattern - a regexp-like pattern that specifies how to insert
@@ -175,12 +204,12 @@ class Measurements(object):
                   "\g<METADATA_TAG>" (Python-style)
         image_name - name of image associated with the metadata (or None
                      if metadata is not associated with an image)
-        image_set_number - # of image set to use to retrieve data. 
+        image_set_index - # of image set to use to retrieve data. 
                            None for current.
         returns a string with the metadata tags replaced by the metadata
         """
-        if image_set_number == None:
-            image_set_number = self.image_set_number
+        if image_set_index == None:
+            image_set_index = self.image_set_index
         result = ''
         while True:
             m = re.search('\\(\\?[<](.+?)[>]\\)', pattern)
@@ -191,7 +220,7 @@ class Measurements(object):
             result += pattern[:m.start()]
             measurement = 'Metadata_'+m.groups()[0]
             result += self.get_measurement("Image", measurement, 
-                                           image_set_number)
+                                           image_set_index)
             pattern = pattern[m.end():]
         result += pattern
         return result
@@ -207,7 +236,7 @@ class Measurements(object):
         """
         if len(tags) == 0:
             # if there are no tags, all image sets match each other
-            return [MetadataGroup({}, range(self.image_set_number+1))]
+            return [MetadataGroup({}, range(self.image_set_index+1))]
             
         #
         # The flat_dictionary has a row of tag values as a key
@@ -215,7 +244,7 @@ class Measurements(object):
         flat_dictionary = {}
         values = [self.get_all_measurements('Image', "Metadata_%s"%tag)
                   for tag in tags]
-        for index in range(self.image_set_number+1):
+        for index in range(self.image_set_index+1):
             row = tuple([value[index] for value in values])
             if flat_dictionary.has_key(row):
                 flat_dictionary[row].append(index)

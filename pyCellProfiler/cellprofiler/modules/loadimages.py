@@ -827,7 +827,8 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
         """Load an image from a pathname
         """
         if self.__filename.endswith(".mat"):
-            imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name())
+            imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
+                                                  struct_as_record=True)
             return cpimage.Image(imgdata["Image"])
         img = PILImage.open(self.get_full_name())
         if img.mode=='I;16':

@@ -92,6 +92,14 @@ parser.add_option("-i", "--image-directory",
                   dest="image_directory",
                   default=None,
                   help="Make this directory the default image directory")
+parser.add_option("-f","--first-image-set",
+                  dest="first_image_set",
+                  default=None,
+                  help="The one-based index of the first image set to process")
+parser.add_option("-l","--last-image-set",
+                  dest="last_image_set",
+                  default=None,
+                  help="The one-based index of the last image set to process")
 
 options, args = parser.parse_args()
 
@@ -101,6 +109,22 @@ if not options.show_gui:
     options.run_pipeline = True
 if options.run_pipeline and not options.pipeline_filename:
     raise ValueError("You must specify a pipeline filename to run")
+
+if not options.first_image_set is None:
+    if not options.first_image_set.isdigit():
+        raise ValueError("The --first-image-set option takes a numeric argument")
+    else:
+        image_set_start = int(options.first_image_set) - 1
+else:
+    image_set_start = None
+
+if not options.last_image_set is None:
+    if not options.last_image_set.isdigit():
+        raise ValueError("The --last-image-set option takes a numeric argument")
+    else:
+        image_set_end = int(options.last_image_set)
+else:
+    image_set_end = None
 
 if options.output_directory:
     cpprefs.set_default_output_directory(options.output_directory)
@@ -118,7 +142,8 @@ if options.show_gui:
 else:
     pipeline = Pipeline()
     pipeline.load(options.pipeline_filename)
-    measurements = pipeline.run()
+    measurements = pipeline.run(image_set_start = image_set_start, 
+                                image_set_end = image_set_end)
     if len(args) > 0:
         pipeline.save_measurements(args[0], measurements)
     

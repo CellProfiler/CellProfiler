@@ -343,7 +343,7 @@ that can be processed by different nodes in a cluster.
                 if not failure:
                     break
         else:
-            index = workspace.image_set.number
+            index = workspace.measurements.image_set_number
         for feature_name in dictionary.keys():
             value = dictionary[feature_name][index]
             workspace.measurements.add_image_measurement(feature_name, value)

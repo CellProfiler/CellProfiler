@@ -30,7 +30,7 @@ import cellprofiler.modules.loadtext as L
 from cellprofiler.modules.tests import example_images_directory
 
 class TestLoadText(unittest.TestCase):
-    def make_workspace(self, csv_text):
+    def make_workspace(self, csv_text, image_set_start = None):
         handle, name = tempfile.mkstemp("csv")
         fd = os.fdopen(handle, 'w')
         fd.write(csv_text)
@@ -47,7 +47,7 @@ class TestLoadText(unittest.TestCase):
                                   module,
                                   None,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurements(image_set_start=image_set_start),
                                   image_set_list)
         return workspace, module, name
     
@@ -185,6 +185,31 @@ class TestLoadText(unittest.TestCase):
             workspace.set_image_set_for_testing_only(module_num)
             module.run(workspace)
             data = m.get_current_image_measurement("Test_Measurement")
+            self.assertEqual(data, expected)
+            m.next_image_set()
+        os.remove(filename)
+    
+    def test_06_01_alternate_image_start(self):
+        csv_text = '''"Metadata_Measurement"
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+'''
+        workspace, module, filename = self.make_workspace(csv_text,
+                                                          image_set_start=2)
+        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+        m = workspace.measurements
+        for module_num, expected in ((2,'3'),(3,'4'),(4,'5')):        
+            workspace.set_image_set_for_testing_only(module_num)
+            module.run(workspace)
+            data = m.get_current_image_measurement("Metadata_Measurement")
             self.assertEqual(data, expected)
             m.next_image_set()
         os.remove(filename)

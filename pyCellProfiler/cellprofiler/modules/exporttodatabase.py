@@ -147,6 +147,7 @@ Step 6: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
 
 Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
 """
+
     variable_revision_number = 6
     category = "File Processing"
     
@@ -215,11 +216,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix):
                 raise ValidationError("The table prefix has invalid characters",self.table_prefix)
             
-    def run(self, workspace):
-        if (workspace.measurements.image_set_number+1 !=
-            workspace.image_set_list.count()):
-            return
-        
+    def post_run(self, workspace):
         mappings = self.get_column_name_mappings(workspace)
         if self.database_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
@@ -345,7 +342,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
     
     def base_name(self,workspace):
         """The base for the output file name"""
-        return '%s%d_%d'%(self.file_prefix,1,workspace.image_set_list.count())
+        m = workspace.measurements
+        first = m.image_set_start_number
+        last = m.image_set_number + 1
+        return '%s%d_%d'%(self.file_prefix, first, last)
     
     def write_data(self, workspace, mappings, per_image, per_object):
         """Write the data in the measurements out to the csv files
@@ -354,6 +354,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         per_image - map a feature name to its column index in the per_image table
         per_object - map a feature name to its column index in the per_object table
         """
+        measurements = workspace.measurements
         image_filename = os.path.join(self.get_output_directory(),
                                       '%s_image.CSV'%(self.base_name(workspace)))
         object_filename = os.path.join(self.get_output_directory(),
@@ -365,11 +366,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         
         per_image_cols = max(per_image.values())+1
         per_object_cols = max(per_object.values())+1
-        measurements = workspace.measurements
-        for i in range(workspace.image_set_list.count()):
+        for i in range(measurements.image_set_index+1):
             # Loop once per image set
             image_row = [None for k in range(per_image_cols)]
-            image_number = i+1
+            image_number = i+measurements.image_set_start_number
             image_row[per_image['ImageNumber']] = image_number
             #
             # Fill in the image table

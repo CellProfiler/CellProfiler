@@ -447,16 +447,22 @@ class Pipeline:
                         feature_measurements[0,measurements.image_set_number] = data
         return handles
     
-    def run(self,frame = None):
+    def run(self,frame = None, image_set_start = 0, image_set_end = None):
         """Run the pipeline
         
         Run the pipeline, returning the measurements made
+        frame - the frame to be used when displaying graphics or None to
+                run headless
+        image_set_start - the index of the first image to be run
+        image_set_end - the index of the last image to be run + 1
         """
-        for m in self.run_with_yield(frame):
+        for m in self.run_with_yield(frame, image_set_start, image_set_end):
             measurements = m
         return measurements
 
-    def run_with_yield(self,frame = None):
+    def run_with_yield(self,frame = None, 
+                       image_set_start = 0, 
+                       image_set_end = None):
         """Run the pipeline, yielding periodically to keep the GUI alive
         
         Run the pipeline, returning the measurements made
@@ -465,13 +471,16 @@ class Pipeline:
         if image_set_list == None:
             return
             
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurements(image_set_start=image_set_start)
         first_set = True
         matlab_initialized = False
-        while first_set or \
-            image_set_list.count()>measurements.image_set_number+1 or \
-            (image_set_list.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and
-             image_set_list.legacy_fields[NUMBER_OF_IMAGE_SETS] > measurements.image_set_number+1):
+        while (first_set or
+               (measurements.image_set_number+1 <
+                (image_set_list.count() if image_set_end is None
+                 else image_set_end)) or 
+               (image_set_list.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and
+                image_set_list.legacy_fields[NUMBER_OF_IMAGE_SETS] > 
+                measurements.image_set_number+1)):
             if not first_set:
                 measurements.next_image_set()
             numberof_windows = 0;

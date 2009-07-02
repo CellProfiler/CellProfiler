@@ -23,7 +23,7 @@ cdef inline int is_little_endian():
     global is_little_endian_flag
     if is_little_endian_flag == 0:
         x = struct.pack("BBBB",1,0,0,0)
-        is_little_endian_flag = (struct.unpack("L",x)[0]==1 and 1) or -1
+        is_little_endian_flag = (struct.unpack("I",x)[0]==1 and 1) or -1
     return is_little_endian_flag
 
 ###############################################################

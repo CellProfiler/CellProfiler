@@ -125,7 +125,6 @@ end
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
 if any(findobj == ThisModuleFigureNumber);
     CPfigure(handles,'Text',ThisModuleFigureNumber);
-    columns = 1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,6 +161,20 @@ else
             %%% If no perimeter found, default to centroid
             props = regionprops(double(LabelMatrixImage == k),'Centroid');
             Centroids(:,k) = round([props(:).Centroid]);
+        end
+    end
+    %% Remove objects 
+    while length(Points) ~= size(Centroids,2)
+        CPwarndlg(['There is a mismatch in the number of input objects and centroids calculated in ' ...
+                    ModuleName ' Module #' CurrentModuleNum '.  Attempting to fix.'])
+        %% Remove Centroids entries with zeros in both rows.  This happens in the rare case that the number of IDSecondary
+        %% objects is different than the IDPrimary they were generated with, likely because they were too small and 
+        %% edited out.
+        idx_zeros = Centroids(1,:) == 0 & Centroids(2,:) == 0;
+        Centroids(:,idx_zeros) = [];
+        for i = find(idx_zeros);
+            LabelMatrixImage(LabelMatrixImage == i) = 0;
+            LabelMatrixImage(LabelMatrixImage > i) = LabelMatrixImage(LabelMatrixImage > i) - 1;
         end
     end
     CenterLabels = full(sparse(Centroids(2,:), Centroids(1,:), 1:size(Centroids, 2), size(LabelMatrixImage, 1), size(LabelMatrixImage, 2)));

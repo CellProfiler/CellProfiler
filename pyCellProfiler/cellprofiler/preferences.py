@@ -31,7 +31,30 @@ ABSPATH_IMAGE = 'abspath_image'
 __python_root = os.path.split(str(cellprofiler.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
 
+class HeadlessConfig(object):
+    def __init__(self):
+        self.__preferences = {}
+    
+    def Read(self, kwd):
+        return self.__preferences[kwd]
+    
+    def Write(self, kwd, value):
+        self.__preferences[kwd] = value
+    
+    def Exists(self, kwd):
+        return self.__preferences.has_key(kwd)
+
+__is_headless = False
+__headless_config = HeadlessConfig()
+
+def set_headless():
+    global __is_headless
+    __is_headless = True
+    
 def get_config():
+    global __is_headless,__headless_config
+    if __is_headless:
+        return __headless_config
     try:
         config = wx.Config.Get(False)
     except wx.PyNoAppError:

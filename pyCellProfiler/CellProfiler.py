@@ -104,6 +104,7 @@ parser.add_option("-l","--last-image-set",
 options, args = parser.parse_args()
 
 if not options.show_gui:
+    cpprefs.set_headless()
     # What's there to do but run if you're running headless?
     # Might want to change later if there's some headless setup 
     options.run_pipeline = True

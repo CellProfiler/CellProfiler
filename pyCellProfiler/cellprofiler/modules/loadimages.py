@@ -88,7 +88,8 @@ class LoadImages(cpmodule.CPModule):
         # Settings
         self.file_types = cps.Choice('What type of files are you loading?', FF)
         self.match_method = cps.Choice('How do you want to load these files?', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER])
-        self.match_exclude = cps.Text('If you want to exclude certain files, type the text that the excluded images have in common', cps.DO_NOT_USE)
+        self.exclude = cps.Binary('Do you want to exclude certain files?', False)
+        self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE)
         self.order_group_size = cps.Integer('How many images are there in each group?', 3)
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
         self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
@@ -131,8 +132,11 @@ class LoadImages(cpmodule.CPModule):
 
     def visible_settings(self):
         varlist = [self.file_types, self.match_method]
+        
         if self.match_method == MS_EXACT_MATCH:
-            varlist += [self.match_exclude]
+            varlist += [self.exclude]
+            if self.exclude.value:
+                varlist += [self.match_exclude]
         elif self.match_method == MS_ORDER:
             varlist += [self.order_group_size]
         varlist += [self.descend_subdirectories]
@@ -176,6 +180,8 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V1 = 8
     SLOT_GROUP_BY_METADATA = 8
     SLOT_FIRST_IMAGE_V2 = 9
+    SLOT_FIRST_IMAGE_V3 = 10
+    SLOT_EXCLUDE = 9
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
     SLOT_OFFSET_ORDER_POSITION = 2
@@ -185,11 +191,12 @@ class LoadImages(cpmodule.CPModule):
     SLOT_IMAGE_FIELD_COUNT = 6
     def settings(self):
         """Return the settings array in a consistent order"""
-        varlist = range(self.SLOT_FIRST_IMAGE_V2 + \
+        varlist = range(self.SLOT_FIRST_IMAGE_V3 + \
                         self.SLOT_IMAGE_FIELD_COUNT * len(self.images))
         varlist[self.SLOT_FILE_TYPE]              = self.file_types
         varlist[self.SLOT_MATCH_METHOD]           = self.match_method
         varlist[self.SLOT_ORDER_GROUP_SIZE]       = self.order_group_size
+        varlist[self.SLOT_EXCLUDE]                = self.exclude
         varlist[self.SLOT_MATCH_EXCLUDE]          = self.match_exclude
         varlist[self.SLOT_DESCEND_SUBDIRECTORIES] = self.descend_subdirectories
         varlist[self.SLOT_LOCATION]               = self.location
@@ -197,7 +204,7 @@ class LoadImages(cpmodule.CPModule):
         varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
         varlist[self.SLOT_GROUP_BY_METADATA]      = self.group_by_metadata
         for i in range(len(self.images)):
-            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE_V2
+            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE_V3
             varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
                 self.images[i][FD_COMMON_TEXT]
             varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
@@ -227,9 +234,10 @@ class LoadImages(cpmodule.CPModule):
             setting_values,variable_revision_number = self.upgrade_5_to_new_1(setting_values)
             module_name = self.module_class()
         
-        if (variable_revision_number == 1 and 
-            module_name == self.module_class()):
+        if (variable_revision_number == 1 and module_name == self.module_class()):
             setting_values, variable_revision_number = self.upgrade_new_1_to_2(setting_values)
+        if (variable_revision_number == 2 and module_name == self.module_class()):
+            setting_values, variable_revision_number = self.upgrade_new_2_to_3(setting_values)
 
         if variable_revision_number != self.variable_revision_number or \
            module_name != self.module_class():
@@ -239,8 +247,8 @@ class LoadImages(cpmodule.CPModule):
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert (len(setting_values) - self.SLOT_FIRST_IMAGE_V2) % self.SLOT_IMAGE_FIELD_COUNT == 0
-        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT
+        assert (len(setting_values) - self.SLOT_FIRST_IMAGE_V3) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE_V3) / self.SLOT_IMAGE_FIELD_COUNT
         while len(self.images) > image_count:
             self.remove_imagecb(self.image_keys[0])
         while len(self.images) < image_count:
@@ -283,7 +291,7 @@ class LoadImages(cpmodule.CPModule):
         new_values.append(cps.NO)
         return (new_values,5)
     
-    def upgrade_5_to_new_1(self,setting_values):
+    def upgrade_5_to_new_1(self, setting_values):
         """Take the old LoadImages values and put them in the correct slots"""
         new_values = range(self.SLOT_FIRST_IMAGE_V1)
         new_values[self.SLOT_FILE_TYPE]              = setting_values[11]
@@ -327,7 +335,24 @@ class LoadImages(cpmodule.CPModule):
                                "None"])
         return (new_values, 2)
 
-    variable_revision_number = 2
+    def upgrade_new_2_to_3(self, setting_values):
+        """Add the checkbox for excluding certain files"""
+        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
+        if settings_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
+            new_values += [cps.NO]
+        else:
+            new_values += [cps.YES]
+        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2)/3):
+            off = self.SLOT_FIRST_IMAGE_V2+i*3
+            new_values.extend([setting_values[off],
+                               setting_values[off+1],
+                               setting_values[off+2],
+                               M_NONE,
+                               "None",
+                               "None"])
+        return (new_values, 3)
+
+    variable_revision_number = 3
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles

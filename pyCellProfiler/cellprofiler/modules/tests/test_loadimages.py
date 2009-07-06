@@ -17,6 +17,7 @@ import os
 import unittest
 import tempfile
 
+import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
@@ -128,6 +129,21 @@ class testLoadImages(unittest.TestCase):
         self.assertEqual(module.image_name_vars()[2].value,'OrigBlue')
         self.assertEqual(module.text_to_find_vars()[2].value,'s1_w3.TIF')
         self.assertFalse(module.analyze_sub_dirs())
+        
+    def test_03_03_load_new_version_2(self):
+        #XXX: in progress
+        data = 'eJztV91u2jAUNjRURZOm7qLaLn1ZtoIga6UWTbQMJo2NMFRYt6rqVhcMWHJiFJwONlXaI+yR9ih7hD3CbOpA8CJC6S42jUhOfI7Pd36+EzmOVWxWi8/hXiYLrWIz3SEUwzpFvMNcOw8dvgNLLkYctyFz8rDZ8+Arj8KsCXN7+V0zLyZmNnsAlrtiFeu+fIrbunhsiBFXSwklxwJDyg3MOXG6gwQwwCOl/y7GCXIJuqT4BFEPD6YhfH3F6bDmqD9Zsljbo7iG7KCxuGqefYndwZuOD1TLdTLEtEE+Y60E3+wYX5EBYY7CK/+6dhKXcS2u5GF/fcpDLISHrYBe2r8EU3sjxP5BwH5TycRpkyvS9hCFxEbdSRbS31GEv03NnxxNPOTpF0PU4tBGvNWTfrIRfmIzfmLgqV9/BC6hxZdypVp9ayl8VNz4DD4OamwxHh9qcaVcxh3kUQ4rkkRYJi5uceaOfstjXfPnX76/ZID/qPzXZvJYA6eie3fBRfG9AWbrlnKphxwHU3OZuOVacaF89fcjtyA/xgzOEP11sMR9jcC91uqU8oftw/ozuRHiQuZJ6qOU3mFKj9mnwlkxXT9P+ZoSo57tFM6y6YPzL7kd8/rGuEEEcqxMjf3KPHoReexreUhZ+jrFyFUBdq9TaamymMN7SmcqXRmNppo79je3yH6Q1PBSLo0461M0sJV+mX6bq34v1e8fxu2+H39in1rh/h/cEZj/PoedD8aHjK7LvD4URw/c/5fqXfH7d+K+BXBh+1zweyLtL8B8Xh+DWV6l3BJbfd9l8n/IzdjjQ/sgQxlq35yaM1UxrQQO0Ho9yZA4wbziYrYVwYNe/5SXn4fLxIuHxLsXgTPUH5nEvQe34317jj3Q7H8BnRn8NQ=='
+        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cpp.Pipeline()
+        pipeline.load(fd)
+    
+    def test_03_03_load_new_version_3(self):
+        #XXX: in progress
+        data = 'eJztWW9v20QYv7Rp1TI0DV4A0iR0L5uusezQwlqhLFnDINBk0Ro2pq6Uq3NpDp19ln3uGhASL3nNJ+IlH4ePwJ1jx86tqR2njTQprhz7efz8nn93z/3pterdo/pTuKfpsFXvlvuEYtihiPeZax1Ah3nkagceuhhx3IPMPoDdgQ+/9ymEFWjsHuztHxg6rOj6PshxFZqt++Lx0+cArIvnhrhXwk9rIV1I3JI+xpwT+8JbA0XwWcj/R9wvkUvQOcUvEfWxF5uI+E27z7pDZ/ypxXo+xW1kJYXF1fatc+x6z/sRMPzcIVeYHpPfsBJCJPYCXxKPMDvEh/pV7tgu44pdmYdf7sd5KCh5kHl5mOBL+e9ALF+8Jm8fJeQfhDSxe+SS9HxEIbHQxdgLqU9P0bc6oW8VNNr1AFdLwT1Q/JB3F1/x8jdXyOTQQtwcSD2PU/SsK3ok3fZNikk2/wsT+AL4ImPcxQlcEXy5s6tn8XdN8VfSzaOjH1s58/1atFYW3MoEbgW0WTZ703Bp/exTJU5JN3Af+ZTDpuxksEFcbHLmDm8t7nUFF10RbjN8Zumf9xT/Jf2cez78lrJzRMd67qq9VJyh6XPZyzMu6JoeXDtG+JLI313FrdaV8MHIUlcbYNJ/SR8OkG1jamRp700FL+mmzbHtET5MxJ1Hz+GQM4ciz5pTz3X+zDq+GRlxat0ben6/n8kFhC2m1Tn8/irE/ZuC+1uxL+mft550vpYLGFx15K/2qFSWrIbkbJ3o5f3T33f/KI9eKvFLabt0JuVeYUpfsLfVk3q5c1qKOIeM+pZdHQkbO0I8ED4mQqkXcEtn2qOzNyeS+xS5JuvhqrZdenOqbWfPw7Q6GqTgHit5kLR05DVGbjUKeZSGFrP5oDoOOkzNMOZkafcPFHuSbjBoMw59D8fxzlHHlUWOt9E65q7sqf27AhY7rraZjfPY08N56M8U3A9gsh0lnahDUYI5S2tUWYHeeeJedP3cxvpslvXNotdTs/ejvYWv37pvGTTFPOyFO5x57OdZT73C5GIg98yXcoNom9Pmw9vMw3Xj8jPm4guX+XYv1jP4cLZ95iL9DTal0mFnfvt52o2d/yp2KoEDUOyVsXMLeVjilrgl7v3D1RK4rP/Xisev0fDxPsW7xOWbRz4Gk/1A0sznlNj4nYlk2Y+XuAhXAze3y12vj5a4JW4RuI3C9P2Guh8OzsHAzXWxDSbrQtImptRxmTy/dDUrOGTzNMpQb3TKpR2J12biwEvacVLs1BQ7tWl2SA/bnPSHjius+ZxZiBNTa4bcjuDWI66ax81r7CbzsSL+Pnl4c/7VvMft8d+TPPZWV9+1dy8FVwwzKHF/gdnae+sG+Si2vPL/A2yLmoM='
+        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cpp.Pipeline()
+        pipeline.load(fd)
+        
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='

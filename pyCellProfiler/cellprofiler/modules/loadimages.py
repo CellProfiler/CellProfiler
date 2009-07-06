@@ -342,8 +342,8 @@ class LoadImages(cpmodule.CPModule):
             new_values += [cps.NO]
         else:
             new_values += [cps.YES]
-        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2)/3):
-            off = self.SLOT_FIRST_IMAGE_V2+i*3
+        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2)/6):
+            off = self.SLOT_FIRST_IMAGE_V2+i*6
             new_values.extend([setting_values[off],
                                setting_values[off+1],
                                setting_values[off+2],
@@ -353,6 +353,7 @@ class LoadImages(cpmodule.CPModule):
         return (new_values, 3)
 
     variable_revision_number = 3
+    
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
@@ -828,12 +829,12 @@ class LoadImages(cpmodule.CPModule):
             return None
         if self.load_choice() == MS_EXACT_MATCH:
             ttfs = self.text_to_find_vars()
-            for i,ttf in zip(range(0,len(ttfs)),ttfs):
+            for i,ttf in enumerate(ttfs):
                 if filename.find(ttf.value) >=0:
                     return i
         elif self.load_choice() == MS_REGEXP:
             ttfs = self.text_to_find_vars()
-            for i,ttf in zip(range(0,len(ttfs)),ttfs):
+            for i,ttf in enumerate(ttfs):
                 if re.search(ttf.value, filename):
                     return i
         else:

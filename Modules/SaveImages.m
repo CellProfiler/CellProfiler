@@ -284,7 +284,7 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
     else
         try
             if ~isImageGroups
-                FileName = handles.Pipeline.(['FileList',ImageFileName]){SetBeingAnalyzed};
+                FileName = handles.Pipeline.(['FileList',ImageFileName]){1,SetBeingAnalyzed};
             else
                 FileName = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageFileName]){SetBeingAnalyzed};
             end

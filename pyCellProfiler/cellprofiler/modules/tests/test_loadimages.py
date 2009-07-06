@@ -16,6 +16,8 @@ import numpy
 import os
 import unittest
 import tempfile
+import zlib
+from StringIO import StringIO
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
@@ -36,7 +38,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number,2,"LoadImages' version number has changed")
+        self.assertEqual(LI.LoadImages().variable_revision_number,3,"LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
@@ -44,8 +46,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
-        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
+        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -66,7 +68,7 @@ class testLoadImages(unittest.TestCase):
             ii = i+1
             if i:
                 l.add_imagecb()
-            idx = l.SLOT_FIRST_IMAGE_V2+l.SLOT_IMAGE_FIELD_COUNT * i 
+            idx = l.SLOT_FIRST_IMAGE_V3+l.SLOT_IMAGE_FIELD_COUNT * i 
             l.settings()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
             l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
         image_set_list = I.ImageSetList()
@@ -86,8 +88,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
-        l.settings()[l.SLOT_FIRST_IMAGE_V2+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
+        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list,None)

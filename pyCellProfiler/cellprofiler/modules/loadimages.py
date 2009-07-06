@@ -338,7 +338,7 @@ class LoadImages(cpmodule.CPModule):
     def upgrade_new_2_to_3(self, setting_values):
         """Add the checkbox for excluding certain files"""
         new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
-        if settings_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
+        if setting_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
             new_values += [cps.NO]
         else:
             new_values += [cps.YES]

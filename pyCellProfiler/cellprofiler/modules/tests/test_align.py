@@ -222,8 +222,22 @@ class TestAlign(unittest.TestCase):
             output = workspace.image_set.get_image('Aligned2')
             self.assertTrue(np.all(np.abs(output.pixel_data[mask] - expected[mask]<=np.finfo(float).eps)))
             m = workspace.measurements
-            self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned2'),offset[1])
-            self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned2'),offset[0])
+            columns = module.get_measurement_columns()
+            self.assertEqual(len(columns), 4)
+            align_measurements = [x for x in m.get_feature_names(cpmeas.IMAGE)
+                                  if x.startswith('Align')]
+            self.assertEqual(len(align_measurements), 4)
+            for feature, value in (('Align_Xshift_Aligned0_vs_Aligned1',offset[1]),
+                                   ('Align_Yshift_Aligned0_vs_Aligned1',offset[0]),
+                                   ('Align_Xshift_Aligned0_vs_Aligned2',offset[1]),
+                                   ('Align_Yshift_Aligned0_vs_Aligned2',offset[0])):
+                self.assertEqual(m.get_current_image_measurement(feature), value)
+                fcolumns = [column for column in columns
+                            if column[1] == feature]
+                self.assertEqual(len(fcolumns),1)
+                fcolumn = fcolumns[0]
+                self.assertEqual(fcolumn[0],cpmeas.IMAGE)
+                self.assertEqual(fcolumn[2],cpmeas.COLTYPE_INTEGER)
 
     def test_03_02_align_separately(self):
         '''Align a third image to the first image'''
@@ -243,10 +257,22 @@ class TestAlign(unittest.TestCase):
             output = workspace.image_set.get_image('Aligned2')
             self.assertTrue(np.all(image1[mask] == output.pixel_data[mask]))
             m = workspace.measurements
-            self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned1'),offset[1]+5)
-            self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned1'),offset[0]+5)
-            self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned2'),offset[1])
-            self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned2'),offset[0])
+            columns = module.get_measurement_columns()
+            self.assertEqual(len(columns), 4)
+            align_measurements = [x for x in m.get_feature_names(cpmeas.IMAGE)
+                                  if x.startswith('Align')]
+            self.assertEqual(len(align_measurements), 4)
+            for feature, value in (('Align_Xshift_Aligned0_vs_Aligned1',offset[1]+5),
+                                   ('Align_Yshift_Aligned0_vs_Aligned1',offset[0]+5),
+                                   ('Align_Xshift_Aligned0_vs_Aligned2',offset[1]),
+                                   ('Align_Yshift_Aligned0_vs_Aligned2',offset[0])):
+                self.assertEqual(m.get_current_image_measurement(feature), value)
+                fcolumns = [column for column in columns
+                            if column[1] == feature]
+                self.assertEqual(len(fcolumns),1)
+                fcolumn = fcolumns[0]
+                self.assertEqual(fcolumn[0],cpmeas.IMAGE)
+                self.assertEqual(fcolumn[2],cpmeas.COLTYPE_INTEGER)
     
     def test_04_01_crop(self):
         '''Align with cropping'''
@@ -270,5 +296,4 @@ class TestAlign(unittest.TestCase):
         m = workspace.measurements
         self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned1'),1)
         self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned1'),-1)
-
         

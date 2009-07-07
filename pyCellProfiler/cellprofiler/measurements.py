@@ -29,6 +29,12 @@ EXPERIMENT = "Experiment"
 """The neighbor association measurement category"""
 NEIGHBORS = "Neighbors"
 
+COLTYPE_INTEGER = "integer"
+COLTYPE_FLOAT = "float"
+COLTYPE_VARCHAR_FORMAT = "varchar(%d)"
+COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % 128
+COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % 128
+
 class Measurements(object):
     """Represents measurements made on images and objects
     """

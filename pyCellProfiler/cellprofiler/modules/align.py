@@ -21,6 +21,7 @@ import uuid
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.filter import stretch
 
 M_MUTUAL_INFORMATION = 'Mutual Information'
@@ -29,6 +30,8 @@ M_ALL = (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION)
 
 A_SIMILARLY = 'Similarly'
 A_SEPARATELY = 'Separately'
+
+MEASUREMENT_FORMAT = "Align_%sshift_%s_vs_%s"
 
 class Align(cpm.CPModule):
     '''SHORT DESCRIPTION:
@@ -230,7 +233,7 @@ template and be smaller than the first image selected.
         #
         for index, input_name, output_name, t_off_x, t_off_y in statistics:
             for axis, value in (('X',t_off_x),('Y',t_off_y)):
-                feature = ("Align_%sshift_%s_vs_%s" %
+                feature = (MEASUREMENT_FORMAT %
                            (axis, self.first_output_image.value,
                             output_name))
                 workspace.measurements.add_image_measurement(feature, value)
@@ -491,12 +494,20 @@ template and be smaller than the first image selected.
                                  parent_image = image)
         workspace.image_set.add(output_image_name, output_image)
     
-    def get_categories(self, pipeline, object_name):
-        return cpm.CPModule.get_categories(self, pipeline, object_name)
-
-
-    def get_measurements(self, pipeline, object_name, category):
-        return cpm.CPModule.get_measurements(self, pipeline, object_name, category)
+    def get_measurement_columns(self):
+        '''return the offset measurements'''
+        
+        targets = ([self.second_output_image.value] +
+                   [additional.output_image_name.value
+                    for additional in self.additional_images])
+        columns = []
+        for axis in ('X','Y'):
+            columns += [(cpmeas.IMAGE, 
+                         MEASUREMENT_FORMAT%(axis,self.first_output_image.value,
+                                             target),
+                         cpmeas.COLTYPE_INTEGER)
+                         for target in targets]
+        return columns
 
 def offset_slice(pixels1, pixels2, i, j):
     '''Return two sliced arrays where the first slice is offset by i,j

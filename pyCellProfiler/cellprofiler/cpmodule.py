@@ -407,6 +407,22 @@ class CPModule(object):
         workspace - the workspace at the end of the run
         """
         pass
+    
+    def get_measurement_columns(self):
+        '''Return a sequence describing the measurement columns needed by this module
+        
+        This call should return one element per image or object measurement
+        made by the module during image set analysis. The element itself
+        is a 3-tuple:
+        first entry: either one of the predefined measurement categories,
+                     {Image", "Experiment" or "Neighbors" or the name of one
+                     of the objects.
+        second entry: the measurement name (as would be used in a call 
+                      to add_measurement)
+        third entry: the column data type (for instance, "varchar(255)" or
+                     "float")
+        '''
+        return []
 
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces

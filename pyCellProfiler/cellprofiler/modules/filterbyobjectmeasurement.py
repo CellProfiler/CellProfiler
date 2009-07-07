@@ -19,10 +19,12 @@ import uuid
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
 
 '''Minimal filter - pick a single object per image by minimum measured value'''
 FI_MINIMAL = "Minimal"
@@ -47,6 +49,8 @@ FIXED_SETTING_COUNT = 11
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
+
+FF_PARENT = "Parent_%s"
 
 class FilterByObjectMeasurement(cpm.CPModule):
     '''SHORT DESCRIPTION:
@@ -401,7 +405,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
             # Relate the old numbering to the new numbering
             #
             m.add_measurement(target_name,
-                              "Parent_%s"%(src_name),
+                              FF_PARENT%(src_name),
                               np.array(indexes))
             #
             # Add an outline if asked to do so
@@ -549,3 +553,16 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
         indexes = np.argwhere(hits)[:,0] 
         indexes = indexes + 1
         return indexes
+
+    def get_measurement_columns(self):
+        '''Return measurement column defs for the parent/child measurement'''
+        object_list = ([(self.object_name.value, self.target_name.value)] + 
+                       [(x.object_name.value, x.target_name.value)
+                         for x in self.additional_objects])
+        columns = []
+        for src_name, target_name in object_list:
+            columns.append((target_name, 
+                            FF_PARENT%src_name, 
+                            cpmeas.COLTYPE_INTEGER))
+            columns += get_object_measurement_columns(target_name)
+        return columns

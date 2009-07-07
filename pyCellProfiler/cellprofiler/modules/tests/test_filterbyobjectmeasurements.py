@@ -107,6 +107,10 @@ class TestFilterByObjectMeasurement(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects("my_result")
         self.assertTrue(np.all(labels.segmented==expected))
+        parents = m.get_current_measurement("my_result","Parent_my_objects")
+        self.assertEqual(len(parents),1)
+        self.assertEqual(parents[0],2)
+        self.assertEqual(m.get_current_image_measurement("Count_my_result"),1)
 
     def test_01_02_keep_single_max(self):
         '''Keep a single object (max) from among two'''
@@ -789,3 +793,41 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(len(module.additional_objects), 1)
         self.assertEqual(module.additional_objects[0].object_name.value, 'Cells')
         self.assertEqual(module.additional_objects[0].target_name.value, 'FilteredCells')
+
+    def test_06_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns function'''
+        workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
+        module.object_name.value = "my_objects"
+        module.target_name.value = "my_result"
+        module.measurement.value = "my_measurement"
+        module.filter_choice = F.FI_MAXIMAL
+        m = workspace.measurements
+        m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
+        module.run(workspace)
+        image_features = m.get_feature_names(cpm.IMAGE)
+        object_features = m.get_feature_names("my_result")
+        columns = module.get_measurement_columns()
+        self.assertEqual(len(columns), 4)
+        for feature in image_features:
+            self.assertTrue(any([(column[0] == cpm.IMAGE and 
+                                  column[1] == feature)
+                                 for column in columns]))
+        for feature in object_features:
+            self.assertTrue(any([(column[0] == "my_result" and
+                                  column[1] == feature)
+                                 for column in columns]))
+        
+        for column in columns:
+            self.assertTrue(column[0] in (cpm.IMAGE, "my_result"))
+            if column[0] == cpm.IMAGE:
+                self.assertTrue(column[1] in image_features)
+            elif column[0] == "my_result":
+                self.assertTrue(column[1] in object_features)
+        
+        for feature, coltype in (("Location_Center_X", cpm.COLTYPE_FLOAT),
+                                 ("Location_Center_Y", cpm.COLTYPE_FLOAT),
+                                 ("Parent_my_objects", cpm.COLTYPE_INTEGER),
+                                 ("Count_my_result", cpm.COLTYPE_INTEGER)):
+            fcolumns = [x for x in columns if x[1] == feature]
+            self.assertEqual(len(fcolumns),1,"Missing or duplicate column: %s"%feature)
+            self.assertEqual(fcolumns[0][2], coltype)

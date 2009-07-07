@@ -21,6 +21,7 @@ import scipy.stats
 
 import cellprofiler.cpmodule
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.cpmath.smooth import smooth_with_noise
@@ -35,6 +36,15 @@ O_ENTROPY = 'Entropy'
 
 O_FOREGROUND = 'Foreground'
 O_BACKGROUND = 'Background'
+
+'''The centroid X coordinate measurement feature name'''
+M_LOCATION_CENTER_X = 'Location_Center_X'
+
+'''The centroid Y coordinate measurement feature name'''
+M_LOCATION_CENTER_Y = 'Location_Center_Y'
+
+'''The format for the object count image measurement'''
+FF_COUNT = 'Count_%s' 
 class Identify(cellprofiler.cpmodule.CPModule):
     def get_threshold(self, image, mask, labels):
         """Compute the threshold using whichever algorithm was selected by the user
@@ -106,15 +116,26 @@ def add_object_location_measurements(measurements,
     else:
         location_center_y = numpy.zeros((0,),dtype=float)
         location_center_x = numpy.zeros((0,),dtype=float)
-    measurements.add_measurement(object_name,'Location_Center_X',
+    measurements.add_measurement(object_name, M_LOCATION_CENTER_X,
                                  location_center_x)
-    measurements.add_measurement(object_name,'Location_Center_Y',
+    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
                                  location_center_y)
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement('Image',
-                                 'Count_%s'%(object_name),
+                                 FF_COUNT%(object_name),
                                  numpy.array([object_count],
                                              dtype=float))
-            
+
+def get_object_measurement_columns(object_name):
+    '''Get the column definitions for measurements made by identify modules
+    
+    Identify modules can use this call when implementing
+    CPModule.get_measurement_columns to get the column definitions for
+    the measurements made by add_object_location_measurements and
+    add_object_count_measurements.
+    '''
+    return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+            (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_COUNT%object_name, cpmeas.COLTYPE_INTEGER)]

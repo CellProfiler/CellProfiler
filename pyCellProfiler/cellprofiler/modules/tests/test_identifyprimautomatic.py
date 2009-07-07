@@ -29,7 +29,7 @@ from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.settings
 import cellprofiler.cpimage
 import cellprofiler.objects
-import cellprofiler.measurements
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
 from cellprofiler.matlab.cputils import get_matlab_instance
@@ -180,7 +180,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -217,7 +217,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -240,7 +240,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -263,7 +263,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -286,7 +286,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -309,7 +309,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -351,7 +351,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -397,7 +397,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -444,7 +444,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -472,7 +472,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -524,7 +524,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -575,7 +575,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -630,7 +630,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -681,7 +681,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -732,7 +732,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -789,7 +789,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -973,7 +973,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -1003,7 +1003,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -1031,7 +1031,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -1063,7 +1063,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -1096,7 +1096,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
@@ -1126,7 +1126,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertEqual(len(object_set.object_names),1)
@@ -1256,7 +1256,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
                               image_set_list)
         x.run(workspace)
@@ -1405,12 +1405,33 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         threshold = cellprofiler.cpimage.Image(thresh)
         image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_threshold",threshold))
         object_set = cellprofiler.objects.ObjectSet()
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
         count = measurements.get_current_measurement("Image","Count_my_object")
         self.assertEqual(count,2)
+    
+    def test_16_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns method'''
+        x = ID.IdentifyPrimAutomatic()
+        oname = "my_object"
+        x.object_name.value = oname
+        x.image_name.value = "my_image"
+        columns = x.get_measurement_columns()
+        expected_columns = [(cpmeas.IMAGE, format%oname, coltype )
+                            for format,coltype in ((I.FF_COUNT, cpmeas.COLTYPE_INTEGER),
+                                                   (ID.FF_FINAL_THRESHOLD, cpmeas.COLTYPE_FLOAT),
+                                                   (ID.FF_ORIG_THRESHOLD, cpmeas.COLTYPE_FLOAT),
+                                                   (ID.FF_WEIGHTED_VARIANCE, cpmeas.COLTYPE_FLOAT),
+                                                   (ID.FF_SUM_OF_ENTROPIES, cpmeas.COLTYPE_FLOAT))]
+        expected_columns += [(oname, feature, cpmeas.COLTYPE_FLOAT)
+                             for feature in (I.M_LOCATION_CENTER_X,
+                                             I.M_LOCATION_CENTER_Y)]
+        self.assertEqual(len(columns), len(expected_columns))
+        for column in columns:
+            self.assertTrue(any(all([colval==exval for colval, exval in zip(column, expected)])
+                                for expected in expected_columns))
 
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''

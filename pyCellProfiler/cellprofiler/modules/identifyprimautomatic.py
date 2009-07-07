@@ -26,6 +26,7 @@ import wx
 
 import identify as cpmi
 import cellprofiler.cpmodule
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.preferences as cpp
@@ -71,6 +72,17 @@ AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
 
+'''Format string for the FinalThreshold feature name'''
+FF_FINAL_THRESHOLD = 'Threshold_FinalThreshold_%s'
+
+'''Format string for the OrigThreshold feature name'''
+FF_ORIG_THRESHOLD = 'Threshold_OrigThreshold_%s'
+
+'''Format string for the WeightedVariance feature name'''
+FF_WEIGHTED_VARIANCE = 'Threshold_WeightedVariance_%s'
+
+'''Format string for the SumOfEntropies feature name'''
+FF_SUM_OF_ENTROPIES = 'Threshold_SumOfEntropies_%s'
 
 class IdentifyPrimAutomatic(cpmi.Identify):
     """This module identifies primary objects (e.g. nuclei) in grayscale images
@@ -707,21 +719,21 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         else:
             # The local threshold is an array
             ave_threshold = local_threshold.mean()
-        measurements.add_measurement('Image',
-                                     'Threshold_FinalThreshold_%s'%(objname),
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_FINAL_THRESHOLD%(objname),
                                      np.array([ave_threshold],
                                                  dtype=float))
-        measurements.add_measurement('Image',
-                                     'Threshold_OrigThreshold_%s'%(objname),
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_ORIG_THRESHOLD%(objname),
                                      np.array([global_threshold],
                                                   dtype=float))
         wv = cpthresh.weighted_variance(img, mask, local_threshold)
-        measurements.add_measurement('Image',
-                                     'Threshold_WeightedVariance_%s'%(objname),
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_WEIGHTED_VARIANCE%(objname),
                                      np.array([wv],dtype=float))
         entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
-        measurements.add_measurement('Image',
-                                     'Threshold_SumOfEntropies_%s'%(objname),
+        measurements.add_measurement(cpmeas.IMAGE,
+                                     FF_SUM_OF_ENTROPIES%(objname),
                                      np.array([entropies],dtype=float))
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
@@ -1049,6 +1061,16 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             return 2.35*self.size_range.min/3.5;
         else:
             return self.smoothing_filter_size.value
+    
+    def get_measurement_columns(self):
+        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        columns = cpmi.get_object_measurement_columns(self.object_name.value)
+        columns += [(cpmeas.IMAGE, 
+                     format%self.object_name.value,
+                     cpmeas.COLTYPE_FLOAT)
+                    for format in (FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD,
+                                   FF_WEIGHTED_VARIANCE, FF_SUM_OF_ENTROPIES)]
+        return columns
              
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces

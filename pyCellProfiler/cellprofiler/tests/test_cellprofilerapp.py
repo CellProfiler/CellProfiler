@@ -81,7 +81,7 @@ class Test_CellProfilerApp(unittest.TestCase):
         #
         vv = module.visible_settings()
         self.assertTrue(isinstance(vv[0],vvv.Choice))
-        self.assertTrue(isinstance(vv[2],vvv.Text))
+        self.assertTrue(isinstance(vv[6],vvv.Text))
         self.assertTrue(isinstance(vv[3],vvv.Binary))
         for v,i in zip(vv,range(len(vv))):
             text_name = mv.text_control_name(v)

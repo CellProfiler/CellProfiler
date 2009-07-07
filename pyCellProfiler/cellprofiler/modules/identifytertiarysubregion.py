@@ -18,6 +18,7 @@ import matplotlib.cm
 
 import identify as cpmi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
@@ -48,6 +49,7 @@ objects.
 
 See also Identify Primary and Identify Secondary modules.
 """
+
     variable_revision_number = 1
     category = "Object Processing"
     
@@ -247,10 +249,10 @@ See also Identify Primary and Identify Secondary modules.
          in ((self.primary_objects_name, primary_parents,child_count_of_primary),
              (self.secondary_objects_name, secondary_parents, child_count_of_secondary)):
             m.add_measurement(self.subregion_objects_name.value,
-                              "Parent_%s"%(parent_objects_name.value),
+                              cpmi.FF_PARENT%(parent_objects_name.value),
                               parents_of)
             m.add_measurement(parent_objects_name.value,
-                              "Children_%s_Count"%(self.subregion_objects_name.value),
+                              cpmi.FF_CHILDREN_COUNT%(self.subregion_objects_name.value),
                               child_count)
         object_count = np.max(tertiary_labels)
         #
@@ -271,6 +273,18 @@ See also Identify Primary and Identify Secondary modules.
         if self.use_outlines.value:
             workspace.add_outline(self.outlines_name.value, tertiary_outlines)
             
-
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements made by this module'''
+        subregion_name = self.subregion_objects_name.value
+        columns = cpmi.get_object_measurement_columns(subregion_name)
+        for parent in (self.primary_objects_name.value, 
+                       self.secondary_objects_name.value):
+            columns += [(parent,
+                         cpmi.FF_CHILDREN_COUNT%subregion_name,
+                         cpmeas.COLTYPE_INTEGER),
+                        (subregion_name,
+                         cpmi.FF_PARENT%parent,
+                         cpmeas.COLTYPE_INTEGER)]
+        return columns
          
         

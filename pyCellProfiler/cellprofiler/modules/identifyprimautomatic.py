@@ -41,6 +41,8 @@ import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 import cellprofiler.cpmath.threshold as cpthresh
+from identify import FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD
+from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 
 IMAGE_NAME_VAR                  = 0
 OBJECT_NAME_VAR                 = 1
@@ -71,18 +73,6 @@ AUTOMATIC_SMOOTHING_VAR         = 18
 AUTOMATIC_MAXIMA_SUPPRESSION    = 19
 MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
-
-'''Format string for the FinalThreshold feature name'''
-FF_FINAL_THRESHOLD = 'Threshold_FinalThreshold_%s'
-
-'''Format string for the OrigThreshold feature name'''
-FF_ORIG_THRESHOLD = 'Threshold_OrigThreshold_%s'
-
-'''Format string for the WeightedVariance feature name'''
-FF_WEIGHTED_VARIANCE = 'Threshold_WeightedVariance_%s'
-
-'''Format string for the SumOfEntropies feature name'''
-FF_SUM_OF_ENTROPIES = 'Threshold_SumOfEntropies_%s'
 
 class IdentifyPrimAutomatic(cpmi.Identify):
     """This module identifies primary objects (e.g. nuclei) in grayscale images

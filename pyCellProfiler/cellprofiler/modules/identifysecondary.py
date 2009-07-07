@@ -20,6 +20,7 @@ import scipy.ndimage as scind
 import scipy.misc as scimisc
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
@@ -173,6 +174,7 @@ postprocess.
 
 See also Identify primary modules.
     """
+
     variable_revision_number = 2
     category = "Object Processing"
     
@@ -448,26 +450,37 @@ See also Identify primary modules.
             else:
                 ave_threshold = local_threshold
             
-            measurements.add_measurement('Image',
-                                         'Threshold_FinalThreshold_%s'%(objname),
+            measurements.add_measurement(cpmeas.IMAGE,
+                                         cpmi.FF_FINAL_THRESHOLD%(objname),
                                          np.array([ave_threshold],
                                                      dtype=float))
-            measurements.add_measurement('Image',
-                                         'Threshold_OrigThreshold_%s'%(objname),
+            measurements.add_measurement(cpmeas.IMAGE,
+                                         cpmi.FF_ORIG_THRESHOLD%(objname),
                                          np.array([global_threshold],
                                                       dtype=float))
             wv = cpthresh.weighted_variance(img, mask, local_threshold)
-            measurements.add_measurement('Image',
-                                         'Threshold_WeightedVariance_%s'%(objname),
+            measurements.add_measurement(cpmeas.IMAGE,
+                                         cpmi.FF_WEIGHTED_VARIANCE%(objname),
                                          np.array([wv],dtype=float))
             entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
-            measurements.add_measurement('Image',
-                                         'Threshold_SumOfEntropies_%s'%(objname),
+            measurements.add_measurement(cpmeas.IMAGE,
+                                         cpmi.FF_SUM_OF_ENTROPIES%(objname),
                                          np.array([entropies],dtype=float))
         cpmi.add_object_count_measurements(measurements, objname, object_count)
         cpmi.add_object_location_measurements(measurements, objname,
                                               segmented_out)
-
+        #
+        # Relate the secondary objects to the primary ones and record
+        # the relationship.
+        #
+        children_per_parent, parents_of_children = \
+            objects.relate_children(objects_out)
+        measurements.add_measurement(self.primary_objects.value,
+                                     cpmi.FF_CHILDREN_COUNT%objname,
+                                     children_per_parent)
+        measurements.add_measurement(objname,
+                                     cpmi.FF_PARENT%self.primary_objects.value,
+                                     parents_of_children)
 
     def filter_labels(self, labels_out, objects):
         """Filter labels out of the output that are not in the segmented input labels
@@ -488,4 +501,21 @@ See also Identify primary modules.
             segmented_labels_out = labels_out.copy()
         return segmented_labels_out
         
-            
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements made by this module'''
+        columns = cpmi.get_object_measurement_columns(self.objects_name.value)
+        columns += [(self.primary_objects.value,
+                     cpmi.FF_CHILDREN_COUNT%self.objects_name.value,
+                     cpmeas.COLTYPE_INTEGER),
+                    (self.objects_name.value,
+                     cpmi.FF_PARENT%self.primary_objects.value,
+                     cpmeas.COLTYPE_INTEGER)]
+        if self.method != M_DISTANCE_N:
+            columns += [(cpmeas.IMAGE, 
+                         format % self.objects_name.value,
+                         cpmeas.COLTYPE_FLOAT)
+                        for format in (cpmi.FF_FINAL_THRESHOLD,
+                                       cpmi.FF_ORIG_THRESHOLD,
+                                       cpmi.FF_WEIGHTED_VARIANCE,
+                                       cpmi.FF_SUM_OF_ENTROPIES)]
+        return columns 

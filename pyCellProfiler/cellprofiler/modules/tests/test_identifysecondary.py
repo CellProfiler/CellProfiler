@@ -112,6 +112,12 @@ class TestIdentifySecondary(unittest.TestCase):
         counts = m.get_current_measurement("Image", "Count_my_objects")
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
+        columns = module.get_measurement_columns()
+        for object_name in (cpm.IMAGE, "my_objects","primary"):
+            ocolumns =[x for x in columns if x[0] == object_name]
+            features = m.get_feature_names(object_name)
+            self.assertEqual(len(ocolumns), len(features))
+            self.assertTrue(all([column[1] in features for column in ocolumns]))
     
     def test_02_02_one_object_propagation(self):
         p = cpp.Pipeline()
@@ -147,6 +153,12 @@ class TestIdentifySecondary(unittest.TestCase):
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
+        child_counts = m.get_current_measurement("primary","Children_my_objects_Count")
+        self.assertEqual(len(child_counts),1)
+        self.assertEqual(child_counts[0],1)
+        parents = m.get_current_measurement("my_objects","Parent_primary")
+        self.assertEqual(len(parents),1)
+        self.assertEqual(parents[0],1)
 
     def test_02_03_two_objects_propagation_image(self):
         p = cpp.Pipeline()

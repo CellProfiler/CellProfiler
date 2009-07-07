@@ -45,6 +45,25 @@ M_LOCATION_CENTER_Y = 'Location_Center_Y'
 
 '''The format for the object count image measurement'''
 FF_COUNT = 'Count_%s' 
+
+'''Format string for the FinalThreshold feature name'''
+FF_FINAL_THRESHOLD = 'Threshold_FinalThreshold_%s'
+
+'''Format string for the OrigThreshold feature name'''
+FF_ORIG_THRESHOLD = 'Threshold_OrigThreshold_%s'
+
+'''Format string for the WeightedVariance feature name'''
+FF_WEIGHTED_VARIANCE = 'Threshold_WeightedVariance_%s'
+
+'''Format string for the SumOfEntropies feature name'''
+FF_SUM_OF_ENTROPIES = 'Threshold_SumOfEntropies_%s'
+
+'''Format string for # of children per parent feature name'''
+FF_CHILDREN_COUNT = "Children_%s_Count"
+
+'''Format string for parent of child feature name'''
+FF_PARENT = "Parent_%s"
+
 class Identify(cellprofiler.cpmodule.CPModule):
     def get_threshold(self, image, mask, labels):
         """Compute the threshold using whichever algorithm was selected by the user

@@ -12,9 +12,13 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import base64
 import numpy as np
+from StringIO import StringIO
 import unittest
+import zlib
 
+import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiarysubregion as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
@@ -27,6 +31,9 @@ SECONDARY = "secondary"
 TERTIARY = "tertiary"
 
 class TestIdentifyTertiarySubregion(unittest.TestCase):
+    def on_pipeline_event(self, caller, event):
+        self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
     def make_workspace(self,primary_labels,secondary_labels):
         """Make a workspace that has objects for the input labels
         
@@ -73,6 +80,12 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
         self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == primary_labels))
+        columns = module.get_measurement_columns()
+        for object_name in (cpm.IMAGE, PRIMARY, SECONDARY, TERTIARY):
+            ocolumns =[x for x in columns if x[0] == object_name]
+            features = measurements.get_feature_names(object_name)
+            self.assertEqual(len(ocolumns), len(features))
+            self.assertTrue(all([column[1] in features for column in ocolumns]))
     
     def test_01_01_one_object(self):
         """Test creation of a single tertiary object"""
@@ -198,3 +211,88 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
             mapped_labels = label_map[output_labels]
             self.assertTrue(np.all(parent_labels == mapped_labels))
             
+    def test_02_01_load_matlab(self):
+        '''Load a Matlab pipeline with an IdentifyTertiary module'''
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
+                'sSU1RyM+zUggpTVXwKs1RMDBXMDS2MjW3MjZRMDIwsFQgGTAwevryMzAwJD'
+                'AyMFTMWRu80e+wgcDekMxQh1VRalqGKSktvYKcbFYBWkGhazyLdd3WyaqaK'
+                'fnUSM1v8517zTTQWcvP6uj7T/d2nz75kvGAt/SCxfNip+pGuN9OOO/V6yzS'
+                'tCH1Hpv8OZ+/3k91TnmIBM9xDUnim63xWnnbg8tKd/dUPehcYtEXZhZ5NGJ'
+                'd0plPx101TdarP5HN9LATKFu8xPah9EnOdLf8P3dfLdMX97s/71R2/m729U'
+                'n8+0L/Pzw87X34B2ux/fkfIs5pTtr6b5lb/ZMXpvt0Wfwzp6yXOnOxtMZkX'
+                'pKaxxTR+pmPb1zMrjnOfMxVofjOuY93CupLa/3n7JP6/EP0edLMwpn/dp+v'
+                '7T1/4KPkm18sLaozou6HPy9/9SPzzNIFLQ/1nd9+5/z9/fXBd3Xqpn/b/ep'
+                '73TmNHMVcK+2dJNN3hOyf8LQ682dZ1rOMlZPjF66edfza16svXx2ou8doFa'
+                '/Z/vyZnPmdz0fl6iRT/0oLzMsPAADtf80+')
+        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_pipeline_event)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()),1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        self.assertEqual(module.primary_objects_name.value, "Cytoplasm")
+        self.assertEqual(module.secondary_objects_name.value, "Nuclei")
+        self.assertEqual(module.subregion_objects_name.value, "Tertiary")
+        self.assertFalse(module.use_outlines.value)
+    
+    def test_02_02_load_v1(self):
+        data = ('eJztW89v2zYUlh0nWFagSHfYivXCY7PFhuwmaBoMqT17W7zVjlEbLYqi3Wi'
+                'ZtjnQoiFRabyhwI77k3bcn7PjjjtOdCRLZlSLln9ETiVAcN4Tv/fxPZLvUV'
+                'JUK7Welb4FRzkV1EqtbBcTBBoEsi41BidAZwegbCDIUAdQ/QS0LAR+tAhQH'
+                '4P84Un+6KTwCBRU9YkS7UhVa3ftnz+PFWXH/v3EPtPOpW1HTvlOLjcRY1jv'
+                'mdtKRrnv6P+2zxfQwLBN0AtILGR6FK6+qndpazScXKrRjkVQHQ78je2jbg3'
+                'ayDDPuy7QudzAl4g08W9IcMFt9hxdYBNT3cE79kXthJcygZfH4a8vvTikhD'
+                'hk7POBT8/bnyle+0xA3O752u85MtY7+AJ3LEgAHsDepBfcnhpib2vK3pZSq'
+                'ZfGuOMQ3I7Qj51xnDWCsCKF3xbwXC4jQkyn38UQ/J6A52cLXbLsd5dQY2AA'
+                'mdaPgx+L8oeNX2oKn1IeSfIG9TuvHhyqkvG/I+C53DDoEPYgsxfHWC9jZ1e'
+                'ww+XyiNEhgebA0cvY+VSww+UKBTplwDKRZ2fe9fDKXk3r9CNoXk/snFuMYB'
+                '3J+JGespNW6lTO/w/hwvodNB/OmWmBHwhtQ7Jw/MPy4hcCP5crqAstwkCVJ'
+                '0VQwQbSGDVGC/VjXlw+p17D7Qg493Bxu87vIrhiSD9lxytKPVJz6vg4yDt/'
+                'LMGfmxyvIFxmCpfhPudvwr9Vjo9Mfsirqx3XqHlMZnwkcUeL+BdWh/37wj1'
+                'HLvehriNSiFp3qjpDuonZyNePMDtR6ucq57e7D12W//Pyq0vM2zL7trwkTm'
+                'b9yczrOr2+j1imfzJ8MnF5HDEuQXliHv/+COH7SZmed1x++/Bp4xt+o41Oc'
+                '1/v/8yll/atwHP67vR1Kdt4s+9qypRYA/30tZp98ub3/EHh/VXjJraRY+W+'
+                'dJyj7leD6n/rHQWavc80nTvIReLXD+E/Fvi5zGPwCkHDCczh+/0sV9Wozvq'
+                'OruDoKnDkaZaZ36LU05cI9/r8ccoFf3Cga+7zhBuqG1J1Luq8CYrj99RAPY'
+                'Naemdxv8P4Ze+zlrFfXMc+fd58WLhl/kWtE6us17exTqyy/se5Lqx73xC39'
+                'RXHPLBK/9Tc0Y33c9XPaZa5T1s3Li77q7iN86r3VVFx/9z3cCkBF/T+ap3x'
+                'Gb/s4gEaytsJWk+0/SvSmGdomXbWuU58/ADrHTRcob2bjs8m5K1Z8duE/BO'
+                '0vsLi8Jlgh8v06rXVtUBs0vgnuASX4BLcx46LS/4vhvRjT+gHP716dtWLTY'
+                'r7pu4XNsXfBBcPXFzyS4JL8m6C+3hxRWX2PE/qX4JLcAkuwd0u3H8pDye+7'
+                '+Cy/z06b/+LjyeoTnylTNcJLmuIkKFB+XdZRm4w/njIzBEKO1df7+Se2X9W'
+                'fR/ycJ5hCE9R4Cl+iAd3kM5wdzQ0bDaL0QFkWMtVHW3D1pZcLefth/AGva+'
+                'fyWsijeodaIwmnE1Xw/kuQ/jOBL6zMD6GDIZt46bVNlAPU33C23KuNN0r4r'
+                'zZDeD3j3/alj5/cG971nxTlOl55s2/f59G4dvaSqfuKtP/H3YnBJdRpuf9+'
+                'L2eMt88fzijvetjXNv/D2IFXD8=')
+        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_pipeline_event)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()),4)
+        module = pipeline.modules()[3]
+        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        self.assertEqual(module.primary_objects_name.value, "Nuclei")
+        self.assertEqual(module.secondary_objects_name.value, "Cells")
+        self.assertEqual(module.subregion_objects_name.value, "Cytoplasm")
+        self.assertTrue(module.use_outlines.value)
+        self.assertEqual(module.outlines_name.value, "CytoplasmOutline")
+    
+    def test_03_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns method'''
+        module = cpmit.IdentifyTertiarySubregion()
+        module.primary_objects_name.value = PRIMARY
+        module.secondary_objects_name.value = SECONDARY
+        module.subregion_objects_name.value = TERTIARY
+        columns = module.get_measurement_columns()
+        expected = ((cpm.IMAGE, cpmi.FF_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cpmi.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cpmi.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
+                    (PRIMARY, cpmi.FF_CHILDREN_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
+                    (SECONDARY, cpmi.FF_CHILDREN_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cpmi.FF_PARENT%PRIMARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cpmi.FF_PARENT%SECONDARY, cpm.COLTYPE_INTEGER))
+        self.assertEqual(len(columns), len(expected))
+        for column in columns:
+            self.assertTrue(any([all([cv==ev for cv,ev in zip(column, ec)])
+                                 for ec in expected]))

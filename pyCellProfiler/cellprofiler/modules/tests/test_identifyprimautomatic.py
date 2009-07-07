@@ -338,6 +338,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(numpy.product(location_center_x.shape),1)
         self.assertTrue(location_center_x[0]>13)
         self.assertTrue(location_center_x[0]<16)
+        columns = x.get_measurement_columns()
+        for object_name in (cpmeas.IMAGE, "my_object"):
+            ocolumns =[x for x in columns if x[0] == object_name]
+            features = measurements.get_feature_names(object_name)
+            self.assertEqual(len(ocolumns), len(features))
+            self.assertTrue(all([column[1] in features for column in ocolumns]))
 
     def test_02_02_test_two_objects(self):
         x = ID.IdentifyPrimAutomatic()

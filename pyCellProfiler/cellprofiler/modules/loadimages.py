@@ -106,29 +106,29 @@ class LoadImages(cpmodule.CPModule):
         self.location_other = cps.DirectoryPath("Where are the images located?", '')
 
     def add_imagecb(self):
-            'Adds another image to the settings'
-            img_index = len(self.images)
-            new_uuid = uuid.uuid1()
-            fd = { FD_KEY:new_uuid,
-                   FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', ''),
-                   FD_ORDER_POSITION:cps.Integer('What is the position of this image in each group', img_index+1),
-                   FD_IMAGE_NAME:cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', 
-                                                           default_cpimage_name(img_index)),
-                   FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subdirectory path or both?',
-                                                 [M_NONE, M_FILE_NAME, 
-                                                  M_PATH, M_BOTH]),
-                   FD_FILE_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the file name:',
-                                                    '^(?P<Plate>.+)_(?P<WellRow>[A-P])(?P<WellColumn>[0-9]{1,2})_(?P<Site>[0-9])'),
-                   FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subdirectory path:',
-                                              '(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})'),
-                   FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
-                   }
-            self.images.append(fd)
+        'Adds another image to the settings'
+        img_index = len(self.images)
+        new_uuid = uuid.uuid1()
+        fd = { FD_KEY:new_uuid,
+               FD_COMMON_TEXT:cps.Text('Type the text that these images have in common', ''),
+               FD_ORDER_POSITION:cps.Integer('What is the position of this image in each group', img_index+1),
+               FD_IMAGE_NAME:cps.FileImageNameProvider('What do you want to call this image in CellProfiler?', 
+                                                       default_cpimage_name(img_index)),
+               FD_METADATA_CHOICE:cps.Choice('Do you want to extract metadata from the file name, the subdirectory path or both?',
+                                             [M_NONE, M_FILE_NAME, 
+                                              M_PATH, M_BOTH]),
+               FD_FILE_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the file name:',
+                                                '^(?P<Plate>.+)_(?P<WellRow>[A-P])(?P<WellColumn>[0-9]{1,2})_(?P<Site>[0-9])'),
+               FD_PATH_METADATA: cps.RegexpText('Type the regular expression that finds metadata in the subdirectory path:',
+                                          '(?P<Year>[0-9]{4})-(?P<Month>[0-9]{2})-(?P<Day>[0-9]{2})'),
+               FD_REMOVE_IMAGE:cps.DoSomething('Remove this image...', 'Remove',self.remove_imagecb, new_uuid)
+               }
+        self.images.append(fd)
 
     def remove_imagecb(self, id):
-            'Remove an image from the settings'
-            index = [fd[FD_KEY] for fd in self.images].index(id)
-            del self.images[index]
+        'Remove an image from the settings'
+        index = [fd[FD_KEY] for fd in self.images].index(id)
+        del self.images[index]
 
     def visible_settings(self):
         varlist = [self.file_types, self.match_method]
@@ -179,19 +179,22 @@ class LoadImages(cpmodule.CPModule):
     SLOT_CHECK_IMAGES = 7
     SLOT_FIRST_IMAGE_V1 = 8
     SLOT_GROUP_BY_METADATA = 8
-    SLOT_FIRST_IMAGE_V2 = 9
-    SLOT_FIRST_IMAGE_V3 = 10
     SLOT_EXCLUDE = 9
+    SLOT_FIRST_IMAGE_V2 = 9
+    SLOT_FIRST_IMAGE = 10
+    
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
     SLOT_OFFSET_ORDER_POSITION = 2
     SLOT_OFFSET_METADATA_CHOICE = 3
     SLOT_OFFSET_FILE_METADATA = 4
     SLOT_OFFSET_PATH_METADATA = 5
+    SLOT_IMAGE_FIELD_COUNT_V1 = 3
     SLOT_IMAGE_FIELD_COUNT = 6
+    
     def settings(self):
         """Return the settings array in a consistent order"""
-        varlist = range(self.SLOT_FIRST_IMAGE_V3 + \
+        varlist = range(self.SLOT_FIRST_IMAGE + \
                         self.SLOT_IMAGE_FIELD_COUNT * len(self.images))
         varlist[self.SLOT_FILE_TYPE]              = self.file_types
         varlist[self.SLOT_MATCH_METHOD]           = self.match_method
@@ -204,7 +207,7 @@ class LoadImages(cpmodule.CPModule):
         varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
         varlist[self.SLOT_GROUP_BY_METADATA]      = self.group_by_metadata
         for i in range(len(self.images)):
-            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE_V3
+            ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
             varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
                 self.images[i][FD_COMMON_TEXT]
             varlist[ioff+self.SLOT_OFFSET_IMAGE_NAME] = \
@@ -247,8 +250,8 @@ class LoadImages(cpmodule.CPModule):
         # Figure out how many images are in the saved settings - make sure
         # the array size matches the incoming #
         #
-        assert (len(setting_values) - self.SLOT_FIRST_IMAGE_V3) % self.SLOT_IMAGE_FIELD_COUNT == 0
-        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE_V3) / self.SLOT_IMAGE_FIELD_COUNT
+        assert (len(setting_values) - self.SLOT_FIRST_IMAGE) % self.SLOT_IMAGE_FIELD_COUNT == 0
+        image_count = (len(setting_values) - self.SLOT_FIRST_IMAGE) / self.SLOT_IMAGE_FIELD_COUNT
         while len(self.images) > image_count:
             self.remove_imagecb(self.image_keys[0])
         while len(self.images) < image_count:
@@ -325,8 +328,8 @@ class LoadImages(cpmodule.CPModule):
         """Add the metadata slots to the images"""
         new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
         new_values.append(cps.NO) # Group by metadata is off
-        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V1)/3):
-            off = self.SLOT_FIRST_IMAGE_V1+i*3
+        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
+            off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
             new_values.extend([setting_values[off],
                                setting_values[off+1],
                                setting_values[off+2],
@@ -342,8 +345,8 @@ class LoadImages(cpmodule.CPModule):
             new_values += [cps.NO]
         else:
             new_values += [cps.YES]
-        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2)/6):
-            off = self.SLOT_FIRST_IMAGE_V2+i*6
+        for i in range((len(setting_values)-self.SLOT_FIRST_IMAGE_V2) / self.SLOT_IMAGE_FIELD_COUNT):
+            off = self.SLOT_FIRST_IMAGE_V2 + i * self.SLOT_IMAGE_FIELD_COUNT
             new_values.extend([setting_values[off],
                                setting_values[off+1],
                                setting_values[off+2],

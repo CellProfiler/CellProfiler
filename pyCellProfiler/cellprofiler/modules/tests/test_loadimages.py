@@ -46,8 +46,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
-        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -68,7 +68,7 @@ class testLoadImages(unittest.TestCase):
             ii = i+1
             if i:
                 l.add_imagecb()
-            idx = l.SLOT_FIRST_IMAGE_V3+l.SLOT_IMAGE_FIELD_COUNT * i 
+            idx = l.SLOT_FIRST_IMAGE+l.SLOT_IMAGE_FIELD_COUNT * i 
             l.settings()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
             l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
         image_set_list = I.ImageSetList()
@@ -88,8 +88,8 @@ class testLoadImages(unittest.TestCase):
         l.settings()[l.SLOT_LOCATION].value = LI.DIR_OTHER
         l.settings()[l.SLOT_LOCATION_OTHER].value =\
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
-        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
-        l.settings()[l.SLOT_FIRST_IMAGE_V3+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
+        l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         l.prepare_run(pipeline, image_set_list,None)
@@ -133,18 +133,40 @@ class testLoadImages(unittest.TestCase):
         self.assertFalse(module.analyze_sub_dirs())
         
     def test_03_03_load_new_version_2(self):
-        #XXX: in progress
         data = 'eJztV91u2jAUNjRURZOm7qLaLn1ZtoIga6UWTbQMJo2NMFRYt6rqVhcMWHJiFJwONlXaI+yR9ih7hD3CbOpA8CJC6S42jUhOfI7Pd36+EzmOVWxWi8/hXiYLrWIz3SEUwzpFvMNcOw8dvgNLLkYctyFz8rDZ8+Arj8KsCXN7+V0zLyZmNnsAlrtiFeu+fIrbunhsiBFXSwklxwJDyg3MOXG6gwQwwCOl/y7GCXIJuqT4BFEPD6YhfH3F6bDmqD9Zsljbo7iG7KCxuGqefYndwZuOD1TLdTLEtEE+Y60E3+wYX5EBYY7CK/+6dhKXcS2u5GF/fcpDLISHrYBe2r8EU3sjxP5BwH5TycRpkyvS9hCFxEbdSRbS31GEv03NnxxNPOTpF0PU4tBGvNWTfrIRfmIzfmLgqV9/BC6hxZdypVp9ayl8VNz4DD4OamwxHh9qcaVcxh3kUQ4rkkRYJi5uceaOfstjXfPnX76/ZID/qPzXZvJYA6eie3fBRfG9AWbrlnKphxwHU3OZuOVacaF89fcjtyA/xgzOEP11sMR9jcC91uqU8oftw/ozuRHiQuZJ6qOU3mFKj9mnwlkxXT9P+ZoSo57tFM6y6YPzL7kd8/rGuEEEcqxMjf3KPHoReexreUhZ+jrFyFUBdq9TaamymMN7SmcqXRmNppo79je3yH6Q1PBSLo0461M0sJV+mX6bq34v1e8fxu2+H39in1rh/h/cEZj/PoedD8aHjK7LvD4URw/c/5fqXfH7d+K+BXBh+1zweyLtL8B8Xh+DWV6l3BJbfd9l8n/IzdjjQ/sgQxlq35yaM1UxrQQO0Ho9yZA4wbziYrYVwYNe/5SXn4fLxIuHxLsXgTPUH5nEvQe34317jj3Q7H8BnRn8NQ=='
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
-    
+        self.assertEqual(len(pipeline.modules()),1)
+        module = pipeline.module(1)
+        self.assertEqual(module.load_choice(), LI.MS_EXACT_MATCH)
+        self.assertTrue(module.load_images())
+        self.assertFalse(module.load_movies())
+        self.assertTrue(module.exclude.value)
+        self.assertEqual(module.text_to_exclude(), 'ILLUM')
+        self.assertEqual(module.images[0][LI.FD_IMAGE_NAME], 'DNA')
+        self.assertEqual(module.images[0][LI.FD_COMMON_TEXT], 'Channel2')
+        self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], 'Cytoplasm')
+        self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], 'Channel1')
+        
     def test_03_03_load_new_version_3(self):
-        #XXX: in progress
-        data = 'eJztWW9v20QYv7Rp1TI0DV4A0iR0L5uusezQwlqhLFnDINBk0Ro2pq6Uq3NpDp19ln3uGhASL3nNJ+IlH4ePwJ1jx86tqR2njTQprhz7efz8nn93z/3pterdo/pTuKfpsFXvlvuEYtihiPeZax1Ah3nkagceuhhx3IPMPoDdgQ+/9ymEFWjsHuztHxg6rOj6PshxFZqt++Lx0+cArIvnhrhXwk9rIV1I3JI+xpwT+8JbA0XwWcj/R9wvkUvQOcUvEfWxF5uI+E27z7pDZ/ypxXo+xW1kJYXF1fatc+x6z/sRMPzcIVeYHpPfsBJCJPYCXxKPMDvEh/pV7tgu44pdmYdf7sd5KCh5kHl5mOBL+e9ALF+8Jm8fJeQfhDSxe+SS9HxEIbHQxdgLqU9P0bc6oW8VNNr1AFdLwT1Q/JB3F1/x8jdXyOTQQtwcSD2PU/SsK3ok3fZNikk2/wsT+AL4ImPcxQlcEXy5s6tn8XdN8VfSzaOjH1s58/1atFYW3MoEbgW0WTZ703Bp/exTJU5JN3Af+ZTDpuxksEFcbHLmDm8t7nUFF10RbjN8Zumf9xT/Jf2cez78lrJzRMd67qq9VJyh6XPZyzMu6JoeXDtG+JLI313FrdaV8MHIUlcbYNJ/SR8OkG1jamRp700FL+mmzbHtET5MxJ1Hz+GQM4ciz5pTz3X+zDq+GRlxat0ben6/n8kFhC2m1Tn8/irE/ZuC+1uxL+mft550vpYLGFx15K/2qFSWrIbkbJ3o5f3T33f/KI9eKvFLabt0JuVeYUpfsLfVk3q5c1qKOIeM+pZdHQkbO0I8ED4mQqkXcEtn2qOzNyeS+xS5JuvhqrZdenOqbWfPw7Q6GqTgHit5kLR05DVGbjUKeZSGFrP5oDoOOkzNMOZkafcPFHuSbjBoMw59D8fxzlHHlUWOt9E65q7sqf27AhY7rraZjfPY08N56M8U3A9gsh0lnahDUYI5S2tUWYHeeeJedP3cxvpslvXNotdTs/ejvYWv37pvGTTFPOyFO5x57OdZT73C5GIg98yXcoNom9Pmw9vMw3Xj8jPm4guX+XYv1jP4cLZ95iL9DTal0mFnfvt52o2d/yp2KoEDUOyVsXMLeVjilrgl7v3D1RK4rP/Xisev0fDxPsW7xOWbRz4Gk/1A0sznlNj4nYlk2Y+XuAhXAze3y12vj5a4JW4RuI3C9P2Guh8OzsHAzXWxDSbrQtImptRxmTy/dDUrOGTzNMpQb3TKpR2J12biwEvacVLs1BQ7tWl2SA/bnPSHjius+ZxZiBNTa4bcjuDWI66ax81r7CbzsSL+Pnl4c/7VvMft8d+TPPZWV9+1dy8FVwwzKHF/gdnae+sG+Si2vPL/A2yLmoM='
+        data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()),1)
+        module = pipeline.module(1)
+        self.assertEqual(module.load_choice(), LI.MS_EXACT_MATCH)
+        self.assertTrue(module.load_images())
+        self.assertFalse(module.load_movies())
+        self.assertTrue(module.exclude.value)
+        self.assertEqual(module.text_to_exclude(), 'ILLUM')
+        self.assertEqual(module.images[0][LI.FD_IMAGE_NAME], 'DNA')
+        self.assertEqual(module.images[0][LI.FD_COMMON_TEXT], 'Channel2')
+        self.assertEqual(module.images[0][LI.FD_FILE_METADATA], '^.*-(?P<Row>.+)-(?P<Col>[0-9]{2})')
+        self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], 'Cytoplasm')
+        self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], 'Channel1')
+        self.assertEqual(module.images[1][LI.FD_FILE_METADATA], '^.*-(?P<Row>.+)-(?P<Col>[0-9]{2})')
         
         
     def test_04_01_load_save_and_load(self):
@@ -512,6 +534,7 @@ class testLoadImages(unittest.TestCase):
         finally:
             os.remove(os.path.join(directory, filename))
             os.rmdir(directory)
+            
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
         directory = tempfile.mkdtemp()

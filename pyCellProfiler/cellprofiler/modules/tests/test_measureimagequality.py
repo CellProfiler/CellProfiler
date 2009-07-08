@@ -67,7 +67,19 @@ class TestMeasureImageQuality(unittest.TestCase):
                 self.assertEqual(m_value, value,
                                  "Measured value, %f, for feature %s was not %f" %
                                 (m_value, feature_name, value))
-
+        self.features_and_columns_match(m, q)
+                
+    def features_and_columns_match(self, measurements, module):
+        self.assertEqual(len(measurements.get_object_names()),1)
+        self.assertEqual(measurements.get_object_names()[0],cpmeas.IMAGE)
+        features = measurements.get_feature_names(cpmeas.IMAGE)
+        columns = module.get_measurement_columns()
+        self.assertEqual(len(features), len(columns))
+        for column in columns:
+            self.assertTrue(column[0] == cpmeas.IMAGE)
+            self.assertTrue(column[1] in features)
+            self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+            
     def test_00_01_zeros_and_mask(self):
         workspace = self.make_workspace(np.zeros((100,100)),
                                         np.zeros((100,100),bool))
@@ -122,6 +134,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                 m_value =m.get_current_measurement(cpmeas.IMAGE, feature_name)
                 self.assertAlmostEqual(m_value, value, 2, 
                                        "Measured value, %f, for feature %s was not %f"%(m_value, feature_name, value))
+        self.features_and_columns_match(m, q)
 
     def test_01_02_local_focus_score(self):
         '''Test the local focus score by creating one deviant grid block
@@ -211,6 +224,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE, 
                                                              feature_name),
                                    expected_value)
+        self.features_and_columns_match(m, q)
     
     def test_02_02_maximal(self):
         '''Test percent maximal'''
@@ -314,6 +328,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             feature_name = "ImageQuality_Threshold%s_my_image"%tm.split(' ')[0]
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                        feature_name)) 
+        self.features_and_columns_match(m, q)
 
     def check_error(self, caller, event):
         self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))

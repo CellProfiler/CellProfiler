@@ -361,7 +361,29 @@ fraction in the question, "What fraction of the image is composed of objects?"
         '''True if some image has its blur calculated'''
         return any([ig.check_blur.value
                     for ig in self.image_groups])
-        
+    
+    def get_measurement_columns(self):
+        '''Return column definitions for all measurements'''
+        columns = []
+        for ig in self.image_groups:
+            if ig.check_blur.value:
+                for feature in (FOCUS_SCORE,LOCAL_FOCUS_SCORE):
+                    columns.append((cpmeas.IMAGE,
+                                    '%s_%s_%s_%d'%(IMAGE_QUALITY, feature,
+                                                   ig.image_name.value,
+                                                   ig.window_size.value),
+                                    cpmeas.COLTYPE_FLOAT))
+            if ig.check_saturation.value:
+                for feature in (PERCENT_SATURATION, PERCENT_MAXIMAL):
+                    columns.append((cpmeas.IMAGE,
+                                    '%s_%s_%s'%(IMAGE_QUALITY, feature,
+                                                ig.image_name.value),
+                                    cpmeas.COLTYPE_FLOAT))
+            if ig.calculate_threshold.value:
+                feature = ig.threshold_feature_name
+                columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
+        return columns
+            
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [IMAGE_QUALITY]

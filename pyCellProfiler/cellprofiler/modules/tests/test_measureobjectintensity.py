@@ -21,7 +21,7 @@ import unittest
 import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P
-
+import cellprofiler.measurements as cpmeas
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,
 # IdentifyPrimAutomatic and MeasureObjectIntensity
@@ -64,6 +64,34 @@ class TestMeasureObjects(unittest.TestCase):
                                                    MOI.MAX_INTENSITY),
                         ['MyImage'])
     
+    def test_02_02_get_measurement_columns(self):
+        '''test the get_measurement_columns method'''
+        moi = MOI.MeasureObjectIntensity()
+        moi.image_names[0].value='MyImage'
+        moi.add_cb()
+        moi.object_names[0].value = 'MyObjects1'
+        moi.object_names[1].value = 'MyObjects2'
+        columns = moi.get_measurement_columns()
+        self.assertEqual(len(columns), 2*len(MOI.ALL_MEASUREMENTS))
+        for column in columns:
+            self.assertTrue(column[0] in ('MyObjects1','MyObjects2'))
+            self.assertEqual(column[2], cpmeas.COLTYPE_FLOAT)
+            self.assertEqual(column[1].split('_')[0], MOI.INTENSITY)
+            self.assertTrue(column[1][column[1].find('_')+1:] in 
+                            [m+'_MyImage' for m in MOI.ALL_MEASUREMENTS])
+
+    def features_and_columns_match(self, measurements, module):
+        object_names = [x for x in measurements.get_object_names()
+                        if x != cpmeas.IMAGE]
+        features = [measurements.get_feature_names(object_name)
+                    for object_name in object_names]
+        columns = module.get_measurement_columns()
+        self.assertEqual(sum([len(f) for f in features]), len(columns))
+        for column in columns:
+            index = object_names.index(column[0])
+            self.assertTrue(column[1] in features[index])
+            self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+        
     def test_03_01_zero(self):
         """Make sure we can process a blank image"""
         ii = II.InjectImage('MyImage',numpy.zeros((10,10)))
@@ -84,7 +112,8 @@ class TestMeasureObjects(unittest.TestCase):
             feature_name = "%s_%s_%s"%(MOI.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects',feature_name)
             self.assertEqual(numpy.product(data.shape),0,"Got data for feature %s"%(feature_name))
-    
+        self.features_and_columns_match(m, moi)
+        
     def test_03_02_one(self):
         """Check measurements on a 3x3 square of 1's"""
         img = numpy.array([[0,0,0,0,0,0,0],

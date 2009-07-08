@@ -17,6 +17,7 @@ import scipy.ndimage as nd
 import uuid
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline as cpmo
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -213,6 +214,18 @@ See also MeasureImageIntensity.
                                                               variable_revision_number, 
                                                               module_name)
 
+    def get_measurement_columns(self):
+        '''Return the column definitions for measurements made by this module'''
+        columns = []
+        for image_name in self.image_names:
+            for object_name in self.object_names:
+                for feature in (ALL_MEASUREMENTS):
+                    columns.append((object_name.value,
+                                    "%s_%s_%s"%(INTENSITY, feature,
+                                                image_name.value),
+                                    cpmeas.COLTYPE_FLOAT))
+        return columns
+            
     def get_categories(self,pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
         

@@ -17,6 +17,7 @@ import scipy.ndimage as scind
 import matplotlib.cm
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -358,6 +359,25 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                              "Expanded %s"%
                                              self.object_name.value)
     
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements made by this module'''
+        if self.distance_method == D_EXPAND:
+            scale = S_EXPANDED
+        elif self.distance_method == D_WITHIN:
+            scale = str(self.distance.value)
+        elif self.distance_method == D_ADJACENT:
+            scale = S_ADJACENT
+        coltypes = [cpmeas.COLTYPE_INTEGER 
+                    if feature in (M_NUMBER_OF_NEIGHBORS, 
+                                   M_FIRST_CLOSEST_OBJECT_NUMBER,
+                                   M_SECOND_CLOSEST_OBJECT_NUMBER)
+                    else cpmeas.COLTYPE_FLOAT
+                    for feature in M_ALL]
+        return [(self.object_name.value,
+                 '%s_%s_%s'%(C_NEIGHBORS, feature_name, scale),
+                 coltype)
+                 for feature_name,coltype in zip(M_ALL, coltypes)]
+        
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:
             return [C_NEIGHBORS]

@@ -136,6 +136,15 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,"Neighbors_NumberOfNeighbors_Expanded")
         self.assertEqual(len(neighbors), 0)
+        features = m.get_feature_names(OBJECTS_NAME)
+        columns = module.get_measurement_columns()
+        self.assertEqual(len(features), len(columns))
+        for column in columns:
+            self.assertEqual(column[0],OBJECTS_NAME)
+            self.assertTrue(column[1] in features)
+            self.assertTrue(column[2] == (cpmeas.COLTYPE_INTEGER 
+                                          if column[1].find('Number') != -1
+                                          else cpmeas.COLTYPE_FLOAT))
     
     def test_02_03_one(self):
         '''Test a labels matrix with a single object'''
@@ -385,4 +394,22 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertTrue(np.all(image[2,2,:]==image[2,5,:]))
         # 3 is at 50% and should have a different color
         self.assertFalse(np.all(image[2,2,:]==image[6,2,:]))
-        
+    
+    def test_05_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns method'''
+        module = M.MeasureObjectNeighbors()
+        module.object_name.value = OBJECTS_NAME
+        module.distance.value = 5
+        for distance_method, scale in ((M.D_EXPAND, M.S_EXPANDED),
+                                       (M.D_ADJACENT, M.S_ADJACENT),
+                                       (M.D_WITHIN, "5")):
+            module.distance_method.value = distance_method
+            columns = module.get_measurement_columns()
+            features = ["%s_%s_%s"%(M.C_NEIGHBORS, feature, scale)
+                        for feature in M.M_ALL]
+            self.assertEqual(len(columns),len(features))
+            for column in columns:
+                self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
+
+                
+                

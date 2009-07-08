@@ -24,11 +24,11 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
 import optparse
 import wx
 import subprocess
-if hasattr(sys, 'frozen'):
-    # necessary to prevent matplotlib trying to use Tkinter as its backend
-    from matplotlib import use as mpluse
-    mpluse('WXAgg')
-else:
+# necessary to prevent matplotlib trying to use Tkinter as its backend
+from matplotlib import use as mpluse
+mpluse('WXAgg')
+
+if not hasattr(sys, 'frozen'):
     import cellprofiler.cpmath.setup
     from distutils.dep_util import newer_group
     #

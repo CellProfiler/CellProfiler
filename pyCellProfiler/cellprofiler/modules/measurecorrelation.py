@@ -26,6 +26,13 @@ M_IMAGES = "Images"
 M_OBJECTS = "Objects"
 M_IMAGES_AND_OBJECTS = "Images and objects"
 M_ALL = [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS]
+
+'''Feature name format for the correlation measurement'''
+F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
+
+'''Feature name format for the slope measurement'''
+F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
+
 class MeasureCorrelation(cpm.CPModule):
     '''SHORT DESCRIPTION:
     Measures the correlation between intensities in different images (e.g.
@@ -264,12 +271,12 @@ class MeasureCorrelation(cpm.CPModule):
         #
         # Add the measurements
         #
-        corr_measurement = "Correlation_Correlation_%s_%s"%(first_image_name, 
-                                                            second_image_name)
+        corr_measurement = F_CORRELATION_FORMAT%(first_image_name, 
+                                                 second_image_name)
         m = workspace.measurements
         m.add_image_measurement(corr_measurement, corr)
-        slope_measurement = "Correlation_Slope_%s_%s"%(first_image_name,
-                                                       second_image_name)
+        slope_measurement = F_SLOPE_FORMAT%(first_image_name,
+                                            second_image_name)
         m.add_image_measurement(slope_measurement, slope)
         return [[first_image_name, second_image_name,"-",
                  "Correlation","%.2f"%corr],
@@ -329,6 +336,26 @@ class MeasureCorrelation(cpm.CPModule):
                 [first_image_name, second_image_name, object_name,
                  "Max correlation","%.2f"%np.max(corr)]]
              
+    def get_measurement_columns(self):
+        '''Return column definitions for all measurements made by this module'''
+        columns = []
+        for first_image, second_image in self.get_image_pairs():
+            if self.wants_images:
+                columns += [(cpmeas.IMAGE,
+                             F_CORRELATION_FORMAT%(first_image, second_image),
+                             cpmeas.COLTYPE_FLOAT),
+                            (cpmeas.IMAGE,
+                             F_SLOPE_FORMAT%(first_image, second_image),
+                             cpmeas.COLTYPE_FLOAT)]
+            if self.wants_objects:
+                for i in range(self.object_count.value):
+                    object_name = self.object_groups[i].object_name.value
+                    columns += [(object_name,
+                                 F_CORRELATION_FORMAT %
+                                 (first_image, second_image),
+                                 cpmeas.COLTYPE_FLOAT)]
+        return columns
+
     def get_categories(self, pipeline, object_name):
         '''Return the categories supported by this module for the given object
         

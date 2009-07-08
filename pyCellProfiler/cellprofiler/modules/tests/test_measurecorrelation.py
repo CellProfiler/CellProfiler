@@ -223,7 +223,61 @@ class TestMeasureCorrelation(unittest.TestCase):
         module.images_or_objects = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
-        
+    
+    def test_02_04_01_get_measurement_columns_images(self):
+        module = M.MeasureCorrelation()
+        module.image_groups[0].image_name.value = IMAGE1_NAME
+        module.image_groups[1].image_name.value = IMAGE2_NAME
+        module.object_groups[0].object_name.value = OBJECTS_NAME
+        module.images_or_objects = M.M_IMAGES
+        columns = module.get_measurement_columns()
+        expected = ((cpmeas.IMAGE, 
+                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT),
+                    (cpmeas.IMAGE, 
+                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT))
+        self.assertEqual(len(columns), len(expected))
+        for column in columns:
+            self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
+                                 for ex in expected]))
+    
+    def test_02_04_02_get_measurement_columns_objects(self):
+        module = M.MeasureCorrelation()
+        module.image_groups[0].image_name.value = IMAGE1_NAME
+        module.image_groups[1].image_name.value = IMAGE2_NAME
+        module.object_groups[0].object_name.value = OBJECTS_NAME
+        module.images_or_objects = M.M_OBJECTS
+        columns = module.get_measurement_columns()
+        expected = ((OBJECTS_NAME, 
+                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT),)
+        self.assertEqual(len(columns), len(expected))
+        for column in columns:
+            self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
+                                 for ex in expected]))
+
+    def test_02_04_03_get_measurement_columns_both(self):
+        module = M.MeasureCorrelation()
+        module.image_groups[0].image_name.value = IMAGE1_NAME
+        module.image_groups[1].image_name.value = IMAGE2_NAME
+        module.object_groups[0].object_name.value = OBJECTS_NAME
+        module.images_or_objects = M.M_IMAGES_AND_OBJECTS
+        columns = module.get_measurement_columns()
+        expected = ((cpmeas.IMAGE, 
+                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT),
+                    (cpmeas.IMAGE, 
+                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT),
+                    (OBJECTS_NAME, 
+                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
+                     cpmeas.COLTYPE_FLOAT))
+        self.assertEqual(len(columns), len(expected))
+        for column in columns:
+            self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
+                                 for ex in expected]))
+            
     def test_03_01_correlated(self):
         np.random.seed(0)
         image = np.random.uniform(size = (10,10))
@@ -235,6 +289,14 @@ class TestMeasureCorrelation(unittest.TestCase):
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Correlation")
         corr = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr,1)
+        
+        self.assertEqual(len(m.get_object_names()),1)
+        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        columns = module.get_measurement_columns()
+        features = m.get_feature_names(cpmeas.IMAGE)
+        self.assertEqual(len(columns),len(features))
+        for column in columns:
+            self.assertTrue(column[1] in features)
     
     def test_03_02_anticorrelated(self):
         '''Test two anticorrelated images'''
@@ -334,6 +396,19 @@ class TestMeasureCorrelation(unittest.TestCase):
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],-1)
         
+        self.assertEqual(len(m.get_object_names()),2)
+        self.assertTrue(OBJECTS_NAME in m.get_object_names())
+        columns = module.get_measurement_columns()
+        image_features = m.get_feature_names(cpmeas.IMAGE)
+        object_features = m.get_feature_names(OBJECTS_NAME)
+        self.assertEqual(len(columns),len(image_features)+len(object_features))
+        for column in columns:
+            if column[0] == cpmeas.IMAGE:
+                self.assertTrue(column[1] in image_features)
+            else:
+                self.assertEqual(column[0],OBJECTS_NAME)
+                self.assertTrue(column[1] in object_features)
+            
     def test_06_02_cropped_objects(self):
         '''Test images and objects with a cropping mask'''
         np.random.seed(0)

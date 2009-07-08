@@ -213,4 +213,28 @@ class TestLoadText(unittest.TestCase):
             self.assertEqual(data, expected)
             m.next_image_set()
         os.remove(filename)
+    
+    def test_07_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns method'''
+        colnames = ('Integer_Measurement','Float_Measurement','String_Measurement')
+        coltypes = [cpmeas.COLTYPE_INTEGER,cpmeas.COLTYPE_FLOAT,
+                    cpmeas.COLTYPE_VARCHAR_FORMAT%9]
+        csv_text = '''"%s","%s","%s"
+1,1,1
+2,1.5,"Hi"
+3,1,"Hello"
+4,1.7,"Hola"
+5,1.2,"Bonjour"
+6,1.5,"Gutentag"
+7,1.1,"Hej"
+8,2.3,"Bevakasha"
+'''%colnames
+        workspace, module, filename = self.make_workspace(csv_text)
+        columns = module.get_measurement_columns()
+        for colname, coltype in zip(colnames, coltypes):
+            self.assertTrue(any([(column[0] == cpmeas.IMAGE and
+                                  column[1] == colname and
+                                  column[2] == coltype) for column in columns]),
+                            'Failed to find %s'%colname)
+        os.remove(filename)
         

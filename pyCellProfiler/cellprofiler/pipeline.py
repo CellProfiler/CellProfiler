@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version = "$Revision$"
 
+import hashlib
 import numpy
 import scipy.io.matlab
 import os
@@ -231,7 +232,7 @@ def add_all_measurements(handles, measurements):
             feature_measurements[0,0] = measurements.get_experiment_measurement(feature_name)
             experiment_measurements[feature_name][0,0] = feature_measurements
 
-class Pipeline:
+class Pipeline(object):
     """A pipeline represents the modules that a user has put together
     to analyze their images.
     
@@ -239,6 +240,25 @@ class Pipeline:
     def __init__(self):
         self.__modules = [];
         self.__listeners = [];
+        self.__measurement_columns = {}
+        self.__measurement_column_hash = None
+    
+    def settings_hash(self):
+        '''Return a hash of the module settings
+        
+        This function can be used to invalidate a cached calculation
+        that's based on pipeline settings - if the settings change, the
+        hash changes and the calculation must be performed again.
+        
+        We use secure hashing functions which are really good at avoiding
+        collisions for small changes in data.
+        '''
+        h = hashlib.md5()
+        for module in self.modules():
+            h.update(module.module_name)
+            for setting in module.settings():
+                h.update(str(setting.value))
+        return h.digest()
     
     def create_from_handles(self,handles):
         """Read a pipeline's modules out of the handles structure
@@ -684,7 +704,7 @@ class Pipeline:
                 return True
         return False
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, terminating_module=None):
         '''Return a sequence describing the measurement columns for this pipeline
         
         This call returns one element per image or object measurement
@@ -698,9 +718,23 @@ class Pipeline:
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
         '''
+        hash =  self.settings_hash()
+        if hash != self.__measurement_column_hash:
+            self.__measurement_columns = {}
+            self.__measurement_column_hash = hash
+        
+        terminating_module_num = ((len(self.modules())+1) 
+                                  if terminating_module == None
+                                  else terminating_module.module_num)
+        if self.__measurement_columns.has_key(terminating_module_num):
+            return self.__measurement_columns[terminating_module_num]
         columns = []
         for module in self.modules():
+            if (terminating_module is not None and 
+                terminating_module_num == module.module_num):
+                break
             columns += module.get_measurement_columns()
+        self.__measurement_columns[terminating_module_num] = columns
         return columns
         
 class AbstractPipelineEvent:

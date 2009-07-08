@@ -295,6 +295,33 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(len(y.modules()),1)
         module = y.module(1)
         self.assertEqual(module.my_variable.value,'')
+    
+    def test_09_01_get_measurement_columns(self):
+        '''Test the get_measurement_columns method'''
+        x = cellprofiler.pipeline.Pipeline()
+        module = MyClassForTest0801()
+        module.module_num = 1
+        module.my_variable.value = "foo"
+        x.add_module(module)
+        for i in range(2):
+            columns = x.get_measurement_columns()
+            self.assertEqual(len(columns), 1)
+            self.assertEqual(columns[0][1], "foo")
+        module.my_variable.value = "bar"
+        columns = x.get_measurement_columns()
+        self.assertEqual(len(columns), 1)
+        self.assertEqual(columns[0][1], "bar")
+        module = MyClassForTest0801()
+        module.module_num = 2
+        module.my_variable.value = "foo"
+        x.add_module(module)
+        columns = x.get_measurement_columns()
+        self.assertEqual(len(columns), 2)
+        self.assertEqual(columns[0][1], "bar")
+        self.assertEqual(columns[1][1], "foo")
+        columns = x.get_measurement_columns(module)
+        self.assertEqual(len(columns), 1)
+        self.assertEqual(columns[0][1], "bar")
          
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):
@@ -306,6 +333,11 @@ class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     
     def module_class(self):
         return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
+    
+    def get_measurement_columns(self):
+        return [(cellprofiler.measurements.IMAGE,
+                 self.my_variable.value,
+                 "varchar(255)")]
 
 
 if __name__ == "__main__":

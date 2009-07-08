@@ -114,6 +114,7 @@ the end row.
 This option can be used to break the image sets in an experiment into groups
 that can be processed by different nodes in a cluster.
 '''
+
     category = 'File Processing'
     variable_revision_number = 1
 
@@ -351,6 +352,33 @@ that can be processed by different nodes in a cluster.
         if not workspace.frame is None:
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_table(0,0,statistics,[.3,.7])
+
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements output by this module'''
+        fd = open(self.csv_path, 'rb')
+        reader = csv.reader(fd)
+        header = reader.next()
+        coltypes = [cpmeas.COLTYPE_INTEGER]*len(header)
+        collen = [0]*len(header)
+        for row in reader:
+            for field,index in zip(row,range(len(row))):
+                if coltypes[index] == cpmeas.COLTYPE_INTEGER:
+                    try:
+                        int(field)
+                        continue
+                    except ValueError:
+                        coltypes[index] = cpmeas.COLTYPE_FLOAT
+                if coltypes[index] == cpmeas.COLTYPE_FLOAT:
+                    try:
+                        float(field)
+                        continue
+                    except ValueError:
+                        coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
+                if collen[index] < len(field):
+                    collen[index] = len(field)
+                    coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
+        return [(cpmeas.IMAGE, colname, coltype)
+                for colname, coltype in zip(header, coltypes)]
 
     def get_categories(self, pipeline, object_name):
         if object_name != cpmeas.IMAGE:

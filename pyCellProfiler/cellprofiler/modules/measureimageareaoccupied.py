@@ -16,7 +16,14 @@ import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+
+'''Measurement feature name format for the AreaOccupied measurement'''
+F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
+
+'''Measure feature name format for the TotalArea measurement'''
+F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
 
 class MeasureImageAreaOccupied(cpm.CPModule):
     """% SHORT DESCRIPTION:
@@ -110,9 +117,9 @@ of the labeled pixels being processed by this  module.
             figure.subplot_table(1,0,statistics)
         
         m = workspace.measurements
-        m.add_image_measurement("AreaOccupied_AreaOccupied_%s"%(self.object_name.value),
+        m.add_image_measurement(F_AREA_OCCUPIED%(self.object_name.value),
                                 np.array([area_occupied], dtype=float ))
-        m.add_image_measurement("AreaOccupied_TotalArea_%s"%(self.object_name.value),
+        m.add_image_measurement(F_TOTAL_AREA%(self.object_name.value),
                                 np.array([total_area], dtype=float))
         if self.should_save_image.value:
             binary_pixels = objects.segmented > 0
@@ -120,6 +127,16 @@ of the labeled pixels being processed by this  module.
                                      parent_image = objects.parent_image)
             workspace.image_set.add(self.image_name.value,
                                     output_image)
+    
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements made by this module'''
+        return [(cpmeas.IMAGE,
+                 F_AREA_OCCUPIED % (self.object_name.value),
+                 cpmeas.COLTYPE_FLOAT),
+                (cpmeas.IMAGE,
+                 F_TOTAL_AREA % (self.object_name.value),
+                 cpmeas.COLTYPE_FLOAT)
+                 ]
 
     def get_categories(self, pipeline, object_name):
         """The categories output by this module for the given object (or Image)

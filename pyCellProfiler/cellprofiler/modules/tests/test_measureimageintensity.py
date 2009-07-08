@@ -57,6 +57,15 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.run(workspace)
         m = workspace.measurements
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image"), 0)
+        
+        self.assertEqual(len(m.get_object_names()),1)
+        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        columns = module.get_measurement_columns()
+        features = m.get_feature_names(cpmeas.IMAGE)
+        self.assertEqual(len(columns),len(features))
+        for column in columns:
+            self.assertTrue(column[1] in features)
+        
     
     def test_01_01_image(self):
         '''Test operation on a single unmasked image'''
@@ -112,6 +121,14 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.sum(pixels[1:9,1:9]))
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
                          np.sum(pixels[1:9,1:9])/64.0)
+
+        self.assertEqual(len(m.get_object_names()),1)
+        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        columns = module.get_measurement_columns()
+        features = m.get_feature_names(cpmeas.IMAGE)
+        self.assertEqual(len(columns),len(features))
+        for column in columns:
+            self.assertTrue(column[1] in features)
 
     def test_01_04_image_and_objects_and_mask(self):
         '''Test operation on an image masked by objects and a mask'''
@@ -295,3 +312,36 @@ class TestMeasureImageIntensity(unittest.TestCase):
         self.assertEqual(len(module.images), 1)
         self.assertEqual(module.images[0].image_name.value, 'DNA')
         self.assertFalse(module.images[0].wants_objects.value)
+
+    def test_03_01_get_measurement_columns(self):
+        module = M.MeasureImageIntensity()
+        image_names = ['image%d'%i for i in range(3)]
+        object_names = ['object%d'%i for i in range(3)]
+        first = True
+        expected_suffixes = []
+        for image_name in image_names:
+            if first:
+                first = False
+            else:
+                module.add_image_measurement()
+            im = module.images[-1]
+            im.image_name.value = image_name
+            im.wants_objects.value = False
+            expected_suffixes.append(image_name)
+            for object_name in object_names:
+                module.add_image_measurement()
+                im = module.images[-1]
+                im.image_name.value = image_name
+                im.wants_objects.value = True
+                im.object_name.value = object_name
+                expected_suffixes.append("%s_%s"%(image_name, object_name))
+        columns = module.get_measurement_columns()
+        self.assertTrue(all([column[0] == cpmeas.IMAGE for column in columns]))
+        for expected_suffix in expected_suffixes:
+            for feature, coltype in ((M.TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                feature_name = "%s_%s_%s"%(M.INTENSITY,feature, expected_suffix)
+                self.assertTrue(any([(column[1] == feature_name and
+                                     column[2] == coltype)
+                                    for column in columns]))

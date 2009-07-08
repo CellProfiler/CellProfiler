@@ -93,6 +93,15 @@ The intensity will be restricted to within the objects you name here.
                                                      uber_self.remove_image_measurement,
                                                      self.__key)
             
+            def name(self, feature):
+                '''Return the feature name produced by this measurement'''  
+                if self.wants_objects.value:
+                    return '_'.join([INTENSITY, feature,
+                                     self.image_name.value,
+                                     self.object_name.value])
+                else:
+                    return '_'.join([INTENSITY, feature, self.image_name.value])
+                
             @property
             def key(self):
                 '''The key that uniquely identifies this image measurement
@@ -170,21 +179,22 @@ The intensity will be restricted to within the objects you name here.
                        [x.visible_settings() for x in self.images]) +
                 [self.add_button])
 
-    def run(self, workspace):
-        '''Perform the measurements on the imageset'''
-        #
-        # First, make a non-redundant set of measurements
-        #
+    def get_non_redundant_image_measurements(self):
+        '''Return a non-redundant sequence of image measurement objects'''
         dict = {}
         for im in self.images:
             key = ((im.image_name, im.object_name) if im.wants_objects.value
                    else (im.image_name,))
             dict[key] = im
+        return dict.values()
+        
+    def run(self, workspace):
+        '''Perform the measurements on the imageset'''
         #
         # Then measure each
         #
         statistics = [["Image","Masking object","Feature","Value"]]
-        for im in dict.values():
+        for im in self.get_non_redundant_image_measurements():
             statistics += self.measure(im, workspace)
         if not workspace.frame is None:
             figure = workspace.create_or_find_figure(subplots=(1,1))
@@ -212,23 +222,26 @@ The intensity will be restricted to within the objects you name here.
         pixel_count = np.product(pixels.shape)
         pixel_sum = np.sum(pixels)
         pixel_mean = pixel_sum/float(pixel_count)
-        def name(x):
-            if im.wants_objects.value:
-                return '_'.join([INTENSITY, x,
-                                 im.image_name.value,
-                                 im.object_name.value])
-            else:
-                return '_'.join([INTENSITY, x, im.image_name.value])
         m = workspace.measurements
-        m.add_image_measurement(name(TOTAL_INTENSITY), pixel_sum)
-        m.add_image_measurement(name(MEAN_INTENSITY), pixel_mean)
-        m.add_image_measurement(name(TOTAL_AREA), pixel_count)
+        m.add_image_measurement(im.name(TOTAL_INTENSITY), pixel_sum)
+        m.add_image_measurement(im.name(MEAN_INTENSITY), pixel_mean)
+        m.add_image_measurement(im.name(TOTAL_AREA), pixel_count)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
                 for feature_name, value in (('Total intensity', pixel_sum),
                                             ('Mean intensity', pixel_mean),
                                             ('Total area', pixel_count))]
+    
+    def get_measurement_columns(self):
+        '''Return column definitions for measurements made by this module'''
+        columns = []
+        for im in self.get_non_redundant_image_measurements():
+            for feature, coltype in ((TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
+                columns.append((cpmeas.IMAGE, im.name(feature), coltype))
+        return columns
                         
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:

@@ -20,6 +20,7 @@ import StringIO
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.measureobjectareashape as cpmoas
 import cellprofiler.modules.injectimage as ii
+import cellprofiler.measurements as cpmeas
 
 class TestMeasureObjectAreaShape(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -58,6 +59,9 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
         pipeline.add_module(io2)
         pipeline.add_module(module)
         measurements = pipeline.run()
+        
+        self.features_and_columns_match(measurements, module)
+        
         a = measurements.get_current_measurement('SomeObjects','AreaShape_Area')
         self.assertEqual(len(a),2)
         self.assertEqual(a[0],32)
@@ -107,7 +111,18 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
             for measurement in cpmoas.F_STANDARD:
                 self.assertTrue(measurement in measurements)
             self.assertFalse('Zernike_3_1' in measurements)
+            
+    def features_and_columns_match(self, measurements, module):
+        self.assertEqual(len(measurements.get_object_names()), 3)
+        self.assertTrue('SomeObjects' in measurements.get_object_names())
+        self.assertTrue('OtherObjects' in measurements.get_object_names())
+        features = measurements.get_feature_names('SomeObjects')
+        features += measurements.get_feature_names('OtherObjects')
+        columns = module.get_measurement_columns()
+        self.assertEqual(len(features), len(columns))
+        for column in columns:
+            self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])
+            self.assertTrue(column[1] in features)
+            self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
         
-        
-        
-        
+                

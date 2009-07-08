@@ -25,6 +25,7 @@ from cellprofiler.cpmath.cpmorphology import calculate_extents
 from cellprofiler.cpmath.cpmorphology import calculate_perimeters
 from cellprofiler.cpmath.cpmorphology import calculate_solidity
 from cellprofiler.cpmath.cpmorphology import euler_number
+from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'
@@ -400,6 +401,20 @@ See also MeasureImageAreaOccupied.
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
+        
+    def get_measurement_columns(self):
+        '''Return measurement column definitions. 
+        All cols returned as float even though "Area" will only ever be int'''
+        object_names = [s.value for s in self.settings()][:-1]
+        measurement_names = self.get_feature_names()
+        cols = []
+        for oname in object_names:
+            for mname in measurement_names:
+                cols += [(oname, AREA_SHAPE+'_'+mname, COLTYPE_FLOAT)]
+        return cols
+        
+            
+        
         
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""

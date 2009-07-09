@@ -20,6 +20,7 @@ import base64
 import cStringIO
 import wx
 import os
+import sys
 import cellprofiler.preferences
 
 def get_cp_image():
@@ -40,10 +41,12 @@ def get_cp_bitmap(size=None):
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
     return wx.BitmapFromImage(img)
     
-def get_icon():
+def get_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     icon = wx.EmptyIcon()
-    icon.CopyFromBitmap(get_cp_bitmap())
+    if size == None and sys.platform.startswith('win'):
+        size = 32
+    icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 
 BV_DOWN = "down"

@@ -31,12 +31,21 @@ CHILD_OBJECTS = 'childobjects'
 MEASUREMENT = 'Measurement'
 
 class TestRelate(unittest.TestCase):
-    def make_workspace(self, parents, children):
+    def make_workspace(self, parents, children, fake_measurement=False):
         '''Make a workspace for testing Relate'''
+        pipeline = cpp.Pipeline()
+        if fake_measurement:
+            class FakeModule(cpm.CPModule):
+                def get_measurement_columns(self, pipeline):
+                    return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
+            module = FakeModule()
+            module.module_num = 1
+            pipeline.add_module(module)
         module = R.Relate()
         module.parent_name.value = PARENT_OBJECTS
         module.sub_object_name.value = CHILD_OBJECTS
-        pipeline = cpp.Pipeline()
+        module.module_num = 2 if fake_measurement else 1
+        pipeline.add_module(module)
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -54,6 +63,22 @@ class TestRelate(unittest.TestCase):
         object_set.add_objects(o, CHILD_OBJECTS)
         return workspace, module
     
+    def features_and_columns_match(self, workspace):
+        module = workspace.module
+        pipeline = workspace.pipeline
+        measurements = workspace.measurements
+        object_names = [x for x in measurements.get_object_names()
+                        if x != cpmeas.IMAGE]
+        features = [[feature  
+                     for feature in measurements.get_feature_names(object_name)
+                     if feature != MEASUREMENT]
+                    for object_name in object_names]
+        columns = module.get_measurement_columns(pipeline)
+        self.assertEqual(sum([len(f) for f in features]), len(columns))
+        for column in columns:
+            index = object_names.index(column[0])
+            self.assertTrue(column[1] in features[index])
+        
     def test_01_01_load_matlab_v4(self):
         '''Load a Matlab pipeline with a version 4 relate module'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
@@ -141,6 +166,7 @@ class TestRelate(unittest.TestCase):
                                                 "Children_%s_Count"%
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 0)
+        self.features_and_columns_match(workspace)
     
     def test_02_01_relate_one(self):
         '''Relate one parent to one child'''
@@ -160,13 +186,15 @@ class TestRelate(unittest.TestCase):
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 1)
         self.assertEqual(child_count[0],1)
+        self.features_and_columns_match(workspace)
     
     def test_03_01_mean(self):
         '''Compute the mean for two parents and four children'''
         i,j = np.mgrid[0:20,0:20]
         parent_labels = (i/10 + 1).astype(int) 
         child_labels  = (i/10).astype(int) + (j/10).astype(int) * 2 + 1
-        workspace, module = self.make_workspace(parent_labels, child_labels)
+        workspace, module = self.make_workspace(parent_labels, child_labels,
+                                                fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
         m.add_measurement(CHILD_OBJECTS,MEASUREMENT, 
@@ -176,6 +204,7 @@ class TestRelate(unittest.TestCase):
         name = "Mean_%s_%s"%(CHILD_OBJECTS, MEASUREMENT)
         data = m.get_current_measurement(PARENT_OBJECTS, name)
         self.assertTrue(np.all(data==expected))
+        self.features_and_columns_match(workspace)
         
         
         

@@ -110,14 +110,8 @@ class Relate(cpm.CPModule):
         children = workspace.object_set.get_objects(self.sub_object_name.value)
         child_count, parents_of = parents.relate_children(children)
         m = workspace.measurements
-        m.add_measurement(self.sub_object_name.value,
-                          FF_PARENT%(self.parent_name.value),
-                          parents_of)
-        m.add_measurement(self.parent_name.value,
-                          FF_CHILDREN_COUNT%(self.sub_object_name.value),
-                          child_count)
-        parent_indexes = np.arange(np.max(parents.segmented))+1
         if self.wants_per_parent_means.value:
+            parent_indexes = np.arange(np.max(parents.segmented))+1
             for feature_name in m.get_feature_names(self.sub_object_name.value):
                 data = m.get_current_measurement(self.sub_object_name.value,
                                                  feature_name)
@@ -126,6 +120,12 @@ class Relate(cpm.CPModule):
                                              feature_name)
                 m.add_measurement(self.parent_name.value, mean_feature_name,
                                   means)
+        m.add_measurement(self.sub_object_name.value,
+                          FF_PARENT%(self.parent_name.value),
+                          parents_of)
+        m.add_measurement(self.parent_name.value,
+                          FF_CHILDREN_COUNT%(self.sub_object_name.value),
+                          child_count)
     
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''

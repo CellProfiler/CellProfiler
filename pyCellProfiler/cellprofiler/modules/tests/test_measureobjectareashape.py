@@ -118,7 +118,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
         self.assertTrue('OtherObjects' in measurements.get_object_names())
         features = measurements.get_feature_names('SomeObjects')
         features += measurements.get_feature_names('OtherObjects')
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[0] in ['SomeObjects', 'OtherObjects'])

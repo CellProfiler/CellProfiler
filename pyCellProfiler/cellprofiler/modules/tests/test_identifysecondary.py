@@ -112,7 +112,7 @@ class TestIdentifySecondary(unittest.TestCase):
         counts = m.get_current_measurement("Image", "Count_my_objects")
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],0)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         for object_name in (cpm.IMAGE, "my_objects","primary"):
             ocolumns =[x for x in columns if x[0] == object_name]
             features = m.get_feature_names(object_name)

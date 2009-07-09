@@ -222,7 +222,7 @@ class TestAlign(unittest.TestCase):
             output = workspace.image_set.get_image('Aligned2')
             self.assertTrue(np.all(np.abs(output.pixel_data[mask] - expected[mask]<=np.finfo(float).eps)))
             m = workspace.measurements
-            columns = module.get_measurement_columns()
+            columns = module.get_measurement_columns(workspace.pipeline)
             self.assertEqual(len(columns), 4)
             align_measurements = [x for x in m.get_feature_names(cpmeas.IMAGE)
                                   if x.startswith('Align')]
@@ -257,7 +257,7 @@ class TestAlign(unittest.TestCase):
             output = workspace.image_set.get_image('Aligned2')
             self.assertTrue(np.all(image1[mask] == output.pixel_data[mask]))
             m = workspace.measurements
-            columns = module.get_measurement_columns()
+            columns = module.get_measurement_columns(workspace.pipeline)
             self.assertEqual(len(columns), 4)
             align_measurements = [x for x in m.get_feature_names(cpmeas.IMAGE)
                                   if x.startswith('Align')]

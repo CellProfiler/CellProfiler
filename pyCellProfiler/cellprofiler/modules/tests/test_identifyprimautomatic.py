@@ -338,7 +338,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(numpy.product(location_center_x.shape),1)
         self.assertTrue(location_center_x[0]>13)
         self.assertTrue(location_center_x[0]<16)
-        columns = x.get_measurement_columns()
+        columns = x.get_measurement_columns(pipeline)
         for object_name in (cpmeas.IMAGE, "my_object"):
             ocolumns =[x for x in columns if x[0] == object_name]
             features = measurements.get_feature_names(object_name)
@@ -1424,7 +1424,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         oname = "my_object"
         x.object_name.value = oname
         x.image_name.value = "my_image"
-        columns = x.get_measurement_columns()
+        columns = x.get_measurement_columns(None)
         expected_columns = [(cpmeas.IMAGE, format%oname, coltype )
                             for format,coltype in ((I.FF_COUNT, cpmeas.COLTYPE_INTEGER),
                                                    (ID.FF_FINAL_THRESHOLD, cpmeas.COLTYPE_FLOAT),

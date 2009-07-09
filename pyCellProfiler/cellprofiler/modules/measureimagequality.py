@@ -362,7 +362,7 @@ fraction in the question, "What fraction of the image is composed of objects?"
         return any([ig.check_blur.value
                     for ig in self.image_groups])
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for all measurements'''
         columns = []
         for ig in self.image_groups:

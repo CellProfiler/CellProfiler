@@ -73,7 +73,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertEqual(len(measurements.get_object_names()),1)
         self.assertEqual(measurements.get_object_names()[0],cpmeas.IMAGE)
         features = measurements.get_feature_names(cpmeas.IMAGE)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[0] == cpmeas.IMAGE)

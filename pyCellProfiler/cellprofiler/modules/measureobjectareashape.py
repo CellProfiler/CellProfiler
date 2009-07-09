@@ -402,7 +402,7 @@ See also MeasureImageAreaOccupied.
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
         
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return measurement column definitions. 
         All cols returned as float even though "Area" will only ever be int'''
         object_names = [s.value for s in self.settings()][:-1]

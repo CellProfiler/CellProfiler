@@ -80,7 +80,7 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
         self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == primary_labels))
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         for object_name in (cpm.IMAGE, PRIMARY, SECONDARY, TERTIARY):
             ocolumns =[x for x in columns if x[0] == object_name]
             features = measurements.get_feature_names(object_name)
@@ -284,7 +284,7 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
         module.primary_objects_name.value = PRIMARY
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         expected = ((cpm.IMAGE, cpmi.FF_COUNT%TERTIARY, cpm.COLTYPE_INTEGER),
                     (TERTIARY, cpmi.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
                     (TERTIARY, cpmi.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),

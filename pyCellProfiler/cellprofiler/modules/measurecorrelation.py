@@ -336,7 +336,7 @@ class MeasureCorrelation(cpm.CPModule):
                 [first_image_name, second_image_name, object_name,
                  "Max correlation","%.2f"%np.max(corr)]]
              
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for all measurements made by this module'''
         columns = []
         for first_image, second_image in self.get_image_pairs():

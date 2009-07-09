@@ -71,7 +71,7 @@ class TestMeasureObjects(unittest.TestCase):
         moi.add_cb()
         moi.object_names[0].value = 'MyObjects1'
         moi.object_names[1].value = 'MyObjects2'
-        columns = moi.get_measurement_columns()
+        columns = moi.get_measurement_columns(None)
         self.assertEqual(len(columns), 2*len(MOI.ALL_MEASUREMENTS))
         for column in columns:
             self.assertTrue(column[0] in ('MyObjects1','MyObjects2'))
@@ -85,7 +85,7 @@ class TestMeasureObjects(unittest.TestCase):
                         if x != cpmeas.IMAGE]
         features = [measurements.get_feature_names(object_name)
                     for object_name in object_names]
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         self.assertEqual(sum([len(f) for f in features]), len(columns))
         for column in columns:
             index = object_names.index(column[0])

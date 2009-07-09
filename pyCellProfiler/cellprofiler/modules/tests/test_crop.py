@@ -77,7 +77,7 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(np.all(output_image.crop_mask == output_image.pixel_data))
         m = workspace.measurements
         self.assertTrue('Image' in m.get_object_names())
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns),2)
         self.assertTrue(all([x[0] == cpm.IMAGE for x in columns]))
         self.assertTrue(all([x[2] == cpm.COLTYPE_INTEGER for x in columns]))

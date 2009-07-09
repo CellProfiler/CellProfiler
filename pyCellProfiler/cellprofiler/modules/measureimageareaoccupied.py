@@ -128,7 +128,7 @@ of the labeled pixels being processed by this  module.
             workspace.image_set.add(self.image_name.value,
                                     output_image)
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         return [(cpmeas.IMAGE,
                  F_AREA_OCCUPIED % (self.object_name.value),

@@ -494,7 +494,7 @@ template and be smaller than the first image selected.
                                  parent_image = image)
         workspace.image_set.add(output_image_name, output_image)
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''return the offset measurements'''
         
         targets = ([self.second_output_image.value] +

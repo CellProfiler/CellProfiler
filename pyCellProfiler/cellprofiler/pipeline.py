@@ -733,7 +733,7 @@ class Pipeline(object):
             if (terminating_module is not None and 
                 terminating_module_num == module.module_num):
                 break
-            columns += module.get_measurement_columns()
+            columns += module.get_measurement_columns(self)
         self.__measurement_columns[terminating_module_num] = columns
         return columns
         

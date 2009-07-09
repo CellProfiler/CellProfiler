@@ -359,7 +359,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                              "Expanded %s"%
                                              self.object_name.value)
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         if self.distance_method == D_EXPAND:
             scale = S_EXPANDED

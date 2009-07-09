@@ -230,7 +230,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects = M.M_IMAGES
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         expected = ((cpmeas.IMAGE, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
                      cpmeas.COLTYPE_FLOAT),
@@ -248,7 +248,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects = M.M_OBJECTS
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         expected = ((OBJECTS_NAME, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
                      cpmeas.COLTYPE_FLOAT),)
@@ -263,7 +263,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects = M.M_IMAGES_AND_OBJECTS
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         expected = ((cpmeas.IMAGE, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
                      cpmeas.COLTYPE_FLOAT),
@@ -292,7 +292,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         features = m.get_feature_names(cpmeas.IMAGE)
         self.assertEqual(len(columns),len(features))
         for column in columns:
@@ -398,7 +398,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         
         self.assertEqual(len(m.get_object_names()),2)
         self.assertTrue(OBJECTS_NAME in m.get_object_names())
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         image_features = m.get_feature_names(cpmeas.IMAGE)
         object_features = m.get_feature_names(OBJECTS_NAME)
         self.assertEqual(len(columns),len(image_features)+len(object_features))

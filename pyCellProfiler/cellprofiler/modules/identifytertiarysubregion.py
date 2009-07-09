@@ -273,7 +273,7 @@ See also Identify Primary and Identify Secondary modules.
         if self.use_outlines.value:
             workspace.add_outline(self.outlines_name.value, tertiary_outlines)
             
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         subregion_name = self.subregion_objects_name.value
         columns = cpmi.get_object_measurement_columns(subregion_name)

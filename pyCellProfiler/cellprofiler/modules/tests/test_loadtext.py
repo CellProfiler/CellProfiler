@@ -230,7 +230,7 @@ class TestLoadText(unittest.TestCase):
 8,2.3,"Bevakasha"
 '''%colnames
         workspace, module, filename = self.make_workspace(csv_text)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and

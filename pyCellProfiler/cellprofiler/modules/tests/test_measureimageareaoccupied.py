@@ -61,7 +61,7 @@ class TestMeasureImageArea(unittest.TestCase):
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied"))[0], 0)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea"))[0],100)
         
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmm.IMAGE)
         self.assertEqual(len(columns), len(features))
         for column in columns:
@@ -102,7 +102,7 @@ class TestMeasureImageArea(unittest.TestCase):
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()
         module.object_name.value = OBJECTS_NAME
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s"%OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
                     (cpmm.IMAGE, "AreaOccupied_TotalArea_%s"%OBJECTS_NAME,

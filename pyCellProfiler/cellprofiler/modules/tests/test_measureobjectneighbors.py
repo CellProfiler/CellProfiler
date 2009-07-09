@@ -137,7 +137,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         neighbors = m.get_current_measurement(OBJECTS_NAME,"Neighbors_NumberOfNeighbors_Expanded")
         self.assertEqual(len(neighbors), 0)
         features = m.get_feature_names(OBJECTS_NAME)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertEqual(column[0],OBJECTS_NAME)
@@ -404,7 +404,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                        (M.D_ADJACENT, M.S_ADJACENT),
                                        (M.D_WITHIN, "5")):
             module.distance_method.value = distance_method
-            columns = module.get_measurement_columns()
+            columns = module.get_measurement_columns(None)
             features = ["%s_%s_%s"%(M.C_NEIGHBORS, feature, scale)
                         for feature in M.M_ALL]
             self.assertEqual(len(columns),len(features))

@@ -554,7 +554,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
         indexes = indexes + 1
         return indexes
 
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return measurement column defs for the parent/child measurement'''
         object_list = ([(self.object_name.value, self.target_name.value)] + 
                        [(x.object_name.value, x.target_name.value)

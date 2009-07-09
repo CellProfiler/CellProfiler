@@ -1052,7 +1052,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
         else:
             return self.smoothing_filter_size.value
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += [(cpmeas.IMAGE, 

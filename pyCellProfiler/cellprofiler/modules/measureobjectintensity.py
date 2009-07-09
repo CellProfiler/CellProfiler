@@ -214,7 +214,7 @@ See also MeasureImageIntensity.
                                                               variable_revision_number, 
                                                               module_name)
 
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return the column definitions for measurements made by this module'''
         columns = []
         for image_name in self.image_names:

@@ -60,7 +60,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmeas.IMAGE)
         self.assertEqual(len(columns),len(features))
         for column in columns:
@@ -124,7 +124,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
 
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmeas.IMAGE)
         self.assertEqual(len(columns),len(features))
         for column in columns:
@@ -335,7 +335,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 im.wants_objects.value = True
                 im.object_name.value = object_name
                 expected_suffixes.append("%s_%s"%(image_name, object_name))
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(None)
         self.assertTrue(all([column[0] == cpmeas.IMAGE for column in columns]))
         for expected_suffix in expected_suffixes:
             for feature, coltype in ((M.TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),

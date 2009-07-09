@@ -17,6 +17,7 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
@@ -26,6 +27,13 @@ D_MINIMUM = "Minimum"
 D_BOTH = "Both"
 
 D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
+
+FF_PARENT = "Parent_%s"
+
+FF_CHILDREN_COUNT = "Children_%s_Count"
+
+FF_MEAN = 'Mean_%s_%s'
+
 class Relate(cpm.CPModule):
     ''' SHORT DESCRIPTION:
     Assigns relationships: All objects (e.g. speckles) within a parent object
@@ -103,10 +111,10 @@ class Relate(cpm.CPModule):
         child_count, parents_of = parents.relate_children(children)
         m = workspace.measurements
         m.add_measurement(self.sub_object_name.value,
-                          "Parent_%s"%(self.parent_name.value),
+                          FF_PARENT%(self.parent_name.value),
                           parents_of)
         m.add_measurement(self.parent_name.value,
-                          "Children_%s_Count"%(self.sub_object_name.value),
+                          FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
         parent_indexes = np.arange(np.max(parents.segmented))+1
         if self.wants_per_parent_means.value:
@@ -114,10 +122,26 @@ class Relate(cpm.CPModule):
                 data = m.get_current_measurement(self.sub_object_name.value,
                                                  feature_name)
                 means = fix(scind.mean(data, parents_of, parent_indexes))
-                mean_feature_name = 'Mean_%s_%s'%(self.sub_object_name.value,
-                                                  feature_name)
+                mean_feature_name = FF_MEAN%(self.sub_object_name.value,
+                                             feature_name)
                 m.add_measurement(self.parent_name.value, mean_feature_name,
                                   means)
+    
+    def get_measurement_columns(self, pipeline):
+        '''Return the column definitions for this module's measurements'''
+        columns = [(self.sub_object_name.value,
+                    FF_PARENT%(self.parent_name.value),
+                    cpmeas.COLTYPE_INTEGER),
+                   (self.parent_name.value,
+                    FF_CHILDREN_COUNT%self.sub_object_name.value,
+                    cpmeas.COLTYPE_INTEGER)]
+        if self.wants_per_parent_means.value:
+            child_columns = pipeline.get_measurement_columns(self)
+            columns += [(self.parent_name.value,
+                         FF_MEAN%(self.sub_object_name.value, column[1]),
+                         cpmeas.COLTYPE_FLOAT)
+                        for column in child_columns]
+        return columns
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.parent_name.value:

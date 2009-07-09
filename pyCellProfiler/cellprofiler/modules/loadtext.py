@@ -353,7 +353,7 @@ that can be processed by different nodes in a cluster.
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_table(0,0,statistics,[.3,.7])
 
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements output by this module'''
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)

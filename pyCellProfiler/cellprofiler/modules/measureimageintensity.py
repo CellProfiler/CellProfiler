@@ -233,7 +233,7 @@ The intensity will be restricted to within the objects you name here.
                                             ('Mean intensity', pixel_mean),
                                             ('Total area', pixel_count))]
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = []
         for im in self.get_non_redundant_image_measurements():

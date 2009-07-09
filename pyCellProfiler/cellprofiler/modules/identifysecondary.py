@@ -501,7 +501,7 @@ See also Identify primary modules.
             segmented_labels_out = labels_out.copy()
         return segmented_labels_out
         
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,

@@ -408,7 +408,7 @@ class CPModule(object):
         """
         pass
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         '''Return a sequence describing the measurement columns needed by this module
         
         This call should return one element per image or object measurement

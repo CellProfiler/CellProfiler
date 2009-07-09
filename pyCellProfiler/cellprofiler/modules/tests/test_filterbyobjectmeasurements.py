@@ -806,7 +806,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         module.run(workspace)
         image_features = m.get_feature_names(cpm.IMAGE)
         object_features = m.get_feature_names("my_result")
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 4)
         for feature in image_features:
             self.assertTrue(any([(column[0] == cpm.IMAGE and 

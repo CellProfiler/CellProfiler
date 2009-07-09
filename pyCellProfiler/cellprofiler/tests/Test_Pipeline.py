@@ -334,7 +334,7 @@ class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def module_class(self):
         return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
     
-    def get_measurement_columns(self):
+    def get_measurement_columns(self, pipeline):
         return [(cellprofiler.measurements.IMAGE,
                  self.my_variable.value,
                  "varchar(255)")]

@@ -1,361 +1,426 @@
-"""rescaleintensity.py
+'''rescaleintensity.py - the RescaleIntensity module
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
-Developed by the Broad Institute of MIT and Harvard
+Developed by the Broad Institute
 Copyright 2003-2009
 
 Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
-"""
-# TODO: Verify that the mask is respected.
-# TODO: Implement "Determine automatically from all"
-# TODO: Implement "Text -- Divide by loaded text value"
-# TODO: Test.
+'''
 __version__="$Revision: 6746 $"
 
 import numpy as np
-import wx
-import matplotlib.cm
-import matplotlib.backends.backend_wxagg
 
-from cellprofiler.cpmodule import CPModule
-from cellprofiler import cpimage
-import cellprofiler.settings as cpsetting
-from cellprofiler.gui import cpfigure
+import cellprofiler.cpmodule as cpm
+import cellprofiler.cpimage as cpi
+import cellprofiler.measurements as cpmeas
+import cellprofiler.settings as cps
 
-METHOD_S = "Stretch 0 to 1"
-METHOD_E = "Enter min/max below"
-METHOD_G = "Greater than one"
-METHOD_M = "Match maximum"
-METHOD_T = "Text -- Divide by loaded text value"
-AUTO_ALL = "Determine automatically from all of the images to be analyzed"
-AUTO_EACH = "Determine automatically from each image independently"
-MANUAL = "Manual"
+from cellprofiler.cpmath.filter import stretch
 
-class RescaleIntensity(CPModule):
-    """Changes intensity range of an image to desired specifications.
+M_STRETCH = 'Stretch each image to use the full intensity range'
+M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'
+M_MANUAL_IO_RANGE = 'Choose specific values to be reset to a custom range'
+M_DIVIDE_BY_IMAGE_MINIMUM = "Divide by the image's minimum"
+M_DIVIDE_BY_IMAGE_MAXIMUM = "Divide by the image's maximum"
+M_DIVIDE_BY_VALUE = 'Divide each image by the same value'
+M_DIVIDE_BY_MEASUREMENT = 'Divide each image by a previously calculated value'
+M_SCALE_BY_IMAGE_MAXIMUM = "Match the image's maximum to another image's maximum"
+M_CONVERT_TO_8_BIT = 'Convert to 8 bit'
+
+M_ALL = [M_STRETCH, M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE, 
+         M_DIVIDE_BY_IMAGE_MINIMUM, M_DIVIDE_BY_IMAGE_MAXIMUM,
+         M_DIVIDE_BY_VALUE, M_DIVIDE_BY_MEASUREMENT, 
+         M_SCALE_BY_IMAGE_MAXIMUM, M_CONVERT_TO_8_BIT]
+
+M_TOOLTIPS = {
+              M_STRETCH:
+'''Find the minimum and maximum values within the unmasked part of the image
+(or the whole image if there is no mask) and rescale every pixel so that
+the minimum has an intensity of zero and the maximum has an intensity of
+one.''',
+              M_MANUAL_INPUT_RANGE:
+'''Enter the minimum and maximum values of the original image. Pixels are
+scaled from their user-specified original range to the range, 0 to 1.
+Options are available to handle values outside of the original range.
+    
+To convert 12-bit images saved in 16-bit format to the correct range,
+use the range, 0 to 0.0625. The value 0.0625 is equivalent 
+to 2^12 divided by 2^16, so it will convert a 16 bit image containing 
+only 12 bits of data to the proper range.''',
+              M_MANUAL_IO_RANGE:
+'''Enter the minimum and maximum values of the original image and of
+the target image. Pixels are scaled from their original range to
+the new target range. Options are available to handle values outside
+of the original range.''',
+              M_DIVIDE_BY_IMAGE_MINIMUM:
+'''Divide the intensity value of each pixel by the image's minimum intensity
+value so that all pixel intensities are equal to or greater than 1.
+You can use the output from this option in CorrectIllumination_Apply.
+The image becomes an illumination correction function.''',
+              M_DIVIDE_BY_IMAGE_MAXIMUM:
+'''Divide the intensity value of each pixel by the image's maximum intensity
+value so that all pixel intensities are less than or equal to 1.''', 
+              M_DIVIDE_BY_VALUE:
+'''Divide the intensity value of each pixel by the value entered.''',
+              M_DIVIDE_BY_MEASUREMENT:
+'''Divide the intensity value of each pixel by some previously calculated
+measurement. This measurement can be the output of some other module
+or can be a value loaded by the LoadText module.''',
+              M_SCALE_BY_IMAGE_MAXIMUM:
+'''Scale an image so that its maximum value is the same as the maximum value
+within the target image.''',
+              M_CONVERT_TO_8_BIT:
+'''Images in CellProfiler are normally stored as a floating point number in
+the range of 0 to 1. This option converts these images to class uint8, 
+meaning an 8 bit integer in the range of 0 to 255.  This is useful to
+reduce the amount of memory required to store the image. Warning: Most
+CellProfiler modules require the incoming image to be in the standard 0
+to 1 range, so this conversion may cause downstream modules to behave 
+unexpectedly.'''
+              }
+
+R_SCALE = 'Scale similarly to others'
+R_MASK = 'Mask pixels'
+R_SET_TO_ZERO = 'Set to zero'
+R_SET_TO_CUSTOM = 'Set to custom value'
+R_SET_TO_ONE = 'Set to one'
+
+class RescaleIntensity(cpm.CPModule):
+    '''SHORT DESCRIPTION:
+Changes intensity range of an image to desired specifications.
+*************************************************************************
 
 The intensity of the incoming images are rescaled by one of several
 methods. This is especially helpful for converting 12-bit images saved in
-16-bit format to the correct range (see method E).
+16-bit format to the correct range.
 
 Settings:
 
 Rescaling method:
+%s
 
-Stretch 0 to 1: Stretch the image so that the minimum is zero and the
-maximum is one.
+How do you want to handle values that are less than the lower limit of the
+intensity range?
+    There are four choices:
+    Scale similarly to others - scale pixels with values below the lower limit
+          using the same offset and divisor as other pixels. The results
+          will be less than zero.
+    Mask pixels - create a mask for the output image. All pixels below
+          the lower limit will be masked out.
+    Set to zero - set all pixels below the lower limit to zero
+    Set to custom value - set all pixels below the lower limit to a custom
+          value.
+'''%('\n'.join([key+'\n    '+M_TOOLTIPS[key].replace('\n','\n    ')
+                for key in M_ALL]))
 
-Enter min/max below: Enter the minimum and maximum values of the
-original image and the desired resulting image. Pixels are scaled from
-their user-specified original range to a new user-specified range.  If
-the user chooses "Determine automatically from each image
-independently" then the highest and lowest pixel values will be
-Automatically computed for each image by taking the maximum and
-minimum pixel values in each image.  If the user chooses "Determine
-automatically from all of the images to be analyzed" then the highest
-and/or lowest pixel values will be automatically computed by taking
-the maximum and minimum pixel values in all the images in the set.
-
-The user also has the option of selecting the values that pixels
-outside the original min/max range are set to, by entering numbers in
-the "What value should pixels below/above the original intensity range
-be mapped to" boxes. If you want these pixels to be set to the
-highest/lowest rescaled intensity values, enter the same number in
-these boxes as was entered in the highest/lowest rescaled intensity
-boxes. However, using other values permits a simple form of
-thresholding (e.g., setting the upper bounding value to 0 can be used
-for removing bright pixels above a specified value)
-
-To convert 12-bit images saved in 16-bit format to the correct range,
-use the settings 0, 0.0625, 0, 1, 0, 1.  The value 0.0625 is
-equivalent to 2^12 divided by 2^16, so it will convert a 16 bit image
-containing only 12 bits of data to the proper range.
-
-Greater than one: Rescale the image so that all pixels are equal to or
-greater than one.
-
-Match maximum: Match the maximum of one image to the maximum of
-another.
-
-Text -- Divide by loaded text value: Rescale by dividing by a value
-loaded from a text file with LoadText.
-
-See also SubtractBackground.
-    """
-
+    category="Image Processing"
     variable_revision_number = 1
-    category = "Image Processing"
-
+    
     def create_settings(self):
-        self.module_name = self.__class__.__name__
-        self.image_name = cpsetting.ImageNameSubscriber(
-            "Which image do you want to rescale?", "None")
-        self.rescaled_image_name = cpsetting.ImageNameProvider(
-            "What do you want to call the rescaled image?", "RescaledBlue")
-        self.method = cpsetting.Choice(
-            "Which rescaling method do you want to use?",
-            [METHOD_S, METHOD_E, METHOD_G, METHOD_M, METHOD_T])
+        self.module_name = "RescaleIntensity"
+        self.image_name = cps.ImageNameSubscriber("What did you call the image to be rescaled?","None")
+        self.rescaled_image_name = cps.ImageNameProvider("What do you want to call the rescaled image?","RescaledBlue")
+        self.rescale_method = cps.Choice('Which rescaling method do you want to use?',
+                                         choices=M_ALL,tooltips = M_TOOLTIPS)
+        self.wants_automatic_low = cps.Binary('Do you want to use the minimum intensity value in the image as the lower limit of the intensity range?',
+                                              False)
+        self.wants_automatic_high = cps.Binary('Do you want to use the maximum intensity value in the image as the upper limit of the intensity range?',
+                                               False)
+        self.source_low = cps.Float('Enter the lower limit for the intensity range for the original image',0)
+        self.source_high = cps.Float('Enter the upper limit for the intensity range for the original image',1)
+        self.source_scale = cps.FloatRange('Enter the intensity range for the original image',(0,1))
+        self.dest_scale = cps.FloatRange('Enter the desired intensity range for the final image', (0,1))
+        self.low_truncation_choice = cps.Choice('How do you want to handle values that are less than the lower limit of the intensity range?',
+                                                [R_MASK, R_SET_TO_ZERO, 
+                                                 R_SET_TO_CUSTOM, R_SCALE])
+        self.custom_low_truncation = cps.Float("What custom value should be assigned to pixels with values below the lower limit?",0)
+        self.high_truncation_choice = cps.Choice('How do you want to handle values that are greater than the upper limit of the intensity range?',
+                                                [R_MASK, R_SET_TO_ONE, 
+                                                 R_SET_TO_CUSTOM, R_SCALE])
+        self.custom_high_truncation = cps.Float("What custom value should be assigned to pixels with values above the upper limit?",0)
+        self.matching_image_name = cps.ImageNameSubscriber("What did you call the image whose maximum you want the rescaled image to match?", "None")
+        self.divisor_value = cps.Float("What value should be used as the divisor for the final image?",
+                                       1,minval=np.finfo(float).eps)
+        self.divisor_measurement = cps.Measurement("What measurement do you want to use as the divisor?",
+                                                   lambda : cpmeas.IMAGE)
 
-        # if METHOD_E:
-        self.low_orig = cpsetting.Choice(
-            "What intensity from the original image should be set to the "
-            "lowest value in the rescaled image?",
-            [AUTO_ALL, AUTO_EACH, MANUAL])
-        # if METHOD_E and low_orig == MANUAL:
-        self.low_orig_manual = cpsetting.Float(
-            "Manual value (range [0, 1])", 0.0, minval=0, maxval=1)
-        # if METHOD_E:
-        self.high_orig = cpsetting.Choice(
-            "What intensity from the original image should be set to the "
-            "highest value in the rescaled image?",
-            [AUTO_ALL, AUTO_EACH, MANUAL])
-        # if METHOD_E and high_orig == MANUAL:
-        self.high_orig_manual = cpsetting.Float(
-            "Manual value (range [0, 1])", 1.0, minval=0, maxval=1)
-        
-        # if METHOD_E:
-        self.low_rescale = cpsetting.Float(
-            "What value should pixels at the low end of the original "
-            "intensity range be mapped to (range [0, 1])?", 0.0, 
-            minval=0, maxval=1)
-        # if METHOD_E:
-        self.high_rescale = cpsetting.Float(
-            "What value should pixels at the high end of the original "
-            "intensity range be mapped to (range [0, 1])?", 1.0,
-            minval=0, maxval=1)
-
-        # if METHOD_E:
-        self.low_pinned = cpsetting.Float(
-            "What value should pixels below the original "
-            "intensity range be mapped to (range [0, 1])?", 0.0,
-            minval=0, maxval=1)
-        # if METHOD_E:
-        self.high_pinned = cpsetting.Float(
-            "What value should pixels above the original "
-            "intensity range be mapped to (range [0, 1])?", 1.0,
-            minval=0, maxval=1)
-
-        # if METHOD_M:
-        self.other_image = cpsetting.ImageNameSubscriber(
-            "What did you call the image whose maximum you want the rescaled "
-            "image to match?", "None")
-
-        # if METHOD_T:
-        self.text_name = cpsetting.NameSubscriber(
-            "What did you call the loaded text in the LoadText module?",
-            "datagroup", "None")
-
-    def visible_settings(self):
-        vv = [self.image_name, self.rescaled_image_name, self.method]
-        if self.method.value == METHOD_E:
-            vv.append(self.low_orig)
-            if self.low_orig.value == MANUAL:
-                vv.append(self.low_orig_manual)
-            vv.append(self.high_orig)
-            if self.high_orig.value == MANUAL:
-                vv.append(self.high_orig_manual)
-            vv += [self.low_rescale, self.high_rescale, self.low_pinned,
-                   self.high_pinned]
-        elif self.method.value == METHOD_M:
-            vv.append(self.other_image)
-        elif self.method.value == METHOD_T:
-            vv.append(self.text_name)
-        return vv
-    
     def settings(self):
-        """Return all settings in a consistent order"""
-        return [self.image_name, self.rescaled_image_name, self.method,
-                self.low_orig, self.low_orig_manual, self.high_orig,
-                self.high_orig_manual, self.low_rescale, self.high_rescale,
-                self.low_pinned, self.high_pinned, self.other_image,
-                self.text_name]
-    
-    def backwards_compatibilize(self, setting_values,
-                                variable_revision_number, module_name,
-                                from_matlab):
-        if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
-                                        "RescaleIntensity with revision < 4")
+        return [self.image_name, self.rescaled_image_name, self.rescale_method,
+                self.wants_automatic_low, self.wants_automatic_high,
+                self.source_low, self.source_high,
+                self.source_scale, self.dest_scale, self.low_truncation_choice,
+                self.custom_low_truncation, self.high_truncation_choice,
+                self.custom_high_truncation, self.matching_image_name,
+                self.divisor_value, self.divisor_measurement]
+
+    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+                                module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
-            new = [setting_values[0],  # ImageName
-                   setting_values[1],  # RescaledImageName
-                   setting_values[3]]  # RescaleOption
-            # LowestPixelOrig
-            if setting_values[4] == "AA":
-                new[4] = AUTO_ALL
-                new[5] = 0
-            elif setting_values[4] == "AE":
-                new[4] = AUTO_EACH
-                new[5] = 1
-            else:
-                new[4] = MANUAL
-                new[5] = setting_values[4]
-            # HighestPixelOrig
-            if setting_values[5] == "AA":
-                new[6] = AUTO_ALL
-                new[7] = 0
-            elif setting_values[5] == "AE":
-                new[6] = AUTO_EACH
-                new[7] = 1
-            else:
-                new[6] = MANUAL
-                new[7] = setting_values[5]
-            new += [setting_values[6:]]
+            new_setting_values = (setting_values[:2] +
+                                  [M_STRETCH, # 2: rescale_method,
+                                   cps.NO,    # 3: wants_automatic_low
+                                   cps.NO,    # 4: wants_automatic_high
+                                   "0",       # 5: source_low
+                                   "1",       # 6: source_high 
+                                   "0,1",     # 7: source_scale
+                                   "0,1",     # 8: dest_scale
+                                   R_MASK,    # 9: low_truncation_choice
+                                   "0",       # 10: custom_low_truncation
+                                   R_MASK,    # 11: high_truncation_choice
+                                   "1",       # 12: custom_high_truncation
+                                   "None",    # 13: matching_image_name
+                                   "1",       # 14: divisor_value
+                                   "None"     # 15: divisor_measurement
+                                   ])
+            code = setting_values[2][0]
+            if code.upper() == 'S':
+                new_setting_values[2] = M_STRETCH
+            elif code.upper() == 'E':
+                if setting_values[5] == "0" and setting_values[6] == "1":
+                    new_setting_values[2] = M_MANUAL_INPUT_RANGE
+                else:
+                    new_setting_values[2] = M_MANUAL_IO_RANGE
+                if setting_values[3].upper() == "AA":
+                    new_setting_values[3] = cps.YES
+                    if setting_values[4].upper() == "AA":
+                        new_setting_values[4] = cps.YES
+                    else:
+                        new_setting_values[6] = setting_values[4]
+                elif setting_values[4].upper() == "AA":
+                    new_setting_values[4] = cps.YES
+                    new_setting_values[5] = setting_values[3]
+                else:
+                    new_setting_values[5] = setting_values[3]
+                    new_setting_values[6] = setting_values[4]
+                    new_setting_values[7] = ",".join(setting_values[3:5])
+                new_setting_values[8] = ",".join(setting_values[5:7])
+                new_setting_values[9] = R_SET_TO_CUSTOM
+                new_setting_values[10] = setting_values[7]
+                new_setting_values[11] = R_SET_TO_CUSTOM
+                new_setting_values[12] = setting_values[8]
+            elif code.upper() == 'G':
+                new_setting_values[2] = M_DIVIDE_BY_IMAGE_MINIMUM
+            elif code.upper() == 'M':
+                new_setting_values[2] = M_SCALE_BY_IMAGE_MAXIMUM
+                new_setting_values[13] = setting_values[9]
+            elif code.upper() == 'C':
+                new_setting_values[2] = M_CONVERT_TO_8_BIT
+            elif code.upper() == 'T':
+                new_setting_values[2] = M_DIVIDE_BY_MEASUREMENT
+                new_setting_values[15] = setting_values[10]
+            setting_values = new_setting_values
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
 
-    def prepare_run(self, pipeline, image_set_list, frame):
-        if self.method == METHOD_E:
-            if self.low_orig.value == AUTO_ALL or \
-                    self.high_orig.value == AUTO_ALL:
-               if not pipeline.is_source_loaded(self.image_name.value):
-                   raise ValueError, "Values can only be determined "
-               "automatically from all images if the images are loaded "
-               "directly from files (i.e., not preprocessed by other modules)."
-               nimages = image_set_list.count()
-               if frame != None:
-                   progress_dialog = wx.ProgressDialog(
-                       "#%d: RescaleIntensity for %s"%(self.module_num, 
-                                                       self.image_name),
-                       "RescaleIntensity is inspecting %d images to "
-                       "determine values automatically"%(nimages,),
-                       nimages, frame, 
-                       wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-               for i in range(nimages):
-                    image_set = image_set_list.get_image_set(i)
-                    image = image_set.get_image(self.image_name, cache=False,
-                                                must_be_grayscale=True)
-                    if self.low_orig.value == AUTO_ALL:
-                        low = image.pixel_data[image.mask].min()
-                        if i == 0 or low < self.auto_low_orig:
-                            self.auto_low_orig = low
-                    if self.high_orig.value == AUTO_ALL:
-                        high = image.pixel_data[image.mask].max()
-                        if i == 0 or high > self.auto_high_orig:
-                            self.auto_high_orig = high
-                    if frame != None:
-                        should_continue, skip = progress_dialog.Update(i+1)
-                        if not should_continue:
-                            progress_dialog.EndModal(0)
-                            return False
-        return True
-
-        
-    def run(self,workspace):
-        """Run the module
-        
-        workspace    - the workspace contains:
-            pipeline     - instance of CellProfiler.Pipeline for this run
-            image_set    - the images in the image set being processed
-            object_set   - the objects (labeled masks) in this image set
-            measurements - the measurements for this run
-            frame        - display within this frame (or None to not display)
-        """
-        input = workspace.image_set.get_image(self.image_name,
-                                              must_be_grayscale=True)
-
-        if self.method == METHOD_S:
-            pixels = rescale_s(input.pixel_data)
-        elif self.method == METHOD_E:
-            if self.low_orig.value == AUTO_ALL:
-                low_orig = self.auto_low_orig
-            elif self.low_orig.value == AUTO_EACH:
-                low_orig = input.pixel_data[input.mask].min()
+    def visible_settings(self):
+        result =  [self.image_name, self.rescaled_image_name, 
+                   self.rescale_method]
+        if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
+            result += [self.wants_automatic_low]
+            if not self.wants_automatic_low.value:
+                if self.wants_automatic_high.value:
+                    result += [self.source_low, self.wants_automatic_high]
+                else:
+                    result += [self.wants_automatic_high, self.source_scale]
+            elif not self.wants_automatic_high.value:
+                result += [self.wants_automatic_high, self.source_high]
             else:
-                low_orig = self.low_orig_manual.value
-            if self.high_orig.value == AUTO_ALL:
-                high_orig = self.auto_high_orig
-            elif self.high_orig.value == AUTO_EACH:
-                high_orig = input.pixel_data[input.mask].max()
+                result += [self.wants_automatic_high]
+        if self.rescale_method == M_MANUAL_IO_RANGE:
+            result += [self.dest_scale]
+        if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
+            result += [self.low_truncation_choice]
+            if self.low_truncation_choice.value == R_SET_TO_CUSTOM:
+                result += [self.custom_low_truncation]
+            result += [self.high_truncation_choice]
+            if self.high_truncation_choice.value == R_SET_TO_CUSTOM:
+                result += [self.custom_high_truncation]
+                
+        if self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
+            result += [self.matching_image_name]
+        elif self.rescale_method == M_DIVIDE_BY_MEASUREMENT:
+            result += [self.divisor_measurement]
+        elif self.rescale_method == M_DIVIDE_BY_VALUE:
+            result += [self.divisor_value]
+        return result
+
+    def run(self, workspace):
+        input_image = workspace.image_set.get_image(self.image_name.value)
+        output_mask = None
+        if self.rescale_method == M_STRETCH:
+            output_image = self.stretch(input_image)
+        elif self.rescale_method == M_MANUAL_INPUT_RANGE:
+            output_image, output_mask = self.manual_input_range(input_image)
+        elif self.rescale_method == M_MANUAL_IO_RANGE:
+            output_image, output_mask = self.manual_io_range(input_image)
+        elif self.rescale_method == M_DIVIDE_BY_IMAGE_MINIMUM:
+            output_image = self.divide_by_image_minimum(input_image)
+        elif self.rescale_method == M_DIVIDE_BY_IMAGE_MAXIMUM:
+            output_image = self.divide_by_image_maximum(input_image)
+        elif self.rescale_method == M_DIVIDE_BY_VALUE:
+            output_image = self.divide_by_value(input_image)
+        elif self.rescale_method == M_DIVIDE_BY_MEASUREMENT:
+            output_image = self.divide_by_measurement(workspace, input_image)
+        elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
+            output_image = self.scale_by_image_maximum(workspace, input_image)
+        elif self.rescale_method == M_CONVERT_TO_8_BIT:
+            output_image = self.convert_to_8_bit(input_image)
+        if output_mask is not None:
+            rescaled_image = cpi.Image(output_image, 
+                                       mask = output_mask,
+                                       parent_image = input_image,
+                                       convert = False)
+        else:
+            rescaled_image = cpi.Image(output_image,
+                                       parent_image = input_image,
+                                       convert = False)
+        workspace.image_set.add(self.rescaled_image_name.value, rescaled_image) 
+    
+    def stretch(self, input_image):
+        '''Stretch the input image to the range 0:1'''
+        if input_image.has_mask:
+            return stretch(input_image.pixel_data, input_image.mask)
+        else:
+            return stretch(input_image.pixel_data)
+    
+    def manual_input_range(self, input_image):
+        '''Stretch the input image from the requested range to 0:1'''
+        if self.wants_automatic_low.value and self.wants_automatic_high.value:
+            return self.stretch(input_image)
+        
+        src_min, src_max = self.get_source_range(input_image)
+        rescaled_image = ((input_image.pixel_data - src_min) / 
+                          (src_max - src_min))
+        return self.truncate_values(input_image, rescaled_image, 0, 1)
+    
+    def manual_io_range(self, input_image):
+        '''Stretch the input image using manual input and output values'''
+
+        src_min, src_max = self.get_source_range(input_image)
+        rescaled_image = ((input_image.pixel_data - src_min) / 
+                          (src_max - src_min))
+        dest_min = self.dest_scale.min
+        dest_max = self.dest_scale.max
+        rescaled_image = rescaled_image * (dest_max-dest_min) + dest_min
+        return self.truncate_values(input_image, 
+                                    rescaled_image, 
+                                    dest_min, dest_max)
+    
+    def divide_by_image_minimum(self, input_image):
+        '''Divide the image by its minimum to get an illumination correction function'''
+        
+        if input_image.has_mask:
+            src_min = np.min(input_image.pixel_data[input_image.mask])
+        else:
+            src_min = np.min(input_image.pixel_data)
+        if src_min != 0:
+            rescaled_image = input_image.pixel_data / src_min
+        return rescaled_image
+    
+    def divide_by_image_maximum(self, input_image):
+        '''Stretch the input image from 0 to the image maximum'''
+        
+        if input_image.has_mask:
+            src_max = np.max(input_image.pixel_data[input_image.mask])
+        else:
+            src_max = np.max(input_image.pixel_data)
+        if src_max != 0:
+            rescaled_image = input_image.pixel_data / src_max
+        return rescaled_image
+    
+    def divide_by_value(self, input_image):
+        '''Divide the image by a user-specified value'''
+        return input_image.pixel_data / self.divisor_value.value
+    
+    def divide_by_measurement(self, workspace, input_image):
+        '''Divide the image by the value of an image measurement'''
+        m = workspace.measurements
+        value = m.get_current_image_measurement(self.divisor_measurement.value)
+        return input_image.pixel_data / float(value) 
+        
+    def scale_by_image_maximum(self, workspace, input_image):
+        '''Scale the image by the maximum of another image
+        
+        Find the maximum value within the unmasked region of the input
+        and reference image. Multiply by the reference maximum, divide
+        by the input maximum to scale the input image to the same
+        range as the reference image
+        '''
+        reference_image = workspace.image_set.get_image(self.matching_image_name.value)
+        reference_pixels = reference_image.pixel_data
+        if reference_image.has_mask:
+            reference_pixels = reference_pixels[reference_image.mask]
+        reference_max = np.max(reference_pixels)
+        if input_image.has_mask:
+            image_max = np.max(input_image.pixel_data[input_image.mask])
+        else:
+            image_max = np.max(input_image.pixel_data)
+        if image_max == 0:
+            return input_image.pixel_data
+        return input_image.pixel_data * reference_max / image_max
+    
+    def convert_to_8_bit(self, input_image):
+        '''Convert the image data to uint8'''
+        return (input_image.pixel_data * 255).astype(np.uint8)
+    
+    def get_source_range(self, input_image):
+        '''Get the source range, accounting for automatically computed values'''
+        if self.wants_automatic_low.value or self.wants_automatic_high.value:
+            input_pixels = input_image.pixel_data
+            if input_image.has_mask:
+                input_pixels = input_pixels[input_image.mask]
+            if self.wants_automatic_low.value:
+                src_min = np.min(input_pixels)
             else:
-                high_orig = self.high_orig_manual.value
-            pixels = rescale_e(input.pixel_data, low_orig, high_orig,
-                               self.low_rescale.value, self.low_pinned.value,
-                               self.high_rescale.value, self.high_pinned.value,
-                               self.image_name.value)
-        elif self.method == METHOD_G:
-            pixels = rescale_g(input.pixel_data)
-        elif self.method == METHOD_M:
-            other = workspace.image_set.get_image(self.other_image, 
-                                                  must_be_grayscale=True)
-            pixels = rescale_m(input.pixel_data, other.pixel_data)
-        elif self.method == METHOD_T:
-            pixels = rescale_t(input.pixel_data, self.text_name.value)
-
-        output = cpimage.Image(pixels, input.mask)
-        workspace.image_set.add(self.rescaled_image_name, output)
-        if workspace.display:
-            figure = workspace.create_or_find_figure(subplots=(2, 1))
-            figure.subplot_imshow(0, 0, input.pixel_data, 
-                                  "Original image: %s"%(self.image_name,),
-                                  colormap=matplotlib.cm.Greys_r,
-                                  colorbar=True),
-            figure.subplot_imshow(1, 0, output.pixel_data, 
-                                  "Rescaled image: " + \
-                                      self.rescaled_image_name.value,
-                                  colormap=matplotlib.cm.Greys_r,
-                                  colorbar=True)
-
-def rescale_s(input):
-    """The minimum of the image is brought to zero, whether it
-     originally positive or negative.  maximum of the image is brought
-     to 1."""
-    tmp = input - input.min() 
-    return tmp / tmp.max()
-
-def rescale_m(input, other):
-    """Rescales the image so the max equals the max of the other
-    image."""
-    if input.any():
-        tmp = input / input.max()
-    else:
-        tmp = input
-    return tmp * other.max()
-
-def rescale_g(input):
-    """Rescales the image so that all pixels are equal to or greater
-    than one. This is done by dividing each pixel of the image by a
-    scalar: the minimum pixel value anywhere in the smoothed
-    image. (If the minimum value is zero, .0001 is substituted
-    instead.) This rescales the image from 1 to some number. This is
-    useful in cases where other images will be divided by this image,
-    because it ensures that the final, divided image will be in a
-    reasonable range, from zero to 1."""
-    tmp = input / max(input.min(), 0.0001)
-    tmp[tmp < 1] = 1
-    return tmp
-
-def rescale_t(input):
-    return NotImplementedError
-
-def rescale_e(input, low_orig, high_orig, low_rescale, low_pinned, 
-              high_rescale, high_pinned, image_name):
-    # (1) Scale and shift the original image to produce the rescaled
-    # image.  Here, we find the linear transformation that maps the
-    # user-specified old high/low values to their new high/low values.
-    hi = high_orig
-    HI = high_rescale;
-    lo = low_orig
-    LO = low_rescale;
-    a = np.array([[low_orig, 1], [high_orig, 1]])
-    b = np.array([low_rescale, high_rescale])
-    X = np.linalg.solve(a, b)
-    output = input * X[0] + X[1]
-
-    # Make sure values close to EPS are mapped to 0 (since the matrix
-    # algebra is not perfect).
-    eps = np.finfo(float).eps
-    output[np.logical_and(np.abs(output) > 0,
-                          np.abs(output) < eps)] = 0
+                src_min = self.source_low.value
+            if self.wants_automatic_high.value:
+                src_max = np.max(input_pixels)
+            else:
+                src_max = self.source_high.value
+        else:
+            src_min = self.source_scale.min
+            src_max = self.source_scale.max
+        return src_min, src_max
     
-    # (2) Pixels above/below rescaled values are set to the desired
-    # pinning values.
-    output[output > high_rescale] = high_pinned;
-    output[output < low_rescale] = low_pinned;
-    
-    return output
+    def truncate_values(self, input_image, rescaled_image, target_min, target_max):
+        '''Handle out of range values based on user settings
+        
+        input_image - the original input image
+        rescaled_image - the pixel data after scaling
+        target_min - values below this are out of range
+        target_max - values above this are out of range
+        
+        returns the truncated pixel data and either a mask or None
+        if the user doesn't want to mask out-of-range values
+        '''
+        
+        if (self.low_truncation_choice == R_MASK or
+            self.high_truncation_choice == R_MASK):
+            if input_image.has_mask:
+                mask = input_image.mask.copy()
+            else:
+                mask = np.ones(rescaled_image.shape,bool)
+            if self.low_truncation_choice == R_MASK:
+                mask[rescaled_image < target_min] = False
+            if self.high_truncation_choice == R_MASK:
+                mask[rescaled_image > target_max] = False
+        else:
+            mask = None
+        if self.low_truncation_choice == R_SET_TO_ZERO:
+            rescaled_image[rescaled_image < target_min] = 0
+        elif self.low_truncation_choice == R_SET_TO_CUSTOM:
+            rescaled_image[rescaled_image < target_min] =\
+                self.custom_low_truncation.value
+        
+        if self.high_truncation_choice == R_SET_TO_ONE:
+            rescaled_image[rescaled_image > target_max] = 1
+        elif self.high_truncation_choice == R_SET_TO_CUSTOM:
+            rescaled_image[rescaled_image > target_max] =\
+                self.custom_high_truncation.value
+        return rescaled_image, mask
+            

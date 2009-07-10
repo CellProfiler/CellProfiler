@@ -82,6 +82,10 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.sum(pixels))
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image"),
                          np.sum(pixels)/100.0)
+        self.assertEqual(m.get_current_image_measurement('Intensity_MinIntensity_my_image'),
+                         np.min(pixels))
+        self.assertEqual(m.get_current_image_measurement('Intensity_MaxIntensity_my_image'),
+                         np.max(pixels))
     
     def test_01_02_image_and_mask(self):
         '''Test operation on a masked image'''
@@ -340,6 +344,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
         for expected_suffix in expected_suffixes:
             for feature, coltype in ((M.TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
                 feature_name = "%s_%s_%s"%(M.INTENSITY,feature, expected_suffix)
                 self.assertTrue(any([(column[1] == feature_name and

@@ -31,6 +31,12 @@ TOTAL_INTENSITY = 'TotalIntensity'
 '''Name for the measurement that's the mean of all measured pixels'''
 MEAN_INTENSITY = 'MeanIntensity'
 
+'''Name for the measurement that is the maximum of all measured pixels'''
+MAX_INTENSITY = 'MaxIntensity'
+
+'''Name for the measurement that is the minimum of all measured pixels'''
+MIN_INTENSITY = 'MinIntensity'
+
 '''Name for the measurement that's the number of measured pixels'''
 TOTAL_AREA = 'TotalArea'
 
@@ -220,17 +226,29 @@ The intensity will be restricted to within the objects you name here.
             pixels = pixels[image.mask]
 
         pixel_count = np.product(pixels.shape)
-        pixel_sum = np.sum(pixels)
-        pixel_mean = pixel_sum/float(pixel_count)
+        if pixel_count == 0:
+            pixel_sum = 0
+            pixel_mean = 0
+            pixel_min = 0
+            pixel_max = 0
+        else:
+            pixel_sum = np.sum(pixels)
+            pixel_mean = pixel_sum/float(pixel_count)
+            pixel_min = np.min(pixels)
+            pixel_max = np.max(pixels)
         m = workspace.measurements
         m.add_image_measurement(im.name(TOTAL_INTENSITY), pixel_sum)
         m.add_image_measurement(im.name(MEAN_INTENSITY), pixel_mean)
+        m.add_image_measurement(im.name(MAX_INTENSITY), pixel_max)
+        m.add_image_measurement(im.name(MIN_INTENSITY), pixel_min)
         m.add_image_measurement(im.name(TOTAL_AREA), pixel_count)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
                 for feature_name, value in (('Total intensity', pixel_sum),
                                             ('Mean intensity', pixel_mean),
+                                            ('Min intensity', pixel_min),
+                                            ('Max intensity', pixel_max),
                                             ('Total area', pixel_count))]
     
     def get_measurement_columns(self, pipeline):
@@ -239,6 +257,8 @@ The intensity will be restricted to within the objects you name here.
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (TOTAL_AREA, cpmeas.COLTYPE_INTEGER)):
                 columns.append((cpmeas.IMAGE, im.name(feature), coltype))
         return columns
@@ -252,14 +272,16 @@ The intensity will be restricted to within the objects you name here.
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == cpmeas.IMAGE and
             category == INTENSITY):
-            return [TOTAL_INTENSITY, MEAN_INTENSITY, TOTAL_AREA]
+            return [TOTAL_INTENSITY, MEAN_INTENSITY, MIN_INTENSITY, 
+                    MAX_INTENSITY, TOTAL_AREA]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, 
                                 category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == INTENSITY and
-            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, TOTAL_AREA]):
+            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, MIN_INTENSITY,
+                            MAX_INTENSITY, TOTAL_AREA]):
             return [ im.object_name.value for im in self.images
                     if im.wants_objects.value]
         return []
@@ -268,6 +290,7 @@ The intensity will be restricted to within the objects you name here.
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == INTENSITY and
-            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, TOTAL_AREA]):
+            measurement in [TOTAL_INTENSITY, MEAN_INTENSITY, 
+                            MIN_INTENSITY, MAX_INTENSITY, TOTAL_AREA]):
             return [im.image_name.value for im in self.images]
         return []

@@ -343,7 +343,10 @@ class ModuleView:
                 control.Items = choices
             if control.Value != v.value:
                 control.Value = v.value
-            
+        
+        if (getattr(v,'has_tooltips',False) and 
+            v.has_tooltips and v.tooltips.has_key(control.Value)):
+            control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
         return control
     
     def make_colormap_control(self, v, control_name, control):
@@ -485,7 +488,7 @@ class ModuleView:
                 min_ctrl.Value = str(v.min)
             max_ctrl = panel.FindWindowByName(max_control_name(v))
             if max_ctrl.Value != str(v.max):
-                min_ctrl.Value = str(v.max)
+                max_ctrl.Value = str(v.max)
             
         return panel
     

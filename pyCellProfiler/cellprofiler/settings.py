@@ -514,7 +514,7 @@ class FloatRange(Setting):
     
     def get_min(self):
         """The minimum value of the range"""
-        return self.value[0]
+        return float(str(self).split(',')[0])
     
     def set_min(self, value):
         self.set_value((value, self.max))
@@ -523,7 +523,7 @@ class FloatRange(Setting):
     
     def get_max(self):
         """The maximum value of the range"""
-        return self.value[1]
+        return float(str(self).split(',')[1])
     
     def set_max(self, value):
         self.set_value((self.min, value))
@@ -741,15 +741,17 @@ class Choice(Setting):
     """A setting that displays a drop-down set of choices
     
     """
-    def __init__(self,text,choices,value=None):
+    def __init__(self,text,choices,value=None,tooltips=None):
         """Initializer
         module - the module containing the setting
         text - the explanatory text for the setting
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
+        tooltips - a dictionary of choice to tooltip
         """
         super(Choice,self).__init__(text, value or choices[0])
         self.__choices = choices
+        self.__tooltips = tooltips
     
     def __internal_get_choices(self):
         """The sequence of strings that define the choices to be displayed"""
@@ -760,6 +762,17 @@ class Choice(Setting):
         return self.__choices
     
     choices = property(__internal_get_choices)
+    
+    def get_tooltips(self):
+        '''The tooltip strings for each choice''' 
+        return self.__tooltips
+    
+    tooltips = property(get_tooltips)
+    
+    @property
+    def has_tooltips(self):
+        '''Return true if the choice has tooltips installed'''
+        return self.__tooltips is not None
     
     def test_valid(self,pipeline):
         """Check to make sure that the value is among the choices"""
@@ -816,7 +829,7 @@ class Measurement(Setting):
     object when relating two classes of objects or the object name when
     aggregating object measurements over an image) or scale.
     '''
-    def __init__(self, text, object_fn, value = None):
+    def __init__(self, text, object_fn, value = "None"):
         '''Construct the measurement category subscriber setting
         
         text - Explanatory text that appears to the side of the setting

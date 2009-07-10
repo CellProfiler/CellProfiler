@@ -599,7 +599,7 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
                 %%% ChosenColormap will not exist until the eval function
                 %%% is carried out.
                 try 
-                    movie2avi(Movie(1:SetBeingAnalyzed),FileAndPathName,'colormap','compression','none');
+                    movie2avi(Movie(1:SetBeingAnalyzed),FileAndPathName,'colormap',ChosenColormap,'compression','none');
                 catch
                     error(['Image processing was canceled in the ', ModuleName, ' module because there was an error saving the movie to the hard drive.'])
                 end

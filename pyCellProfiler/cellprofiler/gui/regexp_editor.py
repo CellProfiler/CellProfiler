@@ -77,7 +77,7 @@ class RegexpDialog(wx.Dialog):
                 group_idx = list(range(len(match.groups())+1))
                 for i in group_idx:
                     for j in range(match.start(i),match.end(i)):
-                        colors[j] = color_db[i]
+                        colors[j] = color_db[i % len(color_db)]
             else:
                 text = "Regular expression did not match"
                 colors = [wx.RED for i in range(len(text))]

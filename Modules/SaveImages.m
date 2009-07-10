@@ -283,10 +283,17 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
         FileName = ImageFileName(2:end);
     else
         try
-            if ~isImageGroups
-                FileName = handles.Pipeline.(['FileList',ImageFileName]){1,SetBeingAnalyzed};
+            % If the filename is present in the FileList, pull it from
+            % handles.Pipeline
+            if isfield(handles.Pipeline,['FileList',ImageFileName])
+                if ~isImageGroups
+                    FileName = handles.Pipeline.(['FileList',ImageFileName]){1,SetBeingAnalyzed};
+                else
+                    FileName = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageFileName]){SetBeingAnalyzed};
+                end
             else
-                FileName = handles.Pipeline.GroupFileList{handles.Pipeline.CurrentImageGroupID}.(['FileList',ImageFileName]){SetBeingAnalyzed};
+                % ...otherwise, get it from handles.Measurements.Image
+                FileName = handles.Measurements.Image.(['FileName_', ImageFileName]);
             end
             if iscell(FileName), FileName = char(FileName); end
             if isempty(FileName), % Image is missing

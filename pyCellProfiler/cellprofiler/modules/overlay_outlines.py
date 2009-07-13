@@ -146,6 +146,7 @@ See also identify modules.
         for outline in self.outlines:
             result += outline.visible_settings(self.wants_color.value ==
                                                WANTS_COLOR)
+        result += [self.add_outline_button]
         return result
 
     def run(self, workspace):

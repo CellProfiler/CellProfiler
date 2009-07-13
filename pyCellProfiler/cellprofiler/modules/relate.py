@@ -145,18 +145,25 @@ class Relate(cpm.CPModule):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.parent_name.value:
-            return "Mean_%s"%self.sub_object_name.value
+            return ["Mean_%s"%self.sub_object_name.value,
+                    "Children"]
+        elif object_name == self.sub_object_name.value:
+            return ["Parent"]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (object_name == self.parent_name.value and
-            category == "Mean_%s"%self.sub_object_name.value):
-            measurements = []
-            for module in pipeline.modules():
-                c = module.get_categories(self.sub_object_name.value)
-                for category in c:
-                    m = module.get_measurements(self.sub_object_name.value,
-                                                category)
-                    measurements += ["%s_%s"%(c,x) for x in m]
-            return measurements
+        if object_name == self.parent_name.value:
+            if category == "Mean_%s"%self.sub_object_name.value:
+                measurements = []
+                for module in pipeline.modules():
+                    c = module.get_categories(self.sub_object_name.value)
+                    for category in c:
+                        m = module.get_measurements(self.sub_object_name.value,
+                                                    category)
+                        measurements += ["%s_%s"%(c,x) for x in m]
+                return measurements
+            elif category == "Children":
+                return ["%s_Count"%self.sub_object_name.value]
+        elif object_name == self.sub_object_name.value and category == "Parent":
+            return [ self.parent_name.value ]
         return []

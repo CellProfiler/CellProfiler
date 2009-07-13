@@ -117,9 +117,9 @@ class Test_CellProfilerApp(unittest.TestCase):
         self.assertTrue(v==control.Value)
         items = control.Items
         self.assertEqual(len(items),3)
-        self.assertEqual(items[0],"OrigRed")
+        self.assertEqual(items[0],"OrigBlue")
         self.assertEqual(items[1],"OrigGreen")
-        self.assertEqual(items[2],"OrigBlue")
+        self.assertEqual(items[2],"OrigRed")
     
     def test_02_01_move_up(self):
         """Move the second module up one using the pipeline controller"""

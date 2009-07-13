@@ -177,7 +177,7 @@ class PipelineController:
         for module in selected_modules:
             for setting in module.settings():
                 if self.__setting_errors.has_key(setting.key()):
-                    self.__frame.preferencesview.pop_error_text(self.__setting_errors.pop(setting.key()))                    
+                    self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))                    
             self.__pipeline.remove_module(module.module_num)
             
     def on_module_up(self,event):
@@ -219,10 +219,15 @@ class PipelineController:
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
+            self.__frame.preferences_view.on_analyze_images()
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
     
     def on_stop_running(self,event):
+        self.stop_running()
+    
+    def stop_running(self):
         self.__running_pipeline = False
+        self.__frame.preferences_view.on_stop_analysis()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""
@@ -324,7 +329,7 @@ class PipelineController:
                 self.__pipeline_measurements = self.__running_pipeline.next()
                 event.RequestMore()
             except StopIteration:
-                self.__running_pipeline = None
+                self.stop_running()
                 if self.__pipeline_measurements != None:
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None

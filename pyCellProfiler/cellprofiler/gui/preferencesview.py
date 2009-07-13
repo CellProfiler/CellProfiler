@@ -71,11 +71,14 @@ class PreferencesView:
         self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
         output_filename_help_button = wx.Button(panel,-1,'?',(0,0),(25,25))
         self.__analyze_images_button = wx.Button(panel,-1,'Analyze images')
+        self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_text,0,wx.ALL,1),
                        (self.__output_filename_edit_box,3,wx.EXPAND|wx.ALL,1),
                        (output_filename_help_button,0,wx.ALL,1),
-                       (self.__analyze_images_button,0,wx.ALL,1)])
+                       (self.__analyze_images_button,0,wx.ALL,1),
+                       (self.__stop_analysis_button, 0, wx.ALL,1)])
+        sizer.Hide(self.__stop_analysis_button)
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,lambda event: self.__on_help(event,"HelpOutputFileName.m"),output_filename_help_button)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
@@ -90,7 +93,22 @@ class PreferencesView:
         cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
 
     def attach_to_pipeline_controller(self,pipeline_controller):
-        self.__panel.Bind(wx.EVT_BUTTON,pipeline_controller.on_analyze_images, self.__analyze_images_button)
+        self.__panel.Bind(wx.EVT_BUTTON,
+                          pipeline_controller.on_analyze_images, 
+                          self.__analyze_images_button)
+        self.__panel.Bind(wx.EVT_BUTTON,
+                          pipeline_controller.on_stop_running,
+                          self.__stop_analysis_button)
+    
+    def on_analyze_images(self):
+        self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
+        self.__odds_and_ends_panel.Sizer.Show(self.__stop_analysis_button)
+        self.__odds_and_ends_panel.Layout()
+    
+    def on_stop_analysis(self):
+        self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
+        self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)
+        self.__odds_and_ends_panel.Layout()
         
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()

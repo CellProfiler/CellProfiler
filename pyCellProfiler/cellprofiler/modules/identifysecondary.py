@@ -439,6 +439,8 @@ See also Identify primary modules.
         objects_out.parent_image = image
         objname = self.objects_name.value
         workspace.object_set.add_objects(objects_out, objname)
+        if self.use_outlines.value:
+            workspace.add_outline(self.outlines_name.value, secondary_outline)
         object_count = np.max(segmented_out)
         #
         # Add the background measurements if made

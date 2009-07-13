@@ -103,6 +103,8 @@ class TestIdentifySecondary(unittest.TestCase):
         module.primary_objects.value="primary"
         module.objects_name.value="my_objects"
         module.image_name.value = "my_image"
+        module.use_outlines.value = False
+        module.outlines_name.value = "my_outlines"
         module.method = cpmi2.M_PROPAGATION
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -118,6 +120,7 @@ class TestIdentifySecondary(unittest.TestCase):
             features = m.get_feature_names(object_name)
             self.assertEqual(len(ocolumns), len(features))
             self.assertTrue(all([column[1] in features for column in ocolumns]))
+        self.assertTrue("my_outlines" not in workspace.get_outline_names())
     
     def test_02_02_one_object_propagation(self):
         p = cpp.Pipeline()
@@ -569,3 +572,44 @@ class TestIdentifySecondary(unittest.TestCase):
         expected[:,10:] = 2
         self.assertTrue(np.all(objects_out.segmented==expected))
     
+    def test_06_01_save_outlines(self):
+        '''Test the "save_outlines" feature'''
+        p = cpp.Pipeline()
+        o_s = cpo.ObjectSet()
+        i_l = cpi.ImageSetList()
+        img = np.zeros((10,10))
+        img[2:7,2:7] = .5
+        image = cpi.Image(img)
+        objects = cpo.Objects()
+        labels = np.zeros((10,10),int)
+        labels[3:6,3:6] = 1
+        objects.unedited_segmented = labels 
+        objects.small_removed_segmented = labels
+        objects.segmented = labels
+        o_s.add_objects(objects, "primary")
+        i_s = i_l.get_image_set(0)
+        i_s.add("my_image",image)
+        m = cpm.Measurements()
+        module = cpmi2.IdentifySecondary()
+        module.primary_objects.value="primary"
+        module.objects_name.value="my_objects"
+        module.image_name.value = "my_image"
+        module.use_outlines.value = True
+        module.outlines_name.value = "my_outlines"
+        module.method = cpmi2.M_WATERSHED_I
+        workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.run(workspace)
+        self.assertTrue("my_objects" in m.get_object_names())
+        self.assertTrue("Image" in m.get_object_names())
+        self.assertTrue("Count_my_objects" in m.get_feature_names("Image"))
+        counts = m.get_current_measurement("Image", "Count_my_objects")
+        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(counts[0],1)
+        objects_out = o_s.get_objects("my_objects")
+        outlines_out = workspace.get_outline("my_outlines")
+        expected = np.zeros((10,10),int)
+        expected[2:7,2:7] = 1
+        outlines = expected == 1
+        outlines[3:6,3:6] = False
+        self.assertTrue(np.all(objects_out.segmented==expected))
+        self.assertTrue(np.all(outlines == outlines_out))

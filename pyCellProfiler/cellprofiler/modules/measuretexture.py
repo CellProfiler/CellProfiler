@@ -303,6 +303,25 @@ class MeasureTexture(cpm.CPModule):
                                            measurement)) > 0:
             return [x.scale.value for x in self.scale_groups]
         return []
+    
+    def get_measurement_columns(self, pipeline):
+        '''Get column names output for each measurement.'''
+        cols = []
+        for feature in F_HARALICK+[F_GABOR]:
+            for im in self.image_groups:
+                for sg in self.scale_groups:
+                    cols += [('Image',
+                              '%s_%s_%s_%d'%(TEXTURE, feature, im.image_name.value, sg.scale.value),
+                              'float')]
+                   
+        for ob in self.object_groups:
+            for feature in F_HARALICK+[F_GABOR]:
+                for im in self.image_groups:
+                    for sg in self.scale_groups:
+                        cols += [(ob.object_name.value,
+                                  "%s_%s_%s_%d"%(TEXTURE, feature, im.image_name.value, sg.scale.value),
+                                  'float')]
+        return cols
 
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""

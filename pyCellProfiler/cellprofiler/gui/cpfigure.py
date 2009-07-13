@@ -39,9 +39,16 @@ def create_or_find(parent=None, id=-1, title="",
 MENU_FILE_SAVE = wx.NewId()
 MENU_ZOOM_IN = wx.NewId()
 MENU_ZOOM_OUT = wx.NewId()
+MENU_TOOLS_SHOW_PIXEL_DATA = wx.NewId()
 
-MODE_NONE = 0   # mouse tool mode - do nothing
-MODE_ZOOM = 1   # mouse tool mode - zoom in
+'''mouse tool mode - do nothing'''
+MODE_NONE = 0
+
+'''mouse tool mode - zoom in'''   
+MODE_ZOOM = 1
+
+'''mouse tool mode - show pixel data'''
+MODE_SHOW_PIXEL_DATA = 2
 
 class CPFigureFrame(wx.Frame):
     """A wx.Frame with a figure inside"""
@@ -64,13 +71,15 @@ class CPFigureFrame(wx.Frame):
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
         self.mouse_mode = MODE_NONE
         self.zoom_stack = []
+        self.length_arrow = None
         self.colorbar = {}
         self.mouse_down = None
         sizer = wx.BoxSizer()
-        self.figure = figure= matplotlib.figure.Figure()
-        self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure) 
         self.SetSizer(sizer)
-        sizer.Add(self.panel,1,wx.EXPAND)
+        self.figure = figure= matplotlib.figure.Figure()
+        self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure)
+        sizer.Add(self.panel,1,wx.EXPAND) 
+        self.status_bar = self.CreateStatusBar()
         self.Bind(wx.EVT_PAINT,self.on_paint)
         if subplots:
             self.subplots = numpy.zeros(subplots,dtype=object)
@@ -98,17 +107,25 @@ class CPFigureFrame(wx.Frame):
         wx.EVT_MENU(self,MENU_ZOOM_OUT,self.on_zoom_out)
         self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
         self.MenuBar.Append(self.__menu_zoom, "&Zoom")
+        
+        self.__menu_tools = wx.Menu()
+        self.__menu_item_show_pixel_data = \
+            self.__menu_tools.AppendCheckItem(MENU_TOOLS_SHOW_PIXEL_DATA,
+                                              "Show &pixel data")
+        self.MenuBar.Append(self.__menu_tools, "&Tools")
+        wx.EVT_MENU(self, MENU_TOOLS_SHOW_PIXEL_DATA, self.on_show_pixel_data)
     
     def on_paint(self, event):
         dc = wx.PaintDC(self)
         self.panel.draw(dc)
     
     def on_zoom_in(self,event):
-        if self.mouse_mode == MODE_NONE:
+        if self.__menu_item_zoom_in.IsChecked():
             self.mouse_mode = MODE_ZOOM
-        else:
+            self.__menu_item_show_pixel_data.Check(False)
+        elif self.mouse_mode == MODE_ZOOM:
             self.mouse_mode = MODE_NONE
-            
+
     def on_zoom_out(self, event):
         if self.subplots != None and len(self.zoom_stack) > 0:
             old_extents = self.zoom_stack.pop()
@@ -119,25 +136,59 @@ class CPFigureFrame(wx.Frame):
         self.__menu_item_zoom_out.Enable(len(self.zoom_stack) > 0)
         self.Refresh()
     
+    def on_show_pixel_data(self, event):
+        if self.__menu_item_show_pixel_data.IsChecked():
+            self.mouse_mode = MODE_SHOW_PIXEL_DATA
+            self.__menu_item_zoom_in.Check(False)
+            self.Layout()
+        elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+            self.mouse_mode = MODE_NONE
+            
     def on_button_press(self, event):
         if event.inaxes in self.subplots.flatten():
             self.mouse_down = (event.xdata,event.ydata)
-            for x in range(self.subplots.shape[0]):
-                for y in range(self.subplots.shape[1]):
-                    plot = self.subplots[x,y]
-                    if plot:
-                        self.zoom_rects[x,y] = matplotlib.patches.Rectangle(self.mouse_down, 1,1,fill=False,edgecolor='red',linewidth=1,linestyle='solid')
-                        plot.add_patch(self.zoom_rects[x,y])
-            self.figure.canvas.draw()
-            self.Refresh()
-            
+            if self.mouse_mode == MODE_ZOOM:
+                self.on_zoom_mouse_down(event)
+            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+                self.on_show_pixel_data_mouse_down(event)
+    
+    def on_zoom_mouse_down(self, event):
+        for x in range(self.subplots.shape[0]):
+            for y in range(self.subplots.shape[1]):
+                plot = self.subplots[x,y]
+                if plot:
+                    self.zoom_rects[x,y] = \
+                        matplotlib.patches.Rectangle(self.mouse_down, 
+                                                     1, 1,
+                                                     fill=False,
+                                                     edgecolor='red',
+                                                     linewidth=1,
+                                                     linestyle='solid')
+                    plot.add_patch(self.zoom_rects[x,y])
+        self.figure.canvas.draw()
+        self.Refresh()
+    
+    def on_show_pixel_data_mouse_down(self, event):
+        pass
     
     def on_mouse_move(self, event):
-        if event.inaxes in self.subplots.flatten() and self.mouse_down:
+        if self.mouse_down is None:
+            x0 = event.xdata
+            x1 = event.xdata
+            y0 = event.ydata
+            y1 = event.ydata
+        else:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
+        if self.mouse_mode == MODE_ZOOM:
+            self.on_mouse_move_zoom(event, x0, y0, x1, y1)
+        elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+            self.on_mouse_move_show_pixel_data(event, x0, y0, x1, y1)
+    
+    def on_mouse_move_zoom(self, event, x0, y0, x1, y1):
+        if event.inaxes in self.subplots.flatten() and self.mouse_down:
             for zoom_rect in self.zoom_rects.flatten():
                 if zoom_rect:
                     zoom_rect.set_x(x0)
@@ -147,13 +198,68 @@ class CPFigureFrame(wx.Frame):
             self.figure.canvas.draw()
             self.Refresh()
     
+    def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
+        if event.xdata is None or event.ydata is None:
+            return
+        xi = int(event.xdata+.5)
+        yi = int(event.ydata+.5)
+        fields = ["X: %d"%xi, "Y: %d"%yi]
+        if event.inaxes:
+            images = event.inaxes.get_images()
+            if len(images) == 1:
+                image = images[0]
+                array = image.get_array()
+                if array.ndim == 2:
+                    fields += ["Intensity: %.4f"%array[yi,xi]]
+                elif array.ndim == 3:
+                    fields += ["Red: %.4f"%array[yi,xi,0],
+                               "Green: %.4f"%array[yi,xi,1],
+                               "Blue: %.4f"%array[yi,xi,2]]
+        if self.mouse_down is not None:
+            length = numpy.sqrt((x0-x1)**2 +(y0-y1)**2)
+            fields.append("Length: %.1f"%length)
+            if self.length_arrow is not None:
+                self.length_arrow.remove()
+            xinterval = event.inaxes.xaxis.get_view_interval()
+            yinterval = event.inaxes.yaxis.get_view_interval()
+            diagonal = numpy.sqrt((xinterval[1]-xinterval[0])**2 +
+                                  (yinterval[1]-yinterval[0])**2)
+            mutation_scale = min(int(length*100/diagonal), 20) 
+            self.length_arrow =\
+                matplotlib.patches.FancyArrowPatch((self.mouse_down[0],
+                                                    self.mouse_down[1]),
+                                                   (event.xdata,
+                                                    event.ydata),
+                                                   edgecolor='red',
+                                                   arrowstyle='<->',
+                                                   mutation_scale=mutation_scale)
+            try:
+                event.inaxes.add_patch(self.length_arrow)
+            except:
+                print "Failed to add arrow from %f,%f to %f,%f"%(x0,y0,x1,y1)
+                self.length_arrow = None
+            self.figure.canvas.draw()
+            self.Refresh()
+        self.status_bar.SetFields(fields)
+    
     def on_button_release(self,event):
         if event.inaxes in self.subplots.flatten() and self.mouse_down:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
-            self.mouse_down = None
+            if self.mouse_mode == MODE_ZOOM:
+                self.on_zoom_done( event, x0, y0, x1, y1)
+            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+                self.on_show_pixel_data_done(event, x0, y0, x1, y1)
+        elif self.mouse_down:
+            if self.mouse_mode == MODE_ZOOM:
+                self.on_zoom_canceled(event)
+            elif self.mouse_mode == MODE_SHOW_PIXEL_DATA:
+                self.on_show_pixel_data_canceled(event)
+        self.mouse_down = None
+    
+    def on_zoom_done(self, event, x0, y0, x1, y1):
             old_limits = None
             for x in range(self.subplots.shape[0]):
                 for y in range(self.subplots.shape[1]):
@@ -173,16 +279,26 @@ class CPFigureFrame(wx.Frame):
                             self.__menu_item_zoom_out.Enable(True)
             self.figure.canvas.draw()
             self.Refresh()
-        elif self.mouse_down:
-            # cancel if released outside of axes
-            for x in range(self.subplots.shape[0]):
-                for y in range(self.subplots.shape[1]):
-                    if self.zoom_rects[x,y]:
-                        self.zoom_rects[x,y].remove()
-                        self.zoom_rects[x,y] = 0
-            self.mouse_down = None
-            self.figure.canvas.draw()
-            self.Refresh()
+    
+    def on_zoom_canceled(self, event):
+        # cancel if released outside of axes
+        for x in range(self.subplots.shape[0]):
+            for y in range(self.subplots.shape[1]):
+                if self.zoom_rects[x,y]:
+                    self.zoom_rects[x,y].remove()
+                    self.zoom_rects[x,y] = 0
+        self.figure.canvas.draw()
+        self.Refresh()
+    
+    def on_show_pixel_data_done(self, event, x0, y0, x1, y1):
+        self.on_show_pixel_data_canceled(event)
+    
+    def on_show_pixel_data_canceled(self, event):
+        if self.length_arrow is not None:
+            self.length_arrow.remove()
+            self.length_arrow = None
+        self.figure.canvas.draw()
+        self.Refresh()
     
     def subplot(self,x,y):
         """Return the indexed subplot

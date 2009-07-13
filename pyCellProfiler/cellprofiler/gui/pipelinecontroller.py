@@ -112,6 +112,7 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
+            cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
     
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
@@ -140,9 +141,13 @@ class PipelineController:
         
     def __on_save_pipeline(self,event):
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+        path = cellprofiler.preferences.get_current_pipeline_path()
+        if path is not None:
+            dlg.Path = path
         if dlg.ShowModal() == wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.__pipeline.save(pathname)
+            cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

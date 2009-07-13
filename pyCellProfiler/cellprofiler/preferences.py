@@ -271,4 +271,12 @@ def get_default_colormap():
 
 def set_default_colormap(colormap):
     get_config().Write(COLORMAP, colormap)
-    
+
+__current_pipeline_path = None
+def get_current_pipeline_path():
+    global __current_pipeline_path
+    return __current_pipeline_path
+
+def set_current_pipeline_path(path):
+    global __current_pipeline_path
+    __current_pipeline_path = path

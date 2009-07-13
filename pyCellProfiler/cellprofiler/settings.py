@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import matplotlib.cm
+import numpy as np
 import re
 import uuid
 
@@ -622,6 +623,8 @@ class NameSubscriber(Setting):
             module_choices = module.get_name_providers(self.group)
             for setting in module.visible_settings():
                 if setting.key() == self.key():
+                    choices = np.unique(choices).tolist()
+                    choices.sort()
                     return choices
                 if (isinstance(setting, NameProvider) and 
                     setting != DO_NOT_USE and

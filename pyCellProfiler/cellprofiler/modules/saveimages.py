@@ -317,6 +317,7 @@ class SaveImages(cpm.CPModule):
                 result.append(self.pathname)
             if self.file_format != FF_MAT:
                 result.append(self.bit_depth)
+            result.append(self.overwrite_check)
             result.append(self.when_to_save)
             if (self.save_image_or_figure == IF_IMAGE and
                 self.file_format != FF_MAT):

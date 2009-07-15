@@ -178,11 +178,8 @@ elseif strcmpi('Automatic',ThresholdStr(1:9))
     Threshold = (Threshold_scaled .* ac_range) + ac_min;
 end
 
-Threshold(Threshold < 1./(2^12)) = 1./(2^12);
-Threshold(Threshold > 1) = 1;
-
-ac = ac - Threshold;
 ac(ac < Threshold) = Threshold;
+ac = ac - Threshold;
 
 bw = false(size(im));
 if any(ac(:))

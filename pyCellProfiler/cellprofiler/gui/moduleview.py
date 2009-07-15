@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 import matplotlib.cm
 import numpy as np
+import os
 import wx
 import wx.grid
 import sys
@@ -434,8 +435,21 @@ class ModuleView:
                 self.__on_cell_change(event, setting,control)
                 
             def on_button_pressed(event, setting = v, control = text_ctrl):
-                new_value = edit_regexp(panel, control.Value, 
-                                        "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif")
+                #
+                # Find a file in the image directory
+                #
+                file = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
+                try:
+                    path = cellprofiler.preferences.get_default_image_directory()
+                    filenames = [x for x in os.listdir(path)
+                                 if x.find('.') != -1 and
+                                 os.path.splitext(x)[1].upper() in
+                                 ('.TIF','.JPG','.PNG','.BMP')]
+                    if len(filenames):
+                        file = filenames[0]
+                except:
+                    pass
+                new_value = edit_regexp(panel, control.Value, file)
                 if new_value:
                     control.Value = new_value
                     self.__on_cell_change(event, setting,control)

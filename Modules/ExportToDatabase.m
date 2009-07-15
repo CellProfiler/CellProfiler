@@ -254,7 +254,7 @@ StatisticsCalculated{2} = char(handles.Settings.VariableValues{CurrentModuleNum,
 StatisticsCalculated{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
-%textVAR09 = Which objects do you want to export? Use "All objects" in this first box to export all objects, or select the objects you want to export in this and the following boxes. Use "Do not use" to ignore. 
+%textVAR09 = Which objects do you want to export? Use "All objects" in this first box to export all objects (including 'Image'), or select the objects you want to export in this and the following boxes. Use "Do not use" to ignore. 
 %infotypeVAR09 = objectgroup
 %choiceVAR09 = All objects
 %choiceVAR09 = Image

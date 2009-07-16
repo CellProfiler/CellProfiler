@@ -263,4 +263,12 @@ function f = lapofgau(im, s)
 sigma = (s-1)/3;
 op = fspecial('log',s,sigma); 
 op = op - sum(op(:))/numel(op); % make the op to sum to zero
+
+%% Pad image to fix border artifact
+padsize = ceil(s./2);
+im = padarray(im,[padsize padsize],'replicate');
+
 f = filter2(op,im);
+
+%% Crop pad
+f = f(padsize+1:end-padsize,padsize+1:end-padsize);

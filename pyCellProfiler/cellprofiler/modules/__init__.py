@@ -30,6 +30,7 @@ from identifytertiarysubregion import IdentifyTertiarySubregion
 from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
 from loadtext import LoadText
+from makeprojection import MakeProjection
 from maskimage import MaskImage
 from measurecorrelation import MeasureCorrelation
 from measureimageareaoccupied import MeasureImageAreaOccupied
@@ -66,6 +67,7 @@ def get_module_classes():
             LoadImages,
             LoadSingleImage,
             LoadText,
+            MakeProjection,
             MaskImage,
             MeasureCorrelation,
             MeasureImageAreaOccupied,
@@ -105,6 +107,7 @@ def get_module_substitutions():
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,
             "LoadText":LoadText,
+            "MakeProjection":MakeProjection,
             "MaskImage": MaskImage,
             "MeasureCorrelation": MeasureCorrelation,
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,

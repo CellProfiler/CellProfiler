@@ -310,7 +310,8 @@ def GetCPUTime(batch, run):
         text_file = open(RunTextFilePath(batch, run),"r")
         text = text_file.read()
         text_file.close()
-        match = re.compile("\s+CPU time\s+:\s+([0-9.]+)\s+sec").search(text)
+        match = re.compile(".*\s+CPU time\s+:\s+([0-9.]+)\s+sec",
+                           re.DOTALL).search(text)
         return float(match.group(1))
     except:
         return

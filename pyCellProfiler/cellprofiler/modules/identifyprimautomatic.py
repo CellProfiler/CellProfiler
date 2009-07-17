@@ -658,14 +658,24 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                               labeled_image,
                                               object_count,global_threshold)
         # Filter out small and large objects
+        size_excluded_labeled_image = labeled_image.copy()
         labeled_image, unedited_labels, small_removed_labels = \
             self.filter_on_size(labeled_image,object_count)
+        size_excluded_labeled_image[labeled_image > 0] = 0
+        
         # Filter out objects touching the border or mask
+        border_excluded_labeled_image = labeled_image.copy()
         labeled_image = self.filter_on_border(image, labeled_image)
+        border_excluded_labeled_image[labeled_image > 0] = 0
+        
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
+        
         # Make an outline image
         outline_image = cellprofiler.cpmath.outline.outline(labeled_image)
+        outline_size_excluded_image = cellprofiler.cpmath.outline.outline(size_excluded_labeled_image)
+        outline_border_excluded_image = cellprofiler.cpmath.outline.outline(border_excluded_labeled_image)
+        
         if workspace.frame:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])
@@ -695,6 +705,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                          image,
                          labeled_image,
                          outline_image,
+                         outline_size_excluded_image,
+                         outline_border_excluded_image,
                          statistics,
                          workspace.image_set.number+1)
         # Add image measurements
@@ -1000,8 +1012,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     
-    def display(self, frame, image, labeled_image, outline_image,statistics,
-                image_set_number):
+    def display(self, frame, image, labeled_image, outline_image, outline_size_excluded_image, outline_border_excluded_image, statistics, image_set_number):
         """Display the image and labeling"""
         window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
         my_frame=cpf.create_or_find(frame, title="Identify primary automatic", 
@@ -1020,6 +1031,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                        self.object_name.value)
 
         if image.pixel_data.ndim == 2:
+            # Outline the size-excluded pixels in red
             outline_img = np.ndarray(shape=(image.pixel_data.shape[0],
                                                image.pixel_data.shape[1],3))
             outline_img[:,:,0] = image.pixel_data 
@@ -1027,9 +1039,21 @@ objects (e.g. SmallRemovedSegmented Nuclei).
             outline_img[:,:,2] = image.pixel_data
         else:
             outline_img = image.pixel_data.copy()
-        outline_img[outline_image != 0,0]=1
-        outline_img[outline_image != 0,1]=1 
-        outline_img[outline_image != 0,2]=0
+        
+        # Outline the accepted objects pixels in green
+        outline_img[outline_image != 0,0] = 0
+        outline_img[outline_image != 0,1] = 1 
+        outline_img[outline_image != 0,2] = 0
+        
+        # Outline the size-excluded pixels in red
+        outline_img[outline_size_excluded_image != 0,0] = 1
+        outline_img[outline_size_excluded_image != 0,1] = 0 
+        outline_img[outline_size_excluded_image != 0,2] = 0
+        
+        # Outline the border-excluded pixels in yellow
+        outline_img[outline_border_excluded_image != 0,0] = 1
+        outline_img[outline_border_excluded_image != 0,1] = 1 
+        outline_img[outline_border_excluded_image != 0,2] = 0
         
         title = "%s outlines"%(self.object_name.value) 
         my_frame.subplot_imshow(0,1,outline_img, title)

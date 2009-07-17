@@ -499,11 +499,23 @@ end
 % Changes to Align
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(CurrentModuleName, 'Align')
-    if SavedVarRevNum == 4      % Relate got one new arguments at the end.
+    if SavedVarRevNum == 4      % Align got one new arguments at the end.
         Settings.VariableValues{ModuleNum-Skipped,12} = 'No';
         Settings.VariableInfoTypes{ModuleNum-Skipped,12} = [];
         Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
         SavedVarRevNum = 5;
+        IsModuleModified = true;
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Changes to PauseCellProfiler
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(CurrentModuleName, 'PauseCellProfiler')
+    if SavedVarRevNum == 1      % PauseCellProfiler got one new argument at the end.
+        Settings.VariableValues{ModuleNum-Skipped,2} = 'Pause';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 1;
+        SavedVarRevNum = 2;
         IsModuleModified = true;
     end
 end

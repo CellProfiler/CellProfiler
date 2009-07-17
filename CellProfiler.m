@@ -4486,6 +4486,9 @@ else
                             end
                             %%% This is used to check for errors and allow restart.
                             CanMoveToNextModule = false;
+                            
+                            %% Initialize here, since it should only be set in PauseCellProfiler.m
+                            handles.Settings.SkipToModule = 0; 
 
                             %%% Updates the timer with the current module.
                             TimerData = get(timer_handle,'UserData');
@@ -4643,7 +4646,12 @@ else
 
                     %%% if we can move to the next module, do so
                     if CanMoveToNextModule,
-                        SlotNumber = SlotNumber + 1;
+                        if isfield(handles.Settings,'SkipToModule') && handles.Settings.SkipToModule ~= 0
+%                             SlotNumber = handles.Settings.SkipToModule;
+                            SlotNumber = handles.Current.NumberOfModules + 1;
+                        else
+                            SlotNumber = SlotNumber + 1;
+                        end
                     end
                 end %%% ends loop over slot number
 

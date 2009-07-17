@@ -943,8 +943,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).
                                                    labeled_image,
                                                    range(0,object_count+1))
             areas = np.array(areas,dtype=int)
-            min_allowed_area = np.pi * self.size_range.min * self.size_range.min
-            max_allowed_area = np.pi * self.size_range.max * self.size_range.max
+            min_allowed_area = np.pi * (self.size_range.min * self.size_range.min)/4
+            max_allowed_area = np.pi * (self.size_range.max * self.size_range.max)/4
             # area_image has the area of the object at every pixel within the object
             area_image = areas[labeled_image]
             labeled_image[area_image < min_allowed_area] = 0

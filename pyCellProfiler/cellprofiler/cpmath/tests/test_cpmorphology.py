@@ -22,11 +22,17 @@ import scipy.io.matlab
 import cellprofiler.cpmath.cpmorphology as morph
 
 class TestFillLabeledHoles(unittest.TestCase):
-    def test_01_zeros(self):
+    def test_01_00_zeros(self):
         """A label matrix of all zeros has no hole"""
         image = np.zeros((10,10),dtype=int)
         output = morph.fill_labeled_holes(image)
         self.assertTrue(np.all(output==0))
+    
+    def test_01_01_ones(self):
+        """Regression test - an image of all ones"""
+        image = np.ones((10,10),dtype=int)
+        output = morph.fill_labeled_holes(image)
+        self.assertTrue(np.all(output==1))
 
     def test_02_object_without_holes(self):
         """The label matrix of a single object without holes has no hole"""

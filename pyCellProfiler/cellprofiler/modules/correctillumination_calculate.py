@@ -27,6 +27,7 @@ from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
 from cellprofiler.cpmath.smooth import fit_polynomial
 from cellprofiler.cpmath.filter import median_filter
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
 IC_REGULAR         = "Regular"
 IC_BACKGROUND      = "Background"
@@ -451,8 +452,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                                           self.block_size.value))
             if orig_image.has_mask:
                 labels[np.logical_not(orig_image.mask)] = -1
-            minima = scind.minimum(pixels, labels, indexes)
-            minima = np.array(minima)
+            minima = fix(scind.minimum(pixels, labels, indexes))
             min_block = np.zeros(pixels.shape)
             min_block[labels != -1] = minima[labels[labels != -1]]
             avg_image = cpi.Image(min_block, parent_image = orig_image)

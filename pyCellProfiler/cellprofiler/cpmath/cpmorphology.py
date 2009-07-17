@@ -1209,11 +1209,16 @@ def block(shape, block_shape):
     minima = scind.minimum(image, labels, indexes)
     img2 = image - minima[labels]
     """
+    shape = np.array(shape)
+    block_shape = np.array(block_shape)
     i,j = np.mgrid[0:shape[0],0:shape[1]]
-    i = (i / block_shape[0]).astype(int)
-    j = (j / block_shape[1]).astype(int)
-    labels = i * block_shape[0] + j
-    indexes = np.array(range(np.product(block_shape)))
+    ijmax = (shape.astype(float)/block_shape.astype(float)).astype(int)
+    ijmax = np.maximum(ijmax, 1)
+    multiplier = ijmax.astype(float) / shape.astype(float)
+    i = (i * multiplier[0]).astype(int)
+    j = (j * multiplier[1]).astype(int)
+    labels = i * ijmax[1] + j
+    indexes = np.array(range(np.product(ijmax)))
     return labels, indexes
 
 def white_tophat(image, radius=None, mask=None):

@@ -2182,4 +2182,33 @@ class TestTableLookup(unittest.TestCase):
             result = morph.table_lookup(im[1:-1,1:-1],table,False)
             self.assertTrue(np.all(result==expected))
          
-                        
+class TestBlock(unittest.TestCase):
+    def test_01_01_one_block(self):
+        labels, indexes = morph.block((10,10),(10,10))
+        self.assertEqual(len(indexes),1)
+        self.assertEqual(indexes[0],0)
+        self.assertTrue(np.all(labels==0))
+        self.assertEqual(labels.shape,(10,10))
+    
+    def test_01_02_six_blocks(self):
+        labels, indexes = morph.block((10,15),(5,5))
+        self.assertEqual(len(indexes),6)
+        self.assertEqual(labels.shape, (10,15))
+        i,j = np.mgrid[0:10,0:15]
+        self.assertTrue(np.all(labels == (i / 5).astype(int)*3 + (j/5).astype(int)))
+
+    def test_01_03_big_blocks(self):
+        labels, indexes = morph.block((10,10),(20,20))
+        self.assertEqual(len(indexes),1)
+        self.assertEqual(indexes[0],0)
+        self.assertTrue(np.all(labels==0))
+        self.assertEqual(labels.shape,(10,10))
+
+    def test_01_04_small_blocks(self):
+        labels, indexes = morph.block((100,100),(2,4))
+        self.assertEqual(len(indexes), 1250)
+        i,j = np.mgrid[0:100,0:100]
+        i = (i / 2).astype(int)
+        j = (j / 4).astype(int)
+        expected = i * 25 + j
+        self.assertTrue(np.all(labels == expected))

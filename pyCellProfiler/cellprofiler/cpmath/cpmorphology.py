@@ -52,6 +52,8 @@ def fill_labeled_holes(image):
     global four_connect
     negative_mask = (image == 0)
     labeled_holes, nholes = scind.label(negative_mask,four_connect)
+    if nholes == 0:
+        return image
     high = image.max()+1
     image_with_high_holes = image.copy()
     image_with_high_holes[labeled_holes > 0] = high

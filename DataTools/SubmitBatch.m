@@ -61,7 +61,7 @@ function handles=SubmitBatch(handles)
                     write_data,info.BatchSize,info.Timeout,...
                     info.CPCluster, info.Project, info.MemoryLimit);
         result=urlread(url);
-        web(strcat('text://',result));
+        web(strcat('text://',result),'-browser');
     end;
 end
 

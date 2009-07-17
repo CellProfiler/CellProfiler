@@ -27,6 +27,7 @@ from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
+from imagemath import ImageMath
 from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
 from loadtext import LoadText
@@ -64,6 +65,7 @@ def get_module_classes():
             IdentifyPrimAutomatic,
             IdentifySecondary,
             IdentifyTertiarySubregion,
+            ImageMath,
             LoadImages,
             LoadSingleImage,
             LoadText,
@@ -103,6 +105,7 @@ def get_module_substitutions():
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
+            "ImageMath":ImageMath,
             "KeepLargestObject":FilterByObjectMeasurement,
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,

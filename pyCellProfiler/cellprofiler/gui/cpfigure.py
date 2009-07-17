@@ -33,6 +33,13 @@ def create_or_find(parent=None, id=-1, title="",
         if window:
             if len(title) and title != window.Title:
                 window.Title = title
+            if (subplots is not None and 
+                (subplots[0] != window.subplots.shape[0] or
+                 subplots[1] != window.subplots.shape[1])):
+                window.figure.clf()
+                window.subplots = numpy.zeros(subplots,dtype=object)
+                window.zoom_rects = numpy.zeros(subplots,dtype=object)
+                
             return window
     return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
 

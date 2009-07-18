@@ -431,43 +431,308 @@ objects (e.g. SmallRemovedSegmented Nuclei).
     category =  "Object Processing"
     
     def create_settings(self):
-        self.set_module_name("IdentifyPrimAutomatic")
-        self.image_name = cps.ImageNameSubscriber('What did you call the images you want to process?')
-        self.object_name = cps.ObjectNameProvider('What do you want to call the objects identified by this module?', 'Nuclei')
-        self.size_range = cps.IntegerRange('Typical diameter of objects, in pixel units (Min,Max):', 
-                                           (10,40),minval=1)
-        self.exclude_size = cps.Binary('Discard objects outside the diameter range?', True)
-        self.merge_objects = cps.Binary('Try to merge too small objects with nearby larger objects?', False)
-        self.exclude_border_objects = cps.Binary('Discard objects touching the border of the image?', True)
-        self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
-                                           cpthresh.TM_METHODS)
-        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1)
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1)
-        self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
-                                                ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'])
-        self.unclump_method = cps.Choice('Method to distinguish clumped objects (see help for details):', 
-                                          [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE])
-        self.watershed_method = cps.Choice('Method to draw dividing lines between clumped objects (see help for details):', 
-                                           [WA_INTENSITY,WA_DISTANCE,WA_NONE])
-        self.automatic_smoothing = cps.Binary('Automatically calculate size of smoothing filter when separating clumped objects',True)
-        self.smoothing_filter_size = cps.Integer('Size of smoothing filter, in pixel units (if you are distinguishing between clumped objects). Enter 0 for low resolution images with small objects (~< 5 pixel diameter) to prevent any image smoothing.', 10)
-        self.automatic_suppression = cps.Binary('Automatically calculate minimum size of local maxima for clumped objects',True)
-        self.maxima_suppression_size = cps.Integer( 'Suppress local maxima within this distance, (a positive integer, in pixel units) (if you are distinguishing between clumped objects)', 7)
-        self.low_res_maxima = cps.Binary('Speed up by using lower-resolution image to find local maxima?  (if you are distinguishing between clumped objects)', True)
-        self.should_save_outlines = cps.Binary('Do you want to save outlines?',False)
-        self.save_outlines = cps.OutlineNameProvider('What do you want to call the outlines of the identified objects?')
-        self.fill_holes = cps.Binary('Do you want to fill holes in identified objects?', True)
-        self.test_mode = cps.Binary('Do you want to run in test mode where each method for distinguishing clumped objects is compared?', False)
-        self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
-        self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
-        self.wants_automatic_log_threshold = cps.Binary('Do you want to calculate the Laplacian of Gaussian threshold automatically?',True)
-        self.manual_log_threshold = cps.Float('What is the Laplacian of Gaussian threshold?',.5, 0, 1)
-        self.two_class_otsu = cps.Choice('Does your image have two classes of intensity value or three?',
-                                         [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS])
-        self.use_weighted_variance = cps.Choice('Do you want to minimize the weighted variance or the entropy?',
-                                                [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
-        self.assign_middle_to_foreground = cps.Choice("Assign pixels in the middle intensity class to the foreground or the background?",
-                                                      [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
+        self.image_name = cps.ImageNameSubscriber(
+            "What did you call the images you want to process?")
+        self.object_name = cps.ObjectNameProvider(
+            "What do you want to call the objects identified by this module?",
+            "Nuclei")
+        self.size_range = cps.IntegerRange(
+            "Typical diameter of objects, in pixel units (Min,Max):", 
+            (10,40), minval=1, doc="""\
+This is a very important parameter which tells the module what you are
+looking for. Most options within this module use this estimate of the
+size range of the objects in order to distinguish them from noise in the
+image. For example, for some of the identification methods, the smoothing
+applied to the image is based on the minimum size of the objects. A comma
+should be placed between the minimum and the maximum diameters. The units
+here are pixels so that it is easy to zoom in on objects and determine
+typical diameters. To measure distances easily, use the CellProfiler
+Image Tool, 'ShowOrHidePixelData', in any open window. Once this tool is
+activated, you can draw a line across objects in your image and the
+length of the line will be shown in pixel units. Note that for non-round
+objects, the diameter here is actually the 'equivalent diameter', meaning
+the diameter of a circle with the same area as the object.""")
+        self.exclude_size = cps.Binary(
+            "Discard objects outside the diameter range?",
+            True, doc="""\
+You can choose to discard objects outside the specified range of
+diameters. This allows you to exclude small objects (e.g. dust, noise,
+and debris) or large objects (e.g. clumps) if desired. See also the
+FilterByObjectMeasurement module to further discard objects based on some
+other measurement. During processing, the window for this module will
+show that objects outlined in green were acceptable, objects outlined in
+red were discarded based on their size, and objects outlined in yellow
+were discarded because they touch the border.""")
+        self.merge_objects = cps.Binary(
+            "Try to merge too small objects with nearby larger objects?", 
+            False, doc="""\
+Use caution when choosing 'Yes' for this option! This is an experimental
+functionality that takes objects that were discarded because they were
+smaller than the specified Minimum diameter and tries to merge them with
+other surrounding objects. This is helpful in cases when an object was
+incorrectly split into two objects, one of which is actually just a tiny
+piece of the larger object. However, this could be dangerous if you have
+selected poor settings which produce many tiny objects - the module
+will take a very long time and you will not realize that it is because
+the tiny objects are being merged. It is therefore a good idea to run the
+module first without merging objects to make sure the settings are
+reasonably effective.""")
+        self.exclude_border_objects = cps.Binary(
+            "Discard objects touching the border of the image?", 
+            True, doc="""\
+You can choose to discard objects that touch the border of the image.
+This is useful in cases when you do not want to make measurements of
+objects that are not fully within the field of view (because, for
+example, the area would not be accurate).""")
+        self.threshold_method = cps.Choice(
+            '''Select an automatic thresholding method or choose "Manual"
+to enter a threshold manually.  To choose a binary image, select
+"Binary image".  Choosing "All" will use the Otsu Global method to
+calculate a single threshold for the entire image group. The other
+methods calculate a threshold for each image individually. "Set
+interactively" will allow you to manually adjust the threshold during
+the first cycle to determine what will work well.''',
+            cpthresh.TM_METHODS, doc="""The threshold affects the
+stringency of the lines between the objects and the background. You
+can have the threshold automatically calculated using several methods,
+or you can enter an absolute number between 0 and 1 for the threshold
+(to see the pixel intensities for your images in the appropriate range
+of 0 to 1, use the CellProfiler Image Tool, 'ShowOrHidePixelData', in
+a window showing your image). There are advantages either way. An
+absolute number treats every image identically, but is not robust to
+slight changes in lighting/staining conditions between images. An
+automatically calculated threshold adapts to changes in
+lighting/staining conditions between images and is usually more
+robust/accurate, but it can occasionally produce a poor threshold for
+unusual/artifactual images. It also takes a small amount of time to
+calculate.
+   <p>The threshold which is used for each image is recorded as a
+measurement in the output file, so if you find unusual measurements from
+one of your images, you might check whether the automatically calculated
+threshold was unusually high or low compared to the other images.
+   <p>There are five methods for finding thresholds automatically, Otsu's
+method, the Mixture of Gaussian (MoG) method, the Background method, the
+Robust Background method and the Ridler-Calvard method.
+<ul><li> The Otsu method
+uses our version of the Matlab function graythresh (the code is in the
+CellProfiler subfunction CPthreshold). Our modifications include taking
+into account the max and min values in the image and log-transforming the
+image prior to calculating the threshold. Otsu's method is probably best
+if you don't know anything about the image, or if the percent of the
+image covered by objects varies substantially from image to image. If you
+know the object coverage percentage and it does not vary much from image
+to image, the MoG can be better, especially if the coverage percentage is
+not near 50%. Note, however, that the MoG function is experimental and
+has not been thoroughly validated. 
+<li>The Background method 
+is simple and appropriate for images in which most of the image is 
+background. It finds the mode of the histogram of the image, which is 
+assumed to be the background of the image, and chooses a threshold at 
+twice that value (which you can adjust with a Threshold Correction Factor,
+see below).  Note that the mode is protected from a high number of 
+saturated pixels by only counting pixels < 0.95. This can be very helpful,
+for example, if your images vary in overall brightness but the objects of 
+interest are always twice (or actually, any constant) as bright as the 
+background of the image. 
+<li>The Robust background
+method trims the brightest and dimmest 5of pixel intensities off first
+in the hopes that the remaining pixels represent a gaussian of intensity
+values that are mostly background pixels. It then calculates the mean and
+standard deviation of the remaining pixels and calculates the threshold
+as the mean + 2 times the standard deviation. 
+<li>The Ridler-Calvard method
+is simple and its results are often very similar to Otsu's - according to
+Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
+overall quality on testing 40 nondestructive testing images is slightly 
+better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
+It chooses an initial threshold, and then iteratively calculates the next 
+one by taking the mean of the average intensities of the background and 
+foreground pixels determined by the first threshold, repeating this until 
+the threshold converges.
+<li>The Kapur method
+computes the threshold of an image by
+log-transforming its values, then searching for the threshold that
+maximizes the sum of entropies of the foreground and background
+pixel values, when treated as separate distributions.
+</ul>
+   <p>You can also choose between Global, Adaptive, and Per object
+thresholding:
+<ul><li> Global: one threshold is used for the entire image (fast).
+Adaptive: the threshold varies across the image - a bit slower but
+provides more accurate edge determination which may help to separate
+clumps, especially if you are not using a clump-separation method (see
+below).
+<li>Per object: if you are using this module to find child objects located
+*within* parent objects, the per object method will calculate a distinct
+threshold for each parent object. This is especially helpful, for
+example, when the background brightness varies substantially among the
+parent objects. Important: the per object method requires that you run an
+IdentifyPrim module to identify the parent objects upstream in the
+pipeline. After the parent objects are identified in the pipeline, you
+must then also run a Crop module as follows: the image to be cropped is the one
+that you will want to use within this module to identify the children
+objects (e.g., ChildrenStainedImage), and the shape in which to crop
+is the name of the parent objects (e.g., Nuclei). Then, set this
+IdentifyPrimAutomatic module to identify objects within the
+CroppedChildrenStainedImage.</ul>""")
+        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
+                                                doc="""\
+When the threshold is calculated automatically, it may consistently be
+too stringent or too lenient. You may need to enter an adjustment factor
+which you empirically determine is suitable for your images. The number 1
+means no adjustment, 0 to 1 makes the threshold more lenient and greater
+than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+Otsu automatic thresholding inherently assumes that 50of the image is
+covered by objects. If a larger percentage of the image is covered, the
+Otsu method will give a slightly biased threshold that may have to be
+corrected using a threshold correction factor.""")
+        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in '
+                                         'the range [0,1]', (0,1), minval=0,
+                                         maxval=1, doc="""\
+Can be used as a safety precaution when the threshold is calculated
+automatically. For example, if there are no objects in the field of view,
+the automatic threshold will be unreasonably low. In such cases, the
+lower bound you enter here will override the automatic threshold.""")
+        self.object_fraction = cps.CustomChoice(
+            'For MoG thresholding, what is the  approximate fraction of image '
+            'covered by objects?', 
+            ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
+             '0.99'], doc="""\
+An estimate of how much of the image is covered with objects. This
+information is currently only used in the MoG (Mixture of Gaussian)
+thresholding but may be used for other thresholding methods in the future
+(see below).""")
+        self.unclump_method = cps.Choice(
+            'Method to distinguish clumped objects (see help for details):', 
+            [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
+Note: to choose between these methods, you can try test mode (see the
+last setting for this module).
+* Intensity - For objects that tend to have only one peak of brightness
+per object (e.g. objects that are brighter towards their interiors), this
+option counts each intensity peak as a separate object. The objects can
+be any shape, so they need not be round and uniform in size as would be
+required for a distance-based module. The module is more successful when
+the objects have a smooth texture. By default, the image is automatically
+blurred to attempt to achieve appropriate smoothness (see blur option),
+but overriding the default value can improve the outcome on
+lumpy-textured objects. Technical description: Object centers are defined
+as local intensity maxima.
+* Shape - For cases when there are definite indentations separating
+objects. This works best for objects that are round. The intensity
+patterns in the original image are irrelevant - the image is converted to
+black and white (binary) and the shape is what determines whether clumped
+objects will be distinguished. Therefore, the cells need not be brighter
+towards the interior as is required for the Intensity option. The
+de-clumping results of this method are affected by the thresholding
+method you choose. Technical description: The binary thresholded image is
+distance-transformed and object centers are defined as peaks in this
+image. 
+
+* None (fastest option) - If objects are far apart and are very well
+separated, it may be unnecessary to attempt to separate clumped objects.
+Using the 'None' option, a simple threshold will be used to identify
+objects. This will override any declumping method chosen in the next
+question.""")
+        self.watershed_method = cps.Choice(
+            'Method to draw dividing lines between clumped objects (see help '
+            'for details):', 
+            [WA_INTENSITY,WA_DISTANCE,WA_NONE], doc="""\
+* Intensity - works best where the dividing lines between clumped
+objects are dim. Technical description: watershed on the intensity image.
+* Distance - Dividing lines between clumped objects are based on the
+shape of the clump. For example, when a clump contains two objects, the
+dividing line will be placed where indentations occur between the two
+nuclei. The intensity patterns in the original image are irrelevant - the
+cells need not be dimmer along the lines between clumped objects.
+Technical description: watershed on the distance-transformed thresholded
+image.
+* None (fastest option) - If objects are far apart and are very well
+separated, it may be unnecessary to attempt to separate clumped objects.
+Using the 'None' option, the thresholded image will be used to identify
+objects. This will override any declumping method chosen in the above
+question.""")
+        self.automatic_smoothing = cps.Binary(
+            'Automatically calculate size of smoothing filter when separating '
+            'clumped objects', 
+            True)
+        self.smoothing_filter_size = cps.Integer(
+            'Size of smoothing filter, in pixel units (if you are '
+            'distinguishing between clumped objects). Enter 0 for low '
+            'resolution images with small objects (< ~5 pixels in diameter) '
+            'to prevent any \ image smoothing.', 
+            10, doc="""\
+   (Only used when distinguishing between clumped objects) This setting,
+along with the suppress local maxima setting, affects whether objects
+close to each other are considered a single object or multiple objects.
+It does not affect the dividing lines between an object and the
+background. If you see too many objects merged that ought to be separate,
+the value should be lower. If you see too many objects split up that
+ought to be merged, the value should be higher.
+   The image is smoothed based on the specified minimum object diameter
+that you have entered, but you may want to override the automatically
+calculated value here. Reducing the texture of objects by increasing the
+smoothing increases the chance that each real, distinct object has only
+one peak of intensity but also increases the chance that two distinct
+objects will be recognized as only one object. Note that increasing the
+size of the smoothing filter increases the processing time exponentially.""")
+        self.automatic_suppression = cps.Binary(
+            'Automatically calculate minimum size of local maxima for clumped '
+            'objects', True)
+        self.maxima_suppression_size = cps.Integer(
+            'Suppress local maxima within this distance, (a positive integer, '
+            'in pixel units) (if you are distinguishing between clumped '
+            'objects)', 
+            7, doc="""\
+   (Only used when distinguishing between clumped objects) This setting,
+along with the size of the smoothing filter, affects whether objects
+close to each other are considered a single object or multiple objects.
+It does not affect the dividing lines between an object and the
+background. This setting looks for the maximum intensity in the size 
+specified by the user.  The local intensity histogram is smoothed to 
+remove the peaks within that distance. So,if you see too many objects 
+merged that ought to be separate, the value should be lower. If you see 
+too many objects split up that ought to be merged, the value should be higher.
+   Object markers are suppressed based on the specified minimum object
+diameter that you have entered, but you may want to override the
+automatically calculated value here. The maxima suppression distance
+should be set to be roughly equivalent to the minimum radius of a real
+object of interest. Basically, any distinct 'objects' which are found but
+are within two times this distance from each other will be assumed to be
+actually two lumpy parts of the same object, and they will be merged.""")
+        self.low_res_maxima = cps.Binary(
+            'Speed up by using lower-resolution image to find local maxima '
+            '(if you are distinguishing between clumped objects)?', 
+            True, doc="""\
+(Only used when distinguishing between clumped objects) If you have
+entered a minimum object diameter of 10 or less, setting this option to
+Yes will have no effect.""")
+        self.should_save_outlines = cps.Binary(
+            'Do you want to save outlines?', False)
+        self.save_outlines = cps.OutlineNameProvider(
+            'What do you want to call the outlines of the identified objects?')
+        self.fill_holes = cps.Binary(
+            'Do you want to fill holes in identified objects?', True)
+        self.test_mode = cps.Binary(
+            'Do you want to run in test mode where each method for '
+            'distinguishing clumped objects is compared?', False)
+        self.manual_threshold = cps.Float("What is the manual threshold?", 
+                                          value=0.0, minval=0.0, maxval=1.0)
+        self.binary_image = cps.ImageNameSubscriber(
+            "What is the binary thresholding image?", "None")
+        self.wants_automatic_log_threshold = cps.Binary(
+            'Do you want to calculate the Laplacian of Gaussian threshold '
+            'automatically?', True)
+        self.manual_log_threshold = cps.Float('What is the Laplacian of '
+                                              'Gaussian threshold?', .5, 0, 1)
+        self.two_class_otsu = cps.Choice(
+            'Does your image have two classes of intensity value or three?',
+            [cpmi.O_TWO_CLASS, cpmi.O_THREE_CLASS])
+        self.use_weighted_variance = cps.Choice(
+            'Do you want to minimize the weighted variance or the entropy?',
+            [cpmi.O_WEIGHTED_VARIANCE, cpmi.O_ENTROPY])
+        self.assign_middle_to_foreground = cps.Choice(
+            'Assign pixels in the middle intensity class to the foreground '
+            'or the background?', [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range,

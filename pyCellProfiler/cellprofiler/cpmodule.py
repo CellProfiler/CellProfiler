@@ -49,8 +49,13 @@ class CPModule(object):
         self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
-        self.__module_name = 'unknown'
         self.__annotation_dict = None
+        # Set the name of the module based on the class name.  A
+        # subclass can override this either by declaring a module_name
+        # attribute in the class definition or by assigning to it in
+        # the create_settings method.
+        if 'module_name' not in self.__dict__:
+            self.module_name = self.__class__.__name__
         self.create_settings()
         
     def create_settings(self):
@@ -297,13 +302,18 @@ class CPModule(object):
     module_num = property(get_module_num, set_module_num)
     
     def get_module_name(self):
-        """The name shown to the user in the Add Modules box"""
-        return self.__module_name
+        """The name shown to the user in the Add Modules box.
+        Deprecated in favor of accessing the attribute directly."""
+        if self.__module_name is None:
+            return re.sub('([^A-Z])([A-Z])', '\\1 \\2', 
+                          self.__class__.__name__)
+        else:
+            return self.__module_name
     
     def set_module_name(self, module_name):
-        self.__module_name = module_name
-        
-    module_name = property(get_module_name,set_module_name)
+        """Deprecated in favor of setting the attribute directly.  Can
+        be removed once all modules have been updated."""
+        self.module_name = module_name
     
     def module_class(self):
         """The class to instantiate, except for the special case of matlab modules.

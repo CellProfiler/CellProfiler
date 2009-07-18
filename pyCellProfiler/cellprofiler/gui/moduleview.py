@@ -22,6 +22,7 @@ import cellprofiler.pipeline
 import cellprofiler.settings
 import cellprofiler.preferences
 from regexp_editor import edit_regexp
+from htmldialog import HTMLDialog
 
 ERROR_COLOR = wx.RED
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
@@ -167,8 +168,10 @@ def encode_label(text):
     and wx.Button in order to keep it from signifying an accelerator.
     """
     return text.replace('&','&&')
-  
+
+
 class ModuleView:
+
     """The module view implements a view on CellProfiler.Module
     
     The module view implements a view on CellProfiler.Module. The view consists
@@ -229,10 +232,10 @@ class ModuleView:
             data                = []
             settings            = self.__module.visible_settings()
             if self.__sizer is None:
-                self.__sizer = ModuleSizer(len(settings), 2)
+                self.__sizer = ModuleSizer(len(settings), 3)
                 self.module_panel.SetSizer(self.__sizer)
             else:
-                self.__sizer.Reset(len(settings), 2, False)
+                self.__sizer.Reset(len(settings), 3, False)
             sizer    = self.__sizer
             if reselecting:
                 self.hide_settings()
@@ -263,7 +266,8 @@ class ModuleView:
                                                        wx.CB_DROPDOWN,
                                                        control)
                 elif isinstance(v,cellprofiler.settings.Colormap):
-                    control = self.make_colormap_control(v, control_name, control)
+                    control = self.make_colormap_control(v, control_name, 
+                                                         control)
                 elif isinstance(v,cellprofiler.settings.Choice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
@@ -287,7 +291,8 @@ class ModuleView:
                 elif isinstance(v, cellprofiler.settings.IntegerRange) or\
                      isinstance(v, cellprofiler.settings.FloatRange):
                     control = self.make_range_control(v, control)
-                elif isinstance(v, cellprofiler.settings.IntegerOrUnboundedRange):
+                elif isinstance(v,
+                                cellprofiler.settings.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
                 elif isinstance(v, cellprofiler.settings.Coordinates):
                     control = self.make_coordinates_control(v,control)
@@ -297,8 +302,12 @@ class ModuleView:
                     control = self.make_measurement_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
-                sizer.Add(control,1,wx.EXPAND|wx.ALL,2)
+                sizer.Add(control)
                 self.__controls.append(control)
+                help_control = (wx.StaticText(self.__module_panel, -1, "")
+                                if v.doc is None else
+                                self.make_help_control(v.doc, v.text))
+                sizer.Add(help_control)
             self.__module_panel.Layout()
         finally:
             self.module_panel.Thaw()
@@ -755,6 +764,13 @@ class ModuleView:
         set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel
     
+    def make_help_control(self, content, title="Help"):
+        control = wx.Button(self.__module_panel, -1, '?', style=wx.BU_EXACTFIT)
+        def callback(event):
+            HTMLDialog(self.__module_panel, title, content).Show()
+        self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
+        return control
+
     def add_listener(self,listener):
         self.__listeners.append(listener)
     
@@ -850,10 +866,10 @@ class ModuleView:
                 focus_control.SetFocus()
         
 class ModuleSizer(wx.PySizer):
-    """The module sizer uses the maximum best width of the setting edit controls
-    to compute the column widths, then it sets the text controls to wrap within
-    the remaining space, then it uses the best height of each text control to lay
-    out the rows.
+    """The module sizer uses the maximum best width of the setting
+    edit controls to compute the column widths, then it sets the text
+    controls to wrap within the remaining space, then it uses the best
+    height of each text control to lay out the rows.
     """
     
     def __init__(self,rows,cols=2):
@@ -882,76 +898,89 @@ class ModuleSizer(wx.PySizer):
         self.__cols = cols
     
     def CalcMin(self):
-        """Calculate the minimum from the edit controls
+        """Calculate the minimum from the edit controls.  Returns a
+        wx.Size where the height is the total height of the grid and
+        the width is self.__min_text_width plus the widths of the edit
+        controls and help controls.
         """
         if self.__rows * self.__cols == 0:
             return wx.Size(0,0)
-        size = self.calc_edit_size()
         height = 0
         for j in range(0,self.__rows):
             row_height = 0
             for i in range(0,self.__cols):
                 item = self.GetItem(self.idx(i,j))
-                row_height = max([row_height,item.CalcMin()[1]])
+                row_height = max([row_height, item.CalcMin()[1]])
             height += row_height;
-        return wx.Size(size[0]+self.__min_text_width,height)
-        
-    def calc_edit_size(self):
+        return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
+                       self.calc_help_size()[0],
+                       height)
+
+    def calc_column_size(self, j):
+        """Return a wx.Size with the total height of the controls in
+        column j and the maximum of their widths.
+        """
         height = 0
-        width  = 0
-        for i in range(0,self.__rows):
-            if len(self.Children) <= self.idx(1,i):
+        width = 0
+        for i in range(self.__rows):
+            if len(self.Children) <= self.idx(j, i):
                 break
-            item = self.GetItem(self.idx(1,i))
+            item = self.GetItem(self.idx(j, i))
             size = item.CalcMin()
             height += size[1]
-            width = max(width,size[0])
+            width = max(width, size[0])
         return wx.Size(width,height)
+        
+    def calc_help_size(self):
+        return self.calc_column_size(2)
+
+    def calc_edit_size(self):
+        return self.calc_column_size(1)
     
     def calc_max_text_width(self):
         width = self.__min_text_width
-        for i in range(0,self.__rows):
-            if len(self.Children) <= self.idx(0,i):
+        for i in range(self.__rows):
+            if len(self.Children) <= self.idx(0, i):
                 break
-            item = self.GetItem(self.idx(0,i))
+            item = self.GetItem(self.idx(0, i))
             control = item.GetWindow()
-            assert isinstance(control,wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
-            text = control.GetLabel()
-            text = text.replace('\n',' ')
-            ctrl_width = control.GetTextExtent(text)[0]
-            ctrl_width += 2* item.GetBorder()
+            assert isinstance(control, wx.StaticText), 'Control at column 0, '\
+                '%d of grid is not StaticText: %s'%(i, str(control))
+            text = control.GetLabel().replace('\n', ' ')
+            ctrl_width = control.GetTextExtent(text)[0] + 2 * item.GetBorder()
             width = max(width, ctrl_width)
         return width
     
     def RecalcSizes(self):
-        """Recalculate the sizes of our items, resizing the text boxes as we go  
+        """Recalculate the sizes of our items, resizing the text boxes
+        as we go.
         """
         if self.__rows * self.__cols == 0:
             return
         size = self.GetSize()
-        width = size[0]-20
-        edit_size = self.calc_edit_size()
-        edit_width = edit_size[0] # the width of the edit controls portion
+        width = size[0] - 20
+        edit_width = self.calc_edit_size()[0]
+        help_width = self.calc_help_size()[0]
         max_text_width = self.calc_max_text_width()
-        if edit_width + max_text_width < width:
-            edit_width = width - max_text_width
+        if edit_width + help_width + max_text_width < width:
+            edit_width = width - max_text_width - help_width
         elif edit_width * 4 < width:
-            edit_width = width/4
-        text_width = max([width-edit_width,self.__min_text_width])
+            edit_width = width / 4
+        text_width = max([width - edit_width - help_width, 
+                          self.__min_text_width])
+        widths = [text_width, edit_width, help_width]
         #
         # Change all static text controls to wrap at the text width. Then
         # ask the items how high they are and do the layout of the line.
         #
         height = 0
-        widths = [text_width, edit_width]
         panel = self.GetContainingWindow()
-        for i in range(0,self.__rows):
-            text_item = self.GetItem(self.idx(0,i))
-            edit_item = self.GetItem(self.idx(1,i))
-            inner_text_width = text_width - 2*text_item.GetBorder() 
-            items = [text_item, edit_item]
+        for i in range(self.__rows):
+            text_item = self.GetItem(self.idx(0, i))
+            edit_item = self.GetItem(self.idx(1, i))
+            inner_text_width = text_width - 2 * text_item.GetBorder() 
             control = text_item.GetWindow()
-            assert isinstance(control,wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
+            assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
             text = control.GetLabel()
             if (text_width > self.__min_text_width and
                 (text.find('\n') != -1 or
@@ -959,13 +988,14 @@ class ModuleSizer(wx.PySizer):
                 text = text.replace('\n',' ')
                 control.SetLabel(text)
                 control.Wrap(inner_text_width)
-            item_heights = [text_item.CalcMin()[1],edit_item.CalcMin()[1]]
-            for j in range(0,self.__cols):
-                item_size = wx.Size(widths[j],item_heights[j])
-                item_location = wx.Point(sum(widths[0:j]),height)
+            for j in range(self.__cols):
+                item = self.GetItem(self.idx(j, i))
+                item_size = wx.Size(widths[j], item.CalcMin()[1])
+                item_location = wx.Point(sum(widths[0:j]), height)
                 item_location = panel.CalcScrolledPosition(item_location)
-                items[j].SetDimension(item_location, item_size)
-            height += max(item_heights)
+                item.SetDimension(item_location, item_size)
+            height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
+                            for j in range(self.__cols)])
         panel.SetVirtualSizeWH(width,height+20)
 
     def coords(self,idx):

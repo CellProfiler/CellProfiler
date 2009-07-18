@@ -28,7 +28,7 @@ class Setting(object):
     """A module setting which holds a single string value
     
     """
-    def __init__(self,text,value):
+    def __init__(self,text,value,doc=None):
         """Initialize a setting with the enclosing module and its string value
         
         module - the module containing this setting
@@ -38,6 +38,7 @@ class Setting(object):
         self.__annotations = []
         self.__text = text
         self.__value = value
+        self.doc = doc
         self.__key = uuid.uuid1() 
     
     def set_value(self,value):
@@ -137,26 +138,26 @@ class Text(Setting):
     """A setting that displays as an edit box, accepting a string
     
     """
-    def __init__(self,text,value):
-        super(Text,self).__init__(text,value)
+    def __init__(self, text, value, *args, **kwargs):
+        super(Text,self).__init__(text, value, *args, **kwargs)
 
 class RegexpText(Setting):
     """A setting with a regexp button on the side
     """
-    def __init__(self,text,value):
-        super(RegexpText,self).__init__(text,value)
+    def __init__(self, text, value, *args, **kwargs):
+        super(RegexpText,self).__init__(text, value, *args, **kwargs)
 
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """
-    def __init__(self,text,value):
-        super(DirectoryPath,self).__init__(text,value)
+    def __init__(self, text, value, *args, **kwargs):
+        super(DirectoryPath,self).__init__(text, value, *args, **kwargs)
 
 class FilenameText(Text):
     """A setting that displays a file name
     """
-    def __init__(self,text,value):
-        super(FilenameText,self).__init__(text,value)
+    def __init__(self, text, value, *args, **kwargs):
+        super(FilenameText,self).__init__(text, value, *args, **kwargs)
 
 class Integer(Text):
     """A setting that allows only integer input
@@ -167,8 +168,9 @@ class Integer(Text):
     minval - minimum allowed value defaults to no minimum
     maxval - maximum allowed value defaults to no maximum
     """
-    def __init__(self,text,value=0,minval=None, maxval=None):
-        super(Integer,self).__init__(text,str(value))
+    def __init__(self, text, value=0, minval=None, maxval=None, *args, 
+                 **kwargs):
+        super(Integer,self).__init__(text, str(value), *args, **kwargs)
         self.__minval = minval
         self.__maxval = maxval
     
@@ -201,14 +203,15 @@ class Integer(Text):
 class IntegerRange(Setting):
     """A setting that allows only integer input between two constrained values
     """
-    def __init__(self,text,value=(0,1),minval=None, maxval=None):
+    def __init__(self,text,value=(0,1),minval=None, maxval=None, *args, 
+                 **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        super(IntegerRange,self).__init__(text,"%d,%d"%value)
+        super(IntegerRange,self).__init__(text, "%d,%d"%value, *args, **kwargs)
         self.__minval = minval
         self.__maxval = maxval
         
@@ -274,12 +277,12 @@ class IntegerRange(Setting):
 class Coordinates(Setting):
     """A setting representing X and Y coordinates on an image
     """
-    def __init__(self,text,value=(0,0)):
+    def __init__(self, text, value=(0,0), *args, **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as x and y
         """
-        super(Coordinates,self).__init__(text,"%d,%d"%value)
+        super(Coordinates,self).__init__(text, "%d,%d"%value, *args, **kwargs)
     
     def set_value(self,value):
         """Convert integer tuples to string
@@ -337,16 +340,18 @@ class IntegerOrUnboundedRange(Setting):
     The maximum value can be relative to the far side in which case a negative
     number is returned for slicing.
     """
-    def __init__(self,text,value=(0,END),minval=None, maxval=None):
+    def __init__(self, text, value=(0,END), minval=None, maxval=None,
+                 *args, **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        super(IntegerOrUnboundedRange,self).__init__(text,"%s,%s"%
-                                                     (str(value[0]),
-                                                      str(value[1])))
+        super(IntegerOrUnboundedRange,self).__init__(text, 
+                                                     "%s,%s"% (str(value[0]),
+                                                               str(value[1])),
+                                                     *args, **kwargs)
         self.__minval = minval
         self.__maxval = maxval
         
@@ -450,8 +455,9 @@ class IntegerOrUnboundedRange(Setting):
 class Float(Text):
     """A setting that allows only floating point input
     """
-    def __init__(self,text,value=0,minval=None, maxval=None):
-        super(Float,self).__init__(text,str(value))
+    def __init__(self, text, value=0, minval=None, maxval=None, *args,
+                 **kwargs):
+        super(Float,self).__init__(text, str(value), *args, **kwargs)
         self.__minval = minval
         self.__maxval = maxval
     
@@ -486,14 +492,15 @@ class Float(Text):
 class FloatRange(Setting):
     """A setting that allows only floating point input between two constrained values
     """
-    def __init__(self,text,value=(0,1),minval=None, maxval=None):
+    def __init__(self, text, value=(0,1), minval=None, maxval=None, *args,
+                 **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        super(FloatRange,self).__init__(text,"%f,%f"%value)
+        super(FloatRange,self).__init__(text, "%f,%f"%value, *args, **kwargs)
         self.__minval = minval
         self.__maxval = maxval
     
@@ -552,8 +559,8 @@ class FloatRange(Setting):
 class NameProvider(Text):
     """A setting that provides a named object
     """
-    def __init__(self,text,group,value=DO_NOT_USE):
-        super(NameProvider,self).__init__(text,value)
+    def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
+        super(NameProvider,self).__init__(text, value, *args, **kwargs)
         self.__group = group
     
     def get_group(self):
@@ -568,39 +575,43 @@ class NameProvider(Text):
 class ImageNameProvider(NameProvider):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=DO_NOT_USE):
-        super(ImageNameProvider,self).__init__(text,'imagegroup',value)
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        super(ImageNameProvider,self).__init__(text, 'imagegroup', value,
+                                               *args, **kwargs)
 
 class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
-    def __init__(self,text,value=DO_NOT_USE):
-        super(FileImageNameProvider,self).__init__(text,value)
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        super(FileImageNameProvider,self).__init__(text, value, *args,
+                                                   **kwargs)
 
 class CroppingNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has a cropping mask"""
-    def __init__(self,text,value=DO_NOT_USE):
-        super(CroppingNameProvider,self).__init__(text,value)
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        super(CroppingNameProvider,self).__init__(text, value, *args, **kwargs)
     
 class ObjectNameProvider(NameProvider):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=DO_NOT_USE):
-        super(ObjectNameProvider,self).__init__(text,'objectgroup',value)
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        super(ObjectNameProvider,self).__init__(text, 'objectgroup', value,
+                                                *args, **kwargs)
 
 class OutlineNameProvider(NameProvider):
     '''A setting that provides an object outline name
     '''
-    def __init__(self, text, value=DO_NOT_USE):
-        super(OutlineNameProvider,self).__init__(text,'outlinegroup')
+    def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
+        super(OutlineNameProvider,self).__init__(text, 'outlinegroup', *args,
+                                                 **kwargs)
 
 class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
     """
-    def __init__(self,text,group,value=None,
-                 can_be_blank=False,blank_text=LEAVE_BLANK):
+    def __init__(self, text, group, value=None,
+                 can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
         if value==None:
             value = (can_be_blank and blank_text) or "None"
-        super(NameSubscriber,self).__init__(text,value)
+        super(NameSubscriber,self).__init__(text, value, *args, **kwargs)
     
         self.__group = group
         self.__can_be_blank = can_be_blank
@@ -651,17 +662,19 @@ class NameSubscriber(Setting):
 class ImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=None,
-                 can_be_blank = False,blank_text=LEAVE_BLANK):
-        super(ImageNameSubscriber,self).__init__(text,'imagegroup',value,
-                                                 can_be_blank,blank_text)
+    def __init__(self, text, value=None, can_be_blank = False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ImageNameSubscriber,self).__init__(text, 'imagegroup', value,
+                                                 can_be_blank, blank_text,
+                                                 *args, **kwargs)
 
 class FileImageNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names loaded from files"""
-    def __init__(self,text,value=DO_NOT_USE,can_be_blank = False,
-                 blank_text = LEAVE_BLANK):
-        super(FileImageNameSubscriber,self).__init__(text,value,can_be_blank,
-                                                     blank_text)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank = False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(FileImageNameSubscriber,self).__init__(text, value, can_be_blank,
+                                                     blank_text, *args,
+                                                     **kwargs)
     
     def matches(self,setting):
         """Only match FileImageNameProvider variables"""
@@ -669,10 +682,11 @@ class FileImageNameSubscriber(ImageNameSubscriber):
 
 class CroppingNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names that have cropping masks"""
-    def __init__(self,text,value=DO_NOT_USE,can_be_blank = False,
-                 blank_text = LEAVE_BLANK):
-        super(CroppingNameSubscriber,self).__init__(text,value,can_be_blank,
-                                                    blank_text)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(CroppingNameSubscriber,self).__init__(text, value, can_be_blank,
+                                                    blank_text, *args, 
+                                                    **kwargs)
     
     def matches(self,setting):
         """Only match CroppingNameProvider variables"""
@@ -681,23 +695,27 @@ class CroppingNameSubscriber(ImageNameSubscriber):
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
-    def __init__(self,text,value=DO_NOT_USE,can_be_blank=False,
-                 blank_text = LEAVE_BLANK):
-        super(ObjectNameSubscriber,self).__init__(text,'objectgroup',value,
-                                                  can_be_blank, blank_text)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ObjectNameSubscriber,self).__init__(text, 'objectgroup', value,
+                                                  can_be_blank, blank_text,
+                                                  *args, **kwargs)
 
 class OutlineNameSubscriber(NameSubscriber):
     '''A setting that provides a list of available object outline names
     '''
-    def __init__(self, text, value="None", can_be_blank = False, blank_text = LEAVE_BLANK):
-        super(OutlineNameSubscriber, self).__init__(text,'outlinegroup', value,
-                                                    can_be_blank, blank_text)
+    def __init__(self, text, value="None", can_be_blank=False, 
+                 blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(OutlineNameSubscriber, self).__init__(text, 'outlinegroup', 
+                                                    value, can_be_blank,
+                                                    blank_text, *args,
+                                                    **kwargs)
 
 class FigureSubscriber(Setting):
     """A setting that provides a figure indicator
     """
-    def __init(self,text,value=DO_NOT_USE):
-        super(Setting,self).__init(text,value)
+    def __init(self,text,value=DO_NOT_USE, *args, **kwargs):
+        super(Setting,self).__init(text, value, *args, **kwargs)
     
     def get_choices(self,pipeline):
         choices = []
@@ -713,13 +731,13 @@ class Binary(Setting):
     The underlying value stored in the settings slot is "Yes" or "No"
     for historical reasons.
     """
-    def __init__(self,text,value):
-        """Initialize the binary setting with the module, explanatory text and value
-        
-        The value for a binary setting is True or False
+    def __init__(self, text, value, *args, **kwargs):
+        """Initialize the binary setting with the module, explanatory
+        text and value. The value for a binary setting is True or
+        False.
         """
         str_value = (value and YES) or NO
-        super(Binary,self).__init__(text, str_value)
+        super(Binary,self).__init__(text, str_value, *args, **kwargs)
     
     def set_value(self,value):
         """When setting, translate true and false into yes and no"""
@@ -744,7 +762,8 @@ class Choice(Setting):
     """A setting that displays a drop-down set of choices
     
     """
-    def __init__(self,text,choices,value=None,tooltips=None):
+    def __init__(self, text, choices, value=None, tooltips=None, *args,
+                 **kwargs):
         """Initializer
         module - the module containing the setting
         text - the explanatory text for the setting
@@ -752,7 +771,7 @@ class Choice(Setting):
         value - the default choice or None to choose the first of the choices.
         tooltips - a dictionary of choice to tooltip
         """
-        super(Choice,self).__init__(text, value or choices[0])
+        super(Choice,self).__init__(text, value or choices[0], *args, **kwargs)
         self.__choices = choices
         self.__tooltips = tooltips
     
@@ -783,14 +802,15 @@ class Choice(Setting):
             raise ValidationError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)),self)
 
 class CustomChoice(Choice):
-    def __init__(self,text,choices,value=None):
+    def __init__(self, text, choices, value=None, *args, **kwargs):
         """Initializer
         module - the module containing the setting
         text - the explanatory text for the setting
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
         """
-        super(CustomChoice,self).__init__(text, choices, value)
+        super(CustomChoice,self).__init__(text, choices, value, *args, 
+                                          **kwargs)
     
     def get_choices(self):
         """Put the custom choice at the top"""
@@ -806,8 +826,8 @@ class CustomChoice(Choice):
 class DoSomething(Setting):
     """Do something in response to a button press
     """
-    def __init__(self,text,label,callback,*args):
-        super(DoSomething,self).__init__(text,'n/a')
+    def __init__(self, text, label, callback, *args, **kwargs):
+        super(DoSomething,self).__init__(text, 'n/a', *args, **kwargs)
         self.__label = label
         self.__callback = callback
         self.__args = args
@@ -832,14 +852,14 @@ class Measurement(Setting):
     object when relating two classes of objects or the object name when
     aggregating object measurements over an image) or scale.
     '''
-    def __init__(self, text, object_fn, value = "None"):
+    def __init__(self, text, object_fn, value = "None", *args, **kwargs):
         '''Construct the measurement category subscriber setting
         
         text - Explanatory text that appears to the side of the setting
         object_fn - a function that returns the measured object when called
         value - the initial value of the setting
         '''
-        super(Measurement, self).__init__(text, value)
+        super(Measurement, self).__init__(text, value, *args, **kwargs)
         self.__object_fn = object_fn
     
     def construct_value(self, category, feature_name, image_name, scale):
@@ -1007,11 +1027,11 @@ class Measurement(Setting):
 
 class Colormap(Choice):
     '''Represents the choice of a colormap'''
-    def __init__(self, text, value=DEFAULT):
+    def __init__(self, text, value=DEFAULT, *args, **kwargs):
         names = list(matplotlib.cm.cmapnames)
         names.sort()
         choices = [DEFAULT] + names
-        super(Colormap,self).__init__(text, choices, value)
+        super(Colormap,self).__init__(text, choices, value, *args, **kwargs)
     
 class ChangeSettingEvent(object):
     """Abstract class representing either the event that a setting will be

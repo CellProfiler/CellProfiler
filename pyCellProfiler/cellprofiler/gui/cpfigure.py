@@ -43,6 +43,12 @@ def create_or_find(parent=None, id=-1, title="",
             return window
     return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
 
+def close_all(parent):
+    windows = [x for x in parent.GetChildren()
+               if isinstance(x, CPFigureFrame)]
+    for window in windows:
+        window.Close()
+        
 MENU_FILE_SAVE = wx.NewId()
 MENU_ZOOM_IN = wx.NewId()
 MENU_ZOOM_OUT = wx.NewId()

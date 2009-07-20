@@ -18,6 +18,7 @@ import wx.lib.scrolledpanel
 import cellprofiler.preferences
 from cellprofiler.gui import get_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
+from cellprofiler.gui.cpfigure import close_all
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
@@ -41,6 +42,8 @@ ID_DEBUG_START = wx.NewId()
 ID_DEBUG_STOP = wx.NewId()
 ID_DEBUG_STEP = wx.NewId()
 ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
+
+ID_WINDOW_CLOSE_ALL = wx.NewId()
 
 ID_HELP_MODULE=wx.NewId()
 
@@ -106,6 +109,10 @@ class CPFrame(wx.Frame):
         self.__menu_options = wx.Menu()
         self.__menu_options.Append(ID_OPTIONS_PREFERENCES,"&Preferences","Set global application preferences")
         self.__menu_bar.Append(self.__menu_options,"&Options")
+        self.__menu_window = wx.Menu()
+        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all", 
+                                  "Close all figure windows")
+        self.__menu_bar.Append(self.__menu_window,"&Window")
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')
         self.__menu_bar.Append(self.__menu_help,'&Help')
@@ -114,6 +121,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
+        wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
                                                  (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
@@ -140,6 +148,9 @@ class CPFrame(wx.Frame):
     def __on_preferences(self, event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.show_modal()
+    
+    def __on_close_all(self, event):
+        close_all(self)
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()

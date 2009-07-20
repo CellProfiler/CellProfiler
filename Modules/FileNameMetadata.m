@@ -185,7 +185,11 @@ end
 
 SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 FileOrPathName = fullfile(handles.Measurements.Image.(['PathName_',ImageName]){SetBeingAnalyzed}, handles.Measurements.Image.(FileNameField){SetBeingAnalyzed});
-[PathName,FileName] = fileparts(FileOrPathName);
+if ~isempty(handles.Measurements.Image.(FileNameField){SetBeingAnalyzed})
+    [PathName,FileName] = fileparts(FileOrPathName);
+else
+    PathName = FileOrPathName; FileName = '';
+end
 
 Metadata = [];
 if ~isempty(PathFieldNames)
@@ -210,16 +214,22 @@ if ~isempty(FileFieldNames)
 end
 
 if (isempty(Metadata) && ~isempty(FileFieldNames)) || (~isempty(Metadata) && all(structfun(@isempty,Metadata)))
-    error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression "',RegularExpressionFilename,'"']);
+    if ~isempty(FileName)
+        error([ 'Image processing was canceled in the ', ModuleName, ' module. The file name, "',FileName,'" doesn''t match the regular expression "',RegularExpressionFilename,'"']);
+    end
 end
 
 FieldNames = [PathFieldNames,FileFieldNames];
 % if Row and Column exist, create Well from them
 if isfield(Metadata,'WellRow') && isfield(Metadata,'WellColumn');
     % If Column is a number, make sure it's 0-padded
-    lpadcolnum = num2str(str2num(Metadata.WellColumn),'%02d');
-    if isempty(lpadcolnum), lpadcolnum = Metadata.WellColumn; end
-    Metadata.Well = [Metadata.WellRow lpadcolnum];
+    if ~isempty(Metadata.WellColumn)
+        lpadcolnum = num2str(str2num(Metadata.WellColumn),'%02d');
+        if isempty(lpadcolnum), lpadcolnum = Metadata.WellColumn; end
+        Metadata.Well = [Metadata.WellRow lpadcolnum];
+    else
+        Metadata.Well = {};
+    end
     FieldNames{length(FieldNames)+1} = 'Well';
     % Add 'Well' to available metadata list if needed later
     if any(strcmp(FileFieldNames,'WellRow')) || any(strcmp(FileFieldNames,'WellColumn'))

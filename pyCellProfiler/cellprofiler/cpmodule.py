@@ -91,7 +91,6 @@ class CPModule(object):
                 setting_values.append(value_cell)
         self.set_setting_values(setting_values, variable_revision_number, 
                                  module_name)
-        self.on_post_load()
     
     def prepare_to_set_values(self,setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -195,9 +194,8 @@ class CPModule(object):
             settings.append(v)
                      
         self.set_settings(settings)
-        self.on_post_load()
     
-    def on_post_load(self):
+    def on_post_load(self, pipeline):
         """This is a convenient place to do things to your module after the settings have been loaded or initialized"""
         pass
 

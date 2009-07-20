@@ -245,6 +245,7 @@ See also MeasureImageIntensity.
         for object_name_variable in self.object_names:
             if object_name_variable == object_name:
                 return ALL_MEASUREMENTS
+        return []
     
     def get_measurement_images(self, pipeline,object_name, category, measurement):
         """Get the images used to make the given measurement in the given category on the given object"""

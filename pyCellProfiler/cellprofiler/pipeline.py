@@ -257,7 +257,7 @@ class Pipeline(object):
         for module in self.modules():
             h.update(module.module_name)
             for setting in module.settings():
-                h.update(str(setting.value))
+                h.update(str(setting))
         return h.digest()
     
     def create_from_handles(self,handles):
@@ -282,6 +282,9 @@ class Pipeline(object):
                     return
                 
             self.__modules.append(module)
+        for module in self.__modules:
+            module.on_post_load(self)
+            
         self.notify_listeners(PipelineLoadedEvent())
     
     def instantiate_module(self,module_name):
@@ -736,6 +739,40 @@ class Pipeline(object):
             columns += module.get_measurement_columns(self)
         self.__measurement_columns[terminating_module_num] = columns
         return columns
+    
+    def synthesize_measurement_name(self, module, object, category, 
+                                    feature, image, scale):
+        '''Turn a measurement requested by a Matlab module into a measurement name
+        
+        Some Matlab modules specify measurement names as a combination
+        of category, feature, image name and scale, but not all measurements
+        have associated images or scales. This function attempts to match
+        the given parts to the measurements available to the module and
+        returns the best guess at a measurement. It throws a value error
+        exception if it can't find a match
+        
+        module - the module requesting the measurement. Only measurements
+                 made prior to this module will be considered.
+        object - the object name or "Image"
+        category - The module's measurement category (e.g. Intensity or AreaShape)
+        feature - a descriptive name for the measurement
+        image - the measurement should be made on this image (optional)
+        scale - the measurement should be made at this scale
+        '''
+        measurement_columns = self.get_measurement_columns(module)
+        measurements = [x[1] for x in measurement_columns
+                        if x[0] == object]
+        for measurement in ("_".join((category,feature,image,scale)),
+                            "_".join((category,feature,image)),
+                            "_".join((category,feature,scale)),
+                            "_".join((category,feature))):
+            if measurement in measurements:
+                return measurement
+        raise ValueError("No such measurement in pipeline: " +
+                         ("Category = %s" % category) +
+                         (", Feature = %s" % feature) +
+                         (", Image (optional) = %s" % image) +
+                         (", Scale (optional) = %s" % scale))
         
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners

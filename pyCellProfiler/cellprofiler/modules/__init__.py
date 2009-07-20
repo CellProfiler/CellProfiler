@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 from align import Align
 from applythreshold import ApplyThreshold
+from calculatemath import CalculateMath
 from colortogray import ColorToGray
 from converttoimage import ConvertToImage
 from correctillumination_calculate import CorrectIllumination_Calculate
@@ -51,6 +52,7 @@ from smooth import Smooth
 def get_module_classes():
     return [Align,
             ApplyThreshold,
+            CalculateMath,
             ColorToGray,
             ConvertToImage,
             CorrectIllumination_Calculate,
@@ -92,6 +94,7 @@ def get_module_substitutions():
     """
     return {"Align": Align,
             "ApplyThreshold": ApplyThreshold,
+            "CalculateMath": CalculateMath,
             "ColorToGray":ColorToGray,
             "ConvertToImage":ConvertToImage,
             "CorrectIllumination_Calculate":CorrectIllumination_Calculate,

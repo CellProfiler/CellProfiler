@@ -160,6 +160,8 @@ class Measurements(object):
     
     def has_feature(self, object_name, feature_name):
         """Return true if a particular object has a particular feature"""
+        if not self.__dictionary.has_key(object_name):
+            return False
         return self.__dictionary[object_name].has_key(feature_name)
     
     def get_current_image_measurement(self, feature_name):

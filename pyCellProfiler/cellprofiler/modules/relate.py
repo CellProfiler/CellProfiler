@@ -126,6 +126,19 @@ class Relate(cpm.CPModule):
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
+        if workspace.frame is not None:
+            figure = workspace.create_or_find_figure(subplots=(2,2))
+            figure.subplot_imshow_labels(0,0,parents.segmented,
+                                         title = self.parent_name.value)
+            figure.subplot_imshow_labels(1,0,children.segmented,
+                                         title = self.sub_object_name.value)
+            parent_labeled_children = np.zeros(children.segmented.shape, int)
+            parent_labeled_children[children.segmented > 0] = \
+                parents_of[children.segmented[children.segmented > 0]-1]
+            figure.subplot_imshow_labels(0,1,parent_labeled_children,
+                                         "%s labeled by %s"%
+                                         (self.sub_object_name.value,
+                                          self.parent_name.value))
     
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''

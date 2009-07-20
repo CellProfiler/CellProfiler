@@ -972,8 +972,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
-        draw_circle(img,(100,100),50,.5)
-        draw_circle(img,(25,25),20,.5)
+        draw_circle(img,(100,100),25,.5)
+        draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1002,8 +1002,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
-        draw_circle(img,(100,100),50,.5)
-        draw_circle(img,(25,25),20,.5)
+        draw_circle(img,(100,100),25,.5)
+        draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1030,8 +1030,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.max = 60
         x.watershed_method.value = ID.WA_NONE
         img = numpy.zeros((200,200))
-        draw_circle(img,(100,100),50,.5)
-        draw_circle(img,(25,25),20,.5)
+        draw_circle(img,(100,100),25,.5)
+        draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)

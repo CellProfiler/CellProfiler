@@ -410,7 +410,7 @@ See also Identify primary modules.
             window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, title="Identify secondary", 
                                         name=window_name, subplots=(2,2))
-            title = "Input image, cycle #%d"%(workspace.image_set.number)
+            title = "Input image, cycle #%d"%(workspace.image_set.number+1)
             my_frame.subplot_imshow_grayscale(0, 0, img, title)
             my_frame.subplot_imshow_labels(1,0,segmented_out,
                                            "Labeled image")

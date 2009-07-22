@@ -329,12 +329,8 @@ class Morph(cpm.CPModule):
         for function in self.functions:
             count = function.repeat_count
             
-            for i in range(count):
-                new_pixel_data = self.run_function(function.function.value,
-                                                   pixel_data, mask)
-                if i != count-1 and np.all(new_pixel_data == pixel_data):
-                    break
-                pixel_data = new_pixel_data
+            pixel_data = self.run_function(function.function.value,
+                                           pixel_data, mask, count)
         new_image = cpi.Image(pixel_data, parent_image = image) 
         workspace.image_set.add(self.output_image_name.value, new_image)
         if not workspace.frame is None:
@@ -352,11 +348,11 @@ class Morph(cpm.CPModule):
                 figure.subplot_imshow_grayscale(1,0,pixel_data,
                                                 self.output_image_name.value)
     
-    def run_function(self, function_name, pixel_data, mask):
+    def run_function(self, function_name, pixel_data, mask, count):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
         if (function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
-                              F_HBREAK, F_LIFE, F_MAJORITY, F_SHRINK,
+                              F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
                               F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) and
             not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
@@ -364,72 +360,92 @@ class Morph(cpm.CPModule):
                              function_name)
             pixel_data = pixel_data != 0
 
-        if function_name == F_BOTHAT:
-            return morph.black_tophat(pixel_data, mask=mask)
-        elif function_name == F_BRIDGE:
-            return morph.bridge(pixel_data, mask)
-        elif function_name == F_CLEAN:
-            return morph.clean(pixel_data, mask)
-        elif function_name == F_CLOSE:
-            if is_binary:
+        if (function_name in (F_BRIDGE, F_CLEAN, F_DIAG, F_FILL,
+                              F_HBREAK, F_LIFE, F_MAJORITY, F_REMOVE, F_SHRINK,
+                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
+            (is_binary and
+             function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
+            # All of these have an iterations argument
+            if function_name == F_BRIDGE:
+                return morph.bridge(pixel_data, mask, count)
+            elif function_name == F_CLEAN:
+                return morph.clean(pixel_data, mask, count)
+            elif function_name == F_CLOSE:
                 if mask is None:
-                    return scind.binary_closing(pixel_data,np.ones((3,3),bool))
+                    return scind.binary_closing(pixel_data,
+                                                np.ones((3,3),bool),
+                                                iterations = count)
                 else:
                     return (scind.binary_closing(pixel_data & mask, 
-                                                 np.ones((3,3),bool)) |
+                                                 np.ones((3,3),bool),
+                                                 iterations = count) |
                             (pixel_data & ~ mask))
-                                                 
-            else:
-                return morph.closing(pixel_data, mask==mask)
-        elif function_name == F_DIAG:
-            return morph.diag(pixel_data, mask)
-        elif function_name == F_DILATE:
-            if is_binary:
+                
+            elif function_name == F_DIAG:
+                return morph.diag(pixel_data, mask, count)
+            elif function_name == F_DILATE:
                 return scind.binary_dilation(pixel_data, 
-                                             np.ones((3,3),bool),1,mask)
-            else:
-                return morph.grey_dilation(pixel_data, mask=mask)
-        elif function_name == F_ERODE:
-            if is_binary:
+                                             np.ones((3,3),bool),
+                                             iterations=count,
+                                             mask=mask)
+            elif function_name == F_ERODE:
                 return scind.binary_erosion(pixel_data, np.ones((3,3),bool),
-                                            1,mask)
-            else:
-                return morph.grey_erosion(pixel_data, mask=mask)
-        elif function_name == F_FILL:
-            return morph.fill(pixel_data, mask)
-        elif function_name == F_HBREAK:
-            return morph.hbreak(pixel_data, mask)
-        elif function_name == F_LIFE:
-            return morph.life(pixel_data)
-        elif function_name == F_MAJORITY:
-            return morph.majority(pixel_data, mask)
-        elif function_name == F_OPEN:
-            if is_binary:
+                                            iterations = count,
+                                            mask = mask)
+            elif function_name == F_FILL:
+                return morph.fill(pixel_data, mask, count)
+            elif function_name == F_HBREAK:
+                return morph.hbreak(pixel_data, mask, count)
+            elif function_name == F_LIFE:
+                return morph.life(pixel_data, count)
+            elif function_name == F_MAJORITY:
+                return morph.majority(pixel_data, mask, count)
+            elif function_name == F_OPEN:
                 if mask is None:
-                    return scind.binary_opening(pixel_data,np.ones((3,3),bool))
+                    return scind.binary_opening(pixel_data,
+                                                np.ones((3,3),bool),
+                                                iterations = count)
                 else:
                     return (scind.binary_opening(pixel_data & mask, 
-                                                 np.ones((3,3),bool)) |
+                                                 np.ones((3,3),bool),
+                                                 iterations = count) |
                             (pixel_data & ~ mask))
-                                                 
+            elif function_name == F_REMOVE:
+                return morph.remove(pixel_data, mask, count)
+            elif function_name == F_SHRINK:
+                return morph.binary_shrink(pixel_data, count)
+            elif function_name == F_SKEL:
+                return morph.skeletonize(pixel_data, mask)
+            elif function_name == F_SPUR:
+                return morph.spur(pixel_data, mask, count)
+            elif function_name == F_THICKEN:
+                return morph.thicken(pixel_data, mask, count)
+            elif function_name == F_THIN:
+                return morph.thin(pixel_data, mask, count)
+            elif function_name == F_VBREAK:
+                return morph.vbreak(pixel_data, mask)
             else:
-                return morph.opening(pixel_data, mask==mask)
-        elif function_name == F_REMOVE:
-            return morph.remove(pixel_data, mask)
-        elif function_name == F_SHRINK:
-            return morph.binary_shrink(pixel_data, 1)
-        elif function_name == F_SKEL:
-            return morph.skeletonize(pixel_data, mask)
-        elif function_name == F_SPUR:
-            return morph.spur(pixel_data, mask)
-        elif function_name == F_THICKEN:
-            return morph.thicken(pixel_data, mask)
-        elif function_name == F_THIN:
-            return morph.thin(pixel_data, mask)
-        elif function_name == F_TOPHAT:
-            return morph.white_tophat(pixel_data, mask=mask)
-        elif function_name == F_VBREAK:
-            return morph.vbreak(pixel_data, mask)
+                raise NotImplementedError("Unimplemented morphological function: %s" %
+                                          function_name)
         else:
-            raise NotImplementedError("Unimplemented morphological function: %s" %
-                                      function_name)
+            for i in range(count):
+                if function_name == F_BOTHAT:
+                    new_pixel_data = morph.black_tophat(pixel_data, mask=mask)
+                elif function_name == F_CLOSE:
+                                                         
+                    new_pixel_data = morph.closing(pixel_data, mask==mask)
+                elif function_name == F_DILATE:
+                    new_pixel_data = morph.grey_dilation(pixel_data, mask=mask)
+                elif function_name == F_ERODE:
+                    new_pixel_data = morph.grey_erosion(pixel_data, mask=mask)
+                elif function_name == F_OPEN:
+                    new_pixel_data = morph.opening(pixel_data, mask==mask)
+                elif function_name == F_TOPHAT:
+                    new_pixel_data = morph.white_tophat(pixel_data, mask=mask)
+                else:
+                    raise NotImplementedError("Unimplemented morphological function: %s" %
+                                              function_name)
+                if np.all(new_pixel_data == pixel_data):
+                    break;
+                pixel_data = new_pixel_data
+            return pixel_data

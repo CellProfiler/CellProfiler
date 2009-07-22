@@ -935,6 +935,12 @@ Yes will have no effect.""")
         
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
+        #
+        # Fill again - sometimes a small object gets filtered out of the
+        # middle of a larger object
+        #
+        if self.fill_holes.value:
+            labeled_image = fill_labeled_holes(labeled_image)
         
         # Make an outline image
         outline_image = cellprofiler.cpmath.outline.outline(labeled_image)

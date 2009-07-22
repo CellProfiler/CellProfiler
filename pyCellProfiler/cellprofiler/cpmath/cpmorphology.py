@@ -79,6 +79,24 @@ def fill_labeled_holes(image):
     output_image[hole_mask] = hole_label[labeled_holes[hole_mask]]
     return output_image
 
+def adjacent(labels):
+    '''Return a binary mask of all pixels which are adjacent to a pixel of 
+       a different label.
+       
+    '''
+    high = labels.max()+1
+    image_with_high_background = labels.copy()
+    image_with_high_background[labels == 0] = high
+    min_label = scind.minimum_filter(image_with_high_background,
+                                     footprint=np.ones((3,3),bool),
+                                     mode = 'constant',
+                                     cval = high)
+    max_label = scind.maximum_filter(labels,
+                                     footprint=np.ones((3,3),bool),
+                                     mode = 'constant',
+                                     cval = 0)
+    return (min_label != max_label) & (labels > 0)
+
 def binary_thin(image, strel1, strel2):
     """Morphologically thin an image
     strel1 - the required values of the pixels in order to survive
@@ -87,6 +105,8 @@ def binary_thin(image, strel1, strel2):
     hit_or_miss = scind.binary_hit_or_miss(image, strel1, strel2)
     return np.logical_and(image,np.logical_not(hit_or_miss))
 
+binary_shrink_top_right = None
+binary_shrink_bottom_left = None
 def binary_shrink(image, iterations=-1):
     """Shrink an image by repeatedly removing pixels which have partners
        above, to the left, to the right and below until the image doesn't change
@@ -107,27 +127,84 @@ def binary_shrink(image, iterations=-1):
        0  0  1
        Rotate each of these 4x to get the four directions for each
     """
-    hv_thinner = np.array([[False,False,False],[False,True,False],[False,True,False]])
-    hv_anti_thinner = np.array([[True,True,True],[False,False,False],[False,False,False]])
-    d_thinner = np.array([[False,False,False],[False,True,False],[False,False,True]])
-    d_anti_thinner = np.array([[True,True,True],[True,False,True],[True,True,False]])
-    thinners = []
-    anti_thinners = []
-    for thinner,anti_thinner in ((hv_thinner, hv_anti_thinner),(d_thinner,d_anti_thinner)):
-        for n in range(4):
-            thinners.append(np.lib.rot90(thinner,n))
-            anti_thinners.append(np.lib.rot90(anti_thinner,n))
+    global binary_shrink_top_right, binary_shrink_bottom_left
+    if binary_shrink_top_right is None:
+        #
+        # Neither of these patterns can remove both of two isolated
+        # eight-connected pixels. Taken together, they can remove any
+        # pixel touching a background pixel.
+        #
+        binary_shrink_top_right = make_table(False,
+                                             np.array([[0,0,0],
+                                                       [0,1,0],
+                                                       [0,1,0]],bool),
+                                             np.array([[1,1,1],
+                                                       [0,1,0],
+                                                       [0,1,0]],bool))
+        binary_shrink_top_right &= make_table(False,
+                                              np.array([[0,0,0],
+                                                        [0,1,0],
+                                                        [1,0,0]], bool),
+                                              np.array([[1,1,1],
+                                                        [0,1,1],
+                                                        [1,0,1]], bool))
+        binary_shrink_top_right &= make_table(False,
+                                              np.array([[0,0,0],
+                                                        [1,1,0],
+                                                        [0,0,0]], bool),
+                                              np.array([[0,0,1],
+                                                        [1,1,1],
+                                                        [0,0,1]], bool))
+        binary_shrink_top_right &= make_table(False,
+                                              np.array([[0,0,0],
+                                                        [0,1,0],
+                                                        [0,0,1]], bool),
+                                              np.array([[1,1,1],
+                                                        [1,1,0],
+                                                        [1,0,1]], bool))
+        binary_shrink_bottom_left = make_table(False,
+                                               np.array([[0,1,0],
+                                                         [0,1,0],
+                                                         [0,0,0]],bool),
+                                               np.array([[0,1,0],
+                                                         [0,1,0],
+                                                         [1,1,1]],bool))
+        binary_shrink_bottom_left &= make_table(False,
+                                                np.array([[0,0,1],
+                                                          [0,1,0],
+                                                          [0,0,0]], bool),
+                                                np.array([[1,0,1],
+                                                          [1,1,0],
+                                                          [1,1,1]], bool))
+        binary_shrink_bottom_left &= make_table(False,
+                                                np.array([[0,0,0],
+                                                          [0,1,1],
+                                                          [0,0,0]], bool),
+                                                np.array([[1,0,0],
+                                                          [1,1,1],
+                                                          [1,0,0]], bool))
+        binary_shrink_bottom_left &= make_table(False,
+                                                np.array([[1,0,0],
+                                                          [0,1,0],
+                                                          [0,0,0]], bool),
+                                                np.array([[1,0,1],
+                                                          [0,1,1],
+                                                          [1,1,1]], bool))
+    orig_image = image
+    index_i, index_j, image = prepare_for_index_lookup(image, False)
     if iterations == -1:
-        iterations = 10000
-    result = image
-    for n in range(iterations):
-        temp = result.copy()
-        for thinner,anti_thinner in zip(thinners,anti_thinners):
-            temp = binary_thin(temp,thinner,anti_thinner)
-        if np.all(temp==result):
-            return result
-        result=temp
-    return result
+        iterations = len(index_i)
+    for i in range(iterations):
+        pixel_count = len(index_i)
+        for table in (binary_shrink_top_right, 
+                      binary_shrink_bottom_left):
+            index_i, index_j = index_lookup(index_i, index_j, 
+                                            image, table, 1)
+        if len(index_i) == pixel_count:
+            break
+    image = np.zeros(orig_image.shape, orig_image.dtype)
+    image[index_i, index_j] = orig_image[index_i, index_j]
+    return image
 
 def strel_disk(radius):
     """Create a disk structuring element for morphological operations
@@ -1127,10 +1204,14 @@ def euler_number(labels, indexes=None):
     I01 = np.zeros(I_shape,int)
     I10 = np.zeros(I_shape,int)
     I11 = np.zeros(I_shape,int)
-    I00[1:labels.shape[0]+1,1:labels.shape[1]+1] = labels
-    I01[1:labels.shape[0]+1,2:labels.shape[1]+2] = labels
-    I10[2:labels.shape[0]+2,1:labels.shape[1]+1] = labels
-    I11[2:labels.shape[0]+2,2:labels.shape[1]+2] = labels
+    slice_00 = [slice(1,labels.shape[0]+1),slice(1,labels.shape[1]+1)]
+    slice_01 = [slice(1,labels.shape[0]+1),slice(0,labels.shape[1])]
+    slice_10 = [slice(labels.shape[0]),slice(1,labels.shape[1]+1)]
+    slice_11 = [slice(0,labels.shape[0]),slice(0,labels.shape[1])]
+    I00[slice_00] = labels
+    I01[slice_01] = labels
+    I10[slice_10] = labels
+    I11[slice_11] = labels
     #
     # There are 6 binary comparisons among the four bits
     #
@@ -1149,46 +1230,41 @@ def euler_number(labels, indexes=None):
     #
     # Q1: 1 0 
     #     0 0
-    Q1_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),NE00_11)
-    Q1  = fix(scind.sum(Q1_condition, I00, indexes))
+    Q1_condition = (NE00_01 & NE00_10 & NE00_11).astype(int)
     #     0 1
     #     0 0
-    Q1_condition = np.logical_and(np.logical_and(NE01_00, NE01_10),NE01_11)
-    Q1 += fix(scind.sum(Q1_condition, I01, indexes))
+    Q1_condition[slice_00] += (NE01_00 & NE01_10 & NE01_11)[slice_01]
     #     0 0
     #     1 0
-    Q1_condition = np.logical_and(np.logical_and(NE10_00, NE10_01),NE10_11)
-    Q1 += fix(scind.sum(Q1_condition, I10, indexes))
+    Q1_condition[slice_00] += (NE10_00 & NE10_01 & NE10_11)[slice_10]
     #     0 0
     #     0 1
-    Q1_condition = np.logical_and(np.logical_and(NE11_00, NE11_01),NE11_10)
-    Q1 += fix(scind.sum(Q1_condition, I11, indexes))
+    Q1_condition[slice_00] += (NE11_00 & NE11_01 & NE11_10)[slice_11]
+    Q1 = fix(scind.sum(Q1_condition, I00, indexes))
     #
-    # Q3: 0 1
+    # Q3: 1 1
+    #     1 0
+    Q3_condition = (EQ00_10 & EQ00_01 & NE00_11).astype(int)
+    #     0 1
     #     1 1
-    Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ01_10),EQ01_11)
-    Q3  = fix(scind.sum(Q3_condition, I01, indexes))
+    Q3_condition[slice_00] += (NE11_00 & EQ11_10 & EQ11_01)[slice_11]
     #     1 0
     #     1 1
-    Q3_condition = np.logical_and(np.logical_and(NE00_01, EQ00_10),EQ00_11)
-    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
-    #     1 1
-    #     1 0
-    Q3_condition = np.logical_and(np.logical_and(NE00_11, EQ00_01),EQ00_10)
-    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
+    Q3_condition += (NE00_01 & EQ00_10 & EQ00_11)
     #     1 1
     #     0 1
-    Q3_condition = np.logical_and(np.logical_and(NE00_10, EQ00_01),EQ00_11)
-    Q3 += fix(scind.sum(Q3_condition, I00, indexes))
+    Q3_condition += (NE00_10 & EQ00_01 & EQ00_11)
+    Q3 = fix(scind.sum(Q3_condition, I00, indexes))
     # QD: 1 0
     #     0 1
-    QD_condition = np.logical_and(np.logical_and(NE00_01, NE00_10),EQ00_11)
-    QD  = fix(scind.sum(QD_condition, I00, indexes))
+    QD_condition = (NE00_01 & NE00_10 & EQ00_11).astype(int)
     #     0 1
     #     1 0
-    QD_condition = np.logical_and(np.logical_and(NE01_00, NE01_11),EQ01_10)
-    QD  = fix(scind.sum(QD_condition, I01, indexes))
+    QD_condition[slice_00] += (NE01_00 & NE01_11 & EQ01_10)[slice_01]
+    QD  = fix(scind.sum(QD_condition, I00, indexes))
     W = (Q1 - Q3 - 2*QD).astype(float)/4.0
+    if indexes is None:
+        return W[0]
     return W
 
 def block(shape, block_shape):
@@ -1331,7 +1407,7 @@ def closing(image, radius=None, mask=None):
     dilated_image = grey_dilation(image, radius, mask)
     return grey_erosion(dilated_image, radius, mask)
 
-def table_lookup(image, table, border_value):
+def table_lookup(image, table, border_value, iterations = None):
     '''Perform a morphological transform on an image, directed by its neighbors
     
     image - a binary image
@@ -1349,31 +1425,149 @@ def table_lookup(image, table, border_value):
     that evaluate to true. 
     '''
     #
-    # We accumulate into the indexer to get the index into the table
-    # at each point in the image
+    # Test for a table that never transforms a zero into a one:
     #
-    if image.shape[0] < 3 or image.shape[1] < 3:
-        image = image.astype(bool)
-        indexer = np.zeros(image.shape,int)
-        indexer[1:,1:]   += image[:-1,:-1] * 2**0
-        indexer[1:,:]    += image[:-1,:] * 2**1
-        indexer[1:,:-1]  += image[:-1,1:] * 2**2
-        
-        indexer[:,1:]    += image[:,:-1] * 2**3
-        indexer[:,:]     += image[:,:] * 2**4
-        indexer[:,:-1]   += image[:,1:] * 2**5
+    center_is_zero = np.array([(x & 2**4) == 0 for x in range(2**9)])
+    use_index_trick = False
+    if (not np.any(table[center_is_zero]) and
+        (np.issubdtype(image.dtype, bool) or np.issubdtype(image.dtype, int))):
+        # Use the index trick
+        use_index_trick = True
+        invert = False
+    elif (np.all(table[~center_is_zero]) and np.issubdtype(image.dtype, bool)):
+        # All ones stay ones, invert the table and the image and do the trick
+        use_index_trick = True
+        invert = True
+        image = ~ image
+        # table index 0 -> 511 and the output is reversed
+        table = ~ table[511-np.arange(512)]
+        border_value = not border_value
+    if use_index_trick:
+        orig_image = image
+        index_i, index_j, image = prepare_for_index_lookup(image, border_value)
+        index_i, index_j = index_lookup(index_i, index_j, 
+                                        image, table, iterations)
+        image = np.zeros(orig_image.shape, orig_image.dtype)
+        image[index_i, index_j] = orig_image[index_i, index_j]
+        if invert:
+            image = ~ image
+        return image
     
-        indexer[:-1,1:]  += image[1:,:-1] * 2**6
-        indexer[:-1,:]   += image[1:,:] * 2**7
-        indexer[:-1,:-1] += image[1:,1:] * 2**8
-    else:
-        indexer = table_lookup_index(np.ascontiguousarray(image,np.uint8))
-    if border_value:
-        indexer[0,:]   |= 2**0 + 2**1 + 2**2
-        indexer[-1,:]  |= 2**6 + 2**7 + 2**8
-        indexer[:,0]   |= 2**0 + 2**3 + 2**6
-        indexer[:,-1]  |= 2**2 + 2**5 + 2**8
-    return table[indexer]
+    counter = 0
+    while counter != iterations:
+        counter += 1
+        #
+        # We accumulate into the indexer to get the index into the table
+        # at each point in the image
+        #
+        if image.shape[0] < 3 or image.shape[1] < 3:
+            image = image.astype(bool)
+            indexer = np.zeros(image.shape,int)
+            indexer[1:,1:]   += image[:-1,:-1] * 2**0
+            indexer[1:,:]    += image[:-1,:] * 2**1
+            indexer[1:,:-1]  += image[:-1,1:] * 2**2
+            
+            indexer[:,1:]    += image[:,:-1] * 2**3
+            indexer[:,:]     += image[:,:] * 2**4
+            indexer[:,:-1]   += image[:,1:] * 2**5
+        
+            indexer[:-1,1:]  += image[1:,:-1] * 2**6
+            indexer[:-1,:]   += image[1:,:] * 2**7
+            indexer[:-1,:-1] += image[1:,1:] * 2**8
+        else:
+            indexer = table_lookup_index(np.ascontiguousarray(image,np.uint8))
+        if border_value:
+            indexer[0,:]   |= 2**0 + 2**1 + 2**2
+            indexer[-1,:]  |= 2**6 + 2**7 + 2**8
+            indexer[:,0]   |= 2**0 + 2**3 + 2**6
+            indexer[:,-1]  |= 2**2 + 2**5 + 2**8
+        new_image = table[indexer]
+        if np.all(new_image == image):
+            break
+        image = new_image
+    return image
+
+def index_lookup(index_i, index_j, image, table, iterations=None):
+    '''Perform a table lookup for only the indexed pixels
+    
+    For morphological operations that only convert 1 to 0, the set of
+    resulting pixels is always a subset of the input set. Therefore, when
+    repeating, it will be faster to operate only on the subsets especially
+    when the results are 1-d or 0-d objects.
+    
+    This function returns a new index_i and index_j array of the pixels
+    that survive the operation. The image is modified in-place to remove
+    the pixels that did not survive.
+    
+    index_i - an array of row indexes into the image.
+    index_j - a similarly-shaped array of column indexes.
+    image - the binary image: *NOTE* add a row and column of border values
+            to the original image to account for pixels on the edge of the
+            image.
+    iterations - # of iterations to do, default is "forever"
+    
+    The idea of index_lookup was taken from
+    http://blogs.mathworks.com/steve/2008/06/13/performance-optimization-for-applylut/
+    which, apparently, is how Matlab achieved its bwmorph speedup.
+    '''
+    if iterations == None:
+        # Worst case - remove one per iteration
+        iterations = len(index_i)
+    for i in range(iterations):
+        hit_count = len(index_i)
+        indexer = np.ones(index_i.shape, int) * 2**4 # get the middle for free
+        if np.issubdtype(image.dtype, int):
+            #
+            # For integers, an adjacent point is "background" if it
+            # doesn't match the integer value. This lets adjacent labeled
+            # objects shrink independently of each other.
+            #
+            indexer[image[index_i-1, index_j-1]==image[index_i,index_j]]+=2**0
+            indexer[image[index_i-1, index_j]==image[index_i,index_j]]  +=2**1
+            indexer[image[index_i-1, index_j+1]==image[index_i,index_j]]+=2**2
+            indexer[image[index_i, index_j-1]==image[index_i,index_j]]  +=2**3
+            # we did 2**4 already
+            indexer[image[index_i, index_j+1]==image[index_i,index_j]]  +=2**5
+            indexer[image[index_i+1, index_j-1]==image[index_i,index_j]]+=2**6
+            indexer[image[index_i+1, index_j]==image[index_i,index_j]]  +=2**7
+            indexer[image[index_i+1, index_j+1]==image[index_i,index_j]]+=2**8
+        elif np.issubdtype(image.dtype, bool):
+            indexer[image[index_i-1, index_j-1]] += 2**0
+            indexer[image[index_i-1, index_j]]   += 2**1
+            indexer[image[index_i-1, index_j+1]] += 2**2
+            indexer[image[index_i, index_j-1]]   += 2**3
+            # we did 2**4 already
+            indexer[image[index_i, index_j+1]]   += 2**5
+            indexer[image[index_i+1, index_j-1]] += 2**6
+            indexer[image[index_i+1, index_j]]   += 2**7
+            indexer[image[index_i+1, index_j+1]] += 2**8
+        else:
+            raise ValueError("Unsupported dtype: %s"%image.dtype)
+        hits = table[indexer]
+        not_hits = ~hits
+        image[index_i[not_hits], index_j[not_hits]] = False
+        index_i = index_i[hits]
+        index_j = index_j[hits]
+        if len(index_i) == hit_count:
+            break
+    return (index_i, index_j)
+
+def prepare_for_index_lookup(image, border_value):
+    '''Return the index arrays of "1" pixels and an image with an added border
+    
+    The routine, index_lookup takes an array of i indexes, an array of
+    j indexes and an image guaranteed to be indexed successfully by 
+    index_<i,j>[:] +/- 1. This routine constructs an image with added border
+    pixels... evilly, the index, 0 - 1, lands on the border because of Python's
+    negative indexing convention.
+    '''
+    if np.issubdtype(image.dtype, float):
+        image = image.astype(bool)
+    image_i, image_j = np.argwhere(image.astype(bool)).transpose()
+    output_image = (np.ones(np.array(image.shape)+1,image.dtype) if border_value
+                    else np.zeros(np.array(image.shape)+1, image.dtype))
+    output_image[:image.shape[0],:image.shape[1]] = image
+    return (image_i, image_j, output_image)
 
 def pattern_of(index):
     '''Return the pattern represented by an index value'''
@@ -1417,7 +1611,7 @@ bridge_table = np.array([pattern_of(index)[1,1] or
                                      np.ones((3,3),bool))[1] > 1
                          for index in range(512)])
 
-def bridge(image, mask=None):
+def bridge(image, mask=None, iterations = 1):
     '''Fill in pixels that bridge gaps.
     
     1 0 0    1 0 0
@@ -1430,7 +1624,7 @@ def bridge(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, bridge_table, False)
+    result = table_lookup(masked_image, bridge_table, False, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1439,7 +1633,8 @@ def bridge(image, mask=None):
 clean_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                           np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) &
                make_table(False, np.array([[0,0,0],[0,1,0],[0,0,0]],bool)))
-def clean(image, mask=None):
+
+def clean(image, mask=None, iterations = 1):
     '''Remove isolated pixels
     
     0 0 0     0 0 0
@@ -1455,7 +1650,7 @@ def clean(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, clean_table, False)
+    result = table_lookup(masked_image, clean_table, False, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1489,7 +1684,7 @@ diag_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                                          [1,1,0],
                                          [1,1,0]])))
                                          
-def diag(image, mask=None):
+def diag(image, mask=None, iterations=1):
     '''4-connect pixels that are 8-connected
     
     0 0 0     0 0 ?
@@ -1503,7 +1698,7 @@ def diag(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, diag_table, False)
+    result = table_lookup(masked_image, diag_table, False, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1512,7 +1707,8 @@ def diag(image, mask=None):
 fill_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                          np.array([[0,0,0],[0,1,0],[0,0,0]],bool)) |
               make_table(True, np.array([[1,1,1],[1,0,1],[1,1,1]],bool)))
-def fill(image, mask=None):
+
+def fill(image, mask=None, iterations=1):
     '''Fill isolated black pixels
     
     1 1 1     1 1 1
@@ -1525,7 +1721,7 @@ def fill(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = True
-    result = table_lookup(masked_image, fill_table, True)
+    result = table_lookup(masked_image, fill_table, True, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1536,7 +1732,7 @@ hbreak_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                 [i != index_of(np.array([[1,1,1],[0,1,0],[1,1,1]],bool))
                  for i in range(512)])
 
-def hbreak(image, mask=None):
+def hbreak(image, mask=None, iterations=1):
     '''Remove horizontal breaks
     
     1 1 1     1 1 1
@@ -1560,7 +1756,7 @@ vbreak_table = (make_table(True, np.array([[0,0,0],[0,1,0],[0,0,0]],bool),
                 [i != index_of(np.array([[1,0,1],[1,1,1],[1,0,1]],bool))
                  for i in range(512)])
 
-def vbreak(image, mask=None):
+def vbreak(image, mask=None, iterations=1):
     '''Remove horizontal breaks
     
     1 1 1     1 1 1
@@ -1582,13 +1778,13 @@ life_table = np.array([np.sum(pattern_of(i))==3 or
                        (pattern_of(i)[1,1] and np.sum(pattern_of(i))==4)
                        for i in range(512)])
 
-def life(image, mask=None):
+def life(image, mask=None, iterations=1):
     global life_table
     return table_lookup(image, life_table, False)
     
 # Majority table - a pixel is 1 if the sum of it and its neighbors is > 4
 majority_table = np.array([np.sum(pattern_of(i))>4 for i in range(512)])
-def majority(image, mask=None):
+def majority(image, mask=None, iterations=1):
     '''A pixel takes the value of the majority of its neighbors
     
     '''
@@ -1598,7 +1794,7 @@ def majority(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, majority_table, False)
+    result = table_lookup(masked_image, majority_table, False, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1616,7 +1812,7 @@ remove_table = (make_table(True,
                                     [1,1,1],
                                     [0,1,0]],bool)))
 
-def remove(image, mask=None):
+def remove(image, mask=None, iterations=1):
     '''Turn 1 pixels to 0 if their 4-connected neighbors are all 0
     
     ? 1 ?     ? 1 ?
@@ -1654,7 +1850,7 @@ spur_table_2 = np.array([(np.sum(pattern_of(i)) != 2 or
                          (i & 2**4)
                          for i in range(512)],bool)
 
-def spur(image, mask=None):
+def spur(image, mask=None, iterations=1):
     '''Remove spur pixels from an image
     
     0 0 0    0 0 0
@@ -1667,11 +1863,19 @@ def spur(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, spur_table_1, False)
-    result = table_lookup(result, spur_table_2, False)
+    index_i, index_j, masked_image = prepare_for_index_lookup(masked_image, 
+                                                              False)
+    if iterations == None:
+        iterations = len(index_i)
+    for i in range(iterations):
+        for table in (spur_table_1, spur_table_2):
+            index_i, index_j = index_lookup(index_i, index_j, 
+                                            masked_image, table, 1)
+    masked_image = np.zeros(image.shape, image.dtype)
+    masked_image[index_i, index_j] = image[index_i, index_j]
     if not mask is None:
-        result[~mask] = image[~mask]
-    return result
+        masked_image[~mask] = image[~mask]
+    return masked_image
 
 #
 # The thicken table turns pixels on if they have a neighbor that's on and
@@ -1681,7 +1885,7 @@ thicken_table = np.array([scind.label(pattern_of(i), eight_connect)[1] ==
                           scind.label(pattern_of(i | 16), eight_connect)[1] or
                           ((i & 16) != 0) for i in range(512)])
                                       
-def thicken(image, mask=None):
+def thicken(image, mask=None, iterations=1):
     '''Thicken the objects in an image where doing so does not connect them
     
     0 0 0    ? ? ?
@@ -1698,7 +1902,7 @@ def thicken(image, mask=None):
     else:
         masked_image = image.astype(bool).copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, thicken_table, False)
+    result = table_lookup(masked_image, thicken_table, False, iterations)
     if not mask is None:
         result[~mask] = image[~mask]
     return result
@@ -1725,7 +1929,7 @@ def thicken(image, mask=None):
 #
 thin_table = None
 
-def thin(image, mask=None):
+def thin(image, mask=None, iterations=1):
     '''Thin an image to lines, preserving Euler number
     
     Implements thinning as described in algorithm # 1 from
@@ -1756,18 +1960,29 @@ def thin(image, mask=None):
             thin_table[1,i] = ((pat[2,1] or pat[2,0] or not pat[0,0]) and
                                pat[1,0])
     if mask is None:
-        masked_image = image
+        masked_image = image.copy()
     else:
-        masked_image = image.astype(bool).copy()
+        masked_image = image.copy()
         masked_image[~mask] = False
-    result = table_lookup(masked_image, thin_table[0], False)
-    result = table_lookup(result, thin_table[1], False)
+    index_i, index_j, masked_image = prepare_for_index_lookup(masked_image, False)
+    if iterations is None:
+        iterations = len(index_i)
+    for i in range(iterations):
+        hit_count = len(index_i)
+        for j in range(2):
+            index_i, index_j, = index_lookup(index_i, index_j, 
+                                             masked_image,
+                                             thin_table[j], 1)
+        if hit_count == len(index_i):
+            break
+    masked_image = np.zeros(image.shape, image.dtype)
+    masked_image[index_i, index_j] = image[index_i, index_j]
     if not mask is None:
-        result[~mask] = image[~mask]
-    return result
+        masked_image[~mask] = masked_image[~mask]
+    return masked_image
         
 
-def skeletonize(image, mask=None,fast=True):
+def skeletonize(image, mask=None):
     '''Skeletonize the image
     
     Take the distance transform.
@@ -1803,7 +2018,7 @@ def skeletonize(image, mask=None,fast=True):
     #
     cornerness_table = np.array([9-np.sum(pattern_of(index))
                                  for index in range(512)])
-    corner_score = table_lookup(masked_image, cornerness_table, False)
+    corner_score = table_lookup(masked_image, cornerness_table, False,1)
     i,j = np.mgrid[0:image.shape[0],0:image.shape[1]]
     result=masked_image.copy()
     distance = distance[result]
@@ -1816,32 +2031,7 @@ def skeletonize(image, mask=None,fast=True):
                         distance))
     order = np.ascontiguousarray(order, np.int32)
     table = np.ascontiguousarray(table, np.uint8)
-    if fast:
-        skeletonize_loop(result, i, j, order, table)
-    else:
-        for index in order:
-            accumulator = 16
-            ii = i[index]
-            jj = j[index]
-            if ii > 0:
-                if jj > 0 and result[ii-1,jj-1]:
-                    accumulator += 1
-                if result[ii-1,jj]:
-                    accumulator += 2
-                if jj < result.shape[1]-1 and result[ii-1,jj+1]:
-                    accumulator += 4
-            if jj > 0 and result[ii,jj-1]:
-                accumulator += 8
-            if jj < result.shape[1]-1 and result[ii,jj+1]:
-                accumulator += 32
-            if ii < result.shape[0]-1:
-                if jj > 0 and result[ii+1,jj-1]:
-                    accumulator += 64
-                if result[ii+1,jj]:
-                    accumulator += 128
-                if jj < result.shape[1]-1 and result[ii+1,jj+1]:
-                    accumulator += 256
-            result[ii,jj] = table[accumulator]
+    skeletonize_loop(result, i, j, order, table)
     
     result = result.astype(bool)
     if not mask is None:

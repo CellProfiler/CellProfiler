@@ -20,6 +20,7 @@ from correctillumination_calculate import CorrectIllumination_Calculate
 from correctillumination_apply import CorrectIllumination_Apply
 from crop import Crop
 from enhanceorsuppressspeckles import EnhanceOrSuppressSpeckles
+from expandorshrink import ExpandOrShrink
 from exporttodatabase import ExportToDatabase
 from exporttoexcel import ExportToExcel
 from filterbyobjectmeasurement import FilterByObjectMeasurement
@@ -59,6 +60,7 @@ def get_module_classes():
             CorrectIllumination_Apply,
             Crop,
             EnhanceOrSuppressSpeckles,
+            ExpandOrShrink,
             ExportToDatabase,
             ExportToExcel,
             FindEdges,
@@ -100,6 +102,7 @@ def get_module_substitutions():
             "CorrectIllumination_Calculate":CorrectIllumination_Calculate,
             "CorrectIllumination_Apply":CorrectIllumination_Apply,
             "Crop": Crop,
+            "ExpandOrShrink": ExpandOrShrink,
             "ExportToDatabase": ExportToDatabase,
             "ExportToExcel": ExportToExcel,
             "FindEdges": FindEdges,

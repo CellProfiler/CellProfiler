@@ -20,6 +20,7 @@ import scipy.misc
 import scipy.io.matlab
 
 import cellprofiler.cpmath.cpmorphology as morph
+from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
 class TestFillLabeledHoles(unittest.TestCase):
     def test_01_00_zeros(self):
@@ -115,7 +116,34 @@ class TestFillLabeledHoles(unittest.TestCase):
                              [0,0,0,0,0,0,0,0,0,0,0,0]])
         output = morph.fill_labeled_holes(image)
         self.assertTrue(np.all(output==expec))
-            
+
+class TestAdjacent(unittest.TestCase):
+    def test_00_00_zeros(self):
+        result = morph.adjacent(np.zeros((10,10), int))
+        self.assertTrue(np.all(result==False))
+    
+    def test_01_01_one(self):
+        image = np.zeros((10,10), int)
+        image[2:5,3:8] = 1
+        result = morph.adjacent(image)
+        self.assertTrue(np.all(result==False))
+        
+    def test_01_02_not_adjacent(self):
+        image = np.zeros((10,10), int)
+        image[2:5,3:8] = 1
+        image[6:8,3:8] = 2
+        result = morph.adjacent(image)
+        self.assertTrue(np.all(result==False))
+
+    def test_01_03_adjacent(self):
+        image = np.zeros((10,10), int)
+        image[2:8,3:5] = 1
+        image[2:8,5:8] = 2
+        expected = np.zeros((10,10), bool)
+        expected[2:8,4:6] = True
+        result = morph.adjacent(image)
+        self.assertTrue(np.all(result==expected))
+        
 class TestStrelDisk(unittest.TestCase):
     """Test cellprofiler.cpmath.cpmorphology.strel_disk"""
     
@@ -206,6 +234,28 @@ class TestBinaryShrink(unittest.TestCase):
         my_sum = scind.sum(result.astype(int),filled_labels,range(nlabels+1))
         my_sum = np.array(my_sum)
         self.assertTrue(np.all(my_sum[1:] == 1))
+        
+    def test_07_all_patterns_of_3x3(self):
+        '''Run all patterns of 3x3 with a 1 in the middle
+        
+        All of these patterns should shrink to a single pixel since
+        all are 8-connected and there are no holes
+        '''
+        for i in range(512):
+            a = morph.pattern_of(i)
+            if a[1,1]:
+                result = morph.binary_shrink(a)
+                self.assertEqual(np.sum(result),1)
+    
+    def test_08_labels(self):
+        '''Run a labels matrix through shrink with two touching objects'''
+        labels = np.zeros((10,10),int)
+        labels[2:8,2:5] = 1
+        labels[2:8,5:8] = 2
+        result = morph.binary_shrink(labels)
+        self.assertFalse(np.any(result[labels==0] > 0))
+        my_sum = fix(scind.sum(result>0, labels, np.arange(1,3)))
+        self.assertTrue(np.all(my_sum == 1))
         
 class TestCpmaximum(unittest.TestCase):
     def test_01_zeros(self):
@@ -872,7 +922,17 @@ class TestEulerNumber(unittest.TestCase):
         result = morph.euler_number(labels, [1])
         self.assertEqual(len(result),1)
         self.assertEqual(result[0],1)
-        self.assertEqual(result[0],1)
+    
+    def test_03_01_two_objects(self):
+        labels = np.zeros((10,10), int)
+        # First object has a hole - Euler # is zero
+        labels[1:4,1:4] = 1
+        labels[2,2] = 0
+        # Second object has no hole - Euler # is 1
+        labels[5:8,5:8] = 2
+        result = morph.euler_number(labels, [1,2])
+        self.assertEqual(result[0], 0)
+        self.assertEqual(result[1], 1)
 
 class TestWhiteTophat(unittest.TestCase):
     '''Test the white_tophat function'''
@@ -1721,6 +1781,17 @@ class TestClean(unittest.TestCase):
         mask  = np.array([[1,1,1],[0,1,1],[1,1,1]],bool)
         result= morph.clean(image,mask)
         self.assertEqual(result[1,1], False)
+    
+    def test_03_01_clean_labels(self):
+        '''Test clean on a labels matrix where two single-pixel objects touch'''
+        
+        image = np.zeros((10,10), int)
+        image[2,2] = 1
+        image[2,3] = 2
+        image[5:8,5:8] = 3
+        result = morph.clean(image)
+        self.assertTrue(np.all(result[image != 3] == 0))
+        self.assertTrue(np.all(result[image==3] == 3))
 
 class TestDiag(unittest.TestCase):
     def test_00_00_zeros(self):
@@ -2138,6 +2209,47 @@ class TestThin(unittest.TestCase):
         '''Test thin on an array that is completely masked'''
         result = morph.thin(np.zeros((10,10),bool),np.zeros((10,10),bool))
         self.assertTrue(np.all(result==False))
+    
+    def test_01_01_bar(self):
+        '''Test thin on a bar of width 3'''
+        image = np.zeros((10,10), bool)
+        image[3:6,2:8] = True
+        expected = np.zeros((10,10), bool)
+        expected[4,3:7] = True
+        result = morph.thin(expected,iterations = None)
+        self.assertTrue(np.all(result==expected))
+    
+    def test_02_01_random(self):
+        '''A random image should preserve its Euler number'''
+        np.random.seed(0)
+        for i in range(20):
+            image = np.random.uniform(size=(100,100)) < .1+float(i)/30.
+            expected_euler_number = morph.euler_number(image)
+            result = morph.thin(image)
+            euler_number = morph.euler_number(result)
+            if euler_number != expected_euler_number:
+                from scipy.io.matlab import savemat
+                savemat("c:\\temp\\euler.mat", 
+                        {"orig":image, 
+                         "orig_euler":np.array([expected_euler_number]),
+                         "result":result,
+                         "result_euler":np.array([euler_number]) },
+                         False, "5", True)
+            self.assertTrue(expected_euler_number == euler_number)
+    
+    def test_03_01_labels(self):
+        '''Thin a labeled image'''
+        image = np.zeros((10,10), int)
+        #
+        # This is two touching bars
+        #
+        image[3:6,2:8] = 1
+        image[6:9,2:8] = 2
+        expected = np.zeros((10,10),int)
+        expected[4,3:7] = 1
+        expected[7,3:7] = 2
+        result = morph.thin(expected,iterations = None)
+        self.assertTrue(np.all(result==expected))
 
 class TestTableLookup(unittest.TestCase):
     def test_01_01_all_centers(self):
@@ -2147,40 +2259,45 @@ class TestTableLookup(unittest.TestCase):
             pattern = morph.pattern_of(i)
             image[i*3+1:i*3+4,1:4] = pattern
         table = np.arange(512)
-        index = morph.table_lookup(image, table, False)
+        table[511] = 0 # do this to force using the normal mechanism
+        index = morph.table_lookup(image, table, False, 1)
         self.assertTrue(np.all(index[2::3,2] == table))
     
     def test_01_02_all_corners(self):
         '''Test table lookup at the corners of the image'''
-        table = np.arange(512)
-        for p00 in (False,True):
-            for p01 in (False, True):
-                for p10 in (False, True):
-                    for p11 in (False,True):
-                        image = np.array([[False,False,False,False,False,False],
-                                          [False,p00,  p01,  p00,  p01,  False],
-                                          [False,p10,  p11,  p10,  p11,  False],
-                                          [False,p00,  p01,  p00,  p01,  False],
-                                          [False,p10,  p11,  p10,  p11,  False],
-                                          [False,False,False,False,False,False]])
-                        expected = morph.table_lookup(image,table,False)[1:-1,1:-1]
-                        result = morph.table_lookup(image[1:-1,1:-1],table,False)
-                        self.assertTrue(np.all(result==expected),
-                                        "Failure case:\n%7s,%s\n%7s,%s"%
-                                        (p00,p01,p10,p11))
+        np.random.seed(0)
+        for iteration in range(100):
+            table = np.random.uniform(size=512) > .5
+            for p00 in (False,True):
+                for p01 in (False, True):
+                    for p10 in (False, True):
+                        for p11 in (False,True):
+                            image = np.array([[False,False,False,False,False,False],
+                                              [False,p00,  p01,  p00,  p01,  False],
+                                              [False,p10,  p11,  p10,  p11,  False],
+                                              [False,p00,  p01,  p00,  p01,  False],
+                                              [False,p10,  p11,  p10,  p11,  False],
+                                              [False,False,False,False,False,False]])
+                            expected = morph.table_lookup(image,table,False,1)[1:-1,1:-1]
+                            result = morph.table_lookup(image[1:-1,1:-1],table,False,1)
+                            self.assertTrue(np.all(result==expected),
+                                            "Failure case:\n%7s,%s\n%7s,%s"%
+                                            (p00,p01,p10,p11))
     
     def test_01_03_all_edges(self):
         '''Test table lookup along the edges of the image'''
         image = np.zeros((32*3+2,6),bool)
-        table = np.arange(512)
-        for i in range(32):
-            pattern = morph.pattern_of(i)
-            image[i*3+1:i*3+4,1:3] = pattern[:,:2]
-            image[i*3+1:i*3+4,3:5] = pattern[:,:2]
-        for im in (image,image.transpose()):
-            expected = morph.table_lookup(im,table,False)[1:-1,1:-1]
-            result = morph.table_lookup(im[1:-1,1:-1],table,False)
-            self.assertTrue(np.all(result==expected))
+        np.random.seed(0)
+        for iteration in range(100):
+            table = np.random.uniform(size=512) > .5
+            for i in range(32):
+                pattern = morph.pattern_of(i)
+                image[i*3+1:i*3+4,1:3] = pattern[:,:2]
+                image[i*3+1:i*3+4,3:5] = pattern[:,:2]
+            for im in (image,image.transpose()):
+                expected = morph.table_lookup(im,table,False, 1)[1:-1,1:-1]
+                result = morph.table_lookup(im[1:-1,1:-1],table,False,1)
+                self.assertTrue(np.all(result==expected))
          
 class TestBlock(unittest.TestCase):
     def test_01_01_one_block(self):

@@ -1,15 +1,23 @@
 function compare_outlines
 
-FOLDER1 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/4_28_09_InformerIII/test/BR00011210/HepOutlines';
-FOLDER2 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/4_28_09_InformerIII/test/BR00011210/HepOutlinesCopiedFromOrigRun';
+% This script was used to compare outlines for Meghan Shan's project before and after some CP edits.
+% We wanted to be sure that the segmentation hadn't changed. (2009-07 DLogan)
 
-h = waitbar(0,'Please wait...');
-filelist1 = dir(FOLDER1);
-filelist2 = dir(FOLDER2);
+% FOLDER1 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/4_28_09_InformerIII/test/BR00011210/HepOutlines';
+% FOLDER2 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/4_28_09_InformerIII/test/BR00011210/HepOutlinesCopiedFromOrigRun';
 
-assert(length(filelist1) == length(filelist2))
+FOLDER1 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/2009_3_20_ValidationScreen/BR00008677/HepOutlines';
+FOLDER2 = '/Volumes/imaging_analysis/2007_11_07_Hepatoxicity_SPARC/RadialTest_7_15_09/BR00008677/HepOutlines';
+
 
 try
+    h = waitbar(0,'Please wait...');
+    filelist1 = dir(FOLDER1);
+    filelist2 = dir(FOLDER2);
+
+    assert(length(filelist1) == length(filelist2))
+
+
     for i = 1:length(filelist1)
         file1 = filelist1(i).name;
         file2 = filelist2(i).name;

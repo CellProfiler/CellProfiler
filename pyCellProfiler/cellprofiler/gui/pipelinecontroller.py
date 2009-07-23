@@ -112,7 +112,6 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
-            cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
     
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
@@ -131,6 +130,7 @@ class PipelineController:
             else:
                 self.__pipeline.create_from_handles(handles)
             self.__clear_errors()
+            cellprofiler.preferences.set_current_pipeline_path(pathname)
         except Exception,instance:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
 

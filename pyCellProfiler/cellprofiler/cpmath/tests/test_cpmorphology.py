@@ -2329,3 +2329,97 @@ class TestBlock(unittest.TestCase):
         j = (j / 4).astype(int)
         expected = i * 25 + j
         self.assertTrue(np.all(labels == expected))
+
+class TestNeighbors(unittest.TestCase):
+    def test_00_00_zeros(self):
+        labels = np.zeros((10,10),int)
+        v_counts, v_indexes, v_neighbors = morph.find_neighbors(labels)
+        self.assertEqual(len(v_counts), 0)
+        self.assertEqual(len(v_indexes), 0)
+        self.assertEqual(len(v_neighbors), 0)
+    
+    def test_01_01_no_touch(self):
+        labels = np.zeros((10,10),int)
+        labels[2,2] = 1
+        labels[7,7] = 2
+        v_counts, v_indexes, v_neighbors = morph.find_neighbors(labels)
+        self.assertEqual(len(v_counts), 2)
+        self.assertEqual(v_counts[0], 0)
+        self.assertEqual(v_counts[1], 0)
+    
+    def test_01_02_touch(self):
+        labels = np.zeros((10,10),int)
+        labels[2,2:5] = 1
+        labels[3,2:5] = 2
+        v_counts, v_indexes, v_neighbors = morph.find_neighbors(labels)
+        self.assertEqual(len(v_counts), 2)
+        self.assertEqual(v_counts[0], 1)
+        self.assertEqual(v_neighbors[v_indexes[0]], 2)
+        self.assertEqual(v_counts[1], 1)
+        self.assertEqual(v_neighbors[v_indexes[1]], 1)
+    
+    def test_01_03_complex(self):
+        labels = np.array([[1,1,2,2],
+                           [2,2,2,3],
+                           [4,3,3,3],
+                           [5,6,3,3],
+                           [0,7,8,9]])
+        v_counts, v_indexes, v_neighbors = morph.find_neighbors(labels)
+        self.assertEqual(len(v_counts), 9)
+        for i, neighbors in ((1,[2]),
+                             (2,[1,3,4]),
+                             (3,[2,4,5,6,7,8,9]),
+                             (4,[2,3,5,6]),
+                             (5,[3,4,6,7]),
+                             (6,[3,4,5,7,8]),
+                             (7,[3,5,6,8]),
+                             (8,[3,6,7,9]),
+                             (9,[3,8])):
+            i_neighbors = v_neighbors[v_indexes[i-1]:v_indexes[i-1]+v_counts[i-1]]
+            self.assertTrue(np.all(i_neighbors == np.array(neighbors)))
+
+class TestColor(unittest.TestCase):
+    def test_01_01_color_zeros(self):
+        '''Color a labels matrix of all zeros'''
+        labels = np.zeros((10,10), int)
+        colors = morph.color_labels(labels)
+        self.assertTrue(np.all(colors==0))
+    
+    def test_01_02_color_ones(self):
+        '''color a labels matrix of all ones'''
+        labels = np.ones((10,10), int)
+        colors = morph.color_labels(labels)
+        self.assertTrue(np.all(colors==1))
+
+    def test_01_03_color_complex(self):
+        '''Create a bunch of shapes using Voroni cells and color them'''
+        np.random.seed(0)
+        mask = np.random.uniform(size=(100,100)) < .1
+        labels,count = scind.label(mask, np.ones((3,3),bool))
+        distances,(i,j) = scind.distance_transform_edt(~mask, 
+                                                       return_indices = True)
+        labels = labels[i,j]
+        colors = morph.color_labels(labels)
+        l00 = labels[1:-2,1:-2]
+        c00 = colors[1:-2,1:-2]
+        for i,j in ((-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)):
+            lij = labels[1+i:i-2,1+j:j-2]
+            cij = colors[1+i:i-2,1+j:j-2]
+            self.assertTrue(np.all((l00 == lij) | (c00 != cij)))
+            
+class TestSkeletonizeLabels(unittest.TestCase):
+    def test_01_01_skeletonize_complex(self):
+        '''Skeletonize a complex field of shapes and check each individually'''
+        np.random.seed(0)
+        mask = np.random.uniform(size=(100,100)) < .1
+        labels,count = scind.label(mask, np.ones((3,3),bool))
+        distances,(i,j) = scind.distance_transform_edt(~mask, 
+                                                       return_indices = True)
+        labels = labels[i,j]
+        skel = morph.skeletonize_labels(labels)
+        for i in range(1,count+1,10):
+            mask = labels == i
+            skel_test = morph.skeletonize(mask)
+            self.assertTrue(np.all(skel[skel_test] == i))
+            self.assertTrue(np.all(skel[~skel_test] != i))
+        

@@ -20,6 +20,7 @@ import cellprofiler.settings as cps
 import cellprofiler.objects as cpo
 from cellprofiler.cpmath.cpmorphology import binary_shrink, thin
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, adjacent
+from cellprofiler.cpmath.cpmorphology import skeletonize_labels, spur
 from cellprofiler.cpmath.outline import outline
 
 O_SHRINK_INF = 'Shrink objects to a point'
@@ -43,12 +44,21 @@ O_EXPAND = 'Expand objects by a specified number of pixels'
 TT_EXPAND = '''Expand each object by adding background pixels adjacent to the
 image. The user can choose the number of times to expand. Processing stops
 automatically if there are no more background pixels.'''
-O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND]
-TT_ALL = {O_SHRINK_INF: TT_SHRINK_INF, 
-          O_EXPAND_INF: TT_EXPAND_INF,
-          O_DIVIDE:     TT_DIVIDE, 
-          O_SHRINK:     TT_SHRINK,
-          O_EXPAND:     TT_EXPAND }
+O_SKELETONIZE = 'Skeletonize each object'
+TT_SKELETONIZE = '''Erode each object to its skeleton'''
+O_SPUR = 'Remove spurs'
+TT_SPUR = '''Remove or reduce the length of spurs in a skeletonized image.
+The algorithm reduces spur size by the number of pixels indicated in the
+setting "Enter the number of pixels by which to expand or shrink."'''
+O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
+         O_SKELETONIZE, O_SPUR]
+TT_ALL = {O_SHRINK_INF:  TT_SHRINK_INF, 
+          O_EXPAND_INF:  TT_EXPAND_INF,
+          O_DIVIDE:      TT_DIVIDE, 
+          O_SHRINK:      TT_SHRINK,
+          O_EXPAND:      TT_EXPAND,
+          O_SKELETONIZE: TT_SKELETONIZE,
+          O_SPUR:        TT_SPUR}
 
 DOC_FILL_HOLES = '''The shrink algorithm preserves each object's Euler number
 which means that it will erode an object with a hole to a ring in order to
@@ -69,6 +79,11 @@ objects down to a point. Objects are never lost using this module (shrinking
 stops when an object becomes a single pixel). The module can separate touching
 objects (which can be created by IdentifySecondary) without otherwise shrinking
 the objects.
+
+ExpandOrShrink can perform some specialized morphological operations that 
+remove pixels without completely removing an object:
+* Skeletonize - reduce each object to its skeleton
+* 
 
 Special note on saving images: Using the settings in this module, object
 outlines can be passed along to the module OverlayOutlines and then saved
@@ -124,7 +139,7 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
 
     def visible_settings(self):
         result = [self.object_name, self.output_object_name, self.operation]
-        if self.operation in (O_SHRINK, O_EXPAND):
+        if self.operation in (O_SHRINK, O_EXPAND, O_SPUR):
             result += [self.iterations]
         if self.operation in (O_SHRINK, O_SHRINK_INF):
             result += [self.wants_fill_holes]
@@ -191,6 +206,10 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
             out_labels = labels.copy()
             out_labels[adjacent_mask & thinnable_mask] = 0
             return out_labels
+        elif self.operation == O_SKELETONIZE:
+            return skeletonize_labels(labels)
+        elif self.operation == O_SPUR:
+            return spur(labels, iterations=self.iterations.value)
         else:
             raise NotImplementedError("Unsupported operation: %s" %
                                       self.operation.value)

@@ -46,6 +46,11 @@ SkipChoice = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 
 %%%VariableRevisionNumber = 2
 
+%%% The figure window display is unnecessary for this module, so the figure
+%%% window is closed the first time through the module.
+CPclosefigure(handles,CurrentModule)
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,9 +59,12 @@ drawnow
 
 if strcmp(SkipChoice,'Skip')
     handles.Settings.SkipToModule = 1;
+    SkipTxt = ' at the beginning of the next cycle';
+else
+    SkipTxt = '';
 end
 
-ButtonName = CPquestdlg({'Continue processing?';'';'Note: Press Ctrl+C to interact with CellProfiler windows while paused.'},...
+ButtonName = CPquestdlg({['Continue processing' SkipTxt '?'];'';'Note: Press Ctrl+C to interact with CellProfiler windows while paused.'},...
     'PauseCellProfiler',...
     'Continue','Cancel',...
     'Continue');
@@ -71,11 +79,3 @@ switch ButtonName
         set(handles.timertexthandle,'string','Canceling after current module')
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%
-%%% DISPLAY RESULTS %%%
-%%%%%%%%%%%%%%%%%%%%%%%
-drawnow
-
-%%% The figure window display is unnecessary for this module, so the figure
-%%% window is closed the first time through the module.
-CPclosefigure(handles,CurrentModule)

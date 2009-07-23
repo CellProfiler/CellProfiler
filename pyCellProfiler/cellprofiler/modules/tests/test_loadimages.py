@@ -576,6 +576,26 @@ class testLoadImages(unittest.TestCase):
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
             os.rmdir(directory)
+            
+    def test_07_01_get_measurement_columns(self):
+        data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
+        fd = StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cpp.Pipeline()
+        pipeline.load(fd)
+        module = pipeline.module(1)
+        expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
+                         ('Image', 'PathName_DNA', 'varchar(128)'), 
+                         ('Image', 'Metadata_Row', 'varchar(128)'), 
+                         ('Image', 'Metadata_Col', 'varchar(128)'), 
+                         ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
+                         ('Image', 'PathName_Cytoplasm', 'varchar(128)'), 
+                         ('Image', 'Metadata_Row', 'varchar(128)'), 
+                         ('Image', 'Metadata_Col', 'varchar(128)')]
+        returned_cols = module.get_measurement_columns(pipeline)
+        for c in expected_cols: 
+            assert c in returned_cols
+        for c in returned_cols: 
+            assert c in expected_cols
 
 if __name__=="main":
     unittest.main()

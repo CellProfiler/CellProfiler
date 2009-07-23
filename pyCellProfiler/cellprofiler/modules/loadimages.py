@@ -850,6 +850,27 @@ class LoadImages(cpmodule.CPModule):
             raise NotImplementedError("Load by order not implemented")
         return None
 
+    def get_measurement_columns(self, pipeline):
+        '''Return a sequence describing the measurement columns needed by this module 
+        '''
+        cols = []
+        for fd in self.images:
+            name = fd[FD_IMAGE_NAME].value
+            cols += [('Image','FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [('Image','PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
+            
+            if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
+                tokens = cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
+                cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
+            
+            if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
+                tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+                cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
+        
+        return cols
+            
+            
+            
 def is_image(filename):
     '''Determine if a filename is a potential image file based on extension'''
     ext = os.path.splitext(filename)[1].lower()
@@ -857,6 +878,8 @@ def is_image(filename):
         return True
     return ext == '.mat'
     
+
+
 class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename, loading the file as it is requested
     """

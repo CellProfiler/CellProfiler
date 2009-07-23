@@ -17,6 +17,7 @@ import scipy.ndimage as scind
 import matplotlib.cm
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
@@ -322,7 +323,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             img[:,:,0][~ object_mask] = 0
             img[:,:,1][~ object_mask] = 0
             img[:,:,2][~ object_mask] = 0
-            image_set.add(self.count_image_name.value, img)
+            count_image = cpi.Image(img, masking_objects = objects)
+            image_set.add(self.count_image_name.value, count_image)
         else:
             neighbor_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         if self.wants_percent_touching_image.value:
@@ -332,8 +334,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
             img[:,:,0][~ object_mask] = 0
             img[:,:,1][~ object_mask] = 0
             img[:,:,2][~ object_mask] = 0
+            touching_image = cpi.Image(img, masking_objects = objects)
             image_set.add(self.touching_image_name.value,
-                          img)
+                          touching_image)
         else:
             percent_touching_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         if not workspace.frame is None:

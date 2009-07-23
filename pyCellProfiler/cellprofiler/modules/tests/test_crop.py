@@ -261,6 +261,20 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
+    
+    def test_04_06_crop_color_with_rectangle(self):
+        '''Regression test: make sure cropping works with a color image'''
+        i,j,k = np.mgrid[0:10,0:10,0:3]
+        input_image = i/1000.0 + j/100.0 + k
+        expected_image = input_image[2:8,1:9,:]
+        workspace, module = self.make_workspace(input_image)
+        module.shape.value = cpmc.SH_RECTANGLE
+        module.horizontal_limits.set_value((1,9))
+        module.vertical_limits.set_value((2,8))
+        module.remove_rows_and_columns.value = cpmc.RM_EDGES
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        self.assertTrue(np.all(output_image.pixel_data == expected_image))
         
     def test_05_01_crop_image_plate_fixup(self):
         x,y = np.mgrid[0:10,0:10]
@@ -297,6 +311,24 @@ class TestCrop(unittest.TestCase):
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
     
+    def test_05_03_crop_color_image_plate_fixup(self):
+        x,y,z = np.mgrid[0:10,0:10,0:3]
+        input_image = x/100.0 + y/10.0 + z/1000.0
+        crop_image = np.zeros((10,10),bool)
+        crop_image[2:,1:9] = True
+        crop_image[1,(1,4)] = True # A rough edge to be cropped
+        expected_image = input_image[2:,1:9.:]
+        workspace, module = self.make_workspace(input_image,
+                                                crop_image = crop_image)
+        module.shape.value = cpmc.SH_IMAGE
+        module.horizontal_limits.set_value((0,"end"))
+        module.vertical_limits.set_value((0,"end"))
+        module.remove_rows_and_columns.value = cpmc.RM_EDGES
+        module.use_plate_fix.value = True;
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        self.assertTrue(np.all(output_image.pixel_data == expected_image))
+
     def test_06_01_mask_with_objects(self):
         np.random.seed()
         input_image = np.random.uniform(size=(20,10))

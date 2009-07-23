@@ -364,7 +364,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         module.count_image_name.value = 'my_image'
         module.count_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image')
+        image = workspace.image_set.get_image('my_image').pixel_data
         self.assertEqual(tuple(image.shape), (10,10,3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels==0],:]==0))
@@ -386,7 +386,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         module.touching_image_name.value = 'my_image'
         module.touching_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image')
+        image = workspace.image_set.get_image('my_image').pixel_data
         self.assertEqual(tuple(image.shape), (10,10,3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels==0],:]==0))

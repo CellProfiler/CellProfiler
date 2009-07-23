@@ -23,7 +23,7 @@ import matplotlib.figure
 import matplotlib.backends.backend_wx
 
 import cellprofiler.preferences
-from cellprofiler.modules.loadimages import LoadImagesImageProvider
+from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
 
 
 class DirectoryView(object):
@@ -79,7 +79,7 @@ class DirectoryView(object):
             return
         files = [x 
                  for x in os.listdir(cellprofiler.preferences.get_default_image_directory()) 
-                     if os.path.splitext(x)[1][1:].lower() in self.__image_extensions]
+                     if is_image(x)]
         files.sort()
         self.__list_box.AppendItems(files)
     

@@ -30,6 +30,8 @@ import cellprofiler.measurements as cpm
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 
+PILImage.init()
+
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
 MS_REGEXP = 'Text-Regular expressions'
@@ -399,9 +401,11 @@ class LoadImages(cpmodule.CPModule):
             list_of_lists[image_index].append(pathname)
         
         image_set_count = len(list_of_lists[0])
-        for x,name in zip(list_of_lists[1:],image_names):
+        for x,name in zip(list_of_lists[1:],image_names[1:]):
             if len(x) != image_set_count:
-                raise RuntimeError("Image %s has %d files, but image %s has %d files"%(image_names[0],image_set_count,name.value,len(x)))
+                raise RuntimeError("Image %s has %d files, but image %s has %d files" %
+                                   (image_names[0], image_set_count,
+                                    name.value, len(x)))
         list_of_lists = numpy.array(list_of_lists)
         root = self.image_directory()
         for i in range(0,image_set_count):
@@ -827,6 +831,8 @@ class LoadImages(cpmodule.CPModule):
     def filter_filename(self, filename):
         """Returns either None or the index of the match setting
         """
+        if not is_image(filename):
+            return None
         if self.text_to_exclude() != cps.DO_NOT_USE and \
             filename.find(self.text_to_exclude()) >=0:
             return None
@@ -844,6 +850,13 @@ class LoadImages(cpmodule.CPModule):
             raise NotImplementedError("Load by order not implemented")
         return None
 
+def is_image(filename):
+    '''Determine if a filename is a potential image file based on extension'''
+    ext = os.path.splitext(filename)[1].lower()
+    if PILImage.EXTENSION.has_key(ext):
+        return True
+    return ext == '.mat'
+    
 class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename, loading the file as it is requested
     """

@@ -30,6 +30,13 @@ function handles = SmoothOrEnhance(handles)
 % speckles/non-speckles image. Furthermore, the IdentifyPrimAutomatic can 
 % be used on the thresholded image to label each speckle for your analysis.
 %
+% ENHANCE NEURITES: This method maximizes the contrast of objects slightly 
+% less than the width of the Object Width setting, while leaving other
+% structures intact.  For example, this is useful for enhancing thin
+% neurite processes while leaving cell bodies morphologically intact.  
+% The algorithm applied is Orig+tophat(Orig)-bottomhat(Orig), from 
+% Zhang et al., 2007, J. Neuroscience Methods.
+%
 % SMOOTH KEEPING EDGES: 'Smooth Keeping Edges' smooths the images while
 % preserving the edges. It uses the Bilateral Filter, as implemented by 
 % Jiawen Chen.
@@ -132,6 +139,7 @@ SmoothedImageName = char(handles.Settings.VariableValues{CurrentModuleNum,2});
 %choiceVAR03 = Remove BrightRoundSpeckles
 %choiceVAR03 = Enhance BrightRoundSpeckles (Tophat Filter)
 %choiceVAR03 = Smooth Keeping Edges
+%choiceVAR03 = Enhance Neurites (I+Tophat-Bothat)
 SmoothingMethod = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 %inputtypeVAR03 = popupmenu
 
@@ -379,9 +387,7 @@ downsampledHeight = floor( ( inputHeight - 1 ) / samplingSpatial ) + 1 + 2 * pad
 downsampledDepth = floor( edgeDelta / samplingRange ) + 1 + 2 * paddingZ;
 
 gridData = zeros( downsampledHeight, downsampledWidth, downsampledDepth );
-gridData2 = gridData;
 gridWeights = zeros( downsampledHeight, downsampledWidth, downsampledDepth );
-gridWeights2 = gridWeights;
 
 % compute downsampled indices
 [ jj, ii ] = meshgrid( 0 : inputWidth - 1, 0 : inputHeight - 1 );

@@ -1050,8 +1050,8 @@ Yes will have no effect.""")
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7
         
-        blurred_image = self.smooth_image(image, mask, 
-                                          self.calc_smoothing_filter_size())
+        sigma = self.calc_smoothing_filter_size() / 2.35
+        blurred_image = self.smooth_image(image, mask, sigma)
         if self.low_res_maxima.value and self.size_range.min > 10:
             image_resize_factor = 10.0 / float(self.size_range.min)
             if self.automatic_suppression.value:

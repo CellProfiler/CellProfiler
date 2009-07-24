@@ -47,6 +47,7 @@ from morph import Morph
 from overlay_outlines import OverlayOutlines
 from relate import Relate
 from rescaleintensity import RescaleIntensity
+from resize import Resize
 from saveimages import SaveImages
 from smooth import Smooth
 
@@ -87,6 +88,7 @@ def get_module_classes():
             OverlayOutlines,
             Relate,
             RescaleIntensity,
+            Resize,
             SaveImages,
             Smooth ]
 
@@ -130,6 +132,7 @@ def get_module_substitutions():
             "OverlayOutlines": OverlayOutlines,
             "Relate": Relate,
             "RescaleIntensity": RescaleIntensity,
+            "Resize": Resize,
             "SaveImages": SaveImages,
             "SmoothOrEnhance": Smooth
             }

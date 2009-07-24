@@ -199,9 +199,8 @@ drawnow
 % Do Filtering
 Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
 FinalLabelMatrixImage = LabelMatrixImage;
-for i = 1:numel(Filter)
-    FinalLabelMatrixImage(FinalLabelMatrixImage == Filter(i)) = 0;
-end
+
+FinalLabelMatrixImage(ismember(LabelMatrixImage(:),Filter(:))) = 0;
 
 % Renumber Objects
 x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);

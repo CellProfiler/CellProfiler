@@ -102,6 +102,8 @@ for i = length(Good):-1:1
     end
 
     J = imsubtract(imadd(I,imtophat(I,SE)), imbothat(I,SE));
+    J(J<0) = 0;
+    J(J>1) = 1;
     colormap(gray)
 
     [foo,OutputFileBase] = fileparts(Good{i});

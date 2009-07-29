@@ -303,7 +303,7 @@ named, "XZ29_A01.csv".
         if not os.path.isdir(path):
             os.makedirs(path)
         if self.prepend_output_filename.value:
-            file = os.path.splitext(get_output_file_name())[0] + file 
+            file = os.path.splitext(get_output_file_name())[0] + '_' + file 
         return os.path.join(path,file)
     
     def make_experiment_file(self, file_name, workspace):

@@ -32,21 +32,11 @@ function ShowOrHidePixelData(handles)
 %
 % $Revision$
 
-%%% We want to use impixelinfoval (see below), but it fails when there are
-%%% four subplots in a figure (e.g. GrayToColor). So for now we are using
-%%% the outdated pixval command. The bug has been reported to Mathworks.
-warning off Images:pixval:obsoleteFunction
-pixval
-warning on Images:pixval:obsoleteFunction
-
-%%% If we ever do end up using impixelinfoval instead of pixval, we should
-%%% also create a mechanism to delete the pixel info tool. Pixval works
-%%% like a toggle so running this tool above repeatedly toggles it on/off,
-%%% whereas the impixelinfoval is not designed to work that way.
-
-% AllImagesHandles = findobj(gcf,'type','image');
-% OneOfTheImagesHandle = AllImagesHandles(1);
-% PixelInfoHandle = impixelinfoval(gcf,OneOfTheImagesHandle);
-% try
-%     set(PixelInfoHandle,'fontsize',handles.Preferences.FontSize)
-% end
+if verLessThan('matlab', '7.8');
+    warning off Images:pixval:obsoleteFunction
+    pixval
+    warning on Images:pixval:obsoleteFunction
+else
+    %% For now, we can't turn this one off
+    impixelinfo
+end

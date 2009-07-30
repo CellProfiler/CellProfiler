@@ -506,6 +506,23 @@ if strcmp(CurrentModuleName, 'Align')
         SavedVarRevNum = 5;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 5      % Align got four new arguments towards the end.
+        Settings.VariableValues{ModuleNum-Skipped,16} = Settings.VariableValues{ModuleNum-Skipped,12};
+        Settings.VariableInfoTypes{ModuleNum-Skipped,16} = Settings.VariableInfoTypes{ModuleNum-Skipped,12};
+        
+        Settings.VariableValues{ModuleNum-Skipped,12} = 'Do not use';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,12} = [];
+        Settings.VariableValues{ModuleNum-Skipped,13} = 'Do not use';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,13} = [];
+        Settings.VariableValues{ModuleNum-Skipped,14} = 'Do not use';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,14} = [];
+        Settings.VariableValues{ModuleNum-Skipped,15} = 'Do not use';
+        Settings.VariableInfoTypes{ModuleNum-Skipped,15} = [];
+        
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 4;
+        SavedVarRevNum = 6;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

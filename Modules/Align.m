@@ -175,33 +175,55 @@ AlignMethod = char(handles.Settings.VariableValues{CurrentModuleNum,7});
 %textVAR08 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
 %choiceVAR08 = Do not use
 %infotypeVAR08 = imagegroup
-MoreImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,8});
+MoreImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu
 
 %textVAR09 = What do you want to call the subsequently aligned first image?
 %defaultVAR09 = Do not use
 %infotypeVAR09 = imagegroup indep
-MoreAlignedImage1Name = char(handles.Settings.VariableValues{CurrentModuleNum,9});
+MoreAlignedImageName{1} = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
 %textVAR10 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
 %choiceVAR10 = Do not use
 %infotypeVAR10 = imagegroup
-MoreImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+MoreImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,10});
 %inputtypeVAR10 = popupmenu
 
 %textVAR11 = What do you want to call the subsequently aligned second image?
 %defaultVAR11 = Do not use
 %infotypeVAR11 = imagegroup indep
-MoreAlignedImage2Name = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+MoreAlignedImageName{2} = char(handles.Settings.VariableValues{CurrentModuleNum,11});
 
-%textVAR12 = Do you want the output images cropped according to the smallest input image? If so, the shifted images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
-%choiceVAR12 = No
-%choiceVAR12 = Yes
-wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,12});
-wantImagesCropped = strncmpi(wantImagesCropped,'y',1);
+%textVAR12 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR12 = Do not use
+%infotypeVAR12 = imagegroup
+MoreImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,12});
 %inputtypeVAR12 = popupmenu
 
-%%%VariableRevisionNumber = 5
+%textVAR13 = What do you want to call the subsequently aligned third image?
+%defaultVAR13 = Do not use
+%infotypeVAR13 = imagegroup indep
+MoreAlignedImageName{3} = char(handles.Settings.VariableValues{CurrentModuleNum,13});
+
+%textVAR14 = (Two image alignment only): If you aligned an image or a sequence with a template, to what other image/sequence do you want to apply the shift calculated above?
+%choiceVAR14 = Do not use
+%infotypeVAR14 = imagegroup
+MoreImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,14});
+%inputtypeVAR14 = popupmenu
+
+%textVAR15 = What do you want to call the subsequently aligned fourth image?
+%defaultVAR15 = Do not use
+%infotypeVAR15 = imagegroup indep
+MoreAlignedImageName{4} = char(handles.Settings.VariableValues{CurrentModuleNum,15});
+
+%textVAR16 = Do you want the output images cropped according to the smallest input image? If so, the shifted images will be cropped from the upper left corner. If not, the shifted images will remain the same size and will be padded with zeros.
+%choiceVAR16 = No
+%choiceVAR16 = Yes
+wantImagesCropped = char(handles.Settings.VariableValues{CurrentModuleNum,16});
+wantImagesCropped = strncmpi(wantImagesCropped,'y',1);
+%inputtypeVAR16 = popupmenu
+
+%%%VariableRevisionNumber = 6
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
@@ -232,14 +254,12 @@ if AreThereThreeInputImages
     Image3 = CPretrieveimage(handles,Image3Name,ModuleName,'DontCheckColor','CheckScale');
     [M3 N3 P3] = size(Image3);
 end
-% Same for More Image 1,2.
-if ~strcmpi(MoreImage1Name,'Do not use')
-    MoreImage1 = CPretrieveimage(handles,MoreImage1Name,ModuleName,'DontCheckColor','CheckScale');
-    [M3 N3 P3] = size(MoreImage1);
-end
-if ~strcmpi(MoreImage2Name,'Do not use')
-    MoreImage2 = CPretrieveimage(handles,MoreImage2Name,ModuleName,'DontCheckColor','CheckScale');
-    [M3 N3 P3] = size(MoreImage2);
+% Same for MoreImage 1,2,...
+MoreImage = cell(1,length(MoreImageName));
+for i = 1:length(MoreImageName)
+    if ~strcmpi(MoreImageName{i},'Do not use')
+        MoreImage{i} = CPretrieveimage(handles,MoreImageName{i},ModuleName,'DontCheckColor','CheckScale');
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -311,11 +331,11 @@ if AreThereThreeInputImages,
 end
     
 % Apply this transformation to other images if desired
-if ~strcmpi(MoreImage1Name,'Do not use')
-    MoreAlignedImage1 = imtransform(MoreImage1,tform,'xdata',[1 size(MoreImage1,2)],'ydata',[1 size(MoreImage1,1)]);
-end
-if ~strcmpi(MoreImage2Name,'Do not use')
-    MoreAlignedImage2 = imtransform(MoreImage2,tform,'xdata',[1 size(MoreImage2,2)],'ydata',[1 size(MoreImage2,1)]);
+MoreAlignedImage = cell(1,length(MoreImageName));
+for i = 1:length(MoreImageName)
+    if ~strcmpi(MoreImageName{i},'Do not use')
+        MoreAlignedImage{i} = imtransform(MoreImage{i},tform,'xdata',[1 size(MoreImage{i},2)],'ydata',[1 size(MoreImage{i},1)]);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -381,12 +401,13 @@ drawnow
 % Saves the adjusted image to the handles structure so it can be used
 % by subsequent modules.
 handles = CPaddimages(handles,AlignedImage1Name,AlignedImage1,AlignedImage2Name,AlignedImage2);
-if ~strcmpi(MoreImage1Name,'Do not use')
-    handles = CPaddimages(handles,MoreAlignedImage1Name,MoreAlignedImage1);
+
+for i = 1:length(MoreImageName)
+    if ~strcmpi(MoreImageName{i},'Do not use')
+        handles = CPaddimages(handles,MoreAlignedImageName{i},MoreAlignedImage{i});
+    end
 end
-if ~strcmpi(MoreImage2Name,'Do not use')
-    handles = CPaddimages(handles,MoreAlignedImage2Name,MoreAlignedImage2);
-end
+
 if AreThereThreeInputImages
     handles = CPaddimages(handles,AlignedImage3Name,AlignedImage3);
 end

@@ -858,14 +858,15 @@ class LoadImages(cpmodule.CPModule):
             name = fd[FD_IMAGE_NAME].value
             cols += [('Image','FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
             cols += [('Image','PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
-            
-            if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
-                tokens = cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
-                cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
-            
-            if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
-                tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
-                cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
+        
+        fd = self.images[0]    
+        if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:
+            tokens = cpm.find_metadata_tokens(fd[FD_FILE_METADATA].value)
+            cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_FILE_NAME) for token in tokens]
+        
+        if fd[FD_METADATA_CHOICE]==M_PATH or fd[FD_METADATA_CHOICE]==M_BOTH:
+            tokens = cpm.find_metadata_tokens(fd[FD_PATH_METADATA].value)
+            cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
         
         return cols
             

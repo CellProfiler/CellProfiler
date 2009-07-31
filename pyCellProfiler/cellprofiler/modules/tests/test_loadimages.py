@@ -592,6 +592,9 @@ class testLoadImages(unittest.TestCase):
                          ('Image', 'Metadata_Row', 'varchar(128)'), 
                          ('Image', 'Metadata_Col', 'varchar(128)')]
         returned_cols = module.get_measurement_columns(pipeline)
+        # check for duplicates
+        assert len(returned_cols) == len(set(returned_cols))
+        # check what was returned was expected
         for c in expected_cols: 
             assert c in returned_cols
         for c in returned_cols: 

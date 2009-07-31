@@ -50,6 +50,7 @@ from rescaleintensity import RescaleIntensity
 from resize import Resize
 from saveimages import SaveImages
 from smooth import Smooth
+from trackobjects import TrackObjects
 
 def get_module_classes():
     return [Align,
@@ -90,7 +91,8 @@ def get_module_classes():
             RescaleIntensity,
             Resize,
             SaveImages,
-            Smooth ]
+            Smooth,
+            TrackObjects]
 
 def get_module_substitutions():
     """Return a dictionary of matlab module names and replacement classes
@@ -134,7 +136,8 @@ def get_module_substitutions():
             "RescaleIntensity": RescaleIntensity,
             "Resize": Resize,
             "SaveImages": SaveImages,
-            "SmoothOrEnhance": Smooth
+            "SmoothOrEnhance": Smooth,
+            "TrackObjects":TrackObjects
             }
     
 

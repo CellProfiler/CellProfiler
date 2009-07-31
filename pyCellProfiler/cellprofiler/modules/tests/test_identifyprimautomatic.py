@@ -962,7 +962,45 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                          I.O_WEIGHTED_VARIANCE)
         self.assertEqual(module.assign_middle_to_foreground.value,
                          I.O_FOREGROUND)
-    
+
+    def test_04_04_load_v4(self):
+        data = ('eJztWd1u0zAUdrtu2piGBjdwM+RLhLYo2VYxekPLyqCo7SZWhrjDTd3WyLWr'
+                'xJlWnoBLHolLHodHIO6SNvG6JUvaiaGkitLj+Dvf+bFP7KRRadUrb2BR02Gj'
+                '0trpEorhCUWiy61BCTKxDQ8tjATuQM5K8Mgi8IND4e4+NIolQy/t7cFdXX8F'
+                'kh25WuOhe/n5DIAV97rqnnnv1rIn5wKnlE+xEIT17GVQAE+99l/ueYYsgtoU'
+                'nyHqYHtK4bfXWJe3RsPJrQbvOBQ30SDY2T2azqCNLfu46wO92yfkAtNT8h0r'
+                'LvjdPuJzYhPOPLynX22d8HKh8Mo4/N6YxiGnxEHGZSvQLvu/B9P+hRlxexTo'
+                'v+nJhHXIOek4iEIyQL2JFVKfHqFvKaRvCVSblTGuHIHbVOyQZwtfiJ23F8gU'
+                'cICE2Zd6DiL0rCh6pNx0TIpJPPtzIXwO7Hl+R/EuK7xSNvTtfT0Fvlavf2ok'
+                'jPsXN2txcPkQLg+aPB7fdbio8fZE8VPKVdxFDhWwJgcbrBILm4Jbo7n5vaLg'
+                '/MPHrXnXOON0XbFfysfCduA7ytuITvQsKl8qztD0VHxJ6oOu6eNj2/D+BOK3'
+                'KL8LIVxB2mDEmVerIGy/lA/7iDFMd+Pke03BS7nGBGY2EaMUfseti/PiV+ua'
+                'EROnznNDj4dT89XkDCex82VMO5PyzWs8+nzlCNwDEM6nlKscMi6gY3sLhzT1'
+                '667rZcYX5tNn1ON58sUZ5/Pki7M++L/yV1zo+mEDhOe/lFt9C2NoUmTb47V2'
+                'Gv4kz/PPmPT6cvt2LjcqzMQBfYuKw6w6eMQt3LO4wzrp+f+1caY+14oe7uCW'
+                '+7m7zMd48ycTMkzPn2Rc8vY3dycwNgC6e1I8nEMcMlyGy3D3D1cO4OK+P5rW'
+                'r8vycZ/8zXDJniOPQXgcSJk7ghKGrzxI7pPfGe5u68mi10MZLsNluPS41dz1'
+                '+yf1/YXs/zXAM2vevwDheS9lE1M6tLj87mlpg/HHOVujHHUuv45pdfdvLfCh'
+                'TPIMI3jKCk/5Oh7SwUyQ7mhouWyO4AMkiKnVvNYTt7Xit6pxXJvBG4xH3v1t'
+                'bt0cfzXu03z8eZ2Eb6lwlW89AlfwIihxP8Dt8v38hv6+b0n7/wXQ1Cms')
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(
+            StringIO.StringIO(zlib.decompress(base64.b64decode(data))))        
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module,cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic))
+        self.assertTrue(module.threshold_algorithm,T.TM_OTSU)
+        self.assertTrue(module.threshold_modifier,T.TM_GLOBAL)
+        self.assertEqual(module.two_class_otsu.value, I.O_THREE_CLASS)
+        self.assertEqual(module.use_weighted_variance.value, 
+                         I.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground.value,
+                         I.O_FOREGROUND)
+        
     def test_05_01_discard_large(self):
         x = ID.IdentifyPrimAutomatic()
         x.object_name.value = "my_object"

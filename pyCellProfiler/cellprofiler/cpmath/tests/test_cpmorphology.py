@@ -518,7 +518,15 @@ class TestConvexHull(unittest.TestCase):
         result,counts = morph.convex_hull(labels,np.array(range(100))+1)
         self.assertFalse(np.any(np.logical_and(result[:,1]==5,
                                                      result[:,2]==106)))
-        
+    
+    def test_05_01_missing_labels(self):
+        '''Ensure that there's an entry if a label has no corresponding points'''
+        labels = np.zeros((10,10),int)
+        labels[3:6,2:8] = 2
+        result, counts = morph.convex_hull(labels, np.arange(2)+1)
+        self.assertEqual(counts.shape[0], 2)
+        self.assertEqual(counts[0], 0)
+        self.assertEqual(counts[1], 4)
     
 class TestMinimumEnclosingCircle(unittest.TestCase):
     def test_00_00_zeros(self):
@@ -527,12 +535,27 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
         self.assertEqual(np.product(center.shape),0)
         self.assertEqual(np.product(radius.shape),0)
     
-    def test_01_01_zeros(self):
+    def test_01_01_01_zeros(self):
         """Make sure minimum_enclosing_circle can work if a label has no points"""
         center,radius = morph.minimum_enclosing_circle(np.zeros((10,10),int), [1])
         self.assertEqual(center.shape,(1,2))
         self.assertEqual(np.product(radius.shape),1)
         self.assertEqual(radius[0],0)
+    
+    def test_01_01_02_zeros(self):
+        """Make sure minimum_enclosing_circle can work if one of two labels has no points
+        
+        This is a regression test of a bug
+        """
+        labels = np.zeros((10,10), int)
+        labels[2,2:5] = 3
+        labels[2,6:9] = 4
+        hull_and_point_count = morph.convex_hull(labels)
+        center,radius = morph.minimum_enclosing_circle(
+            labels,
+            hull_and_point_count=hull_and_point_count)
+        self.assertEqual(center.shape,(2,2))
+        self.assertEqual(np.product(radius.shape),2)
     
     def test_01_02_point(self):
         """Make sure minimum_enclosing_circle can handle the degenerate case of one point"""
@@ -2422,4 +2445,96 @@ class TestSkeletonizeLabels(unittest.TestCase):
             skel_test = morph.skeletonize(mask)
             self.assertTrue(np.all(skel[skel_test] == i))
             self.assertTrue(np.all(skel[~skel_test] != i))
+
+class TestAssociateByDistance(unittest.TestCase):
+    def test_01_01_zeros(self):
+        '''Test two label matrices with nothing in them'''
+        result = morph.associate_by_distance(np.zeros((10,10),int),
+                                             np.zeros((10,10),int), 0)
+        self.assertEqual(result.shape[0], 0)
+    
+    def test_01_02_one_zero(self):
+        '''Test a labels matrix with objects against one without'''
+        result = morph.associate_by_distance(np.ones((10,10),int),
+                                             np.zeros((10,10),int), 0)
+        self.assertEqual(result.shape[0], 0)
+    
+    def test_02_01_point_in_square(self):
+        '''Test a single point in a square'''
+        #
+        # Point is a special case - only one point in its convex hull
+        #
+        l1 = np.zeros((10,10),int)
+        l1[1:5,1:5] = 1
+        l1[5:9,5:9] = 2
+        l2 = np.zeros((10,10),int)
+        l2[2,3] = 3
+        l2[2,9] = 4
+        result = morph.associate_by_distance(l1, l2, 0)
+        self.assertEqual(result.shape[0], 1)
+        self.assertEqual(result[0,0],1)
+        self.assertEqual(result[0,1],3)
+    
+    def test_02_02_line_in_square(self):
+        '''Test a line in a square'''
+        l1 = np.zeros((10,10),int)
+        l1[1:5,1:5] = 1
+        l1[5:9,5:9] = 2
+        l2 = np.zeros((10,10),int)
+        l2[2,2:5] = 3
+        l2[2,6:9] = 4
+        result = morph.associate_by_distance(l1, l2, 0)
+        self.assertEqual(result.shape[0], 1)
+        self.assertEqual(result[0,0],1)
+        self.assertEqual(result[0,1],3)
+    
+    def test_03_01_overlap(self):
+        '''Test a square overlapped by four other squares'''
+        
+        l1 = np.zeros((20,20),int)
+        l1[5:16,5:16] = 1
+        l2 = np.zeros((20,20),int)
+        l2[1:6,1:6] = 1
+        l2[1:6,14:19] = 2
+        l2[14:19,1:6] = 3
+        l2[14:19,14:19] = 4
+        result = morph.associate_by_distance(l1, l2, 0)
+        self.assertEqual(result.shape[0],4)
+        self.assertTrue(np.all(result[:,0]==1))
+        self.assertTrue(all([x in result[:,1] for x in range(1,5)]))
+    
+    def test_03_02_touching(self):
+        '''Test two objects touching at one point'''
+        l1 = np.zeros((10,10), int)
+        l1[3:6,3:6] = 1
+        l2 = np.zeros((10,10), int)
+        l2[5:9,5:9] = 1
+        result = morph.associate_by_distance(l1, l2, 0)
+        self.assertEqual(result.shape[0], 1)
+        self.assertEqual(result[0,0],1)
+        self.assertEqual(result[0,1],1)
+    
+    def test_04_01_distance_square(self):
+        '''Test two squares separated by a distance'''
+        l1 = np.zeros((10,20),int)
+        l1[3:6,3:6] = 1
+        l2 = np.zeros((10,20),int)
+        l2[3:6,10:16] = 1
+        result = morph.associate_by_distance(l1,l2, 4)
+        self.assertEqual(result.shape[0],0)
+        result = morph.associate_by_distance(l1,l2, 5)
+        self.assertEqual(result.shape[0],1)
+    
+    def test_04_02_distance_triangle(self):
+        '''Test a triangle and a square (edge to point)'''
+        l1 = np.zeros((10,20),int)
+        l1[3:6,3:6] = 1
+        l2 = np.zeros((10,20),int)
+        l2[4,10] = 1
+        l2[3:6,11] = 1
+        l2[2:7,12] = 1
+        result = morph.associate_by_distance(l1,l2, 4)
+        self.assertEqual(result.shape[0],0)
+        result = morph.associate_by_distance(l1,l2, 5)
+        self.assertEqual(result.shape[0],1)
         

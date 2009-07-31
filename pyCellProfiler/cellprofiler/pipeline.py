@@ -479,6 +479,7 @@ class Pipeline(object):
         image_set_start - the index of the first image to be run
         image_set_end - the index of the last image to be run + 1
         """
+        measurements = cellprofiler.measurements.Measurements()
         for m in self.run_with_yield(frame, image_set_start, image_set_end):
             measurements = m
         return measurements

@@ -404,12 +404,12 @@ and the dividing lines between clumped objects (watershed) is done on the
 non-smoothed image.
 
 Laplacian of Gaussian method:
-This is a specialized method to find objects and will override the above
-settings in this module. The code was kindly donated by Zach Perlman and 
-was used in this published work:
-Multidimensional drug profiling by automated microscopy.
-Science. 2004 Nov 12;306(5699):1194-8.  PMID: 15539606
-Regrettably, we have no further description of its settings.
+The Laplacian of Gaussian (LOG) method uses a Laplacian of Gaussian (or Mexican
+Hat) filter to enhance local maxima of a desired size in the image.
+IdentifyPrimAutomatic can use the the LOG filter to identify the seed points
+for the watershed. This involves thresholding the filtered image. 
+IdentifyPrimAutomatic uses the Otsu algorithm to threshold automatically
+unless you specify a custom threshold value.
 
 Special note on saving images: Using the settings in this module, object
 outlines can be passed along to the module OverlayOutlines and then saved
@@ -426,7 +426,7 @@ saved using the name: SmallRemovedSegmented + whatever you called the
 objects (e.g. SmallRemovedSegmented Nuclei).
 """
             
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     category =  "Object Processing"
     
@@ -733,6 +733,21 @@ Yes will have no effect.""")
         self.assign_middle_to_foreground = cps.Choice(
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [cpmi.O_FOREGROUND, cpmi.O_BACKGROUND])
+        self.wants_automatic_log_diameter = cps.Binary(
+            'Do you want to automatically calculate the size of objects '
+            'for the Laplacian of Gaussian filter?', True,
+            doc='<p>Check this box to use the filtering diameter range above '
+            'when constructing the Laplacian of Gaussian filter. Uncheck the'
+            'box in order to enter a size that is not related to the filtering '
+            'size. You may want to specify a custom size if you want to filter '
+            'using loose criteria, but have objects that are generally of '
+            'similar sizes.</p>')
+        self.log_diameter = cps.Float(
+            'What diameter do you want to use for the Laplacian of '
+            'Gaussian filter?', 5, minval=1, maxval=100,
+            doc='<p>This is the size used when calculating the Laplacian of '
+            'Gaussian filter. The filter enhances the local maxima of objects '
+            'whose diameters are roughly the entered number or smaller.</p>')
 
     def settings(self):
         return [self.image_name,self.object_name,self.size_range,
@@ -749,7 +764,8 @@ Yes will have no effect.""")
                 self.wants_automatic_log_threshold,
                 self.manual_log_threshold,
                 self.two_class_otsu, self.use_weighted_variance,
-                self.assign_middle_to_foreground ]
+                self.assign_middle_to_foreground,
+                self.wants_automatic_log_diameter, self.log_diameter]
     
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -836,6 +852,11 @@ Yes will have no effect.""")
             setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
                                cpmi.O_FOREGROUND]
             variable_revision_number = 3
+        
+        if (not from_matlab) and variable_revision_number == 3:
+            # Added more LOG options
+            setting_values = setting_values + [cps.YES, "5"]
+            variable_revision_number = 4
              
         return setting_values, variable_revision_number, from_matlab
             
@@ -861,6 +882,9 @@ Yes will have no effect.""")
                 vv += [self.wants_automatic_log_threshold]
                 if not self.wants_automatic_log_threshold.value:
                     vv += [self.manual_log_threshold]
+                vv += [self.wants_automatic_log_diameter]
+                if not self.wants_automatic_log_diameter.value:
+                    vv += [self.log_diameter]
             vv += [self.watershed_method, self.automatic_smoothing]
             if not self.automatic_smoothing.value:
                 vv += [self.smoothing_filter_size]
@@ -1068,13 +1092,15 @@ Yes will have no effect.""")
         maxima_mask = strel_disk(maxima_suppression_size)
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
-            diameter = (self.size_range.max+self.size_range.min)/2
+            if self.wants_automatic_log_diameter.value:
+                diameter = (min(self.size_range.max, self.size_range.min**2) + 
+                            self.size_range.min * 5)/6
+            else:
+                diameter = self.log_diameter.value
             sigma = float(diameter) / 2.35
             #
             # Shrink the image to save processing time
             #
-            figure = self.workspace_saved_for_debugging_take_this_out_please.create_or_find_figure(subplots=(2,3),window_name='debugging')
-            figure.subplot_imshow_grayscale(0,0,image,"original")
             if image_resize_factor < 1.0:
                 shrunken = True
                 shrunken_shape = (np.array(image.shape) * image_resize_factor+1).astype(int)
@@ -1083,7 +1109,6 @@ Yes will have no effect.""")
                 smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
                 diameter = diameter * image_resize_factor + 1
                 sigma = sigma * image_resize_factor
-                figure.subplot_imshow_grayscale(0,1,simage,"shrunken")
             else:
                 shrunken = False
                 simage = image
@@ -1091,8 +1116,7 @@ Yes will have no effect.""")
             normalized_image = 1 - stretch(simage, smask)
             
             log_image = laplacian_of_gaussian(normalized_image, smask, 
-                                              diameter * 3/2, sigma)
-            figure.subplot_imshow_grayscale(1,0,log_image,"LoG shrunken")
+                                              int(diameter * 3/2), sigma)
             if shrunken:
                 i_j = (np.mgrid[0:image.shape[0],
                                 0:image.shape[1]].astype(float) * 
@@ -1105,18 +1129,8 @@ Yes will have no effect.""")
                 log_threshold = self.manual_log_threshold.value
             log_image[log_image < log_threshold] = log_threshold
             log_image -= log_threshold
-            figure.subplot_imshow_grayscale(1,1,log_image,"Expanded LoG")
             maxima_image = self.get_maxima(log_image, labeled_image,
                                            maxima_mask, image_resize_factor)
-            dilated_image = scipy.ndimage.binary_dilation(maxima_image > 0, iterations=6)
-            figure.subplot_imshow_bw(0,2,dilated_image, "maxima")
-            color_image = np.zeros((image.shape[0],image.shape[1],3))
-            color_image[:,:,2] = stretch(image)
-            color_image[:,:,1] = stretch(log_image)
-            color_image[:,:,0] = dilated_image
-            color_image[:,:,1][dilated_image] = 0
-            color_image[:,:,2][dilated_image] = 0
-            figure.subplot_imshow_color(1,2,color_image)
         elif self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
             maxima_image = blurred_image.copy()

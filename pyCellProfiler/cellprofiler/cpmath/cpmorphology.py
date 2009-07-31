@@ -518,8 +518,8 @@ def draw_line(labels,pt0,pt1,value=1):
         remainder = diff_x*2 - diff_y
         while y != y1:
             if remainder >= 0:
-                 x += step_x
-                 remainder -= diff_y*2
+                x += step_x
+                remainder -= diff_y*2
             y += step_y
             remainder += diff_x*2
             labels[y,x] = value
@@ -527,8 +527,8 @@ def draw_line(labels,pt0,pt1,value=1):
         remainder = diff_y*2 - diff_x
         while x != x1:
             if remainder >= 0:
-                 y += step_y
-                 remainder -= diff_x*2
+                y += step_y
+                remainder -= diff_x*2
             x += step_x
             remainder += diff_y*2
             labels[y,x] = value
@@ -548,11 +548,34 @@ def fixup_scipy_ndimage_result(whatever_it_returned):
     else:
         return np.array([whatever_it_returned])
 
-def minimum_enclosing_circle(labels, indexes = None):
+def centers_of_labels(labels):
+    '''Return the i,j coordinates of the centers of a labels matrix
+    
+    The result returned is an 2 x n numpy array where n is the number
+    of the label minus one, result[0,x] is the i coordinate of the center
+    and result[x,1] is the j coordinate of the center.
+    You can unpack the result as "i,j = centers_of_labels(labels)"
+    '''
+    max_labels = np.max(labels)
+    if max_labels == 0:
+        return np.zeros((2,0),int)
+    
+    result = scind.center_of_mass(np.ones(labels.shape),
+                                  labels,
+                                  np.arange(max_labels)+1)
+    result = np.array(result)
+    if result.ndim == 1:
+        result.shape = (2,1)
+        return result
+    return result.transpose()
+
+def minimum_enclosing_circle(labels, indexes = None, 
+                             hull_and_point_count = None):
     """Find the location of the minimum enclosing circle and its radius
     
     labels - a labels matrix
     indexes - an array giving the label indexes to be processed
+    hull_and_point_count - convex_hull output if already done. None = calculate
     
     returns an Nx3 array organized as i,j of the center and radius
     Algorithm from 
@@ -563,14 +586,20 @@ def minimum_enclosing_circle(labels, indexes = None):
     the Edinburgh Mathematical Society, vol 3, 1884
     """
     if indexes == None:
-        max_label = np.max(labels)
-        indexes = np.array(range(1,max_label+1))
+        if hull_and_point_count is not None:
+            indexes = np.unique(hull_and_point_count[0][:,0])
+        else:
+            max_label = np.max(labels)
+            indexes = np.array(range(1,max_label+1))
     else:
         indexes = np.array(indexes)
     if indexes.shape[0] == 0:
         return np.zeros((0,2)),np.zeros((0,))
 
-    hull, point_count = convex_hull(labels, indexes)
+    if hull_and_point_count is None:
+        hull, point_count = convex_hull(labels, indexes)
+    else:
+        hull, point_count = hull_and_point_count
     centers = np.zeros((len(indexes),2))
     radii = np.zeros((len(indexes),))
     #
@@ -866,6 +895,405 @@ def minimum_enclosing_circle(labels, indexes = None):
                 s1_idx[indexes_to_consider[s1_is_obtuse]] = v_obtuse_s1_indexes
                 within_label_indexes[v_obtuse_s1_indexes] = 1
     return centers, radii
+
+def associate_by_distance(labels_a, labels_b, distance):
+    '''Find the objects that are within a given distance of each other
+    
+    Given two labels matrices and a distance, find pairs of objects that
+    are within the given distance of each other where the distance is
+    the minimum distance between any point in the convex hull of the
+    two objects.
+    
+    labels_a - first labels matrix
+    labels_b - second labels matrix
+    distance - distance to measure
+    
+    returns a n x 2 matrix where m[x,0] is the label number in labels1 and
+    m[x,1] is the label number in labels2
+    
+    Algorithm for computing distance between convex polygons taken from
+    Chin, "Optimal Algorithms for the Intersection and the Minimum Distance 
+    Problems Between Planar Polygons", IEEE Transactions on Computers, 
+    vol. C-32, # 12, December 1983
+    '''
+    if np.max(labels_a) == 0 or np.max(labels_b) == 0:
+        return np.zeros((0,2),int)
+    
+    hull_a, point_counts_a = convex_hull(labels_a)
+    hull_b, point_counts_b = convex_hull(labels_b)
+    centers_a, radii_a = minimum_enclosing_circle(
+        labels_a, hull_and_point_count = (hull_a, point_counts_a))
+    centers_b, radii_b = minimum_enclosing_circle(
+        labels_b, hull_and_point_count = (hull_b, point_counts_b))
+    #
+    # Make an indexer into the hull tables
+    #
+    indexer_a = np.cumsum(point_counts_a)
+    indexer_a[1:] = indexer_a[:-1]
+    indexer_a[0] = 0
+    indexer_b = np.cumsum(point_counts_b)
+    indexer_b[1:] = indexer_b[:-1]
+    indexer_b[0] = 0
+    #
+    # Compute the distances between minimum enclosing circles =
+    # distance - radius_a - radius_b
+    #
+    i,j = np.mgrid[0:len(radii_a),0:len(radii_b)]
+    ab_distance = np.sqrt((centers_a[i,0]-centers_b[j,0])**2 +
+                          (centers_a[i,1]-centers_b[j,1])**2)
+    ab_distance_minus_radii = ab_distance - radii_a[i] - radii_b[j]
+    # Account for roundoff error
+    ab_distance_minus_radii -= np.sqrt(np.finfo(float).eps)
+    #
+    # Exclude from consideration ab_distance > distance and automatically
+    # choose those whose centers are within the distance
+    #
+    ab_easy_wins = ab_distance <= distance
+    ij_wins = np.dstack((hull_a[indexer_a[i[ab_easy_wins]],0], 
+                         hull_b[indexer_b[j[ab_easy_wins]],0]))
+    ij_wins.shape = ij_wins.shape[1:]
+    
+    ab_consider = (ab_distance_minus_radii <= distance) & (~ ab_easy_wins)
+    ij_consider = np.dstack((i[ab_consider], j[ab_consider]))
+    ij_consider.shape = ij_consider.shape[1:]
+    if np.product(ij_consider.shape) == 0:
+        return ij_wins
+    if True:
+        wins = []
+        distance2 = distance**2
+        for ii,jj in ij_consider:
+            a = hull_a[indexer_a[ii]:indexer_a[ii]+point_counts_a[ii],1:]
+            b = hull_b[indexer_b[jj]:indexer_b[jj]+point_counts_b[jj],1:]
+            d = minimum_distance2(a,centers_a[ii,:],
+                                  b,centers_b[jj,:])
+            if d <= distance2:
+                wins.append((hull_a[indexer_a[ii],0],
+                             hull_b[indexer_b[jj],0]))
+        ij_wins = np.vstack((ij_wins, np.array(wins)))
+        return ij_wins
+    else:
+        #
+        # For each point in the hull, get the next point mod # of points in hull
+        #
+        hull_next_a = np.arange(hull_a.shape[0])+1
+        hull_next_a[indexer_a+point_counts_a-1] = indexer_a
+        hull_next_b = np.arange(hull_b.shape[0])+1
+        hull_next_b[indexer_b+point_counts_b-1] = indexer_b
+        #
+        # Parallelize the algorithm for overlap
+        #
+        # For each pair of points i, i+1 mod n in the hull, and the test point t
+        # the cross product of the vector from i to i+1 and the vector from i+1
+        # to t should have the same sign.
+        #
+        next_b = hull_b[hull_next_b,1:]
+        vector_b = hull_b[:,1:] - next_b
+        #
+        # For each i,j, we have to compare the centers_a against point_counts_b[j]
+        # crosses.
+        #
+        b_len = point_counts_b[ij_consider[:,1]]
+        b_index = np.cumsum(point_counts_b)
+        b_elems = b_index[-1]
+        b_index[1:] = b_index[:-1]
+        b_index[0] = 0
+        #
+        # First create a vector that's b_elems long and every element contains an
+        # index into the ij_consider vector. How we do this:
+        # 1) mark the first element at a particular index by 1, all others = 0
+        # 2) Erase the first 1
+        # 3) Take the cumulative sum which will increment to 1 when it hits the
+        #    first 1, again when it hits the second...etc.
+        #
+        b_indexer = np.zeros(b_elems, int)
+        b_indexer[b_index[1:]] = 1
+        b_indexer = np.cumsum(b_indexer)
+        #
+        # The sub-index is the index from 1 to n for each of the vertices
+        # per b convex hull
+        #
+        b_sub_index = np.arange(b_elems) - b_index[b_indexer]
+        #
+        # For each element of b_indexer, get the i and j at that index
+        #
+        b_i = ij_consider[b_indexer,0]
+        b_j = ij_consider[b_indexer,1]
+        #
+        # Compute the cross-products now
+        #
+        b_vector_b = vector_b[indexer_b[b_j]+b_sub_index,:]
+        b_center_vector = (next_b[indexer_b[b_j]+b_sub_index,:] - 
+                           centers_a[indexer_a[b_i]])
+        cross = (b_vector_b[:,0] * b_center_vector[:,1] -
+                 b_vector_b[:,1] * b_center_vector[:,0])
+        hits = (all_true(cross > 0, b_index) | all_true(cross < 0, b_index))
+        
+        ij_wins = np.vstack((ij_wins, ij_consider[hits,:]))
+        ij_consider = ij_consider[~hits,:]
+        if ij_consider.shape[0] == 0:
+            return ij_wins
+
+def minimum_distance2(hull_a, center_a, hull_b, center_b):
+    '''Return the minimum distance or 0 if overlap between 2 convex hulls
+    
+    hull_a - list of points in clockwise direction
+    center_a - a point within the hull
+    hull_b - list of points in clockwise direction
+    center_b - a point within the hull
+    '''
+    if hull_a.shape[0] < 3 or hull_b.shape[0] < 3:
+        return slow_minimum_distance2(hull_a, hull_b)
+    else:
+        return faster_minimum_distance2(hull_a, center_a, hull_b, center_b)
+    
+def slow_minimum_distance2(hull_a, hull_b):
+    '''Do the minimum distance by exhaustive examination of all points'''
+    d2_min = np.iinfo(int).max
+    for a in hull_a:
+        if within_hull(a, hull_b):
+            return 0
+    for b in hull_b:
+        if within_hull(b, hull_a):
+            return 0
+    for pt_a in hull_a:
+        for pt_b in hull_b:
+            d2_min = min(d2_min, np.sum((pt_a - pt_b)**2))
+            
+    for h1, h2 in ((hull_a, hull_b), (hull_b, hull_a)):
+        # Find the distance from a vertex in h1 to an edge in h2
+        for pt1 in h1:
+            prev_pt2 = h2[-1,:]
+            for pt2 in h2:
+                if (np.dot(pt2-prev_pt2,pt1-prev_pt2) > 0 and
+                    np.dot(prev_pt2-pt2,pt1-pt2) > 0):
+                    # points form an acute triangle, so edge is closer
+                    # than vertices
+                    d2_min = min(d2_min, distance2_to_line(pt1, prev_pt2, pt2))
+                prev_pt2 = pt2
+    return d2_min
+
+def faster_minimum_distance2(hull_a, center_a, hull_b, center_b):
+    '''Do the minimum distance using the bimodal property of hull ordering
+    
+    '''
+    #
+    # Find the farthest vertex in b from some point within A. Find the
+    # vertices within A visible from this point in B. If the point in A
+    # is within B or the farthest vertex in B is within A, then the objects
+    # intersect.
+    #
+    if within_hull(center_a, hull_b):
+        return 0
+    farthest_b = find_farthest(center_a, hull_b)
+    if within_hull(hull_b[farthest_b,:], hull_a):
+        return 0
+    visible_b = find_visible(hull_b, center_a, farthest_b)
+    #
+    # Do the same for B
+    if within_hull(center_b, hull_a):
+        return 0
+    farthest_a = find_farthest(center_b, hull_a)
+    if within_hull(hull_a[farthest_a,:], hull_b):
+        return 0
+    visible_a = find_visible(hull_a, center_b, farthest_a)
+    #
+    # Now go from the first in A and last in B measuring distances
+    # which should decrease as we move toward the best
+    #
+    i = visible_a[0]
+    i_next = (i+1) % hull_a.shape[0]
+    j = visible_b[1]
+    j_next = (j+hull_b.shape[0]-1) % hull_b.shape[0]
+    a = hull_a[i,:]
+    a_next = hull_a[i_next,:]
+    b = hull_b[j,:]
+    b_next = hull_b[j_next,:]
+    d2_min = np.sum((a-b)**2)
+    
+    while i != visible_a[1] and j != visible_b[0]:
+        if lines_intersect(a, a_next, b, b_next):
+            return 0
+        if (np.dot(b-b_next,a-b_next) > 0 and
+            np.dot(b_next-b,a-b) > 0):
+            # do the edge if better than the vertex
+            d2a = distance2_to_line(b, a, a_next)
+        else:
+            # try the next vertex of a
+            d2a = np.sum((a_next-b)**2)
+        if (np.dot(a-a_next,b-a_next) > 0 and
+            np.dot(a_next-a,b-a) > 0):
+            d2b = distance2_to_line(a, b, b_next)
+        else:
+            d2b = np.sum((b_next-a)**2)
+        if d2a < d2_min and d2a < d2b:
+            # The edge of A is closer than the best or the b-edge
+            # Take it and advance A
+            d2_min = d2a
+            a = a_next
+            i = i_next
+            i_next = (i+1) % hull_a.shape[0]
+            a_next = hull_a[i_next,:]
+        elif d2b < d2_min:
+            # B is better. Take it and advance
+            d2_min = d2b
+            b = b_next
+            j = j_next
+            j_next = (j+hull_b.shape[0]-1) % hull_b.shape[0]
+            b_next = hull_b[j_next,:]
+        else:
+            return d2_min
+    #
+    # Some more to do... either one more i or one more j
+    #
+    while i != visible_a[1]:
+        d2_min = min(d2_min, np.sum((a_next-b)**2))
+        a = a_next
+        i = i_next
+        i_next = (i+1) % hull_a.shape[0]
+        a_next = hull_a[i_next,:]
+        
+    while j != visible_b[0]:
+        d2_min = min(d2_min, np.sum((b_next-a)**2))
+        b = b_next
+        j = j_next
+        j_next = (j+ hull_b.shape[0]-1) % hull_b.shape[0]
+        b_next = hull_b[j_next,:]
+    return d2_min
+
+def lines_intersect(pt1_p, pt2_p, pt1_q, pt2_q):
+    '''Return true if two line segments intersect
+    pt1_p, pt2_p - endpoints of first line segment
+    pt1_q, pt2_q - endpoints of second line segment
+    '''
+    #
+    # The idea here is to do the cross-product of the vector from
+    # point 1 to point 2 of one segment against the cross products from 
+    # both points of the other segment. If any of the cross products are zero,
+    # the point is colinear with the line. If the cross products differ in
+    # sign, then one point is on one side of the line and the other is on
+    # the other. If that happens for both, then the lines must cross.
+    #
+    for pt1_a, pt2_a, pt1_b, pt2_b in ((pt1_p, pt2_p, pt1_q, pt2_q),
+                                       (pt1_q, pt2_q, pt1_p, pt2_p)):
+        v_a = pt2_a-pt1_a
+        cross_a_1b = np.cross(v_a, pt1_b-pt2_a)
+        if cross_a_1b == 0 and colinear_intersection_test(pt1_a, pt2_a, pt1_b):
+            return True
+        cross_a_2b = np.cross(v_a, pt2_b-pt2_a)
+        if cross_a_2b == 0 and colinear_intersection_test(pt1_a, pt2_a, pt2_b):
+            return True
+        if (cross_a_1b < 0) == (cross_a_2b < 0):
+            return False
+    return True
+
+def colinear_intersection_test(pt1_a, pt2_a, pt_b):
+    '''Test that co-linear pt_b lies between pt1_a and pt2_a'''
+    da = np.sum((pt2_a-pt1_a)**2)
+    return np.sum((pt1_a - pt_b)**2) < da and np.sum((pt2_a - pt_b)**2) < da
+
+def find_farthest(point, hull):
+    '''Find the vertex in hull farthest away from a point'''
+    d_start = np.sum((point-hull[0,:])**2)
+    d_end = np.sum((point-hull[-1,:])**2)
+    if d_start > d_end:
+        # Go in the forward direction
+        i = 1
+        inc = 1
+        term = hull.shape[0]
+        d2_max = d_start
+    else:
+        # Go in the reverse direction
+        i = hull.shape[0]-2
+        inc = -1
+        term = -1
+        d2_max = d_end
+    while i != term:
+        d2 = np.sum((point - hull[i,:])**2)
+        if d2 < d2_max:
+            break
+        i += inc
+        d2_max = d2
+    return i-inc
+
+def find_visible(hull, observer, background):
+    '''Given an observer location, find the first and last visible
+       points in the hull
+       
+       The observer at "observer" is looking at the hull whose most distant
+       vertex from the observer is "background. Find the vertices that are
+       the furthest distance from the line between observer and background.
+       These will be the start and ends in the vertex chain of vertices
+       visible by the observer.
+       '''
+    pt_background = hull[background,:]
+    vector = pt_background - observer
+    i = background
+    dmax = 0
+    while True:
+        i_next = (i+1) % hull.shape[0]
+        pt_next = hull[i_next,:]
+        d = -np.cross(vector, pt_next-pt_background)
+        if d < dmax or i_next == background:
+            i_min = i
+            break
+        dmax = d
+        i = i_next
+    dmax = 0
+    i = background
+    while True:
+        i_next = (i+hull.shape[0]-1) % hull.shape[0]
+        pt_next = hull[i_next,:]
+        d = np.cross(vector, pt_next-pt_background)
+        if d < dmax or i_next == background:
+            i_max = i
+            break
+        dmax = d
+        i = i_next
+    return (i_min, i_max)
+        
+def distance2_to_line(pt, l0, l1):
+    '''The perpendicular distance squared from a point to a line
+    
+    pt - point in question
+    l0 - one point on the line
+    l1 - another point on the line
+    '''
+    return (((l1[0]-l0[0])*(l0[1]-pt[1]) - (l0[0] - pt[0])*(l0[1]-l1[1]))**2 /
+            np.sum((l1-l0)**2))
+        
+
+def within_hull(point, hull):
+    '''Return true if the point is within the convex hull'''
+    h_prev_pt = hull[-1,:]
+    for h_pt in hull:
+        if np.cross(h_pt-h_prev_pt, point - h_pt) >= 0:
+            return False
+        h_prev_pt = h_pt
+    return True
+        
+def all_true(a, indexes):
+    '''Find which vectors have all-true elements
+    
+    Given an array, "a" and indexes into the first elements of vectors
+    within that array, return an array where each element is true if
+    all elements of the corresponding vector are true.
+    
+    Example: a = [ 1,1,0,1,1,1,1], indexes=[0,3]
+             vectors = [[1,1,0],[1,1,1,1]]
+             return = [False, True]
+    '''
+    if len(indexes) == 0:
+        return np.zeros(0,bool)
+    elif len(indexes) == 1:
+        return np.all(a)
+    cs = np.zeros(len(a)+1,int)
+    cs[1:] = np.cumsum(a)
+    augmented_indexes = np.zeros(len(indexes)+1, int)
+    augmented_indexes[0:-1] = indexes + 1
+    augmented_indexes[-1] = len(a) + 1
+    counts = augmented_indexes[1:]-augmented_indexes[0:-1]
+    hits = cs[augmented_indexes[1:]-1] - cs[augmented_indexes[0:-1]-1]
+    return counts == hits
 
 def ellipse_from_second_moments(image, labels, indexes):
     """Calculate measurements of ellipses equivalent to the second moments of labels
@@ -2290,7 +2718,13 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
 if __name__=='__main__':
     import Image as PILImage
     from matplotlib.image import pil_to_array
-    image = pil_to_array(PILImage.open('c:/temp/worm_masks/041609vit3gfpA01_w.PNG'))
-    image = image[:,:,0] > 0
-    for i in range(10):
-        thin(image)
+    image1 = pil_to_array(PILImage.open('c:/cellprofiler/trunk/exampleimages/examplesbsimages/Channel2-01-A-01.tif'))
+    image1 = image1[:,:,0] > 80
+    labels1 = scind.label(image1)[0]
+    image2 = pil_to_array(PILImage.open('c:/cellprofiler/trunk/exampleimages/examplesbsimages/Channel2-02-A-02.tif'))
+    image2 = image2[:,:,0] > 80
+    labels2 = scind.label(image2)[0]
+    match = associate_by_distance(labels1, labels2, 50)
+    for i,j in match:
+        print "i=%d, j=%d"%(i,j)
+    

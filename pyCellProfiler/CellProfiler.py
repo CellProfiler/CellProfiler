@@ -30,12 +30,15 @@ mpluse('WXAgg')
 
 if not hasattr(sys, 'frozen'):
     import cellprofiler.cpmath.setup
+    import cellprofiler.ffmpeg.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary
     #
     compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
-                        cellprofiler.cpmath.setup)]
+                        cellprofiler.cpmath.setup),
+                       (os.path.join('cellprofiler','ffmpeg','setup.py'),
+                        cellprofiler.ffmpeg.setup)]
     current_directory = os.curdir
     for compile_script,my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)

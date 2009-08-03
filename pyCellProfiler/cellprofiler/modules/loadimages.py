@@ -42,7 +42,7 @@ FF_STK_MOVIES = 'stk movies'
 FF_AVI_MOVIES = 'avi movies'
 FF_OTHER_MOVIES = 'tif,tiff,flex movies'
 try:
-    import ffmpeg
+    import cellprofiler.ffmpeg.ffmpeg as ffmpeg
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 except ImportError:
     FF = [FF_INDIVIDUAL_IMAGES]
@@ -648,9 +648,12 @@ class LoadImages(cpmodule.CPModule):
         #
         list_of_lists = [[] for x in image_names]
         for pathname,image_index in files:
-            frame_count = self.get_frame_count(os.path.join(root,pathname))
-            # the video stream to be used when reading the movie
-            video_stream = pyffmpeg.VideoStream()
+            pathname = os.path.join(self.image_directory(), pathname)
+            video_stream = ffmpeg.VideoStream(pathname)
+            frame_count = video_stream.frame_count
+            if frame_count == 0:
+                print "Warning - no frame count detected"
+                frame_count = 256
             for i in range(frame_count):
                 list_of_lists[image_index].append((pathname,i,video_stream))
         image_set_count = len(list_of_lists[0])
@@ -725,12 +728,11 @@ class LoadImages(cpmodule.CPModule):
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES):
-            print "opening %s"%(pathname)
-            video_stream = pyffmpeg.VideoStream()
-            video_stream.open("file:%s"%(pathname))
-            frame_count = video_stream.frame_count()
-            video_stream.close()
-            print "Found %d frames"%(frame_count)
+            f = ffmpeg.open(path)
+            index = f.get_frame_types().index["video"]
+            if index == 0:
+                raise ValueError("No video stream in %s"%pathname)
+            frame_count = f.get_frame_count(0)
             return frame_count
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
     
@@ -877,7 +879,7 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext == '.mat'
+    return ext in ('.avi', '.mpeg', '.mat')
     
 
 
@@ -952,29 +954,10 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         """Load an image from a movie frame
         """
-        if (self.__frame == 0):
-            # open the stream on the first frame
-            pathname = self.get_full_name()
-            self.__video_stream.open("file:%s"%(pathname))
-        img = self.__video_stream.GetNextFrame()
-        if self.__frame + 1 == self.__video_stream.frame_count():
-            # Close the stream on the last frame
-            # self.__video_stream.close()
-            pass
-
-        # There's an apparent bug in the PIL library that causes
-        # images to be loaded upside-down. At best, load and save have opposite
-        # orientations; in other words, if you load an image and then save it
-        # the resulting saved image will be upside-down
-        img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
-        if img.mode=='I;16':
-            # 16-bit image
-            imgdata = numpy.array(img.getdata(),numpy.uint16)
-            img = imgdata.reshape(img.size)
-            img = img.astype(float) / 65535.0
-        else:
-            img = matplotlib.image.pil_to_array(img)
-        return cpimage.Image(img)
+        pixel_data = self.__video_stream.read_rgb8().astype(float)/255.
+        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
+                              file_name = self.get_filename())
+        return image
     
     def get_name(self):
         return self.__name

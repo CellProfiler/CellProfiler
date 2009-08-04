@@ -29,7 +29,7 @@ class PreferencesView:
         self.__image_folder_panel = wx.Panel(panel,-1)
         self.__image_edit_box = self.__make_folder_panel(self.__image_folder_panel,
                                                          cellprofiler.preferences.get_default_image_directory(),
-                                                         'default image folder',
+                                                         'default input folder',
                                                          'HelpDefaultImageFolder.m',
                                                          cellprofiler.preferences.set_default_image_directory)
         self.__output_folder_panel = wx.Panel(panel,-1)

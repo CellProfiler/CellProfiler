@@ -507,8 +507,11 @@ else
     %%% in the image.
     % im = im(:);
     if length(im) > 512^2
-        rand('seed',0);
+        defaultStream = RandStream.getDefaultStream;
+        savedState = defaultStream.State;
+        RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
         indexes = randperm(length(im));
+        defaultStream.State = savedState;
         im = im(indexes(1:512^2));
     end
 

@@ -507,11 +507,16 @@ else
     %%% in the image.
     % im = im(:);
     if length(im) > 512^2
-        defaultStream = RandStream.getDefaultStream;
-        savedState = defaultStream.State;
-        RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+        is2008b_or_greater = str2num(strrep(strtok(version),'.','')) > 760324;
+        if is2008b_or_greater,
+            defaultStream = RandStream.getDefaultStream;
+            savedState = defaultStream.State;
+            RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+        else
+            rand('seed',0);
+        end
         indexes = randperm(length(im));
-        defaultStream.State = savedState;
+        if is2008b_or_greater, defaultStream.State = savedState; end
         im = im(indexes(1:512^2));
     end
 
@@ -889,14 +894,19 @@ thresh = 2^((X(entry) + X(entry+1)) / 2);
 %%% proportional to the histogram value.
 function Q = smooth_log_histogram(R, bits)
 %%% seed random state
-defaultStream = RandStream.getDefaultStream;
-savedState = defaultStream.State;
-RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+is2008b_or_greater= str2num(strrep(strtok(version),'.','')) > 760324;
+if is2008b_or_greater,
+    defaultStream = RandStream.getDefaultStream;
+    savedState = defaultStream.State;
+    RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+else
+    rand('seed',0);
+end
 R(R == 0) = 1 / (2^bits);
 Q = exp(log(R) + 0.5*randn(size(R)).*(-log2(R)/bits));
 Q(Q > 1) = 1.0;
 Q(Q < 0) = 0.0;
-defaultStream.State = savedState;
+if is2008b_or_greater, defaultStream.State = savedState; end
 
 %%% Weighted variances of the foreground and background.
 function  wv = WeightedVariance(Image, CropMask, Threshold)

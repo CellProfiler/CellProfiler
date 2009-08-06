@@ -139,14 +139,19 @@ class TestLoadText(unittest.TestCase):
 "Channel2-01-A-01.tif","%s"
 '''%(dir)
         workspace, module, filename = self.make_workspace(csv_text)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        imgset = workspace.image_set
-        image = imgset.get_image("DNA")
-        pixels = image.pixel_data
-        self.assertEqual(pixels.shape[0],640)
-        os.remove(filename)
+        try:
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
+            workspace.set_image_set_for_testing_only(0)
+            module.run(workspace)
+            imgset = workspace.image_set
+            image = imgset.get_image("DNA")
+            pixels = image.pixel_data
+            self.assertEqual(pixels.shape[0],640)
+            hexdigest = workspace.measurements.get_current_image_measurement(
+                'MD5Digest_DNA')
+            self.assertEqual(hexdigest, 'c55554be83a1c928c1ae9268486a94b3')
+        finally:
+            os.remove(filename)
     
     def test_04_02_dont_load_file(self):
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -154,13 +159,15 @@ class TestLoadText(unittest.TestCase):
 "Channel2-01-A-01.tif","%s"
 '''%(dir)
         workspace, module, filename = self.make_workspace(csv_text)
-        module.wants_images.value = False
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        imgset = workspace.image_set
-        self.assertEqual(len(imgset.get_names()),0)
-        os.remove(filename)
+        try:
+            module.wants_images.value = False
+            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
+            workspace.set_image_set_for_testing_only(0)
+            module.run(workspace)
+            imgset = workspace.image_set
+            self.assertEqual(len(imgset.get_names()),0)
+        finally:
+            os.remove(filename)
     
     def test_05_01_some_rows(self):
         csv_text = '''"Test_Measurement"

@@ -693,7 +693,7 @@ class LoadImages(cpmodule.CPModule):
             m.add_measurement('Image','PathName_'+name, full_path)
             pixel_data = provider.provide_image(workspace.image_set).pixel_data
             digest = hashlib.md5()
-            digest.update(pixel_data.data)
+            digest.update(numpy.ascontiguousarray(pixel_data).data)
             m.add_measurement('Image','MD5Digest_'+name, digest.hexdigest())
             for key in metadata:
                 measurement = 'Metadata_%s'%(key)

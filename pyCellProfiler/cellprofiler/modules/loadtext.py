@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version = "$Revision$"
 
 import csv
+import hashlib
 import numpy as np
 import os
 import sys
@@ -219,7 +220,7 @@ that can be processed by different nodes in a cluster.
         
     def get_name_providers(self, group):
         '''Get name providers from the CSV header'''
-        if group=='imagegroup':
+        if group=='imagegroup' and self.wants_images.value:
             try:
                 header = self.get_header()
                 return [field[len('Image_FileName_'):]
@@ -349,6 +350,16 @@ that can be processed by different nodes in a cluster.
             value = dictionary[feature_name][index]
             workspace.measurements.add_image_measurement(feature_name, value)
             statistics += [[feature_name, value]]
+        #
+        # Calculate the MD5 hash of every image
+        #
+        for image_name in self.get_name_providers('imagegroup'):
+            md5 = hashlib.md5()
+            pixel_data = workspace.image_set.get_image(image_name).pixel_data
+            md5.update(np.ascontiguousarray(pixel_data).data)
+            workspace.measurements.add_image_measurement(
+                'MD5Digest_'+image_name,
+                md5.hexdigest())
         if not workspace.frame is None:
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_table(0,0,statistics,[.3,.7])
@@ -377,8 +388,12 @@ that can be processed by different nodes in a cluster.
                 if collen[index] < len(field):
                     collen[index] = len(field)
                     coltypes[index] = cpmeas.COLTYPE_VARCHAR_FORMAT%len(field)
-        return [(cpmeas.IMAGE, colname, coltype)
-                for colname, coltype in zip(header, coltypes)]
+        image_names = self.get_name_providers('imagegroup')
+        return ([(cpmeas.IMAGE, colname, coltype)
+                 for colname, coltype in zip(header, coltypes)] +
+                [(cpmeas.IMAGE, 'MD5Digest_'%image_name,
+                  cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
+                 for image_name in image_names])
 
     def get_categories(self, pipeline, object_name):
         if object_name != cpmeas.IMAGE:

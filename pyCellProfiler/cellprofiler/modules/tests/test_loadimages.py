@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 import base64
+import hashlib
 import numpy
 import os
 import unittest
@@ -223,6 +224,10 @@ class testLoadImages(unittest.TestCase):
                 check_data = base64.b64decode(T.raw_8_1)
                 check_image = numpy.fromstring(check_data,numpy.uint8).reshape(T.raw_8_1_shape)
                 outer_self.assertTrue(numpy.all(pixel_data ==check_image))
+                digest = hashlib.md5()
+                digest.update((check_image.astype(float)/255).data)
+                hexdigest = workspace.measurements.get_current_image_measurement('MD5Digest_Orig')
+                outer_self.assertEqual(hexdigest, digest.hexdigest())
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
@@ -584,11 +589,13 @@ class testLoadImages(unittest.TestCase):
         pipeline.load(fd)
         module = pipeline.module(1)
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
-                         ('Image', 'PathName_DNA', 'varchar(128)'), 
+                         ('Image', 'PathName_DNA', 'varchar(128)'),
+                         ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                          ('Image', 'Metadata_Row', 'varchar(128)'), 
                          ('Image', 'Metadata_Col', 'varchar(128)'), 
                          ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
                          ('Image', 'PathName_Cytoplasm', 'varchar(128)'), 
+                         ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
                          ('Image', 'Metadata_Row', 'varchar(128)'), 
                          ('Image', 'Metadata_Col', 'varchar(128)')]
         returned_cols = module.get_measurement_columns(pipeline)

@@ -36,9 +36,10 @@ if not hasattr(sys, 'frozen'):
     # Check for dependencies and compile if necessary
     #
     compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
-                        cellprofiler.cpmath.setup),
-                       (os.path.join('cellprofiler','ffmpeg','setup.py'),
-                        cellprofiler.ffmpeg.setup)]
+                        cellprofiler.cpmath.setup)]
+    if sys.platform == 'win32':
+        compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
+                             cellprofiler.ffmpeg.setup)]
     current_directory = os.curdir
     for compile_script,my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)

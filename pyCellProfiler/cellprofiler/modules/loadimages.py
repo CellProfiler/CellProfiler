@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import cgi
+import hashlib
 import os
 import re
 import wx
@@ -690,6 +691,10 @@ class LoadImages(cpmodule.CPModule):
             m.add_measurement('Image','FileName_'+name, filename)
             full_path = os.path.join(self.image_directory(),path)
             m.add_measurement('Image','PathName_'+name, full_path)
+            pixel_data = provider.provide_image(workspace.image_set).pixel_data
+            digest = hashlib.md5()
+            digest.update(pixel_data.data)
+            m.add_measurement('Image','MD5Digest_'+name, digest.hexdigest())
             for key in metadata:
                 measurement = 'Metadata_%s'%(key)
                 if not m.has_current_measurements('Image',measurement):
@@ -860,6 +865,7 @@ class LoadImages(cpmodule.CPModule):
             name = fd[FD_IMAGE_NAME].value
             cols += [('Image','FileName_'+name, cpm.COLTYPE_VARCHAR_FILE_NAME)]
             cols += [('Image','PathName_'+name, cpm.COLTYPE_VARCHAR_PATH_NAME)]
+            cols += [('Image','MD5Digest_'+name, cpm.COLTYPE_VARCHAR_FORMAT%32)]
         
         fd = self.images[0]    
         if fd[FD_METADATA_CHOICE]==M_FILE_NAME or fd[FD_METADATA_CHOICE]==M_BOTH:

@@ -416,6 +416,49 @@ class CPModule(object):
         """
         pass
     
+    def get_groupings(self, image_set_list):
+        '''Return the image groupings of the image sets in an image set list
+        
+        get_groupings is called after prepare_run
+        
+        returns a tuple of key_names and group_list:
+        key_names - the names of the keys that identify the groupings
+        group_list - a sequence composed of two-tuples.
+                     the first element of the tuple has the values for
+                     the key_names for this group.
+                     the second element of the tuple is a sequence of
+                     image numbers comprising the image sets of the group
+        For instance, an experiment might have key_names of 'Metadata_Row'
+        and 'Metadata_Column' and a group_list of:
+        [ ('A','01'), [0,96,192],
+          ('A','02'), [1,97,193],... ]
+        
+        Returns None to indicate that the module does not contribute any
+        groupings.
+        '''
+        return None
+    
+    def prepare_group(self, pipeline, image_set_list, grouping):
+        '''Prepare to start processing a new grouping
+        
+        pipeline - the pipeline being run
+        image_set_list - the image_set_list for the experiment
+        grouping - a dictionary that describes the key for the grouping.
+                   For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
+        
+        prepare_group is called once after prepare_run if there are no
+        groups.
+        '''
+        pass
+    
+    def post_group(self, workspace, grouping):
+        '''Do post-processing after a group completes
+        
+        workspace - the workspace at the end of the group
+        grouping - the group that's being run
+        '''
+        pass
+    
     def get_measurement_columns(self, pipeline):
         '''Return a sequence describing the measurement columns needed by this module
         
@@ -543,7 +586,7 @@ class MatlabModule(CPModule):
         handles = pipeline.load_pipeline_into_matlab(image_set,object_set,measurements)
         handles.Current.CurrentModuleNumber = str(self.module_num)
         figure_field = 'FigureNumberForModule%d'%(self.module_num)
-        if measurements.image_set_number == 0:
+        if measurements.image_set_index == 0:
             if handles.Preferences.DisplayWindows[self.module_num-1] == 0:
                 # Make up a fake figure for the module if we're not displaying its window
                 self.__figure = math.ceil(max(matlab.findobj()))+1 

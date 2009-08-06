@@ -48,6 +48,9 @@ class TestSaveImages(unittest.TestCase):
         cpprefs.set_default_image_directory(self.old_image_directory)
         cpprefs.set_default_output_directory(self.old_output_directory)
     
+    def on_event(self, pipeline, event):
+        self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
@@ -56,6 +59,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -107,6 +111,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -161,6 +166,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -207,6 +213,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -261,6 +268,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -316,6 +324,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -375,6 +384,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -433,6 +443,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
@@ -488,6 +499,7 @@ class TestSaveImages(unittest.TestCase):
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH

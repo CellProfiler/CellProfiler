@@ -21,6 +21,9 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.modules.measureobjectareashape as cpmoas
 import cellprofiler.modules.injectimage as ii
 import cellprofiler.measurements as cpmeas
+import cellprofiler.workspace as cpw
+import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 
 class TestMeasureObjectAreaShape(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -39,27 +42,32 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
     
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
+        object_set = cpo.ObjectSet()
         labels = np.zeros((10,20),int)
         labels[1:9,1:5] = 1
         labels[1:9,11] = 2
         labels[4,6:19] = 2
-        io1 = ii.InjectObjects('SomeObjects',labels)
-        io1.module_num = 1
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, "SomeObjects")
         labels = np.zeros((115,115),int)
         x,y = np.mgrid[-50:51,-50:51]
         labels[x**2+y**2<=2500] = 1
-        io2 = ii.InjectObjects('OtherObjects',labels)
-        io2.module_num = 2
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, "OtherObjects")
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects","OtherObjects","Yes"]
         module.set_setting_values(settings, 1, module.module_name)
-        module.module_num = 3
+        module.module_num = 1
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
-        pipeline.add_module(io1)
-        pipeline.add_module(io2)
         pipeline.add_module(module)
-        measurements = pipeline.run()
-        
+        workspace = cpw.Workspace(pipeline, module, 
+                                  image_set_list.get_image_set(0),
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
         self.features_and_columns_match(measurements, module)
         
         a = measurements.get_current_measurement('SomeObjects','AreaShape_Area')
@@ -113,7 +121,7 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
             self.assertFalse('Zernike_3_1' in measurements)
             
     def features_and_columns_match(self, measurements, module):
-        self.assertEqual(len(measurements.get_object_names()), 3)
+        self.assertEqual(len(measurements.get_object_names()), 2)
         self.assertTrue('SomeObjects' in measurements.get_object_names())
         self.assertTrue('OtherObjects' in measurements.get_object_names())
         features = measurements.get_feature_names('SomeObjects')

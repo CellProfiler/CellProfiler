@@ -303,25 +303,90 @@ class TestPipeline(unittest.TestCase):
         module.module_num = 1
         module.my_variable.value = "foo"
         x.add_module(module)
-        for i in range(2):
-            columns = x.get_measurement_columns()
-            self.assertEqual(len(columns), 1)
-            self.assertEqual(columns[0][1], "foo")
+        columns = x.get_measurement_columns()
+        self.assertEqual(len(columns), 2)
+        self.assertTrue(any([column[0] == 'Image' and 
+                             column[1] == 'ImageNumber'
+                             for column in columns]))
+        self.assertTrue(any([column[1] == "foo" for column in columns]))
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][1], "bar")
+        self.assertEqual(len(columns), 2)
+        self.assertTrue(any([column[1] == "bar" for column in columns]))
         module = MyClassForTest0801()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 2)
-        self.assertEqual(columns[0][1], "bar")
-        self.assertEqual(columns[1][1], "foo")
+        self.assertEqual(len(columns), 3)
+        self.assertTrue(any([column[1] == "foo" for column in columns]))
+        self.assertTrue(any([column[1] == "bar" for column in columns]))
         columns = x.get_measurement_columns(module)
-        self.assertEqual(len(columns), 1)
-        self.assertEqual(columns[0][1], "bar")
+        self.assertEqual(len(columns), 2)
+        self.assertTrue(any([column[1] == "bar" for column in columns]))
+    
+    def test_10_01_all_groups(self):
+        '''Test running a pipeline on all groups'''
+        pipeline = exploding_pipeline(self)
+        expects = ['PrepareRun',0]
+        keys = ('foo','bar')
+        groupings = ((('foo-A','bar-A'),(1,3)),
+                     (('foo-B','bar-B'),(2,4)))
+        def prepare_run(pipeline, image_set_list, frame):
+            self.assertEqual(expects[0], 'PrepareRun')
+            for i in range(4):
+                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
+                image_set = image_set_list.get_image_set(i)
+                image_set.add('image', image)
+            expects[0], expects[1] = ('PrepareGroup', 0)
+            return True
+        def prepare_group(pipeline, image_set_list, grouping):
+            expects_state, expects_grouping = expects
+            self.assertEqual(expects_state, 'PrepareGroup')
+            for key, value in zip(keys, groupings[expects_grouping][0]):
+                self.assertTrue(grouping.has_key(key))
+                self.assertEqual(grouping[key], value)
+            if expects_grouping == 0:
+                expects[0], expects[1] = ('Run', 1)
+            else:
+                expects[0], expects[1] = ('Run', 2)
+            return True
+        def run(workspace):
+            expects_state, expects_image_number = expects
+            image_number = workspace.measurements.get_current_image_measurement(
+                'ImageNumber')
+            self.assertEqual(expects_state, 'Run')
+            self.assertEqual(expects_image_number, image_number)
+            image = workspace.image_set.get_image('image')
+            self.assertTrue(numpy.all(image.pixel_data == 1.0 / image_number))
+            if image_number == 1:
+                expects[0],expects[1] = ('Run', 3)
+            elif image_number == 2:
+                expects[0],expects[1] = ('Run', 4)
+            elif image_number == 3:
+                expects[0],expects[1] = ('PostGroup', 0)
+            else:
+                expects[0],expects[1] = ('PostGroup', 1)
+        def post_group(workspace, grouping):
+            expects_state, expects_grouping = expects
+            self.assertEqual(expects_state, 'PostGroup')
+            for key, value in zip(keys, groupings[expects_grouping][0]):
+                self.assertTrue(grouping.has_key(key))
+                self.assertEqual(grouping[key], value)
+            if expects_grouping == 0:
+                expects[0],expects[1] = ('PrepareGroup', 1)
+            else:
+                expects[0],expects[1] = ('PostRun', 0)
+        def post_run(workspace):
+            self.assertEqual(expects[0], 'PostRun')
+            expects[0],expects[1] = ('Done', 0)
+        
+        module = GroupModule((keys,groupings), prepare_run, prepare_group,
+                             run, post_group, post_run)
+        module.module_num = 1
+        pipeline.add_module(module)
+        pipeline.run()
+        self.assertEqual(expects[0], 'Done')
          
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):
@@ -339,6 +404,39 @@ class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
                  self.my_variable.value,
                  "varchar(255)")]
 
+class GroupModule(cellprofiler.cpmodule.CPModule):
+    module_name = "Group"
+    def __init__(self, groupings, 
+                 prepare_run_callback = None,
+                 prepare_group_callback = None,
+                 run_callback = None,
+                 post_group_callback = None,
+                 post_run_callback = None):
+        self.prepare_run_callback = prepare_run_callback
+        self.prepare_group_callback = prepare_group_callback
+        self.run_callback = run_callback
+        self.post_group_callback = post_group_callback
+        self.post_run_callback = post_run_callback
+        self.groupings = groupings
+    def get_groupings(self, image_set_list):
+        return self.groupings
+    def prepare_run(self, *args):
+        if self.prepare_run_callback is not None:
+            return self.prepare_run_callback(*args)
+        return True
+    def prepare_group(self, *args):
+        if self.prepare_group_callback is not None:
+            return self.prepare_group_callback(*args)
+        return True
+    def run(self, *args):
+        if self.run_callback is not None:
+            self.run_callback(*args)
+    def post_run(self, *args):
+        if self.post_run_callback is not None:
+            self.post_run_callback(*args)
+    def post_group(self, *args):
+        if self.post_group_callback is not None:
+            self.post_group_callback(*args)
 
 if __name__ == "__main__":
     unittest.main()

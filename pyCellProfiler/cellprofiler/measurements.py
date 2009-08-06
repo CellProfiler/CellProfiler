@@ -49,13 +49,19 @@ class Measurements(object):
                           or None to start at the beginning
         """
         self.__dictionary = {}
-        self.__image_set_number = 0 if image_set_start is None else image_set_start
+        self.__image_set_number = (1 if image_set_start is None
+                                   else image_set_start+1)
         self.__image_set_start = image_set_start
         self.__can_overwrite = can_overwrite
         self.__is_first_image = True
+        self.__image_set_index = 0
     
-    def next_image_set(self):
-        self.__image_set_number+=1
+    def next_image_set(self, explicit_image_set_number = None):
+        if explicit_image_set_number is None:
+            self.__image_set_number+=1
+        else:
+            self.__image_set_number = explicit_image_set_number
+        self.__image_set_index += 1
         self.__is_first_image = False
         for object_features in self.__dictionary.values():
             for measurements in object_features.values():
@@ -88,7 +94,7 @@ class Measurements(object):
     @property
     def image_set_index(self):
         '''Return the index into the measurements for the current measurement'''
-        return self.__image_set_number - (self.image_set_start_number - 1)
+        return self.__image_set_index
     
     def add_image_measurement(self, feature_name, data):
         """Add a measurement to the "Image" category

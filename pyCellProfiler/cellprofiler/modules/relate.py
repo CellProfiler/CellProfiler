@@ -161,7 +161,8 @@ class Relate(cpm.CPModule):
             columns += [(self.parent_name.value,
                          FF_MEAN%(self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
-                        for column in child_columns]
+                        for column in child_columns
+                        if column[0] == self.sub_object_name.value]
         return columns
 
     def get_categories(self, pipeline, object_name):

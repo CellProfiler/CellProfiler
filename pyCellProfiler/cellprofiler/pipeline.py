@@ -31,6 +31,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
 
+'''The measurement name of the image number'''
+IMAGE_NUMBER = "ImageNumber"
 CURRENT = 'Current'
 NUMBER_OF_IMAGE_SETS     = 'NumberOfImageSets'
 NUMBER_OF_MODULES        = 'NumberOfModules'
@@ -167,7 +169,7 @@ def add_matlab_measurements(handles, measurements):
         for j in range(0,int(matlab.length(object_fields)[0,0])):
             feature = matlab.cell2mat(object_fields[j])
             if not measurements.has_current_measurements(field,feature):
-                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.image_set_number])
+                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.image_set_number-1])
                 if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
                     # It's either not a numpy array (it's a string) or it's not the empty numpy array
                     # so add it to the measurements
@@ -213,16 +215,18 @@ def add_all_measurements(handles, measurements):
         object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
         for feature_name in measurements.get_feature_names(object_name):
-            feature_measurements = numpy.ndarray((1,measurements.image_set_number+1),dtype='object')
+            feature_measurements = numpy.ndarray((1,measurements.image_set_index+1),dtype='object')
             object_measurements[feature_name][0,0] = feature_measurements
             data = measurements.get_all_measurements(object_name,feature_name)
-            for i in range(0,measurements.image_set_number+1):
+            for i in range(0,measurements.image_set_index+1):
                 if data != None:
                     ddata = data[i]
                     if numpy.isscalar(ddata) and numpy.isreal(ddata):
                         feature_measurements[0,i] = numpy.array([ddata])
                     else:
                         feature_measurements[0,i] = ddata
+                else:
+                    feature_measurements[0, i] = np.array([0])
     if cpmeas.EXPERIMENT in measurements.object_names:
         object_dtype = make_cell_struct_dtype(measurements.get_feature_names(cpmeas.EXPERIMENT))
         experiment_measurements = numpy.ndarray((1,1), dtype=object_dtype)
@@ -400,7 +404,7 @@ class Pipeline(object):
         current = numpy.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
         handles[CURRENT]=current
         current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
-        current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.image_set_number + 1) or 1]
+        current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.image_set_number) or 1]
         current[NUMBER_OF_MODULES][0,0]        = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = [1]
         current[TIME_STARTED][0,0]             = str(datetime.datetime.now())
@@ -462,15 +466,19 @@ class Pipeline(object):
                 object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
                 npy_measurements[object_name][0,0] = object_measurements
                 for feature_name in measurements.get_feature_names(object_name):
-                    feature_measurements = numpy.ndarray((1,measurements.image_set_number+1),dtype='object')
+                    feature_measurements = numpy.ndarray((1,measurements.image_set_number),dtype='object')
                     object_measurements[feature_name][0,0] = feature_measurements
                     data = measurements.get_current_measurement(object_name,feature_name)
                     feature_measurements.fill(numpy.ndarray((0,),dtype=numpy.float64))
                     if data != None:
-                        feature_measurements[0,measurements.image_set_number] = data
+                        feature_measurements[0,measurements.image_set_number-1] = data
         return handles
     
-    def run(self,frame = None, image_set_start = 0, image_set_end = None):
+    def run(self,
+            frame = None, 
+            image_set_start = 0, 
+            image_set_end = None,
+            grouping = None):
         """Run the pipeline
         
         Run the pipeline, returning the measurements made
@@ -478,15 +486,21 @@ class Pipeline(object):
                 run headless
         image_set_start - the index of the first image to be run
         image_set_end - the index of the last image to be run + 1
+        grouping - a dictionary that gives the keys and values in the
+                   grouping to run or None to run all groupings
         """
         measurements = cellprofiler.measurements.Measurements()
-        for m in self.run_with_yield(frame, image_set_start, image_set_end):
+        for m in self.run_with_yield(frame, 
+                                     image_set_start, 
+                                     image_set_end,
+                                     grouping):
             measurements = m
         return measurements
 
     def run_with_yield(self,frame = None, 
                        image_set_start = 0, 
-                       image_set_end = None):
+                       image_set_end = None,
+                       grouping = None):
         """Run the pipeline, yielding periodically to keep the GUI alive
         
         Run the pipeline, returning the measurements made
@@ -494,64 +508,101 @@ class Pipeline(object):
         image_set_list = self.prepare_run(frame)
         if image_set_list == None:
             return
-            
-        measurements = cpmeas.Measurements(image_set_start=image_set_start)
+        
+        keys, groupings = self.get_groupings(image_set_list)
+        if grouping is not None:
+            for key in grouping.keys():
+                if key not in keys:
+                    raise ValueError("The grouping key, %s, is not in the list of keys that specify a group: %s"%
+                                     (key, keys))
+            for key in keys:
+                if key not in grouping.keys():
+                    raise ValueError("The key, %s, is missing from the list of keys that specify a group: %s"%
+                                     (key, keys))
+        measurements = None
         first_set = True
         matlab_initialized = False
-        while (first_set or
-               (measurements.image_set_number+1 <
-                (image_set_list.count() if image_set_end is None
-                 else image_set_end)) or 
-               (image_set_list.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and
-                image_set_list.legacy_fields[NUMBER_OF_IMAGE_SETS] > 
-                measurements.image_set_number+1)):
-            if not first_set:
-                measurements.next_image_set()
-            numberof_windows = 0;
-            slot_number = 0
-            object_set = cellprofiler.objects.ObjectSet()
-            image_set = image_set_list.get_image_set(measurements.image_set_number)
-            outlines = {}
-            for module in self.modules():
-                module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
-                execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
-                failure = 1
-                if (not matlab_initialized) and module.needs_matlab():
-                    self.set_matlab_path()
-                    matlab_initialized = True
-                try:
-                    workspace = cpw.Workspace(self,
-                                              module,
-                                              image_set,
-                                              object_set,
-                                              measurements,
-                                              image_set_list,
-                                              frame,
-                                              outlines = outlines)
-                    t0 = datetime.datetime.now()
-                    module.run(workspace)
-                    t1 = datetime.datetime.now()
-                    workspace.refresh()
-                    failure = 0
-                except Exception,instance:
-                    traceback.print_exc()
-                    event = RunExceptionEvent(instance,module)
-                    self.notify_listeners(event)
-                    if event.cancel_run:
+        
+        for grouping_keys, image_numbers in groupings:
+            #
+            # Loop over groups
+            #
+            match = True
+            grouping_dictionary = {}
+            for key, value in zip(keys, grouping_keys):
+                if grouping is not None and grouping[key] != value:
+                    match = False
+                    break
+                grouping_dictionary[key] = value
+            if not match:
+                continue
+            prepare_group_has_run = False
+            for image_number in image_numbers:
+                #
+                # Loop over image sets within groups
+                #
+                if image_number < image_set_start:
+                    continue
+                if image_set_end is not None and image_number > image_set_end:
+                    continue
+                if not prepare_group_has_run:
+                    if not self.prepare_group(image_set_list, grouping_dictionary):
                         return
-                if module.module_name != 'Restart':
-                    measurements.add_measurement('Image',
-                                                 module_error_measurement,
-                                                 numpy.array([failure]));
-                    delta = t1-t0
-                    delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
-                                 float(delta.microseconds) / 1000. / 1000.)
-                    measurements.add_measurement('Image',
-                                                 execution_time_measurement,
-                                                 numpy.array([delta_sec]))
-                yield measurements
-            first_set = False
-            image_set_list.purge_image_set(measurements.image_set_number)
+                    prepare_group_has_run = True
+                if first_set:
+                    measurements = cpmeas.Measurements(
+                        image_set_start=image_number-1)
+                else:
+                    measurements.next_image_set(image_number)
+                measurements.add_image_measurement(IMAGE_NUMBER, image_number)
+                numberof_windows = 0;
+                slot_number = 0
+                object_set = cellprofiler.objects.ObjectSet()
+                image_set = image_set_list.get_image_set(image_number-1)
+                outlines = {}
+                for module in self.modules():
+                    module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
+                    execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
+                    failure = 1
+                    if (not matlab_initialized) and module.needs_matlab():
+                        self.set_matlab_path()
+                        matlab_initialized = True
+                    try:
+                        workspace = cpw.Workspace(self,
+                                                  module,
+                                                  image_set,
+                                                  object_set,
+                                                  measurements,
+                                                  image_set_list,
+                                                  frame,
+                                                  outlines = outlines)
+                        t0 = datetime.datetime.now()
+                        module.run(workspace)
+                        t1 = datetime.datetime.now()
+                        workspace.refresh()
+                        failure = 0
+                    except Exception,instance:
+                        traceback.print_exc()
+                        event = RunExceptionEvent(instance,module)
+                        self.notify_listeners(event)
+                        if event.cancel_run:
+                            return
+                    if module.module_name != 'Restart':
+                        measurements.add_measurement('Image',
+                                                     module_error_measurement,
+                                                     numpy.array([failure]));
+                        delta = t1-t0
+                        delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
+                                     float(delta.microseconds) / 1000. / 1000.)
+                        measurements.add_measurement('Image',
+                                                     execution_time_measurement,
+                                                     numpy.array([delta_sec]))
+                    yield measurements
+                first_set = False
+                image_set_list.purge_image_set(image_number-1)
+            if prepare_group_has_run:
+                if not self.post_group(workspace, grouping_dictionary):
+                    return
         self.post_run(measurements, image_set_list, frame)
         
     def prepare_run(self, frame):
@@ -597,6 +648,76 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
+    
+    def get_groupings(self, image_set_list):
+        '''Return the image groupings of the image sets in an image set list
+        
+        returns a tuple of key_names and group_list:
+        key_names - the names of the keys that identify the groupings
+        group_list - a sequence composed of two-tuples.
+                     the first element of the tuple has the values for
+                     the key_names for this group.
+                     the second element of the tuple is a sequence of
+                     image numbers comprising the image sets of the group
+        For instance, an experiment might have key_names of 'Metadata_Row'
+        and 'Metadata_Column' and a group_list of:
+        [ ('A','01'), [0,96,192],
+          ('A','02'), [1,97,193],... ]
+        '''
+        groupings = None
+        grouping_module = None
+        for module in self.modules():
+            new_groupings = module.get_groupings(image_set_list)
+            if new_groupings is None:
+                continue
+            if groupings is None:
+                groupings = new_groupings
+                grouping_module = module
+            else:
+                raise ValueError("The pipeline has two grouping modules: # %d "
+                                 "(%s) and # %d (%s)" %
+                                 (grouping_module.module_num, 
+                                  grouping_module.module_name,
+                                  module.module_num,
+                                  module.module_name))
+        if groupings is None:
+            return ((), (((),range(1, image_set_list.count()+1)),))
+        return groupings
+    
+    def prepare_group(self, image_set_list, grouping):
+        '''Prepare to start processing a new group
+        
+        image_set_list - the image set list for the run
+        grouping - a dictionary giving the keys and values for the group
+        
+        returns true if the group should be run
+        '''
+        for module in self.modules():
+            try:
+                module.prepare_group(self, image_set_list, grouping)
+            except Exception, instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance, module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return False
+        return True
+    
+    def post_group(self, workspace, grouping):
+        '''Do post-processing after a group completes
+        
+        workspace - the last workspace run
+        '''
+        for module in self.modules():
+            try:
+                module.post_group(workspace, grouping)
+            except Exception, instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance, module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return False
+        return True
 
     def set_matlab_path(self):
         matlab = get_matlab_instance()
@@ -732,7 +853,7 @@ class Pipeline(object):
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]
-        columns = []
+        columns = [(cpmeas.IMAGE, IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER)]
         for module in self.modules():
             if (terminating_module is not None and 
                 terminating_module_num == module.module_num):

@@ -21,12 +21,12 @@ class TestMeasurements(unittest.TestCase):
     
     def test_01_01_image_number_is_zero(self):
         x = cellprofiler.measurements.Measurements()
-        self.assertEqual(x.image_set_number,0)
+        self.assertEqual(x.image_set_number,1)
     
     def test_01_01_next_image(self):
         x = cellprofiler.measurements.Measurements()
         x.next_image_set()
-        self.assertEqual(x.image_set_number,1)
+        self.assertEqual(x.image_set_number,2)
     
     def test_02_01_add_image_measurement(self):
         x = cellprofiler.measurements.Measurements()

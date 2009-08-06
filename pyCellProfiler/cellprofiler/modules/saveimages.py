@@ -337,7 +337,23 @@ class SaveImages(cpm.CPModule):
             result.append(self.rescale)
             result.append(self.colormap)
         return result
+    
+    @property
+    def module_key(self):
+        return "%s_%d"%(self.module_name, self.module_num)
+    
+    def get_dictionary(self, image_set_list):
+        '''Return the runtime dictionary associated with this module'''
+        return image_set_list.legacy_fields[self.module_key]
+    
+    def prepare_run(self, pipeline, image_set_list, frame):
+        image_set_list.legacy_fields[self.module_key] = {}
+        return True
 
+    def prepare_group(self, pipeline, image_set_list, grouping):
+        self.get_dictionary(image_set_list)["FIRST_IMAGE"] = True
+        return True
+        
     def run(self,workspace):
         """Run the module
         
@@ -360,13 +376,20 @@ class SaveImages(cpm.CPModule):
         # First, check to see if we should save this image
         #
         if self.when_to_save == WS_FIRST_CYCLE:
-            if workspace.measurements.image_set_number > 0:
+            d = self.get_dictionary(workspace.image_set_list)
+            if not d["FIRST_IMAGE"]:
                 return
-        elif self.when_to_save == WS_LAST_CYCLE:
-            if (workspace.measurements.image_set_number <
-                workspace.image_set_list.count()-1):
-                return
+            d["FIRST_IMAGE"] = False
             
+        elif self.when_to_save == WS_LAST_CYCLE:
+            return
+        self.save_image(workspace)
+    
+    def post_group(self, workspace, grouping):
+        if self.when_to_save == WS_LAST_CYCLE:
+            self.save_image(workspace)
+
+    def save_image(self, workspace):
         image = workspace.image_set.get_image(self.image_name)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data

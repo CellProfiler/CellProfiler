@@ -61,7 +61,14 @@ function handles=SubmitBatch(handles)
                     write_data,info.BatchSize,info.Timeout,...
                     info.CPCluster, info.Project, info.MemoryLimit);
         result=urlread(url);
-        web(strcat('text://',result),'-browser');
+        filename = strcat(tempname(),'.html');
+        fid = fopen(filename, 'wt');
+        fprintf(fid,'%s', result);
+        fclose(fid)
+        if ispc
+            filename = strcat('/',strrep(filename,'\','/'));
+        end
+        web(strcat('file://',filename),'-browser');
     end;
 end
 

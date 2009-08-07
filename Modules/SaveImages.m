@@ -560,7 +560,7 @@ if strcmpi(SaveWhen,'Every cycle') || (strcmpi(SaveWhen,'First cycle') && SetBei
             %%% at once later, when the file is saved.
             Movie(SetBeingAnalyzed).colormap = [];
             %%% Adds the image as the last frame in the movie.
-            Movie(SetBeingAnalyzed).cdata = Image*256;
+            Movie(SetBeingAnalyzed).cdata = im2uint8(Image);
         end
         %%% Saves the movie to the handles structure.
         handles = CPaddimages(handles,fieldname,Movie);

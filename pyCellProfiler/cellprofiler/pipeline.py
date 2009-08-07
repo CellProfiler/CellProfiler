@@ -528,12 +528,10 @@ class Pipeline(object):
             # Loop over groups
             #
             match = True
-            grouping_dictionary = {}
-            for key, value in zip(keys, grouping_keys):
-                if grouping is not None and grouping[key] != value:
+            for key in keys:
+                if grouping is not None and grouping[key] != grouping_keys[key]:
                     match = False
                     break
-                grouping_dictionary[key] = value
             if not match:
                 continue
             prepare_group_has_run = False
@@ -547,7 +545,7 @@ class Pipeline(object):
                     continue
                 if not prepare_group_has_run:
                     if not self.prepare_group(image_set_list, 
-                                              grouping_dictionary,
+                                              grouping_keys,
                                               image_numbers):
                         return
                     prepare_group_has_run = True
@@ -603,7 +601,7 @@ class Pipeline(object):
                 first_set = False
                 image_set_list.purge_image_set(image_number-1)
             if prepare_group_has_run:
-                if not self.post_group(workspace, grouping_dictionary):
+                if not self.post_group(workspace, grouping_keys):
                     return
         self.post_run(measurements, image_set_list, frame)
         

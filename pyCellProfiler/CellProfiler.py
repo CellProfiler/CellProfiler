@@ -104,6 +104,13 @@ parser.add_option("-l","--last-image-set",
                   dest="last_image_set",
                   default=None,
                   help="The one-based index of the last image set to process")
+parser.add_option("-g","--group",
+                  dest="groups",
+                  default=None,
+                  help=('Restrict processing to one grouping in a grouped '
+                        'pipeline. For instance, "-g ROW=H,COL=01", will '
+                        'process only the group of image sets that match '
+                        'the keys.'))
 
 options, args = parser.parse_args()
 
@@ -147,8 +154,14 @@ if options.show_gui:
 else:
     pipeline = Pipeline()
     pipeline.load(options.pipeline_filename)
+    if options.groups is not None:
+        kvs = [x.split('=') for x in options.groups.split(',')]
+        groups = dict(kvs)
+    else:
+        groups = None
     measurements = pipeline.run(image_set_start = image_set_start, 
-                                image_set_end = image_set_end)
+                                image_set_end = image_set_end,
+                                grouping = groups)
     if len(args) > 0:
         pipeline.save_measurements(args[0], measurements)
     

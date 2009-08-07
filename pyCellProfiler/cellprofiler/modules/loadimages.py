@@ -791,25 +791,7 @@ class LoadImages(cpmodule.CPModule):
             keys = self.metadata_fields.selections
             if len(keys) == 0:
                 return None
-            #
-            # Sort order for dictionary keys
-            #
-            sort_order = []
-            dictionaries = []
-            #
-            # Dictionary of key_values to list of image numbers
-            #
-            d = {}
-            assert isinstance(image_set_list, cpimage.ImageSetList)
-            for i in range(image_set_list.count()):
-                image_set = image_set_list.get_image_set(i)
-                assert isinstance(image_set, cpimage.ImageSet)
-                key_values = tuple([image_set.keys[key] for key in keys])
-                if not d.has_key(key_values):
-                    d[key_values] = []
-                    sort_order.append(key_values)
-                d[key_values].append(i+1)
-            return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+            return image_set_list.get_groupings(keys)
         else:
             return None
     

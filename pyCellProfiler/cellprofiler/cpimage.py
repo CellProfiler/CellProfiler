@@ -528,7 +528,7 @@ class ImageSet(object):
             self.providers.remove(provider)
         provider = VanillaImageProvider(name,image)
         self.providers.append(provider)
-
+    
 class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
     
@@ -585,6 +585,40 @@ class ImageSetList(object):
     
     legacy_fields = property(get_legacy_fields)
     
+    def get_groupings(self, keys):
+        '''Return the groupings of an image set list over a set of keys
+        
+        keys - a sequence of keys that match some of the image set keys
+        
+        returns an object suitable for use by CPModule.get_groupings:
+        tuple of keys, groupings
+        keys - the keys as passed into the function
+        groupings - a sequence of groupings of image sets where
+                    each element of the sequence is a two-tuple.
+                    The first element of the two-tuple is a dictionary
+                    that gives the group's values for each key.
+                    The second element is a list of image numbers of
+                    the images in the group
+        '''
+        #
+        # Sort order for dictionary keys
+        #
+        sort_order = []
+        dictionaries = []
+        #
+        # Dictionary of key_values to list of image numbers
+        #
+        d = {}
+        for i in range(self.count()):
+            image_set = self.get_image_set(i)
+            assert isinstance(image_set, ImageSet)
+            key_values = tuple([image_set.keys[key] for key in keys])
+            if not d.has_key(key_values):
+                d[key_values] = []
+                sort_order.append(key_values)
+            d[key_values].append(i+1)
+        return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+        
 
 def readc01(fname):
     '''Read a Cellomics file into an array

@@ -15,6 +15,7 @@ __version = "$Revision$"
 import base64
 import numpy as np
 import os
+import re
 from StringIO import StringIO
 import tempfile
 import unittest
@@ -51,6 +52,10 @@ class TestLoadText(unittest.TestCase):
                                   image_set_list)
         return workspace, module, name
     
+    def test_01_00_revision(self):
+        '''Remember to update this and write another test on new revision'''
+        self.assertEqual(L.LoadText().variable_revision_number, 2)
+        
     def test_01_01_load_v1(self):
         data = ('eJztV01v2jAYdvgabBPith59mnrootANqeWyMtAEU6EVRdV2qlwwzJITR46'
                 'DYL9gP2nHHfdz9hNm06QkHiUQsXXSsGQlr/0+z/tlJ3a3MThvvIM104Ldxu'
@@ -76,9 +81,38 @@ class TestLoadText(unittest.TestCase):
         self.assertEqual(module.csv_directory_choice, L.DIR_DEFAULT_IMAGE)
         self.assertEqual(module.csv_file_name, "1049.csv")
         self.assertTrue(module.wants_images.value)
+        self.assertFalse(module.wants_image_groupings.value)
         self.assertEqual(module.image_directory_choice, L.DIR_DEFAULT_IMAGE)
         self.assertFalse(module.wants_rows.value)
     
+    def test_01_02_load_v2(self):
+        data = ('eJztVd1KwzAUTuv82QTxTi9zJV5oycTf3eimiAM3xQ3RK4lbOgJpM9J0bD6B'
+                'j+Jj+Cg+go9gMtKtrWOdeiPogZCc5PvOyfk4bWrl5mW5AvccBGvl5rZLGYHX'
+                'DEuXC68EfbkFTwXBkrQh90vwXFBYDjsQHcDifqmISmgX7iB0BL5nVrW2oqa3'
+                'RQAW1Lykhm2O5o1vxYb2G0RK6neCeZAD62b/VY1bLCh+ZOQWs5AE4xTRftV3'
+                'eXPQHR3VeDtkpI69OFhZPfQeiQiu3Ihojq9pn7AGfSKpEiLYDenRgHLf8E38'
+                '9O4oL5epvFqHF3usgzVBh0JsX+MvwBifm4Bfi+FXjX9GXBwyCase7hB4RgVp'
+                'SS4Gw3goI56ViGcBx9zjMIO3BJL30H4R7R45raA3S965BH8O3CvtflP9WTw7'
+                'wbNBnf9At60i0vYT3U4yePlUXu03Ko2HNg9GXavj3H2xX+P3XUjhI4vw+X/e'
+                'n+c9g+n9Ff8eh/0Ipvf1Bkj2tfZbhLGu4PrdE443/DkHDuO4LUlfOpdq0VSL'
+                'z3XkJ8SP38dWq0JG/em6x3q8H38nnz0h33IGL2de3LR+s+i9OQUPUvgPhsiG'
+                'ig==')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module,L.LoadText))
+        self.assertEqual(module.csv_file_name, "1049.csv")
+        self.assertTrue(module.wants_images.value)
+        self.assertTrue(module.wants_image_groupings.value)
+        self.assertEqual(len(module.metadata_fields.selections),1)
+        self.assertEqual(module.metadata_fields.selections[0], "SBS_doses")
+        self.assertEqual(module.image_directory_choice, L.DIR_DEFAULT_IMAGE)
+        self.assertFalse(module.wants_rows.value)
+        
     def test_02_01_string_image_measurement(self):
         csv_text = '''"Test_Measurement"
 "Hello, world"
@@ -244,4 +278,36 @@ class TestLoadText(unittest.TestCase):
                                   column[2] == coltype) for column in columns]),
                             'Failed to find %s'%colname)
         os.remove(filename)
-        
+    
+    def test_08_01_get_groupings(self):
+        '''Test the get_groupings method'''
+        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        pattern = 'Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif'
+        csv_text ='"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
+        for filename in os.listdir(dir):
+            match = re.match(pattern, filename)
+            if match:
+                csv_text += ('"%s","%s","%s","%s"\n' %
+                             (filename, dir, match.group("ROW"), 
+                              match.group("COL")))
+        workspace, module, filename = self.make_workspace(csv_text)
+        self.assertTrue(isinstance(module, L.LoadText))
+        module.wants_images.value = True
+        module.wants_image_groupings.value = True
+        module.metadata_fields.value = "ROW"
+        image_set_list = workspace.image_set_list
+        module.prepare_run(workspace.pipeline, image_set_list, None)
+        keys, groupings = module.get_groupings(image_set_list)
+        self.assertEqual(len(keys), 1)
+        self.assertEqual(keys[0], "ROW")
+        self.assertEqual(len(groupings), 8)
+        self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
+        for grouping in groupings:
+            row = grouping[0]["ROW"]
+            for image_number in grouping[1]:
+                image_set = image_set_list.get_image_set(image_number-1)
+                self.assertEqual(image_set.keys["ROW"], row)
+                provider = image_set.get_image_provider("Cytoplasm")
+                match = re.search(pattern, provider.get_filename())
+                self.assertTrue(match)
+                self.assertEqual(row, match.group("ROW"))

@@ -117,7 +117,7 @@ that can be processed by different nodes in a cluster.
 '''
 
     category = 'File Processing'
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         self.module_name = "LoadText"
@@ -133,6 +133,8 @@ that can be processed by different nodes in a cluster.
                                                  DIR_ALL)
         self.image_custom_directory = cps.DirectoryPath("What is the name of the image directory?",
                                                         ".")
+        self.wants_image_groupings = cps.Binary("Do you want to group images by metadata?", False)
+        self.metadata_fields = cps.MultiChoice("What metadata fields should be used to group?", None)
         self.wants_rows = cps.Binary("Do you want to specify a range of rows to be processed?",
                                      False)
         self.row_range = cps.IntegerRange("Enter the row numbers of the first and last row to be processed",
@@ -142,7 +144,8 @@ that can be processed by different nodes in a cluster.
         return [self.csv_directory_choice, self.csv_custom_directory,
                 self.csv_file_name, self.wants_images, self.image_directory_choice,
                 self.image_custom_directory, self.wants_rows,
-                self.row_range]
+                self.row_range, self.wants_image_groupings, 
+                self.metadata_fields]
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -162,6 +165,9 @@ that can be processed by different nodes in a cluster.
                               cps.NO, "1,100000"]
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = setting_values + [cps.NO, ""]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab 
 
     def test_valid(self, pipeline):
@@ -180,6 +186,14 @@ that can be processed by different nodes in a cluster.
             result += [self.image_directory_choice]
             if self.image_directory_choice == DIR_OTHER:
                 result += [self.image_custom_directory]
+            result += [self.wants_image_groupings]
+            if self.wants_image_groupings.value:
+                result += [self.metadata_fields]
+                fields = [field[len("Metadata_"):] 
+                          for field in self.get_header()
+                          if field.startswith("Metadata_")]
+                self.metadata_fields.choices = fields
+                
         result += [self.wants_rows]
         if self.wants_rows.value:
             result += [self.row_range]
@@ -212,6 +226,11 @@ that can be processed by different nodes in a cluster.
         return 'LoadTextMetadata_%s'%str(self.uuid)
     
     def get_header(self):
+        '''Read the header fields from the csv file
+        
+        Open the csv file indicated by the settings and read the fields
+        of its first line. These should be the measurement columns.
+        '''
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
         header = reader.next()
@@ -363,6 +382,20 @@ that can be processed by different nodes in a cluster.
         if not workspace.frame is None:
             figure = workspace.create_or_find_figure(subplots=(1,1))
             figure.subplot_table(0,0,statistics,[.3,.7])
+    
+    def get_groupings(self, image_set_list):
+        '''Return the image groupings of the image sets
+
+        See CPModule for documentation
+        '''
+        if (self.wants_images.value and 
+            self.wants_image_groupings.value and
+            len(self.metadata_fields.selections) > 0):
+            keys = self.metadata_fields.selections
+            if len(keys) == 0:
+                return None
+            return image_set_list.get_groupings(keys)
+        return None
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements output by this module'''

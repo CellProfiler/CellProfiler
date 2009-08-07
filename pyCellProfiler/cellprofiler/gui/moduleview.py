@@ -260,6 +260,9 @@ class ModuleView:
                 self.__static_texts.append(static_text)
                 if isinstance(v,cellprofiler.settings.Binary):
                     control = self.make_binary_control(v,control_name,control)
+                elif isinstance(v, cellprofiler.settings.MultiChoice):
+                    control = self.make_multichoice_control(v, control_name, 
+                                                            control)
                 elif isinstance(v,cellprofiler.settings.CustomChoice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
@@ -344,7 +347,7 @@ class ModuleView:
             self.__module_panel.Bind(wx.EVT_COMBOBOX,callback,control)
             if style == wx.CB_DROPDOWN:
                 def on_cell_change(event, setting=v, control=control):
-                     self.__on_cell_change(event, setting, control)
+                    self.__on_cell_change(event, setting, control)
                 self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
         else:
             old_choices = control.Items
@@ -357,6 +360,39 @@ class ModuleView:
         if (getattr(v,'has_tooltips',False) and 
             v.has_tooltips and v.tooltips.has_key(control.Value)):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
+        return control
+    
+    def make_multichoice_control(self, v, control_name, control):
+        selections = v.selections
+        choices = v.choices + [selection for selection in selections
+                               if selection not in v.choices]
+        assert isinstance(v, cellprofiler.settings.MultiChoice)
+        if not control:
+            control = wx.ListBox(self.__module_panel, -1, choices=choices,
+                                 style = wx.LB_EXTENDED,
+                                 name=control_name)
+            for selection in selections:
+                index = choices.index(selection)
+                control.SetSelection(index)
+                if selection not in v.choices:
+                    control.SetItemForegroundColour(index, ERROR_COLOR)
+            
+            def callback(event, setting = v, control = control):
+                self.__on_multichoice_change(event, setting, control)
+            self.__module_panel.Bind(wx.EVT_LISTBOX, callback, control)
+        else:
+            old_choices = control.Items
+            if (len(choices) != len(old_choices) or
+                not all([x==y for x,y in zip(choices, old_choices)])):
+                control.Items = choices
+            for i in range(len(choices)):
+                if control.IsSelected(i):
+                    if choices[i] not in selections:
+                        control.Deselect(i)
+                elif choices[i] in selections:
+                    control.Select(i)
+                    if choices[i] not in v.choices:
+                        control.SetItemForegroundColour(i, ERROR_COLOR)
         return control
     
     def make_colormap_control(self, v, control_name, control):
@@ -462,9 +498,17 @@ class ModuleView:
                 if new_value:
                     control.Value = new_value
                     self.__on_cell_change(event, setting,control)
-                
+            
+            def on_kill_focus(event, setting = v, control = text_ctrl):
+                if self.__module is not None:
+                    self.set_selection(self.__module.module_num)
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, text_ctrl)
             self.__module_panel.Bind(wx.EVT_BUTTON, on_button_pressed, bitmap_button)
+            #
+            # http://www.velocityreviews.com/forums/t359823-textctrl-focus-events-in-wxwidgets.html
+            # explains why bind is to control itself
+            #
+            text_ctrl.Bind(wx.EVT_KILL_FOCUS, on_kill_focus)
         else:
             text_control = control.FindWindowByName(text_control_name(v))
             text_control.Value = v.value
@@ -790,6 +834,15 @@ class ModuleView:
     
     def __on_combobox_change(self,event,setting,control):
         self.__on_cell_change(event, setting, control)
+        self.reset_view()
+    
+    def __on_multichoice_change(self, event, setting, control):
+        old_value = str(setting)
+        proposed_value = str(','.join([control.Items[i]
+                                       for i in control.Selections]))
+        setting_edited_event = SettingEditedEvent(setting, proposed_value, 
+                                                  event)
+        self.notify(setting_edited_event)
         self.reset_view()
         
     def __on_cell_change(self,event,setting,control):

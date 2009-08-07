@@ -340,7 +340,7 @@ class TestPipeline(unittest.TestCase):
                 image_set.add('image', image)
             expects[0], expects[1] = ('PrepareGroup', 0)
             return True
-        def prepare_group(pipeline, image_set_list, grouping):
+        def prepare_group(pipeline, image_set_list, grouping, *args):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for key, value in zip(keys, groupings[expects_grouping][0]):
@@ -367,6 +367,7 @@ class TestPipeline(unittest.TestCase):
                 expects[0],expects[1] = ('PostGroup', 0)
             else:
                 expects[0],expects[1] = ('PostGroup', 1)
+            workspace.measurements.add_image_measurement("mymeasurement",image_number)
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
@@ -385,9 +386,73 @@ class TestPipeline(unittest.TestCase):
                              run, post_group, post_run)
         module.module_num = 1
         pipeline.add_module(module)
-        pipeline.run()
+        measurements = pipeline.run()
         self.assertEqual(expects[0], 'Done')
+        image_numbers = measurements.get_all_measurements("Image","ImageNumber")
+        self.assertEqual(len(image_numbers), 4)
+        self.assertTrue(numpy.all(image_numbers == numpy.array([1,3,2,4])))
          
+    def test_10_02_one_group(self):
+        '''Test running a pipeline on one group'''
+        pipeline = exploding_pipeline(self)
+        expects = ['PrepareRun',0]
+        keys = ('foo','bar')
+        groupings = ((('foo-A','bar-A'),(1,4)),
+                     (('foo-B','bar-B'),(2,5)),
+                     (('foo-C','bar-C'),(3,6)))
+        def prepare_run(pipeline, image_set_list, frame):
+            self.assertEqual(expects[0], 'PrepareRun')
+            for i in range(6):
+                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
+                image_set = image_set_list.get_image_set(i)
+                image_set.add('image', image)
+            expects[0], expects[1] = ('PrepareGroup', 1)
+            return True
+        def prepare_group(pipeline, image_set_list, grouping,*args):
+            expects_state, expects_grouping = expects
+            self.assertEqual(expects_state, 'PrepareGroup')
+            for key, value in zip(keys, groupings[expects_grouping][0]):
+                self.assertTrue(grouping.has_key(key))
+                self.assertEqual(grouping[key], value)
+            self.assertEqual(expects_grouping, 1)
+            expects[0], expects[1] = ('Run', 2)
+            return True
+        
+        def run(workspace):
+            expects_state, expects_image_number = expects
+            image_number = workspace.measurements.get_current_image_measurement(
+                'ImageNumber')
+            self.assertEqual(expects_state, 'Run')
+            self.assertEqual(expects_image_number, image_number)
+            image = workspace.image_set.get_image('image')
+            self.assertTrue(numpy.all(image.pixel_data == 1.0 / image_number))
+            if image_number == 2:
+                expects[0],expects[1] = ('Run', 5)
+            elif image_number == 5:
+                expects[0],expects[1] = ('PostGroup', 1)
+            workspace.measurements.add_image_measurement("mymeasurement",image_number)
+
+        def post_group(workspace, grouping):
+            expects_state, expects_grouping = expects
+            self.assertEqual(expects_state, 'PostGroup')
+            for key, value in zip(keys, groupings[expects_grouping][0]):
+                self.assertTrue(grouping.has_key(key))
+                self.assertEqual(grouping[key], value)
+            expects[0],expects[1] = ('PostRun', 0)
+        def post_run(workspace):
+            self.assertEqual(expects[0], 'PostRun')
+            expects[0],expects[1] = ('Done', 0)
+        
+        module = GroupModule((keys,groupings), prepare_run, prepare_group,
+                             run, post_group, post_run)
+        module.module_num = 1
+        pipeline.add_module(module)
+        measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
+        self.assertEqual(expects[0], 'Done')
+        image_numbers = measurements.get_all_measurements("Image","ImageNumber")
+        self.assertEqual(len(image_numbers), 2)
+        self.assertTrue(numpy.all(image_numbers == numpy.array([2,5])))
+
 class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
     def create_settings(self):
         self.my_variable = cellprofiler.settings.Text('','')

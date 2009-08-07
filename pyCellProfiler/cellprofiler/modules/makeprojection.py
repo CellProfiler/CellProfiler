@@ -80,6 +80,15 @@ image set.
                                  self.projection_type.value)
         image_set_list.add_provider_to_all_image_sets(provider)
         return True
+    
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+        '''Reset the aggregate image at the start of group processing'''
+        if len(image_numbers) > 0:
+            image_set = image_set_list.get_image_set(image_numbers[0]-1)
+            assert isinstance(image_set, cpi.ImageSet)
+            provider = image_set.get_image_provider(self.projection_image_name.value)
+            provider.reset()
+        return True
         
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
@@ -117,6 +126,12 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__image_count = None
         self.__cached_image = None
     
+    def reset(self):
+        '''Reset accumulator at start of groups'''
+        self.__image_count = None
+        self.__image = None
+        self.__cached_image = None
+        
     @property
     def has_image(self):
         return self.__image is not None

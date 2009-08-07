@@ -30,18 +30,34 @@ class CPModule(object):
     """ Derive from the abstract module class to create your own module in Python
     
     You need to implement the following in the derived class:
-    UpgradeModuleFromRevision - to modify a module's variables after loading to match the current revision number
-    GetHelp - to return help for the module
-    VariableRevisionNumber - to return the current variable revision number
-    Annotations - to return the variable annotations (see cps.Annotation).
-                  These are the annotations in the .M file (like choiceVAR05 = Yes)
-    Run - to run the module, producing measurements, etc.
+    create_settings - fill in the module_name and create the settings that
+               configure the module.
+    settings - return the settings that will be loaded or saved from/to the
+               pipeline.
+    visible_settings - return the settings that will be displayed on the UI
+    backwards_compatibilize - adjusts settings while loading to account for
+               old revisions.
+    run - to run the module, producing measurements, etc.
     
     Implement these if you produce measurements:
-    GetCategories - The category of measurement produced, for instance AreaShape
-    GetMeasurements - The measurements produced by a category
-    GetMeasurementImages - The images measured for a particular measurement
-    GetMeasurementScales - the scale at which a measurement was taken
+    get_categories - The category of measurement produced, for instance AreaShape
+    get_measurements - The measurements produced by a category
+    get_measurement_images - The images measured for a particular measurement
+    get_measurement_scales - the scale at which a measurement was taken
+    get_measurement_columns - the measurements stored in the database
+    
+    The pipeline calls hooks in the module before and after runs and groups.
+    If your module requires state across image_sets, think of storing that 
+    state in the image_set_list's legacy_fields dictionary instead
+    of the module. 
+    
+    The hooks are:
+    prepare_run - before run: useful for setting up image sets
+    prepare_group - before group: useful for initializing aggregation
+    post_group - after group: useful for calculating final aggregation steps
+                 and for writing out results.
+    post_run - use this to perform operations on the results of the experiment,
+               for instance on all measurements
     """
     
     def __init__(self):
@@ -438,13 +454,17 @@ class CPModule(object):
         '''
         return None
     
-    def prepare_group(self, pipeline, image_set_list, grouping):
+    def prepare_group(self, pipeline, image_set_list, grouping,
+                      image_numbers):
         '''Prepare to start processing a new grouping
         
         pipeline - the pipeline being run
         image_set_list - the image_set_list for the experiment
         grouping - a dictionary that describes the key for the grouping.
                    For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
+        image_numbers - a sequence of the image numbers within the
+                   group (image sets can be retreved as
+                   image_set_list.get_image_set(image_numbers[i]-1)
         
         prepare_group is called once after prepare_run if there are no
         groups.

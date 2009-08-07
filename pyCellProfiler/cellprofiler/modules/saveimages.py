@@ -346,11 +346,11 @@ class SaveImages(cpm.CPModule):
         '''Return the runtime dictionary associated with this module'''
         return image_set_list.legacy_fields[self.module_key]
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, pipeline, image_set_list, *args):
         image_set_list.legacy_fields[self.module_key] = {}
         return True
 
-    def prepare_group(self, pipeline, image_set_list, grouping):
+    def prepare_group(self, pipeline, image_set_list, *args):
         self.get_dictionary(image_set_list)["FIRST_IMAGE"] = True
         return True
         
@@ -385,7 +385,7 @@ class SaveImages(cpm.CPModule):
             return
         self.save_image(workspace)
     
-    def post_group(self, workspace, grouping):
+    def post_group(self, workspace, *args):
         if self.when_to_save == WS_LAST_CYCLE:
             self.save_image(workspace)
 

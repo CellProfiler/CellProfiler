@@ -546,7 +546,9 @@ class Pipeline(object):
                 if image_set_end is not None and image_number > image_set_end:
                     continue
                 if not prepare_group_has_run:
-                    if not self.prepare_group(image_set_list, grouping_dictionary):
+                    if not self.prepare_group(image_set_list, 
+                                              grouping_dictionary,
+                                              image_numbers):
                         return
                     prepare_group_has_run = True
                 if first_set:
@@ -684,7 +686,7 @@ class Pipeline(object):
             return ((), (((),range(1, image_set_list.count()+1)),))
         return groupings
     
-    def prepare_group(self, image_set_list, grouping):
+    def prepare_group(self, image_set_list, grouping, image_numbers):
         '''Prepare to start processing a new group
         
         image_set_list - the image set list for the run
@@ -694,7 +696,8 @@ class Pipeline(object):
         '''
         for module in self.modules():
             try:
-                module.prepare_group(self, image_set_list, grouping)
+                module.prepare_group(self, image_set_list, grouping, 
+                                     image_numbers)
             except Exception, instance:
                 traceback.print_exc()
                 event = RunExceptionEvent(instance, module)

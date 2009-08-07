@@ -96,7 +96,8 @@ class LoadImages(cpmodule.CPModule):
         self.order_group_size = cps.Integer('How many images are there in each group?', 3)
         self.descend_subdirectories = cps.Binary('Analyze all subfolders within the selected folder?', False)
         self.check_images = cps.Binary('Do you want to check image sets for missing or duplicate files?',True)
-        self.group_by_metadata = cps.Binary('Do you want to group image sets by metadata?',True)
+        self.group_by_metadata = cps.Binary('Do you want to group image sets by metadata?',False)
+        self.metadata_fields = cps.MultiChoice('What metadata fields do you want to group by?',[])
         # Add the first image to the images list
         self.images = []
         self.add_imagecb()
@@ -146,7 +147,17 @@ class LoadImages(cpmodule.CPModule):
         
         if len(self.images) > 1:
             varlist += [self.check_images]
-            varlist += [self.group_by_metadata]
+        varlist += [self.group_by_metadata]
+        if self.group_by_metadata.value:
+            varlist += [self.metadata_fields]
+            choices = set()
+            for fd in self.images:
+                for setting, tag in ((fd[FD_FILE_METADATA], M_FILE_NAME),
+                                     (fd[FD_PATH_METADATA], M_PATH)):
+                    if fd[FD_METADATA_CHOICE].value in (tag, M_BOTH):
+                        choices.update(
+                            cpm.find_metadata_tokens(setting.value))
+            self.metadata_fields.choices = list(choices)
         
         # per image settings
         if self.match_method != MS_ORDER:
@@ -183,8 +194,10 @@ class LoadImages(cpmodule.CPModule):
     SLOT_FIRST_IMAGE_V1 = 8
     SLOT_GROUP_BY_METADATA = 8
     SLOT_EXCLUDE = 9
+    SLOT_GROUP_FIELDS = 10
     SLOT_FIRST_IMAGE_V2 = 9
-    SLOT_FIRST_IMAGE = 10
+    SLOT_FIRST_IMAGE_V3 = 10
+    SLOT_FIRST_IMAGE = 11
     
     SLOT_OFFSET_COMMON_TEXT = 0
     SLOT_OFFSET_IMAGE_NAME = 1
@@ -209,6 +222,7 @@ class LoadImages(cpmodule.CPModule):
         varlist[self.SLOT_LOCATION_OTHER]         = self.location_other
         varlist[self.SLOT_CHECK_IMAGES]           = self.check_images
         varlist[self.SLOT_GROUP_BY_METADATA]      = self.group_by_metadata
+        varlist[self.SLOT_GROUP_FIELDS]           = self.metadata_fields
         for i in range(len(self.images)):
             ioff = i*self.SLOT_IMAGE_FIELD_COUNT + self.SLOT_FIRST_IMAGE
             varlist[ioff+self.SLOT_OFFSET_COMMON_TEXT] = \
@@ -244,6 +258,8 @@ class LoadImages(cpmodule.CPModule):
             setting_values, variable_revision_number = self.upgrade_new_1_to_2(setting_values)
         if (variable_revision_number == 2 and module_name == self.module_class()):
             setting_values, variable_revision_number = self.upgrade_new_2_to_3(setting_values)
+        if (variable_revision_number == 3 and module_name == self.module_class()):
+            setting_values, variable_revision_number = self.upgrade_new_3_to_4(setting_values)
 
         if variable_revision_number != self.variable_revision_number or \
            module_name != self.module_class():
@@ -357,9 +373,15 @@ class LoadImages(cpmodule.CPModule):
                                "None",
                                "None"])
         return (new_values, 3)
-
-    variable_revision_number = 3
     
+    def upgrade_new_3_to_4(self, setting_values):
+        """Add the metadata_fields setting"""
+        new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V3])
+        new_values.append('')
+        new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
+        return (new_values, 4)
+
+    variable_revision_number = 4
     
     def write_to_handles(self,handles):
         """Write out the module's state to the handles
@@ -385,7 +407,7 @@ class LoadImages(cpmodule.CPModule):
         if len(files) == 0:
             raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
         
-        if self.group_by_metadata.value and len(self.get_metadata_tags()):
+        if (self.group_by_metadata.value and len(self.get_metadata_tags())):
             self.organize_by_metadata(pipeline, image_set_list, files, frame)
         else:
             self.organize_by_order(pipeline, image_set_list, files)
@@ -763,6 +785,33 @@ class LoadImages(cpmodule.CPModule):
     
     category = "File Processing"
 
+    def get_groupings(self, image_set_list):
+        '''Return the groupings as indicated by the metadata_fields setting'''
+        if self.group_by_metadata.value:
+            keys = self.metadata_fields.selections
+            if len(keys) == 0:
+                return None
+            #
+            # Sort order for dictionary keys
+            #
+            sort_order = []
+            dictionaries = []
+            #
+            # Dictionary of key_values to list of image numbers
+            #
+            d = {}
+            assert isinstance(image_set_list, cpimage.ImageSetList)
+            for i in range(image_set_list.count()):
+                image_set = image_set_list.get_image_set(i)
+                assert isinstance(image_set, cpimage.ImageSet)
+                key_values = tuple([image_set.keys[key] for key in keys])
+                if not d.has_key(key_values):
+                    d[key_values] = []
+                    sort_order.append(key_values)
+                d[key_values].append(i+1)
+            return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+        else:
+            return None
     
     def load_images(self):
         """Return true if we're loading images

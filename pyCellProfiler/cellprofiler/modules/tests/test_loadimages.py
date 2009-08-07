@@ -15,6 +15,7 @@ import base64
 import hashlib
 import numpy
 import os
+import re
 import unittest
 import tempfile
 import zlib
@@ -39,7 +40,7 @@ class testLoadImages(unittest.TestCase):
         x=LI.LoadImages()
     
     def test_00_01version(self):
-        self.assertEqual(LI.LoadImages().variable_revision_number,3,"LoadImages' version number has changed")
+        self.assertEqual(LI.LoadImages().variable_revision_number,4,"LoadImages' version number has changed")
     
     def test_01_01load_image_text_match(self):
         l=LI.LoadImages()
@@ -137,6 +138,7 @@ class testLoadImages(unittest.TestCase):
         data = 'eJztV91u2jAUNjRURZOm7qLaLn1ZtoIga6UWTbQMJo2NMFRYt6rqVhcMWHJiFJwONlXaI+yR9ih7hD3CbOpA8CJC6S42jUhOfI7Pd36+EzmOVWxWi8/hXiYLrWIz3SEUwzpFvMNcOw8dvgNLLkYctyFz8rDZ8+Arj8KsCXN7+V0zLyZmNnsAlrtiFeu+fIrbunhsiBFXSwklxwJDyg3MOXG6gwQwwCOl/y7GCXIJuqT4BFEPD6YhfH3F6bDmqD9Zsljbo7iG7KCxuGqefYndwZuOD1TLdTLEtEE+Y60E3+wYX5EBYY7CK/+6dhKXcS2u5GF/fcpDLISHrYBe2r8EU3sjxP5BwH5TycRpkyvS9hCFxEbdSRbS31GEv03NnxxNPOTpF0PU4tBGvNWTfrIRfmIzfmLgqV9/BC6hxZdypVp9ayl8VNz4DD4OamwxHh9qcaVcxh3kUQ4rkkRYJi5uceaOfstjXfPnX76/ZID/qPzXZvJYA6eie3fBRfG9AWbrlnKphxwHU3OZuOVacaF89fcjtyA/xgzOEP11sMR9jcC91uqU8oftw/ozuRHiQuZJ6qOU3mFKj9mnwlkxXT9P+ZoSo57tFM6y6YPzL7kd8/rGuEEEcqxMjf3KPHoReexreUhZ+jrFyFUBdq9TaamymMN7SmcqXRmNppo79je3yH6Q1PBSLo0461M0sJV+mX6bq34v1e8fxu2+H39in1rh/h/cEZj/PoedD8aHjK7LvD4URw/c/5fqXfH7d+K+BXBh+1zweyLtL8B8Xh+DWV6l3BJbfd9l8n/IzdjjQ/sgQxlq35yaM1UxrQQO0Ho9yZA4wbziYrYVwYNe/5SXn4fLxIuHxLsXgTPUH5nEvQe34317jj3Q7H8BnRn8NQ=='
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
@@ -154,6 +156,7 @@ class testLoadImages(unittest.TestCase):
         data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.error_callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
@@ -168,7 +171,34 @@ class testLoadImages(unittest.TestCase):
         self.assertEqual(module.images[1][LI.FD_IMAGE_NAME], 'Cytoplasm')
         self.assertEqual(module.images[1][LI.FD_COMMON_TEXT], 'Channel1')
         self.assertEqual(module.images[1][LI.FD_FILE_METADATA], '^.*-(?P<Row>.+)-(?P<Col>[0-9]{2})')
-        
+
+    def test_03_04_load_new_version_4(self):
+        data = ('eJztVt1O2zAUdn9A65AmuBqXvgS0VGnpNqgmILRDVOqfoGJDVaeZ1m0tOXGV'
+                'OKjdxDvsco/DI/EIi0vSpF7WpN24mIQlKznH53zf8Zf4p6a1qtopfJtVYU1r'
+                'KX1CMWxSxPvM1IvQ4G9gycSI4x5kRhGemQRq9gCq72GuUMztFwsHMK+qh2C1'
+                'lqjUXjmPnxsArDvPF05PukNrrp0IdGFfYs6JMbDWQBpsu/57p18hk6Abiq8Q'
+                'tbHlU3j+itFnrcloNlRjPZviOtKDwU6r2/oNNq1G30t0h5tkjOkl+YalKXhh'
+                'F/iWWIQZbr6LL3tnvIxLvEKH+7SvQyJEh62AX8SfAz8+HRG/6drE6JFb0rMR'
+                'hURHg1kVAu8kAm9TwhO9hcdc+ThGXQ51xLtDgaNG4CTmcBJgPyb/S4lf2GUG'
+                'DcahbWF/HlH8yTmcJKizeHq+lviFXcZ9ZFMOK0JMWCYm7nJmTn6rY13C85qH'
+                'lwHx60/N1ZEC185XfMq8P+m1LN9F41Os75yRdBZ2aYgMA9Oc8hc6letarDz5'
+                '/8yBeP9nWN1nYkM1nG0mUPcwAuedhCPsL64A7Vy+o7RV5bDzPX+n7Bw3Pziq'
+                'HrU15byzOzVLjeqRN74bj+9A4hO2gLrGyHSxCneP6DVm8KGPP/WV0cT3CL6H'
+                '1HL72L9YJ895z3lPlXcCFq+fsHNxergOTGaPoHPk4tH/NN9V834E8sLWfXBf'
+                'FfFfwWJd98C8rsLuYkpHJhP3VDOrTy9TVpYy1Hu8zWSrzmslcLGR55MJ4QnW'
+                'lXTetiJ0kOfv6/JwvApfOoRvIyIv7d6URd5nsJzuOwvigRT/CxrVwC0=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        assert isinstance(module, LI.LoadImages)
+        self.assertEqual(len(module.metadata_fields.selections), 1)
+        self.assertEqual(module.metadata_fields.selections[0], "ROW")
+        self.assertEqual(len(module.images), 1)
+        self.assertEqual(module.images[0][LI.FD_FILE_METADATA], '^Channel[12]-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})')
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
@@ -606,6 +636,42 @@ class testLoadImages(unittest.TestCase):
             assert c in returned_cols
         for c in returned_cols: 
             assert c in expected_cols
+    
+    def test_08_01_get_groupings(self):
+        '''Get groupings for the SBS image set'''
+        sbs_path = os.path.join(T.example_images_directory(),'ExampleSBSImages')
+        module = LI.LoadImages()
+        module.location.value = LI.DIR_OTHER
+        module.location_other.value = sbs_path
+        module.group_by_metadata.value = True
+        module.images[0][LI.FD_COMMON_TEXT].value = 'Channel1-'
+        module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
+        module.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+        module.images[0][LI.FD_FILE_METADATA].value = '^Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})'
+        module.metadata_fields.value = "ROW"
+        module.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = pipeline.prepare_run(None)
+        self.assertTrue(isinstance(image_set_list, I.ImageSetList))
+        keys, groupings = module.get_groupings(image_set_list)
+        self.assertEqual(len(keys), 1)
+        self.assertEqual(keys[0], "ROW")
+        self.assertEqual(len(groupings), 8)
+        self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
+        for grouping in groupings:
+            row = grouping[0]["ROW"]
+            for image_number in grouping[1]:
+                image_set = image_set_list.get_image_set(image_number-1)
+                self.assertEqual(image_set.keys["ROW"], row)
+                provider = image_set.get_image_provider("MyImage")
+                self.assertTrue(isinstance(provider, LI.LoadImagesImageProvider))
+                match = re.search(module.images[0][LI.FD_FILE_METADATA].value,
+                                  provider.get_filename())
+                self.assertTrue(match)
+                self.assertEqual(row, match.group("ROW"))
+                
 
 if __name__=="main":
     unittest.main()

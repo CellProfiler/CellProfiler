@@ -7,7 +7,7 @@ function fout = CPwaitbar(varargin)
 % $Revision$
 
 is2008b = str2num(strrep(strtok(version),'.','')) > 760324;
-if is2008b && nargin > 2,  % Updating previously created waitbar
+if is2008b && nargin > 2 && ~(ischar(varargin{2}) || iscellstr(varargin{2})),  % Updating previously created waitbar
     fin = varargin{2};
     userData = get(fin,'userdata');
     set(fin,'userdata',userData.FractionInput);

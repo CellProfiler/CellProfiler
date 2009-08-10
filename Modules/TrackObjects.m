@@ -256,8 +256,17 @@ end
 drawnow
 
 % Initialize a few variables
-SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
-NumberOfImageSets = handles.Current.NumberOfImageSets;
+% Set up variables depending on image grouping or not
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Current.NumberOfImageSets;
+else
+    CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
+    SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
+    NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
+end
+
 CollectStatistics = strncmpi(CollectStatistics,'y',1);
 
 % Start the analysis
@@ -275,7 +284,7 @@ if SetBeingAnalyzed == handles.Current.StartingImageSet
     PreviousLocations = NaN(size(CurrentLocations));
     
     % (2) Segmented, labeled image
-    TrackObjInfo.Current.SegmentedImage = handles.Pipeline.(['Segmented' ObjectName]);
+    TrackObjInfo.Current.SegmentedImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
     
     % (3) Labels
     InitialNumObjs = length(TrackObjInfo.Current.Locations{SetBeingAnalyzed});
@@ -317,7 +326,7 @@ else
     TrackObjInfo.Current.Locations{SetBeingAnalyzed} = ...
     cat(2,  handles.Measurements.(ObjectName).Location_Center_X{SetBeingAnalyzed},...
             handles.Measurements.(ObjectName).Location_Center_Y{SetBeingAnalyzed});
-    TrackObjInfo.Current.SegmentedImage = handles.Pipeline.(['Segmented' ObjectName]);
+    TrackObjInfo.Current.SegmentedImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
     CurrentLocations = TrackObjInfo.Current.Locations{SetBeingAnalyzed};
     CurrentSegmentedImage = TrackObjInfo.Current.SegmentedImage;
 
@@ -519,7 +528,7 @@ if ~strcmp(DataImage,'Do not use')
     ResizedCapturedImage(ResizedCapturedImage < 0) = 0;
     
     % Save to handles
-    handles.Pipeline.(DataImage) = ResizedCapturedImage;
+    handles = CPaddimages(handles,DataImage,ResizedCapturedImage);
     
     if ~any(findobj == ThisModuleFigureNumber)
         % Destroy the invisible figure created earlier

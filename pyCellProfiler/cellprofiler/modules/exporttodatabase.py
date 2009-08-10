@@ -20,15 +20,56 @@ import os
 import random
 import re
 import sys
+import MySQLdb
+from MySQLdb.cursors import SSCursor
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpp
-from cellprofiler.measurements import AGG_NAMES
+import cellprofiler.measurements as cpmeas
 
 DB_MYSQL = "MySQL"
 DB_ORACLE = "Oracle"
+DB_SQLITE = "SQLite"
 
+def execute(cursor, query, return_result=True):
+    print query
+    cursor.execute(query)
+    if return_result:
+        return get_results_as_list(cursor)
+    
+def get_results_as_list(cursor):
+    r = get_next_result(cursor)
+    l = []
+    while r:
+        l.append(r)
+        r = get_next_result(cursor)
+    return l
+
+def get_next_result(cursor):
+    try:
+        return cursor.next()
+    except MySQLdb.Error, e:
+        raise DBException, 'Error retrieving next result from database: %s'%(e)
+        return None
+    except StopIteration, e:
+        return None
+    
+def connect_mysql(host, db, user, pw):
+    '''Creates and returns a db connection and cursor.'''
+    connection = MySQLdb.connect(host=host, db=db, user=user, passwd=pw)
+    cursor = SSCursor(connection)
+    return connection, cursor
+
+def connect_sqlite(db_file):
+    '''Creates and returns a db connection and cursor.'''
+    from pysqlite2 import dbapi2 as sqlite
+    connection = sqlite.connect(db_file)
+    cursor = connection.cursor()
+    return connection, cursor
+
+    
+    
 class ExportToDatabase(cpm.CPModule):
     """% SHORT DESCRIPTION:
 Exports data in database readable format, including an importing file
@@ -148,48 +189,72 @@ Step 6: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
 Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
 """
 
-    variable_revision_number = 6
+    variable_revision_number = 7
     category = "File Processing"
-    
+
     def create_settings(self):
         self.module_name = "ExportToDatabase"
-        self.database_type = cps.Choice("What type of database do you want to use?",
-                                        [DB_MYSQL,DB_ORACLE],DB_MYSQL)
-        self.database_name = cps.Text("What is the name of the database you want to use?","DefaultDB")
-        self.want_table_prefix = cps.Binary("Do you want to add a prefix to your table names? (Use the default table names unless checked)",False)
-        self.table_prefix = cps.Text("What is the table prefix you want to use?","Expt")
-        self.file_prefix = cps.Text("What prefix do you want to use to name the SQL files?","SQL_")
-        self.use_default_output_directory = cps.Binary("Do you want to save files in the default output directory?",True)
-        self.output_directory = cps.Text("What directory should be used to save files?",".")
-        self.save_cpa_properties = cps.Binary("Do you want to create a CellProfilerAnalyst properties file?",False)
+        self.db_type = cps.Choice("What type of database do you want to use?", [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL)
+        self.db_name = cps.Text("What is the name of the database you want to use?", "DefaultDB")
+        self.want_table_prefix = cps.Binary("Do you want to add a prefix to your table names?", False)
+        self.table_prefix = cps.Text("What is the table prefix you want to use?", "Expt_")
+        self.sql_file_prefix = cps.Text("What prefix do you want to use to name the SQL file?", "SQL_")
+        self.use_default_output_directory = cps.Binary("Do you want to save files in the default output directory?", True)
+        self.output_directory = cps.Text("What directory should be used to save files?", ".")
+        self.save_cpa_properties = cps.Binary("Do you want to create a CellProfilerAnalyst properties file?", False)
+        self.store_csvs = cps.Binary("Store the database in CSV files? (This will write per_image and per_object tables as a series of CSV files along with an SQL file that can be used with those files to create the database.)", False)
+        self.db_host = cps.Text("What is the database host?", "imgdb01")
+        self.db_user = cps.Text("What is the database username?", "cpuser")
+        self.db_passwd = cps.Text("What is the database password?", "cPus3r")
+        self.sqlite_file = cps.Text("What is the SQLite database file you want to write to?", "DefaultDB.db")
+        
     
     def visible_settings(self):
-        result = [self.database_type]
-        if self.database_type == DB_MYSQL:
-            result.append(self.database_name)
-        result.append(self.want_table_prefix)
+        result = [self.db_type]
+        if self.db_type==DB_MYSQL:
+            result += [self.store_csvs]
+            if self.store_csvs.value:
+                result += [self.sql_file_prefix]
+                result += [self.use_default_output_directory]
+                if not self.use_default_output_directory.value:
+                    result += [self.output_directory]
+                result += [self.db_name]
+            else:
+                result += [self.db_name]
+                result += [self.db_host]
+                result += [self.db_user]
+                result += [self.db_passwd]
+        elif self.db_type==DB_SQLITE:
+            result += [self.use_default_output_directory]
+            if not self.use_default_output_directory.value:
+                result += [self.output_directory]
+            result += [self.sqlite_file]
+        elif self.db_type==DB_ORACLE:
+            result += [self.sql_file_prefix]
+            result += [self.use_default_output_directory]
+            if not self.use_default_output_directory.value:
+                result += [self.output_directory]
+        result += [self.want_table_prefix]
         if self.want_table_prefix.value:
-            result.append(self.table_prefix)
-        result.append(self.file_prefix)
-        result.append(self.use_default_output_directory)
-        if not self.use_default_output_directory.value:
-            result.append(self.output_directory)
-        result.append(self.save_cpa_properties)
+            result += [self.table_prefix]
+        result += [self.save_cpa_properties]
+
         return result
     
     def settings(self):
-        return [self.database_type, self.database_name,self.want_table_prefix,
-                self.table_prefix, self.file_prefix, 
+        return [self.db_type, self.db_name, self.want_table_prefix,
+                self.table_prefix, self.sql_file_prefix, 
                 self.use_default_output_directory, self.output_directory,
-                self.save_cpa_properties]
+                self.save_cpa_properties, self.store_csvs, self.db_host, 
+                self.db_user, self.db_passwd, self.sqlite_file]
     
     def backwards_compatibilize(self,setting_values,variable_revision_number,
-                                module_name,from_matlab):
+                                module_name, from_matlab):
         if from_matlab and variable_revision_number == 6:
             new_setting_values = [setting_values[0],setting_values[1]]
             if setting_values[2] == cps.DO_NOT_USE:
                 new_setting_values.append(cps.NO)
-                new_setting_values.append("Expt")
+                new_setting_values.append("Expt_")
             else:
                 new_setting_values.append(cps.YES)
                 new_setting_values.append(setting_values[2])
@@ -206,42 +271,87 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 new_setting_values.append(cps.NO)
             from_matlab = False
             setting_values = new_setting_values
+            
+        if (not from_matlab) and variable_revision_number == 6:
+            # Append default values for store_csvs, db_host, db_user, 
+            #  db_passwd, and sqlite_file to update to revision 7 
+            new_setting_values = settings_values
+            new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
+            
         return setting_values, variable_revision_number, from_matlab
     
     def test_valid(self,pipeline):
         if self.want_table_prefix.value:
-            # Test the table prefix
-            if not self.table_prefix.value[0].isalpha():
-                raise ValidationError("The table prefix must begin with a letter", self.table_prefix)
-            if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix):
-                raise ValidationError("The table prefix has invalid characters",self.table_prefix)
+            if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix.value):
+                raise cps.ValidationError("Invalid table prefix",self.table_prefix)
+
+        if self.db_type.value==DB_MYSQL:
+            if not re.match("^[A-Za-z0-9_]+$",self.db_name.value):
+                raise cps.ValidationError("The database name has invalid characters",self.db_name)
+        elif self.db_type.value==DB_SQLITE:
+            if not re.match("^[A-Za-z0-9_].*$",self.sqlite_file.value):
+                raise cps.ValidationError("The sqlite file name has invalid characters",self.sqlite_file)
+
+        if not self.store_csvs.value:
+            if not re.match("^[A-Za-z0-9_]+$",self.db_user.value):
+                raise cps.ValidationError("The database user name has invalid characters",self.db_user)
+            if not re.match("^[A-Za-z0-9_].*$",self.db_host.value):
+                raise cps.ValidationError("The database host name has invalid characters",self.db_host)
+        else:
+            if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
+                raise cps.ValidationError('Invalid SQL file prefix', self.sql_file_prefix)
+            
+    def prepare_run(self, pipeline, image_set_list, frame):
+        if self.db_type == DB_ORACLE:
+            raise NotImplementedError("Writing to an Oracle database is not yet supported")
+        if not self.store_csvs.value:
+            if self.db_type==DB_MYSQL:
+                self.connection, self.cursor = connect_mysql(self.db_host.value, 
+                                                             self.db_name.value, 
+                                                             self.db_user.value, 
+                                                             self.db_passwd.value)
+            elif self.db_type==DB_SQLITE:
+                db_file = self.get_output_directory()+'/'+self.sqlite_file.value
+                self.connection, self.cursor = connect_sqlite(db_file)
+            self.create_database_tables(self.cursor, pipeline.get_measurement_columns())
+        return True
+            
+    def run(self, workspace):
+        if ((self.db_type == DB_MYSQL and not self.store_csvs.value) or
+            self.db_type == DB_SQLITE):
+            mappings = self.get_column_name_mappings(workspace)
+            self.write_data_to_db(workspace, mappings)
             
     def post_run(self, workspace):
+        if self.save_cpa_properties.value:
+            self.write_properties(workspace)
+        if not self.store_csvs.value:
+            # commit changes to db here or in run?
+            print 'Commit'
+            self.connection.commit()
+            return
         mappings = self.get_column_name_mappings(workspace)
-        if self.database_type == DB_MYSQL:
+        if self.db_type == DB_MYSQL:
             per_image, per_object = self.write_mysql_table_defs(workspace, mappings)
         else:
             per_image, per_object = self.write_oracle_table_defs(workspace, mappings)
-        self.write_data(workspace,mappings, per_image, per_object)
-        if self.save_cpa_properties.value:
-            self.write_properties(workspace)
+        self.write_data(workspace, mappings, per_image, per_object)
     
     def ignore_object(self,object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in ('Experiment','Neighbors'):
             return True
-    def ignore_feature(self, measurements, object_name, feature_name):
-        """Return true if we should ignore a feature"""
         
-        if self.ignore_object(object_name):
-            return True
-        if measurements.has_feature(object_name, "SubObjectFlag"):
-            return True
-        if feature_name.startswith('Description_'):
-            return True
-        if feature_name.startswith('ModuleError_'):
-            return True
-        if feature_name.startswith('TimeElapsed_'):
+    def ignore_feature(self, object_name, feature_name, measurements=None):
+        """Return true if we should ignore a feature"""
+        if (self.ignore_object(object_name) or 
+            (measurements is not None and 
+             measurements.has_feature(object_name, "SubObjectFlag")) or 
+            feature_name.startswith('Description_') or 
+            feature_name.startswith('ModuleError_') or 
+            feature_name.startswith('TimeElapsed_') or 
+            feature_name.startswith('ExecutionTime_')
+            ):
             return True
         return False
     
@@ -251,16 +361,90 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         mappings = ColumnNameMapping()
         for object_name in measurements.get_object_names():
             for feature_name in measurements.get_feature_names(object_name):
-                if self.ignore_feature(measurements, object_name, feature_name):
+                if self.ignore_feature(object_name, feature_name, measurements):
                     continue
                 mappings.add("%s_%s"%(object_name,feature_name))
                 if object_name != 'Image':
-                    for agg_name in AGG_NAMES:
+                    for agg_name in cpmeas.AGG_NAMES:
                         mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
     
+    
+    #
+    # Create per_image and per_object tables in MySQL
+    #
+    def create_database_tables(self, cursor, column_defs):
+        '''Creates empty image and object tables.'''
+        self.image_col_order = {}
+        self.object_col_order = {}
+        
+        object_table = self.get_table_prefix()+'Per_Object'
+        image_table = self.get_table_prefix()+'Per_Image'
+        
+        # Build a dictionary keyed by object type of measurement cols
+        self.col_dict = {}
+        for c in column_defs:
+            if c[0]!=cpmeas.EXPERIMENT:
+                if c[0] in self.col_dict.keys():
+                    self.col_dict[c[0]] += [c]
+                else:
+                    self.col_dict[c[0]] = [c]
+        
+        # Create the database
+        if self.db_type.value==DB_MYSQL:
+            execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
+        
+        # Object table
+        ob_tables = set([obname for obname, _, _ in column_defs 
+                         if obname!=cpmeas.IMAGE and obname!=cpmeas.EXPERIMENT])
+        statement = 'CREATE TABLE '+object_table+' (\n'
+        statement += 'ImageNumber INTEGER,\n'
+        statement += 'ObjectNumber INTEGER'
+        agg_column_defs = []
+        c = 2
+        for ob_table in ob_tables:
+            for obname, feature, ftype in column_defs:
+                if obname==ob_table and not self.ignore_feature(obname, feature):
+                    feature_name = '%s_%s'%(obname, feature)
+                    # create per_image aggregate column defs 
+                    for aggname in cpmeas.AGG_NAMES:
+                        agg_column_defs += [(cpmeas.IMAGE,
+                                             '%s_%s'%(aggname,feature_name),
+                                             cpmeas.COLTYPE_FLOAT)]
+                    self.object_col_order[feature_name] = c
+                    c+=1
+                    statement += ',\n%s %s'%(feature_name, ftype)
+        statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
+        
+        execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
+        execute(cursor, statement)
+        
+        # Image table
+        statement = 'CREATE TABLE '+image_table+' (\n'
+        statement += 'ImageNumber INTEGER'
+        c = 1
+        for obname, feature, ftype in column_defs+agg_column_defs:
+            if obname==cpmeas.IMAGE and not self.ignore_feature(obname, feature):
+                if feature not in [d[1] for d in agg_column_defs]:
+                    feature_name = '%s_%s'%(obname, feature)
+                else:
+                    feature_name = feature
+                self.image_col_order[feature_name] = c
+                statement += ',\n%s %s'%(feature_name, ftype)
+                c+=1
+        statement += ',\nPRIMARY KEY (ImageNumber) )'
+        
+        execute(cursor, 'DROP TABLE IF EXISTS %s'%(image_table))
+        execute(cursor, statement)
+        print 'Commit'
+        cursor.connection.commit()
+    
+    
     def write_mysql_table_defs(self, workspace, mappings):
         """Returns dictionaries mapping per-image and per-object column names to column #s"""
+        
+        m_cols = workspace.pipeline.get_measurement_columns()
+        
         per_image = {"ImageNumber":0}
         per_object = {"ImageNumber":0,"ObjectNumber":1}
         per_image_idx = 1
@@ -268,15 +452,15 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         measurements = workspace.measurements
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
-        file_name = "%s_SETUP.SQL"%(self.file_prefix)
+        file_name = "%s_SETUP.SQL"%(self.sql_file_prefix)
         path_name = os.path.join(self.get_output_directory(), file_name)
         fid = open(path_name,"wt")
-        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.database_name.value))
-        fid.write("USE %s;\n"%(self.database_name.value))
+        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
+        fid.write("USE %s;\n"%(self.db_name.value))
         fid.write("CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY"%
                   (self.get_table_prefix()))
         for feature in measurements.get_feature_names('Image'):
-            if self.ignore_feature(measurements, 'Image', feature):
+            if self.ignore_feature('Image', feature, measurements):
                 continue
             feature_name = "%s_%s"%('Image',feature)
             colname = mappings[feature_name]
@@ -293,12 +477,12 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         #
         # Put mean and std dev measurements for objects in the per_image table
         #
-        for aggname in AGG_NAMES:
+        for aggname in cpmeas.AGG_NAMES:
             for object_name in workspace.measurements.get_object_names():
                 if object_name == 'Image':
                     continue
                 for feature in measurements.get_feature_names(object_name):
-                    if self.ignore_feature(measurements,object_name, feature):
+                    if self.ignore_feature(object_name, feature, measurements):
                         continue
                     feature_name = "%s_%s_%s"%(aggname,object_name,feature)
                     colname = mappings[feature_name]
@@ -316,7 +500,7 @@ ObjectNumber INTEGER"""%(self.get_table_prefix()))
             if object_name == 'Image':
                 continue
             for feature in measurements.get_feature_names(object_name):
-                if self.ignore_feature(measurements,object_name, feature):
+                if self.ignore_feature(object_name, feature, measurements):
                     continue
                 feature_name = '%s_%s'%(object_name,feature)
                 fid.write(",\n%s FLOAT NOT NULL"%(mappings[feature_name]))
@@ -345,8 +529,45 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         m = workspace.measurements
         first = m.image_set_start_number
         last = m.image_set_number + 1
-        return '%s%d_%d'%(self.file_prefix, first, last)
+        return '%s%d_%d'%(self.sql_file_prefix, first, last)
     
+    
+#    def write_data(self, workspace, mappings, per_image, per_object):
+#        """Write the data in the measurements out to the csv files
+#        workspace - contains the measurements
+#        mappings  - map a feature name to a column name
+#        per_image - map a feature name to its column index in the per_image table
+#        per_object - map a feature name to its column index in the per_object table
+#        """
+#        measurements = workspace.measurements
+#        image_filename = os.path.join(self.get_output_directory(),
+#                                      '%s_image.CSV'%(self.base_name(workspace)))
+#        object_filename = os.path.join(self.get_output_directory(),
+#                                       '%s_object.CSV'%(self.base_name(workspace)))
+#        fid_per_image = open(image_filename,"wt")
+#        csv_per_image = csv.writer(fid_per_image)
+#        fid_per_object = open(object_filename,"wt")
+#        csv_per_object = csv.writer(fid_per_object)
+#        
+#        per_image_cols = max(per_image.values())+1
+#        per_object_cols = max(per_object.values())+1
+#        
+#        image_rows, object_rows = self.get_measurement_rows(measurements, per_image, per_object)
+#        
+#        print 'write data'
+#        print image_rows
+#        print object_rows
+#        
+#        for row in image_rows:
+#            csv_per_image.writerow(row)
+#        for row in object_rows:
+#            csv_per_object.writerow(row)
+#        
+#        fid_per_image.close()
+#        fid_per_object.close()
+        
+        
+        
     def write_data(self, workspace, mappings, per_image, per_object):
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
@@ -379,7 +600,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
             #
             max_count = 0
             for feature in measurements.get_feature_names('Image'):
-                if self.ignore_feature(measurements, 'Image', feature):
+                if self.ignore_feature('Image', feature, measurements):
                     continue
                 feature_name = "%s_%s"%('Image',feature)
                 value = measurements.get_measurement('Image',feature, i)
@@ -393,9 +614,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                     if object_name == 'Image':
                         continue
                     for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(measurements, object_name, feature):
+                        if self.ignore_feature(object_name, feature, measurements):
                             continue
-                        for agg_name in AGG_NAMES:
+                        for agg_name in cpmeas.AGG_NAMES:
                             feature_name = "%s_%s_%s"%(agg_name,object_name, feature)
                             image_row[per_image[feature_name]] = 0
             else:
@@ -418,7 +639,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                     if object_name == 'Image':
                         continue
                     for feature in measurements.get_feature_names(object_name):
-                        if self.ignore_feature(measurements, object_name, feature):
+                        if self.ignore_feature(object_name, feature, measurements):
                             continue
                         feature_name = "%s_%s"%(object_name, feature)
                         values = measurements.get_measurement(object_name, feature, i)
@@ -435,6 +656,93 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
             csv_per_image.writerow(image_row)
         fid_per_image.close()
         fid_per_object.close()
+        
+        
+    def write_data_to_db(self, workspace, mappings):
+        """Write the data in the measurements out to the database
+        workspace - contains the measurements
+        mappings  - map a feature name to a column name
+        """
+        measurements = workspace.measurements
+        measurement_cols = workspace.pipeline.get_measurement_columns()
+        index = measurements.image_set_index
+        
+        # Check that all image and object columns reported by 
+        #  get_measurement_columns agree with measurements.get_feature_names
+        for obname, col in self.col_dict.items():
+            f1 = measurements.get_feature_names(obname)
+            f2 = [c[1] for c in self.col_dict[obname]]
+            diff = set(f1).symmetric_difference(set(f2))
+            assert not diff, 'pipeline.get_measurements and measurements.get_feature_names disagree on the following columns %s'%(diff)
+        
+        # Fill image row with non-aggregate cols    
+        max_count = 0
+        image_number = index + measurements.image_set_start_number
+        image_row = [None for k in range(len(self.image_col_order)+1)]
+        image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER)
+        for m_col in self.col_dict[cpmeas.IMAGE]:
+            feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
+            value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
+            if isinstance(value, np.ndarray):
+                value=value[0]
+            if feature_name in self.image_col_order.keys():
+                image_row[self.image_col_order[feature_name]] = (value, m_col[2])
+                if feature_name.find('Count') != -1:
+                    max_count = max(max_count,int(value))
+        
+        if max_count == 0:
+            for obname, cols in self.col_dict.items():
+                if obname==cpmeas.IMAGE:
+                    continue
+                for col in cols:
+                    for agg_name in cpmeas.AGG_NAMES:
+                        feature_name = "%s_%s_%s"%(agg_name, obname, col[1])
+                        if feature_name in self.image_col_order.keys():
+                            image_row[self.image_col_order[feature_name]] = (0, cpmeas.COLTYPE_FLOAT)
+            object_rows = []
+        else:    
+            # Compute and insert the aggregate measurements
+            agg_dict = measurements.compute_aggregate_measurements(index)
+            for feature_name, value in agg_dict.items():
+                if feature_name in self.image_col_order.keys():
+                    image_row[self.image_col_order[feature_name]] = (value, cpmeas.COLTYPE_FLOAT)
+            
+            object_rows = np.zeros((max_count, len(self.object_col_order)+2), dtype=object)
+            for i in xrange(max_count):
+                object_rows[i,0] = (image_number, cpmeas.COLTYPE_INTEGER)
+                object_rows[i,1] = (i+1, cpmeas.COLTYPE_INTEGER)
+            
+            # Loop through the object columns, setting all object values for each column
+            for obname, cols in self.col_dict.items():
+                if obname==cpmeas.IMAGE or obname==cpmeas.EXPERIMENT:
+                    continue
+                for _, feature, ftype in cols:
+                    feature_name = "%s_%s"%(obname, feature)
+                    values = measurements.get_measurement(obname, feature, index)
+                    values[np.logical_not(np.isfinite(values))] = 0
+                    nvalues = np.product(values.shape)
+                    if (nvalues < max_count):
+                        sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                    elif nvalues > max_count:
+                        sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                        values = values[:max_count]
+                    for i in xrange(nvalues):
+                        object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
+        
+        # wrap non-numeric types in quotes
+        image_row_formatted = [(dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]) and str(val) or "'%s'"%val for val, dtype in image_row]
+        
+        image_table = self.get_table_prefix()+'Per_Image'
+        object_table = self.get_table_prefix()+'Per_Object'
+        
+        stmt = 'INSERT INTO %s VALUES (%s)'%(image_table, ','.join([str(v) for v in image_row_formatted]))
+        execute(self.cursor, stmt)
+        for ob_row in object_rows:
+            stmt = 'INSERT INTO %s VALUES (%s)'%(object_table, ','.join([str(v) for v, t in ob_row]))
+            execute(self.cursor, stmt)
+
+        self.connection.commit()
+        
     
     def write_properties(self, workspace):
         """Write the CellProfiler Analyst properties file"""
@@ -456,16 +764,33 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
             if match:
                 image_names.append(match.groups()[0])
         
-        filename = '%s_v2.properties'%(self.database_name)
+        if self.db_type==DB_SQLITE:
+            name = os.path.splitext(self.sqlite_file.value)[0]
+        else:
+            name = self.db_name
+        filename = '%s.properties'%(name)
         path = os.path.join(self.get_output_directory(), filename)
         fid = open(path,'wt')
         date = datetime.datetime.now().ctime()
-        db_type = (self.database_type == DB_MYSQL and 'mysql') or 'oracle'
-        db_port = (self.database_type == DB_MYSQL and 3306) or 1521
+        db_type = (self.db_type == DB_MYSQL and 'mysql') or (self.db_type == DB_SQLITE and 'sqlite') or 'oracle_not_supported'
+        db_port = (self.db_type == DB_MYSQL and 3306) or (self.db_type == DB_ORACLE and 1521) or ''
         db_host = 'imgdb01'
         db_pwd  = ''
-        db_name = self.database_name
+        db_name = self.db_name
         db_user = 'cpuser'
+        db_sqlite_file = (self.db_type == DB_SQLITE and self.get_output_directory()+'/'+self.sqlite_file.value) or ''
+        if self.db_type != DB_SQLITE:
+            db_info =  'db_type      = %(db_type)s\n'%(locals())
+            db_info += 'db_port      = %(db_port)d\n'%(locals())
+            db_info += 'db_host      = %(db_host)s\n'%(locals())
+            db_info += 'db_name      = %(db_name)s\n'%(locals())
+            db_info += 'db_user      = %(db_user)s\n'%(locals())
+            db_info += 'db_passwd    = %(db_pwd)s'%(locals())
+        else:
+            db_info =  'db_type         = %(db_type)s\n'%(locals())
+            db_info += 'db_sqlite_file  = %(db_sqlite_file)s'%(locals())
+        
+        
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
         cell_tables = '%sPer_Object'%(self.get_table_prefix())
         unique_id = 'ImageNumber'
@@ -479,7 +804,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         if len(image_names) == 1:
             image_channel_colors = 'gray,'
         else:
-            image_channel_colors = 'red,green,blue,cyan,magenta,yellow,gray,none,none,none,'  
+            image_channel_colors = 'red,green,blue,cyan,magenta,yellow,gray,none,none,none,'
+        # TODO: leave blank if image files are local  
         image_url = 'http://imageweb/images/CPALinks'
         contents = """#%(date)s
 # ==============================================
@@ -489,12 +815,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
 # ==============================================
 
 # ==== Database Info ====
-db_type      = %(db_type)s
-db_port      = %(db_port)d
-db_host      = %(db_host)s
-db_name      = %(db_name)s
-db_user      = %(db_user)s
-db_passwd    = %(db_pwd)s
+%(db_info)s
 
 # ==== Database Tables ====
 image_table   = %(spot_tables)s
@@ -550,7 +871,6 @@ filters  =
 # FORMAT:
 #   object_name  =  singular object name, plural object name,
 object_name  =  cell, cells,
-
 
 # ==== Excluded Columns ====
 # DB Columns the classifier should exclude:

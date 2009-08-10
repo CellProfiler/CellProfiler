@@ -244,35 +244,6 @@ if ~isImageGroups
     NumberOfImageSets = handles.Current.NumberOfImageSets;
     StartingImageSet = handles.Current.StartingImageSet;
 else
-    if isProcessingAll
-        if isCreatingBatchFile
-            % If (1) 'All' is selected and (2) we are creating a batch file
-            % or we are running on the cluster,
-            % (a) replace the number of cycles with the number of groups, so
-            % each group gets it's own node, (b) do or skip the computation
-            % of the illumination fxn on the 1st cycle (see below)
-            if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-                handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
-            end
-            CPwarndlg('You are using image grouping to create an illumination function by processing "All" images during a batch run. You will need to submit the batch job using a batch size of 1.',[ModuleName,': Required settings for cluster run'],'replace');
-        elseif isRunningOnCluster
-            % If (1) 'All' is selected and (2) we are running on the cluster,
-            % (a) replace the number of cycles with the number of groups, so
-            % each group gets it's own node, (b) do the computation of the
-            % illumination fxn on the 1st cycle, (c) set the groupID to 
-            % the current set number, which should be be the group number
-            % at this point (Note: This is an exception to
-            % FileNameMetadata)
-            %if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-            %    handles.Current.NumberOfImageSets = handles.Pipeline.GroupFileList{handles.Current.SetBeingAnalyzed}.NumberOfImageSets;
-            %end
-        else
-            % If (1) 'All' is selected and (2) we are running locally,
-            % proceed as normal
-        end
-    elseif isProcessingEach
-        % Proceed as normal
-    end
     CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
     SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
     NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;

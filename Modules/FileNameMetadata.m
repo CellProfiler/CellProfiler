@@ -432,6 +432,20 @@ if ~isempty(FieldsToGroupBy)
                 handles.Pipeline.GroupFileList{idx}.SetBeingAnalyzed = handles.Pipeline.GroupFileList{idx}.SetBeingAnalyzed + 1;
             end
         end
+        
+        % Finally, if the user is preparing for a a batch run, we need to
+        % replace the number of cycles with the number of groups, so each 
+        % group gets it's own node
+        isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+        isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+        StartingImageSet = handles.Current.StartingImageSet;
+        
+        if isCreatingBatchFile
+            if SetBeingAnalyzed == StartingImageSet
+                handles.Current.NumberOfImageSets = length(handles.Pipeline.GroupFileList);
+            end
+            CPwarndlg('You are using image grouping in preparation for a batch run. You will need to submit the batch job using a batch size of 1.',[ModuleName,': Required settings for cluster run'],'replace');
+        end
     end
 
     % A final check, in case the filename is '': If image groups exist, fill in

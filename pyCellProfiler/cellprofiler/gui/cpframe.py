@@ -209,7 +209,7 @@ class CPFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         bitmap = get_cp_bitmap(52)
         logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
-        logotext = wx.StaticText(self.__logo_panel,-1,"Cell Profiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
+        logotext = wx.StaticText(self.__logo_panel,-1,"CellProfiler\nimage analysis\npipeline",style=wx.ALIGN_CENTER)
         sizer.AddMany([(logopic,0,wx.ALIGN_LEFT|wx.ALIGN_TOP|wx.ALL,5),
                        (logotext,1,wx.EXPAND)])
         self.__logo_panel.SetSizer(sizer)

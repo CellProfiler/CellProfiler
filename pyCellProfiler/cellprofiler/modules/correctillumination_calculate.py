@@ -297,36 +297,24 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
             result += [self.dilated_image_name]
         return result
 
-    def prepare_run(self, pipeline, image_set_list, frame):
-        """Prepare the image set list for a run
-        
-        Calculate the illumination correction image for all images in
-        the image set list if the image is loaded from a file and the
-        user wants image correction over all images.
-        """
-        
-        if self.each_or_all == EA_ALL:
-            output_image_provider =\
-                CorrectIlluminationImageProvider(self.illumination_image_name.value,
-                                                 self)
-            image_set_list.add_provider_to_all_image_sets(output_image_provider)
-            if self.save_average_image.value:
-                ap = CorrectIlluminationAvgImageProvider(self.average_image_name.value,
-                                                         output_image_provider)
-                image_set_list.add_provider_to_all_image_sets(ap)
-            if self.save_dilated_image.value:
-                dp = CorrectIlluminationDilatedImageProvider(self.dilated_image_name.value,
-                                                             output_image_provider)
-                image_set_list.add_provider_to_all_image_sets(dp)
-        return True
-    
     def prepare_group(self, pipeline, image_set_list, grouping, 
                       image_numbers):
         if self.each_or_all == EA_ALL and len(image_numbers) > 0:
-            image_set = image_set_list.get_image_set(image_numbers[0]-1)
-            provider = image_set.get_image_provider(
-                self.illumination_image_name.value)
-            provider.reset()
+            output_image_provider =\
+                CorrectIlluminationImageProvider(self.illumination_image_name.value,
+                                                 self)
+            image_providers = [output_image_provider]
+            if self.save_average_image.value:
+                ap = CorrectIlluminationAvgImageProvider(self.average_image_name.value,
+                                                         output_image_provider)
+                image_providers.append(ap)
+            if self.save_dilated_image.value:
+                dp = CorrectIlluminationDilatedImageProvider(self.dilated_image_name.value,
+                                                             output_image_provider)
+                image_providers.append(dp)
+            for image_number in image_numbers:
+                image_set = image_set_list.get_image_set(image_number-1)
+                image_set.providers.extend(image_providers)
             if pipeline.is_source_loaded(self.image_name.value):
                 if frame != None:
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),

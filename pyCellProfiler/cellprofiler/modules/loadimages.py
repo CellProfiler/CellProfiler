@@ -74,6 +74,16 @@ M_FILE_NAME = "File name"
 M_PATH      = "Path"
 M_BOTH      = "Both"
 
+'''The provider name for the image file image provider'''
+P_IMAGES = "LoadImagesImageProvider"
+'''The version number for the __init__ method of the image file image provider'''
+V_IMAGES = 1
+
+'''The provider name for the movie file image provider'''
+P_MOVIES = "LoadImagesMovieProvider"
+'''The version number for the __init__ method of the movie file image provider'''
+V_MOVIES = 1
+
 def default_cpimage_name(index):
     # the usual suspects
     names = ['DNA', 'Actin', 'Protein']
@@ -433,8 +443,10 @@ class LoadImages(cpmodule.CPModule):
         root = self.image_directory()
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
-            providers = [LoadImagesImageProvider(name.value,root,file) for name,file in zip(image_names, list_of_lists[:,i])]
-            image_set.providers.extend(providers)
+            for j in range(len(image_names)):
+                self.save_image_set_info(image_set, image_names[j].value,
+                                         P_IMAGES, V_IMAGES, 
+                                         root, list_of_lists[j,i])
     
     def organize_by_metadata(self, pipeline, image_set_list, files, frame):
         """Organize each kind of file by metadata
@@ -525,9 +537,71 @@ class LoadImages(cpmodule.CPModule):
             cpimageset = image_set_list.get_image_set(keys)
             for i in range(len(self.images)):
                 path = os.path.join(image_set[1][i][0],image_set[1][i][1])
-                provider = LoadImagesImageProvider(self.images[i][FD_IMAGE_NAME].value,
-                                                   root,path)
-                cpimageset.providers.append(provider)
+                self.save_image_set_info(cpimageset,
+                                         self.images[i][FD_IMAGE_NAME].value,
+                                          P_IMAGES, V_IMAGES, root,path)
+    
+    def get_dictionary(self, image_set):
+        '''Get the module's legacy fields dictionary for this image set'''
+        key = "%s:%d"%(self.module_name, self.module_num)
+        if not image_set.legacy_fields.has_key(key):
+            image_set.legacy_fields[key] = {}
+        d = image_set.legacy_fields[key]
+        if not d.has_key(image_set.number):
+            d[image_set.number] = {}
+        return d[image_set.number]
+    
+    def save_image_set_info(self, image_set, image_name, provider, 
+                            version, *args):
+        '''Write out the details for creating an image provider
+        
+        Write information to the image set list legacy fields for saving
+        the state needed to create an image provider.
+        
+        image_set - create a provider on this image set
+        image_name - the image name for the image
+        provider - the name of an image set provider (the name will be read
+                   by load_image_set_info to create the actual provider)
+        version - the version # of the provider, in case the arguments change
+        args - string arguments that will be passed to the provider's init fn
+        '''
+        if provider == P_MOVIES:
+            raise NotImplementedError("Movie processing has not yet been implemented on the cluster")
+        d = self.get_dictionary(image_set)
+        d[image_name] = [provider, version] + list(args)
+    
+    def modify_image_set_info(self, image_set, fn_alter_path):
+        '''Redirect path names to a remote host
+        
+        image_set - modify path names for this image set
+        fn_alter_path - call this to modify each path name
+        '''
+        d = self.get_dictionary(image_set)
+        for image_name in d.keys():
+            values = d[image_name]
+            provider, version = values[:2]
+            if provider == P_IMAGES:
+                assert version == V_IMAGES
+                for i in range(1,3):
+                    values[i] = fn_alter_path(values[i])
+            else:
+                raise NotImplementedError("%s not handled by modify_image_set_info"%provider)
+            
+    def load_image_set_info(self, image_set):
+        '''Load the image set information, creating the providers'''
+        assert isinstance(image_set, cpimage.ImageSet)
+        d = self.get_dictionary(image_set)
+        for image_name in d.keys():
+            values = d[image_name]
+            provider, version = values[:2]
+            if provider == P_IMAGES:
+                if version != V_IMAGES:
+                    raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
+                pathname, filename = values[2:]
+                p = LoadImagesImageProvider(image_name, pathname, filename)
+                image_set.providers.append(p)
+            else:
+                raise NotImplementedError("Can't restore file information: provider %s not supported"%provider)
     
     def get_image_sets(self, d):
         """Get image sets from a dictionary tree
@@ -691,7 +765,35 @@ class LoadImages(cpmodule.CPModule):
             image_set.providers.extend(providers)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
         
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        for i in range(image_set_list.count()):
+            image_set = image_set_list.get_image(i)
+            self.modify_image_set_info(image_set, fn_alter_path)
+        return True
+    
+    def prepare_group(self, pipeline, image_set_list, grouping,
+                      image_numbers):
+        '''Load the images from the dictionary into the image sets here'''
+        for image_number in image_numbers:
+            image_set = image_set_list.get_image_set(image_number-1)
+            self.load_image_set_info(image_set)
+            
     def run(self,workspace):
         """Run the module - add the measurements
         

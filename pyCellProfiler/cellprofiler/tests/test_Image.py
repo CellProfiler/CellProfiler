@@ -137,6 +137,49 @@ class TestImageSetList(unittest.TestCase):
         y.providers.append(cellprofiler.cpimage.CallbackImageProvider("IP2",fn2))
         self.assertEquals(img1,y.get_image("IP1"),"Failed to get correct first image")
         self.assertEquals(img2,y.get_image("IP2"),"Failed to get correct second image")
+    
+    def test_03_01_serialize_no_key(self):
+        '''Serialize an image list with no keys in the image sets'''
+        x = cellprofiler.cpimage.ImageSetList()
+        for i in range(5):
+            x.get_image_set(i)
+        s = x.save_state()
+        
+        y = cellprofiler.cpimage.ImageSetList()
+        y.load_state(s)
+        self.assertEquals(y.count(), 5)
+    
+    def test_03_02_serialize_key(self):
+        x = cellprofiler.cpimage.ImageSetList()
+        values = (('A','B'),('C','D'),('E','F'))
+        for value1, value2 in values:
+            d = { 'K1':value1, 'K2':value2 }
+            x.get_image_set(d)
+        s = x.save_state()
+        
+        y = cellprofiler.cpimage.ImageSetList()
+        y.load_state(s)
+        self.assertEquals(y.count(), len(values))
+        for i in range(len(values)):
+            image_set = y.get_image_set(i)
+            self.assertTrue(isinstance(image_set, cellprofiler.cpimage.ImageSet))
+            value1, value2 = values[i]
+            for key, value in (('K1',value1),('K2',value2)):
+                self.assertEqual(image_set.keys[key], value)
+    
+    def test_03_03_serialize_legacy_fields(self):
+        x = cellprofiler.cpimage.ImageSetList()
+        for i in range(5):
+            x.get_image_set(i)
+        d = { 'foo':'bar', 'test':'suite' }
+        x.legacy_fields['dictionary'] = d
+        s = x.save_state()
+        
+        y = cellprofiler.cpimage.ImageSetList()
+        y.load_state(s)
+        self.assertEquals(y.count(), 5)
+        self.assertTrue(y.legacy_fields.has_key('dictionary'))
+        for key in d.keys():
+            self.assertTrue(y.legacy_fields['dictionary'].has_key(key))
+            self.assertEqual(y.legacy_fields['dictionary'][key], d[key])
 
-if __name__ == "__main__":
-    unittest.main()

@@ -52,6 +52,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         module.rescale_option = cpmcia.RE_NONE
         image_set_list = pipeline.prepare_run(None)
+        input_module.prepare_group(pipeline, image_set_list, {}, [1])
+        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
+        module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         measurements = cpm.Measurements()
@@ -91,6 +94,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         module.rescale_option = cpmcia.RE_NONE
         image_set_list = pipeline.prepare_run(None)
+        input_module.prepare_group(pipeline, image_set_list, {}, [1])
+        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
+        module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         measurements = cpm.Measurements()
@@ -131,6 +137,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         module.rescale_option = cpmcia.RE_STRETCH
         image_set_list = pipeline.prepare_run(None)
+        input_module.prepare_group(pipeline, image_set_list, {}, [1])
+        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
+        module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         measurements = cpm.Measurements()
@@ -173,6 +182,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         module.rescale_option = cpmcia.RE_MATCH
         image_set_list = pipeline.prepare_run(None)
+        input_module.prepare_group(pipeline, image_set_list, {}, [1])
+        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
+        module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         measurements = cpm.Measurements()

@@ -23,6 +23,7 @@ from struct import unpack
 from zlib import decompress
 from StringIO import StringIO
 from numpy import fromstring, uint8, uint16
+from cPickle import dump, load
 
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
@@ -618,7 +619,34 @@ class ImageSetList(object):
                 sort_order.append(key_values)
             d[key_values].append(i+1)
         return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+    
+    def save_state(self):
+        '''Return a string that can be used to load the image_set_list's state
         
+        load_state will restore the image set list's state. No image_set can
+        have image providers before this call.
+        '''
+        f = StringIO()
+        dump(self.count(),f)
+        for i in range(self.count()):
+            image_set = self.get_image_set(i)
+            assert isinstance(image_set, ImageSet)
+            assert len(image_set.providers)==0, "An image set cannot have providers while saving its state"
+            dump(image_set.keys, f)
+        dump(self.legacy_fields, f)
+        return f.getvalue()
+    
+    def load_state(self, state):
+        '''Load an image_set_list's state from the string returned from save_state'''
+        
+        self.__image_sets = []
+        self.__image_sets_by_key = {}
+        f = StringIO(state)
+        count = load(f)
+        for i in range(count):
+            keys = load(f)
+            self.get_image_set(keys)
+        self.__legacy_fields = load(f)
 
 def readc01(fname):
     '''Read a Cellomics file into an array

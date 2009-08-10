@@ -266,7 +266,7 @@ that can be processed by different nodes in a cluster.
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d"%
                                      (i,len(row),len(header)))
                 rows.append(row)
-                if i == self.row_range.max:
+                if i == self.row_range.max - 1:
                     break
                 i += 1
         else:
@@ -308,42 +308,41 @@ that can be processed by different nodes in a cluster.
             if not images[image].has_key(FILE_NAME):
                 raise ValueError('The CSV file has an Image_PathName_%s metadata column without a corresponding Image_FileName_%s column'%
                                  (image,image))
-        if self.wants_images.value and len(images) > 0:
-            #
-            # Populate the image set list with a list of filenames
-            #
-            path_base = self.image_path
-            for i in range(len(rows)):
-                if len(metadata):
-                    key = {}
-                    for k in metadata.keys():
-                        key[k] = metadata[k][i]
-                    image_set = image_set_list.get_image_set(key)
-                else:
-                    image_set = image_set_list.get_image_set(i)
-                for image in images.keys():
-                    if images[image].has_key(PATH_NAME):
-                        path = os.path.join(path_base, 
-                                            images[image][PATH_NAME][i])
-                    else:
-                        path = path_base
-                    ip = LoadImagesImageProvider(image, path, 
-                                                 images[image][FILE_NAME][i])
-                    image_set.providers.append(ip)
-        elif len(metadata):
-            #
-            # Populate the image set list with metadata, e.g. for LoadImages
-            #
-            for i in range(len(rows)):
+        #
+        # Populate the image set list 
+        #
+        for i in range(len(rows)):
+            if len(metadata):
                 key = {}
                 for k in metadata.keys():
                     key[k] = metadata[k][i]
                 image_set = image_set_list.get_image_set(key)
+            else:
+                image_set = image_set_list.get_image_set(i)
         #
         # Hide the measurements in the image_set_list
         #
         image_set_list.legacy_fields[self.legacy_field_key] = dictionary
         return True
+    
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+        dictionary = image_set_list.legacy_fields[self.legacy_field_key]
+        path_base = self.image_path
+        image_names = self.get_name_providers('imagegroup')
+        if self.wants_images.value:
+            for image_number in image_numbers:
+                index = image_number -1
+                image_set = image_set_list.get_image_set(index)
+                for image_name in image_names:
+                    path_name_feature = 'Image_PathName_%s'%image_name
+                    if dictionary.has_key(path_name_feature):
+                        path = os.path.join(path_base, 
+                                            dictionary[path_name_feature][index])
+                    else:
+                        path = path_base
+                    filename = dictionary['Image_FileName_%s'%image_name][index]
+                    ip = LoadImagesImageProvider(image_name, path, filename)
+                    image_set.providers.append(ip)
             
     def run(self, workspace):
         '''Populate the image measurements on each run iteration'''

@@ -330,21 +330,25 @@ class TestPipeline(unittest.TestCase):
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun',0]
         keys = ('foo','bar')
-        groupings = ((('foo-A','bar-A'),(1,3)),
-                     (('foo-B','bar-B'),(2,4)))
+        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,3)),
+                     ({'foo':'foo-B','bar':'bar-B'},(2,4)))
         def prepare_run(pipeline, image_set_list, frame):
             self.assertEqual(expects[0], 'PrepareRun')
             for i in range(4):
+                image_set_list.get_image_set(i)
+            expects[0], expects[1] = ('PrepareGroup', 0)
+            return True
+        def prepare_group(pipeline, image_set_list, grouping, image_numbers):
+            expects_state, expects_grouping = expects
+            self.assertEqual(expects_state, 'PrepareGroup')
+            for image_number in image_numbers:
+                i = image_number-1
                 image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
                 image_set = image_set_list.get_image_set(i)
                 image_set.add('image', image)
-            expects[0], expects[1] = ('PrepareGroup', 0)
-            return True
-        def prepare_group(pipeline, image_set_list, grouping, *args):
-            expects_state, expects_grouping = expects
-            self.assertEqual(expects_state, 'PrepareGroup')
-            for key, value in zip(keys, groupings[expects_grouping][0]):
+            for key in keys:
                 self.assertTrue(grouping.has_key(key))
+                value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
                 expects[0], expects[1] = ('Run', 1)
@@ -371,8 +375,9 @@ class TestPipeline(unittest.TestCase):
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
-            for key, value in zip(keys, groupings[expects_grouping][0]):
+            for key in keys:
                 self.assertTrue(grouping.has_key(key))
+                value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
                 expects[0],expects[1] = ('PrepareGroup', 1)
@@ -397,22 +402,25 @@ class TestPipeline(unittest.TestCase):
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun',0]
         keys = ('foo','bar')
-        groupings = ((('foo-A','bar-A'),(1,4)),
-                     (('foo-B','bar-B'),(2,5)),
-                     (('foo-C','bar-C'),(3,6)))
+        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,4)),
+                     ({'foo':'foo-B','bar':'bar-B'},(2,5)),
+                     ({'foo':'foo-C','bar':'bar-C'},(3,6)))
         def prepare_run(pipeline, image_set_list, frame):
             self.assertEqual(expects[0], 'PrepareRun')
             for i in range(6):
-                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
-                image_set = image_set_list.get_image_set(i)
-                image_set.add('image', image)
+                image_set_list.get_image_set(i)
             expects[0], expects[1] = ('PrepareGroup', 1)
             return True
         def prepare_group(pipeline, image_set_list, grouping,*args):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
-            for key, value in zip(keys, groupings[expects_grouping][0]):
+            for i in range(6):
+                image = cellprofiler.cpimage.Image(numpy.ones((10,10)) / (i+1))
+                image_set = image_set_list.get_image_set(i)
+                image_set.add('image', image)
+            for key in keys:
                 self.assertTrue(grouping.has_key(key))
+                value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             self.assertEqual(expects_grouping, 1)
             expects[0], expects[1] = ('Run', 2)
@@ -435,8 +443,9 @@ class TestPipeline(unittest.TestCase):
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
-            for key, value in zip(keys, groupings[expects_grouping][0]):
+            for key in keys:
                 self.assertTrue(grouping.has_key(key))
+                value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             expects[0],expects[1] = ('PostRun', 0)
         def post_run(workspace):

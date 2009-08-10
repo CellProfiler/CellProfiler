@@ -30,6 +30,7 @@ class testInjectImage(unittest.TestCase):
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
         ii.prepare_run(pipeline, image_set_list, None)
+        ii.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         self.assertTrue(image_set,"No image set returned from ImageSetList.GetImageSet")
         my_image = image_set.get_image("my_image")

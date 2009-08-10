@@ -50,11 +50,14 @@ class testLoadImages(unittest.TestCase):
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-01-A-01.tif")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.module_num = 1
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
+        pipeline.add_module(l)
         l.prepare_run(pipeline, image_set_list, None)
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
+        l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
         self.assertEqual(len(image_set.get_names()),1)
         self.assertEqual(image_set.get_names()[0],"my_image")
@@ -73,12 +76,15 @@ class testLoadImages(unittest.TestCase):
             idx = l.SLOT_FIRST_IMAGE+l.SLOT_IMAGE_FIELD_COUNT * i 
             l.settings()[idx+l.SLOT_OFFSET_COMMON_TEXT].set_value("1-0%(ii)d-A-0%(ii)d.tif"%(locals()))
             l.settings()[idx+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image%(i)d"%(locals()))
+        l.module_num = 1
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
+        pipeline.add_module(l)
         pipeline.add_listener(self.error_callback)
         l.prepare_run(pipeline, image_set_list, None)
         self.assertEqual(image_set_list.count(),1,"Expected one image set, there were %d"%(image_set_list.count()))
         image_set = image_set_list.get_image_set(0)
+        l.prepare_group(pipeline, image_set_list, (), [1])
         self.assertEqual(len(image_set.get_names()),4)
         for i in range(0,4):
             self.assertTrue("my_image%d"%(i) in image_set.get_names())
@@ -92,10 +98,13 @@ class testLoadImages(unittest.TestCase):
             os.path.join(T.example_images_directory(),"ExampleSBSImages")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_COMMON_TEXT].set_value("Channel1-[0-1][0-9]-A-01")
         l.settings()[l.SLOT_FIRST_IMAGE+l.SLOT_OFFSET_IMAGE_NAME].set_value("my_image")
+        l.module_num = 1
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
+        pipeline.add_module(l)
         l.prepare_run(pipeline, image_set_list,None)
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
+        l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
         self.assertEqual(len(image_set.get_names()),1)
         self.assertEqual(image_set.get_names()[0],"my_image")
@@ -417,6 +426,7 @@ class testLoadImages(unittest.TestCase):
             image_set_list = I.ImageSetList()
             load_images.prepare_run(pipeline, image_set_list, None)
             self.assertEqual(image_set_list.count(),2)
+            load_images.prepare_group(pipeline, image_set_list, (), [1,2])
             image_set = image_set_list.get_image_set(0)
             self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                              filenames[0])
@@ -494,6 +504,7 @@ class testLoadImages(unittest.TestCase):
             image_set_list = I.ImageSetList()
             load_images.prepare_run(pipeline, image_set_list, None)
             self.assertEqual(image_set_list.count(),2)
+            load_images.prepare_group(pipeline, image_set_list, {}, [1,2])
             image_set = image_set_list.get_image_set(0)
             self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                              os.path.join(*path_and_file[0]))
@@ -662,6 +673,8 @@ class testLoadImages(unittest.TestCase):
         self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
         for grouping in groupings:
             row = grouping[0]["ROW"]
+            module.prepare_group(pipeline, image_set_list, grouping[0],
+                                 grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
                 self.assertEqual(image_set.keys["ROW"], row)

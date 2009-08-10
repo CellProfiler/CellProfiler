@@ -76,18 +76,17 @@ image set.
                 self.projection_image_name]
 
     def prepare_run(self, pipeline, image_set_list, frame):
-        provider = ImageProvider(self.projection_image_name.value,
-                                 self.projection_type.value)
-        image_set_list.add_provider_to_all_image_sets(provider)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
         if len(image_numbers) > 0:
-            image_set = image_set_list.get_image_set(image_numbers[0]-1)
-            assert isinstance(image_set, cpi.ImageSet)
-            provider = image_set.get_image_provider(self.projection_image_name.value)
-            provider.reset()
+            provider = ImageProvider(self.projection_image_name.value,
+                                     self.projection_type.value)
+            for image_number in image_numbers:
+                image_set = image_set_list.get_image_set(image_number-1)
+                assert isinstance(image_set, cpi.ImageSet)
+                image_set.providers.append(provider)
         return True
         
     def run(self, workspace):

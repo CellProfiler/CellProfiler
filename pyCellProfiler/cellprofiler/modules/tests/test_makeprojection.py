@@ -124,6 +124,8 @@ class TestMakeProjection(unittest.TestCase):
         module.projection_type.value = projection_type
         pipeline.add_module(module)
         module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, {},
+                             range(1,len(images_and_masks)+1))
         for i in range(len(images_and_masks)):
             workspace = cpw.Workspace(pipeline, module, 
                                       image_set_list.get_image_set(i),

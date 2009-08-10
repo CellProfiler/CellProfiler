@@ -622,6 +622,9 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return None
+        assert not any([len(image_set_list.get_image_set(i).providers)
+                        for i in range(image_set_list.count())]),\
+               "Image providers cannot be added in prepare_run. Please add them in prepare_group instead"
         return image_set_list
     
     def post_run(self, measurements, image_set_list, frame):
@@ -642,6 +645,32 @@ class Pipeline(object):
             workspace.refresh()
             try:
                 module.post_run(workspace)
+            except Exception, instance:
+                traceback.print_exc()
+                event = RunExceptionEvent(instance, module)
+                self.notify_listeners(event)
+                if event.cancel_run:
+                    return
+    
+    def prepare_to_create_batch(self, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        for module in self.modules():
+            try:
+                module.prepare_to_create_batch(self, image_set_list, 
+                                               fn_alter_path)
             except Exception, instance:
                 traceback.print_exc()
                 event = RunExceptionEvent(instance, module)

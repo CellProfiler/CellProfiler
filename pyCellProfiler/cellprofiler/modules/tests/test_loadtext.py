@@ -31,7 +31,7 @@ import cellprofiler.modules.loadtext as L
 from cellprofiler.modules.tests import example_images_directory
 
 class TestLoadText(unittest.TestCase):
-    def make_workspace(self, csv_text, image_set_start = None):
+    def make_pipeline(self, csv_text):
         handle, name = tempfile.mkstemp("csv")
         fd = os.fdopen(handle, 'w')
         fd.write(csv_text)
@@ -41,16 +41,13 @@ class TestLoadText(unittest.TestCase):
         module.csv_directory_choice.value = L.DIR_OTHER
         module.csv_custom_directory.value = csv_path
         module.csv_file_name.value = csv_file
+        module.module_num = 1
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  None,
-                                  object_set,
-                                  cpmeas.Measurements(image_set_start=image_set_start),
-                                  image_set_list)
-        return workspace, module, name
+        pipeline.add_module(module)
+        def error_callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(error_callback)
+        return pipeline, module, name
     
     def test_01_00_revision(self):
         '''Remember to update this and write another test on new revision'''
@@ -117,11 +114,8 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Test_Measurement"
 "Hello, world"
 '''
-        workspace, module, filename = self.make_workspace(csv_text)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        m = workspace.measurements
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         self.assertEqual(data, "Hello, world")
         os.remove(filename)
@@ -130,11 +124,8 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Test_Measurement"
 1.5
 '''
-        workspace, module, filename = self.make_workspace(csv_text)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        m = workspace.measurements
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         self.assertAlmostEqual(data, 1.5)
         os.remove(filename)
@@ -143,11 +134,8 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Test_Measurement"
 1
 '''
-        workspace, module, filename = self.make_workspace(csv_text)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        m = workspace.measurements
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
         self.assertEqual(data, 1)
         os.remove(filename)
@@ -156,15 +144,10 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Metadata_Plate"
 "P-12345"
 '''
-        workspace, module, filename = self.make_workspace(csv_text)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-        workspace.set_image_set_for_testing_only(0)
-        module.run(workspace)
-        m = workspace.measurements
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run()
         data = m.get_current_image_measurement("Metadata_Plate")
         self.assertEqual(data, "P-12345")
-        imgset = workspace.image_set
-        self.assertEqual(imgset.keys["Plate"],"P-12345")
         os.remove(filename)
 
     def test_04_01_load_file(self):
@@ -172,17 +155,23 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "Channel2-01-A-01.tif","%s"
 '''%(dir)
-        workspace, module, filename = self.make_workspace(csv_text)
-        try:
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-            workspace.set_image_set_for_testing_only(0)
-            module.run(workspace)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        c0_ran = [False]
+        def callback(workspace):
             imgset = workspace.image_set
             image = imgset.get_image("DNA")
             pixels = image.pixel_data
             self.assertEqual(pixels.shape[0],640)
-            hexdigest = workspace.measurements.get_current_image_measurement(
-                'MD5Digest_DNA')
+            c0_ran[0] = True
+            
+        c0 = C0(callback)
+        c0.module_num = 1
+        pipeline.add_module(c0)
+                
+        try:
+            m = pipeline.run()
+            self.assertTrue(c0_ran[0])
+            hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
             self.assertEqual(hexdigest, 'c55554be83a1c928c1ae9268486a94b3')
         finally:
             os.remove(filename)
@@ -192,14 +181,19 @@ class TestLoadText(unittest.TestCase):
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "Channel2-01-A-01.tif","%s"
 '''%(dir)
-        workspace, module, filename = self.make_workspace(csv_text)
-        try:
-            module.wants_images.value = False
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)        
-            workspace.set_image_set_for_testing_only(0)
-            module.run(workspace)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        c0_ran = [False]
+        def callback(workspace):
             imgset = workspace.image_set
             self.assertEqual(len(imgset.get_names()),0)
+            c0_ran[0] = True
+        c0 = C0(callback)
+        c0.module_num = 1
+        pipeline.add_module(c0)
+        try:
+            module.wants_images.value = False
+            pipeline.run()
+            self.assertTrue(c0_ran[0])
         finally:
             os.remove(filename)
     
@@ -216,18 +210,14 @@ class TestLoadText(unittest.TestCase):
 9
 10
 '''
-        workspace, module, filename = self.make_workspace(csv_text)
+        pipeline, module, filename = self.make_pipeline(csv_text)
         module.wants_rows.value = True
         module.row_range.min = 4
         module.row_range.max = 6
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
-        m = workspace.measurements
-        for module_num, expected in ((0,4),(1,5),(2,6)):        
-            workspace.set_image_set_for_testing_only(module_num)
-            module.run(workspace)
-            data = m.get_current_image_measurement("Test_Measurement")
-            self.assertEqual(data, expected)
-            m.next_image_set()
+        m = pipeline.run()
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
+        self.assertTrue(np.all(data == np.arange(4,7)))
         os.remove(filename)
     
     def test_06_01_alternate_image_start(self):
@@ -243,16 +233,10 @@ class TestLoadText(unittest.TestCase):
 9
 10
 '''
-        workspace, module, filename = self.make_workspace(csv_text,
-                                                          image_set_start=2)
-        module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
-        m = workspace.measurements
-        for module_num, expected in ((2,'3'),(3,'4'),(4,'5')):        
-            workspace.set_image_set_for_testing_only(module_num)
-            module.run(workspace)
-            data = m.get_current_image_measurement("Metadata_Measurement")
-            self.assertEqual(data, expected)
-            m.next_image_set()
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        m = pipeline.run(image_set_start=2)
+        data = m.get_all_measurements(cpmeas.IMAGE, "Metadata_Measurement")
+        self.assertTrue(all([data[i-2] == str(i) for i in range(2,11)]))
         os.remove(filename)
     
     def test_07_01_get_measurement_columns(self):
@@ -270,7 +254,7 @@ class TestLoadText(unittest.TestCase):
 7,1.1,"Hej"
 8,2.3,"Bevakasha"
 '''%colnames
-        workspace, module, filename = self.make_workspace(csv_text)
+        pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(None)
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
@@ -290,13 +274,13 @@ class TestLoadText(unittest.TestCase):
                 csv_text += ('"%s","%s","%s","%s"\n' %
                              (filename, dir, match.group("ROW"), 
                               match.group("COL")))
-        workspace, module, filename = self.make_workspace(csv_text)
+        pipeline, module, filename = self.make_pipeline(csv_text)
         self.assertTrue(isinstance(module, L.LoadText))
         module.wants_images.value = True
         module.wants_image_groupings.value = True
         module.metadata_fields.value = "ROW"
-        image_set_list = workspace.image_set_list
-        module.prepare_run(workspace.pipeline, image_set_list, None)
+        image_set_list = cpi.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
         keys, groupings = module.get_groupings(image_set_list)
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0], "ROW")
@@ -304,6 +288,7 @@ class TestLoadText(unittest.TestCase):
         self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
         for grouping in groupings:
             row = grouping[0]["ROW"]
+            module.prepare_group(pipeline, image_set_list, grouping[0], grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
                 self.assertEqual(image_set.keys["ROW"], row)
@@ -311,3 +296,12 @@ class TestLoadText(unittest.TestCase):
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
+
+class C0(cpm.CPModule):
+    module_name = 'C0'
+    def __init__(self, callback):
+        self.callback = callback
+        
+    def run(self, workspace):
+        self.callback(workspace)
+                

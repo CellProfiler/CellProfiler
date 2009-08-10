@@ -404,8 +404,7 @@ class CPModule(object):
         """Prepare the image set list for a run (& whatever else you want to do)
         
         pipeline - the pipeline being run
-        image_set_list - add any image providers for this module to this
-                         image set list
+        image_set_list - add any image sets to the image set list
         frame - parent frame of application if GUI enabled, None if GUI
                 disabled
         
@@ -431,6 +430,24 @@ class CPModule(object):
         workspace - the workspace at the end of the run
         """
         pass
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        return True
     
     def get_groupings(self, image_set_list):
         '''Return the image groupings of the image sets in an image set list
@@ -459,7 +476,8 @@ class CPModule(object):
         '''Prepare to start processing a new grouping
         
         pipeline - the pipeline being run
-        image_set_list - the image_set_list for the experiment
+        image_set_list - the image_set_list for the experiment. Add image
+                         providers to the image set list here.
         grouping - a dictionary that describes the key for the grouping.
                    For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
         image_numbers - a sequence of the image numbers within the
@@ -470,6 +488,7 @@ class CPModule(object):
         groups.
         '''
         pass
+    
     
     def post_group(self, workspace, grouping):
         '''Do post-processing after a group completes

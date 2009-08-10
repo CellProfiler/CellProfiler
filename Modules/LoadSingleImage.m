@@ -185,7 +185,10 @@ if doFirstCycleOnly || doTokensExist,
         end
     else CPwarndlg('It is advisable to use RELATIVE path names, i.e. begin your path with either ''.'' or ''&''',[ModuleName,': Pathname warning'],'replace');
     end
-
+    
+    % Substitute Metadata tokens into Pathname (if found)
+    Pathname = CPreplacemetadata(handles,Pathname);
+    
     SpecifiedPathname = Pathname;
     if ~exist(SpecifiedPathname,'dir')
         error(['Image processing was canceled in the ', ModuleName, ' module because the directory "',SpecifiedPathname,'" does not exist. Be sure that no spaces or unusual characters exist in your typed entry and that the pathname of the directory begins with / (for Mac/Unix) or \ (for PC).'])

@@ -198,9 +198,9 @@ FinalLabelMatrixImage = bwlabel(bw);
 % The dilated mask is used only for visualization.
 dilated = imdilate(bw, strel('disk', 2));
 vislabel = bwlabel(dilated);
-r = im;
-g = im;
-b = im;
+r = OrigImage;
+g = OrigImage;
+b = OrigImage;
 r(dilated) = 1;
 g(dilated) = 0;
 b(dilated) = 0;

@@ -278,9 +278,11 @@ if SetBeingAnalyzed == StartingImageSet
     % An additional structure is added to handles.Pipeline in order to keep
     % track of frame-to-frame changes
     % (1) Locations
+    % If using image grouping: The measurements are located in the actual 
+    % set being analyzed, so we break the grouping convention here
     TrackObjInfo.Current.Locations{SetBeingAnalyzed} = ...
-    cat(2,  handles.Measurements.(ObjectName).Location_Center_X{SetBeingAnalyzed},...
-            handles.Measurements.(ObjectName).Location_Center_Y{SetBeingAnalyzed});
+    cat(2,  handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed},...
+            handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed});
         
     CurrentLocations = TrackObjInfo.Current.Locations{SetBeingAnalyzed};
     PreviousLocations = NaN(size(CurrentLocations));

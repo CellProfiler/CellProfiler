@@ -261,16 +261,18 @@ isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
 if ~isImageGroups
     SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
     NumberOfImageSets = handles.Current.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
 else
     CurrentImageGroupID = handles.Pipeline.CurrentImageGroupID;
     SetBeingAnalyzed = handles.Pipeline.GroupFileList{CurrentImageGroupID}.SetBeingAnalyzed;
     NumberOfImageSets = handles.Pipeline.GroupFileList{CurrentImageGroupID}.NumberOfImageSets;
+    StartingImageSet = handles.Current.StartingImageSet;
 end
 
 CollectStatistics = strncmpi(CollectStatistics,'y',1);
 
 % Start the analysis
-if SetBeingAnalyzed == handles.Current.StartingImageSet
+if SetBeingAnalyzed == StartingImageSet
     % Initialize data structures
     
     % An additional structure is added to handles.Pipeline in order to keep
@@ -322,10 +324,12 @@ else
     PreviousSegmentedImage = TrackObjInfo.Previous.SegmentedImage;
     PrevHeaders = TrackObjInfo.Previous.Headers;
 
-    % Get the needed variables from the 'current' state
+    % Get the needed variables from the 'current' state. 
+    % If using image grouping: The measurements are located in the actual 
+    % set being analyzed, so we break the grouping convention here
     TrackObjInfo.Current.Locations{SetBeingAnalyzed} = ...
-    cat(2,  handles.Measurements.(ObjectName).Location_Center_X{SetBeingAnalyzed},...
-            handles.Measurements.(ObjectName).Location_Center_Y{SetBeingAnalyzed});
+    cat(2,  handles.Measurements.(ObjectName).Location_Center_X{handles.Current.SetBeingAnalyzed},...
+            handles.Measurements.(ObjectName).Location_Center_Y{handles.Current.SetBeingAnalyzed});
     TrackObjInfo.Current.SegmentedImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
     CurrentLocations = TrackObjInfo.Current.Locations{SetBeingAnalyzed};
     CurrentSegmentedImage = TrackObjInfo.Current.SegmentedImage;

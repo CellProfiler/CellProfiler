@@ -262,7 +262,12 @@ end
 % ImageGroupFields: The metadata used to group the images
 
 if ~isempty(FieldsToGroupBy)
-    if handles.Current.SetBeingAnalyzed == 1 
+    isRunningOnCluster = isfield(handles.Current,'BatchInfo');
+    isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
+    
+    % If executing on the cluster, the following portion has already been
+    % done and doesn't need to executed again
+    if handles.Current.SetBeingAnalyzed == 1 && ~isRunningOnCluster
         % Find the strings corresponding to metadata fields
         % Some caution is needed here because during image confirmation, some
         % of the fields may be ''. So I need to check all the FileLists since
@@ -400,8 +405,6 @@ if ~isempty(FieldsToGroupBy)
         % Finally, if the user is preparing for a a batch run, we need to
         % replace the number of cycles with the number of groups, so each 
         % group gets it's own node
-        isRunningOnCluster = isfield(handles.Current,'BatchInfo');
-        isCreatingBatchFile = any(~cellfun(@isempty,regexp(handles.Settings.ModuleNames,'CreateBatchFiles'))) & ~isRunningOnCluster;
         StartingImageSet = handles.Current.StartingImageSet;
         
         if isCreatingBatchFile

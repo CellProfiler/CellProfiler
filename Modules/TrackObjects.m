@@ -451,7 +451,9 @@ lengthCmap = size(LabelMatrixColormap,1);
 CurrentColoredLabelImage = ind2rgb(gray2ind(LookUpTable(CurrentIndexedLabelImage+1)/lengthCmap,lengthCmap),LabelMatrixColormap);
 
 ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule]);
-if any(findobj == ThisModuleFigureNumber) || (~any(findobj == ThisModuleFigureNumber) && ~strcmp(DataImage,'Do not use') )
+isOpenAssignedModuleFigure = any(findobj == ThisModuleFigureNumber);
+userWantsDataImage = ~strcmp(DataImage,'Do not use');
+if isOpenAssignedModuleFigure || (~isOpenAssignedModuleFigure && userWantsDataImage )
     % Create colored images
     % (1) Colored label image of current objects
     CurrentColoredPerimImage = ind2rgb(gray2ind(LookUpTable(CPlabelperim(CurrentIndexedLabelImage)+1)/lengthCmap,lengthCmap),LabelMatrixColormap);
@@ -460,12 +462,12 @@ if any(findobj == ThisModuleFigureNumber) || (~any(findobj == ThisModuleFigureNu
     idx = find(CurrentColoredPerimImage(:));
     ColoredPerimeterImage(idx) = CurrentColoredPerimImage(idx);
 
-    if any(findobj == ThisModuleFigureNumber)
+    if isOpenAssignedModuleFigure
         % Activates the appropriate figure window
         CPfigure(handles,'Image',ThisModuleFigureNumber);
         [ignore,hAx] = CPimagesc(CurrentColoredLabelImage,handles,ThisModuleFigureNumber);
         title(hAx,['Tracked ',ObjectName]);
-    elseif ~any(findobj == ThisModuleFigureNumber) && ~strcmp(DataImage,'Do not use')
+    elseif ~isOpenAssignedModuleFigure && userWantsDataImage
         % If no figure windows exists, then the user doesn't want any windows 
         % to be open. We need a window for the capture to work, so create one
         % but make it invisible
@@ -518,7 +520,7 @@ TrackObjInfo.Current.Labels = CurrentLabels;
 TrackObjInfo.Current.Headers = CurrHeaders;
 
 % Save the image of the tracked objects (if desired)
-if ~strcmp(DataImage,'Do not use')   
+if userWantsDataImage  
     % Do the screen capture at high-res and resize to original image size.
     % This will get the image plus any text
     warning('off','MATLAB:Text:DrawStringIntoBitmap');
@@ -536,7 +538,7 @@ if ~strcmp(DataImage,'Do not use')
     % Save to handles
     handles = CPaddimages(handles,DataImage,ResizedCapturedImage);
     
-    if ~any(findobj == ThisModuleFigureNumber)
+    if ~isOpenAssignedModuleFigure
         % Destroy the invisible figure created earlier
         close(ThisModuleFigureNumber);
     end

@@ -147,7 +147,7 @@ switch lower(usage),
         % Set permissions on scripts (on unix and Mac systems)
         disp('Setting permissions...');
         if ismac || isunix,
-            [status,result] = unix(['chmod 777 ../' output_dir '/CellProfiler*.command']);
+            [status,result] = unix(['chmod 775 ../' output_dir '/CellProfiler*.command']);
         end
         disp('Done');
 
@@ -244,7 +244,7 @@ switch lower(usage),
 
         % Change the permissions
         disp('Setting permissions...');
-        [status,result] = unix('chmod -R 777 *');
+        [status,result] = unix('chmod -R 775 *');
         disp('Done');
     otherwise
         error('Unrecognized arguments. Please use either ''cluster'' or ''single''.');

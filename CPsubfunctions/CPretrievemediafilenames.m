@@ -76,7 +76,7 @@ if strncmpi(recurse,'S',1) && ~isfield(handles.Pipeline,'PathNameSubFolders')
                 end
                 Directories = strread(Directories{:},'%s','delimiter',['',pathsep,'']);
             case 'file'
-                [f,p] = uigetfile('*.txt','Pick a text file to load the directories',handles.Current.DefaultOutputDirectory);
+                [f,p] = uigetfile('*.txt',['Pick a text file to load the directories. Each path should be (a) on a separate line, or (b) all on one line, separated with a "',pathsep,'"'],handles.Current.DefaultOutputDirectory);
                 if isempty(f)
                     error('Processing was stopped because the user chose Cancel or did not select a file.');
                 end

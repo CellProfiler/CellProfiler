@@ -16,6 +16,7 @@ import hashlib
 import numpy
 import scipy.io.matlab
 import os
+import StringIO
 import sys
 import tempfile
 import datetime
@@ -246,6 +247,15 @@ class Pipeline(object):
         self.__listeners = [];
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
+    
+    def copy(self):
+        '''Create a copy of the pipeline modules and settings'''
+        fd = StringIO.StringIO()
+        self.save(fd)
+        pipeline = Pipeline()
+        fd.seek(0)
+        pipeline.load(fd)
+        return pipeline
     
     def settings_hash(self):
         '''Return a hash of the module settings
@@ -754,6 +764,13 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
         return True
+    
+    def in_batch_mode(self):
+        '''Return True if the pipeline is in batch mode'''
+        for module in self.modules():
+            batch_mode = module.in_batch_mode()
+            if batch_mode is not None:
+                return batch_mode
 
     def set_matlab_path(self):
         matlab = get_matlab_instance()

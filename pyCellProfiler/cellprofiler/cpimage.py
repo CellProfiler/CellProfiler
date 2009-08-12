@@ -643,10 +643,14 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
         f = StringIO(state)
         count = load(f)
-        for i in range(count):
-            keys = load(f)
-            self.get_image_set(keys)
+        all_keys = [load(f) for i in range(count)]
         self.__legacy_fields = load(f)
+        #
+        # Have to do in this order in order for the image set's
+        # legacy_fields property to hook to the right legacy_fields
+        #
+        for i in range(count):
+            self.get_image_set(all_keys[i])
 
 def readc01(fname):
     '''Read a Cellomics file into an array

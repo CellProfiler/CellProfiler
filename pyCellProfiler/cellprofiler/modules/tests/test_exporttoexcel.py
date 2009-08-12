@@ -157,7 +157,7 @@ class TestExportToExcel(unittest.TestCase):
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        file_name = cpprefs.get_output_file_name()[:-4]+"my_file.csv"
+        file_name = cpprefs.get_output_file_name()[:-4]+"_my_file.csv"
         path = os.path.join(self.output_dir,file_name)
         self.assertTrue(os.path.isfile(path),"Could not find file %s"%path)
         try:

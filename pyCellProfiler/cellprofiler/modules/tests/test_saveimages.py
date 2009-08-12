@@ -538,6 +538,17 @@ class TestSaveImages(unittest.TestCase):
         expected_data = matplotlib.image.imread(img1_filename) 
         self.assertTrue(numpy.all(data==expected_data))
     
+    def test_02_01_prepare_to_create_batch(self):
+        '''Test the "prepare_to_create_batch" method'''
+        orig_path = '/foo/bar'
+        def fn_alter_path(path):
+            self.assertEqual(path, orig_path)
+            return '/imaging/analysis'
+        module = cpm_si.SaveImages()
+        module.pathname.value = orig_path
+        module.prepare_to_create_batch(None,None, fn_alter_path)
+        self.assertEqual(module.pathname.value, '/imaging/analysis')
+    
 def make_array(encoded,shape,dtype=numpy.uint8):
     data = base64.b64decode(encoded)
     a = numpy.fromstring(data,dtype)

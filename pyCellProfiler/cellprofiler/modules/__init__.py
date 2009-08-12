@@ -18,6 +18,7 @@ from colortogray import ColorToGray
 from converttoimage import ConvertToImage
 from correctillumination_calculate import CorrectIllumination_Calculate
 from correctillumination_apply import CorrectIllumination_Apply
+from createbatchfiles import CreateBatchFiles
 from crop import Crop
 from enhanceorsuppressspeckles import EnhanceOrSuppressSpeckles
 from expandorshrink import ExpandOrShrink
@@ -42,6 +43,7 @@ from measureimagequality import MeasureImageQuality
 from measureobjectintensity import MeasureObjectIntensity
 from measureobjectareashape import MeasureObjectAreaShape
 from measureobjectneighbors import MeasureObjectNeighbors
+from measureobjectradialdistribution import MeasureObjectRadialDistribution
 from measuretexture import MeasureTexture
 from morph import Morph
 from overlay_outlines import OverlayOutlines
@@ -61,6 +63,7 @@ def get_module_classes():
             CorrectIllumination_Calculate,
             CorrectIllumination_Apply,
             Crop,
+            CreateBatchFiles,
             EnhanceOrSuppressSpeckles,
             ExpandOrShrink,
             ExportToDatabase,
@@ -84,6 +87,7 @@ def get_module_classes():
             MeasureObjectAreaShape,
             MeasureObjectIntensity,
             MeasureObjectNeighbors,
+            MeasureObjectRadialDistribution,
             MeasureTexture,
             Morph,
             OverlayOutlines,
@@ -106,6 +110,7 @@ def get_module_substitutions():
             "CorrectIllumination_Calculate":CorrectIllumination_Calculate,
             "CorrectIllumination_Apply":CorrectIllumination_Apply,
             "Crop": Crop,
+            "CreateBatchFiles": CreateBatchFiles,
             "ExpandOrShrink": ExpandOrShrink,
             "ExportToDatabase": ExportToDatabase,
             "ExportToExcel": ExportToExcel,
@@ -129,6 +134,7 @@ def get_module_substitutions():
             "MeasureObjectAreaShape": MeasureObjectAreaShape,
             "MeasureObjectIntensity": MeasureObjectIntensity,
             "MeasureObjectNeighbors": MeasureObjectNeighbors,
+            "MeasureRadialDistribution": MeasureObjectRadialDistribution,
             "MeasureTexture": MeasureTexture,
             "Morph": Morph,
             "OverlayOutlines": OverlayOutlines,

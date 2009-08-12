@@ -2626,6 +2626,24 @@ def skeletonize_labels(labels):
         mask = skeletonize(colors==i)
         result[mask] = labels[mask]
     return result
+
+def distance_to_edge(labels):
+    '''Compute the distance of a pixel to the edge of its object
+    
+    labels - a labels matrix
+    
+    returns a matrix of distances
+    '''
+    colors = color_labels(labels)
+    max_color = np.max(colors)
+    result = np.zeros(labels.shape)
+    if max_color == 0:
+        return result
+    
+    for i in range(1, max_color+1):
+        mask = (colors==i)
+        result[mask] = scind.distance_transform_edt(mask)[mask]
+    return result
  
 def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
     '''Return a binary mask containing only points that are regional maxima

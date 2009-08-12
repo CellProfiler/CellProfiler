@@ -2537,4 +2537,31 @@ class TestAssociateByDistance(unittest.TestCase):
         self.assertEqual(result.shape[0],0)
         result = morph.associate_by_distance(l1,l2, 5)
         self.assertEqual(result.shape[0],1)
+
+class TestDistanceToEdge(unittest.TestCase):
+    '''Test distance_to_edge'''
+    def test_01_01_zeros(self):
+        '''Test distance_to_edge with a matrix of zeros'''
+        result = morph.distance_to_edge(np.zeros((10,10),int))
+        self.assertTrue(np.all(result == 0))
+    
+    def test_01_02_square(self):
+        '''Test distance_to_edge with a 3x3 square'''
+        labels = np.zeros((10,10), int)
+        labels[3:6,3:6] = 1
+        expected = np.zeros((10,10))
+        expected[3:6,3:6] = np.array([[1,1,1],[1,2,1],[1,1,1]])
+        result = morph.distance_to_edge(labels)
+        self.assertTrue(np.all(result == expected))
+    
+    def test_01_03_touching(self):
+        '''Test distance_to_edge when two objects touch each other'''
+        labels = np.zeros((10,10), int)
+        labels[3:6,3:6] = 1
+        labels[6:9,3:6] = 2
+        expected = np.zeros((10,10))
+        expected[3:6,3:6] = np.array([[1,1,1],[1,2,1],[1,1,1]])
+        expected[6:9,3:6] = np.array([[1,1,1],[1,2,1],[1,1,1]])
+        result = morph.distance_to_edge(labels)
+        self.assertTrue(np.all(result == expected))
         

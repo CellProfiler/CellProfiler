@@ -353,6 +353,9 @@ class SaveImages(cpm.CPModule):
     def prepare_group(self, pipeline, image_set_list, *args):
         self.get_dictionary(image_set_list)["FIRST_IMAGE"] = True
         return True
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        self.pathname.value = fn_alter_path(self.pathname.value)
         
     def run(self,workspace):
         """Run the module

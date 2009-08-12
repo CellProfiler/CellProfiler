@@ -45,6 +45,9 @@ class PipelineController:
         self.__pipeline_measurements = None
         self.__debug_image_set_list = None
         self.__debug_measurements = None
+        self.__keys = None
+        self.__groupings = None
+        self.__grouping_index = None
         wx.EVT_MENU(frame,cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame,cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
@@ -55,6 +58,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STOP,self.on_debug_stop)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
         wx.EVT_IDLE(frame,self.on_idle)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
@@ -229,6 +233,7 @@ class PipelineController:
     
     def on_stop_running(self,event):
         self.stop_running()
+        self.__pipeline_measurements = None
     
     def stop_running(self):
         self.__running_pipeline = False
@@ -246,7 +251,14 @@ class PipelineController:
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
+        assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__debug_image_set_list = self.__pipeline.prepare_run(self.__frame)
+        self.__keys, self.__groupings = self.__pipeline.get_groupings(
+            self.__debug_image_set_list)
+        self.__grouping_index = 0
+        self.__pipeline.prepare_group(self.__debug_image_set_list,
+                                      self.__groupings[0][0],
+                                      self.__groupings[0][1])
         self.__debug_outlines = {}
         if self.__debug_image_set_list == None:
             self.stop_debugging()
@@ -321,12 +333,22 @@ class PipelineController:
             self.__movie_viewer.on_step_failed()
         
     def on_debug_next_image_set(self, event):
-        image_set_number = self.__debug_measurements.image_set_number+1
         self.__debug_measurements.next_image_set()
         self.__pipeline_list_view.select_one_module(1)
         self.__movie_viewer.slider.value = 0
         self.__debug_outlines = {}
     
+    def on_debug_next_group(self, event):
+        if self.__grouping_index is not None:
+            self.__grouping_index = ((self.__grouping_index + 1 ) % 
+                                     len(self.__groupings))
+            self.__pipeline.prepare_group(self.__debug_image_set_list,
+                                          self.__groupings[self.__grouping_index][0],
+                                          self.__groupings[self.__grouping_index][1])
+            self.__pipeline_list_view.select_one_module(1)
+            self.__movie_viewer.slider.value = 0
+            self.__debug_outlines = {}
+            
     def on_idle(self,event):
         if self.__running_pipeline and not self.__inside_running_pipeline:
             self.__inside_running_pipeline = True

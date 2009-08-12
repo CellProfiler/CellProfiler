@@ -100,6 +100,8 @@ class Setting(object):
         pass
     
     def __str__(self):
+        if isinstance(self.__value, unicode):
+            return str(self.__value)
         if not isinstance(self.__value,str):
             raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value

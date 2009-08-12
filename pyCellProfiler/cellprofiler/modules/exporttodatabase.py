@@ -315,6 +315,10 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 self.connection, self.cursor = connect_sqlite(db_file)
             self.create_database_tables(self.cursor, pipeline.get_measurement_columns())
         return True
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Alter the output directory path for the remote batch host'''
+        self.output_directory.value = fn_alter_path(self.output_directory.value)
             
     def run(self, workspace):
         if ((self.db_type == DB_MYSQL and not self.store_csvs.value) or

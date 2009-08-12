@@ -42,6 +42,7 @@ ID_DEBUG_START = wx.NewId()
 ID_DEBUG_STOP = wx.NewId()
 ID_DEBUG_STEP = wx.NewId()
 ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
+ID_DEBUG_NEXT_GROUP = wx.NewId()
 
 ID_WINDOW_CLOSE_ALL = wx.NewId()
 
@@ -102,9 +103,11 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_STOP,'S&top debugger\tctrl+F5','Stop the pipeline debugger')
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p debugger\tF6','Execute the currently selected module')
         self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image set\tF7','Advance to the next image set')
+        self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &group\tF8','Advance to the next group in the image set')
         self.__menu_debug.Enable(ID_DEBUG_STOP,False)
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
+        self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
         self.__menu_bar.Append(self.__menu_debug,'&Debug')
         self.__menu_options = wx.Menu()
         self.__menu_options.Append(ID_OPTIONS_PREFERENCES,"&Preferences","Set global application preferences")
@@ -128,7 +131,8 @@ class CPFrame(wx.Frame):
                                                  (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_START),
                                                  (wx.ACCEL_CTRL,wx.WXK_F5,ID_DEBUG_STOP),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
-                                                 (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET)])
+                                                 (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
+                                                 (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP)])
         self.SetAcceleratorTable(accelerator_table)
     
     def enable_debug_commands(self, enable=True):
@@ -137,6 +141,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_STOP,enable)
         self.__menu_debug.Enable(ID_DEBUG_STEP,enable)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,enable)
+        self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, enable)
         
     def __on_widget_inspector(self, evt):
         try:

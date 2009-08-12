@@ -251,6 +251,8 @@ that can be processed by different nodes in a cluster.
     
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Load the CSV file at the outset and populate the image set list'''
+        if self.in_batch_mode():
+            return True
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
         header = reader.next()
@@ -323,6 +325,32 @@ that can be processed by different nodes in a cluster.
         # Hide the measurements in the image_set_list
         #
         image_set_list.legacy_fields[self.legacy_field_key] = dictionary
+        return True
+    
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+        '''Prepare to create a batch file
+        
+        This function is called when CellProfiler is about to create a
+        file for batch processing. It will pickle the image set list's
+        "legacy_fields" dictionary. This callback lets a module prepare for
+        saving.
+        
+        pipeline - the pipeline to be saved
+        image_set_list - the image set list to be saved
+        fn_alter_path - this is a function that takes a pathname on the local
+                        host and returns a pathname on the remote host. It
+                        handles issues such as replacing backslashes and
+                        mapping mountpoints. It should be called for every
+                        pathname stored in the settings or legacy fields.
+        '''
+        dictionary = image_set_list.legacy_fields[self.legacy_field_key]
+        path_keys = [key for key in dictionary.keys()
+                     if key.startswith('Image_PathName_')]
+        for key in path_keys:
+            dictionary[key] = fn_alter_path(dictionary[key])
+        
+        self.image_custom_directory.value = \
+            fn_alter_path(self.image_custom_directory.value)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):

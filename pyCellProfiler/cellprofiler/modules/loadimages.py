@@ -405,6 +405,10 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run(self, pipeline, image_set_list, frame):
         """Set up all of the image providers inside the image_set_list
         """
+        if pipeline.in_batch_mode():
+            # Don't set up if we're going to retrieve the image set list
+            # from batch mode
+            return True
         if self.load_movies():
             self.prepare_run_of_movies(pipeline,image_set_list)
         else:
@@ -582,7 +586,7 @@ class LoadImages(cpmodule.CPModule):
             provider, version = values[:2]
             if provider == P_IMAGES:
                 assert version == V_IMAGES
-                for i in range(1,3):
+                for i in range(2,4):
                     values[i] = fn_alter_path(values[i])
             else:
                 raise NotImplementedError("%s not handled by modify_image_set_info"%provider)
@@ -783,8 +787,9 @@ class LoadImages(cpmodule.CPModule):
                         pathname stored in the settings or legacy fields.
         '''
         for i in range(image_set_list.count()):
-            image_set = image_set_list.get_image(i)
+            image_set = image_set_list.get_image_set(i)
             self.modify_image_set_info(image_set, fn_alter_path)
+        self.location_other.value = fn_alter_path(self.location_other.value)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping,

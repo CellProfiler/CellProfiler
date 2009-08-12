@@ -587,7 +587,12 @@ class Pipeline(object):
                         self.notify_listeners(event)
                         if event.cancel_run:
                             return
-                    if module.module_name != 'Restart':
+                        
+                    # Paradox: ExportToDatabase must write these columns in order 
+                    #  to complete, but in order to do so, the module needs to 
+                    #  have already completed. So we don't report them for it.
+                    if (module.module_name != 'Restart' and 
+                        module.module_name != 'ExportToDatabase'):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
                                                      numpy.array([failure]));
@@ -603,6 +608,7 @@ class Pipeline(object):
             if prepare_group_has_run:
                 if not self.post_group(workspace, grouping_keys):
                     return
+                
         self.post_run(measurements, image_set_list, frame)
         
     def prepare_run(self, frame):
@@ -889,6 +895,11 @@ class Pipeline(object):
                 terminating_module_num == module.module_num):
                 break
             columns += module.get_measurement_columns(self)
+            if module.module_name != 'ExportToDatabase':
+                module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
+                execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
+                columns += [(cpmeas.IMAGE, module_error_measurement, cpmeas.COLTYPE_INTEGER),
+                            (cpmeas.IMAGE, execution_time_measurement, cpmeas.COLTYPE_INTEGER)]
         self.__measurement_columns[terminating_module_num] = columns
         return columns
     

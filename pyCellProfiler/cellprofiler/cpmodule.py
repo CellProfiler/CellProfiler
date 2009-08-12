@@ -144,6 +144,25 @@ class CPModule(object):
     
     def backwards_compatibilize(self,setting_values,variable_revision_number,
                                 module_name,from_matlab):
+        '''Adjust setting values if they came from a previous revision
+        
+        setting_values - a sequence of strings representing the settings
+                         for the module as stored in the pipeline
+        variable_revision_number - the variable revision number of the
+                         module at the time the pipeline was saved. Use this
+                         to determine how the incoming setting values map
+                         to those of the current module version.
+        module_name - the name of the module that did the saving. This can be
+                      used to import the settings from another module if
+                      that module was merged into the current module
+        from_matlab - True if the settings came from a Matlab pipeline, False
+                      if the settings are from a CellProfiler 2.0 pipeline.
+        
+        Overriding modules should return a tuple of setting_values,
+        variable_revision_number and True if upgraded to CP 2.0, otherwise
+        they should leave things as-is so that the caller can report
+        an error.
+        '''
         return setting_values, variable_revision_number, from_matlab
     
     def create_from_annotations(self):
@@ -257,6 +276,10 @@ class CPModule(object):
                 setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
         setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
+    
+    def in_batch_mode(self):
+        '''Return True if the module knows that the pipeline is in batch mode'''
+        return None
     
     def test_valid(self,pipeline):
         """Test to see if the module is in a valid state to run

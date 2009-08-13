@@ -231,6 +231,7 @@ Three features are measured for each object:
         yields a point that may be more representative of a center (again,
         picture a neuron).
         ''')
+        return True
     def run(self, workspace):
         stats = [("Image","Objects","Bin #","Bin count","Fraction","Intensity","COV")]
         for image in self.images:

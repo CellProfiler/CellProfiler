@@ -288,7 +288,7 @@ class PipelineController:
         self.__frame.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         try:
             image_set_number = self.__debug_measurements.image_set_number
-            image_set = self.__debug_image_set_list.get_image_set(image_set_number)
+            image_set = self.__debug_image_set_list.get_image_set(image_set_number-1)
             workspace = cpw.Workspace(self.__pipeline,
                                       module,
                                       image_set,

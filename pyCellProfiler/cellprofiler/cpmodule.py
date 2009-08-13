@@ -486,8 +486,8 @@ class CPModule(object):
                      image numbers comprising the image sets of the group
         For instance, an experiment might have key_names of 'Metadata_Row'
         and 'Metadata_Column' and a group_list of:
-        [ ('A','01'), [0,96,192],
-          ('A','02'), [1,97,193],... ]
+        [ (('A','01'), [0,96,192]),
+          (('A','02'), [1,97,193]),... ]
         
         Returns None to indicate that the module does not contribute any
         groupings.

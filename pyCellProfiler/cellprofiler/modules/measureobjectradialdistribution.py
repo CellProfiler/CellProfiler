@@ -16,6 +16,7 @@ __version__="$Revision$"
 import numpy as np
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
+import sys
 import uuid
 
 import cellprofiler.cpmodule as cpm
@@ -141,7 +142,7 @@ Three features are measured for each object:
                 '''Return the settings that should be displayed'''
                 result = [self.object_name, self.center_choice]
                 if self.center_choice == C_OTHER:
-                    result += [self.center_choice]
+                    result += [self.center_object_name]
                 if can_remove:
                     result += [self.remove_button]
                 return result
@@ -219,6 +220,17 @@ Three features are measured for each object:
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
     
+    def prepare_run(self, pipeline, image_set_list, frame):
+        sys.stderr.write('''TO-DO: MeasureObjectRadialDistribution
+        The module has a few short-cuts that need to be properly implemented.
+        The distance function is Euclidean and it needs to use "propagate"
+        instead to account for distance along things like dendrites where two
+        pixels can be close, but are connected only through a long path.
+        Also, the center of an object (if C_SELF) is computed using the
+        centroid, but visually, using the maximal distance from the edge
+        yields a point that may be more representative of a center (again,
+        picture a neuron).
+        ''')
     def run(self, workspace):
         stats = [("Image","Objects","Bin #","Bin count","Fraction","Intensity","COV")]
         for image in self.images:
@@ -254,7 +266,8 @@ Three features are measured for each object:
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)
         assert isinstance(workspace.measurements, cpmeas.Measurements)
-        image = workspace.image_set.get_image(image_name)
+        image = workspace.image_set.get_image(image_name,
+                                              must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
@@ -284,10 +297,11 @@ Three features are measured for each object:
             good = object_to_center > 0
             center_centers = centers_of_labels(center_objects.segmented)
             centers = np.zeros((2,nobjects))
-            centers[good] = center_centers[object_to_center[good]-1]
+            centers[:,good] = center_centers[:,object_to_center[good]-1]
         else:
-            good = np.array(nobjects, bool)
+            good = np.ones(nobjects, bool)
             centers = centers_of_labels(objects.segmented)
+        centers = (centers+.5).astype(int)
         good0 = np.zeros(nobjects+1, bool)
         good0[1:] = good
         d_from_center = np.zeros(objects.segmented.shape)
@@ -304,19 +318,17 @@ Three features are measured for each object:
         normalized_distance[good_mask] = (d_from_center[good_mask] /
                                           (total_distance[good_mask] + .001))
         bin_indexes = (normalized_distance * bin_count).astype(int)
-        histogram = coo_matrix((image.pixel_data[good_mask],
-                                (good_labels,
-                                 bin_indexes[good_mask])),
+        labels_and_bins = (good_labels-1,bin_indexes[good_mask])
+        histogram = coo_matrix((image.pixel_data[good_mask], labels_and_bins),
                                (nobjects, bin_count)).toarray()
         sum_by_object = np.sum(histogram, 1)
-        fraction_at_distance = histogram / np.tile(sum_by_object, (bin_count,1))
-        number_at_distance = coo_matrix((np.ones(ngood_pixels),
-                                         (good_labels,
-                                          bin_indexes[good_mask])),
+        sum_by_object_per_bin = np.dstack([sum_by_object]*bin_count)[0]
+        fraction_at_distance = histogram / sum_by_object_per_bin
+        number_at_distance = coo_matrix((np.ones(ngood_pixels),labels_and_bins),
                                         (nobjects, bin_count)).toarray()
         sum_by_object = np.sum(number_at_distance, 1)
-        fraction_at_bin = number_at_distance / np.tile(sum_by_object,
-                                                       (bin_count,1))
+        sum_by_object_per_bin = np.dstack([sum_by_object]*bin_count)[0]
+        fraction_at_bin = number_at_distance / sum_by_object_per_bin
         mean_pixel_fraction = fraction_at_distance / (fraction_at_bin +
                                                       np.finfo(float).eps)
         # Anisotropy calculation.  Split each cell into eight wedges, then
@@ -336,26 +348,27 @@ Three features are measured for each object:
             bin_pixels = np.sum(bin_mask)
             bin_labels = objects.segmented[bin_mask]
             bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
+            labels_and_radii = (bin_labels-1, bin_radial_index)
             radial_values = coo_matrix((image.pixel_data[bin_mask],
-                                        (bin_labels, bin_radial_index)),
+                                        labels_and_radii),
                                        (nobjects, 8)).toarray()
-            pixel_count = coo_matrix((np.ones(bin_pixels),
-                                      (bin_labels, bin_radial_index))).toarray()
+            pixel_count = coo_matrix((np.ones(bin_pixels), labels_and_radii),
+                                     (nobjects, 8)).toarray()
             mask = pixel_count==0
             radial_means = masked_array(radial_values / pixel_count, mask)
             radial_cv = np.std(radial_means,1) / np.mean(radial_means, 1)
             radial_cv[np.sum(~mask,1)==0] = 0
-            for measurement, feature in ((fraction_at_distance[1:], MF_FRAC_AT_D),
-                                         (mean_pixel_fraction[1:], MF_MEAN_FRAC),
-                                         (radial_cv[1:], MF_RADIAL_CV)):
+            for measurement, feature in ((fraction_at_distance, MF_FRAC_AT_D),
+                                         (mean_pixel_fraction, MF_MEAN_FRAC),
+                                         (np.array(radial_cv), MF_RADIAL_CV)):
                                          
                 measurements.add_measurement(object_name,
                                              feature % 
                                              (image_name, bin, bin_count),
                                              measurement)
-            statistics += [image_name, object_name, str(bin), str(bin_count),
-                           np.mean(fraction_at_distance[good0,bin]),
-                           np.mean(mean_pixel_fraction[good0, bin]),
-                           np.mean(radial_cv[~mask])]
+            radial_cv.mask = np.sum(~mask,1)==0
+            statistics += [(image_name, object_name, str(bin), str(bin_count),
+                            round(np.mean(fraction_at_distance[good,bin]),4),
+                            round(np.mean(mean_pixel_fraction[good, bin]),4),
+                            round(np.mean(radial_cv),4))]
         return statistics
-                           

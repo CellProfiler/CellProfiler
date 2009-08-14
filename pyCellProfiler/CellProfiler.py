@@ -22,53 +22,6 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
 import optparse
-import wx
-import subprocess
-# necessary to prevent matplotlib trying to use Tkinter as its backend
-from matplotlib import use as mpluse
-mpluse('WXAgg')
-
-if not hasattr(sys, 'frozen'):
-    import cellprofiler.cpmath.setup
-    import cellprofiler.ffmpeg.setup
-    from distutils.dep_util import newer_group
-    #
-    # Check for dependencies and compile if necessary
-    #
-    compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
-                        cellprofiler.cpmath.setup)]
-    if sys.platform == 'win32':
-        compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
-                             cellprofiler.ffmpeg.setup)]
-    current_directory = os.curdir
-    for compile_script,my_module in compile_scripts:
-        script_path, script_file = os.path.split(compile_script)
-        os.chdir(os.path.join(root,script_path))
-        configuration = my_module.configuration()
-        needs_build = False
-        for extension in configuration['ext_modules']:
-            target = extension.name+'.pyd'
-            if newer_group(extension.sources,target):
-                needs_build = True
-        if not needs_build:
-            continue 
-        if sys.platform == 'win32':
-            p = subprocess.Popen(["python",
-                                  script_file,
-                                  "build_ext","-i",
-                                  "--compiler=mingw32"])
-        else:            
-            p = subprocess.Popen(["python",
-                                  script_file,
-                                  "build_ext","-i"])
-        p.communicate()
-    os.chdir(current_directory)
-
-from cellprofiler.cellprofilerapp import CellProfilerApp
-from cellprofiler.pipeline import Pipeline
-import cellprofiler.preferences as cpprefs
-import cellprofiler.gui.cpframe as cpgframe
-
 usage = """usage: %prog [options] [<measurement-file>])
      where <measurement-file> is the optional filename for measurement output
            when running headless"""
@@ -111,8 +64,59 @@ parser.add_option("-g","--group",
                         'pipeline. For instance, "-g ROW=H,COL=01", will '
                         'process only the group of image sets that match '
                         'the keys.'))
-
+parser.add_option("-b","--do-not_build",
+                  dest="do_not_build",
+                  default=True,
+                  action="store_false",
+                  help="Do not build C and Cython extensions")
 options, args = parser.parse_args()
+
+import wx
+import subprocess
+# necessary to prevent matplotlib trying to use Tkinter as its backend
+from matplotlib import use as mpluse
+mpluse('WXAgg')
+
+if (not hasattr(sys, 'frozen')) and options.do_not_build:
+    import cellprofiler.cpmath.setup
+    import cellprofiler.ffmpeg.setup
+    from distutils.dep_util import newer_group
+    #
+    # Check for dependencies and compile if necessary
+    #
+    compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
+                        cellprofiler.cpmath.setup)]
+    if sys.platform == 'win32':
+        compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
+                             cellprofiler.ffmpeg.setup)]
+    current_directory = os.curdir
+    for compile_script,my_module in compile_scripts:
+        script_path, script_file = os.path.split(compile_script)
+        os.chdir(os.path.join(root,script_path))
+        configuration = my_module.configuration()
+        needs_build = False
+        for extension in configuration['ext_modules']:
+            target = extension.name+'.pyd'
+            if newer_group(extension.sources,target):
+                needs_build = True
+        if not needs_build:
+            continue 
+        if sys.platform == 'win32':
+            p = subprocess.Popen(["python",
+                                  script_file,
+                                  "build_ext","-i",
+                                  "--compiler=mingw32"])
+        else:            
+            p = subprocess.Popen(["python",
+                                  script_file,
+                                  "build_ext","-i"])
+        p.communicate()
+    os.chdir(current_directory)
+
+from cellprofiler.cellprofilerapp import CellProfilerApp
+from cellprofiler.pipeline import Pipeline
+import cellprofiler.preferences as cpprefs
+import cellprofiler.gui.cpframe as cpgframe
 
 if not options.show_gui:
     cpprefs.set_headless()

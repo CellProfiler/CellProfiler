@@ -23,7 +23,7 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 5
+S_FIXED_COUNT = 6
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -86,7 +86,7 @@ Press this button to add another path mapping.
     #     from pickled_image_set_list.
     #
     category = 'File Processing'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the module settings and name the module'''
@@ -100,6 +100,8 @@ Press this button to add another path mapping.
                                                  False)
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.pickled_image_set_list = cps.Setting("Hidden: contents of image set list","")
+        self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
+                                                   cpprefs.get_default_image_directory())
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
@@ -131,7 +133,8 @@ Press this button to add another path mapping.
     def settings(self):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
-                  self.batch_mode, self.pickled_image_set_list]
+                  self.batch_mode, self.pickled_image_set_list,
+                  self.default_image_directory]
         for mapping in self.mappings:
             result += mapping.settings()
         return result
@@ -180,6 +183,11 @@ Press this button to add another path mapping.
                 setting_values += [old_pathname, new_pathname]
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = (setting_values[:5] + 
+                              [cpprefs.get_default_image_directory()] +
+                              setting_values[5:])
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     
     def prepare_run(self, pipeline, image_set_list, frame):
@@ -210,7 +218,12 @@ Press this button to add another path mapping.
         pipeline = pipeline.copy()
         pipeline.prepare_to_create_batch(image_set_list, self.alter_path)
         bizarro_self = pipeline.module(self.module_num)
+        assert isinstance(bizarro_self, CreateBatchFiles)
         bizarro_self.pickled_image_set_list.value = image_set_list.save_state()
+        bizarro_self.custom_output_directory.value = \
+                    self.alter_path(cpprefs.get_default_output_directory())
+        bizarro_self.default_image_directory.value = \
+                    self.alter_path(cpprefs.get_default_image_directory())
         bizarro_self.batch_mode.value = True
         if self.wants_default_output_directory.value:
             path = cpprefs.get_default_output_directory()
@@ -235,6 +248,8 @@ Press this button to add another path mapping.
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
         image_set_list.load_state(self.pickled_image_set_list.value)
+        cpprefs.set_default_output_directory(self.custom_output_directory.value)
+        cpprefs.set_default_image_directory(self.default_image_directory.value)
     
     def alter_path(self, path):
         '''Modify the path passed so that it can be executed on the remote host'''

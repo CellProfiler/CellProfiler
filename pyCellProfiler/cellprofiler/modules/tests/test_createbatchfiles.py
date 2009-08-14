@@ -88,6 +88,41 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertFalse(module.remote_host_is_windows.value)
         self.assertFalse(module.batch_mode.value)
     
+    def test_01_03_load_v2(self):
+        '''Load a version 2 pipeline'''
+        data = ('eJztVdFOIjEULSMaxcTsJj6sb330QYdZsuwGXlYwGkkEiRCzD5NoBy7QpNOS'
+                'mWLUL/Fz/CQ/wXaYgaEhjOK+7TaZdG57zzntmXZus9a9rNVx2XZws9Y9HlAG'
+                'uM2IHIjAr2Iuj/BpAERCHwtexecBxbXJEH//gZ1KtfSrWqrgkuNU0Hot12ju'
+                'qW60jdCW6lWHrHhqM45zqUfHHZCS8mG4ifLoWzz+op4bElDiMbghbALhXCIZ'
+                'b/CB6D6OZ1NN0Z8waBE/naxaa+J7EIRXgwQYT7fpA7AOfQJjC0naNdzTkAoe'
+                '42N+c3SmK6Shq33AG3Mfckt8KKTGdb6D5vn5JflWKv+LilpiirvLwNkLuGns'
+                'ulT0KQeX+mSoPsAt4YQ9hjR02yDGDNxLANcjsjdSO5OfW9/fwG0ZuKQluJ2U'
+                'j6MMvbLhR/m9fpw9EF+9d+qdhsqKvrjWa2foHRh6B6v0Uvu4yOD9avDquBjz'
+                'Fdfg2zf49qN1cioDMQTuej3vVrNDwneSwVcw+HRcVCzFGcuU54+1/j35yLn4'
+                'j/s3cc9o9fnKocXzlfX/+IkWz7WOe8DYOBC63ga2HxWF0O5FpTb6i+qJ0J7W'
+                '3roeOKdRLTL3tbNEL70+S70VMvwwfZj78/p7HT1rid5uBi4fV/7ofn/Q/8MV'
+                '+cjIfwPWKbcg')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, C.CreateBatchFiles))
+        self.assertFalse(module.wants_default_output_directory.value)
+        self.assertEqual(len(module.mappings), 2)
+        self.assertEqual(module.mappings[0].local_directory.value, 
+                         '\\\\iodine\\imaging_analysis')
+        self.assertEqual(module.mappings[0].remote_directory.value,
+                         '/imaging/analysis')
+        self.assertEqual(module.mappings[1].local_directory.value,
+                         '\\\\nitrogen\\bcb_image')
+        self.assertEqual(module.mappings[1].remote_directory.value,
+                         '/bcb/image')
+        self.assertFalse(module.remote_host_is_windows.value)
+        self.assertFalse(module.batch_mode.value)
+
     def test_02_01_module_must_be_last(self):
         '''Make sure that the pipeline is invalid if CreateBatchFiles is not last'''
         #

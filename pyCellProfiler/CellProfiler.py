@@ -69,6 +69,11 @@ parser.add_option("-b","--do-not_build",
                   default=True,
                   action="store_false",
                   help="Do not build C and Cython extensions")
+parser.add_option("-d","--done-file",
+                  dest="done_file",
+                  default=None,
+                  help=('The path to the "Done" file, written by CellProfiler'
+                        ' shortly before exiting'))
 options, args = parser.parse_args()
 
 import wx
@@ -168,4 +173,7 @@ else:
                                 grouping = groups)
     if len(args) > 0:
         pipeline.save_measurements(args[0], measurements)
-    
+    if options.done_file is not None:
+        fd = open(options.done_file,"wt")
+        fd.write("Done\n")
+        fd.close()

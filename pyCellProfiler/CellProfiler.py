@@ -135,7 +135,7 @@ if not options.first_image_set is None:
     if not options.first_image_set.isdigit():
         raise ValueError("The --first-image-set option takes a numeric argument")
     else:
-        image_set_start = int(options.first_image_set) - 1
+        image_set_start = int(options.first_image_set)
 else:
     image_set_start = None
 

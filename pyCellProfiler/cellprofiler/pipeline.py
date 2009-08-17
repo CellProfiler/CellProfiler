@@ -915,12 +915,15 @@ class Pipeline(object):
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]
         columns = [(cpmeas.IMAGE, IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER)]
+        should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and 
                 terminating_module_num == module.module_num):
                 break
             columns += module.get_measurement_columns(self)
-            if module.module_name != 'ExportToDatabase':
+            if module.should_stop_writing_measurements():
+                should_write_columns = False
+            if should_write_columns:
                 module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
                 execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
                 columns += [(cpmeas.IMAGE, module_error_measurement, cpmeas.COLTYPE_INTEGER),

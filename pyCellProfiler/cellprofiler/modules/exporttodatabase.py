@@ -732,6 +732,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                     nvalues = np.product(values.shape)
                     if (nvalues < max_count):
                         sys.stderr.write("Warning: too few measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
+                        new_values = np.zeros(max_count, dtype=values.dtype)
+                        new_values[:nvalues] = values.flatten()
+                        values = new_values
                     elif nvalues > max_count:
                         sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
                         values = values[:max_count]

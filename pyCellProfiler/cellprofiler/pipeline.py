@@ -570,9 +570,17 @@ class Pipeline(object):
                 object_set = cellprofiler.objects.ObjectSet()
                 image_set = image_set_list.get_image_set(image_number-1)
                 outlines = {}
+                should_write_measurements = True
                 for module in self.modules():
-                    module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
-                    execution_time_measurement = 'ExecutionTime_%02d%s'%(module.module_num,module.module_name)
+                    if module.should_stop_writing_measurements():
+                        should_write_measurements = False
+                    else:
+                        module_error_measurement = ('ModuleError_%02d%s' %
+                                                    (module.module_num,
+                                                     module.module_name))
+                        execution_time_measurement = ('ExecutionTime_%02d%s' %
+                                                      (module.module_num,
+                                                       module.module_name))
                     failure = 1
                     if (not matlab_initialized) and module.needs_matlab():
                         self.set_matlab_path()
@@ -602,7 +610,7 @@ class Pipeline(object):
                     #  to complete, but in order to do so, the module needs to 
                     #  have already completed. So we don't report them for it.
                     if (module.module_name != 'Restart' and 
-                        module.module_name != 'ExportToDatabase'):
+                        should_write_measurements):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
                                                      numpy.array([failure]));

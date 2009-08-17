@@ -341,6 +341,10 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             per_image, per_object = self.write_oracle_table_defs(workspace, mappings)
         self.write_data(workspace, mappings, per_image, per_object)
     
+    def should_stop_writing_measurements(self):
+        '''All subsequent modules should not write measurements'''
+        return True
+    
     def ignore_object(self,object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in ('Experiment','Neighbors'):

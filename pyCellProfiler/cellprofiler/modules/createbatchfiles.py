@@ -259,6 +259,8 @@ Press this button to add another path mapping.
                         path[len(mapping.local_directory.value):])
         if self.remote_host_is_windows.value:
             path = path.replace('/','\\')
+        else:
+            path = path.replace('\\','/')
         return path
         
             

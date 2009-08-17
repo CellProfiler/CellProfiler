@@ -593,6 +593,18 @@ class CPModule(object):
                 return True
         return False
     
+    def should_stop_writing_measurements(self):
+        '''Returns True if measurements should not be taken after this module
+        
+        The ExportToDatabase and ExportToExcel modules expect that no
+        measurements will be recorded in latter modules. This function
+        returns False in the default, indicating that measurements should
+        keep being made, but returns True for these modules, indicating
+        that any subsequent modules will lose their measurements and should
+        not write any.
+        '''
+        return False
+    
 class MatlabModule(CPModule):
     """A matlab module, as from a .m file
     

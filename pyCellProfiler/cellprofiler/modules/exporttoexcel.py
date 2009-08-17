@@ -259,6 +259,10 @@ named, "XZ29_A01.csv".
                 self.run_objects(object_names, filename, workspace)
                 object_names = []
 
+    def should_stop_writing_measurements(self):
+        '''All subsequent modules should not write measurements'''
+        return True
+    
     def run_objects(self, object_names, file_name, workspace):
         """Create a file (or files if there's metadata) based on the object names
         

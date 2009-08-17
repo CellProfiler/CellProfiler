@@ -215,7 +215,11 @@ switch lower(usage),
         disp('Extracting the CTF archive....');
         [success,msg,msgid] = rmdir('CPCluster_mcr','s');    % Remove pre-existing MCR directory
         if ~success && ~strcmpi(msgid,'MATLAB:RMDIR:NotADirectory'), warning([mfilename,': Unable to remove previous MCR directory']); end
-        [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF CPCluster.ctf']);
+        if strfind(matlabroot,' '),
+            [status,result] = unix(['"',matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF" CPCluster.ctf']);
+        else
+            [status,result] = unix([matlabroot,'/toolbox/compiler/deploy/',computer('arch'),'/extractCTF CPCluster.ctf']);
+        end
         if status,  % If status isn't zero, something went wrong
             error(result);
         else

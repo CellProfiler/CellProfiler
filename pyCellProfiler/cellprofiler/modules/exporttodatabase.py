@@ -739,7 +739,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                         object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
         
         # wrap non-numeric types in quotes
-        image_row_formatted = [(dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]) and str(val) or "'%s'"%val for val, dtype in image_row]
+        image_row_formatted = [(dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]) and
+                               str(val) or "'%s'"%MySQLdb.escape_string(str(val)) 
+                               for val, dtype in image_row]
         
         image_table = self.get_table_prefix()+'Per_Image'
         object_table = self.get_table_prefix()+'Per_Object'

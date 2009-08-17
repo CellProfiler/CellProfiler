@@ -359,8 +359,8 @@ Three features are measured for each object:
             radial_means = masked_array(radial_values / pixel_count, mask)
             radial_cv = np.std(radial_means,1) / np.mean(radial_means, 1)
             radial_cv[np.sum(~mask,1)==0] = 0
-            for measurement, feature in ((fraction_at_distance, MF_FRAC_AT_D),
-                                         (mean_pixel_fraction, MF_MEAN_FRAC),
+            for measurement, feature in ((fraction_at_distance[:,bin], MF_FRAC_AT_D),
+                                         (mean_pixel_fraction[:,bin], MF_MEAN_FRAC),
                                          (np.array(radial_cv), MF_RADIAL_CV)):
                                          
                 measurements.add_measurement(object_name,

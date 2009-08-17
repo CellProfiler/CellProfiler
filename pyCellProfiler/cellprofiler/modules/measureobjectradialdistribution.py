@@ -35,9 +35,9 @@ C_OTHER = 'Other objects'
 C_ALL = [C_SELF, C_OTHER]
 
 M_CATEGORY = 'RadialDistribution'
-FF_FRAC_AT_D = 'FracAtD_%s_%dOf%d'
-FF_MEAN_FRAC = 'MeanFrac_%s_%dOf%d'
-FF_RADIAL_CV = 'RadialCV_%s_%dOf%d'
+FF_FRAC_AT_D = 'FracAtD_%s_%dof%d'
+FF_MEAN_FRAC = 'MeanFrac_%s_%dof%d'
+FF_RADIAL_CV = 'RadialCV_%s_%dof%d'
 MF_FRAC_AT_D = '_'.join((M_CATEGORY,FF_FRAC_AT_D))
 MF_MEAN_FRAC = '_'.join((M_CATEGORY,FF_MEAN_FRAC))
 MF_RADIAL_CV = '_'.join((M_CATEGORY,FF_RADIAL_CV))
@@ -365,7 +365,7 @@ Three features are measured for each object:
                                          
                 measurements.add_measurement(object_name,
                                              feature % 
-                                             (image_name, bin, bin_count),
+                                             (image_name, bin+1, bin_count),
                                              measurement)
             radial_cv.mask = np.sum(~mask,1)==0
             statistics += [(image_name, object_name, str(bin), str(bin_count),
@@ -373,3 +373,18 @@ Three features are measured for each object:
                             round(np.mean(mean_pixel_fraction[good, bin]),4),
                             round(np.mean(radial_cv),4))]
         return statistics
+    
+    def get_measurement_columns(self, pipeline):
+        columns = []
+        for image in self.images:
+            for o in self.objects:
+                for bin_count_obj in self.bin_counts:
+                    bin_count = bin_count_obj.bin_count.value
+                    for feature in (MF_FRAC_AT_D, MF_MEAN_FRAC, MF_RADIAL_CV):
+                        for bin in range(1,bin_count+1):
+                            columns.append((o.object_name.value,
+                                            feature % (image.image_name.value,
+                                                       bin, bin_count),
+                                            cpmeas.COLTYPE_FLOAT))
+        return columns
+                                                  

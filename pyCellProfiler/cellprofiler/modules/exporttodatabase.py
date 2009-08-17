@@ -313,7 +313,8 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             elif self.db_type==DB_SQLITE:
                 db_file = self.get_output_directory()+'/'+self.sqlite_file.value
                 self.connection, self.cursor = connect_sqlite(db_file)
-            self.create_database_tables(self.cursor, pipeline.get_measurement_columns())
+            self.create_database_tables(self.cursor, 
+                                        pipeline.get_measurement_columns())
         return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):

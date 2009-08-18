@@ -304,7 +304,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
     def prepare_run(self, pipeline, image_set_list, frame):
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
-        if not self.store_csvs.value:
+        if (not self.store_csvs.value) and (not pipeline.in_batch_mode()):
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                              self.db_name.value, 
@@ -738,7 +738,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                     elif nvalues > max_count:
                         sys.stderr.write("Warning: too many measurements for %s in image set #%d, got %d, expected %d\n"%(feature_name,image_number,nvalues,max_count))
                         values = values[:max_count]
-                    for i in xrange(nvalues):
+                    for i in xrange(max_count):
                         object_rows[i,self.object_col_order[feature_name]] = (values[i], cpmeas.COLTYPE_FLOAT)
         
         # wrap non-numeric types in quotes

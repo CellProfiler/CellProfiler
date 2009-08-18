@@ -6,8 +6,8 @@ function fout = CPwaitbar(varargin)
 
 % $Revision$
 
-is2008b = str2num(strrep(strtok(version),'.','')) > 760324;
-if is2008b && nargin > 2 && ~(ischar(varargin{2}) || iscellstr(varargin{2})),  % Updating previously created waitbar
+is2008b_or_greater = ~verlessthan('matlab','7.7');
+if is2008b_or_greater && nargin > 2 && ~(ischar(varargin{2}) || iscellstr(varargin{2})),  % Updating previously created waitbar
     fin = varargin{2};
     userData = get(fin,'userdata');
     set(fin,'userdata',userData.FractionInput);
@@ -15,7 +15,7 @@ end
 fout = waitbar(varargin{:});
 userData.Application = 'CellProfiler';
 userData.ImageFlag = 0;
-if is2008b, userData.FractionInput = get(fout,'userdata'); end
+if is2008b_or_greater, userData.FractionInput = get(fout,'userdata'); end
 set(fout, 'Color', [0.7 0.7 0.9], 'UserData',userData);
     
 ax = get(fout, 'Children');

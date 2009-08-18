@@ -120,11 +120,16 @@ drawnow
 if (handles.Current.SetBeingAnalyzed > 1) || isfield(handles.Current, 'BatchInfo')
     return;
 end
-if handles.Current.NumberOfImageSets == 1 
-   CPwarndlg(['Warning: No batch scripts have been written because ',...
-       'you have scheduled only one cycle to be processed and that cycle is already complete.']);
-   return;
-end    
+
+isImageGroups = isfield(handles.Pipeline,'ImageGroupFields');
+if ~isImageGroups
+    if handles.Current.NumberOfImageSets == 1 
+       CPwarndlg(['Warning: No batch scripts have been written because ',...
+           'you have scheduled only one cycle to be processed and that cycle is already complete.']);
+       return;
+    end  
+end
+
 if strncmp(BatchSavePath, '.',1)
     if length(BatchSavePath) == 1
         BatchSavePath = handles.Current.DefaultOutputDirectory;

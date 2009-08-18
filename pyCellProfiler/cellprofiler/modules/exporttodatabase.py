@@ -304,7 +304,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
     def prepare_run(self, pipeline, image_set_list, frame):
         if self.db_type == DB_ORACLE:
             raise NotImplementedError("Writing to an Oracle database is not yet supported")
-        if (not self.store_csvs.value) and (not pipeline.in_batch_mode()):
+        if not self.store_csvs.value:
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                              self.db_name.value, 
@@ -314,7 +314,8 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 db_file = self.get_output_directory()+'/'+self.sqlite_file.value
                 self.connection, self.cursor = connect_sqlite(db_file)
             self.create_database_tables(self.cursor, 
-                                        pipeline.get_measurement_columns())
+                                        pipeline.get_measurement_columns(),
+                                        not pipeline.in_batch_mode())
         return True
     
     def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
@@ -382,8 +383,19 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
     #
     # Create per_image and per_object tables in MySQL
     #
-    def create_database_tables(self, cursor, column_defs):
-        '''Creates empty image and object tables.'''
+    def create_database_tables(self, cursor, column_defs, create_database):
+        '''Creates empty image and object tables
+        
+        Creates the MySQL database (if MySQL), drops existing tables of the
+        same name and creates the tables. Also initializes image_col_order,
+        object_col_order and col_dict.
+        
+        cursor - database cursor for creating the tables
+        column_defs - column definitions as returned by get_measurement_columns
+        create_database - True to actually create the database, False if
+                          we have to call this just to do the initialization
+                          of image_col_order etc. during batch mode
+        '''
         self.image_col_order = {}
         self.object_col_order = {}
         
@@ -400,7 +412,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                     self.col_dict[c[0]] = [c]
         
         # Create the database
-        if self.db_type.value==DB_MYSQL:
+        if self.db_type.value==DB_MYSQL and create_database:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
         
         # Object table
@@ -425,8 +437,9 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                     statement += ',\n%s %s'%(feature_name, ftype)
         statement += ',\nPRIMARY KEY (ImageNumber, ObjectNumber) )'
         
-        execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
-        execute(cursor, statement)
+        if create_database:
+            execute(cursor, 'DROP TABLE IF EXISTS %s'%(object_table))
+            execute(cursor, statement)
         
         # Image table
         statement = 'CREATE TABLE '+image_table+' (\n'
@@ -442,12 +455,12 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 statement += ',\n%s %s'%(feature_name, ftype)
                 c+=1
         statement += ',\nPRIMARY KEY (ImageNumber) )'
-        
-        execute(cursor, 'DROP TABLE IF EXISTS %s'%(image_table))
-        execute(cursor, statement)
-        print 'Commit'
-        cursor.connection.commit()
-    
+
+        if create_database:
+            execute(cursor, 'DROP TABLE IF EXISTS %s'%(image_table))
+            execute(cursor, statement)
+            print 'Commit'
+            cursor.connection.commit()
     
     def write_mysql_table_defs(self, workspace, mappings):
         """Returns dictionaries mapping per-image and per-object column names to column #s"""

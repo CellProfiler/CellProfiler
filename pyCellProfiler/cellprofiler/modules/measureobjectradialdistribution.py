@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
+import matplotlib.cm
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
 import sys
@@ -22,6 +23,7 @@ import uuid
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.gui.cpfigure as cpf
@@ -29,15 +31,26 @@ import relate as R
 
 from cellprofiler.cpmath.cpmorphology import distance_to_edge
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
+from cellprofiler.cpmath.cpmorphology import maximum_position_of_labels
+from cellprofiler.cpmath.cpmorphology import color_labels
+from cellprofiler.cpmath.propagate import propagate
 
 C_SELF = 'These objects'
 C_OTHER = 'Other objects'
 C_ALL = [C_SELF, C_OTHER]
 
 M_CATEGORY = 'RadialDistribution'
-FF_FRAC_AT_D = 'FracAtD_%s_%dof%d'
-FF_MEAN_FRAC = 'MeanFrac_%s_%dof%d'
-FF_RADIAL_CV = 'RadialCV_%s_%dof%d'
+F_FRAC_AT_D = 'FracAtD'
+F_MEAN_FRAC = 'MeanFrac'
+F_RADIAL_CV = 'RadialCV'
+F_ALL = [F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV]
+
+FF_SCALE = '%dof%d'
+FF_GENERIC = '_%s_' + FF_SCALE
+FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
+FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
+FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
+
 MF_FRAC_AT_D = '_'.join((M_CATEGORY,FF_FRAC_AT_D))
 MF_MEAN_FRAC = '_'.join((M_CATEGORY,FF_MEAN_FRAC))
 MF_RADIAL_CV = '_'.join((M_CATEGORY,FF_RADIAL_CV))
@@ -220,20 +233,9 @@ Three features are measured for each object:
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
     
-    def prepare_run(self, pipeline, image_set_list, frame):
-        sys.stderr.write('''TO-DO: MeasureObjectRadialDistribution
-        The module has a few short-cuts that need to be properly implemented.
-        The distance function is Euclidean and it needs to use "propagate"
-        instead to account for distance along things like dendrites where two
-        pixels can be close, but are connected only through a long path.
-        Also, the center of an object (if C_SELF) is computed using the
-        centroid, but visually, using the maximal distance from the edge
-        yields a point that may be more representative of a center (again,
-        picture a neuron).
-        ''')
-        return True
     def run(self, workspace):
         stats = [("Image","Objects","Bin #","Bin count","Fraction","Intensity","COV")]
+        d = {}
         for image in self.images:
             for o in self.objects:
                 for bin_count in self.bin_counts:
@@ -244,14 +246,39 @@ Three features are measured for each object:
                                          o.center_object_name.value
                                          if o.center_choice == C_OTHER
                                          else None,
-                                         bin_count.bin_count.value)
+                                         bin_count.bin_count.value,
+                                         d)
         if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(subplots=(1,1))
+            images = [d[key][0] for key in d.keys()]
+            names = d.keys()
+            figure = workspace.create_or_find_figure(subplots=(1,len(images)))
             assert isinstance(figure, cpf.CPFigureFrame)
-            figure.subplot_table(0,0, stats, [1.0/7.0]*7)
-    
+            figure.figure.clf()
+            nimages = len(images)
+            shrink = .05
+            for i in range(len(images)):
+                rect = [shrink + float(i)/float(nimages),
+                        .5+shrink,
+                        (1.0-2*shrink)/float(nimages),
+                        .45*(1.0-2*shrink)]
+                axes = figure.figure.add_axes(rect)
+                axes.imshow(images[i], matplotlib.cm.Greys_r)
+                axes.set_title(names[i],
+                               fontname=cpprefs.get_title_font_name(),
+                               fontsize=cpprefs.get_title_font_size())
+            rect = [0.1,.1,.8,.35]
+            axes = figure.figure.add_axes(rect, frameon = False)
+            table = axes.table(cellText=stats,
+                               colWidths=[1.0/7.0]*7,
+                               loc='center',
+                               cellLoc='left')
+            axes.set_axis_off()
+            table.auto_set_font_size(False)
+            table.set_fontsize(cpprefs.get_table_font_size())
+            
     def do_measurements(self, workspace, image_name, object_name, 
-                        center_object_name, bin_count):
+                        center_object_name, bin_count,
+                        dd):
         '''Perform the radial measurements on the image set
         
         workspace - workspace that holds images / objects
@@ -261,63 +288,79 @@ Three features are measured for each object:
                       the centers for radial measurements. None to use the
                       objects themselves.
         bin_count - bin the object into this many concentric rings
+        d - a dictionary for saving reusable partial results
         
         returns one statistics tuple per ring.
         '''
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)
-        assert isinstance(workspace.measurements, cpmeas.Measurements)
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
-        d_to_edge = distance_to_edge(objects.segmented)
-        if center_object_name is not None:
-            center_objects=workspace.object_set.get_objects(center_object_name)
-            ncenters = np.max(center_objects.segmented)
-            #
-            # By default, the labels on objects and centers match
-            # We try to use measurements from relate or identify to find
-            # the best center for an object.
-            #
-            object_to_center = np.arange(1,nobjects+1)
-            if measurements.has_current_measurements(
-                object_name, R.FF_PARENT % center_object_name):
-                object_to_center = measurements.get_current_measurement(
-                    object_name, R.FF_PARENT % center_object_name)
-            elif measurements.has_current_measurements(
-                center_object_name, RR.FF_PARENT % object_name):
-                # The reverse is less than ideal. Some objects might have
-                # more than one center and some objects might not have
-                # a center.
-                center_to_object = measurements.get_current_measurement(
-                    center_object_name, R.FF_PARENT % object_name)
-                object_to_center[center_to_object] = np.arange(1, ncenters+1)
-            
-            good = object_to_center > 0
-            center_centers = centers_of_labels(center_objects.segmented)
-            centers = np.zeros((2,nobjects))
-            centers[:,good] = center_centers[:,object_to_center[good]-1]
+        assert isinstance(measurements, cpmeas.Measurements)
+        if nobjects == 0:
+            for bin in range(1, bin_count+1):
+                for feature in (FF_FRAC_AT_D, FF_MEAN_FRAC, FF_RADIAL_CV):
+                    measurements.add_measurement(object_name,
+                                                 M_CATEGORY + "_" + feature % 
+                                                 (image_name, bin, bin_count),
+                                                 np.zeros(0))
+            return [(image_name, object_name, "no objects","-","-","-","-")]
+        name = (object_name if center_object_name is None 
+                else "%s_%s"%(object_name, center_object_name))
+        if dd.has_key(name):
+            normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
-            good = np.ones(nobjects, bool)
-            centers = centers_of_labels(objects.segmented)
-        centers = (centers+.5).astype(int)
-        good0 = np.zeros(nobjects+1, bool)
-        good0[1:] = good
-        d_from_center = np.zeros(objects.segmented.shape)
-        good_mask = good0[objects.segmented]
+            d_to_edge = distance_to_edge(objects.segmented)
+            if center_object_name is not None:
+                center_objects=workspace.object_set.get_objects(center_object_name)
+                i,j = (centers_of_labels(center_objects.segmented) + .5).astype(int)
+                center_labels = np.zeros(center_objects.segmented.shape, int)
+                center_labels[i,j] = objects.segmented[i,j]
+                cl,d_from_center = propagate(np.zeros(center_labels.shape),
+                                             center_labels,
+                                             objects.segmented != 0, 1)
+            else:
+                # Find the point in each object farthest away from the edge.
+                # This does better than the centroid:
+                # * The center is within the object
+                # * The center tends to be an interesting point, like the
+                #   center of the nucleus or the center of one or the other
+                #   of two touching cells.
+                #
+                i,j = maximum_position_of_labels(d_to_edge, objects.segmented)
+                center_labels = np.zeros(objects.segmented.shape, int)
+                center_labels[i,j] = objects.segmented[i,j]
+                #
+                # Use the coloring trick here to process touching objects
+                # in separate operations
+                #
+                colors = color_labels(objects.segmented)
+                ncolors = np.max(colors)
+                d_from_center = np.zeros(objects.segmented.shape)
+                cl = np.zeros(objects.segmented.shape, int)
+                for color in range(1,ncolors+1):
+                    mask = colors == color
+                    l,d = propagate(np.zeros(center_labels.shape),
+                                    center_labels,
+                                    mask, 1)
+                    d_from_center[mask] = d[mask]
+                    cl[mask] = l[mask]
+            good_mask = cl > 0
+            i_center = np.zeros(cl.shape)
+            i_center[good_mask] = i[cl[good_mask]-1]
+            j_center = np.zeros(cl.shape)
+            j_center[good_mask] = j[cl[good_mask]-1]
+            
+            normalized_distance = np.zeros(objects.segmented.shape)
+            total_distance = d_from_center + d_to_edge
+            normalized_distance[good_mask] = (d_from_center[good_mask] /
+                                              (total_distance[good_mask] + .001))
+            dd[name] = [normalized_distance, i_center, j_center, good_mask]
         ngood_pixels = np.sum(good_mask)
-        i,j = np.mgrid[0:objects.segmented.shape[0], 
-                       0:objects.segmented.shape[1]]
         good_labels = objects.segmented[good_mask]
-        pt_centers = centers[:,good_labels-1]
-        d_from_center[good_mask] = np.sqrt((i[good_mask]-pt_centers[0,:])**2 +
-                                           (j[good_mask]-pt_centers[1,:])**2)
-        normalized_distance = np.zeros(objects.segmented.shape)
-        total_distance = d_from_center + d_to_edge
-        normalized_distance[good_mask] = (d_from_center[good_mask] /
-                                          (total_distance[good_mask] + .001))
         bin_indexes = (normalized_distance * bin_count).astype(int)
         labels_and_bins = (good_labels-1,bin_indexes[good_mask])
         histogram = coo_matrix((image.pixel_data[good_mask], labels_and_bins),
@@ -327,20 +370,27 @@ Three features are measured for each object:
         fraction_at_distance = histogram / sum_by_object_per_bin
         number_at_distance = coo_matrix((np.ones(ngood_pixels),labels_and_bins),
                                         (nobjects, bin_count)).toarray()
+        object_mask = number_at_distance > 0
         sum_by_object = np.sum(number_at_distance, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object]*bin_count)[0]
         fraction_at_bin = number_at_distance / sum_by_object_per_bin
         mean_pixel_fraction = fraction_at_distance / (fraction_at_bin +
                                                       np.finfo(float).eps)
+        masked_fraction_at_distance = masked_array(fraction_at_distance,
+                                                   ~object_mask)
+        masked_mean_pixel_fraction = masked_array(mean_pixel_fraction,
+                                                  ~object_mask)
         # Anisotropy calculation.  Split each cell into eight wedges, then
         # compute coefficient of variation of the wedges' mean intensities
         # in each ring.
         #
         # Compute each pixel's delta from the center object's centroid
-        imask = i[good_mask] > pt_centers[0,:]
-        jmask = j[good_mask] > pt_centers[1,:]
-        absmask = (i[good_mask] - pt_centers[0,:] > 
-                   j[good_mask] - pt_centers[1,:])
+        i,j = np.mgrid[0:objects.segmented.shape[0], 
+                       0:objects.segmented.shape[1]]
+        imask = i[good_mask] > i_center[good_mask]
+        jmask = j[good_mask] > j_center[good_mask]
+        absmask = (abs(i[good_mask] - i_center[good_mask]) > 
+                   abs(j[good_mask] - j_center[good_mask]))
         radial_index = (imask.astype(int) + jmask.astype(int)*2 + 
                         absmask.astype(int)*4)
         statistics = []
@@ -368,9 +418,9 @@ Three features are measured for each object:
                                              (image_name, bin+1, bin_count),
                                              measurement)
             radial_cv.mask = np.sum(~mask,1)==0
-            statistics += [(image_name, object_name, str(bin), str(bin_count),
-                            round(np.mean(fraction_at_distance[good,bin]),4),
-                            round(np.mean(mean_pixel_fraction[good, bin]),4),
+            statistics += [(image_name, object_name, str(bin+1), str(bin_count),
+                            round(np.mean(masked_fraction_at_distance[:,bin]),4),
+                            round(np.mean(masked_mean_pixel_fraction[:, bin]),4),
                             round(np.mean(radial_cv),4))]
         return statistics
     
@@ -387,4 +437,26 @@ Three features are measured for each object:
                                                        bin, bin_count),
                                             cpmeas.COLTYPE_FLOAT))
         return columns
-                                                  
+
+    def get_categories(self, pipeline, object_name):
+        if object_name in [x.object_name.value for x in self.objects]:
+            return [M_CATEGORY]
+        return []
+    
+    def get_measurements(self, pipeline, object_name, category):
+        if category in self.get_categories(pipeline, object_name):
+            return F_ALL
+        return []
+    
+    def get_measurement_images(self, pipeline, object_name, category, feature):
+        if feature in self.get_measurements(pipeline, object_name, category):
+            return [image.image_name.value for image in self.images]
+    
+    def get_measurement_scales(self, pipeline, object_name, category, feature,
+                               image_name):
+        if image_name in self.get_measurement_images(pipeline, object_name,
+                                                     category, feature):
+            return [FF_SCALE % (bin,bin_count.bin_count.value)
+                    for bin_count in self.bin_counts
+                    for bin in range(1, bin_count.bin_count.value+1)]
+            

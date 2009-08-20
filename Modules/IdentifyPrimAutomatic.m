@@ -1165,72 +1165,72 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             drawnow
 
-            %%% Saves the segmented image, not edited for objects along the edges or
-            %%% for size, to the handles structure.
-            fieldname = ['UneditedSegmented',ObjectName];
-            handles = CPaddimages(handles,fieldname,UneditedLabelMatrixImage);
+            if strcmp(OriginalLocalMaximaType,LocalMaximaType) && strcmp(OriginalWatershedTransformImageType,WatershedTransformImageType)
+                %%% Saves the segmented image, not edited for objects along the edges or
+                %%% for size, to the handles structure.
+                fieldname = ['UneditedSegmented',ObjectName];
+                handles = CPaddimages(handles,fieldname,UneditedLabelMatrixImage);
 
-            %%% Saves the segmented image, only edited for small objects, to the
-            %%% handles structure.
-            fieldname = ['SmallRemovedSegmented',ObjectName];
-            handles = CPaddimages(handles,fieldname,SmallRemovedLabelMatrixImage);
+                %%% Saves the segmented image, only edited for small objects, to the
+                %%% handles structure.
+                fieldname = ['SmallRemovedSegmented',ObjectName];
+                handles = CPaddimages(handles,fieldname,SmallRemovedLabelMatrixImage);
 
-            %%% Saves the final segmented label matrix image to the handles structure.
-            fieldname = ['Segmented',ObjectName];
-            handles = CPaddimages(handles,fieldname,FinalLabelMatrixImage);
+                %%% Saves the final segmented label matrix image to the handles structure.
+                fieldname = ['Segmented',ObjectName];
+                handles = CPaddimages(handles,fieldname,FinalLabelMatrixImage);
 
-            %%% Saves images to the handles structure so they can be saved to the hard
-            %%% drive, if the user requested.
-            if ~strcmpi(SaveOutlines,'Do not use')
-                try    handles = CPaddimages(handles,SaveOutlines,FinalOutline);
-                catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+                %%% Saves images to the handles structure so they can be saved to the hard
+                %%% drive, if the user requested.
+                if ~strcmpi(SaveOutlines,'Do not use')
+                    try    handles = CPaddimages(handles,SaveOutlines,FinalOutline);
+                    catch error(['The object outlines were not calculated by the ', ModuleName, ' module, so these images were not saved to the handles structure. The Save Images module will therefore not function on these images. This is just for your information - image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
+                    end
                 end
-            end
 
-            if strcmp(MergeChoice,'Yes')
+                if strcmp(MergeChoice,'Yes')
                 % Save the NumberOfMergedObjects to the handles structure.
-		handles = CPaddmeasurements ...
-			  (handles, 'Image', ...
-			   ['NumberOfMergedObjects_', ObjectName], ...
-			   NumberOfMergedObjects);
-	    end
+                    handles = CPaddmeasurements ...
+                          (handles, 'Image', ...
+                           ['NumberOfMergedObjects_', ObjectName], ...
+                           NumberOfMergedObjects);
+                end
 
-            % Save the Threshold value to the handles structure.
-	    handles = CPaddmeasurements(handles, 'Image', ...
-					['Threshold_FinalThreshold_', ObjectName], ...
-					Threshold);
-         if strcmp(ThresholdModifier,'PerObject')
-            %%% If per-object, add the threshold as an object measurement
-            [UniqueLabels,LabelIndices]=unique(Objects);
-            if UniqueLabels == 0
-                % if there aren't any primary objects, OrigThreshold will
-                % be set to 1 with len 1; this arbitrarily lets us save the
-                % value, despite the fact that we didnt find any
-                % 'per-objects' either.
-                ThresholdsPerObjects = OrigThreshold(1);
-            else
-                ThresholdsPerObjectsIncludingZero = OrigThreshold(LabelIndices);
-                ThresholdsPerObjects = ThresholdsPerObjectsIncludingZero(2:end);
-            end
-            handles = CPaddmeasurements ...
-                (handles, ObjectName,'Threshold_PerObject',ThresholdsPerObjects);
-        end
-            %%% Also add the thresholding quality metrics to the measurements
-            if exist('WeightedVariance', 'var')
-	      handles = CPaddmeasurements ...
-			(handles, 'Image', ...
-			 ['Threshold_WeightedVariance_', ObjectName], ...
-			 WeightedVariance);
-	      handles = CPaddmeasurements ...
-			(handles, 'Image', ...
-			 ['Threshold_SumOfEntropies_', ObjectName], ...
-			 SumOfEntropies);
-            end
+                % Save the Threshold value to the handles structure
+                handles = CPaddmeasurements(handles, 'Image', ...
+                            ['Threshold_FinalThreshold_', ObjectName], ...
+                            Threshold);
 
-	    handles = CPsaveObjectCount(handles, ObjectName, ...
-					FinalLabelMatrixImage);
-	    handles = CPsaveObjectLocations(handles, ObjectName, ...
-					    FinalLabelMatrixImage);
+                if strcmp(ThresholdModifier,'PerObject')
+                    %%% If per-object, add the threshold as an object measurement
+                    [UniqueLabels,LabelIndices]=unique(Objects);
+                    if UniqueLabels == 0
+                        % if there aren't any primary objects, OrigThreshold will
+                        % be set to 1 with len 1; this arbitrarily lets us save the
+                        % value, despite the fact that we didnt find any
+                        % 'per-objects' either.
+                        ThresholdsPerObjects = OrigThreshold(1);
+                    else
+                        ThresholdsPerObjectsIncludingZero = OrigThreshold(LabelIndices);
+                        ThresholdsPerObjects = ThresholdsPerObjectsIncludingZero(2:end);
+                    end
+                    handles = CPaddmeasurements ...
+                        (handles, ObjectName,'Threshold_PerObject',ThresholdsPerObjects);
+                end
+                 
+                %%% Also add the thresholding quality metrics to the measurements
+                if exist('WeightedVariance', 'var')
+                    handles = CPaddmeasurements(handles, 'Image', ...
+                        ['Threshold_WeightedVariance_', ObjectName], ...
+                        WeightedVariance);
+                    handles = CPaddmeasurements(handles, 'Image', ...
+                        ['Threshold_SumOfEntropies_', ObjectName], ...
+                        SumOfEntropies);
+                end
+
+                handles = CPsaveObjectCount(handles, ObjectName, FinalLabelMatrixImage);
+                handles = CPsaveObjectLocations(handles, ObjectName, FinalLabelMatrixImage);
+            end
         end
         
         if strcmp(TestMode,'Yes')

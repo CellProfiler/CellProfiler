@@ -166,6 +166,8 @@ if isRGB
     for i = 1:3,
         RGBImage = cat(3,RGBImage,Image{i}.*adj(i));
     end
+    RGBImage(RGBImage > 1) = 1;
+    RGBImage(RGBImage < 0) = 0;
 elseif isCMYK
     c = {[0 1 1 1],[1 1 0 1],[1 0 1 1]};
     RGBImage = [];
@@ -175,6 +177,8 @@ elseif isCMYK
                                     c{i}(3)*Image{3}.*adj(3) + ...
                                     c{i}(4)*Image{4}.*adj(4));
     end
+    RGBImage(RGBImage > 1) = 1;
+    RGBImage(RGBImage < 0) = 0;
 end
 % Normalize by adjustment factors. Not sure if this is needed?
 %RGBImage = RGBImage/sum(adj);

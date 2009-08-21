@@ -507,7 +507,7 @@ else
     %%% in the image.
     % im = im(:);
     if length(im) > 512^2
-        is2008b_or_greater = ~verlessthan('matlab','7.7');
+        is2008b_or_greater = ~verLessThan('matlab','7.7');
         if is2008b_or_greater,
             defaultStream = RandStream.getDefaultStream;
             savedState = defaultStream.State;
@@ -894,7 +894,7 @@ thresh = 2^((X(entry) + X(entry+1)) / 2);
 %%% proportional to the histogram value.
 function Q = smooth_log_histogram(R, bits)
 %%% seed random state
-is2008b_or_greater = ~verlessthan('matlab','7.7');
+is2008b_or_greater = ~verLessThan('matlab','7.7');
 if is2008b_or_greater,
     defaultStream = RandStream.getDefaultStream;
     savedState = defaultStream.State;

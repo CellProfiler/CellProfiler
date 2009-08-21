@@ -569,6 +569,30 @@ def centers_of_labels(labels):
         return result
     return result.transpose()
 
+def maximum_position_of_labels(image, labels):
+    '''Return the i,j coordinates of the maximum value within each object
+    
+    image - measure the maximum within this image
+    labels - use the objects within this labels matrix
+    
+    The result returned is an 2 x n numpy array where n is the number
+    of the label minus one, result[0,x] is the i coordinate of the center
+    and result[x,1] is the j coordinate of the center.
+    '''
+    
+    max_labels = np.max(labels)
+    if max_labels == 0:
+        return np.zeros((2,0),int)
+    
+    result = scind.maximum_position(image,
+                                    labels,
+                                    np.arange(max_labels)+1)
+    result = np.array(result)
+    if result.ndim == 1:
+        result.shape = (2,1)
+        return result
+    return result.transpose()
+
 def minimum_enclosing_circle(labels, indexes = None, 
                              hull_and_point_count = None):
     """Find the location of the minimum enclosing circle and its radius
@@ -2498,7 +2522,7 @@ def color_labels(labels):
     and be assured that the pixels from one object won't interfere with
     pixels in another.
     
-    returns the color matrix and # of colors
+    returns the color matrix
     '''
     # Get the neighbors for each object
     v_count, v_index, v_neighbor = find_neighbors(labels)

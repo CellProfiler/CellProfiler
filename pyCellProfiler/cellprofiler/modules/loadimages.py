@@ -626,7 +626,7 @@ class LoadImages(cpmodule.CPModule):
         values = set()
         for dd in d:
             if not dd is None:
-                values.update(dd.keys())
+                values.update([x for x in dd.keys() if x is not None])
         result = []
         for value in sorted(values):
             subgroup = tuple((dd and dd.has_key(None) and dd[None]) or # wildcard metadata

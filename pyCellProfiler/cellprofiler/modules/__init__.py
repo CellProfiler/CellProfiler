@@ -26,6 +26,7 @@ from exporttodatabase import ExportToDatabase
 from exporttoexcel import ExportToExcel
 from filterbyobjectmeasurement import FilterByObjectMeasurement
 from findedges import FindEdges
+from flagimage import FlagImage
 from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
@@ -70,6 +71,7 @@ def get_module_classes():
             ExportToExcel,
             FindEdges,
             FilterByObjectMeasurement,
+            FlagImage,
             GrayToColor,
             IdentifyPrimAutomatic,
             IdentifySecondary,
@@ -116,6 +118,7 @@ def get_module_substitutions():
             "ExportToExcel": ExportToExcel,
             "FindEdges": FindEdges,
             "FilterByObjectMeasurement": FilterByObjectMeasurement,
+            "FlagImageForQC": FlagImage,
             "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,

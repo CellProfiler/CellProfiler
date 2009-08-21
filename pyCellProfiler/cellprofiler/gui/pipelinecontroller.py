@@ -29,6 +29,9 @@ import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 import cellprofiler.matlab.cputils
 
+'''Use a timer (wx.CallLater) to schedule running the pipeline in the UI'''
+USE_TIMER = False
+
 class PipelineController:
     """Controls the pipeline through the UI
     
@@ -59,7 +62,8 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
-        wx.EVT_IDLE(frame,self.on_idle)
+        if not USE_TIMER:
+            wx.EVT_IDLE(frame,self.on_idle)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -230,6 +234,8 @@ class PipelineController:
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
+            if USE_TIMER:
+                wx.CallLater(1,self.on_idle, None)
     
     def on_stop_running(self,event):
         self.stop_running()
@@ -350,11 +356,19 @@ class PipelineController:
             self.__debug_outlines = {}
             
     def on_idle(self,event):
+        '''Run one iteration of the pipeline
+        
+        Either run the iteration during idle processing or using a timer
+        and wx.CallLater.
+        '''
         if self.__running_pipeline and not self.__inside_running_pipeline:
             self.__inside_running_pipeline = True
             try:
                 self.__pipeline_measurements = self.__running_pipeline.next()
-                event.RequestMore()
+                if USE_TIMER:
+                    wx.CallLater(1,self.on_idle, None)
+                else:
+                    event.RequestMore()
             except StopIteration:
                 self.stop_running()
                 if self.__pipeline_measurements != None:

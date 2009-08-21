@@ -53,7 +53,7 @@ class Workspace(object):
     def refresh(self):
         """Refresh any windows created during use"""
         for window in self.__windows_used:
-            window.Refresh()
+            window.figure.canvas.draw()
     
     def get_windows_used(self):
         return self.__windows_used

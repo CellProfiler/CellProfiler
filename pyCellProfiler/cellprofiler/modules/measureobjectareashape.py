@@ -347,9 +347,9 @@ See also MeasureImageAreaOccupied.
         #
         if self.calculate_zernikes.value:
             zernike_numbers = self.get_zernike_numbers()
-            zernike_features,z_images = cpmz.zernike(zernike_numbers, 
-                                                     objects.segmented,
-                                                     objects.indices)
+            zernike_features = cpmz.zernike(zernike_numbers, 
+                                            objects.segmented,
+                                            objects.indices)
             for i in range(zernike_numbers.shape[0]):
                 zernike_number = zernike_numbers[i]
                 zernike_feature = zernike_features[:,i]

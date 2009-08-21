@@ -119,8 +119,9 @@ def zernike(zernike_indexes,labels,indexes):
     # reverse_index[label] gives you the index into indexes of the label
     # and other similarly shaped vectors (like the results)
     #
+    nindexes = np.max(indexes)
     if indexes == None:
-        indexes = np.arange(1,np.max(indexes)+1,dtype=int)
+        indexes = np.arange(1,nindexes+1,dtype=int)
     else:
         indexes = np.array(indexes)
     reverse_indexes = -np.ones((np.max(indexes)+1,),int)
@@ -150,9 +151,11 @@ def zernike(zernike_indexes,labels,indexes):
     #
     # Pass the resulting x and y through the rest of Zernikeland
     #
-    zf = construct_zernike_polynomials(x, y, zernike_indexes, mask)
-    score = score_zernike(zf, radii, labels, indexes)
-    return score,zf
+    score = np.zeros((nindexes, len(zernike_indexes)))
+    for i in range(len(zernike_indexes)):
+        zf = construct_zernike_polynomials(x, y, zernike_indexes[i:i+1], mask)
+        score[:,i] = score_zernike(zf, radii, labels, indexes)[0]
+    return score
 
 def get_zernike_indexes(limit=10):
     """Return a list of all Zernike indexes up to the given limit

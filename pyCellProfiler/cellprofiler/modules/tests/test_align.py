@@ -98,7 +98,6 @@ class TestAlign(unittest.TestCase):
         # second output name = AlignedImage
         # use normalized correlation
         #
-        self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, A.Align))
         self.assertEqual(module.first_input_image.value, "Template")

@@ -17,9 +17,13 @@ import numpy as np
 import re
 import uuid
 
+'''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
+'''Matlab CellProfiler uses this string for automatically calculated settings'''
 AUTOMATIC = "Automatic"
+'''Value to store for boolean True settings'''
 YES = 'Yes'
+'''Value to store for boolean False settings'''
 NO = 'No'
 LEAVE_BLANK = 'Leave blank'
 DEFAULT = 'Default'

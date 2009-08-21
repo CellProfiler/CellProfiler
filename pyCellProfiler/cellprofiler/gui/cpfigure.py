@@ -93,7 +93,7 @@ class CPFigureFrame(wx.Frame):
         self.panel  = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self,-1,self.figure)
         sizer.Add(self.panel,1,wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
-        self.Bind(wx.EVT_PAINT,self.on_paint)
+        wx.EVT_PAINT(self, self.on_paint)
         if subplots:
             self.subplots = numpy.zeros(subplots,dtype=object)
             self.zoom_rects = numpy.zeros(subplots,dtype=object)
@@ -131,6 +131,8 @@ class CPFigureFrame(wx.Frame):
     def on_paint(self, event):
         dc = wx.PaintDC(self)
         self.panel.draw(dc)
+        event.Skip()
+        del dc
     
     def on_zoom_in(self,event):
         if self.__menu_item_zoom_in.IsChecked():

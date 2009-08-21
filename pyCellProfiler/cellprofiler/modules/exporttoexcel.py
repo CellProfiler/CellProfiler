@@ -16,6 +16,7 @@ __version__="$Revision$"
 import csv
 import numpy as np
 import os
+import sys
 import uuid
 import wx
 
@@ -177,6 +178,23 @@ named, "XZ29_A01.csv".
         if variable_revision_number == 2 and from_matlab:
             wants_subdirectories = (setting_values[8] == cps.YES)
             object_names = [x for x in setting_values[:-1]
+                            if x != cps.DO_NOT_USE]
+            setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
+                              cps.NO, cps.NO ]
+            for name in object_names:
+                setting_values.extend([name, cps.NO, "%s.csv"%(name)])
+            variable_revision_number = 1
+            from_matlab = False
+        if variable_revision_number == 3 and from_matlab:
+            #
+            # Variables 9 and 10 are the pathname and prefix and
+            # are not yet replicated in pyCP
+            #
+            if setting_values[8] != '.':
+                sys.stderr.write("Warning: pathname specification is not yet implemented in ExportToExcel")
+            if setting_values[9] != cps.DO_NOT_USE:
+                sys.stderr.write("Warning: prefix specification is not yet implemented in ExportToExcel")
+            object_names = [x for x in setting_values[:8]
                             if x != cps.DO_NOT_USE]
             setting_values = [ DELIMITER_TAB, cps.YES, cps.NO, cps.NO, 
                               cps.NO, cps.NO ]

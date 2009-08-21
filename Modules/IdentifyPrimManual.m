@@ -188,19 +188,19 @@ if any(findobj == ThisModuleFigureNumber)
     if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
         CPresizefigure(LowResOrigImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-    subplot(2,2,1);
-    CPimagesc(LowResOrigImage,handles);
+    hax = subplot(2,2,1);
+    CPimagesc(LowResOrigImage,handles,hax);
     title(['Original Image, cycle # ', num2str(handles.Current.SetBeingAnalyzed)]);
-    subplot(2,2,2);
-    CPimagesc(FinalLabelMatrixImage,handles);
+    hax = subplot(2,2,2);
+    CPimagesc(FinalLabelMatrixImage,handles,hax);
     title(['Manually Identified ',ObjectName]);
     FinalOutlineOnOrigImage = OrigImage;
     FinalOutlineOnOrigImage(FinalOutline) = max(max(max(OrigImage)));
-    subplot(2,2,3);
-    CPimagesc(FinalOutlineOnOrigImage,handles);
+    hax = subplot(2,2,3);
+    CPimagesc(FinalOutlineOnOrigImage,handles,hax);
     title([ObjectName, ' Outline']);
-    subplot(2,2,4);
-    CPimagesc(ColoredLabelMatrixImage,handles);
+    hax = subplot(2,2,4);
+    CPimagesc(ColoredLabelMatrixImage,handles,hax);
     title(['Identified ' ObjectName]);
 end
 

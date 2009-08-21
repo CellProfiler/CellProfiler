@@ -316,7 +316,8 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                 image_set = image_set_list.get_image_set(image_number-1)
                 image_set.providers.extend(image_providers)
             if pipeline.is_source_loaded(self.image_name.value):
-                if frame != None:
+                assert isinstance(pipeline, cpp.Pipeline)
+                if not pipeline.in_batch_mode():
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
                                                         "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(image_set_list.count()),
                                                         image_set_list.count(),
@@ -331,7 +332,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                                                     must_be_grayscale=True,
                                                     cache = False)
                     output_image_provider.add_image(image)
-                    if frame != None:
+                    if not pipeline.in_batch_mode():
                         should_continue, skip = progress_dialog.Update(i+1)
                         if not should_continue:
                             progress_dialog.EndModal(0)

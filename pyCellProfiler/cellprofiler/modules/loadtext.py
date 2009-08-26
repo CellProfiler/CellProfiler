@@ -451,7 +451,7 @@ that can be processed by different nodes in a cluster.
         image_names = self.get_name_providers('imagegroup')
         return ([(cpmeas.IMAGE, colname, coltype)
                  for colname, coltype in zip(header, coltypes)] +
-                [(cpmeas.IMAGE, 'MD5Digest_'%image_name,
+                [(cpmeas.IMAGE, 'MD5Digest_'+image_name,
                   cpmeas.COLTYPE_VARCHAR_FORMAT % 32)
                  for image_name in image_names])
 

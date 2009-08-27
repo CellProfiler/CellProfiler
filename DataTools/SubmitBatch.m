@@ -143,8 +143,8 @@ else
     SubmitInfo.BatchSize = 10;
 end
 SubmitInfo.MemoryLimit = 2000;
-SubmitInfo.Timeout = 30;
-SubmitInfo.WriteData = 1;
+SubmitInfo.Timeout = 300;
+SubmitInfo.WriteData = 0;
 
 % Create Submit window
 SBh = CPfigure;

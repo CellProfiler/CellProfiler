@@ -6479,7 +6479,7 @@ try
         svn_ver_char = handles.Current.svn_version_number;
     else
         CompiledOrNot = 'Developer''s Version';
-        svn_ver_char = CPsvnversionnumber(handles.Preferences.DefaultModuleDirectory);
+        svn_ver_char = CPsvnversionnumber([handles.Preferences.DefaultModuleDirectory filesep '..']);
     end
 catch
     svn_ver_char = '';

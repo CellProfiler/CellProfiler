@@ -129,7 +129,7 @@ try
     if isdeployed
         svn_ver_char = handles.Settings.CurrentSVNVersion;
     else
-        svn_ver_char = CPsvnversionnumber(handles.Preferences.DefaultModuleDirectory);
+        svn_ver_char = CPsvnversionnumber([handles.Preferences.DefaultModuleDirectory filesep '..']);
     end
 catch
     svn_ver_char = '0';

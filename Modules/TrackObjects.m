@@ -685,8 +685,16 @@ if isempty(LabelMatrixColormap),
     colormap_fxnhdl = str2func(DefaultLabelColorMap);
     NumOfRegions = double(max(LabelMatrix(:)));
     cmap = [0 0 0; colormap_fxnhdl(NumberOfColors-1)];
-    rand('twister', rand('twister'));
+    is2008b_or_greater = ~CPverLessThan('matlab','7.7');
+    if is2008b_or_greater,
+        defaultStream = RandStream.getDefaultStream;
+        savedState = defaultStream.State;
+        RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+    else
+        rand('seed',0);
+    end
     index = rand(1,NumOfRegions)*NumberOfColors;
+    if is2008b_or_greater, defaultStream.State = savedState; end
     
     % Save the colormap and indices into the handles
     LabelMatrixColormap = cmap;

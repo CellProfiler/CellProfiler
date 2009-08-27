@@ -20,6 +20,7 @@ import wx
 import wx.html
 
 import Image as PILImage
+import cellprofiler.dib
 import numpy
 import matplotlib.image
 import scipy.io.matlab.mio

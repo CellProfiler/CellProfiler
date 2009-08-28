@@ -9,12 +9,20 @@ if ~ischar(toolboxstr) || ~ischar(verstr)
     error('MATLAB:verLessThan:invalidInput', 'Inputs must be strings.')
 end
 
-toolboxver = ver(toolboxstr);
-if isempty(toolboxver)
-    error('MATLAB:verLessThan:missingToolbox', 'Toolbox ''%s'' not found.', toolboxstr)
-end
+if ~isdeployed,
+    toolboxver = ver(toolboxstr);
+    if isempty(toolboxver)
+        error('MATLAB:verLessThan:missingToolbox', 'Toolbox ''%s'' not found.', toolboxstr)
+    end
 
-toolboxParts = getParts(toolboxver(1).Version);
+    toolboxParts = getParts(toolboxver(1).Version);
+else
+    toolboxver = version;
+    if isempty(toolboxver)
+        error('MATLAB:verLessThan:missingToolbox', 'Toolbox ''%s'' not found.', toolboxstr)
+    end
+    toolboxParts = getParts(toolboxver);
+end
 verParts = getParts(verstr);
 
 result = (sign(toolboxParts - verParts) * [1; .1; .01]) < 0;

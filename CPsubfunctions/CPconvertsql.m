@@ -168,7 +168,7 @@ if (FirstSet == 1)
         end
         
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
-            msg = 'Please note that you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-image and per-object .CSV files that the cluster job will create.';
+            msg = 'Please note that, unless you are using the SubmitBatch DataTool, you will have to manually edit the "LOAD DATA" line of the SQL file to include each of the per-image and per-object .CSV files that the cluster job will create.';
             if isfield(handles.Current,'BatchInfo')
                 warning(msg);
             else
@@ -220,14 +220,14 @@ if (FirstSet == 1)
 
                 for l = 1:length(per_object_names),
                     if ~ObjectsToOmitFromPerImageTable(l)
-                        fprintf(fmain, ',\nsum(%s)', CPtruncatefeaturename(['Mean_', per_object_names{l}]));
+                        fprintf(fmain, ',\nsum(%s)', CPtruncatefeaturename(['Sum_', per_object_names{l}]));
                     end
                 end
 
                 if wantStdDevCalculated
                     for l = 1:length(per_object_names),
                         if ~ObjectsToOmitFromPerImageTable(l)
-                            fprintf(fmain, ',\nstddev(%s)', CPtruncatefeaturename(['Mean_', per_object_names{l}]));
+                            fprintf(fmain, ',\nstddev(%s)', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
                         end
                     end
                 end
@@ -655,6 +655,6 @@ end
 function sc=cleanup(s)
 sc = s;
 sc(strfind(s,' ')) = '_';
-if (length(sc) >= 64)
+if (length(sc) > namelengthmax)
     warning(['Column name ' sc ' too long in CPconvertsql.']) %#ok Ignore MLint
 end

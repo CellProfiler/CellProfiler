@@ -64,7 +64,7 @@ function handles=SubmitBatch(handles)
         filename = strcat(tempname(),'.html');
         fid = fopen(filename, 'wt');
         fprintf(fid,'%s', result);
-        fclose(fid)
+        fclose(fid);
         if ispc
             filename = strcat('/',strrep(filename,'\','/'));
         end

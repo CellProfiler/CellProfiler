@@ -564,7 +564,11 @@ for img_idx = FirstSet:LastSet
             %%% write image data, gather object data for later writing
             if strcmp(ObjectName, 'Image'),
                 if ischar(vals)
-                    fprintf(fimage, ',%s', vals);
+                    if isempty(findstr(vals,','))
+                        fprintf(fimage, ',%s', vals);
+                    else
+                        fprintf(fimage, ',"%s"', vals); % Since commas are the delimiter, enclose in quotes
+                    end
                 elseif isnumeric(vals)
                     if (~isscalar(vals)),
                         error(['Attempt to write non-scalar numeric value in per_image data, feature handles.Measurements.' ObjectName '.' FeatureName ', value ', num2str(vals)]);

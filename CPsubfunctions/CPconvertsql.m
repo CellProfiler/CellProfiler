@@ -47,7 +47,7 @@ ObjectsToOmitFromPerImageTable = [];
 for ObjectCell = ObjectsToBeExported,
     % why matlab, why?
     ObjectName = ObjectCell{1};
-
+    
     %%% Some objects are not exported
     if any(strcmp(ObjectName, ObjectsNotToBeExported)),
         continue;
@@ -64,7 +64,7 @@ for ObjectCell = ObjectsToBeExported,
                 'UniformOutput', false)))
             continue
         end
-
+        
         if strcmp(ObjectName, 'Image')
             per_image_names{end+1} = cleanup(CPtruncatefeaturename(CPjoinstrings('Image', FeatureName)));
         else
@@ -91,7 +91,7 @@ for fld = fieldnames(handles.Pipeline)',
         end
     end
 end
-% Pad length since we don't know the true max length will be across all cycles 
+% Pad length since we don't know the true max length will be across all cycles
 PadLength = 20;
 FileNameWidth = FileNameWidth + PadLength;
 
@@ -103,22 +103,23 @@ for fld = fieldnames(handles.Pipeline)',
         PathNameWidth = max(PathNameWidth, length(handles.Pipeline.(fld{1})));
     end
 end
-% Pad length since we don't know the true max length will be across all cycles 
+% Pad length since we don't know the true max length will be across all cycles
 PathNameWidth = PathNameWidth + PadLength;
 
 MetadataNameWidth = PathNameWidth;
 
+allfullfeaturename = cell(0);
 %%% Write the SQL table description and data loader.
 if (FirstSet == 1)
     if strcmp(SQLchoice,'MySQL')
-
+        
         fmain = fopen(fullfile(OutDir, [DBname '_SETUP.SQL']), 'W');
-
+        
         fprintf(fmain, 'CREATE DATABASE IF NOT EXISTS %s;\n', DBname);
         fprintf(fmain, 'USE %s;\n\n', DBname);
-
+        
         fprintf(fmain, 'CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY',TablePrefix);
-
+        
         for i = per_image_names,
             if strfind(i{1}, 'FileName')
                 fprintf(fmain, ',\n%s VARCHAR(%d)', i{1}, FileNameWidth);
@@ -130,12 +131,22 @@ if (FirstSet == 1)
                 fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
             end
         end
-
+        
         %add columns for mean, median and stddev for per_object_names
         if wantMeanCalculated
             for j = 1:length(per_object_names),
                 if ~ObjectsToOmitFromPerImageTable(j)
-                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
+                    fullfeaturename = CPtruncatefeaturename(['Mean_', per_object_names{j}]);
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', fullfeaturename);
+                    if ~any(strcmp(fullfeaturename,allfullfeaturename))
+                        allfullfeaturename = [allfullfeaturename fullfeaturename];
+                    else
+                        error(['The column name ''' fullfeaturename ''' is not unique, '...
+                            'likely due to an automatic truncation to keep '...
+                            'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                            'This is most easily remedied by '...
+                            'choosing shorter object names in your pipeline and rerunning.'])
+                    end
                 end
             end
         end
@@ -143,7 +154,17 @@ if (FirstSet == 1)
         if wantMedianCalculated
             for k = 1:length(per_object_names),
                 if ~ObjectsToOmitFromPerImageTable(k)
-                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['Median_', per_object_names{k}]));
+                    fullfeaturename = CPtruncatefeaturename(['Median_', per_object_names{k}]);
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', fullfeaturename);
+                    if ~any(strcmp(fullfeaturename,allfullfeaturename))
+                        allfullfeaturename = [allfullfeaturename fullfeaturename];
+                    else
+                        error(['The column name ''' fullfeaturename ''' is not unique, '...
+                            'likely due to an automatic truncation to keep '...
+                            'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                            'This is most easily remedied by '...
+                            'choosing shorter object names in your pipeline and rerunning.'])
+                    end
                 end
             end
         end
@@ -151,19 +172,29 @@ if (FirstSet == 1)
         if wantStdDevCalculated
             for l = 1:length(per_object_names),
                 if ~ObjectsToOmitFromPerImageTable(l)
-                    fprintf(fmain, ',\n%s FLOAT NOT NULL', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
+                    fullfeaturename = CPtruncatefeaturename(['StDev_', per_object_names{l}]);
+                    fprintf(fmain, ',\n%s FLOAT NOT NULL', fullfeaturename);
+                    if ~any(strcmp(fullfeaturename,allfullfeaturename))
+                        allfullfeaturename = [allfullfeaturename fullfeaturename];
+                    else
+                        error(['The column name ''' fullfeaturename ''' is not unique, '...
+                            'likely due to an automatic truncation to keep '...
+                            'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                            'This is most easily remedied by '...
+                            'choosing shorter object names in your pipeline and rerunning.'])
+                    end
                 end
             end
         end
-
+        
         fprintf(fmain, ');\n\n');
-
+        
         if ~isempty(per_object_names),
             fprintf(fmain, 'CREATE TABLE %sPer_Object(ImageNumber INTEGER,ObjectNumber INTEGER',TablePrefix);
             for i = per_object_names
                 fprintf(fmain, ',\n%s FLOAT NOT NULL', i{1});
             end
-
+            
             fprintf(fmain, ',\nPRIMARY KEY (ImageNumber, ObjectNumber));\n\n');
         end
         
@@ -187,6 +218,7 @@ if (FirstSet == 1)
                 fprintf(fmain, 'LOAD DATA LOCAL INFILE ''%s_object.CSV'' REPLACE INTO TABLE %sPer_Object FIELDS TERMINATED BY '','';\n',basename,TablePrefix);
                 fprintf(fmain, 'SHOW WARNINGS;\n');
             end
+            perwell_allfullfeaturename = [];
             if strcmp(WritePerWell,'Yes')
                 if ~strcmp(PlateMeasurement,'Do not use')
                     fprintf(fmain,'CREATE TABLE %sPer_Well AS SELECT %s,%s',TablePrefix,['Image_Metadata_',PlateMeasurement],['Image_Metadata_',WellMeasurement]);
@@ -194,7 +226,7 @@ if (FirstSet == 1)
                     fprintf(fmain,'CREATE TABLE %sPer_Well AS SELECT %s',TablePrefix,['Image_Metadata_',WellMeasurement]);
                 end
                 for i = 1:length(per_image_names)
-                    if strfind(per_image_names{i}, 'FileName')   
+                    if strfind(per_image_names{i}, 'FileName')
                         continue
                     elseif strfind(per_image_names{i}, 'Path')
                         continue
@@ -207,50 +239,80 @@ if (FirstSet == 1)
                         fprintf(fmain,',\nsum(%s)',per_image_names{i});
                         fprintf(fmain,',\nstddev(%s)',per_image_names{i});
                     end
-
+                    
                 end
-
+                
                 if wantMeanCalculated
                     for j = 1:length(per_object_names),
                         if ~ObjectsToOmitFromPerImageTable(j)
-                            fprintf(fmain, ',\navg(%s)', CPtruncatefeaturename(['Mean_', per_object_names{j}]));
+                            fullfeaturename = CPtruncatefeaturename(['Mean_', per_object_names{j}]);
+                            fprintf(fmain, ',\navg(%s)', fullfeaturename);
+                            if ~any(strcmp(fullfeaturename, perwell_allfullfeaturename))
+                                perwell_allfullfeaturename = [perwell_allfullfeaturename fullfeaturename];
+                            else
+                                error(['The column name ''' fullfeaturename ''' is not unique, '...
+                                    'likely due to an automatic truncation to keep '...
+                                    'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                                    'This is most easily remedied by '...
+                                    'choosing shorter object names in your pipeline and rerunning.'])
+                            end
                         end
                     end
                 end
-
-                for l = 1:length(per_object_names),
-                    if ~ObjectsToOmitFromPerImageTable(l)
-                        fprintf(fmain, ',\nsum(%s)', CPtruncatefeaturename(['Sum_', per_object_names{l}]));
+                
+                for k = 1:length(per_object_names),
+                    if ~ObjectsToOmitFromPerImageTable(k)                        
+                        fullfeaturename = CPtruncatefeaturename(['Mean_', per_object_names{k}]);
+                        fprintf(fmain, ',\nsum(%s)', fullfeaturename);
+                        if ~any(strcmp(fullfeaturename, perwell_allfullfeaturename))
+                            perwell_allfullfeaturename = [perwell_allfullfeaturename fullfeaturename];
+                        else
+                            error(['The column name ''' fullfeaturename ''' is not unique, '...
+                                'likely due to an automatic truncation to keep '...
+                                'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                                'This is most easily remedied by '...
+                                'choosing shorter object names in your pipeline and rerunning.'])
+                        end
                     end
                 end
-
+                
                 if wantStdDevCalculated
                     for l = 1:length(per_object_names),
-                        if ~ObjectsToOmitFromPerImageTable(l)
-                            fprintf(fmain, ',\nstddev(%s)', CPtruncatefeaturename(['StDev_', per_object_names{l}]));
+                        if ~ObjectsToOmitFromPerImageTable(l)                            
+                            fullfeaturename = CPtruncatefeaturename(['Mean_', per_object_names{l}]);
+                            fprintf(fmain, ',\nstddev(%s)', fullfeaturename);
+                            if ~any(strcmp(fullfeaturename, perwell_allfullfeaturename))
+                                perwell_allfullfeaturename = [perwell_allfullfeaturename fullfeaturename];
+                            else
+                                error(['The column name ''' fullfeaturename ''' is not unique, '...
+                                    'likely due to an automatic truncation to keep '...
+                                    'object names to be under Matlab''s ' num2str(namelengthmax) ' character limit.  '...
+                                    'This is most easily remedied by '...
+                                    'choosing shorter object names in your pipeline and rerunning.'])
+                            end
                         end
                     end
                 end
-
+                
                 if ~strcmp(PlateMeasurement,'Do not use')
                     fprintf(fmain,' FROM %sPer_Image GROUP BY %s,%s;',TablePrefix,['Image_Metadata_',PlateMeasurement],['Image_Metadata_',WellMeasurement]);
                 else
                     fprintf(fmain,' FROM %sPer_Image GROUP BY %s;',TablePrefix,['Image_Metadata_',WellMeasurement]);
                 end
-            end    
+            end
         end
         fclose(fmain);
     elseif strcmp(SQLchoice,'Oracle')
         %%%%%%%%%%%%%%%%%%
         %%% SETUP FILE %%%
         %%%%%%%%%%%%%%%%%%
-
+        
         fsetup = fopen(fullfile(OutDir, [DBname,'_SETUP.SQL']), 'W');
-
+        
         fprintf (fsetup, 'CREATE TABLE %sColumn_Names (SHORTNAME VARCHAR2(8), LONGNAME VARCHAR2(250));\n',TablePrefix);
-
+        
         fprintf(fsetup, 'CREATE TABLE %sPer_Image (col1 NUMBER',TablePrefix);
-
+        
         p=1;
         for i = per_image_names,
             p = p+1;
@@ -262,7 +324,7 @@ if (FirstSet == 1)
                 fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
             end
         end
-
+        
         %add columns for mean, median and stddev for per_object_names
         if wantMeanCalculated
             for j = per_object_names,
@@ -281,7 +343,7 @@ if (FirstSet == 1)
                 end
             end
         end
-
+        
         if wantStdDevCalculated
             for l = per_object_names,
                 if ~any(strmatch(l{1},ObjectFeaturesNotToBeAveraged))
@@ -290,7 +352,7 @@ if (FirstSet == 1)
                 end
             end
         end
-
+        
         fprintf(fsetup, ');\n');
         p = p+1;
         PrimKeyPosition = p;
@@ -301,29 +363,29 @@ if (FirstSet == 1)
                 fprintf(fsetup, ',\n%s FLOAT', ['col',num2str(p)]);
             end
         end
-
+        
         fprintf(fsetup, ');\n');
         fclose(fsetup);
-
+        
         %%%%%%%%%%%%%%%%%%%
         %%% FINISH FILE %%%
         %%%%%%%%%%%%%%%%%%%
-
+        
         ffinish = fopen(fullfile(OutDir, [DBname,'_FINISH.SQL']), 'W');
         fprintf(ffinish, 'ALTER TABLE %sPer_Image ADD PRIMARY KEY (col1);\n',TablePrefix);
         if ~isempty(per_object_names)
             fprintf(ffinish, 'ALTER TABLE %sPer_Object ADD PRIMARY KEY (col1, %s);',TablePrefix,['col',num2str(PrimKeyPosition)]);
         end
         fclose(ffinish);
-
+        
         %%%%%%%%%%%%%%%%%%%
         %%% COLUMN FILE %%%
         %%%%%%%%%%%%%%%%%%%
-
+        
         fcol = fopen(fullfile(OutDir, [DBname,'_columnnames.CSV']), 'W');
         fprintf(fcol,'%s','col1');
         fprintf(fcol,',%s\n','ImageNumber');
-
+        
         p = 1;
         for k = per_image_names
             p = p+1;
@@ -349,25 +411,25 @@ if (FirstSet == 1)
             end
         end
         if wantStdDevCalculated
-                for n = per_object_names
+            for n = per_object_names
                 if ~any(strmatch(n{1},ObjectFeaturesNotToBeAveraged))
                     p = p+1;
                     fprintf(fcol, '%s', ['col', num2str(p)]);
                     fprintf(fcol, ',%s\n', ['Stdev_', n{1}]);
                 end
-                end
+            end
         end
-
+        
         p = p+1;
         if PrimKeyPosition ~= p
             error('STOP!');
         end
-
+        
         % Per_Object table's colnames
         if ~isempty(per_object_names)
             fprintf(fcol, '%s', ['col', num2str(p)]);
             fprintf(fcol, ',%s\n','ObjectNumber');
-
+            
             for n = per_object_names
                 p=p+1;
                 fprintf(fcol, '%s', ['col', num2str(p)]);
@@ -375,21 +437,21 @@ if (FirstSet == 1)
             end
         end
         fclose(fcol);
-
+        
         FinalColumnPosition = p;
-
+        
         %%%%%%%%%%%%%%%%%%%%%
         %%% COLUMN LOADER %%%
         %%%%%%%%%%%%%%%%%%%%%
-
+        
         fcolload = fopen(fullfile(OutDir, [DBname,'_LOADCOLUMNS.CTL']), 'W');
         fprintf(fcolload, 'LOAD DATA INFILE ''%s'' INTO TABLE  %sColumn_Names FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''' (shortname, longname)',[DBname, '_columnnames.CSV'],TablePrefix);
         fclose(fcolload);
-
+        
         %%%%%%%%%%%%%%%%%%%%
         %%% IMAGE LOADER %%%
         %%%%%%%%%%%%%%%%%%%%
-
+        
         fimageloader = fopen(fullfile(OutDir, [DBname, '_LOADIMAGE.CTL']), 'W');
         fprintf(fimageloader, 'LOAD DATA\n');
         if strcmp(handles.Settings.ModuleNames{handles.Current.NumberOfModules},'CreateBatchFiles')
@@ -403,19 +465,19 @@ if (FirstSet == 1)
         else
             fprintf(fimageloader, 'INFILE %s\n', [basename, '_image.CSV']);
         end
-
+        
         fprintf(fimageloader, 'INTO TABLE  %sPer_Image FIELDS TERMINATED BY '','' OPTIONALLY ENCLOSED BY ''"'' ESCAPED BY '''' (col1',TablePrefix);
         for i = 2:(PrimKeyPosition-1)
             fprintf(fimageloader, ',\n%s', ['col',num2str(i)]);
         end
         fprintf(fimageloader, ')');
-
+        
         fclose(fimageloader);
-
+        
         %%%%%%%%%%%%%%%%%%%%%
         %%% OBJECT LOADER %%%
         %%%%%%%%%%%%%%%%%%%%%
-
+        
         if ~isempty(per_object_names)
             fobjectloader = fopen(fullfile(OutDir, [DBname, '_LOADOBJECT.CTL']), 'W');
             fprintf(fobjectloader, 'LOAD DATA\n');
@@ -430,7 +492,7 @@ if (FirstSet == 1)
             else
                 fprintf(fobjectloader, 'INFILE %s\n', [basename, '_object.CSV']);
             end
-
+            
             fprintf(fobjectloader, 'INTO TABLE  %sPer_Object FIELDS TERMINATED BY '','' (col1',TablePrefix);
             for i = PrimKeyPosition:FinalColumnPosition
                 fprintf(fobjectloader, ',\n%s', ['col',num2str(i)]);
@@ -456,30 +518,30 @@ end
 
 perobjectvals = [];
 
-for img_idx = FirstSet:LastSet  
+for img_idx = FirstSet:LastSet
     % perobjectvals_aggregate: Holds the values that are going to be aggregated per-image
-    perobjectvals_aggregate = []; 
-   % perobjectvals_aggregate_isobj: Indexes which values are valid from
-   %    an image; non-valid values are excluded from stats later
-    perobjectvals_aggregate_isobj = logical([]); 
+    perobjectvals_aggregate = [];
+    % perobjectvals_aggregate_isobj: Indexes which values are valid from
+    %    an image; non-valid values are excluded from stats later
+    perobjectvals_aggregate_isobj = logical([]);
     fprintf(fimage, '%d', img_idx);
     objectbaserow = size(perobjectvals, 1);
     objectbasecol = 2;
     objectbasemeancol = 2;
     numobj = 0;
     maxnumobj = 0;
-
+    
     feature_idx = 1;
-
+    
     for ObjectCell = ObjectsToBeExported,
         % why matlab, why?
         ObjectName = ObjectCell{1};
-
+        
         %%% Some objects are not exported
         if any(strcmp(ObjectName, ObjectsNotToBeExported)),
             continue;
         end
-
+        
         %%% Find the features for this object
         Features = fieldnames(handles.Measurements.(ObjectName))';
         for FeatureCell = Features,
@@ -487,18 +549,18 @@ for img_idx = FirstSet:LastSet
             
             %%% Certain features are not exported
             if any(cell2mat(cellfun(@(k)strmatch(k, FeatureName), ...
-                        FeaturesNotToBeExported, ...
-                        'UniformOutput', false)))
+                    FeaturesNotToBeExported, ...
+                    'UniformOutput', false)))
                 continue
             end
-
+            
             %%% Old code checked if data for img_idx existed, but this one always should (entry should be [] if no objects).
             try
                 vals = handles.Measurements.(ObjectName).(FeatureName){img_idx};
             catch
                 error(['Measurements missing for image #' int2str(img_idx) ' and feature handles.Measurements.' ObjectName '.' FeatureName '.  (Max size is ' int2str(length(handles.Measurements.(ObjectName).(FeatureName))) '.)']);
             end
-
+            
             %%% write image data, gather object data for later writing
             if strcmp(ObjectName, 'Image'),
                 if ischar(vals)
@@ -524,24 +586,24 @@ for img_idx = FirstSet:LastSet
                     error(['Mismatched feature names #', int2str(feature_idx), ' ', per_object_names{feature_idx}, '!=', cleanup(CPtruncatefeaturename(CPjoinstrings(ObjectName, FeatureName)))])
                 end
                 feature_idx = feature_idx + 1;
-
+                
                 if ~isa(vals,'numeric')
                     error(['Non-numeric data not currently supported in per-object SQL data feature handles.Measurements.' ObjectName '.' FeatureName ', type ', class(vals)]);
                 end
-
+                
                 if ~isvector(vals) && ~isempty(vals)
                     error(['This should not happen.  CellProfiler Coding Error.  Attempting to export multidimensional (', int2str(size(vals)), ') measurement ', ObjectName, '.', FeatureName]);
                 end
-
+                
                 numobj = length(vals);
                 % put in nx1 orientation
                 vals = vals(:);
-
+                
                 %%% There might be different numbers of different types of objects, unfortunately.  These will be filled with zeros, later.
                 if maxnumobj < numobj
                     maxnumobj = numobj;
                 end
-
+                
                 %%% Add the values into the per-object output and shift
                 %%% right
                 if numobj > 0,
@@ -560,15 +622,15 @@ for img_idx = FirstSet:LastSet
                 
             end
         end %%% loop over features
-
+        
         %%% put in image and object numbers
         if numobj > 0
             perobjectvals((objectbaserow+1):end, 1) = img_idx;
             perobjectvals((objectbaserow+1):end, 2) = 1:maxnumobj;
         end
-
+        
     end %%% loop over object types
-
+    
     % Print mean, median, stdev for all measurements per image
     if (wantMeanCalculated || wantMedianCalculated || wantStdDevCalculated)
         formatstr = ['%g' repmat(',%g',1,size(perobjectvals_aggregate,2)-1)];
@@ -586,7 +648,7 @@ for img_idx = FirstSet:LastSet
                     fprintf(fimage,',0'); %ignore NaN
                 end
             end
-        elseif size(perobjectvals_aggregate, 1) > 0,  
+        elseif size(perobjectvals_aggregate, 1) > 0,
             % Ignore NaNs in aggregate measurements
             warning('off','MATLAB:divideByZero');
             perobjectvals_aggregate(perobjectvals_aggregate_isobj == 0) = NaN;

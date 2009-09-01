@@ -7,5 +7,18 @@ export DYLD_LIBRARY_PATH="$mcr_path/runtime/maci:$mcr_path/sys/os/maci:$mcr_path
 echo $DYLD_LIBRARY_PATH
 export XAPPLRESDIR="$mcr_path/X11/app-defaults"
 echo $XAPPLRESDIR
-export DISPLAY=":0.0"
+
+sysver=`sw_vers -productVersion | cut -c 1-4`
+echo $sysver
+
+if [ $sysver = 10.5 -o $sysver = 10.6 ]
+then
+	echo "The DISPLAY variable does not need to be set manually"
+elif [ $sysver = 10.4 -o $sysver = 10.3 ]
+then
+	export DISPLAY=":0.0"
+else
+	echo "This system is too old"
+fi
+
 `dirname "$0"`/CellProfiler;

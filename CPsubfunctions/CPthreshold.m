@@ -350,7 +350,7 @@ elseif strcmp(Threshold,'All')
         fieldname = ['Threshold', ImageName];
         handles = CPaddimages(handles,fieldname,Threshold);
     else fieldname = ['Threshold', ImageName];
-        Threshold = CPretrieveimages(handles,fieldname,ModuleName);
+        Threshold = CPretrieveimage(handles,fieldname,ModuleName);
     end
 elseif strcmp(Threshold,'Set interactively')
     fieldname = ['Threshold',ImageName];
@@ -358,7 +358,7 @@ elseif strcmp(Threshold,'Set interactively')
         Threshold = CPthresh_tool(OrigImage(:,:,1));
         handles = CPaddimages(handles,fieldname,Threshold);
     else
-        Threshold = CPretrieveimages(handles,fieldname,ModuleName);
+        Threshold = CPretrieveimage(handles,fieldname,ModuleName);
     end
 else
     %%% If the threshold is a number, it means that it was manually entered

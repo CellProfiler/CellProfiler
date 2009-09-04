@@ -268,7 +268,9 @@ op = op - sum(op(:))/numel(op); % make the op to sum to zero
 padsize = ceil(s./2);
 im = padarray(im,[padsize padsize],'replicate');
 
-f = filter2(op,im);
+%% Use 'single' here, since imfilter is optimized on Intel chips for
+%% certain array classes (see Matlab documentation)
+f = double(imfilter(single(im),op));
 
 %% Crop pad
 f = f(padsize+1:end-padsize,padsize+1:end-padsize);

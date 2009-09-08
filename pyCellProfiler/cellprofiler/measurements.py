@@ -292,7 +292,8 @@ class Measurements(object):
         return False
     
 
-    def compute_aggregate_measurements(self, image_set_number):
+    def compute_aggregate_measurements(self, image_set_number, 
+                                       aggs=AGG_NAMES):
         """Compute aggregate measurements for a given image set
         
         returns a dictionary whose key is the aggregate measurement name and
@@ -312,18 +313,21 @@ class Measurements(object):
                 #
                 # Compute the mean and standard deviation
                 #
-                mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
-                                                 feature)
-                mean = values.mean()
-                d[mean_feature_name] = mean
-                median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
-                                                  object_name, feature)
-                median = np.median(values)
-                d[median_feature_name] = median
-                stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
-                                                 object_name, feature)
-                stdev = values.std()
-                d[stdev_feature_name] = stdev
+                if AGG_MEAN in aggs:
+                    mean_feature_name = '%s_%s_%s'%(AGG_MEAN, object_name,
+                                                     feature)
+                    mean = values.mean()
+                    d[mean_feature_name] = mean
+                if AGG_MEDIAN in aggs:
+                    median_feature_name = '%s_%s_%s'%(AGG_MEDIAN, 
+                                                      object_name, feature)
+                    median = np.median(values)
+                    d[median_feature_name] = median
+                if AGG_STD_DEV in aggs:
+                    stdev_feature_name = '%s_%s_%s'%(AGG_STD_DEV,
+                                                     object_name, feature)
+                    stdev = values.std()
+                    d[stdev_feature_name] = stdev
         return d
     
 class MetadataGroup(dict):

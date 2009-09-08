@@ -55,9 +55,9 @@ def get_next_result(cursor):
     except StopIteration, e:
         return None
     
-def connect_mysql(host, db, user, pw):
+def connect_mysql(host, user, pw):
     '''Creates and returns a db connection and cursor.'''
-    connection = MySQLdb.connect(host=host, db=db, user=user, passwd=pw)
+    connection = MySQLdb.connect(host=host, user=user, passwd=pw)
     cursor = SSCursor(connection)
     return connection, cursor
 
@@ -152,6 +152,26 @@ properties file in CPA will produce an error since it won't be able to
 connect to the server. However, you can still edit the file in CPA and
 then fill in the required information.
 
+Do you want to calculate the aggregate mean / median / standard deviation
+of the values of each object measurement per image?
+
+ExportToDatabase can calculate statistics over all the objects in each image
+and store the results as columns in the database. For instance, if
+you are measuring the area of the Nuclei objects and you check the aggregate
+mean box in this module, ExportToDatabase will create a column in the Per_Image
+table called Mean_Nuclei_AreaShape_Area. You may not want to use 
+ExportToDatabase to calculate these measurements if your pipeline generates
+a large number of per-object measurements; doing so might exceed database
+column limits. These columns can be created manually for selected measurements.
+For instance, the following SQL creates the Mean_Nuclei_AreaShape_Area column:
+
+    ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
+    UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
+        (SELECT AVG(Nuclei_AreaShape_Area)
+         FROM Per_Object
+         WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);
+
+
 ********************* How To Import MySQL *******************************
 Step 1: Log onto the server where the database will be located.
 
@@ -189,25 +209,47 @@ Step 6: Log into SQLPlus: "sqlplus USERNAME/PASSWORD@DATABASESCRIPT"
 Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
 """
 
-    variable_revision_number = 7
+    variable_revision_number = 8
     category = "File Processing"
 
     def create_settings(self):
         self.module_name = "ExportToDatabase"
-        self.db_type = cps.Choice("What type of database do you want to use?", [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL)
-        self.db_name = cps.Text("What is the name of the database you want to use?", "DefaultDB")
-        self.want_table_prefix = cps.Binary("Do you want to add a prefix to your table names?", False)
-        self.table_prefix = cps.Text("What is the table prefix you want to use?", "Expt_")
-        self.sql_file_prefix = cps.Text("What prefix do you want to use to name the SQL file?", "SQL_")
-        self.use_default_output_directory = cps.Binary("Do you want to save files in the default output directory?", True)
-        self.output_directory = cps.Text("What directory should be used to save files?", ".")
-        self.save_cpa_properties = cps.Binary("Do you want to create a CellProfilerAnalyst properties file?", False)
-        self.store_csvs = cps.Binary("Store the database in CSV files? (This will write per_image and per_object tables as a series of CSV files along with an SQL file that can be used with those files to create the database.)", False)
+        self.db_type = cps.Choice("What type of database do you want to use?",
+                                  [DB_MYSQL,DB_ORACLE,DB_SQLITE], DB_MYSQL)
+        self.db_name = cps.Text(
+            "What is the name of the database you want to use?", "DefaultDB")
+        self.want_table_prefix = cps.Binary(
+            "Do you want to add a prefix to your table names?", False)
+        self.table_prefix = cps.Text(
+            "What is the table prefix you want to use?", "Expt_")
+        self.sql_file_prefix = cps.Text(
+            "What prefix do you want to use to name the SQL file?", "SQL_")
+        self.use_default_output_directory = cps.Binary(
+            "Do you want to save files in the default output directory?", True)
+        self.output_directory = cps.Text(
+            "What directory should be used to save files?", ".")
+        self.save_cpa_properties = cps.Binary(
+            "Do you want to create a CellProfilerAnalyst properties file?", 
+            False)
+        self.store_csvs = cps.Binary(
+            "Store the database in CSV files? (This will write per_image and "
+            "per_object tables as a series of CSV files along with an SQL file "
+            "that can be used with those files to create the database.)", False)
         self.db_host = cps.Text("What is the database host?", "imgdb01")
         self.db_user = cps.Text("What is the database username?", "cpuser")
         self.db_passwd = cps.Text("What is the database password?", "cPus3r")
-        self.sqlite_file = cps.Text("What is the SQLite database file you want to write to?", "DefaultDB.db")
-        
+        self.sqlite_file = cps.Text(
+            "What is the SQLite database file you want to write to?", 
+            "DefaultDB.db")
+        self.wants_agg_mean = cps.Binary(
+            "Do you want to calculate the aggregate mean value of each "
+            "object measurement per image?", True)
+        self.wants_agg_median = cps.Binary(
+            "Do you want to calculate the aggregate median value of each "
+            "object measurement per image?", False)
+        self.wants_agg_std_dev = cps.Binary(
+            "Do you want to calculate the standard deviation of the values "
+            "of each object measurement per image?", False)
     
     def visible_settings(self):
         result = [self.db_type]
@@ -238,6 +280,8 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         if self.want_table_prefix.value:
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
+        result += [self.wants_agg_mean, self.wants_agg_median,
+                   self.wants_agg_std_dev]
 
         return result
     
@@ -246,7 +290,9 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 self.table_prefix, self.sql_file_prefix, 
                 self.use_default_output_directory, self.output_directory,
                 self.save_cpa_properties, self.store_csvs, self.db_host, 
-                self.db_user, self.db_passwd, self.sqlite_file]
+                self.db_user, self.db_passwd, self.sqlite_file,
+                self.wants_agg_mean, self.wants_agg_median,
+                self.wants_agg_std_dev]
     
     def backwards_compatibilize(self,setting_values,variable_revision_number,
                                 module_name, from_matlab):
@@ -277,6 +323,13 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             #  db_passwd, and sqlite_file to update to revision 7 
             new_setting_values = settings_values
             new_setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
+            variable_revision_number = 7
+        
+        if (not from_matlab) and variable_revision_number == 7:
+            # Added ability to selectively turn on aggregate measurements
+            # which were all automatically calculated in version 7
+            new_setting_values = setting_values + [True, True, True]
+            variable_revision_number = 8
             
         return setting_values, variable_revision_number, from_matlab
     
@@ -307,7 +360,6 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         if not self.store_csvs.value:
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value, 
-                                                             self.db_name.value, 
                                                              self.db_user.value, 
                                                              self.db_passwd.value)
             elif self.db_type==DB_SQLITE:
@@ -379,7 +431,15 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                         mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
     
-    
+    @property
+    def agg_names(self):
+        '''The list of selected aggregate names'''
+        return [name
+                for name, setting
+                in ((cpmeas.AGG_MEAN, self.wants_agg_mean),
+                    (cpmeas.AGG_MEDIAN, self.wants_agg_median),
+                    (cpmeas.AGG_STD_DEV, self.wants_agg_std_dev))
+                if setting.value]
     #
     # Create per_image and per_object tables in MySQL
     #
@@ -414,6 +474,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         # Create the database
         if self.db_type.value==DB_MYSQL and create_database:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
+        execute(cursor, 'USE %s'% self.db_name.value)
         
         # Object table
         ob_tables = set([obname for obname, _, _ in column_defs 
@@ -428,7 +489,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 if obname==ob_table and not self.ignore_feature(obname, feature):
                     feature_name = '%s_%s'%(obname, feature)
                     # create per_image aggregate column defs 
-                    for aggname in cpmeas.AGG_NAMES:
+                    for aggname in self.agg_names:
                         agg_column_defs += [(cpmeas.IMAGE,
                                              '%s_%s'%(aggname,feature_name),
                                              cpmeas.COLTYPE_FLOAT)]
@@ -499,7 +560,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         #
         # Put mean and std dev measurements for objects in the per_image table
         #
-        for aggname in cpmeas.AGG_NAMES:
+        for aggname in self.agg_names:
             for object_name in workspace.measurements.get_object_names():
                 if object_name == 'Image':
                     continue
@@ -638,14 +699,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                     for feature in measurements.get_feature_names(object_name):
                         if self.ignore_feature(object_name, feature, measurements):
                             continue
-                        for agg_name in cpmeas.AGG_NAMES:
+                        for agg_name in self.agg_names:
                             feature_name = "%s_%s_%s"%(agg_name,object_name, feature)
                             image_row[per_image[feature_name]] = 0
             else:
                 #
                 # The aggregate measurements
                 #
-                agg_dict = measurements.compute_aggregate_measurements(i)
+                agg_dict = measurements.compute_aggregate_measurements(
+                    i, self.agg_names)
                 for feature_name in agg_dict.keys():
                     image_row[per_image[feature_name]] = agg_dict[feature_name]
                 #
@@ -717,14 +779,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                 if obname==cpmeas.IMAGE:
                     continue
                 for col in cols:
-                    for agg_name in cpmeas.AGG_NAMES:
+                    for agg_name in self.agg_names:
                         feature_name = "%s_%s_%s"%(agg_name, obname, col[1])
                         if feature_name in self.image_col_order.keys():
                             image_row[self.image_col_order[feature_name]] = (0, cpmeas.COLTYPE_FLOAT)
             object_rows = []
         else:    
             # Compute and insert the aggregate measurements
-            agg_dict = measurements.compute_aggregate_measurements(index)
+            agg_dict = measurements.compute_aggregate_measurements(
+                index, self.agg_names)
             for feature_name, value in agg_dict.items():
                 if feature_name in self.image_col_order.keys():
                     image_row[self.image_col_order[feature_name]] = (value, cpmeas.COLTYPE_FLOAT)

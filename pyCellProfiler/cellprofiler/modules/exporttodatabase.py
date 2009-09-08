@@ -542,19 +542,16 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
         fid.write("USE %s;\n"%(self.db_name.value))
         fid.write("CREATE TABLE %sPer_Image (ImageNumber INTEGER PRIMARY KEY"%
                   (self.get_table_prefix()))
-        for feature in measurements.get_feature_names('Image'):
-            if self.ignore_feature('Image', feature, measurements):
+        for object_name, feature, coltype in m_cols:
+            if object_name != cpmeas.IMAGE:
                 continue
-            feature_name = "%s_%s"%('Image',feature)
+            if self.ignore_feature(object_name, feature, measurements):
+                continue
+            feature_name = "%s_%s"%(object_name,feature)
             colname = mappings[feature_name]
-            if feature.startswith('FileName'):
-                fid.write(",\n%s VARCHAR(%d)"%(colname,file_name_width))
-            elif feature.find('Path')!=-1:
-                fid.write(",\n%s VARCHAR(%d)"%(colname,path_name_width))
-            elif feature.startswith('MetaData'):
-                fid.write(",\n%s VARCHAR(%d)"%(colname,metadata_name_width))
-            else:
-                fid.write(",\n%s FLOAT NOT NULL"%(colname))
+            if coltype.upper() == 'FLOAT':
+                coltype = 'FLOAT NOT NULL'
+            fid.write(",\n%s %s"%(colname, coltype))
             per_image[feature_name] = per_image_idx
             per_image_idx += 1
         #
@@ -594,11 +591,11 @@ PRIMARY KEY (ImageNumber, ObjectNumber));
 
 LOAD DATA LOCAL INFILE '%s_image.CSV' REPLACE INTO TABLE %sPer_Image 
 FIELDS TERMINATED BY ',' 
-OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
+OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
 LOAD DATA LOCAL INFILE '%s_object.CSV' REPLACE INTO TABLE %sPer_Object 
 FIELDS TERMINATED BY ',' 
-OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
+OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """%(self.base_name(workspace),self.get_table_prefix(),
      self.base_name(workspace),self.get_table_prefix()))
         fid.close()
@@ -664,7 +661,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
         object_filename = os.path.join(self.get_output_directory(),
                                        '%s_object.CSV'%(self.base_name(workspace)))
         fid_per_image = open(image_filename,"wt")
-        csv_per_image = csv.writer(fid_per_image)
+        csv_per_image = csv.writer(fid_per_image, quoting=csv.QUOTE_NONNUMERIC)
         fid_per_object = open(object_filename,"wt")
         csv_per_object = csv.writer(fid_per_object)
         
@@ -689,6 +686,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '';
                 value = measurements.get_measurement('Image',feature, i)
                 if isinstance(value, np.ndarray):
                     value=value[0]
+                if isinstance(value, unicode) or isinstance(value, str):
+                    value = MySQLdb.escape_string(value)
                 image_row[per_image[feature_name]] = value
                 if feature_name.find('Count') != -1:
                     max_count = max(max_count,int(value))

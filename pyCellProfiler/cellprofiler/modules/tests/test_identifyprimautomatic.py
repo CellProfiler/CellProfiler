@@ -15,7 +15,7 @@ import os
 
 import base64
 import unittest
-import numpy
+import numpy as np
 import Image as PILImage
 import scipy.ndimage
 import tempfile
@@ -174,7 +174,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_range.min =.1
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((25,25))
+        img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -187,7 +187,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue(np.all(segmented == 0))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
         self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
@@ -196,12 +196,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(count,0)
         self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),0)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),0)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
         location_center_y = measurements.get_current_measurement("my_object","Location_Center_Y")
-        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape),0)
+        self.assertTrue(isinstance(location_center_y,np.ndarray))
+        self.assertEqual(np.product(location_center_y.shape),0)
 
     def test_02_001_test_zero_objects_wa_in_lo_in(self):
         x = ID.IdentifyPrimAutomatic()
@@ -211,7 +211,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_INTENSITY
-        img = numpy.zeros((25,25))
+        img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -224,7 +224,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue(np.all(segmented == 0))
 
     def test_02_002_test_zero_objects_wa_di_lo_in(self):
         x = ID.IdentifyPrimAutomatic()
@@ -234,7 +234,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_DISTANCE
         x.unclump_method.value = ID.UN_INTENSITY
-        img = numpy.zeros((25,25))
+        img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -247,7 +247,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue(np.all(segmented == 0))
         
     def test_02_003_test_zero_objects_wa_in_lo_sh(self):
         x = ID.IdentifyPrimAutomatic()
@@ -257,7 +257,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_SHAPE
-        img = numpy.zeros((25,25))
+        img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -270,7 +270,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue(np.all(segmented == 0))
 
     def test_02_004_test_zero_objects_wa_di_lo_sh(self):
         x = ID.IdentifyPrimAutomatic()
@@ -280,7 +280,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_DISTANCE
         x.unclump_method.value = ID.UN_SHAPE
-        img = numpy.zeros((25,25))
+        img = np.zeros((25,25))
         image = cellprofiler.cpimage.Image(img)
         image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -293,7 +293,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented == 0))
+        self.assertTrue(np.all(segmented == 0))
 
     def test_02_01_test_one_object(self):
         x = ID.IdentifyPrimAutomatic()
@@ -316,8 +316,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented[img>0] == 1))
-        self.assertTrue(numpy.all(img[segmented==1] > 0))
+        self.assertTrue(np.all(segmented[img>0] == 1))
+        self.assertTrue(np.all(img[segmented==1] > 0))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
         self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
@@ -328,14 +328,14 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(count,1)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
         location_center_y = measurements.get_current_measurement("my_object","Location_Center_Y")
-        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape),1)
+        self.assertTrue(isinstance(location_center_y,np.ndarray))
+        self.assertEqual(np.product(location_center_y.shape),1)
         self.assertTrue(location_center_y[0]>8)
         self.assertTrue(location_center_y[0]<12)
         self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),1)
         self.assertTrue(location_center_x[0]>13)
         self.assertTrue(location_center_x[0]<16)
         columns = x.get_measurement_columns(pipeline)
@@ -373,16 +373,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(count,2)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
         location_center_y = measurements.get_current_measurement("my_object","Location_Center_Y")
-        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape),2)
+        self.assertTrue(isinstance(location_center_y,np.ndarray))
+        self.assertEqual(np.product(location_center_y.shape),2)
         self.assertTrue(location_center_y[0]>8)
         self.assertTrue(location_center_y[0]<12)
         self.assertTrue(location_center_y[1]>28)
         self.assertTrue(location_center_y[1]<32)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),2)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),2)
         self.assertTrue(location_center_x[0]>33)
         self.assertTrue(location_center_x[0]<37)
         self.assertTrue(location_center_x[1]>13)
@@ -420,14 +420,14 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEqual(count,1)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names("my_object"))
         location_center_y = measurements.get_current_measurement("my_object","Location_Center_Y")
-        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape),1)
+        self.assertTrue(isinstance(location_center_y,np.ndarray))
+        self.assertEqual(np.product(location_center_y.shape),1)
         self.assertTrue(location_center_y[0]>8)
         self.assertTrue(location_center_y[0]<12)
         self.assertTrue("Location_Center_X" in measurements.get_feature_names("my_object"))
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),1)
         self.assertTrue(location_center_x[0]>33)
         self.assertTrue(location_center_x[0]<36)
     
@@ -440,7 +440,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_smoothing.value = False
         x.smoothing_filter_size.value = 0
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((40,40))
+        img = np.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
         draw_circle(img, (30,30), 7, .5)
         img[10,10] = 0
@@ -468,7 +468,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = False
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((40,40))
+        img = np.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
         draw_circle(img, (30,30), 7, .5)
         img[10,10] = 0
@@ -503,7 +503,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_SHAPE
         x.watershed_method.value = ID.WA_DISTANCE
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -534,7 +534,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),2)
+        self.assertEqual(np.max(objects.segmented),2)
     
     def test_02_07_test_watershed_shape_intensity(self):
         """Identify by local_maxima:shape & watershed:intensity
@@ -554,7 +554,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_SHAPE
         x.watershed_method.value = ID.WA_INTENSITY
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -585,7 +585,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),2)
+        self.assertEqual(np.max(objects.segmented),2)
         self.assertEqual(objects.segmented[7,11],objects.segmented[7,4])
     
     def test_02_08_test_watershed_intensity_distance_single(self):
@@ -598,7 +598,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
-        x.size_range.value = (2,10)
+        x.size_range.value = (4,10)
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = 0
@@ -606,7 +606,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -640,7 +640,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),1)
+        self.assertEqual(np.max(objects.segmented),1)
     
     def test_02_08_test_watershed_intensity_distance_triple(self):
         """Identify by local_maxima:intensity & watershed:shape - 3 objects w/o filter
@@ -660,7 +660,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -691,7 +691,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),3)
+        self.assertEqual(np.max(objects.segmented),3)
     
     def test_02_09_test_watershed_intensity_distance_filter(self):
         """Identify by local_maxima:intensity & watershed:shape - filtered
@@ -711,7 +711,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -742,7 +742,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),1)
+        self.assertEqual(np.max(objects.segmented),1)
     
     def test_02_10_test_watershed_intensity_distance_double(self):
         """Identify by local_maxima:intensity & watershed:shape - two objects
@@ -765,7 +765,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_DISTANCE
-        img = numpy.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
                            [ 0, 0, 0,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5, 0, 0, 0],
@@ -799,7 +799,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects("my_object")
-        self.assertEqual(numpy.max(objects.segmented),2)
+        self.assertEqual(np.max(objects.segmented),2)
         self.assertNotEqual(objects.segmented[12,7],objects.segmented[4,7])
     
     def test_03_01_run_inside_pipeline(self):
@@ -835,16 +835,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements,"my_object")),'1')
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_Y")),'1')
         location_center_y = matlab.cell2mat(handles.Measurements.my_object.Location_Center_Y[0])
-        self.assertTrue(isinstance(location_center_y,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_y.shape),2)
+        self.assertTrue(isinstance(location_center_y,np.ndarray))
+        self.assertEqual(np.product(location_center_y.shape),2)
         self.assertTrue(location_center_y[0,0]>8)
         self.assertTrue(location_center_y[0,0]<12)
         self.assertTrue(location_center_y[1,0]>28)
         self.assertTrue(location_center_y[1,0]<32)
         self.assertEquals(matlab.num2str(matlab.isfield(handles.Measurements.my_object,"Location_Center_X")),'1')
         location_center_x = matlab.cell2mat(handles.Measurements.my_object.Location_Center_X[0])
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),2)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),2)
         self.assertTrue(location_center_x[0,0]>33)
         self.assertTrue(location_center_x[0,0]<37)
         self.assertTrue(location_center_x[1,0]>13)
@@ -1009,7 +1009,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((200,200))
+        img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
@@ -1028,8 +1028,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
         self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),1)
 
     def test_05_02_keep_large(self):
         x = ID.IdentifyPrimAutomatic()
@@ -1039,7 +1039,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((200,200))
+        img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
@@ -1056,8 +1056,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
         self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),2)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),2)
 
     def test_05_03_discard_small(self):
         x = ID.IdentifyPrimAutomatic()
@@ -1067,7 +1067,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.min = 40
         x.size_range.max = 60
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((200,200))
+        img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
         image = cellprofiler.cpimage.Image(img)
@@ -1086,8 +1086,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue(objects.unedited_segmented[25,25],"The small object was not in the unedited set")
         self.assertTrue(objects.unedited_segmented[100,100],"The large object was not in the unedited set")
         location_center_x = measurements.get_current_measurement("my_object","Location_Center_X")
-        self.assertTrue(isinstance(location_center_x,numpy.ndarray))
-        self.assertEqual(numpy.product(location_center_x.shape),1)
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),1)
 
     def test_05_02_discard_edge(self):
         x = ID.IdentifyPrimAutomatic()
@@ -1097,7 +1097,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((100,100))
+        img = np.zeros((100,100))
         centers = [(50,50),(10,50),(50,10),(90,50),(50,90)]
         present = [ True,  False,  False,  False,  False]
         for center in centers:
@@ -1128,12 +1128,12 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
-        img = numpy.zeros((200,200))
+        img = np.zeros((200,200))
         centers = [(100,100),(30,100),(100,30),(170,100),(100,170)]
         present = [ True,  False,  False,  False,  False]
         for center in centers:
             draw_circle(img,center,15,.5)
-        mask = numpy.zeros((200,200))
+        mask = np.zeros((200,200))
         mask[25:175,25:175]=1
         image = cellprofiler.cpimage.Image(img,mask)
         image_set_list = cellprofiler.cpimage.ImageSetList()
@@ -1162,7 +1162,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.watershed_method.value = ID.WA_NONE
         x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .5
-        img = numpy.zeros((10,10))
+        img = np.zeros((10,10))
         img[4,4]=1
         img[5,5]=1
         image = cellprofiler.cpimage.Image(img)
@@ -1177,8 +1177,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         self.assertTrue("my_object" in object_set.object_names)
         objects = object_set.get_objects("my_object")
         segmented = objects.segmented
-        self.assertTrue(numpy.all(segmented[img>0] == 1))
-        self.assertTrue(numpy.all(img[segmented==1] > 0))
+        self.assertTrue(np.all(segmented[img>0] == 1))
+        self.assertTrue(np.all(img[segmented==1] > 0))
     
     def test_07_01_adaptive_otsu_small(self):
         """Test the function, get_threshold, using Otsu adaptive / small
@@ -1187,24 +1187,24 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pieces, check that the threshold is different in each block
         and that there are four blocks broken at the 75 boundary
         """
-        numpy.random.seed(0)
-        image = numpy.zeros((120,110))
+        np.random.seed(0)
+        image = np.zeros((120,110))
         for i0,i1 in ((0,60),(60,120)):
             for j0,j1 in ((0,55),(55,110)):
                 dmin = float(i0 * 2 + j0) / 500.0
                 dmult = 1.0-dmin
                 # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0,numpy.pi*2,(60,55))
-                rsin = (numpy.sin(r) + 1) / 2
+                r = np.random.uniform(0,np.pi*2,(60,55))
+                rsin = (np.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
-                                                     numpy.ones((120,110),bool),
+                                                     np.ones((120,110),bool),
                                                      None)
         for i0,i1 in ((0,60),(60,120)):
             for j0,j1 in ((0,55),(55,110)):
-                self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
+                self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
         self.assertTrue(threshold[0,0] != threshold[0,109])
         self.assertTrue(threshold[0,0] != threshold[119,0])
         self.assertTrue(threshold[0,0] != threshold[119,109])
@@ -1216,8 +1216,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         pieces, check that the threshold is different in each block
         and that boundaries occur where expected
         """
-        numpy.random.seed(0)
-        image = numpy.zeros((525,525))
+        np.random.seed(0)
+        image = np.zeros((525,525))
         blocks = []
         for i in range(10):
             for j in range(10):
@@ -1232,49 +1232,49 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
                 blocks.append(dim)
                 ((i0,i1),(j0,j1)) = dim
                 # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0,numpy.pi*2,(i1-i0,j1-j0))
-                rsin = (numpy.sin(r) + 1) / 2
+                r = np.random.uniform(0,np.pi*2,(i1-i0,j1-j0))
+                rsin = (np.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_OTSU_ADAPTIVE
         threshold,global_threshold = x.get_threshold(image, 
-                                                     numpy.ones((525,525),bool),
+                                                     np.ones((525,525),bool),
                                                      None)
         for ((i0,i1),(j0,j1)) in blocks:
-                self.assertTrue(numpy.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
+                self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
     
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""
         
-        image = numpy.zeros((20,20))
+        image = np.zeros((20,20))
         draw_circle(image,(5,5),2,.1)
         draw_circle(image,(15,15),3,.1)
         draw_circle(image,(15,15),2,.2)
-        labels = numpy.zeros((20,20),int)
+        labels = np.zeros((20,20),int)
         draw_circle(labels,(5,5),3,1)
         draw_circle(labels,(15,15),3,2)
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_OTSU_PER_OBJECT
         threshold, global_threshold = x.get_threshold(image, 
-                                                      numpy.ones((20,20), bool),
+                                                      np.ones((20,20), bool),
                                                       labels)
         t1 = threshold[5,5]
         t2 = threshold[15,15]
         self.assertTrue(t1 < .1)
         self.assertTrue(t2 > .1)
         self.assertTrue(t2 < .2)
-        self.assertTrue(numpy.all(threshold[labels==1] == threshold[5,5]))
-        self.assertTrue(numpy.all(threshold[labels==2] == threshold[15,15]))
+        self.assertTrue(np.all(threshold[labels==1] == threshold[5,5]))
+        self.assertTrue(np.all(threshold[labels==2] == threshold[15,15]))
     
     def test_08_02_per_object_otsu_run(self):
         """Test IdentifyPrimAutomatic per object through the Run function"""
         
-        image = numpy.ones((20,20))*0.05
+        image = np.ones((20,20))*0.05
         draw_circle(image,(5,5),2,.1)
         draw_circle(image,(15,15),3,.25)
         draw_circle(image,(15,15),2,.5)
         image = add_noise(image, .01)
-        labels = numpy.zeros((20,20),int)
+        labels = np.zeros((20,20),int)
         draw_circle(labels,(5,5),3,1)
         draw_circle(labels,(15,15),3,2)
         objects = cellprofiler.objects.Objects()
@@ -1286,7 +1286,7 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         image_set.add("my_image", image)
         object_set = cellprofiler.objects.ObjectSet()
         
-        expected_labels = numpy.zeros((20,20),int)
+        expected_labels = np.zeros((20,20),int)
         draw_circle(expected_labels,(5,5),2,1)
         draw_circle(expected_labels,(15,15),2,2)
         
@@ -1308,8 +1308,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         # Do a little indexing trick so we can ignore which object got
         # which label
         self.assertNotEqual(labels[5,5], labels[15,15])
-        indexes = numpy.array([0, labels[5,5], labels[15,15]])
-        self.assertTrue(numpy.all(indexes[labels] == expected_labels))
+        indexes = np.array([0, labels[5,5], labels[15,15]])
+        self.assertTrue(np.all(indexes[labels] == expected_labels))
     
     def test_09_01_mog(self):
         """Test mixture of gaussians thresholding with few pixels
@@ -1319,10 +1319,10 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_MOG_GLOBAL
         for i in range(11):
             if i:
-                image = numpy.array(range(i),float) / float(i)
+                image = np.array(range(i),float) / float(i)
             else:
-                image = numpy.array((0,))
-            x.get_threshold(image, numpy.ones((i,),bool),None)
+                image = np.array((0,))
+            x.get_threshold(image, np.ones((i,),bool),None)
 
     def test_09_02_mog_fly(self):
         """Test mixture of gaussians thresholding on the fly image"""
@@ -1330,15 +1330,15 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_MOG_GLOBAL
         x.object_fraction.value = '0.10'
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.038)
         self.assertTrue(threshold < 0.041)
         x.object_fraction.value = '0.20'
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.0084)
         self.assertTrue(threshold < 0.0088)
         x.object_fraction.value = '0.50'
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.0082)
         self.assertTrue(threshold < 0.0086)
     
@@ -1348,16 +1348,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
         for i in range(11):
             if i:
-                image = numpy.array(range(i),float) / float(i)
+                image = np.array(range(i),float) / float(i)
             else:
-                image = numpy.array((0,))
-            x.get_threshold(image, numpy.ones((i,),bool),None)
+                image = np.array((0,))
+            x.get_threshold(image, np.ones((i,),bool),None)
     
     def test_10_02_test_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.046)
         self.assertTrue(threshold < 0.048)
         
@@ -1367,16 +1367,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_ROBUST_BACKGROUND_GLOBAL
         for i in range(11):
             if i:
-                image = numpy.array(range(i),float) / float(i)
+                image = np.array(range(i),float) / float(i)
             else:
-                image = numpy.array((0,))
-            x.get_threshold(image, numpy.ones((i,),bool),None)
+                image = np.array((0,))
+            x.get_threshold(image, np.ones((i,),bool),None)
     
     def test_11_02_test_robust_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_ROBUST_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
         
@@ -1386,16 +1386,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_RIDLER_CALVARD_GLOBAL
         for i in range(11):
             if i:
-                image = numpy.array(range(i),float) / float(i)
+                image = np.array(range(i),float) / float(i)
             else:
-                image = numpy.array((0,))
-            x.get_threshold(image, numpy.ones((i,),bool),None)
+                image = np.array((0,))
+            x.get_threshold(image, np.ones((i,),bool),None)
 
     def test_12_02_test_ridler_calvard_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_RIDLER_CALVARD_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.017)
         self.assertTrue(threshold < 0.019)
         
@@ -1406,16 +1406,16 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_KAPUR_GLOBAL
         for i in range(11):
             if i:
-                image = numpy.array(range(i),float) / float(i)
+                image = np.array(range(i),float) / float(i)
             else:
-                image = numpy.array((0,))
-            x.get_threshold(image, numpy.ones((i,),bool),None)
+                image = np.array((0,))
+            x.get_threshold(image, np.ones((i,),bool),None)
     
     def test_13_02_test_kapur_background_fly(self):
         image = fly_image()
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_KAPUR_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, numpy.ones(image.shape,bool),None)
+        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None)
         self.assertTrue(threshold > 0.015)
         self.assertTrue(threshold < 0.017)
     
@@ -1424,8 +1424,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x = ID.IdentifyPrimAutomatic()
         x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .5
-        local_threshold,threshold = x.get_threshold(numpy.zeros((10,10)), 
-                                                    numpy.ones((10,10),bool),
+        local_threshold,threshold = x.get_threshold(np.zeros((10,10)), 
+                                                    np.ones((10,10),bool),
                                                     None)
         self.assertTrue(threshold == .5)
         self.assertTrue(threshold == .5)
@@ -1438,8 +1438,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.watershed_method.value = ID.WA_NONE
         x.threshold_method.value = T.TM_BINARY_IMAGE
         x.binary_image.value = "my_threshold"
-        img = numpy.zeros((200,200))
-        thresh = numpy.zeros((200,200),bool)
+        img = np.zeros((200,200))
+        thresh = np.zeros((200,200),bool)
         draw_circle(img,(100,100),50,True)
         draw_circle(img,(25,25),20,True)
         image = cellprofiler.cpimage.Image(img)
@@ -1476,21 +1476,207 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         for column in columns:
             self.assertTrue(any(all([colval==exval for colval, exval in zip(column, expected)])
                                 for expected in expected_columns))
+    
+    def test_17_01_regression_holes(self):
+        '''Regression test - fill holes caused by filtered object
+        
+        This was created as a regression test for the bug, IMG-191, but
+        didn't exercise the bug. It's a good test of watershed and filling
+        labeled holes in an odd case, so I'm leaving it in.
+        '''
+        #
+        # This array has two intensity peaks separated by a border.
+        # You should get two objects, one within the other.
+        #
+        pixels = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,2,1,1,1,1,1,1,2,0,0],
+                           [0,0,2,1,2,2,2,2,1,2,0,0],
+                           [0,0,2,1,2,9,2,2,1,2,0,0],
+                           [0,0,2,1,2,2,2,2,1,2,0,0],
+                           [0,0,2,1,1,1,1,1,1,2,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,9,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,0,0,0,0,0,0,0,0,0,0]], float) / 10.0
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,1,1,1,1,1,1,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0]])
+        mask = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,1,1,1,1,1,1,0,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,0,1,1,1,1,0,1,0,0],
+                         [0,0,1,0,1,1,1,1,0,1,0,0],
+                         [0,0,1,0,1,1,1,1,0,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,0,1,1,1,1,1,1,0,0,0],                           
+                         [0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,0,0,0,0,0,0,0,0,0]], bool)
+        image = cellprofiler.cpimage.Image(pixels)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add("my_image", image)
+        object_set = cellprofiler.objects.ObjectSet()
+        
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = True
+        x.size_range.min = 7
+        x.size_range.max = 50
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.watershed_method.value = ID.WA_INTENSITY
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .05
+        x.threshold_correction_factor.value = 1
+        x.module_num = 1
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(x)
+        measurements = cpmeas.Measurements()
+        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                              image_set_list)
+        x.run(workspace)
+        my_objects = object_set.get_objects("my_object")
+        self.assertTrue(my_objects.segmented[3,3] != 0)
+        if my_objects.unedited_segmented[3,3] == 2:
+            unedited_segmented = my_objects.unedited_segmented
+        else:
+            unedited_segmented = np.array([0,2,1])[my_objects.unedited_segmented]
+        self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
+
+    def test_17_02_regression_holes(self):
+        '''Regression test - fill holes caused by filtered object
+        
+        This is the real regression test for IMG-191. The smaller object
+        is surrounded by pixels below threshold. This prevents filling in
+        the unedited case.
+        '''
+        pixels = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,2,2,2,2,2,2,2,2,0,0],
+                           [0,0,3,0,0,0,0,0,0,3,0,0],
+                           [0,0,3,0,0,0,0,0,0,3,0,0],
+                           [0,0,3,0,0,9,2,0,0,3,0,0],
+                           [0,0,3,0,0,0,0,0,0,3,0,0],
+                           [0,0,3,0,0,0,0,0,0,3,0,0],
+                           [0,0,3,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,3,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,3,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,9,2,0,0],                           
+                           [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                           [0,0,0,0,0,0,0,0,0,0,0,0],
+                           [0,0,0,0,0,0,0,0,0,0,0,0]], float) / 10.0
+        expected = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],
+                             [0,0,2,0,0,0,0,0,0,2,0,0],
+                             [0,0,2,0,0,0,0,0,0,2,0,0],
+                             [0,0,2,0,0,1,1,0,0,2,0,0],
+                             [0,0,2,0,0,0,0,0,0,2,0,0],
+                             [0,0,2,0,0,0,0,0,0,2,0,0],
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,2,2,2,2,2,2,2,2,0,0],                           
+                             [0,0,0,0,0,0,0,0,0,0,0,0],
+                             [0,0,0,0,0,0,0,0,0,0,0,0]])
+        mask = np.array([[0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,1,1,1,1,1,1,0,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,0,0,1,1,0,0,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,0,0,0,0,0,0,1,0,0],
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,1,1,1,1,1,1,1,1,0,0],                           
+                         [0,0,0,1,1,1,1,1,1,0,0,0],                           
+                         [0,0,0,0,0,0,0,0,0,0,0,0],
+                         [0,0,0,0,0,0,0,0,0,0,0,0]], bool)
+        image = cellprofiler.cpimage.Image(pixels)
+        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.add("my_image", image)
+        object_set = cellprofiler.objects.ObjectSet()
+        
+        x = ID.IdentifyPrimAutomatic()
+        x.object_name.value = "my_object"
+        x.image_name.value = "my_image"
+        x.exclude_size.value = True
+        x.size_range.min = 4
+        x.size_range.max = 50
+        x.maxima_suppression_size.value = 3
+        x.automatic_suppression.value = False
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_method.value = T.TM_MANUAL
+        x.manual_threshold.value = .1
+        x.threshold_correction_factor.value = 1
+        x.module_num = 1
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(x)
+        measurements = cpmeas.Measurements()
+        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
+                              image_set_list)
+        x.run(workspace)
+        my_objects = object_set.get_objects("my_object")
+        self.assertTrue(my_objects.segmented[3,3] != 0)
+        if my_objects.unedited_segmented[3,3] == 2:
+            unedited_segmented = my_objects.unedited_segmented
+        else:
+            unedited_segmented = np.array([0,2,1])[my_objects.unedited_segmented]
+        self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
 
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
-    numpy.random.seed(0)
-    noise = numpy.random.uniform(low=1-fraction/2, high=1+fraction/2,
+    np.random.seed(0)
+    noise = np.random.uniform(low=1-fraction/2, high=1+fraction/2,
                                  size=img.shape)
     return img * noise
 
 def one_cell_image():
-    img = numpy.zeros((25,25))
+    img = np.zeros((25,25))
     draw_circle(img,(10,15),5, .5)
     return add_noise(img,.01)
 
 def two_cell_image():
-    img = numpy.zeros((50,50))
+    img = np.zeros((50,50))
     draw_circle(img,(10,35),5, .8)
     draw_circle(img,(30,15),5, .6)
     return add_noise(img,.01)
@@ -1498,31 +1684,31 @@ def two_cell_image():
 def fly_image():
     file = os.path.join(cellprofiler.modules.tests.example_images_directory(),
                         'ExampleFlyImages','01_POS002_D.TIF')
-    img = numpy.asarray(PILImage.open(file))
+    img = np.asarray(PILImage.open(file))
     img = img.astype(float) / 255.0
     return img
     
 def draw_circle(img,center,radius,value):
-    x,y=numpy.mgrid[0:img.shape[0],0:img.shape[1]]
-    distance = numpy.sqrt((x-center[0])*(x-center[0])+(y-center[1])*(y-center[1]))
+    x,y=np.mgrid[0:img.shape[0],0:img.shape[1]]
+    distance = np.sqrt((x-center[0])*(x-center[0])+(y-center[1])*(y-center[1]))
     img[distance<=radius]=value
 
 class TestWeightedVariance(unittest.TestCase):
     def test_01_masked_wv(self):
-        output = T.weighted_variance(numpy.zeros((3,3)), 
-                                      numpy.zeros((3,3),bool), 1)
+        output = T.weighted_variance(np.zeros((3,3)), 
+                                      np.zeros((3,3),bool), 1)
         self.assertEqual(output, 0)
     
     def test_02_zero_wv(self):
-        output = T.weighted_variance(numpy.zeros((3,3)),
-                                      numpy.ones((3,3),bool),1)
+        output = T.weighted_variance(np.zeros((3,3)),
+                                      np.ones((3,3),bool),1)
         self.assertEqual(output, 0)
     
     def test_03_fg_0_bg_0(self):
         """Test all foreground pixels same, all background same, wv = 0"""
-        img = numpy.zeros((4,4))
+        img = np.zeros((4,4))
         img[:,2:4]=1
-        output = T.weighted_variance(img, numpy.ones(img.shape,bool),.5)
+        output = T.weighted_variance(img, np.ones(img.shape,bool),.5)
         self.assertEqual(output,0)
     
     def test_04_values(self):
@@ -1530,9 +1716,9 @@ class TestWeightedVariance(unittest.TestCase):
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25 *2 + .25 *2)/4 = .25
-        img = numpy.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
+        img = np.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
         threshold = 3.0/16.0
-        output = T.weighted_variance(img, numpy.ones((2,2),bool), threshold)
+        output = T.weighted_variance(img, np.ones((2,2),bool), threshold)
         self.assertEqual(output,.25)
     
     def test_05_mask(self):
@@ -1540,34 +1726,34 @@ class TestWeightedVariance(unittest.TestCase):
         #
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25*2 + .25 *2)/4 = .25
-        img = numpy.array([[1.0/16.,1.0/16.0,1.0/8.0],[1.0/4.0,1.0/4.0,1.0/2.0]])
-        mask = numpy.array([[False,True,True],[False,True,True]])
+        img = np.array([[1.0/16.,1.0/16.0,1.0/8.0],[1.0/4.0,1.0/4.0,1.0/2.0]])
+        mask = np.array([[False,True,True],[False,True,True]])
         threshold = 3.0/16.0
         output = T.weighted_variance(img, mask, threshold)
         self.assertAlmostEquals(output,.25)
 
 class TestSumOfEntropies(unittest.TestCase):
     def test_01_all_masked(self):
-        output = T.sum_of_entropies(numpy.zeros((3,3)), 
-                                     numpy.zeros((3,3),bool), 1)
+        output = T.sum_of_entropies(np.zeros((3,3)), 
+                                     np.zeros((3,3),bool), 1)
         self.assertEqual(output,0)
     
     def test_020_all_zero(self):
         """Can't take the log of zero, so all zero matrix = 0"""
-        output = T.sum_of_entropies(numpy.zeros((4,2)),numpy.ones((4,2),bool),1)
+        output = T.sum_of_entropies(np.zeros((4,2)),np.ones((4,2),bool),1)
         self.assertAlmostEqual(output,0)
     
     def test_03_fg_bg_equal(self):
-        img = numpy.ones((128,128))
+        img = np.ones((128,128))
         img[0:64,:] *= .1
         img[64:128,:] *= .9
-        output = T.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+        output = T.sum_of_entropies(img, np.ones((128,128),bool), .5)
     
     def test_04_fg_bg_different(self):
-        img = numpy.ones((128,128))
+        img = np.ones((128,128))
         img[0:64,0:64] *= .1
         img[0:64,64:128] *= .3
         img[64:128,0:64] *= .7
         img[64:128,64:128] *= .9
-        output = T.sum_of_entropies(img, numpy.ones((128,128),bool), .5)
+        output = T.sum_of_entropies(img, np.ones((128,128),bool), .5)
         

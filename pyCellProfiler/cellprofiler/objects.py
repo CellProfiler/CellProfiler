@@ -266,15 +266,7 @@ def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     assert small_removed_segmented == None or small_removed_segmented.ndim == 2, "Small removed segmented label matrix must have two dimensions, has %d"%(small_removed_segmented.ndim)
     assert segmented == None or unedited_segmented == None or segmented.shape == unedited_segmented.shape, "Segmented %s and unedited segmented %s shapes differ"%(repr(segmented.shape),repr(unedited_segmented.shape))
     assert segmented == None or small_removed_segmented == None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ"%(repr(segmented.shape),repr(small_removed_segmented.shape))
-    assert segmented == None or \
-           unedited_segmented == None or \
-           np.logical_or(segmented == 0,unedited_segmented!=0).all(), \
-           "Unedited segmented must be labeled if segmented is labeled"
-    assert small_removed_segmented == None or \
-           unedited_segmented == None or \
-           np.logical_or(small_removed_segmented == 0,unedited_segmented!=0).all(), \
-           "Unedited segmented must be labeled if small_removed_segmented is labeled"
-    
+   
 
 class ObjectSet(object):
     """A set of objects.Objects instances.

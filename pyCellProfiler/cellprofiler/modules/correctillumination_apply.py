@@ -182,6 +182,6 @@ See also CorrectIllumination_Calculate, RescaleIntensity.
                                         "Illumination function: %s"%(self.illum_correct_function_image_name.value))
         figure.subplot_imshow_grayscale(1, 0, output_pixels,
                                         "Final image: %s"%(self.corrected_image_name.value))
-        statistics = [ ["Min value", round(output_pixels.min(),4)],
-                      [ "Max value", round(output_pixels.max(),4)]]
+        statistics = [ ["Min value", round(illum_pixels.min(),4)],
+                      [ "Max value", round(illum_pixels.max(),4)]]
         figure.subplot_table(1, 1, statistics, ratio=(.6,.4))

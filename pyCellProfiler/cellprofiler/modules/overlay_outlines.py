@@ -159,7 +159,7 @@ See also identify modules.
             workspace.image_set.add(self.output_image_name.value, output_image)
             if not workspace.frame is None:
                 figure = workspace.create_or_find_figure(subplots=(1,1))
-                if self.wants_color.value:
+                if self.wants_color.value == WANTS_COLOR:
                     figure.subplot_imshow_color(0, 0, pixel_data, 
                                                 self.output_image_name.value)
                 else:

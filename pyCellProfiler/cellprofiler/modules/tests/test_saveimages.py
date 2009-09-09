@@ -549,6 +549,19 @@ class TestSaveImages(unittest.TestCase):
         module.prepare_to_create_batch(None,None, fn_alter_path)
         self.assertEqual(module.pathname.value, '/imaging/analysis')
     
+    def test_03_01_get_measurement_columns(self):
+        module = cpm_si.SaveImages()
+        module.image_name.value = "MyImage"
+        module.update_file_names.value = False
+        self.assertEqual(len(module.get_measurement_columns(None)), 0)
+        module.update_file_names.value = True
+        columns = module.get_measurement_columns(None)
+        self.assertEqual(len(columns),2)
+        for column in columns:
+            self.assertEqual(column[0], "Image")
+            self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
+        
+    
 def make_array(encoded,shape,dtype=numpy.uint8):
     data = base64.b64decode(encoded)
     a = numpy.fromstring(data,dtype)

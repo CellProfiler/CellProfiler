@@ -449,12 +449,28 @@ class SaveImages(cpm.CPModule):
         if self.update_file_names.value:
             pn, fn = os.path.split(filename)
             workspace.measurements.add_measurement('Image',
-                                                   'FileName_%s'%(self.image_name.value),
+                                                   self.file_name_feature,
                                                    fn)
             workspace.measurements.add_measurement('Image',
-                                                   'PathName_%s'%(self.image_name.value),
+                                                   self.path_name_feature,
                                                    pn)
     
+    @property
+    def file_name_feature(self):
+        return 'FileName_%s'%(self.image_name.value)
+    
+    @property
+    def path_name_feature(self):
+        return 'PathName_%s'%(self.image_name.value)
+    
+    def get_measurement_columns(self, pipeline):
+        if self.update_file_names.value:
+            return [(cellprofiler.measurements.IMAGE, x,
+                     cellprofiler.measurements.COLTYPE_VARCHAR_FILE_NAME)
+                    for x in (self.file_name_feature, self.path_name_feature)]
+        else:
+            return []
+        
     def get_filename(self,workspace):
         "Concoct a filename for the current image based on the user settings"
         

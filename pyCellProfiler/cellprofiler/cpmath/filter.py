@@ -22,6 +22,7 @@ from scipy.ndimage import binary_dilation, binary_erosion
 from scipy.ndimage import generate_binary_structure
 from smooth import smooth_with_function_and_mask
 from cpmorphology import fixup_scipy_ndimage_result as fix
+from cpmorphology import centers_of_labels
 
 def stretch(image, mask=None):
     '''Normalize an image to make the minimum zero and maximum one
@@ -636,12 +637,7 @@ def gabor(image, labels, frequency, theta):
     nobjects = np.max(labels)
     if nobjects == 0:
         return image
-    centers = scind.center_of_mass(np.ones(labels.shape), labels,
-                                   np.arange(nobjects)+1)
-    if nobjects == 1:
-        centers = np.array([centers])
-    else:
-        centers = np.array(centers)
+    centers = centers_of_labels(labels)
     areas = fix(scind.sum(np.ones(image.shape),labels, np.arange(nobjects)+1))
     mask = labels > 0
     i,j = np.mgrid[0:image.shape[0],0:image.shape[1]].astype(float)

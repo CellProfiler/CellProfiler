@@ -791,7 +791,7 @@ def minimum_enclosing_circle(labels, indexes = None,
         #
         min_position = scind.minimum_position(angle_s0vs1,v_labels,
                                               indexes)
-        min_position = fixup_scipy_ndimage_result(min_position)
+        min_position = fixup_scipy_ndimage_result(min_position).astype(int)
         min_position = min_position.flatten()
         #
         # Case 1: minimum angle is obtuse or right. Accept S as the diameter.

@@ -768,6 +768,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
             if isinstance(value, np.ndarray):
                 value=value[0]
+            if isinstance(value, float) and not np.isfinite(value):
+                value = 0
             if feature_name in self.image_col_order.keys():
                 image_row[self.image_col_order[feature_name]] =\
                          (value, m_col[2], feature_name)

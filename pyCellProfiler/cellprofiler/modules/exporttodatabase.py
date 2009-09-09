@@ -37,7 +37,7 @@ def execute(cursor, query, return_result=True):
     cursor.execute(query)
     if return_result:
         return get_results_as_list(cursor)
-    
+
 def get_results_as_list(cursor):
     r = get_next_result(cursor)
     l = []
@@ -762,14 +762,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         max_count = 0
         image_number = index + measurements.image_set_start_number
         image_row = [None for k in range(len(self.image_col_order)+1)]
-        image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER)
+        image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER, 'ImageNumber')
         for m_col in self.col_dict[cpmeas.IMAGE]:
             feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
             value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
             if isinstance(value, np.ndarray):
                 value=value[0]
             if feature_name in self.image_col_order.keys():
-                image_row[self.image_col_order[feature_name]] = (value, m_col[2])
+                image_row[self.image_col_order[feature_name]] =\
+                         (value, m_col[2], feature_name)
                 if feature_name.find('Count') != -1:
                     max_count = max(max_count,int(value))
         
@@ -781,7 +782,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for agg_name in self.agg_names:
                         feature_name = "%s_%s_%s"%(agg_name, obname, col[1])
                         if feature_name in self.image_col_order.keys():
-                            image_row[self.image_col_order[feature_name]] = (0, cpmeas.COLTYPE_FLOAT)
+                            image_row[self.image_col_order[feature_name]] =\
+                                     (0, cpmeas.COLTYPE_FLOAT, feature_name)
             object_rows = []
         else:    
             # Compute and insert the aggregate measurements
@@ -789,13 +791,20 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 index, self.agg_names)
             for feature_name, value in agg_dict.items():
                 if feature_name in self.image_col_order.keys():
-                    image_row[self.image_col_order[feature_name]] = (value, cpmeas.COLTYPE_FLOAT)
+                    image_row[self.image_col_order[feature_name]] =\
+                             (value, cpmeas.COLTYPE_FLOAT, feature_name)
             
             object_rows = np.zeros((max_count, len(self.object_col_order)+2), dtype=object)
             for i in xrange(max_count):
                 object_rows[i,0] = (image_number, cpmeas.COLTYPE_INTEGER)
                 object_rows[i,1] = (i+1, cpmeas.COLTYPE_INTEGER)
-            
+
+            # The object columns in order
+            object_cols = (['ImageNumber','ObjectNumber'] + 
+                           [ None] * len(self.object_col_order))
+            for key in self.object_col_order.keys():
+                object_cols[self.object_col_order[key]] = key
+                
             # Loop through the object columns, setting all object values for each column
             for obname, cols in self.col_dict.items():
                 if obname==cpmeas.IMAGE or obname==cpmeas.EXPERIMENT:
@@ -819,17 +828,23 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         # wrap non-numeric types in quotes
         image_row_formatted = [(dtype in [cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER]) and
                                str(val) or "'%s'"%MySQLdb.escape_string(str(val)) 
-                               for val, dtype in image_row]
+                               for val, dtype, colname in image_row]
         
         image_table = self.get_table_prefix()+'Per_Image'
         object_table = self.get_table_prefix()+'Per_Object'
         
-        stmt = 'INSERT INTO %s VALUES (%s)'%(image_table, ','.join([str(v) for v in image_row_formatted]))
+        stmt = ('INSERT INTO %s (%s) VALUES (%s)' % 
+                (image_table, 
+                 ','.join([colname for val, dtype, colname in image_row]),
+                 ','.join([str(v) for v in image_row_formatted])))
         execute(self.cursor, stmt)
-        for ob_row in object_rows:
-            stmt = 'INSERT INTO %s VALUES (%s)'%(object_table, ','.join([str(v) for v, t in ob_row]))
-            execute(self.cursor, stmt)
-
+        stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
+                (object_table,
+                 ','.join(object_cols),
+                 ','.join(['%s']*len(object_cols))))
+        
+        self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
+                                       for ob_row in object_rows])
         self.connection.commit()
         
     

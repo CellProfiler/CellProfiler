@@ -645,8 +645,8 @@ def gabor(image, labels, frequency, theta):
     j = j[mask]
     image = image[mask]
     lm = labels[mask] - 1
-    i -= centers[lm,0]
-    j -= centers[lm,1]
+    i -= centers[0,lm]
+    j -= centers[1,lm]
     sigma = np.sqrt(areas/np.pi) / 3.0
     sigma = sigma[lm]
     g_exp = 1000.0/(2.0*np.pi*sigma**2) * np.exp(-(i**2 + j**2)/(2*sigma**2))

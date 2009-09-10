@@ -597,6 +597,11 @@ class Pipeline(object):
                         t0 = datetime.datetime.now()
                         module.run(workspace)
                         t1 = datetime.datetime.now()
+                        delta = t1-t0
+                        delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
+                                     float(delta.microseconds) / 1000. / 1000.)
+                        print ("%s: Image # %d, module %s # %d: %.2f sec" %
+                               (t0.ctime(), image_number, module.module_name, module.module_num, delta_sec))
                         workspace.refresh()
                         failure = 0
                     except Exception,instance:

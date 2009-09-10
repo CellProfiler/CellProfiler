@@ -22,6 +22,7 @@ import scipy.misc as scimisc
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
 import identify as cpmi
@@ -465,6 +466,7 @@ thresholding but may be used for other thresholding methods in the future
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
+        assert isinstance(workspace, cpw.Workspace)
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale = True)
         img = image.pixel_data
@@ -563,9 +565,10 @@ thresholding but may be used for other thresholding methods in the future
         primary_outline = outline(objects.segmented)
         secondary_outline = outline(segmented_out) 
         if workspace.frame != None:
-            window_name = "CellProfiler(%s:%d)"%(self.module_name,self.module_num)
-            my_frame=cpf.create_or_find(workspace.frame, title="Identify secondary", 
-                                        name=window_name, subplots=(2,2))
+            object_area = np.sum(segmented_out > 0)
+            object_pct = 100 * object_area / np.product(segmented_out.shape)
+                
+            my_frame=workspace.create_or_find_figure(subplots=(2,2))
             title = "Input image, cycle #%d"%(workspace.image_set.number+1)
             my_frame.subplot_imshow_grayscale(0, 0, img, title)
             my_frame.subplot_imshow_labels(1,0,segmented_out,
@@ -583,8 +586,11 @@ thresholding but may be used for other thresholding methods in the future
                                      primary_outline_img,
                                      img))
             primary_img.shape=(img.shape[0],img.shape[1],3)
-            my_frame.subplot_imshow(1,1,primary_img,"Primary and output outlines")
-            my_frame.Refresh()
+            my_frame.subplot_imshow(1,1,primary_img,
+                                    "Primary and output outlines")
+            my_frame.status_bar.SetFields(
+                ["Threshold: %.3f" % global_threshold,
+                 "Area covered by objects: %.1f %%" % object_pct])
         #
         # Add the objects to the object set
         #

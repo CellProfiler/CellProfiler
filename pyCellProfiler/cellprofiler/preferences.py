@@ -22,6 +22,8 @@ import re
 import wx
 import sys
 
+from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
+
 '''get_absolute_path - mode = output. Assume "." is the default output dir'''
 ABSPATH_OUTPUT = 'abspath_output'
 
@@ -104,16 +106,16 @@ def module_extension():
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
-        return os.path.abspath(os.path.curdir)
+        return get_proper_case_filename(os.path.abspath(os.path.curdir))
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
     if os.path.isdir(default_image_directory):
-        return default_image_directory
+        return get_proper_case_filename(default_image_directory)
     else:
         sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
                          (default_image_directory))
         default_image_directory = os.path.abspath(os.path.curdir)
         set_default_image_directory(default_image_directory)
-        return default_image_directory
+        return get_proper_case_filename(default_image_directory)
 
 def set_default_image_directory(path):
     path = str(path)
@@ -139,12 +141,11 @@ class DirectoryChangedEvent:
     def __init__(self, path):
         self.image_directory = path
 
-
 def get_default_output_directory():
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.curdir)
     default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
-    return default_output_directory
+    return get_proper_case_filename(os.path.abspath(default_output_directory))
 
 def set_default_output_directory(path):
     path=str(path)
@@ -262,7 +263,7 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     elif len(os.path.split(path)[0]) == 0:
         return os.path.join(get_default_output_directory(), path)
     else:
-        return os.path.abspath(path)
+        return get_proper_case_filename(os.path.abspath(path))
 
 def get_default_colormap():
     if not get_config().Exists(COLORMAP):

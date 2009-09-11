@@ -347,9 +347,12 @@ See also MeasureImageAreaOccupied.
         #
         if self.calculate_zernikes.value:
             zernike_numbers = self.get_zernike_numbers()
-            zernike_features = cpmz.zernike(zernike_numbers, 
-                                            objects.segmented,
-                                            objects.indices)
+            if len(objects.indices) > 0:
+                zernike_features = cpmz.zernike(zernike_numbers, 
+                                                objects.segmented,
+                                                objects.indices)
+            else:
+                zernike_features = np.zeros((0,zernike_numbers.shape[0]))
             for i in range(zernike_numbers.shape[0]):
                 zernike_number = zernike_numbers[i]
                 zernike_feature = zernike_features[:,i]
@@ -373,7 +376,10 @@ See also MeasureImageAreaOccupied.
         feature_name- name of feature to deposit in measurements
         """
         objects = workspace.get_objects(object_name)
-        data    = objects.fn_of_label_and_index(function) 
+        if len(objects.indices) > 0:
+            data = objects.fn_of_label_and_index(function) 
+        else:
+            data = np.zeros((0,))
         self.record_measurement(workspace, object_name, feature_name, data)
         
     def perform_ndmeasurement(self, workspace, function, 
@@ -391,7 +397,10 @@ See also MeasureImageAreaOccupied.
         feature_name- name of feature to deposit in measurements
         """
         objects = workspace.get_objects(object_name)
-        data    = objects.fn_of_ones_label_and_index(function) 
+        if len(objects.indices) > 0:
+            data = objects.fn_of_ones_label_and_index(function)
+        else:
+            data = np.zeros((0,))
         self.record_measurement(workspace, object_name, feature_name, data)
 
     def record_measurement(self,workspace,  
@@ -418,8 +427,10 @@ See also MeasureImageAreaOccupied.
         
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
-    areas = fixup_scipy_ndimage_result(
-                objects.fn_of_ones_label_and_index(scind.sum))
-    perimeter = objects.fn_of_label_and_index(calculate_perimeters)
-    return 4.0*np.pi*areas / perimeter**2
-
+    if len(objects.indices) > 0:
+        areas = fixup_scipy_ndimage_result(
+                    objects.fn_of_ones_label_and_index(scind.sum))
+        perimeter = objects.fn_of_label_and_index(calculate_perimeters)
+        return 4.0*np.pi*areas / perimeter**2
+    else:
+        return np.zeros((0,))

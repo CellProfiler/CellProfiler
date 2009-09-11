@@ -39,7 +39,30 @@ class TestMeasureObjectAreaShape(unittest.TestCase):
                                ["Cells","Nuclei","Cytoplasm"]):
             self.assertEqual(og[cpmoas.OG_NAME].value,expected)
         self.assertFalse(module.calculate_zernikes.value)
-    
+
+    def test_01_00_zeros(self):
+        """Run on an empty labels matrix"""
+        object_set = cpo.ObjectSet()
+        labels = np.zeros((10,20),int)
+        objects = cpo.Objects()
+        objects.segmented = labels
+        object_set.add_objects(objects, "SomeObjects")
+        module = cpmoas.MeasureObjectAreaShape()
+        settings = ["SomeObjects","Yes"]
+        module.set_setting_values(settings, 1, module.module_name)
+        module.module_num = 1
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, 
+                                  image_set_list.get_image_set(0),
+                                  object_set, measurements, image_set_list)
+        module.run(workspace)
+        
+        a = measurements.get_current_measurement('SomeObjects','AreaShape_Area')
+        self.assertEqual(len(a), 0)
+
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
         object_set = cpo.ObjectSet()

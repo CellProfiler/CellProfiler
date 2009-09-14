@@ -776,6 +776,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if feature_name.find('Count') != -1:
                     max_count = max(max_count,int(value))
         
+        # The object columns in order
+        object_cols = (['ImageNumber','ObjectNumber'] + 
+                       [ None] * len(self.object_col_order))
+        for key in self.object_col_order.keys():
+            object_cols[self.object_col_order[key]] = key
+
         if max_count == 0:
             for obname, cols in self.col_dict.items():
                 if obname==cpmeas.IMAGE:
@@ -801,12 +807,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 object_rows[i,0] = (image_number, cpmeas.COLTYPE_INTEGER)
                 object_rows[i,1] = (i+1, cpmeas.COLTYPE_INTEGER)
 
-            # The object columns in order
-            object_cols = (['ImageNumber','ObjectNumber'] + 
-                           [ None] * len(self.object_col_order))
-            for key in self.object_col_order.keys():
-                object_cols[self.object_col_order[key]] = key
-                
             # Loop through the object columns, setting all object values for each column
             for obname, cols in self.col_dict.items():
                 if obname==cpmeas.IMAGE or obname==cpmeas.EXPERIMENT:

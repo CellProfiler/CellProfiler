@@ -355,15 +355,24 @@ class MeasureTexture(cpm.CPModule):
         pixel_data = image.pixel_data
         labels = objects.segmented
         pixel_data = objects.crop_image_similarly(pixel_data)
-        for name, value in zip(F_HARALICK, Haralick(pixel_data,
-                                                    labels,
-                                                    scale).all()):
-            statistics += self.record_measurement(workspace, 
-                                                  image_name, 
-                                                  object_name, 
-                                                  scale,
-                                                  name, 
-                                                  value)
+        if np.all(labels == 0):
+            for name in F_HARALICK:
+                statistics += self.record_measurement(workspace, 
+                                                      image_name, 
+                                                      object_name, 
+                                                      scale,
+                                                      name, 
+                                                      np.zeros((0,)))
+        else:
+            for name, value in zip(F_HARALICK, Haralick(pixel_data,
+                                                        labels,
+                                                        scale).all()):
+                statistics += self.record_measurement(workspace, 
+                                                      image_name, 
+                                                      object_name, 
+                                                      scale,
+                                                      name, 
+                                                      value)
         return statistics
 
     def run_image(self, image_name, scale, workspace):
@@ -449,7 +458,7 @@ class MeasureTexture(cpm.CPModule):
                                   data)
         statistics = [[image_name, object_name, 
                        "%s %s"%(aggregate_name, feature_name), scale, 
-                       "%.2f"%fn(data)]
+                       "%.2f"%fn(data) if len(data) else "-"]
                        for aggregate_name, fn in (("min",np.min),
                                                   ("max",np.max),
                                                   ("mean",np.mean),

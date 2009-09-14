@@ -345,18 +345,30 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                          "Original: %s"%self.object_name.value)
             neighbor_count_image[~ object_mask] = -1
             neighbor_cm.set_under((0,0,0))
-            figure.subplot_imshow(0,1, neighbor_count_image,
-                                  "%s colored by # of neighbors" %
-                                  self.object_name.value,
-                                  colormap = neighbor_cm,
-                                  colorbar=True, vmin=0)
             percent_touching_cm.set_under((0,0,0))
             percent_touching_image[~ object_mask] = -1
-            figure.subplot_imshow(1,1, percent_touching_image,
-                                  "%s colored by pct touching"%
-                                  self.object_name.value,
-                                  colormap = percent_touching_cm,
-                                  colorbar=True, vmin=0)
+            if np.any(object_mask):
+                figure.subplot_imshow(0,1, neighbor_count_image,
+                                      "%s colored by # of neighbors" %
+                                      self.object_name.value,
+                                      colormap = neighbor_cm,
+                                      colorbar=True, vmin=0)
+                figure.subplot_imshow(1,1, percent_touching_image,
+                                      "%s colored by pct touching"%
+                                      self.object_name.value,
+                                      colormap = percent_touching_cm,
+                                      colorbar=True, vmin=0)
+            else:
+                # No objects - colorbar blows up.
+                figure.subplot_imshow(0,1, neighbor_count_image,
+                                      "%s colored by # of neighbors" %
+                                      self.object_name.value,
+                                      colormap = neighbor_cm)
+                figure.subplot_imshow(1,1, percent_touching_image,
+                                      "%s colored by pct touching"%
+                                      self.object_name.value,
+                                      colormap = percent_touching_cm)
+                
             if self.distance_method == D_EXPAND:
                 figure.subplot_imshow_labels(1,0, labels,
                                              "Expanded %s"%

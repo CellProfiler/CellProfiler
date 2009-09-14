@@ -260,5 +260,16 @@ class TestMeasureTexture(unittest.TestCase):
                 if m.startswith(M.TEXTURE):
                     assert (obname, m, 'float') in module.get_measurement_columns(pipeline), 'no entry matching %s in get_measurement_columns.'%((obname, m, 'float'))
         cpprefs.set_default_image_directory(origdir)
-        
+    
+    def test_04_01_zeros(self):
+        '''Make sure the module can run on an empty labels matrix'''
+        workspace, module = self.make_workspace(np.zeros((10,10)),
+                                                np.zeros((10,10),int))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        for f in m.get_feature_names(INPUT_OBJECTS_NAME):
+            if f.startswith(M.TEXTURE):
+                values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
+                self.assertEqual(len(values),0)
         

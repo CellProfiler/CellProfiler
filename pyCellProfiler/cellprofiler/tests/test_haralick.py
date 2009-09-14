@@ -86,6 +86,22 @@ class TestHaralick(unittest.TestCase):
         h = haralick.Haralick(gray, labels, 1, nlevels=4)
         fv = h.all()
         self.assertTrue((np.array(map(len, fv)) == 1).all())
+    
+    def test_01_01_regression_edge(self):
+        '''Test coocurrence with an object smaller than the scal near the edge.
+
+        There's a corner case here where the co-occurrence is being done
+        on pixels "scale" to the right of objects and all objects are
+        within "scale" of the right edge. That means that all objects get
+        compared to nothing and the histogram code blows up.
+        '''
+        labels = np.zeros((100,100),int)
+        labels[90:99,90:99] = 1
+        np.random.seed(0)
+        image = (np.random.uniform(size=(100,100))*8).astype(int)
+        c, nlevels = haralick.cooccurrence(image, labels, 30)
+        self.assertTrue(np.all(c==0))
+        
 
 if __name__ == "__main__":
     unittest.main()

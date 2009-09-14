@@ -73,15 +73,18 @@ def cooccurrence(quantized_image, labels, scale=3):
     labels_ab = labels[:, :-scale]
     equilabel = ((labels[:, :-scale] == labels[:, scale:]) & 
                  (labels[:,:-scale] > 0))
-        
-    P, bins_P = np.histogramdd([labels_ab[equilabel]-1, image_a[equilabel],
-                                image_b[equilabel]],
-                               (nobjects, nlevels, nlevels))
-    pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
-                                np.arange(nobjects)+1))
-    pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
-                          (1,nlevels,nlevels))
-    return (P.astype(float) / pixel_count.astype(float), nlevels)
+    if np.any(equilabel):
+            
+        P, bins_P = np.histogramdd([labels_ab[equilabel]-1, image_a[equilabel],
+                                    image_b[equilabel]],
+                                   (nobjects, nlevels, nlevels))
+        pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
+                                    np.arange(nobjects)+1))
+        pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
+                              (1,nlevels,nlevels))
+        return (P.astype(float) / pixel_count.astype(float), nlevels)
+    else:
+        return np.zeros((nobjects, nlevels, nlevels)), nlevels
 
 class Haralick(object):
     """

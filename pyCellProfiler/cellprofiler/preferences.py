@@ -145,7 +145,7 @@ def get_default_output_directory():
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.curdir)
     default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
-    return str(get_proper_case_filename(os.path.abspath(default_output_directory)))
+    return str(get_proper_case_filename(default_output_directory))
 
 def set_default_output_directory(path):
     path=str(path)

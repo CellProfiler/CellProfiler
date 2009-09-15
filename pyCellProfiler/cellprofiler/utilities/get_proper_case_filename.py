@@ -16,7 +16,9 @@ __version__="$Revision$"
 import sys
 
 if sys.platform.startswith("win"):
-    from _get_proper_case_filename import get_proper_case_filename
+    import _get_proper_case_filename
+    def get_proper_case_filename(path):
+        return _get_proper_case_filename.get_proper_case_filename(unicode(path))
 else:
     def get_proper_case_filename(path):
         return path

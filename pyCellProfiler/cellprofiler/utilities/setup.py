@@ -29,6 +29,7 @@ def configuration():
     if sys.platform.startswith('win'):
         extensions += [Extension(name="_get_proper_case_filename",
                                  sources=["get_proper_case_filename.c"],
+                                 libraries=["shlwapi", "shell32", "ole32"],
                                  extra_compile_args=['-O3'])]
     dict = { "name":"utilities",
              "description":"utility module for CellProfiler",

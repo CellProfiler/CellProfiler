@@ -194,3 +194,70 @@ def table_lookup_index(np.ndarray[dtype=np.uint8_t, ndim=2,
             indexer[i,j_shape-1]   += 16
             indexer[i+1,j_shape-1] += 2
     return indexer
+
+@cython.boundscheck(False)
+def grey_reconstruction_loop(np.ndarray[dtype=np.uint32_t, ndim=1,
+                                        negative_indices = False,
+                                        mode = 'c'] avalues,
+                             np.ndarray[dtype=np.int32_t, ndim=1,
+                                        negative_indices = False,
+                                        mode = 'c'] aprev,
+                             np.ndarray[dtype=np.int32_t, ndim=1,
+                                        negative_indices = False,
+                                        mode = 'c'] anext,
+                             np.ndarray[dtype=np.int32_t, ndim=1,
+                                        negative_indices = False,
+                                        mode = 'c'] astrides,
+                             np.int32_t current,
+                             int image_stride):
+    '''The inner loop for grey_reconstruction'''
+    cdef:
+        np.int32_t neighbor
+        np.uint32_t neighbor_value
+        np.uint32_t current_value
+        np.uint32_t mask_value
+        np.int32_t link
+        int i
+        np.int32_t nprev
+        np.int32_t nnext
+        int nstrides = astrides.shape[0]
+        np.uint32_t *values = <np.uint32_t *>(avalues.data)
+        np.uint32_t *prev = <np.uint32_t *>(aprev.data)
+        np.uint32_t *next = <np.uint32_t *>(anext.data)
+        np.uint32_t *strides = <np.uint32_t *>(astrides.data)
+    
+    while current != -1:
+        if current < image_stride:
+            current_value = values[current]
+            if current_value == 0:
+                break
+            for i in range(nstrides):
+                neighbor = current + strides[i]
+                neighbor_value = values[neighbor]
+                # Only do neighbors less than the current value
+                if neighbor_value < current_value:
+                    mask_value = values[neighbor + image_stride]
+                    # Only do neighbors less than the mask value
+                    if neighbor_value < mask_value:
+                        # Raise the neighbor to the mask value if
+                        # the mask is less than current
+                        if mask_value < current_value:
+                            link = neighbor + image_stride
+                            values[neighbor] = mask_value
+                        else:
+                            link = current
+                            values[neighbor] = current_value
+                        # unlink the neighbor
+                        nprev = prev[neighbor]
+                        nnext = next[neighbor]
+                        next[nprev] = nnext
+                        if nnext != -1:
+                            prev[nnext] = nprev
+                        # link the neighbor after the link
+                        nnext = next[link]
+                        next[neighbor] = nnext
+                        prev[neighbor] = link
+                        if nnext >= 0:
+                            prev[nnext] = neighbor
+                            next[link] = neighbor
+        current = next[current]

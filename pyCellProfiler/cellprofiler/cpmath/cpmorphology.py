@@ -18,7 +18,8 @@ import scipy.sparse
 import _cpmorphology
 from outline import outline
 from rankorder import rank_order
-from _cpmorphology2 import skeletonize_loop, table_lookup_index 
+from _cpmorphology2 import skeletonize_loop, table_lookup_index
+from _cpmorphology2 import grey_reconstruction_loop 
 
 eight_connect = scind.generate_binary_structure(2, 2)
 four_connect = scind.generate_binary_structure(2,1)
@@ -1346,7 +1347,8 @@ def ellipse_from_second_moments(image, labels, indexes):
     orientation is the angle of the major axis with respect to the X axis
     """
     if len(indexes) == 0:
-        return np.zeros((0,2)),np.zeros((0,)),np.zeros((0,)),np.zeros((0,))
+        return (np.zeros((0,2)), np.zeros((0,)), np.zeros((0,)), 
+                np.zeros((0,)),np.zeros((0,)))
     i,j = np.mgrid[0:labels.shape[0],0:labels.shape[1]]
     #
     # Start by calculating the moments m[p][q] of the image
@@ -1791,15 +1793,16 @@ def black_tophat(image, radius=None, mask=None):
         final_image[not_mask] = image[not_mask]
     return final_image
 
-def grey_erosion(image, radius=None, mask=None):
+def grey_erosion(image, radius=None, mask=None, footprint=None):
     '''Perform a grey erosion with masking'''
-    if radius is None:
-        strel = np.ones((3,3),bool)
-        strel_size = (3,3)
-        radius = 1
+    if footprint == None:
+        if radius is None:
+            footprint = np.ones((3,3),bool)
+            radius = 1
+        else:
+            footprint = strel_disk(radius)==1
     else:
-        strel = strel_disk(radius)==1
-        strel_size = (radius*2+1,radius*2+1)
+        radius = max(1, np.max(np.array(footprint.shape) / 2))
     #
     # Do a grey_erosion with masked pixels = 1 so they don't participate
     #
@@ -1808,21 +1811,25 @@ def grey_erosion(image, radius=None, mask=None):
     if not mask is None:
         not_mask = np.logical_not(mask)
         big_image[radius:-radius,radius:-radius][not_mask] = 1
-    processed_image = scind.grey_erosion(big_image, footprint=strel)
+    processed_image = scind.grey_erosion(big_image, footprint=footprint)
     final_image = processed_image[radius:-radius,radius:-radius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image
 
-def grey_dilation(image, radius=None, mask=None):
+def grey_dilation(image, radius=None, mask=None, footprint=None):
     '''Perform a grey dilation with masking'''
-    if radius is None:
-        strel = np.ones((3,3),bool)
-        strel_size = (3,3)
-        radius = 1
+    if footprint == None:
+        if radius is None:
+            footprint = np.ones((3,3),bool)
+            footprint_size = (3,3)
+            radius = 1
+        else:
+            footprint = strel_disk(radius)==1
+            footprint_size = (radius*2+1,radius*2+1)
     else:
-        strel = strel_disk(radius)==1
-        strel_size = (radius*2+1,radius*2+1)
+        footprint_size = footprint.shape
+        radius = max(np.max(np.array(footprint.shape) / 2),1)
     #
     # Do a grey_dilation with masked pixels = 0 so they don't participate
     #
@@ -1831,11 +1838,122 @@ def grey_dilation(image, radius=None, mask=None):
     if not mask is None:
         not_mask = np.logical_not(mask)
         big_image[radius:-radius,radius:-radius][not_mask] = 0
-    processed_image = scind.grey_dilation(big_image, footprint=strel)
+    processed_image = scind.grey_dilation(big_image, footprint=footprint)
     final_image = processed_image[radius:-radius,radius:-radius]
     if not mask is None:
         final_image[not_mask] = image[not_mask]
     return final_image
+
+def grey_reconstruction(image, mask, footprint=None, offset=None):
+    '''Perform a morphological reconstruction of the image
+    
+    grey_dilate the image, constraining each pixel to have a value that is
+    at most that of the mask.
+    image - the seed image
+    mask - the mask, giving the maximum allowed value at each point
+    footprint - a boolean array giving the neighborhood pixels to be used
+                in the dilation. None = 8-connected
+    
+    The algorithm is taken from:
+    Robinson, "Efficient morphological reconstruction: a downhill filter",
+    Pattern Recognition Letters 25 (2004) 1759-1767
+    '''
+    assert tuple(image.shape) == tuple(mask.shape)
+    if footprint is None:
+        footprint = np.ones([3]*image.ndim, bool)
+    else:
+        footprint = footprint.copy()
+        
+    if offset == None:
+        assert all([d % 2 == 1 for d in footprint.shape]),\
+               "Footprint dimensions must all be odd"
+        offset = np.array([d/2 for d in footprint.shape])
+    # Cross out the center of the footprint
+    footprint[[slice(d,d+1) for d in offset]] = False
+    #
+    # Construct an array that's padded on the edges so we can ignore boundaries
+    # The array is a dstack of the image and the mask; this lets us interleave
+    # image and mask pixels when sorting which makes list manipulations easier
+    #
+    padding = np.array(footprint.shape)/2
+    dims = np.zeros(image.ndim+1,int)
+    dims[1:] = np.array(image.shape)+2*padding
+    dims[0] = 2
+    inside_slices = [slice(1,-1)]*image.ndim
+    values = np.zeros(dims)
+    values[[0]+inside_slices] = image
+    values[[1]+inside_slices] = mask
+    #
+    # Create a list of strides across the array to get the neighbors
+    # within a flattened array
+    #
+    value_stride = np.array(values.strides[1:]) / values.dtype.itemsize
+    image_stride = values.strides[0] / values.dtype.itemsize
+    footprint_mgrid = np.mgrid[[slice(-o,d - o) 
+                                for d,o in zip(footprint.shape,offset)]]
+    footprint_offsets = footprint_mgrid[:,footprint].transpose()
+    strides = np.array([np.sum(value_stride * footprint_offset)
+                        for footprint_offset in footprint_offsets],
+                       np.int32)
+    values = values.flatten()
+    value_sort = np.lexsort([-values])
+    #
+    # Make a linked list of pixels sorted by value. -1 is the list terminator.
+    #
+    prev = -np.ones(len(values), np.int32)
+    next = -np.ones(len(values), np.int32)
+    prev[value_sort[1:]] = value_sort[:-1]
+    next[value_sort[:-1]] = value_sort[1:]
+    #
+    # Create a rank-order value array so that the Cython inner-loop
+    # can operate on a uniform data type
+    #
+    values, value_map = rank_order(values)
+    current = value_sort[0]
+    slow = False    
+    
+    if slow:
+        while current != -1:
+            if current < image_stride:
+                current_value = values[current]
+                neighbors = strides+current
+                for neighbor in neighbors:
+                    neighbor_value = values[neighbor]
+                    # Only do neighbors less than the current value
+                    if neighbor_value < current_value:
+                        mask_value = values[neighbor + image_stride]
+                        # Only do neighbors less than the mask value
+                        if neighbor_value < mask_value:
+                            # Raise the neighbor to the mask value if
+                            # the mask is less than current
+                            if mask_value < current_value:
+                                link = neighbor + image_stride
+                                values[neighbor] = mask_value
+                            else:
+                                link = current
+                                values[neighbor] = current_value
+                            # unlink the neighbor
+                            nprev = prev[neighbor]
+                            nnext = next[neighbor]
+                            next[nprev] = nnext
+                            if nnext != -1:
+                                prev[nnext] = nprev
+                            # link the neighbor after the link
+                            next[neighbor] = next[link]
+                            prev[neighbor] = link
+                            prev[next[link]] = neighbor
+                            next[link] = neighbor
+            current = next[current]
+    else:
+        grey_reconstruction_loop(values, prev, next, strides, current, 
+                                 image_stride)
+    #
+    # Reshape the values array to the shape of the padded image
+    # and return the unpadded portion of that result
+    #
+    values = value_map[values[:image_stride]]
+    values.shape = np.array(image.shape)+2
+    return values[inside_slices]
     
 def opening(image, radius=None, mask=None):
     '''Do a morphological opening

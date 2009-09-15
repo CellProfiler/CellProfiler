@@ -39,6 +39,7 @@ from makeprojection import MakeProjection
 from maskimage import MaskImage
 from measurecorrelation import MeasureCorrelation
 from measureimageareaoccupied import MeasureImageAreaOccupied
+from measureimagegranularity import MeasureImageGranularity
 from measureimageintensity import MeasureImageIntensity
 from measureimagequality import MeasureImageQuality
 from measureobjectintensity import MeasureObjectIntensity
@@ -84,6 +85,7 @@ def get_module_classes():
             MaskImage,
             MeasureCorrelation,
             MeasureImageAreaOccupied,
+            MeasureImageGranularity,
             MeasureImageIntensity,
             MeasureImageQuality,
             MeasureObjectAreaShape,
@@ -132,6 +134,7 @@ def get_module_substitutions():
             "MaskImage": MaskImage,
             "MeasureCorrelation": MeasureCorrelation,
             "MeasureImageAreaOccupied": MeasureImageAreaOccupied,
+            "MeasureImageGranularity": MeasureImageGranularity,
             "MeasureImageIntensity": MeasureImageIntensity,
             "MeasureImageQuality": MeasureImageQuality,
             "MeasureObjectAreaShape": MeasureObjectAreaShape,

@@ -698,7 +698,7 @@ class TestEllipseFromSecondMoments(unittest.TestCase):
                         "%(actual)f != %(expected)f by the measure, abs(%(actual)f-%(expected)f)) / 2(%(actual)f + %(expected)f)"%(locals()))
         
     def test_00_00_zeros(self):
-        centers,eccentricity,major_axis_length,minor_axis_length =\
+        centers,eccentricity,major_axis_length,minor_axis_length,theta =\
             morph.ellipse_from_second_moments(np.zeros((10,10)),
                                               np.zeros((10,10),int),
                                               [])
@@ -2564,4 +2564,54 @@ class TestDistanceToEdge(unittest.TestCase):
         expected[6:9,3:6] = np.array([[1,1,1],[1,2,1],[1,1,1]])
         result = morph.distance_to_edge(labels)
         self.assertTrue(np.all(result == expected))
+
+class TestGreyReconstruction(unittest.TestCase):
+    '''Test grey_reconstruction'''
+    def test_01_01_zeros(self):
+        '''Test grey_reconstruction with image and mask of zeros'''
+        self.assertTrue(np.all(morph.grey_reconstruction(np.zeros((5,7)),
+                                                         np.zeros((5,7))) == 0))
+    
+    def test_01_02_image_equals_mask(self):
+        '''Test grey_reconstruction where the image and mask are the same'''
+        self.assertTrue(np.all(morph.grey_reconstruction(np.ones((7,5)),
+                                                         np.ones((7,5))) == 1))
+    
+    def test_01_03_image_less_than_mask(self):
+        '''Test grey_reconstruction where the image is uniform and less than mask'''
+        image = np.ones((5,5))
+        mask = np.ones((5,5)) * 2
+        self.assertTrue(np.all(morph.grey_reconstruction(image,mask) == 1))
+    
+    def test_01_04_one_image_peak(self):
+        '''Test grey_reconstruction with one peak pixel'''
+        image = np.ones((5,5))
+        image[2,2] = 2
+        mask = np.ones((5,5)) * 3
+        self.assertTrue(np.all(morph.grey_reconstruction(image,mask) == 2))
+    
+    def test_01_05_two_image_peaks(self):
+        '''Test grey_reconstruction with two peak pixels isolated by the mask'''
+        image = np.array([[1,1,1,1,1,1,1,1],
+                          [1,2,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,3,1],
+                          [1,1,1,1,1,1,1,1]])
+        
+        mask = np.array([[4,4,4,1,1,1,1,1],
+                         [4,4,4,1,1,1,1,1],
+                         [4,4,4,1,1,1,1,1],
+                         [1,1,1,1,1,4,4,4],
+                         [1,1,1,1,1,4,4,4],
+                         [1,1,1,1,1,4,4,4]])
+
+        expected = np.array([[2,2,2,1,1,1,1,1],
+                             [2,2,2,1,1,1,1,1],
+                             [2,2,2,1,1,1,1,1],
+                             [1,1,1,1,1,3,3,3],
+                             [1,1,1,1,1,3,3,3],
+                             [1,1,1,1,1,3,3,3]])
+        self.assertTrue(np.all(morph.grey_reconstruction(image,mask) ==
+                               expected))
         

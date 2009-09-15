@@ -84,13 +84,17 @@ mpluse('WXAgg')
 
 if (not hasattr(sys, 'frozen')) and options.do_not_build:
     import cellprofiler.cpmath.setup
-    import cellprofiler.ffmpeg.setup
+    if sys.platform == 'win32':
+        import cellprofiler.ffmpeg.setup
+    import cellprofiler.utilities.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary
     #
     compile_scripts = [(os.path.join('cellprofiler','cpmath','setup.py'),
-                        cellprofiler.cpmath.setup)]
+                        cellprofiler.cpmath.setup),
+                       (os.path.join('cellprofiler','utilities','setup.py'),
+                        cellprofiler.utilities.setup)]
     if sys.platform == 'win32':
         compile_scripts += [(os.path.join('cellprofiler','ffmpeg','setup.py'),
                              cellprofiler.ffmpeg.setup)]

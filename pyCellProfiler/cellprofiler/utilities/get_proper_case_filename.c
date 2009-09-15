@@ -17,39 +17,65 @@
  * get_proper_case_filename retrieves the file name in its correct case.
  *
  */
+#define COBMACROS
 #define UNICODE
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
+#include <string.h>
+#include <shlwapi.h>
+#include <shlobj.h>
 #include "Python.h"
 
 static PyObject *
 get_proper_case_filename(PyObject *self, PyObject *args)
 {
-    Py_UNICODE *filename_in;
-    Py_UNICODE filename_short[1024];
-    Py_UNICODE filename_out[1024];
+    PyObject *arg_1;
+    wchar_t filename_in[4096];
+    wchar_t filename_out[4096];
     DWORD nchars;
+    LPITEMIDLIST pidl;
+    LPSHELLFOLDER pDesktopFolder;
+    ULONG chEaten;
+    HRESULT hr;
+    DWORD dwAttributes;
     
-    PyArg_ParseTuple(args,"u",&filename_in);
-    /*
-     * The hack here is to convert the path name to the short (DOS)
-     * form and then to the long form. More than one person has settled
-     * on this as the way to do it, e.g.
-     * http://www.west-wind.com/Weblog/posts/202850.aspx
-     */
-    nchars = GetShortPathName(filename_in, filename_short, 1024);
+    if (PyTuple_Size(args) < 1) {
+        Py_RETURN_NONE;
+    }
+    arg_1 = PyTuple_GetItem(args, 0);
+    if (! PyUnicode_Check(arg_1)) {
+        Py_RETURN_NONE;
+    }
+    nchars = PyUnicode_AsWideChar((PyUnicodeObject *)arg_1, filename_in, 4095);
     if (nchars == 0) {
         Py_RETURN_NONE;
     }
-    nchars = GetLongPathName(filename_short, filename_out, 1024);
-    if (nchars == 0)
-    {
+    filename_in[nchars] = 0;
+    /*
+     * The following is taken from http://support.microsoft.com/kb/132750
+     */
+    if (FAILED(SHGetDesktopFolder(&pDesktopFolder))) {
         Py_RETURN_NONE;
     }
-    else
-    {
-        return PyUnicode_FromUnicode(filename_out,nchars);
+    dwAttributes = SFGAO_VALIDATE;
+    hr = pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,
+                                                  NULL,
+                                                  NULL,
+                                                  filename_in,
+                                                  &chEaten,
+                                                  &pidl,
+                                                  &dwAttributes);
+    pDesktopFolder->lpVtbl->Release(pDesktopFolder);
+    if (FAILED(hr)) {
+        Py_RETURN_NONE;
     }
+    if (! SHGetPathFromIDList(pidl, filename_out)) {
+        CoTaskMemFree(pidl);
+        Py_RETURN_NONE;
+    }
+    CoTaskMemFree(pidl);
+    nchars = wcslen(filename_out);
+    return PyUnicode_FromWideChar(filename_out,nchars);
 }
         
     

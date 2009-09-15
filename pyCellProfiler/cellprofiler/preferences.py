@@ -106,16 +106,16 @@ def module_extension():
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
-        return get_proper_case_filename(os.path.abspath(os.path.curdir))
+        return str(get_proper_case_filename(os.path.abspath(os.path.curdir)))
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
     if os.path.isdir(default_image_directory):
-        return get_proper_case_filename(default_image_directory)
+        return str(get_proper_case_filename(default_image_directory))
     else:
         sys.stderr.write("Warning: current path of %s is not a valid directory. Switching to current directory\n"%
                          (default_image_directory))
         default_image_directory = os.path.abspath(os.path.curdir)
         set_default_image_directory(default_image_directory)
-        return get_proper_case_filename(default_image_directory)
+        return str(get_proper_case_filename(default_image_directory))
 
 def set_default_image_directory(path):
     path = str(path)
@@ -145,7 +145,7 @@ def get_default_output_directory():
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.curdir)
     default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
-    return get_proper_case_filename(os.path.abspath(default_output_directory))
+    return str(get_proper_case_filename(os.path.abspath(default_output_directory)))
 
 def set_default_output_directory(path):
     path=str(path)
@@ -263,7 +263,7 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     elif len(os.path.split(path)[0]) == 0:
         return os.path.join(get_default_output_directory(), path)
     else:
-        return get_proper_case_filename(os.path.abspath(path))
+        return str(get_proper_case_filename(os.path.abspath(path)))
 
 def get_default_colormap():
     if not get_config().Exists(COLORMAP):

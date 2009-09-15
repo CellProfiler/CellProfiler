@@ -252,14 +252,14 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             "of each object measurement per image?", False)
     
     def visible_settings(self):
+        needs_default_output_directory =\
+            (self.db_type != DB_MYSQL or self.store_csvs.value or
+             self.save_cpa_properties.value)
         result = [self.db_type]
         if self.db_type==DB_MYSQL:
             result += [self.store_csvs]
             if self.store_csvs.value:
                 result += [self.sql_file_prefix]
-                result += [self.use_default_output_directory]
-                if not self.use_default_output_directory.value:
-                    result += [self.output_directory]
                 result += [self.db_name]
             else:
                 result += [self.db_name]
@@ -267,19 +267,17 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                 result += [self.db_user]
                 result += [self.db_passwd]
         elif self.db_type==DB_SQLITE:
-            result += [self.use_default_output_directory]
-            if not self.use_default_output_directory.value:
-                result += [self.output_directory]
             result += [self.sqlite_file]
         elif self.db_type==DB_ORACLE:
             result += [self.sql_file_prefix]
-            result += [self.use_default_output_directory]
-            if not self.use_default_output_directory.value:
-                result += [self.output_directory]
         result += [self.want_table_prefix]
         if self.want_table_prefix.value:
             result += [self.table_prefix]
         result += [self.save_cpa_properties]
+        if needs_default_output_directory:
+            result += [self.use_default_output_directory]
+            if not self.use_default_output_directory.value:
+                result += [self.output_directory]
         result += [self.wants_agg_mean, self.wants_agg_median,
                    self.wants_agg_std_dev]
 
@@ -1015,7 +1013,8 @@ image_channel_colors = %(image_channel_colors)s
         return FileNameWidth, PathNameWidth
     
     def get_output_directory(self):
-        if self.use_default_output_directory.value:
+        if (self.use_default_output_directory.value or
+            self.output_directory == cps.DO_NOT_USE):
             return cpp.get_default_output_directory()
         elif self.output_directory.value.startswith("."+os.path.sep):
             return os.path.join(cpp.get_default_output_directory(),

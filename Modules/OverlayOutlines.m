@@ -134,8 +134,8 @@ if size(OrigImage,3) ~= 3
     if strcmp(MaxType,'Max of image') && ~strcmp(ImageName,'Blank')
         ValueToUseForOutlines = max(max(OrigImage));
     elseif strcmp(MaxType,'Max possible') || strcmp(ImageName,'Blank')
-        if isfloat(OrigImage(1,1))
-            ValueToUseForOutlines=1;
+        if isfloat(OrigImage(1,1)) || islogical(OrigImage(1,1))
+            ValueToUseForOutlines = 1;
         else
             ValueToUseForOutlines = intmax(class(OrigImage(1,1)));
         end

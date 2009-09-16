@@ -13,6 +13,8 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import os
+import re
+import sys
 import wx
 import uuid
 
@@ -251,14 +253,27 @@ Press this button to add another path mapping.
         cpprefs.set_default_output_directory(self.custom_output_directory.value)
         cpprefs.set_default_image_directory(self.default_image_directory.value)
     
-    def alter_path(self, path):
-        '''Modify the path passed so that it can be executed on the remote host'''
+    def alter_path(self, path, **varargs):
+        '''Modify the path passed so that it can be executed on the remote host
+        
+        path = path to modify
+        regexp_substitution - if true, exclude \g<...> from substitution
+        '''
         for mapping in self.mappings:
-            if path.startswith(mapping.local_directory.value):
-                path = (mapping.remote_directory.value +
-                        path[len(mapping.local_directory.value):])
+            if sys.platform.startswith('win'):
+                # Windows is case-insentitve so do case-insensitve mapping
+                if path.upper().startswith(mapping.local_directory.value.upper()):
+                    path = (mapping.remote_directory.value +
+                            path[len(mapping.local_directory.value):])
+            else:
+                if path.startswith(mapping.local_directory.value):
+                    path = (mapping.remote_directory.value +
+                            path[len(mapping.local_directory.value):])
         if self.remote_host_is_windows.value:
             path = path.replace('/','\\')
+        elif (varargs.has_key("regexp_substitution") and
+                 varargs["regexp_substitution"]):
+            path = re.subn('\\\\(?!g\\<[^>]*\\>)','/',path)[0]
         else:
             path = path.replace('\\','/')
         return path

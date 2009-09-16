@@ -1859,6 +1859,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     Pattern Recognition Letters 25 (2004) 1759-1767
     '''
     assert tuple(image.shape) == tuple(mask.shape)
+    assert np.all(image <= mask)
     if footprint is None:
         footprint = np.ones([3]*image.ndim, bool)
     else:
@@ -1880,7 +1881,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     dims[1:] = np.array(image.shape)+2*padding
     dims[0] = 2
     inside_slices = [slice(1,-1)]*image.ndim
-    values = np.zeros(dims)
+    values = np.ones(dims)*np.min(image)
     values[[0]+inside_slices] = image
     values[[1]+inside_slices] = mask
     #
@@ -1910,14 +1911,21 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     #
     values, value_map = rank_order(values)
     current = value_sort[0]
-    slow = False    
+    slow = False
     
     if slow:
         while current != -1:
             if current < image_stride:
                 current_value = values[current]
+                if current_value == 0:
+                    break
                 neighbors = strides+current
                 for neighbor in neighbors:
+                    if neighbor < 0:
+                        raise IndexError("Index out of bounds: %d, current=%d, current_value=%d"%
+                                         (neighbor,
+                                          np.unravel_index(current, dims),
+                                          current_value))
                     neighbor_value = values[neighbor]
                     # Only do neighbors less than the current value
                     if neighbor_value < current_value:

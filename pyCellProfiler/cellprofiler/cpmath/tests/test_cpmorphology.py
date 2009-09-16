@@ -2614,4 +2614,8 @@ class TestGreyReconstruction(unittest.TestCase):
                              [1,1,1,1,1,3,3,3]])
         self.assertTrue(np.all(morph.grey_reconstruction(image,mask) ==
                                expected))
-        
+    
+    def test_02_01_zero_image_one_mask(self):
+        '''Test grey_reconstruction with an image of all zeros and a mask that's not'''
+        result = morph.grey_reconstruction(np.zeros((10,10)), np.ones((10,10)))
+        self.assertTrue(np.all(result == 0))

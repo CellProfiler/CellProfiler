@@ -15,6 +15,7 @@ __version__="$Revision$"
 import matplotlib.image
 import numpy
 import os
+import sys
 import Image as PILImage
 import unittest
 import base64
@@ -25,6 +26,8 @@ import cellprofiler.modules.loadimages as cpm_li
 import cellprofiler.modules.applythreshold as cpm_a
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
+import cellprofiler.modules.createbatchfiles as cpm_c
+from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 import cellprofiler.modules.tests as cpmt
 
@@ -32,12 +35,12 @@ class TestSaveImages(unittest.TestCase):
     def setUp(self):
         # Change the default image directory to a temporary file
         self.old_image_directory = cpprefs.get_default_image_directory()
-        self.new_image_directory = tempfile.mkdtemp()
+        self.new_image_directory = get_proper_case_filename(tempfile.mkdtemp())
         cpprefs.set_default_image_directory(self.new_image_directory)
         self.old_output_directory = cpprefs.get_default_output_directory()
-        self.new_output_directory = tempfile.mkdtemp()
+        self.new_output_directory = get_proper_case_filename(tempfile.mkdtemp())
         cpprefs.set_default_output_directory(self.new_output_directory)
-        self.custom_directory = tempfile.mkdtemp()
+        self.custom_directory = get_proper_case_filename(tempfile.mkdtemp())
     
     def tearDown(self):
         for subdir in (self.new_image_directory, self.new_output_directory,
@@ -541,13 +544,25 @@ class TestSaveImages(unittest.TestCase):
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''
         orig_path = '/foo/bar'
-        def fn_alter_path(path):
+        def fn_alter_path(path, **varargs):
             self.assertEqual(path, orig_path)
             return '/imaging/analysis'
         module = cpm_si.SaveImages()
         module.pathname.value = orig_path
         module.prepare_to_create_batch(None,None, fn_alter_path)
         self.assertEqual(module.pathname.value, '/imaging/analysis')
+    
+    def test_02_02_regression_prepare_to_create_batch(self):
+        '''Make sure that "prepare_to_create_batch" handles metadata
+
+        This is a regression test for IMG-200
+        '''
+        cmodule = cpm_c.CreateBatchFiles()
+        module = cpm_si.SaveImages()
+        module.pathname.value = '.Outlines\\\\g<Run>_\\g<Plate>'
+        module.pathname_choice.value = cpm_si.PC_WITH_METADATA
+        module.prepare_to_create_batch(None,None, cmodule.alter_path)
+        self.assertEqual(module.pathname.value, '.Outlines/\\g<Run>_\\g<Plate>')
     
     def test_03_01_get_measurement_columns(self):
         module = cpm_si.SaveImages()

@@ -199,7 +199,7 @@ switch Operation
     case 'Add'
         ImageAfterMath = imadd(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
     case 'Subtract'
-        ImageAfterMath = imsubtract(MultiplyFactor2*SecondImage,MultiplyFactor1*FirstImage);
+        ImageAfterMath = imsubtract(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
     case 'Multiply'
         ImageAfterMath = immultiply(MultiplyFactor1*FirstImage,MultiplyFactor2*SecondImage);
     case 'Divide'

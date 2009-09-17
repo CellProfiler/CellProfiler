@@ -220,7 +220,7 @@ def grey_reconstruction_loop(np.ndarray[dtype=np.uint32_t, ndim=1,
         int i
         np.int32_t nprev
         np.int32_t nnext
-        int nstrides = strides.shape[0]
+        int nstrides = astrides.shape[0]
         np.uint32_t *values = <np.uint32_t *>(avalues.data)
         np.uint32_t *prev = <np.uint32_t *>(aprev.data)
         np.uint32_t *next = <np.uint32_t *>(anext.data)

@@ -20,8 +20,12 @@ import os
 import random
 import re
 import sys
-import MySQLdb
-from MySQLdb.cursors import SSCursor
+try:
+    import MySQLdb
+    from MySQLdb.cursors import SSCursor
+    HAS_MYSQL_DB=True
+except:
+    sys.stderr.write("WARNING: MySQL direct insert can't run within MySQLdb package")
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -257,7 +261,8 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
              self.save_cpa_properties.value)
         result = [self.db_type]
         if self.db_type==DB_MYSQL:
-            result += [self.store_csvs]
+            if HAS_MYSQL_DB:
+                result += [self.store_csvs]
             if self.store_csvs.value:
                 result += [self.sql_file_prefix]
                 result += [self.db_name]

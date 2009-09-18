@@ -266,7 +266,7 @@ class TestCpmaximum(unittest.TestCase):
     def test_01_ones(self):
         input = np.ones((10,10))
         output = morph.cpmaximum(input)
-        self.assertTrue(np.all(output==input))
+        self.assertTrue(np.all(np.abs(output-input)<=np.finfo(float).eps))
 
     def test_02_center_point(self):
         input = np.zeros((9,9))

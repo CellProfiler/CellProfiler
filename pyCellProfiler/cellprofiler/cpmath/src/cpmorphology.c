@@ -53,7 +53,7 @@ cpmaximum(PyObject *self, PyObject *args)
      int      j          = 0;
      int      k          = 0;
      int      l          = 0;
-     npy_int  dims[2];
+     npy_intp dims[2];
      long     xoff       = 0;
      long     yoff       = 0;
 

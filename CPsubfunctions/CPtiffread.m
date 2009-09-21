@@ -180,7 +180,7 @@ while (ifd_pos ~= 0)
             case 33631       %metamorph stack data: gain/background?
                 TIFIM.MM_private2   = entry.val;
             otherwise
-                disp(sprintf('ignored tiff entry with tag %i cnt %i', TIF.entry_tag, entry.cnt));
+                warning([mfilename,':IgnoredTiffEntryWithTag'],'Ignored tiff entry with tag %i cnt %i',TIF.entry_tag, entry.cnt);
         end
         % move to next IFD entry in the file
         fseek(TIF.file, file_pos+12,-1);

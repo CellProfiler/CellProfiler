@@ -52,8 +52,8 @@ if strcmpi(Mode,'DoNow')
     catch
         error(['Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) could not find the input image. CellProfiler expected to find an image named "', ImageName, '" but that image has not been created by the pipeline. Please adjust your pipeline to produce the image "', ImageName, '" prior to the use of the CPaverageimages subfunction.'])
     end
-    %%% Calculates the mean image. Initializes the variable.
-    TotalImage = CPimread(fullfile(Pathname,char(FileList(1))));
+    %%% Calculates the mean image. Initializes the variable
+	TotalImage = ImageLoader(handles,ImageName,Pathname,FileList,1);
     %%% Waitbar shows the percentage of image sets remaining.
     delete(findobj(allchild(0),'tag',mfilename));
     WaitbarHandle = CPwaitbar(0,'','tag',mfilename);
@@ -69,14 +69,15 @@ if strcmpi(Mode,'DoNow')
     TimeStart = clock;
     NumberOfImages = length(FileList);
     for i = 2:length(FileList)
-        OrigImage = fullfile(Pathname,char(FileList(i)));
+        OrigImage = ImageLoader(handles,ImageName,Pathname,FileList,i);
+		
         %%% Checks that the original image is two-dimensional (i.e.
         %%% not a color image), which would disrupt several of the
         %%% image functions.
         if ndims(OrigImage) ~= 2
             error('Image processing was canceled because calculating the average image (which is used by the Average and Correct Illumination modules) requires an input image that is two-dimensional (i.e. X vs Y), but the image loaded does not fit this requirement.  This may be because the image is a color image.')
         end
-        TotalImage = TotalImage + CPimread(OrigImage);
+        TotalImage = TotalImage + OrigImage;
         CurrentTime = clock;
         TimeSoFar = etime(CurrentTime,TimeStart);
         TimePerSet = TimeSoFar/i;
@@ -179,4 +180,22 @@ elseif strcmpi(Mode,'Accumulate')
     %%% Saves the updated projection image to the handles structure.
     handles = CPaddimages(handles,ProjectionImageName,OutputImage);
     handles = CPaddimages(handles,'NumberOfActualImages',NumberOfActualImages);
+end
+
+function LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,idx)
+					
+FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
+					
+if ~isempty(findstr(FileFormat,'images'))
+	LoadedImage = CPimread(fullfile(Pathname,char(FileList(idx))));
+else
+	CurrentFileName = FileList(:,idx);
+	if findstr(FileFormat,'stk')
+		warning('off','CPtiffread:IgnoredTiffEntryWithTag');
+		LoadedRawImage = CPtiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+		warning('on','CPtiffread:IgnoredTiffEntryWithTag');
+		LoadedImage = im2double(LoadedRawImage.data);
+	elseif any(strcmpi(FileFormat,{'tif','tiff','flex'}))
+		LoadedImage = im2double(CPimread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2))));  
+	end
 end

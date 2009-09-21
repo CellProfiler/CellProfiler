@@ -314,7 +314,7 @@ else
             Pathname = handles.Pipeline.(fieldname);
             fieldname = ['FileList', ImageName];
             FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
-            OrigImage = CPimread(fullfile(Pathname,FileList{SetBeingAnalyzed}));
+            OrigImage = ImageLoader(handles,ImageName,Pathname,FileList,SetBeingAnalyzed);
         elseif areImagesDerived
             % Otherwise, if "Pipeline" being used, it has already been
             % derived and we can just request it
@@ -400,10 +400,12 @@ if isProcessingAll
                         FileList = handles.Pipeline.GroupFileList{CurrentImageGroupID}.(fieldname);
                     end
                     FileList(cellfun(@isempty,FileList)) = [];   % Get rid of empty names
-                    LoadedImage = CPimread(fullfile(Pathname,char(FileList(1))));
+                    
+					LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,1);
+						
                     SumMiniIlluminationImage = blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
                     for i = 2:length(FileList)
-                        LoadedImage = CPimread(fullfile(Pathname,char(FileList(i))));
+						LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,i);
                         SumMiniIlluminationImage = SumMiniIlluminationImage + ...
                             blkproc(padarray(LoadedImage,[RowsToAdd ColumnsToAdd],'replicate','post'),BestBlockSize,@minnotzero);
                     end
@@ -877,4 +879,22 @@ function lowest = minnotzero(x)
     lowest=min(x(x>0));
     if isempty(lowest)
         lowest=.0001;
-    end
+	end
+
+function LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,idx)
+					
+FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
+					
+if ~isempty(findstr(FileFormat,'images'))
+	LoadedImage = CPimread(fullfile(Pathname,char(FileList(idx))));
+else
+	CurrentFileName = FileList(:,idx);
+	if findstr(FileFormat,'stk')
+		warning('off','CPtiffread:IgnoredTiffEntryWithTag');
+		LoadedRawImage = CPtiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+		warning('on','CPtiffread:IgnoredTiffEntryWithTag');
+		LoadedImage = im2double(LoadedRawImage.data);
+	elseif any(strcmpi(FileFormat,{'tif','tiff','flex'}))
+		LoadedImage = im2double(CPimread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2))));  
+	end
+end

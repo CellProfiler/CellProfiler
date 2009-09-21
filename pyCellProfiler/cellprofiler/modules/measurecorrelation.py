@@ -315,13 +315,16 @@ class MeasureCorrelation(cpm.CPModule):
             area  = fix(scind.sum(np.ones_like(labels), labels, lrange))
             mean1 = fix(scind.mean(first_pixels, labels, lrange))
             mean2 = fix(scind.mean(second_pixels, labels, lrange))
-            std1 = fix(scind.standard_deviation(first_pixels, labels, lrange))
-            std2 = fix(scind.standard_deviation(second_pixels, labels, lrange))
+            #
+            # Calculate the standard deviation times the population.
+            #
+            std1 = np.sqrt(fix(scind.sum((first_pixels-mean1[labels-1])**2,
+                                         labels, lrange)))
+            std2 = np.sqrt(fix(scind.sum((second_pixels-mean2[labels-1])**2,
+                                         labels, lrange)))
             x = first_pixels - mean1[labels-1]  # x - mean(x)
             y = second_pixels - mean2[labels-1] # y - mean(y)
-            corr = fix(scind.sum(x * y / 
-                                 (std1[labels-1] * std2[labels-1] * 
-                                  (area[labels-1]-1)),
+            corr = fix(scind.sum(x * y / (std1[labels-1] * std2[labels-1]),
                                  labels, lrange))
             corr[~ np.isfinite(corr)] = 0
         measurement = ("Correlation_Correlation_%s_%s" %

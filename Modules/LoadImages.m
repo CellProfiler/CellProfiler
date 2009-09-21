@@ -529,7 +529,10 @@ if SetBeingAnalyzed == 1
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         try
                             %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
-                            [S, NumFrames] = CPtiffread(fullfile(Pathname, CurrentMovieFileName),1);
+                            warning('off','CPtiffread:IgnoredTiffEntryWithTag');
+							[S, NumFrames] = CPtiffread(fullfile(Pathname, CurrentMovieFileName),1);
+							warning('on','CPtiffread:IgnoredTiffEntryWithTag');
+						
                             for FrameNumber = 1:NumFrames
                                 %%% Puts the file name into the FrameByFrameFileList in the first row.
                                 FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
@@ -672,8 +675,10 @@ if SetBeingAnalyzed == 1
                         end
                     elseif strcmpi(FileFormat,'stk movies') == 1
                         %%% Reads metamorph or NIH ImageJ movie stacks of tiffs.
-                        [S, NumFrames] = CPtiffread(fullfile(Pathname, CurrentMovieFileName),1);
-                        for FrameNumber = 1:NumFrames
+                        warning('off','CPtiffread:IgnoredTiffEntryWithTag');
+						[S, NumFrames] = CPtiffread(fullfile(Pathname, CurrentMovieFileName),1);
+                        warning('on','CPtiffread:IgnoredTiffEntryWithTag');
+						for FrameNumber = 1:NumFrames
                             %%% Puts the file name into the FrameByFrameFileList in the first row.
                             FrameByFrameFileList{n}(1,StartingPositionForThisMovie + FrameNumber) = {CurrentMovieFileName};
                             %%% Puts the frame number into the FrameByFrameFileList in the second row.
@@ -859,8 +864,10 @@ for n = 1:length(ImageName)
                 LoadedImage = im2double(LoadedRawImage.cdata);
                 end
             elseif strcmpi(FileFormat,'stk movies') == 1
-                LoadedRawImage = CPtiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
-                LoadedImage = im2double(LoadedRawImage.data);
+                warning('off','CPtiffread:IgnoredTiffEntryWithTag');	
+				LoadedRawImage = CPtiffread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
+                warning('on','CPtiffread:IgnoredTiffEntryWithTag');	
+				LoadedImage = im2double(LoadedRawImage.data);
             elseif (strcmpi(FileFormat,'tif,tiff,flex movies') == 1)
                 LoadedRawImage = CPimread(fullfile(Pathname, char(CurrentFileName(1))), cell2mat(CurrentFileName(2)));
                 LoadedImage = im2double(LoadedRawImage);                

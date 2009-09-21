@@ -285,7 +285,9 @@ class TestLoadText(unittest.TestCase):
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0], "ROW")
         self.assertEqual(len(groupings), 8)
-        self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
+        my_rows = [g[0]["ROW"] for g in groupings]
+        my_rows.sort()
+        self.assertEqual(''.join(my_rows), 'ABCDEFGH')
         for grouping in groupings:
             row = grouping[0]["ROW"]
             module.prepare_group(pipeline, image_set_list, grouping[0], grouping[1])

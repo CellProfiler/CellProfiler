@@ -187,6 +187,9 @@ class TestCreateBatchFiles(unittest.TestCase):
                 module.wants_default_output_directory.value = False
                 module.custom_output_directory.value = bpath
                 module.remote_host_is_windows.value = windows_mode
+                self.assertEqual(len(module.mappings), 1)
+                mapping = module.mappings[0]
+                mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
                 image_set_list = pipeline.prepare_run(None)
                 self.assertFalse(pipeline.in_batch_mode())

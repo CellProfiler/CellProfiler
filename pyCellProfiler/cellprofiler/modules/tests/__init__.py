@@ -20,6 +20,8 @@ import tempfile
 import scipy.io.matlab.mio
 
 def example_images_directory():
+    if os.environ.has_key('CP_EXAMPLEIMAGES'):
+        return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0] # CellProfiler.Modules.tests
     d = os.path.split(d)[0]        # CellProfiler.Modules

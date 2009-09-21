@@ -519,6 +519,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
         best_pos = fn(src_values, enclosing_labels, enclosing_range)
         best_pos = np.array((best_pos,) if isinstance(best_pos, tuple)
                             else best_pos)
+        best_pos = best_pos.astype(np.uint32)
         #
         # Get the label of the pixel at each location
         #

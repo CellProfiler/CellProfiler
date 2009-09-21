@@ -15,6 +15,7 @@ __version__="$Revision$"
 import base64
 import numpy as np
 import os
+import sys
 import tempfile
 import unittest
 from StringIO import StringIO
@@ -170,7 +171,8 @@ class TestCreateBatchFiles(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        for windows_mode in (False, True):
+        for windows_mode in ((False, True) if sys.platform.startswith("win")
+                             else (False,)):
             pipeline = cpp.Pipeline()
             pipeline.add_listener(callback)
             pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))

@@ -883,11 +883,10 @@ function lowest = minnotzero(x)
 
 function LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,idx)
 					
-FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
-					
-if ~isempty(findstr(FileFormat,'images'))
+if ~isfield(handles.Pipeline,['FileFormat',ImageName])
 	LoadedImage = CPimread(fullfile(Pathname,char(FileList(idx))));
 else
+	FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
 	CurrentFileName = FileList(:,idx);
 	if findstr(FileFormat,'stk')
 		warning('off','CPtiffread:IgnoredTiffEntryWithTag');

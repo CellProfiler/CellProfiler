@@ -36,8 +36,10 @@ if strcmpi(Mode,'DoNow')
     %%% Retrieves the path where the images are stored from the
     %%% handles structure.
     fieldname = ['Pathname', ImageName];
-    try Pathname = handles.Pipeline.(fieldname);
-    catch error('Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) uses all the images in a set in its calculations. Therefore, the entire image set to be averaged must exist prior to processing the first image set through the pipeline. In other words, the module using CPaverageimages must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this module onward.')
+    try 
+		Pathname = handles.Pipeline.(fieldname);
+	catch
+		error('Image processing was canceled because the CPaverageimages subfunction (which is used by Make Projection and Correct Illumination modules) uses all the images in a set in its calculations. Therefore, the entire image set to be averaged must exist prior to processing the first image set through the pipeline. In other words, the module using CPaverageimages must be run straight from a LoadImages module rather than following an image analysis module. One solution is to process the entire batch of images using the image analysis modules preceding this module and save the resulting images to the hard drive, then start a new stage of processing from this module onward.')
     end
     %%% Retrieves the list of filenames where the images are stored
     %%% from the handles structure.
@@ -183,12 +185,11 @@ elseif strcmpi(Mode,'Accumulate')
 end
 
 function LoadedImage = ImageLoader(handles,ImageName,Pathname,FileList,idx)
-					
-FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
-					
-if ~isempty(findstr(FileFormat,'images'))
+		
+if ~isfield(handles.Pipeline,['FileFormat',ImageName])
 	LoadedImage = CPimread(fullfile(Pathname,char(FileList(idx))));
 else
+	FileFormat = handles.Pipeline.(['FileFormat',ImageName]);
 	CurrentFileName = FileList(:,idx);
 	if findstr(FileFormat,'stk')
 		warning('off','CPtiffread:IgnoredTiffEntryWithTag');

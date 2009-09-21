@@ -623,6 +623,74 @@ class testLoadImages(unittest.TestCase):
                 os.remove(os.path.join(directory,filename))
             os.rmdir(directory)
             
+    def test_06_05_hierarchy(self):
+        """Regression test a file applicable to multiple files
+        
+        The bug is documented in IMG-202
+        """
+        directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.tif_8_1)
+        filenames = ["2008-08-06-run1-plateA_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run1-plateA_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-07-run1-plateA_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run1-plateB_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run1-plateB_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-07-run1-plateB_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run2-plateA_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run2-plateA_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-07-run2-plateA_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run2-plateB_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-06-run2-plateB_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "2008-08-07-run2-plateB_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
+                     "illum_run1-plateA.tif",
+                     "illum_run1-plateB.tif",
+                     "illum_run2-plateA.tif",
+                     "illum_run2-plateB.tif",
+                     ]
+        for filename in filenames:
+            fd = open(os.path.join(directory, filename),"wb")
+            fd.write(data)
+            fd.close()
+        try:
+            load_images = LI.LoadImages()
+            load_images.add_imagecb()
+            load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+            load_images.match_method.value = LI.MS_REGEXP
+            load_images.location.value = LI.DIR_OTHER
+            load_images.location_other.value = directory
+            load_images.group_by_metadata.value = True
+            load_images.images[0][LI.FD_COMMON_TEXT].value = "_w1_"
+            load_images.images[1][LI.FD_COMMON_TEXT].value = "^illum"
+            load_images.images[0][LI.FD_IMAGE_NAME].value = "Channel1"
+            load_images.images[1][LI.FD_IMAGE_NAME].value = "Illum"
+            load_images.images[0][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[1][LI.FD_METADATA_CHOICE].value = LI.M_FILE_NAME
+            load_images.images[0][LI.FD_FILE_METADATA].value =\
+                       ("^(?P<Date>[0-9]{4}-[0-9]{2}-[0-9]{2})-"
+                        "run(?P<Run>[0-9])-(?P<plate>.*?)_"
+                        "(?P<well_row>[A-P])(?P<well_col>[0-9]{2})_"
+                        "s(?P<site>[0-9]+)_w1_")
+            load_images.images[1][LI.FD_FILE_METADATA].value =\
+                       "^illum_run(?P<Run>[0-9])-(?P<plate>.*?)\\."
+            load_images.module_num = 1
+            pipeline = P.Pipeline()
+            pipeline.add_module(load_images)
+            pipeline.add_listener(self.error_callback)
+            image_set_list = I.ImageSetList()
+            load_images.prepare_run(pipeline, image_set_list, None)
+            for i in range(12):
+                iset = image_set_list.legacy_fields["LoadImages:1"][i]
+                ctags = re.search(load_images.images[0][LI.FD_FILE_METADATA].value,
+                                  iset["Channel1"][3]).groupdict()
+                itags = re.search(load_images.images[1][LI.FD_FILE_METADATA].value,
+                                  iset["Illum"][3]).groupdict()
+                self.assertEqual(ctags["Run"], itags["Run"])
+                self.assertEqual(ctags["plate"], itags["plate"])
+        finally:
+            for filename in filenames:
+                os.remove(os.path.join(directory,filename))
+            os.rmdir(directory)
+            
     def test_07_01_get_measurement_columns(self):
         data = 'eJztV+1u0zAUdT+1CgmNP2M/vX/boFHawdgqtK20IIqaUm1lYkIgvNZtLTlxlDhbC9o78Eg8Eo9AnLlNaqKmK0iA1Ehucq/vPef6OLUdo9ppVl/Ap5oOjWqn2CcUwzZFvM8cswJt5pLRY1hzMOK4B5lVgR0PwzcehfAZLOmV8n5lbx+Wdf0QLHGlGsZ9/3bi/+T9+5rf0rIrJ+1UpAn7DHNOrIGbA1mwKf3f/XaOHIIuKT5H1MNuSDHxN6w+64ztaZfBeh7FLWRGg/2r5ZmX2HHf9ieJsrtNRpiekS9YGcIk7BRfEZcwS+ZLfNU75WVc4Q10yIc6pGJ02Ij4RfxrEMZnY+IfROLXpU2sHrkiPQ9RSEw0mFYR8CfgrSt4onXwiBdfjlCXQxPx7lDg6Ak4qRmcFNiT/AcJeTmFX9iNZvOdIfOTeNMz+WnQYovp+FDhFXYd95FHOWwIEWGdOLjLmTP+pY68gje5JniFiP5J9Wdm6siAC3/2/kZe0jytgVm9hF0bIsvCtLwMb71VXahe9b0qgcXe64JSr7BfiYXQ8pcH6Rc47xNwthQcYX/Sdovbx+3np+z6SHu0EzzXGD36oBcPP34t3+xE8IcJ+AcKvrAF3gVGjgR8cnNLYTCLD0OSwFdH49Dzm/NYWlbX2pgzmyLXjIz7rvNaBqt5nTevm7m77SN/Yr1a5a3ykvJOwPz/Qdz5IjikDBzm2dA/umD7fxrvSt9/M+9bJC9ufYzuNyL+M5iv6y6Y1VXYXUyp7TDxPeVoZnDodzXKUO/21K01/cdG5ACujqcQwxOtK+0/bSTooI4/1OXH8TJ8mRi+ewl5WflFp+6zi+i+PSceKPE/AfCf5eY='
         fd = StringIO(zlib.decompress(base64.b64decode(data)))

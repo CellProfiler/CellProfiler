@@ -588,7 +588,7 @@ def maximum_position_of_labels(image, labels):
     result = scind.maximum_position(image,
                                     labels,
                                     np.arange(max_labels)+1)
-    result = np.array(result)
+    result = np.array(result,int)
     if result.ndim == 1:
         result.shape = (2,1)
         return result

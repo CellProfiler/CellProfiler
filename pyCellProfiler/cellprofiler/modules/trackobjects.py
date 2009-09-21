@@ -509,7 +509,8 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
         # Record the new objects' parents
         #
         parents = old_of_new.copy()
-        parents[parents != 0] = old_object_numbers[old_of_new[parents!=0]-1]
+        parents[parents != 0] =\
+               old_object_numbers[(old_of_new[parents!=0]-1).astype(int)]
         self.add_measurement(workspace, F_PARENT, parents)
         #
         # Assign object IDs to the new objects if unambiguous
@@ -520,7 +521,8 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
                                                 old_of_new,
                                                 np.arange(old_count)+1))
             one_to_one = new_per_old == 1
-            mapping[new_of_old[one_to_one]-1] = old_object_numbers[one_to_one]
+            mapping[(new_of_old[one_to_one]-1).astype(int)] =\
+                   old_object_numbers[one_to_one]
             miss_count = np.sum(mapping == 0)
         else:
             miss_count = new_count

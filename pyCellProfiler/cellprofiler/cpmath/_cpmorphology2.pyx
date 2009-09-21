@@ -222,9 +222,9 @@ def grey_reconstruction_loop(np.ndarray[dtype=np.uint32_t, ndim=1,
         np.int32_t nnext
         int nstrides = astrides.shape[0]
         np.uint32_t *values = <np.uint32_t *>(avalues.data)
-        np.uint32_t *prev = <np.uint32_t *>(aprev.data)
-        np.uint32_t *next = <np.uint32_t *>(anext.data)
-        np.uint32_t *strides = <np.uint32_t *>(astrides.data)
+        np.int32_t *prev = <np.int32_t *>(aprev.data)
+        np.int32_t *next = <np.int32_t *>(anext.data)
+        np.int32_t *strides = <np.int32_t *>(astrides.data)
     
     while current != -1:
         if current < image_stride:

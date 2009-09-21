@@ -1897,7 +1897,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
                         for footprint_offset in footprint_offsets],
                        np.int32)
     values = values.flatten()
-    value_sort = np.lexsort([-values])
+    value_sort = np.lexsort([-values]).astype(np.int32)
     #
     # Make a linked list of pixels sorted by value. -1 is the list terminator.
     #
@@ -2835,7 +2835,7 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
                              float(count))
         positions = scind.maximum_position(ro_distance, labels,
                                            np.arange(label_count)+1)
-        positions = np.array(positions)
+        positions = np.array(positions, np.uint32)
         result = np.zeros(image.shape, bool)
         if positions.ndim == 1:
             result[positions[0],positions[1]] = True

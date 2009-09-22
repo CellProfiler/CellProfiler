@@ -867,6 +867,12 @@ class Pipeline(object):
             module.module_num = module.module_num-1
         self.notify_listeners(ModuleRemovedPipelineEvent(module_num))
     
+    def edit_module(self, module_num):
+        """Notify listeners of a module edit
+        
+        """
+        self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+    
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid
         
@@ -1022,6 +1028,16 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
         
     def event_type(self):
         return "Module deleted"
+
+class ModuleEditedPipelineEvent(AbstractPipelineEvent):
+    """A module had its settings changed
+    
+    """
+    def __init__(self, module_num):
+        self.module_num = module_num
+    
+    def event_type(self):
+        return "Module edited"
 
 class RunExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during a pipeline run

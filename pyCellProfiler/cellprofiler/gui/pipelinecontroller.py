@@ -44,6 +44,7 @@ class PipelineController:
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         self.__setting_errors = {}
         self.__running_pipeline = None
+        self.__dirty_pipeline = False
         self.__inside_running_pipeline = False 
         self.__pipeline_measurements = None
         self.__debug_image_set_list = None
@@ -62,6 +63,9 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
+        
+        wx.EVT_CLOSE(frame, self.__on_close)
+        
         if not USE_TIMER:
             wx.EVT_IDLE(frame,self.on_idle)
     
@@ -139,8 +143,8 @@ class PipelineController:
                 self.__pipeline.create_from_handles(handles)
             self.__clear_errors()
             cellprofiler.preferences.set_current_pipeline_path(pathname)
-            path, file = os.path.split(pathname)
-            self.__frame.Title = "CellProfiler: %s (%s)"%(file,path)
+            self.__dirty_pipeline = False
+            self.set_title()
         except Exception,instance:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
 
@@ -150,6 +154,13 @@ class PipelineController:
         self.__setting_errors = {}
         
     def __on_save_pipeline(self,event):
+        self.do_save_pipeline()
+    
+    def do_save_pipeline(self):
+        '''Save the pipeline, asking the user for the name
+
+        return True if the user saved the pipeline
+        '''
         dlg = wx.FileDialog(self.__frame,"Save pipeline",wildcard="*.mat",style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         path = cellprofiler.preferences.get_current_pipeline_path()
         if path is not None:
@@ -158,6 +169,22 @@ class PipelineController:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.__pipeline.save(pathname)
             cellprofiler.preferences.set_current_pipeline_path(dlg.Path)
+            self.__dirty_pipeline = False
+            self.set_title()
+            return True
+        return False
+    
+    def set_title(self):
+        '''Set the title of the parent frame'''
+        pathname = cellprofiler.preferences.get_current_pipeline_path()
+        if pathname is None:
+            self.__frame.Title = "CellProfiler"
+            return
+        path, file = os.path.split(pathname)
+        if self.__dirty_pipeline:
+            self.__frame.Title = "CellProfiler: %s* (%s)"%(file,path)
+        else:
+            self.__frame.Title = "CellProfiler: %s (%s)"%(file,path)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",
@@ -165,6 +192,24 @@ class PipelineController:
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.__pipeline.clear()
             self.__clear_errors()
+            cellprofiler.preferences.set_current_pipeline_path(None)
+            self.__dirty_pipeline = False
+            self.set_title()
+    
+    def __on_close(self, event):
+        if self.__dirty_pipeline:
+            answer = wx.MessageBox("You have unsaved changes in your pipeline, "
+                                   "do you want to save it (Cancel will "
+                                   "return you to CellProfiler)?",
+                                   "Closing CellProfiler",
+                                   wx.YES | wx.NO | wx.CANCEL | wx.ICON_QUESTION)
+            if answer == wx.YES:
+                if not self.do_save_pipeline():
+                    '''Cancel the closing if the user fails to save'''
+                    return
+            elif answer == wx.CANCEL:
+                return
+        self.__frame.Destroy()
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
@@ -176,6 +221,13 @@ class PipelineController:
                        (event.module.module_name, event.error.message))
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
+        elif any([isinstance(event, x) for x in
+                  (cellprofiler.pipeline.ModuleAddedPipelineEvent,
+                   cellprofiler.pipeline.ModuleEditedPipelineEvent,
+                   cellprofiler.pipeline.ModuleMovedPipelineEvent,
+                   cellprofiler.pipeline.ModuleRemovedPipelineEvent)]):
+            self.__dirty_pipeline = True
+            self.set_title()
             
     def __on_help(self,event):
         print "No help yet"
@@ -222,8 +274,8 @@ class PipelineController:
         assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
-        
         setting.value = proposed_value
+        self.__pipeline.edit_module(event.get_module().module_num)
             
     def on_analyze_images(self,event):
         if len(self.__setting_errors):

@@ -33,7 +33,8 @@ class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
     
     """
-    def __init__(self,setting,proposed_value,event):
+    def __init__(self, setting, module, proposed_value, event):
+        self.__module = module
         self.__setting = setting
         self.__proposed_value = proposed_value
         self.__event = event
@@ -50,6 +51,10 @@ class SettingEditedEvent:
         
         """
         return self.__proposed_value
+    
+    def get_module(self):
+        """Get the module holding the setting"""
+        return self.__module
     
     def cancel(self):
         self.__accept_change = False
@@ -597,7 +602,7 @@ class ModuleView:
                 else:
                     max_value = str(setting.max)
                 proposed_value="%s,%s"%(str(control.Value),max_value)
-                setting_edited_event = SettingEditedEvent(setting,
+                setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
                 
@@ -612,7 +617,7 @@ class ModuleView:
                 else:
                     max_value = "-"+str(control.Value)
                 proposed_value="%s,%s"%(setting.display_min,max_value)
-                setting_edited_event = SettingEditedEvent(setting,
+                setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
@@ -629,7 +634,7 @@ class ModuleView:
                 else:
                     proposed_value="%s,%s"%(setting.display_min,
                                             cellprofiler.settings.END)
-                setting_edited_event = SettingEditedEvent(setting,
+                setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_COMBOBOX,
@@ -670,14 +675,14 @@ class ModuleView:
             def on_x_change(event, setting = v, control=x_ctrl):
                 old_value = str(setting)
                 proposed_value="%s,%s"%(str(control.Value),str(setting.y))
-                setting_edited_event = SettingEditedEvent(setting,
+                setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_TEXT,on_x_change,x_ctrl)
             def on_y_change(event, setting = v, control=y_ctrl):
                 old_value = str(setting)
                 proposed_value="%s,%s"%(str(setting.x),str(control.Value))
-                setting_edited_event = SettingEditedEvent(setting,
+                setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_TEXT,on_y_change,y_ctrl)
@@ -761,7 +766,10 @@ class ModuleView:
                                           value_of(feature_ctrl),
                                           value_of(image_ctrl),
                                           value_of(scale_ctrl))
-                setting_edited_event = SettingEditedEvent(v,value,event)
+                setting_edited_event = SettingEditedEvent(v,
+                                                          self.__module,
+                                                          value,
+                                                          event)
                 self.notify(setting_edited_event)
                 self.reset_view()
             
@@ -840,7 +848,8 @@ class ModuleView:
         old_value = str(setting)
         proposed_value = str(','.join([control.Items[i]
                                        for i in control.Selections]))
-        setting_edited_event = SettingEditedEvent(setting, proposed_value, 
+        setting_edited_event = SettingEditedEvent(setting, self.__module, 
+                                                  proposed_value, 
                                                   event)
         self.notify(setting_edited_event)
         self.reset_view()
@@ -851,19 +860,24 @@ class ModuleView:
             proposed_value = (control.GetValue() and 'Yes') or 'No'
         else:
             proposed_value = str(control.GetValue())
-        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        setting_edited_event = SettingEditedEvent(setting,
+                                                  self.__module, 
+                                                  proposed_value,
+                                                  event)
         self.notify(setting_edited_event)
     
     def __on_min_change(self,event,setting,control):
         old_value = str(setting)
         proposed_value="%s,%s"%(str(control.Value),str(setting.max))
-        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        setting_edited_event = SettingEditedEvent(setting,self.__module, 
+                                                  proposed_value,event)
         self.notify(setting_edited_event)
         
     def __on_max_change(self,event,setting,control):
         old_value = str(setting)
         proposed_value="%s,%s"%(str(setting.min),str(control.Value))
-        setting_edited_event = SettingEditedEvent(setting,proposed_value,event)
+        setting_edited_event = SettingEditedEvent(setting,self.__module, 
+                                                  proposed_value,event)
         self.notify(setting_edited_event)
         
     def __on_pipeline_event(self,pipeline,event):
@@ -873,6 +887,9 @@ class ModuleView:
     
     def __on_do_something(self, event, setting):
         setting.on_event_fired()
+        setting_edited_event = SettingEditedEvent(setting,self.__module, 
+                                                  None,event)
+        self.notify(setting_edited_event)
         self.reset_view()
     
     def on_idle(self,event):

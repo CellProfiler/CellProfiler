@@ -20,6 +20,8 @@ import math
 import StringIO
 import wx
 
+import cellprofiler.preferences as cpprefs
+
 from cellprofiler.gui import draw_bevel, BV_DOWN
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
 SLIDER_CTL_STR = u"slider_ctl"
@@ -68,7 +70,7 @@ class SliderCtl(wx.Panel):
         self.__start_value = start_value
         self.__stop_value = stop_value
         self.value_names = value_names
-        self.BackgroundColourColour = wx.RED
+        self.BackgroundColour = wx.RED
         wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_ERASE_BACKGROUND(self, self.on_erase_background)
         self.Bind(wx.EVT_SIZE, self.on_size, self)
@@ -228,7 +230,7 @@ class SliderCtl(wx.Panel):
 
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self)
-        dc.SetBackground(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DFACE)))
+        dc.SetBackground(wx.Brush(cpprefs.get_background_color()))
         dc.Clear()
         self.draw_groove(dc)
         self.draw_ticks(dc)
@@ -359,6 +361,7 @@ class MovieSlider(wx.Panel):
         name        - window's name
         """
         super(MovieSlider,self).__init__(parent, id, pos, size, style, name)
+        self.BackgroundColour = cpprefs.get_background_color()
         self.value_names = value_names 
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)

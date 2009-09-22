@@ -82,6 +82,7 @@ class CPFigureFrame(wx.Frame):
         subplots - 2-tuple indicating the layout of subplots inside the window
         """
         super(CPFigureFrame,self).__init__(parent, id, title, pos, size, style, name)
+        self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
         self.zoom_stack = []
         self.length_arrow = None

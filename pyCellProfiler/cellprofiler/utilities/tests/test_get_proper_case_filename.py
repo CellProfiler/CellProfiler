@@ -65,8 +65,8 @@ if sys.platform.startswith('win'):
 else:
     class TestGetProperCaseFilename(unittest.TestCase):
         '''Test the "get_proper_case_filename" function'''
-    def test_01_01_pass_through(self):
-        '''The function should pass an arbitraty string through unchanged'''
-        path = '/usr/bin'
-        self.assertEqual(path, get_proper_case_filename(path))
+        def test_01_01_pass_through(self):
+            '''The function should pass an arbitraty string through unchanged'''
+            path = '/usr/bin'
+            self.assertEqual(path, get_proper_case_filename(path))
                          

@@ -89,6 +89,7 @@ TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
 TABLE_FONT_NAME = 'TableFontName'
 TABLE_FONT_SIZE = 'TableFontSize'
+BACKGROUND_COLOR = 'BackgroundColor'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
@@ -201,6 +202,29 @@ def get_table_font_size():
 
 def set_table_font_size(table_font_size):
     get_config().Write(TABLE_FONT_SIZE,str(table_font_size))
+
+def get_background_color():
+    '''Get the color to be used for window backgrounds
+    
+    Return wx.Colour that will be applied as
+    the background for all frames and dialogs
+    '''
+    if not get_config().Exists(BACKGROUND_COLOR):
+        return wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE)
+    else:
+        try:
+            color = [int(x) 
+                     for x in get_config().Read(BACKGROUND_COLOR).split(',')]
+            return wx.Colour(*tuple(color))
+        except:
+            return wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE)
+
+def set_background_color(color):
+    '''Set the color to be used for window backgrounds
+    
+    '''
+    get_config().Write(BACKGROUND_COLOR,
+                       ','.join([str(x) for x in color.Get()]))
 
 def get_pixel_size():
     """The size of a pixel in microns"""

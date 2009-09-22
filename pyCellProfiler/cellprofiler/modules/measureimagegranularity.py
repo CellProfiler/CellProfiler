@@ -126,6 +126,7 @@ Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
     def prepare_to_set_values(self, setting_values):
         '''Adjust self.image_groups to account for the expected # of images'''
         assert len(setting_values) % ImageSetting.setting_count == 0
+        group_count = len(setting_values) / ImageSetting.setting_count
         while len(self.image_settings) > group_count:
             del self.image_settings[-1]
         while len(self.image_settings) < group_count:
@@ -142,9 +143,8 @@ Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
                             for image_setting in self.image_settings])
         statistics = [[ "Image name" ] + 
                       [ "GS%d"%n for n in range(1,max_scale+1)]]
-        for image_setting in image_settings:
-            statistic = self.run_on_image_setting(self, workspace, 
-                                                  image_setting)
+        for image_setting in self.image_settings:
+            statistic = self.run_on_image_setting(workspace, image_setting)
             statistic += ["-"] * (max_scale - image_setting.granular_spectrum_length.value)
             statistics.append(statistic)
         if not workspace.frame is None:
@@ -163,29 +163,37 @@ Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
         #
         # Downsample the image and mask
         #
-        new_shape = (np.array(image.pixel_data.shape) *
-                     image_setting.subsample_size.value)
-        i,j = (np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float) *
-               image_setting.subsample_size.value)
-        pixels = scind.map_coordinates(image.pixel_data,(i,j))
-        mask = scind.map_coordinates(image.mask.astype(float), (i,j)) == 1.0
+        new_shape = np.array(image.pixel_data.shape)
+        if image_setting.subsample_size.value < 1:
+            new_shape = new_shape * image_setting.subsample_size.value
+            i,j = (np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float) /
+                   image_setting.subsample_size.value)
+            pixels = scind.map_coordinates(image.pixel_data,(i,j),order=1)
+            mask = scind.map_coordinates(image.mask.astype(float), (i,j)) > .9
+        else:
+            pixels = image.pixel_data
+            mask = image.mask
         #
         # Remove background pixels using a greyscale tophat filter
         #
-        back_shape = new_shape * image_setting.image_sample_size.value
-        i,j = (np.mgrid[0:back_shape[0],0:back_shape[1]].astype(float) *
-               image_setting.image_sample_size.value)
-        back_pixels = scind.map_coordinates(pixels,(i,j))
-        back_mask = scind.map_coordinates(mask, (i,j))
-        radius = max(1, int(image_setting.element_size.value *
-                            image_setting.image_sample_size.value *
-                            image_setting.subsample_size / 2.0))
-        temp = morph.grey_erosion(back_pixels, radius, back_mask)
-        temp = morph.grey_dilation(temp, radius, back_mask)
-        i,j = (np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float) /
-               image_setting.image_sample_size.value)
-        back_pixels = scind.map_coordinates(pixels,(i,j))
+        if image_setting.image_sample_size.value < 1:
+            back_shape = new_shape * image_setting.image_sample_size.value
+            i,j = (np.mgrid[0:back_shape[0],0:back_shape[1]].astype(float) /
+                   image_setting.image_sample_size.value)
+            back_pixels = scind.map_coordinates(pixels,(i,j), order=1)
+            back_mask = scind.map_coordinates(mask.astype(float), (i,j)) > .9
+        else:
+            back_pixels = pixels
+            back_mask = mask
+        radius = image_setting.element_size.value
+        back_pixels = morph.grey_erosion(back_pixels, radius, back_mask)
+        back_pixels = morph.grey_dilation(back_pixels, radius, back_mask)
+        if image_setting.image_sample_size.value < 1:
+            i,j = (np.mgrid[0:new_shape[0],0:new_shape[1]].astype(float) *
+                   image_setting.image_sample_size.value)
+            back_pixels = scind.map_coordinates(back_pixels,(i,j), order=1)
         pixels -= back_pixels
+        pixels[pixels < 0] = 0
         #
         # Transcribed from the Matlab module: granspectr function
         #
@@ -204,22 +212,23 @@ Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
         # Mask the test image so that masked pixels will have no effect
         # during reconstruction
         #
-        ero[mask] = 0
+        ero[~mask] = 0
         currentmean = startmean
         
         footprint = np.array([[False,True,False],
-                              [True ,True,False],
+                              [True ,True,True],
                               [False,True,False]])
         statistics = [ image_setting.image_name.value]
         for i in range(1,ng+1):
             prevmean = currentmean
             ero = morph.grey_erosion(ero, mask = mask, footprint=footprint)
             rec = morph.grey_reconstruction(ero, pixels, footprint)
-            currentmean = np.mean(ero[mask])
+            currentmean = np.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += [ "%.2f"%gs]
             feature = image_setting.granularity_feature(i)
             measurements.add_image_measurement(feature, gs)
+        return statistics
     
     def get_measurement_columns(self, pipeline):
         result = []
@@ -274,7 +283,7 @@ class ImageSetting(object):
             .25, minval = np.finfo(float).eps, maxval = 1)
         self.element_size = cps.Integer(
             "What is the size of the structuring element?",
-            10, minval = 3)
+            10, minval = 1)
         self.granular_spectrum_length = cps.Integer(
             "What do you want to be the length of the granular spectrum?",
             16, minval = 1)
@@ -299,5 +308,5 @@ class ImageSetting(object):
             result += [self.remove_button]
         return result
     
-    def granularity_feature(length):
+    def granularity_feature(self, length):
         return "%s_%d_%s"% (C_GRANULARITY, length, self.image_name.value)

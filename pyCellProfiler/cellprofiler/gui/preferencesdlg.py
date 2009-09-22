@@ -19,6 +19,7 @@ import cellprofiler.preferences as cpprefs
 
 DIRBROWSE = "Browse"
 FONT = "Font"
+COLOR = "Color"
 
 class PreferencesDlg(wx.Dialog):
     '''Display a dialog for setting preferences
@@ -46,6 +47,9 @@ class PreferencesDlg(wx.Dialog):
                 ctl = wx.ComboBox(self, -1, 
                                   choices=ui_info, style=wx.CB_READONLY)
                 ctl.SetStringSelection(getter())
+            elif ui_info == COLOR:
+                ctl = wx.Panel(self, -1, style=wx.BORDER_SUNKEN)
+                ctl.BackgroundColour = getter()
             else:
                 ctl = wx.TextCtrl(self, -1, getter())
                 min_height = ctl.GetMinHeight()
@@ -73,6 +77,12 @@ class PreferencesDlg(wx.Dialog):
                         name = font.GetFaceName()
                         size = font.GetPointSize()
                         ctl.Value = "%s, %f"%(name,size) 
+            elif ui_info == COLOR:
+                def on_press(event, ctl=ctl, parent=self):
+                    color = wx.GetColourFromUser(self, ctl.BackgroundColour)
+                    if any([x != -1 for x in color.asTuple()]):
+                        ctl.BackgroundColour = color
+                        ctl.Refresh()
             else:
                 on_press = None
             if not on_press is None:
@@ -95,6 +105,7 @@ class PreferencesDlg(wx.Dialog):
         top_sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 
         self.SetSizer(top_sizer)
+        top_sizer.Fit(self)
         self.controls = controls
     
     
@@ -102,7 +113,10 @@ class PreferencesDlg(wx.Dialog):
         if self.ShowModal() == wx.ID_OK:
             p = self.get_preferences()
             for control, (text, getter, setter, ui_info) in zip(self.controls, p):
-                setter(control.Value)
+                if ui_info == COLOR:
+                    setter(control.BackgroundColour)
+                else:
+                    setter(control.Value)
     
     def get_preferences(self):
         '''Get the list of preferences.
@@ -122,7 +136,8 @@ class PreferencesDlg(wx.Dialog):
                 ["Default output directory",cpprefs.get_default_output_directory, cpprefs.set_default_output_directory,DIRBROWSE],
                 ["Title font", self.get_title_font, self.set_title_font, FONT],
                 ["Table font", self.get_table_font, self.set_table_font, FONT],
-                ["Default colormap", cpprefs.get_default_colormap, cpprefs.set_default_colormap, cmaps]
+                ["Default colormap", cpprefs.get_default_colormap, cpprefs.set_default_colormap, cmaps],
+                ["Window background", cpprefs.get_background_color, cpprefs.set_background_color, COLOR]
                 ]
     
     def get_title_font(self):

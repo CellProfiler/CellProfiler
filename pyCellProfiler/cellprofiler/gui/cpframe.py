@@ -158,25 +158,32 @@ class CPFrame(wx.Frame):
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
+        self.do_help_modules(modules)
+        
+    def do_help_modules(self, modules):
+        for module in modules:
+            self.do_help_module(module.module_name, module.get_help())
+    
+    def do_help_module(self, module_name, help_text):
+        helpframe = wx.Frame(self,-1,'Help for module, "%s"' %
+                             (module_name),size=(640,480))
         font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
         bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
-        for module in modules:
-            helpframe = wx.Frame(self,-1,'Help for module, "%s"'%(module.module_name),size=(640,480))
-            sizer = wx.BoxSizer()
-            panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
-            panel.SetBackgroundColour(bgcolor)
-            sizer.Add(panel,1,wx.EXPAND)
-            helpframe.SetSizer(sizer)
-            statictext = wx.StaticText(panel,-1,module.get_help())
-            statictext.SetFont(font)
-            statictext.SetBackgroundColour(bgcolor)
-            sizer = wx.BoxSizer()
-            sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
-            panel.SetSizer(sizer)
-            panel.SetupScrolling()
-            helpframe.SetIcon(get_icon())
-            helpframe.Layout()
-            helpframe.Show()
+        sizer = wx.BoxSizer()
+        panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
+        panel.SetBackgroundColour(bgcolor)
+        sizer.Add(panel,1,wx.EXPAND)
+        helpframe.SetSizer(sizer)
+        statictext = wx.StaticText(panel,-1, help_text)
+        statictext.SetFont(font)
+        statictext.SetBackgroundColour(bgcolor)
+        sizer = wx.BoxSizer()
+        sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
+        panel.SetSizer(sizer)
+        panel.SetupScrolling()
+        helpframe.SetIcon(get_icon())
+        helpframe.Layout()
+        helpframe.Show()
         
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel)

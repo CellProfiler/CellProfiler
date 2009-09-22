@@ -230,7 +230,12 @@ class PipelineController:
             self.set_title()
             
     def __on_help(self,event):
-        print "No help yet"
+        modules = self.__get_selected_modules()
+        if len(modules) > 0:
+            self.__frame.do_help_modules(modules)
+        else:
+            wx.MessageBox("Please select a module, then press the help button to get help for it", "No module selected",
+                          style=wx.OK|wx.ICON_INFORMATION)
         
     def __on_add_module(self,event):
         self.__add_module_frame.Show()

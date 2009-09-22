@@ -126,7 +126,9 @@ from cellprofiler.cellprofilerapp import CellProfilerApp
 from cellprofiler.pipeline import Pipeline
 import cellprofiler.preferences as cpprefs
 import cellprofiler.gui.cpframe as cpgframe
+from cellprofiler.utilities.get_revision import get_revision
 
+print "Subversion revision: %d"%get_revision()
 if not options.show_gui:
     cpprefs.set_headless()
     # What's there to do but run if you're running headless?

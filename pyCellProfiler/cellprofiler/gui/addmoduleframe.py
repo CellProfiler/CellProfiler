@@ -19,6 +19,7 @@ import cellprofiler.preferences
 import cellprofiler.modules
 import cellprofiler.cpmodule
 from cellprofiler.gui import get_icon
+import cpframe
 
 class AddModuleFrame(wx.Frame):
     """The window frame that lets you add modules to a pipeline
@@ -175,8 +176,11 @@ class AddModuleFrame(wx.Frame):
             file = self.__module_list_box.GetItems()[idx]
             loader = self.__module_dict[category][file]
             module = loader(0)
-            help = module.get_help()
-            wx.MessageBox(help)
+            if isinstance(self.Parent,cpframe.CPFrame):
+                self.Parent.do_help_module(module.module_name, module.get_help())
+            else:
+                help = module.get_help()
+                wx.MessageBox(help)
         
     def add_listener(self,listener):
         self.__listeners.append(listener)

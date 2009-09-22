@@ -139,6 +139,8 @@ class PipelineController:
                 self.__pipeline.create_from_handles(handles)
             self.__clear_errors()
             cellprofiler.preferences.set_current_pipeline_path(pathname)
+            path, file = os.path.split(pathname)
+            self.__frame.Title = "CellProfiler: %s (%s)"%(file,path)
         except Exception,instance:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
 

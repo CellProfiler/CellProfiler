@@ -74,7 +74,8 @@ function handles = TrackObjects(handles,varargin)
 % Linearity             |       5
 %
 % In addition to these, the following features are also recorded: Label, 
-% Lifetime.
+% Lifetime as a per-object measurement, and the number of unique objects 
+% that have appeared and dissappeared in each frame.
 %
 % Desscription of each feature:
 %   Label: Each tracked object is assigned a unique identifier (label). 
@@ -562,6 +563,9 @@ if CollectStatistics
     if SetBeingAnalyzed ~= NumberOfImageSets,
         [Lifetime,Linearity,IntegratedDistance] = deal(NaN(size(PreviousLabels)));
         [AbsentObjectsLabel,idx] = setdiff(PreviousLabels,CurrentLabels);
+		% Count old objects that have dissappeared
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'DisappearedCount',ObjectName,num2str(PixelRadius)), ...
+                    length(AbsentObjectsLabel));
         Lifetime(idx) = AgeOfObjects(AbsentObjectsLabel);
         IntegratedDistance(idx) = SumDistance(AbsentObjectsLabel);
         % Linearity: In range of [0,1]. Defined as abs[(x,y)_final -
@@ -569,12 +573,21 @@ if CollectStatistics
         warning('off','MATLAB:divideByZero');
         Linearity(idx) = sqrt(sum((InitialObjectLocation(AbsentObjectsLabel,:) - PreviousLocations(idx,:)).^2,2))./SumDistance(AbsentObjectsLabel);
         warning('on','MATLAB:divideByZero');
+		
+		% Count new objects that have appeared
+		NewObjectsLabel = setdiff(CurrentLabels,PreviousLabels);
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'AppearedCount',ObjectName,num2str(PixelRadius)), ...
+                    length(NewObjectsLabel));
     else %... or we reach the end of the analysis
         Lifetime = AgeOfObjects(CurrentLabels);
         IntegratedDistance = SumDistance(CurrentLabels);
         warning('off','MATLAB:divideByZero');
         Linearity = sqrt(sum((InitialObjectLocation(CurrentLabels,:) - CurrentLocations).^2,2))./SumDistance(CurrentLabels);
         warning('on','MATLAB:divideByZero');
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'DisappearedCount',ObjectName,num2str(PixelRadius)), ...
+                    0);
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'AppearedCount',ObjectName,num2str(PixelRadius)), ...
+                    0);
     end
         
     IntegratedDistanceMeasurementName = CPjoinstrings(TrackingMeasurementPrefix,'IntegratedDistance',num2str(PixelRadius));

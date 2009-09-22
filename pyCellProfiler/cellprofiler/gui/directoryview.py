@@ -24,7 +24,7 @@ import matplotlib.backends.backend_wx
 
 import cellprofiler.preferences
 from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
-
+import cellprofiler.gui.cpfigure as FIG
 
 class DirectoryView(object):
     """A directory viewer that displays file names and has smartish clicks
@@ -108,30 +108,16 @@ class DirectoryView(object):
             frame.Show()
     
     def __display_image(self,filename):
-        frame = ImageFrame(self.__list_box.GetTopLevelParent(),filename)
-        frame.Show()
-
-class ImageFrame(wx.Frame):
-    def __init__(self,parent,filename, image=None):
-        wx.Frame.__init__(self,parent,-1,filename)
-        if image != None:
-            self.__image = image
+        lip = LoadImagesImageProvider("dummy", "", filename)
+        image = lip.provide_image(None).pixel_data
+        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                  title = filename,
+                                  subplots=(1,1))
+        if image.ndim == 3:
+            frame.subplot_imshow_color(0,0,image,filename)
         else:
-            lip = LoadImagesImageProvider("dummy", "", filename)
-            self.__image = lip.provide_image(None).pixel_data
-        sizer = wx.BoxSizer()
-        self.__figure= matplotlib.figure.Figure()
-        self.__axes = self.__figure.add_subplot(111)
-        self.__axes.imshow(self.__image)
-        self.__panel = matplotlib.backends.backend_wx.FigureCanvasWx(self,-1,self.__figure)
-        sizer.Add(self.__panel,1,wx.EXPAND)
-        self.SetSizerAndFit(sizer)
-        self.Bind(wx.EVT_PAINT,self.on_paint)
-        
-    def on_paint(self,event):
-        dc = wx.PaintDC(self)
-        self.__panel.draw(dc)
-        
+            frame.subplot_imshow_grayscale(0,0,image,filename)
+
 class LoadPipelineRequestEvent:
     """The user wants to load a pipeline
     

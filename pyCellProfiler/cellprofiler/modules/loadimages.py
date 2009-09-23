@@ -20,6 +20,7 @@ import wx
 import wx.html
 
 import Image as PILImage
+import PIL.TiffImagePlugin as TIFF
 import cellprofiler.dib
 import numpy
 import matplotlib.image
@@ -34,6 +35,15 @@ import cellprofiler.settings as cps
 
 PILImage.init()
 
+'''STK TIFF Tag UIC1 - for MetaMorph internal use'''
+UIC1_TAG = 33628
+'''STK TIFF Tag UIC2 - stack z distance, creation time...'''
+UIC2_TAG = 33629
+'''STK TIFF TAG UIC3 - wavelength'''
+UIC3_TAG = 33630
+'''STK TIFF TAG UIC4 - internal'''
+UIC4_TAG = 33631
+
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
 MS_REGEXP = 'Text-Regular expressions'
@@ -47,7 +57,7 @@ try:
     import cellprofiler.ffmpeg.ffmpeg as ffmpeg
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 except ImportError:
-    FF = [FF_INDIVIDUAL_IMAGES]
+    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
 DIR_DEFAULT_IMAGE = 'Default Image Directory'
 DIR_DEFAULT_OUTPUT = 'Default Output Directory'
@@ -604,9 +614,23 @@ class LoadImages(cpmodule.CPModule):
                     raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
                 pathname, filename = values[2:]
                 p = LoadImagesImageProvider(image_name, pathname, filename)
-                image_set.providers.append(p)
+            elif provider == P_MOVIES:
+                if version != V_MOVIES:
+                    raise NotImplementedError("Can't restore file information: file image provider version %d not supported"%version)
+                pathname, frame, video_stream = values[2:]
+                path,filename = os.path.split(pathname)
+                if self.file_types == FF_STK_MOVIES:
+                    p = LoadImagesSTKFrameProvider(image_name, path, filename,
+                                                   frame)
+                elif self.file_types == FF_AVI_MOVIES:
+                    p = LoadImagesMovieFrameProvider(image_name, path, filename,
+                                                     int(frame), video_stream)
+                else:
+                    raise NotImplementedError("File type %s not supported"%self.file_types.value)
+                
             else:
                 raise NotImplementedError("Can't restore file information: provider %s not supported"%provider)
+            image_set.providers.append(p)
     
     def get_image_sets(self, d):
         """Get image sets from a dictionary tree
@@ -751,8 +775,12 @@ class LoadImages(cpmodule.CPModule):
         list_of_lists = [[] for x in image_names]
         for pathname,image_index in files:
             pathname = os.path.join(self.image_directory(), pathname)
-            video_stream = ffmpeg.VideoStream(pathname)
-            frame_count = video_stream.frame_count
+            if self.file_types == FF_STK_MOVIES:
+                video_stream = None
+                frame_count = self.get_frame_count(pathname)
+            else:
+                video_stream = ffmpeg.VideoStream(pathname)
+                frame_count = video_stream.frame_count
             if frame_count == 0:
                 print "Warning - no frame count detected"
                 frame_count = 256
@@ -765,9 +793,10 @@ class LoadImages(cpmodule.CPModule):
         list_of_lists = numpy.array(list_of_lists,dtype=object)
         for i in range(0,image_set_count):
             image_set = image_set_list.get_image_set(i)
-            providers = [LoadImagesMovieFrameProvider(name.value, root, file, int(frame), video_stream)
-                         for name,(file,frame,video_stream) in zip(image_names,list_of_lists[:,i])]
-            image_set.providers.extend(providers)
+            d = self.get_dictionary(image_set)
+            for name, (file, frame, video_stream) \
+                in zip(image_names, list_of_lists[:,i]):
+                d[name.value] = (P_MOVIES, V_MOVIES, file, frame, video_stream)
         for name in image_names:
             image_set_list.legacy_fields['Pathname%s'%(name.value)]=root
     
@@ -869,6 +898,9 @@ class LoadImages(cpmodule.CPModule):
                 raise ValueError("No video stream in %s"%pathname)
             frame_count = f.get_frame_count(0)
             return frame_count
+        elif self.file_types == FF_STK_MOVIES:
+            f = PILImage.open(pathname)
+            return len(f.ifd[UIC2_TAG])
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
     
     def get_metadata_tags(self, fd=None):
@@ -1024,7 +1056,7 @@ def is_image(filename):
     ext = os.path.splitext(filename)[1].lower()
     if PILImage.EXTENSION.has_key(ext):
         return True
-    return ext in ('.avi', '.mpeg', '.mat')
+    return ext in ('.avi', '.mpeg', '.mat', '.stk')
     
 
 
@@ -1043,33 +1075,7 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             return cpimage.Image(imgdata["Image"])
-        img = PILImage.open(self.get_full_name())
-        if img.mode=='I;16':
-            # 16-bit image
-            # deal with the endianness explicitly... I'm not sure
-            # why PIL doesn't get this right.
-            imgdata = numpy.fromstring(img.tostring(),numpy.uint8)
-            imgdata.shape=(int(imgdata.shape[0]/2),2)
-            imgdata = imgdata.astype(numpy.uint16)
-            hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
-            imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
-            img_size = list(img.size)
-            img_size.reverse()
-            new_img = imgdata.reshape(img_size)
-            # The magic # for maximum sample value is 281
-            if img.tag.has_key(281):
-                img = new_img.astype(float) / img.tag[281][0]
-            elif numpy.max(new_img) < 4096:
-                img = new_img.astype(float) / 4095.
-            else:
-                img = new_img.astype(float) / 65535.
-        else:
-            # There's an apparent bug in the PIL library that causes
-            # images to be loaded upside-down. At best, load and save have opposite
-            # orientations; in other words, if you load an image and then save it
-            # the resulting saved image will be upside-down
-            img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
-            img = matplotlib.image.pil_to_array(img)
+        img = load_using_PIL(self.get_full_name())
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())
@@ -1086,6 +1092,46 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.get_filename())
 
+def load_using_PIL(path, index=0, seekfn=None):
+    '''Get the pixel data for an image using PIL
+    
+    path - path to file
+    index - index of the image if stacked image format such as TIFF
+    seekfn - a function for seeking to a given image in a stack
+    '''
+    img = PILImage.open(path)
+    if seekfn is None:
+        img.seek(index)
+    else:
+        seekfn(img, index)
+    if img.mode=='I;16':
+        # 16-bit image
+        # deal with the endianness explicitly... I'm not sure
+        # why PIL doesn't get this right.
+        imgdata = numpy.fromstring(img.tostring(),numpy.uint8)
+        imgdata.shape=(int(imgdata.shape[0]/2),2)
+        imgdata = imgdata.astype(numpy.uint16)
+        hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
+        imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
+        img_size = list(img.size)
+        img_size.reverse()
+        new_img = imgdata.reshape(img_size)
+        # The magic # for maximum sample value is 281
+        if img.tag.has_key(281):
+            img = new_img.astype(float) / img.tag[281][0]
+        elif numpy.max(new_img) < 4096:
+            img = new_img.astype(float) / 4095.
+        else:
+            img = new_img.astype(float) / 65535.
+    else:
+        # There's an apparent bug in the PIL library that causes
+        # images to be loaded upside-down. At best, load and save have opposite
+        # orientations; in other words, if you load an image and then save it
+        # the resulting saved image will be upside-down
+        img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
+        img = matplotlib.image.pil_to_array(img)
+    return img
+    
 class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
@@ -1115,3 +1161,58 @@ class LoadImagesMovieFrameProvider(cpimage.AbstractImageProvider):
     
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.get_filename())
+
+class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
+    """Provide an image by filename:frame from an STK file"""
+    def __init__(self, name, pathname, filename, frame):
+        '''Initialize the provider
+        
+        name - name of the provider for access from image set
+        pathname - path to the file
+        filename - name of the file
+        frame - # of the frame to provide
+        '''
+        self.__name = name
+        self.__pathname = pathname
+        self.__filename = filename
+        self.__frame    = frame
+        
+    def provide_image(self, image_set):
+        def seekfn(img, index):
+            '''Seek in an STK file to a given stack frame
+            
+            The stack frames are of constant size and follow each other.
+            The tiles contain offsets which need to be incremented by
+            the size of a stack frame. The following is from 
+            Molecular Devices' STK file format document:
+            StripOffsets
+            The strips for all the planes of the stack are stored 
+            contiguously at this location. The following pseudocode fragment 
+            shows how to find the offset of a specified plane planeNum.
+            LONG	planeOffset = planeNum *
+		(stripOffsets[stripsPerImage - 1] +
+		stripByteCounts[stripsPerImage - 1] - stripOffsets[0]);
+            Note that the planeOffset must be added to the stripOffset[0]
+            to find the image data for the specific plane in the file.
+            '''
+            plane_offset = long(index) * (img.ifd[TIFF.STRIPOFFSETS][-1] +
+                                          img.ifd[TIFF.STRIPBYTECOUNTS][-1] -
+                                          img.ifd[TIFF.STRIPOFFSETS][0])
+            img.tile = [(coding, location, offset+plane_offset, format)
+                        for coding, location, offset, format in img.tile]
+            
+        img = load_using_PIL(self.get_full_name(), self.__frame, seekfn)
+        return cpimage.Image(img,
+                             path_name = self.get_pathname(),
+                             file_name = self.get_filename())
+    def get_name(self):
+        return self.__name
+    
+    def get_pathname(self):
+        return self.__pathname
+    
+    def get_filename(self):
+        return "%s:%d" % (self.__filename, self.__frame)
+    
+    def get_full_name(self):
+        return os.path.join(self.get_pathname(),self.__filename)

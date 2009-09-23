@@ -32,6 +32,7 @@ from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
 from identifytertiarysubregion import IdentifyTertiarySubregion
 from imagemath import ImageMath
+from invertforprinting import InvertForPrinting
 from loadimages import LoadImages
 from loadsingleimage import LoadSingleImage
 from loadtext import LoadText
@@ -78,6 +79,7 @@ def get_module_classes():
             IdentifySecondary,
             IdentifyTertiarySubregion,
             ImageMath,
+            InvertForPrinting,
             LoadImages,
             LoadSingleImage,
             LoadText,
@@ -126,6 +128,7 @@ def get_module_substitutions():
             "IdentifySecondary":IdentifySecondary,
             "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
             "ImageMath":ImageMath,
+            "InvertForPrinting":InvertForPrinting,
             "KeepLargestObject":FilterByObjectMeasurement,
             "LoadImages":LoadImages,
             "LoadSingleImage":LoadSingleImage,

@@ -292,12 +292,12 @@ if SetBeingAnalyzed == StartingImageSet
     TrackObjInfo.Current.SegmentedImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName);
     
     % (3) Labels
-    InitialNumObjs = length(TrackObjInfo.Current.Locations{SetBeingAnalyzed});
+    InitialNumObjs = size(TrackObjInfo.Current.Locations{SetBeingAnalyzed},1);
     CurrentLabels = (1:InitialNumObjs)';
     PreviousLabels = CurrentLabels;
-    for i = 1:InitialNumObjs,
-        CurrHeaders{i} = '';
-    end
+	CurrHeaders = cell(size(CurrentLabels));
+	[CurrHeaders{:}] = deal('');
+    
     % (4) Colormap
     TrackObjInfo.Colormap = [];
     % (5) Lookup table for object to color
@@ -568,10 +568,12 @@ if CollectStatistics
                     length(AbsentObjectsLabel));
         Lifetime(idx) = AgeOfObjects(AbsentObjectsLabel);
         IntegratedDistance(idx) = SumDistance(AbsentObjectsLabel);
-        % Linearity: In range of [0,1]. Defined as abs[(x,y)_final -
-        % (x,y)_initial]/(IntegratedDistance).
+        % Linearity: In range of [0,1]. Defined as abs[(x,y)_final - (x,y)_initial]/(IntegratedDistance).
         warning('off','MATLAB:divideByZero');
-        Linearity(idx) = sqrt(sum((InitialObjectLocation(AbsentObjectsLabel,:) - PreviousLocations(idx,:)).^2,2))./SumDistance(AbsentObjectsLabel);
+        if ~isempty(idx)
+			mag =  sqrt(sum((InitialObjectLocation(AbsentObjectsLabel,:) - PreviousLocations(idx,:)).^2,2));
+			Linearity(idx) = mag./reshape(SumDistance(AbsentObjectsLabel),size(mag));
+		end
         warning('on','MATLAB:divideByZero');
 		
 		% Count new objects that have appeared
@@ -582,7 +584,8 @@ if CollectStatistics
         Lifetime = AgeOfObjects(CurrentLabels);
         IntegratedDistance = SumDistance(CurrentLabels);
         warning('off','MATLAB:divideByZero');
-        Linearity = sqrt(sum((InitialObjectLocation(CurrentLabels,:) - CurrentLocations).^2,2))./SumDistance(CurrentLabels);
+		mag = sqrt(sum((InitialObjectLocation(CurrentLabels,:) - CurrentLocations).^2,2));
+        Linearity = mag./reshape(SumDistance(CurrentLabels),size(mag));
         warning('on','MATLAB:divideByZero');
 		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'DisappearedCount',ObjectName,num2str(PixelRadius)), ...
                     0);
@@ -666,12 +669,12 @@ end
 % that have disappeared or newly appeared
 
 % Disspeared: Obj in CurrentObjList set to 0, so drop label from list
-CurrentLabels = zeros(1,NumberOfCurrentObj);
+CurrentLabels = zeros(NumberOfCurrentObj,1);
 CurrentLabels(CurrentObjList(CurrentObjList > 0)) = PreviousLabels(CurrentObjList > 0); 
 
 % Newly appeared: Missing index in CurrentObjList, so add new label to list
-idx = setdiff(1:NumberOfCurrentObj,CurrentObjList);
-CurrentLabels(idx) = max(PreviousLabels) + (1:length(idx));
+idx = setdiff((1:NumberOfCurrentObj)',CurrentObjList);
+CurrentLabels(idx) = max(PreviousLabels) + reshape(1:length(idx),size(CurrentLabels(idx)));
 
 CurrentHeaders(CurrentObjList(CurrentObjList > 0)) = PreviousHeaders(CurrentObjList > 0);
 CurrentHeaders(idx) = {''};
@@ -733,7 +736,8 @@ AgeOfObjects(OldLabels) = AgeOfObjects(OldLabels) + 1;
 [NewLabels,idx_new] = setdiff(CurrentLabels,PreviousLabels);
 AgeOfObjects(NewLabels) = 1;
 
-SumDistance(OldLabels) = SumDistance(OldLabels) + DistanceTraveled(idx_current);
+SumDistance(OldLabels) = SumDistance(OldLabels) + reshape(DistanceTraveled(idx_current),size(SumDistance(OldLabels)));
+
 SumDistance(NewLabels) = 0;
 
 InitialObjectLocation(NewLabels,:) = CurrentLocations(idx_new,:);

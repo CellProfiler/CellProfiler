@@ -77,7 +77,7 @@ function handles = ExportToExcel(handles)
 
 drawnow
 
-[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);%#ok Ignore MLint
+[CurrentModule, CurrentModuleNum, ModuleName] = CPwhichmodule(handles);
 
 %textVAR01 = Which objects do you want to export?
 %infotypeVAR01 = objectgroup
@@ -199,7 +199,7 @@ if SetBeingAnalyzed == NumberOfImageSets
     end
     
     if ~isdir(PathName)
-        [success,ignore,ignore] = mkdir(PathName);
+        success = mkdir(PathName);
         if ~success
             error(['Image processing was canceled in the ', ModuleName, ' module because the specified directory "', PathName, '" does not exist.']);
         end
@@ -232,10 +232,9 @@ if SetBeingAnalyzed == NumberOfImageSets
                 for k = 1:length(FeatureName),
                     if isempty(regexp(FeatureName{k},[ModuleName,'$'],'once'))
                         handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
-                    else
-                        % The ModuleError field for ExportToExcel hasn't
-                        % filled in the last element yet, so we have to
-                        % fill it in ourselves
+					elseif ~isempty(regexp(FeatureName{k},'^ModuleError','once'))
+                        % The ModuleError field hasn't filled in all the 
+						% element yet, so we have to fill it in ourselves
                         handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k}) = repmat({0},[1 length(find(idx))]);
                     end
                 end

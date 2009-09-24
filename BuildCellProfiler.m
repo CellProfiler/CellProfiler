@@ -109,6 +109,10 @@ switch lower(usage),
         end
 
         movefile('CellProfiler*.*',['../' output_dir])
+		% Move the preferences file back if exists in the output dir
+		if exist(['../' output_dir '/CellProfilerPreferences.mat'],'file')
+			movefile(['../' output_dir '/CellProfilerPreferences.mat'],'./')
+		end
         movefile('./Modules/*.txt', ['../' output_dir '/Modules'])
         movefile('readme.txt',['../' output_dir])
         copyfile('version.txt',['../' output_dir])

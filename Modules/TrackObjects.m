@@ -668,13 +668,18 @@ end
 % Update the label and header vectors: The following accounts for objects
 % that have disappeared or newly appeared
 
-% Disspeared: Obj in CurrentObjList set to 0, so drop label from list
+% Disappeared: Obj in CurrentObjList set to 0, so drop label from list
 CurrentLabels = zeros(NumberOfCurrentObj,1);
 CurrentLabels(CurrentObjList(CurrentObjList > 0)) = PreviousLabels(CurrentObjList > 0); 
 
 % Newly appeared: Missing index in CurrentObjList, so add new label to list
 idx = setdiff((1:NumberOfCurrentObj)',CurrentObjList);
-CurrentLabels(idx) = max(PreviousLabels) + reshape(1:length(idx),size(CurrentLabels(idx)));
+if ~isempty(PreviousLabels)
+	maxPreviousLabels = max(PreviousLabels);
+else
+	maxPreviousLabels = 0;
+end
+CurrentLabels(idx) = maxPreviousLabels + reshape(1:length(idx),size(CurrentLabels(idx)));
 
 CurrentHeaders(CurrentObjList(CurrentObjList > 0)) = PreviousHeaders(CurrentObjList > 0);
 CurrentHeaders(idx) = {''};

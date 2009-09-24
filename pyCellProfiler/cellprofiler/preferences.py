@@ -107,7 +107,7 @@ def module_extension():
 
 def get_default_image_directory():
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
-        return str(get_proper_case_filename(os.path.abspath(os.path.curdir)))
+        return os.path.abspath(os.path.expanduser('~'))
     default_image_directory = get_config().Read(DEFAULT_IMAGE_DIRECTORY)
     if os.path.isdir(default_image_directory):
         return str(get_proper_case_filename(default_image_directory))
@@ -144,7 +144,7 @@ class DirectoryChangedEvent:
 
 def get_default_output_directory():
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
-        return os.path.abspath(os.path.curdir)
+        return os.path.abspath(os.path.expanduser('~'))
     default_output_directory = get_config().Read(DEFAULT_OUTPUT_DIRECTORY)
     return str(get_proper_case_filename(default_output_directory))
 

@@ -23,9 +23,10 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+from cellprofiler.utilities.get_revision import get_revision
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 6
+S_FIXED_COUNT = 7
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -88,7 +89,7 @@ Press this button to add another path mapping.
     #     from pickled_image_set_list.
     #
     category = 'File Processing'
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         '''Create the module settings and name the module'''
@@ -104,6 +105,8 @@ Press this button to add another path mapping.
         self.pickled_image_set_list = cps.Setting("Hidden: contents of image set list","")
         self.default_image_directory = cps.Setting("Hidden: default image directory at time of save",
                                                    cpprefs.get_default_image_directory())
+        self.revision = cps.Integer("Hidden: SVN revision number",
+                                    get_revision())
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("Add another path?","Add",
@@ -136,7 +139,7 @@ Press this button to add another path mapping.
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
                   self.batch_mode, self.pickled_image_set_list,
-                  self.default_image_directory]
+                  self.default_image_directory, self.revision]
         for mapping in self.mappings:
             result += mapping.settings()
         return result
@@ -190,6 +193,11 @@ Press this button to add another path mapping.
                               [cpprefs.get_default_image_directory()] +
                               setting_values[5:])
             variable_revision_number = 2
+        if (not from_matlab) and variable_revision_number == 2:
+            setting_values = (setting_values[:6] + 
+                              [get_revision()] +
+                              setting_values[6:])
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
     
     def prepare_run(self, pipeline, image_set_list, frame):

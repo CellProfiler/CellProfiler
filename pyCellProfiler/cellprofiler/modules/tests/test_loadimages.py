@@ -18,6 +18,7 @@ import os
 import re
 import unittest
 import tempfile
+import sys
 import zlib
 from StringIO import StringIO
 
@@ -752,7 +753,85 @@ class testLoadImages(unittest.TestCase):
                                   provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
-                
+    
+    def test_09_01_load_avi(self):
+        if LI.FF_AVI_MOVIES not in LI.FF:
+            sys.stderr.write("WARNING: AVI movies not supported\n")
+        avi_path = os.path.join(T.example_images_directory(), 
+                                'ExampleTrackObjects')
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_AVI_MOVIES
+        module.images[0][LI.FD_COMMON_TEXT].value = 'avi'
+        module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
+        module.location.value = LI.DIR_OTHER
+        module.location_other.value = avi_path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, (), [1,2,3])
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img1 = image.pixel_data
+        self.assertEqual(tuple(img1.shape), (264,544,3))
+        image_set = image_set_list.get_image_set(1)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img2 = image.pixel_data
+        self.assertEqual(tuple(img2.shape), (264,544,3))
+        self.assertTrue(numpy.any(img1!=img2))
+    
+    def test_09_02_load_stk(self):
+        path = '//iodine/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
+        if not os.path.isdir(path):
+            path = '/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM'
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_STK_MOVIES
+        module.images[0][LI.FD_COMMON_TEXT].value = 'stk'
+        module.images[0][LI.FD_IMAGE_NAME].value = 'MyImage'
+        module.location.value = LI.DIR_OTHER
+        module.location_other.value = path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_group(pipeline, image_set_list, (), [1,2,3])
+        image_set = image_set_list.get_image_set(0)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img1 = image.pixel_data
+        self.assertEqual(tuple(img1.shape), (1040,1388))
+        image_set = image_set_list.get_image_set(1)
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, image_set,
+                                cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        self.assertTrue('MyImage' in image_set.get_names())
+        image = image_set.get_image('MyImage')
+        img2 = image.pixel_data
+        self.assertEqual(tuple(img2.shape), (1040,1388))
+        self.assertTrue(numpy.any(img1!=img2))
 
 if __name__=="main":
     unittest.main()

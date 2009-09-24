@@ -230,13 +230,13 @@ if SetBeingAnalyzed == NumberOfImageSets
             if ~strcmp(ObjectName{j}, 'Experiment')
                 FeatureName = fieldnames(handles_MeasurementsOnly.Measurements.(ObjectName{j}));
                 for k = 1:length(FeatureName),
-                    if isempty(regexp(FeatureName{k},[ModuleName,'$'],'once'))
-                        handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
-					elseif ~isempty(regexp(FeatureName{k},'^ModuleError','once'))
-                        % The ModuleError field hasn't filled in all the 
+					if isempty(regexp(FeatureName{k},'^ModuleError','once'))
+						handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k})(~idx) = [];
+					else
+						% The ModuleError field hasn't filled in all the 
 						% element yet, so we have to fill it in ourselves
                         handles_MeasurementsOnly.Measurements.(ObjectName{j}).(FeatureName{k}) = repmat({0},[1 length(find(idx))]);
-                    end
+					end
                 end
             end
         end

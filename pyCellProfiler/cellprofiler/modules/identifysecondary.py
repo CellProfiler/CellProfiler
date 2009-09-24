@@ -472,6 +472,7 @@ thresholding but may be used for other thresholding methods in the future
         img = image.pixel_data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.primary_objects.value)
+        global_threshold = None
         if self.method == M_DISTANCE_N:
             has_threshold = False
         elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
@@ -588,9 +589,13 @@ thresholding but may be used for other thresholding methods in the future
             primary_img.shape=(img.shape[0],img.shape[1],3)
             my_frame.subplot_imshow(1,1,primary_img,
                                     "Primary and output outlines")
-            my_frame.status_bar.SetFields(
-                ["Threshold: %.3f" % global_threshold,
-                 "Area covered by objects: %.1f %%" % object_pct])
+            if global_threshold is not None:
+                my_frame.status_bar.SetFields(
+                    ["Threshold: %.3f" % global_threshold,
+                     "Area covered by objects: %.1f %%" % object_pct])
+            else:
+                my_frame.status_bar.SetFields(
+                    ["Area covered by objects: %.1f %%" % object_pct])
         #
         # Add the objects to the object set
         #

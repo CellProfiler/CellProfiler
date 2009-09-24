@@ -847,9 +847,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 (object_table,
                  ','.join(object_cols),
                  ','.join(['%s']*len(object_cols))))
-        
-        self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
-                                       for ob_row in object_rows])
+
+        # Write 25 rows at a time (to get under the max_allowed_packet limit)
+        for i in range(0,len(object_rows), 25):
+            my_rows = object_rows[i:min(i+25, len(object_rows))]
+            self.cursor.executemany(stmt,[ [ str(v) for v,t in ob_row] 
+                                           for ob_row in my_rows])
         self.connection.commit()
         
     

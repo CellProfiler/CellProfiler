@@ -18,6 +18,7 @@ import matplotlib.cm
 
 import identify as cpmi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -271,7 +272,9 @@ See also Identify Primary and Identify Secondary modules.
         # The outlines
         #
         if self.use_outlines.value:
-            workspace.add_outline(self.outlines_name.value, tertiary_outlines)
+            out_img = cpi.Image(tertiary_outlines.astype(bool),
+                                tertiary_image)
+            workspace.image_set.add(self.outlines_name.value, out_img)
             
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

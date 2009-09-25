@@ -29,6 +29,7 @@ import cellprofiler.measurements as cpm
 PRIMARY = "primary"
 SECONDARY = "secondary"
 TERTIARY = "tertiary"
+OUTLINES = "Outlines"
 
 class TestIdentifyTertiarySubregion(unittest.TestCase):
     def on_pipeline_event(self, caller, event):
@@ -198,9 +199,15 @@ class TestIdentifyTertiarySubregion(unittest.TestCase):
         expected_secondary_parents[expected_primary_parents>0]=1
         workspace = self.make_workspace(primary_labels, secondary_labels)
         module = workspace.module
+        self.assertTrue(isinstance(module, cpmit.IdentifyTertiarySubregion))
+        module.use_outlines.value = True
+        module.outlines_name.value = OUTLINES
         module.run(workspace)
         measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
+        output_outlines = workspace.image_set.get_image(OUTLINES,
+                                                        must_be_binary=True)
+        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
         for parent_name, parent_labels in ((PRIMARY, expected_primary_parents),
                                            (SECONDARY, expected_secondary_parents)):
             parents_of_feature = ("Parent_%s"%(parent_name))

@@ -263,7 +263,7 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
     threshold - the global threshold
     """
     if labels is None:
-        labels = np.ones(image.shape)
+        labels = np.ones(image.shape,int)
         if not mask is None:
             labels[np.logical_not(mask)] = 0 
     label_extents = scipy.ndimage.find_objects(labels,np.max(labels))

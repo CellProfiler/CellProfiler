@@ -537,6 +537,16 @@ class CPModule(object):
         '''
         return []
 
+    def get_dictionary(self, image_set_list):
+        '''Get the dictionary for this module
+        
+        image_set_list - get the dictionary from the legacy fields
+        '''
+        key = "%s:%d"%(self.module_name, self.module_num)
+        if not image_set_list.legacy_fields.has_key(key):
+            image_set_list.legacy_fields[key] = {}
+        return image_set_list.legacy_fields[key]
+    
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         

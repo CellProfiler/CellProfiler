@@ -159,7 +159,13 @@ elseif nargin == 1,
                 %%% Read (open) the image you want to analyze and assign it to a variable,
                 %%% "LoadedImage".
                 %%% Opens Matlab-readable file formats.
-                LoadedImage = im2double(imread(CurrentFileName));
+                try
+                    LoadedImage = im2double(imread(CurrentFileName));
+                catch
+                    %% Try adding an escape character (for UNIX systems at least)
+                    %% around filename in case there is a space in the filename string
+                    LoadedImage = im2double(imread(strrep(CurrentFileName,' ','\ ')));
+                end
             end
         catch
             error(['Image processing was canceled because the module could not load the image "', CurrentFileName, '" in directory "', pwd,'".  The error message was "', lasterr, '"'])

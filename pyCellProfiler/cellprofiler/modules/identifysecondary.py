@@ -20,6 +20,7 @@ import scipy.ndimage as scind
 import scipy.misc as scimisc
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -607,7 +608,9 @@ thresholding but may be used for other thresholding methods in the future
         objname = self.objects_name.value
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
-            workspace.add_outline(self.outlines_name.value, secondary_outline)
+            out_img = cpi.Image(secondary_outline.astype(bool),
+                                parent_image = image)
+            workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = np.max(segmented_out)
         #
         # Add the background measurements if made

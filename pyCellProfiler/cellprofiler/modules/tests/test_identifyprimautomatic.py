@@ -1557,6 +1557,8 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .05
         x.threshold_correction_factor.value = 1
+        x.should_save_outlines.value = True
+        x.save_outlines.value = "outlines"
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
@@ -1571,6 +1573,9 @@ class test_IdentifyPrimAutomatic(unittest.TestCase):
         else:
             unedited_segmented = np.array([0,2,1])[my_objects.unedited_segmented]
         self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
+        outlines = workspace.image_set.get_image("outlines",
+                                                 must_be_binary=True)
+        self.assertTrue(np.all(my_objects.segmented[outlines.pixel_data] > 0))
 
     def test_17_02_regression_holes(self):
         '''Regression test - fill holes caused by filtered object

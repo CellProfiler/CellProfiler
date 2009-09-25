@@ -606,7 +606,8 @@ class TestIdentifySecondary(unittest.TestCase):
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts[0],1)
         objects_out = o_s.get_objects("my_objects")
-        outlines_out = workspace.get_outline("my_outlines")
+        outlines_out = workspace.image_set.get_image("my_outlines",
+                                                     must_be_binary=True).pixel_data
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         outlines = expected == 1

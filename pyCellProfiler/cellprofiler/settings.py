@@ -603,11 +603,11 @@ class ObjectNameProvider(NameProvider):
         super(ObjectNameProvider,self).__init__(text, 'objectgroup', value,
                                                 *args, **kwargs)
 
-class OutlineNameProvider(NameProvider):
+class OutlineNameProvider(ImageNameProvider):
     '''A setting that provides an object outline name
     '''
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(OutlineNameProvider,self).__init__(text, 'outlinegroup', *args,
+        super(OutlineNameProvider,self).__init__(text, value, *args,
                                                  **kwargs)
 
 class NameSubscriber(Setting):
@@ -707,15 +707,18 @@ class ObjectNameSubscriber(NameSubscriber):
                                                   can_be_blank, blank_text,
                                                   *args, **kwargs)
 
-class OutlineNameSubscriber(NameSubscriber):
+class OutlineNameSubscriber(ImageNameSubscriber):
     '''A setting that provides a list of available object outline names
     '''
     def __init__(self, text, value="None", can_be_blank=False, 
                  blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(OutlineNameSubscriber, self).__init__(text, 'outlinegroup', 
+        super(OutlineNameSubscriber, self).__init__(text, 
                                                     value, can_be_blank,
                                                     blank_text, *args,
                                                     **kwargs)
+    def matches(self, setting):
+        '''Only match OutlineNameProvider variables'''
+        return isinstance(setting, OutlineNameProvider)
 
 class FigureSubscriber(Setting):
     """A setting that provides a figure indicator

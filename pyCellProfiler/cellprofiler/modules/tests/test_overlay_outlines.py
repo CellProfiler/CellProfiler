@@ -48,7 +48,7 @@ class TestOverlayOutlines(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        workspace.add_outline(OUTLINE_NAME, outline)
+        image_set.add(OUTLINE_NAME, cpi.Image(outline))
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
         return workspace, module
     
@@ -134,7 +134,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_02_01_gray_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50))
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = np.dstack((image,image,image))
@@ -151,7 +151,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_02_02_color_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3))
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = image.copy()
@@ -168,7 +168,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_02_03_blank_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3))
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = np.zeros((50,50,3))
@@ -186,7 +186,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_03_01_blank_to_gray(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50))
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = np.zeros_like(image)
@@ -201,7 +201,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_03_02_gray_max_image(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50)) * .5
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = image.copy()
@@ -217,7 +217,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def test_03_02_gray_max_possible(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50)) * .5
-        outline = np.zeros((50,50),int)
+        outline = np.zeros((50,50),bool)
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = image.copy()

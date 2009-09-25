@@ -26,6 +26,7 @@ import wx
 
 import identify as cpmi
 import cellprofiler.cpmodule
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.gui.cpfigure as cpf
@@ -1044,7 +1045,9 @@ Yes will have no effect.""")
                                               self.object_name.value,
                                               labeled_image)
         if self.should_save_outlines.value:
-            workspace.add_outline(self.save_outlines.value, outline_image)
+            out_img = cpi.Image(outline_image.astype(bool),
+                                parent_image = image)
+            workspace.image_set.add(self.save_outlines.value, out_img)
     
     def smooth_image(self, image, mask,sigma):
         """Apply the smoothing filter to the image"""

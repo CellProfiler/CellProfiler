@@ -188,34 +188,45 @@ See also identify modules.
                                              self.output_image_name.value)
 
     def run_bw(self, workspace):
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
         if self.blank_image.value:
-            mask = workspace.get_outline(self.outlines[0].outline_name.value)
+            outline_image = image_set.get_image(
+                self.outlines[0].outline_name.value,
+                must_be_binary = True)
+            mask = outline_image.pixel_data
             pixel_data = np.zeros((mask.shape))
             maximum = 1
         else:
-            image = workspace.image_set.get_image(self.image_name.value,
-                                                  must_be_grayscale=True)
+            image = image_set.get_image(self.image_name.value,
+                                        must_be_grayscale=True)
             pixel_data = image.pixel_data
             maximum = 1 if self.max_type == MAX_POSSIBLE else np.max(pixel_data)
             pixel_data = pixel_data.copy()
         for outline in self.outlines:
-            mask = workspace.get_outline(outline.outline_name.value).astype(bool)
+            mask = image_set.get_image(outline.outline_name.value,
+                                       must_be_binary=True).pixel_data
             pixel_data[mask] = maximum
         return pixel_data
     
     def run_color(self, workspace):
+        image_set = workspace.image_set
         if self.blank_image.value:
-            mask = workspace.get_outline(self.outlines[0].outline_name.value)
+            outline_image = image_set.get_image(
+                self.outlines[0].outline_name.value,
+                must_be_binary = True)
+            mask = outline_image.pixel_data
             pixel_data = np.zeros((mask.shape[0],mask.shape[1],3))
         else:
-            image = workspace.image_set.get_image(self.image_name.value)
+            image = image_set.get_image(self.image_name.value)
             pixel_data = image.pixel_data
             if pixel_data.ndim == 2:
                 pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
             else:
                 pixel_data = pixel_data.copy()
         for outline in self.outlines:
-            mask = workspace.get_outline(outline.outline_name.value).astype(bool)
+            mask = image_set.get_image(outline.outline_name.value,
+                                       must_be_binary=True).pixel_data
             color = COLORS[outline.color.value]
             for i in range(3):
                 pixel_data[:,:,i][mask] = float(color[i])/255.0

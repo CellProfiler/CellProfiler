@@ -59,7 +59,7 @@ def propagate(image, labels, mask, weight):
     returns a label matrix and the computed distances
     """
     if image.shape != labels.shape:
-        raise ValueError("Image shape %s != label shape %s"%(repr(image.shape),repr(label.shape)))
+        raise ValueError("Image shape %s != label shape %s"%(repr(image.shape),repr(labels.shape)))
     if image.shape != mask.shape:
         raise ValueError("Image shape %s != mask shape %s"%(repr(image.shape),repr(mask.shape)))
     labels_out = numpy.zeros(labels.shape,numpy.int32)

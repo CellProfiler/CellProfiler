@@ -303,7 +303,10 @@ class MeasureCorrelation(cpm.CPModule):
         first_pixels = first_pixels[mask]
         second_pixels = second_pixels[mask]
         labels = labels[mask]
-        n_objects = np.max(labels)
+        if len(labels)==0:
+            n_objects = 0
+        else:
+            n_objects = np.max(labels)
         if n_objects == 0:
             corr = np.zeros((0,))
         else:
@@ -330,14 +333,24 @@ class MeasureCorrelation(cpm.CPModule):
         measurement = ("Correlation_Correlation_%s_%s" %
                        (first_image_name, second_image_name))
         workspace.measurements.add_measurement(object_name, measurement, corr)
-        return [[first_image_name, second_image_name, object_name,
-                 "Mean correlation","%.2f"%np.mean(corr)],
-                [first_image_name, second_image_name, object_name,
-                 "Median correlation","%.2f"%np.median(corr)],
-                [first_image_name, second_image_name, object_name,
-                 "Min correlation","%.2f"%np.min(corr)],
-                [first_image_name, second_image_name, object_name,
-                 "Max correlation","%.2f"%np.max(corr)]]
+        if n_objects == 0:
+            return [[first_image_name, second_image_name, object_name,
+                     "Mean correlation","-"],
+                    [first_image_name, second_image_name, object_name,
+                     "Median correlation","-"],
+                    [first_image_name, second_image_name, object_name,
+                     "Min correlation","-"],
+                    [first_image_name, second_image_name, object_name,
+                     "Max correlation","-"]]
+        else:
+            return [[first_image_name, second_image_name, object_name,
+                     "Mean correlation","%.2f"%np.mean(corr)],
+                    [first_image_name, second_image_name, object_name,
+                     "Median correlation","%.2f"%np.median(corr)],
+                    [first_image_name, second_image_name, object_name,
+                     "Min correlation","%.2f"%np.min(corr)],
+                    [first_image_name, second_image_name, object_name,
+                     "Max correlation","%.2f"%np.max(corr)]]
              
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for all measurements made by this module'''

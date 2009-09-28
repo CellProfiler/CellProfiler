@@ -434,3 +434,33 @@ class TestMeasureCorrelation(unittest.TestCase):
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],1)
         
+
+    def test_06_03_no_objects(self):
+        '''Test images with no objects'''
+        labels = np.zeros((10,10), int)
+        i,j = np.mgrid[0:10,0:10]
+        image1 = ((i+j)%2).astype(float)
+        image2 = image1.copy()
+        i1 = cpi.Image(image1)
+        i2 = cpi.Image(image2)
+        o  = cpo.Objects()
+        o.segmented = labels
+        workspace, module = self.make_workspace(i1, i2, o)
+        module.run(workspace)
+        m = workspace.measurements
+        mi = module.get_measurement_images(None,OBJECTS_NAME, 
+                                           "Correlation","Correlation")
+        corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
+        self.assertEqual(len(corr), 0)
+        self.assertEqual(len(m.get_object_names()), 2)
+        self.assertTrue(OBJECTS_NAME in m.get_object_names())
+        columns = module.get_measurement_columns(None)
+        image_features = m.get_feature_names(cpmeas.IMAGE)
+        object_features = m.get_feature_names(OBJECTS_NAME)
+        self.assertEqual(len(columns),len(image_features)+len(object_features))
+        for column in columns:
+            if column[0] == cpmeas.IMAGE:
+                self.assertTrue(column[1] in image_features)
+            else:
+                self.assertEqual(column[0],OBJECTS_NAME)
+                self.assertTrue(column[1] in object_features)

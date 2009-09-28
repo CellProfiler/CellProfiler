@@ -207,7 +207,7 @@ TablePrefix = char(handles.Settings.VariableValues{CurrentModuleNum,3});
 TablePrefix = CPreplacemetadata(handles,TablePrefix);
 
 if ~strcmp(TablePrefix,'Do not use')
-    % Try to enusre prefix validity by removing whitespaces and hyphens
+    % Try to ensure prefix validity by removing whitespaces and hyphens
     if any(TablePrefix == ' ' | TablePrefix == '-')
         TablePrefix = strrep(TablePrefix,' ','');
         TablePrefix = strrep(TablePrefix,'-','_');

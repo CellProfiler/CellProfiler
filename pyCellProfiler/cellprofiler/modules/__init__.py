@@ -27,6 +27,7 @@ from exporttoexcel import ExportToExcel
 from filterbyobjectmeasurement import FilterByObjectMeasurement
 from findedges import FindEdges
 from flagimage import FlagImage
+from flipandrotate import FlipAndRotate
 from graytocolor import GrayToColor
 from identifyprimautomatic import IdentifyPrimAutomatic
 from identifysecondary import IdentifySecondary
@@ -74,6 +75,7 @@ def get_module_classes():
             FindEdges,
             FilterByObjectMeasurement,
             FlagImage,
+            FlipAndRotate,
             GrayToColor,
             IdentifyPrimAutomatic,
             IdentifySecondary,
@@ -123,6 +125,7 @@ def get_module_substitutions():
             "FindEdges": FindEdges,
             "FilterByObjectMeasurement": FilterByObjectMeasurement,
             "FlagImageForQC": FlagImage,
+            "FlipAndRotate": FlipAndRotate,
             "GrayToColor":GrayToColor,
             "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
             "IdentifySecondary":IdentifySecondary,

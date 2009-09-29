@@ -25,7 +25,11 @@ end
 
 % Check that either this is a new measurement being added in the first
 % set, or an old measurement being appended to in a later set.
-FirstSet = (ImageSetNumber == 1);
+if isscalar(ImageSetNumber)
+	FirstSet = ImageSetNumber == 1;
+elseif isvector(ImageSetNumber)
+	FirstSet = ImageSetNumber(1) == 1;
+end
 OldMeasurement = ...
     isfield(handles.Measurements, ObjectName) && ...
     isfield(handles.Measurements.(ObjectName), FeatureName);
@@ -56,5 +60,10 @@ end
 if strcmp(ObjectName, 'Experiment'),
     handles.Measurements.(ObjectName).(FeatureName) = Data;
 else
-    handles.Measurements.(ObjectName).(FeatureName){ImageSetNumber} = Data;
+	if isscalar(ImageSetNumber)
+		handles.Measurements.(ObjectName).(FeatureName){ImageSetNumber} = Data;
+	elseif isvector(ImageSetNumber)
+		ImageSetNumber = ImageSetNumber(:)';
+		handles.Measurements.(ObjectName).(FeatureName)(ImageSetNumber) = reshape(Data,size(ImageSetNumber));
+	end
 end

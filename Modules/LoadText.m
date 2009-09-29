@@ -146,40 +146,24 @@ end
 if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
     %%% Parse text file %%%
     fid = fopen(fullfile(PathName,TextFileName),'r');
-    if fid == -1
-        error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid location. You specified this: ',fullfile(PathName,TextFileName)]);
-    end
+	if fid == -1
+		error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid location. You specified this: ',fullfile(PathName,TextFileName)]);
+	end
 
-    % Get description
-    s = fgets(fid,11);
-    if ~strcmp(s,'DESCRIPTION')
+	s = textscan(fid,'%s','Delimiter','\n'); s = s{:};
+	%%% Get description
+	if ~regexp(s{1},'^DESCRIPTION')
         error(['Image processing was canceled in the ', ModuleName, ' module because the first line in the text information file is ', s, '. The first line of the file must start with DESCRIPTION.'])
-    end
-    Description = fgetl(fid);
-    Description = Description(2:end);       % Remove space
-
-    % Read following lines into a cell array
-    Text = [];
-    while 1
-        s = fgetl(fid);
-        if ~ischar(s), break, end               % order reversed, checks the string before it tries to replace things
-        s = strrep(s,sprintf('\t'),' ');
-        if ~isempty(s)
-            Text{end+1} = s;
-        end
-    end
-    fclose(fid);
-    
+	end
+	Description = regexp(s{1},'^DESCRIPTION(\s*)(?<Description>.*)','tokens','once');
+	Description = Description{2};
+	s = s(2:end);	% Skip to next line
+	
+	Text = cellfun(@strrep,s,repmat({sprintf('\t')},size(s)),repmat({' '},size(s)),'UniformOutput',false);
+	fclose(fid);
+	
     %%% Add the data
-    for LineNumber = 1:length(Text)
-        handles = CPaddmeasurements(handles,'Image',CPjoinstrings('LoadedText',FieldName),Text{LineNumber});
-        %%% We need to increment the set being analyzed so the text data can be
-        %%% stored for each cycle.
-        handles.Current.SetBeingAnalyzed = handles.Current.SetBeingAnalyzed + 1;
-    end
-    %%% Set it back to 1, since this really is the first image cycle being
-    %%% processed.
-    handles.Current.SetBeingAnalyzed = 1; 
+	handles = CPaddmeasurements(handles,'Image',CPjoinstrings('LoadedText',FieldName),Text,1:length(Text));
     
     %%%%%%%%%%%%%%%%%%%%%%%
     %%% DISPLAY RESULTS %%%

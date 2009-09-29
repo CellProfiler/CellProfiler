@@ -95,7 +95,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...','Save a pipeline as a .MAT file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+L','Run the pipeline on the images in the image directory')
+        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+N','Run the pipeline on the images in the image directory')
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop analysis','Stop running the pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
@@ -114,7 +114,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
         self.__menu_bar.Append(self.__menu_debug,'&Test')
         self.__menu_window = wx.Menu()
-        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all", 
+        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all\tctrl+L", 
                                   "Close all figure windows")
         self.__menu_window.Append(ID_WINDOW_SHOW_ALL_FRAMES,"Show all frames",
                                   "Show all module display frames for all modules during analysis")
@@ -130,8 +130,9 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
-        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('L'),ID_FILE_ANALYZE_IMAGES),
+        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('N'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
+                                                 (wx.ACCEL_CTRL,ord('L'),ID_WINDOW_CLOSE_ALL),
                                                  (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_START),
                                                  (wx.ACCEL_CTRL,wx.WXK_F5,ID_DEBUG_STOP),

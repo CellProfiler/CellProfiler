@@ -45,6 +45,8 @@ ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
 ID_DEBUG_NEXT_GROUP = wx.NewId()
 
 ID_WINDOW_CLOSE_ALL = wx.NewId()
+ID_WINDOW_SHOW_ALL_FRAMES = wx.NewId()
+ID_WINDOW_HIDE_ALL_FRAMES = wx.NewId()
 
 ID_HELP_MODULE=wx.NewId()
 
@@ -114,6 +116,10 @@ class CPFrame(wx.Frame):
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &all", 
                                   "Close all figure windows")
+        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_FRAMES,"Show all frames",
+                                  "Show all module display frames for all modules during analysis")
+        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_FRAMES,"Hide all frames",
+                                  "Hide all module display frames for all modules during analysis")
         self.__menu_bar.Append(self.__menu_window,"&Window")
         self.__menu_help = wx.Menu()
         self.__menu_help.Append(ID_HELP_MODULE,'Module help','Display help from the module''s .m file')

@@ -64,6 +64,9 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
         
+        wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_FRAMES, self.on_show_all_frames)
+        wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_FRAMES, self.on_hide_all_frames)
+        
         wx.EVT_CLOSE(frame, self.__on_close)
         
         if not USE_TIMER:
@@ -197,7 +200,7 @@ class PipelineController:
             self.set_title()
     
     def __on_close(self, event):
-        if self.__dirty_pipeline:
+        if self.__dirty_pipeline and event.CanVeto():
             answer = wx.MessageBox("You have unsaved changes in your pipeline, "
                                    "do you want to save it (Cancel will "
                                    "return you to CellProfiler)?",
@@ -360,7 +363,7 @@ class PipelineController:
                                       self.__debug_object_set,
                                       self.__debug_measurements,
                                       self.__debug_image_set_list,
-                                      self.__frame,
+                                      self.__frame if module.show_frame else None,
                                       outlines = self.__debug_outlines)
             module.run(workspace)
             workspace.refresh()
@@ -463,7 +466,21 @@ class PipelineController:
             else:
                 return None
         return path
+    
+    def on_show_all_frames(self, event):
+        '''Turn "show_frame" on for every module in the pipeline'''
+        for module in self.__pipeline.modules():
+            module.show_frame = True
+        self.__dirty_pipeline = True
+        self.set_title()
         
+    def on_hide_all_frames(self, event):
+        '''Turn "show_frame" off for every module in the pipeline'''
+        for module in self.__pipeline.modules():
+            module.show_frame = False
+        self.__dirty_pipeline = True
+        self.set_title()
+            
     def run_pipeline(self):
         """Run the current pipeline, returning the measurements
         """

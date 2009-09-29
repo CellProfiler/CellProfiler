@@ -23,7 +23,7 @@ import cellprofiler.settings as cps
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
-import cellprofiler.pipeline
+import pipeline as cpp
 import cellprofiler.matlab.cputils
 
 class CPModule(object):
@@ -66,6 +66,7 @@ class CPModule(object):
         self.__notes = []
         self.__variable_revision_number = 0
         self.__annotation_dict = None
+        self.__show_frame = True
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -86,18 +87,20 @@ class CPModule(object):
         """
         self.__module_num = module_num
         idx = module_num-1
-        settings = handles['Settings'][0,0]
+        settings = handles[cpp.SETTINGS][0,0]
         setting_values = []
-        if settings.dtype.fields.has_key('ModuleNotes'):
-            n=settings['ModuleNotes'][0,idx]
+        if settings.dtype.fields.has_key(cpp.MODULE_NOTES):
+            n=settings[cpp.MODULE_NOTES][0,idx]
             self.__notes = [str(n[i,0][0]) for i in range(0,n.size)]
         else:
             self.__notes = []
-        setting_count=settings['NumbersOfVariables'][0,idx]
-        variable_revision_number = settings['VariableRevisionNumbers'][0,idx]
-        module_name = settings['ModuleNames'][0,idx][0]
+        if settings.dtype.fields.has_key(cpp.SHOW_FRAME):
+            self.__show_frame = settings[cpp.SHOW_FRAME][0,idx] != 0
+        setting_count=settings[cpp.NUMBERS_OF_VARIABLES][0,idx]
+        variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0,idx]
+        module_name = settings[cpp.MODULE_NAMES][0,idx][0]
         for i in range(0,setting_count):
-            value_cell = settings['VariableValues'][idx,i]
+            value_cell = settings[cpp.VARIABLE_VALUES][idx,i]
             if isinstance(value_cell,numpy.ndarray):
                 if numpy.product(value_cell.shape) == 0:
                     setting_values.append('')
@@ -254,28 +257,29 @@ class CPModule(object):
             
     def save_to_handles(self,handles):
         module_idx = self.module_num-1
-        setting = handles[cellprofiler.pipeline.SETTINGS][0,0]
-        setting[cellprofiler.pipeline.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
-        setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.notes()),1),dtype='object')
+        setting = handles[cpp.SETTINGS][0,0]
+        setting[cpp.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NOTES][0,module_idx] = numpy.ndarray(shape=(len(self.notes()),1),dtype='object')
         for i in range(0,len(self.notes())):
-            setting[cellprofiler.pipeline.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
-        setting[cellprofiler.pipeline.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
+            setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes()[i]
+        setting[cpp.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
         for i in range(0,len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[cellprofiler.pipeline.VARIABLE_VALUES][module_idx,i] = unicode(str(variable))
+                setting[cpp.VARIABLE_VALUES][module_idx,i] = unicode(str(variable))
             try: # matlab & old-style through annotations
                 annotations = self.setting_annotations(variable.key())
                 if annotations.has_key('infotype'):
-                    setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
+                    setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(annotations['infotype'][0].value)
             except:
                 pass
             if isinstance(variable,cps.NameProvider):
-                setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
             elif isinstance(variable,cps.NameSubscriber):
-                setting[cellprofiler.pipeline.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
-        setting[cellprofiler.pipeline.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
-        setting[cellprofiler.pipeline.MODULE_REVISION_NUMBERS][0,module_idx] = 0
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
+        setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
+        setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
+        setting[cpp.SHOW_FRAME][0,module_idx] = 1 if self.show_frame else 0
     
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
@@ -386,6 +390,15 @@ class CPModule(object):
         """The settings that are visible in the UI
         """
         return self.settings()
+    
+    def get_show_frame(self):
+        '''True if the user wants to see the figure for this module'''
+        return self.__show_frame
+    
+    def set_show_frame(self, show_frame):
+        self.__show_frame = show_frame
+    
+    show_frame = property(get_show_frame, set_show_frame)
 
     def annotations(self):
         """Return the setting annotations, as read out of the module file.
@@ -439,7 +452,7 @@ class CPModule(object):
         """Run the module (abstract method)
         
         workspace    - The workspace contains
-            pipeline     - instance of CellProfiler.Pipeline for this run
+            pipeline     - instance of cpp for this run
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
@@ -679,9 +692,9 @@ class MatlabModule(CPModule):
         handles.Current = matlab.setfield(handles.Current, figure_field, self.__figure)
             
         handles = matlab.feval(self.module_name,handles)
-        cellprofiler.pipeline.add_matlab_images(handles, image_set)
-        cellprofiler.pipeline.add_matlab_objects(handles, object_set)
-        cellprofiler.pipeline.add_matlab_measurements(handles, measurements)
+        cpp.add_matlab_images(handles, image_set)
+        cpp.add_matlab_objects(handles, object_set)
+        cpp.add_matlab_measurements(handles, measurements)
 
     def __read_annotations(self,file):
         """Read and return the annotations and setting revision # from a file

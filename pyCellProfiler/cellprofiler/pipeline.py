@@ -13,7 +13,7 @@ Website: http://www.cellprofiler.org
 __version = "$Revision$"
 
 import hashlib
-import numpy
+import numpy as np
 import scipy.io.matlab
 import os
 import StringIO
@@ -69,22 +69,34 @@ VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
 MODULE_REVISION_NUMBERS   = 'ModuleRevisionNumbers'
 MODULE_NOTES              = 'ModuleNotes'
 CURRENT_MODULE_NUMBER     = 'CurrentModuleNumber'
-SETTINGS_DTYPE = numpy.dtype([(VARIABLE_VALUES, '|O4'), 
-                            (VARIABLE_INFO_TYPES, '|O4'), 
-                            (MODULE_NAMES, '|O4'), 
-                            (NUMBERS_OF_VARIABLES, '|O4'), 
-                            (PIXEL_SIZE, '|O4'), 
-                            (VARIABLE_REVISION_NUMBERS, '|O4'), 
-                            (MODULE_REVISION_NUMBERS, '|O4'), 
-                            (MODULE_NOTES, '|O4')])
-CURRENT_DTYPE = make_cell_struct_dtype([ NUMBER_OF_IMAGE_SETS,SET_BEING_ANALYZED,NUMBER_OF_MODULES, 
-                                     SAVE_OUTPUT_HOW_OFTEN,TIME_STARTED, STARTING_IMAGE_SET,
-                                     STARTUP_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_IMAGE_DIRECTORY, 
-                                     IMAGE_TOOLS_FILENAMES, IMAGE_TOOL_HELP])
-PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE, DEFAULT_MODULE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, 
-                                         DEFAULT_IMAGE_DIRECTORY, INTENSITY_COLOR_MAP, LABEL_COLOR_MAP,
-                                         STRIP_PIPELINE, SKIP_ERRORS, DISPLAY_MODE_VALUE, FONT_SIZE,
-                                         DISPLAY_WINDOWS])
+SHOW_FRAME                = 'ShowFrame'
+SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'), 
+                           (VARIABLE_INFO_TYPES, '|O4'), 
+                           (MODULE_NAMES, '|O4'), 
+                           (NUMBERS_OF_VARIABLES, '|O4'), 
+                           (PIXEL_SIZE, '|O4'), 
+                           (VARIABLE_REVISION_NUMBERS, '|O4'), 
+                           (MODULE_REVISION_NUMBERS, '|O4'), 
+                           (MODULE_NOTES, '|O4'),
+                           (SHOW_FRAME, '|O4')])
+CURRENT_DTYPE = make_cell_struct_dtype([ NUMBER_OF_IMAGE_SETS,
+                                         SET_BEING_ANALYZED, NUMBER_OF_MODULES, 
+                                         SAVE_OUTPUT_HOW_OFTEN,TIME_STARTED, 
+                                         STARTING_IMAGE_SET,
+                                         STARTUP_DIRECTORY, 
+                                         DEFAULT_OUTPUT_DIRECTORY, 
+                                         DEFAULT_IMAGE_DIRECTORY, 
+                                         IMAGE_TOOLS_FILENAMES, 
+                                         IMAGE_TOOL_HELP])
+PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE, 
+                                            DEFAULT_MODULE_DIRECTORY, 
+                                            DEFAULT_OUTPUT_DIRECTORY, 
+                                            DEFAULT_IMAGE_DIRECTORY, 
+                                            INTENSITY_COLOR_MAP, 
+                                            LABEL_COLOR_MAP,
+                                            STRIP_PIPELINE, SKIP_ERRORS, 
+                                            DISPLAY_MODE_VALUE, FONT_SIZE,
+                                            DISPLAY_WINDOWS])
  
 def add_matlab_images(handles,image_set):
     """Add any images from the handles to the image set
@@ -108,7 +120,7 @@ def add_matlab_images(handles,image_set):
                 if not (isinstance(value,str) or isinstance(value,unicode)):
                     # The two supported types: string/unicode or cell array of strings
                     count = matlab.length(value)
-                    new_value = numpy.ndarray((1,count),dtype='object')
+                    new_value = np.ndarray((1,count),dtype='object')
                     for j in range(0,count):
                         new_value[0,j] = matlab.cell2mat(value[j])
                     value = new_value 
@@ -171,7 +183,7 @@ def add_matlab_measurements(handles, measurements):
             feature = matlab.cell2mat(object_fields[j])
             if not measurements.has_current_measurements(field,feature):
                 value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.image_set_number-1])
-                if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
+                if not isinstance(value,np.ndarray) or np.product(value.shape) > 0:
                     # It's either not a numpy array (it's a string) or it's not the empty numpy array
                     # so add it to the measurements
                     measurements.add_measurement(field,feature,value)
@@ -197,7 +209,7 @@ def add_all_images(handles,image_set, object_set):
         if objects.has_small_removed_segmented():
             images['SmallRemovedSegmented'+object_name] = objects.small_removed_segmented
     
-    npy_images = numpy.ndarray((1,1),dtype=make_cell_struct_dtype(images.keys()))
+    npy_images = np.ndarray((1,1),dtype=make_cell_struct_dtype(images.keys()))
     for key,image in images.iteritems():
         npy_images[key][0,0] = image
     handles[PIPELINE]=npy_images
@@ -207,33 +219,33 @@ def add_all_measurements(handles, measurements):
     
     """
     measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
-    npy_measurements = numpy.ndarray((1,1),dtype=measurements_dtype)
+    npy_measurements = np.ndarray((1,1),dtype=measurements_dtype)
     handles[MEASUREMENTS]=npy_measurements
     for object_name in measurements.get_object_names():
         if object_name == cpmeas.EXPERIMENT:
             continue
         object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
-        object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
+        object_measurements = np.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
         for feature_name in measurements.get_feature_names(object_name):
-            feature_measurements = numpy.ndarray((1,measurements.image_set_index+1),dtype='object')
+            feature_measurements = np.ndarray((1,measurements.image_set_index+1),dtype='object')
             object_measurements[feature_name][0,0] = feature_measurements
             data = measurements.get_all_measurements(object_name,feature_name)
             for i in range(0,measurements.image_set_index+1):
                 if data != None:
                     ddata = data[i]
-                    if numpy.isscalar(ddata) and numpy.isreal(ddata):
-                        feature_measurements[0,i] = numpy.array([ddata])
+                    if np.isscalar(ddata) and np.isreal(ddata):
+                        feature_measurements[0,i] = np.array([ddata])
                     else:
                         feature_measurements[0,i] = ddata
                 else:
                     feature_measurements[0, i] = np.array([0])
     if cpmeas.EXPERIMENT in measurements.object_names:
         object_dtype = make_cell_struct_dtype(measurements.get_feature_names(cpmeas.EXPERIMENT))
-        experiment_measurements = numpy.ndarray((1,1), dtype=object_dtype)
+        experiment_measurements = np.ndarray((1,1), dtype=object_dtype)
         npy_measurements[cpmeas.EXPERIMENT][0,0] = experiment_measurements
         for feature_name in measurements.get_feature_names(cpmeas.EXPERIMENT):
-            feature_measurements = numpy.ndarray((1,1),dtype='object')
+            feature_measurements = np.ndarray((1,1),dtype='object')
             feature_measurements[0,0] = measurements.get_experiment_measurement(feature_name)
             experiment_measurements[feature_name][0,0] = feature_measurements
 
@@ -320,7 +332,7 @@ class Pipeline(object):
         """Create a numpy array representing this pipeline
         
         """
-        settings = numpy.ndarray(shape=[1,1],dtype=SETTINGS_DTYPE)
+        settings = np.ndarray(shape=[1,1],dtype=SETTINGS_DTYPE)
         handles = {SETTINGS:settings }
         setting = settings[0,0]
         # The variables are a (modules,max # of variables) array of cells (objects)
@@ -331,11 +343,16 @@ class Pipeline(object):
         # The variable info types are similarly shaped
         setting[VARIABLE_INFO_TYPES] =      new_string_cell_array((module_count,variable_count))
         setting[MODULE_NAMES] =             new_string_cell_array((1,module_count))
-        setting[NUMBERS_OF_VARIABLES] =     numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
+        setting[NUMBERS_OF_VARIABLES] =     np.ndarray((1,module_count),
+                                                       dtype=np.dtype('uint8'))
         setting[PIXEL_SIZE] =               cellprofiler.preferences.get_pixel_size() 
-        setting[VARIABLE_REVISION_NUMBERS] =numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint8'))
-        setting[MODULE_REVISION_NUMBERS] =  numpy.ndarray(shape=(1,module_count),dtype=numpy.dtype('uint16'))
+        setting[VARIABLE_REVISION_NUMBERS] =np.ndarray((1,module_count),
+                                                       dtype=np.dtype('uint8'))
+        setting[MODULE_REVISION_NUMBERS] =  np.ndarray((1,module_count),
+                                                       dtype=np.dtype('uint16'))
         setting[MODULE_NOTES] =             new_string_cell_array((1,module_count))
+        setting[SHOW_FRAME] =               np.ndarray((1,module_count),
+                                                       dtype=np.dtype('uint8'))
         for module in self.modules():
             module.save_to_handles(handles)
         return handles
@@ -370,7 +387,7 @@ class Pipeline(object):
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
-        root = {'handles':numpy.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
+        root = {'handles':np.ndarray((1,1),dtype=make_cell_struct_dtype(handles.keys()))}
         for key,value in handles.iteritems():
             root['handles'][key][0,0]=value
         
@@ -407,11 +424,11 @@ class Pipeline(object):
         else:
             image_tools = []
         image_tools.insert(0,'Image tools')
-        npy_image_tools = numpy.ndarray((1,len(image_tools)),dtype=numpy.dtype('object'))
+        npy_image_tools = np.ndarray((1,len(image_tools)),dtype=np.dtype('object'))
         for tool,idx in zip(image_tools,range(0,len(image_tools))):
             npy_image_tools[0,idx] = tool
             
-        current = numpy.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
+        current = np.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
         handles[CURRENT]=current
         current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
         current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.image_set_number) or 1]
@@ -425,7 +442,7 @@ class Pipeline(object):
         current[IMAGE_TOOLS_FILENAMES][0,0]    = npy_image_tools
         current[IMAGE_TOOL_HELP][0,0]          = []
 
-        preferences = numpy.ndarray(shape=(1,1),dtype=PREFERENCES_DTYPE)
+        preferences = np.ndarray(shape=(1,1),dtype=PREFERENCES_DTYPE)
         handles[PREFERENCES] = preferences
         preferences[PIXEL_SIZE][0,0]               = cellprofiler.preferences.get_pixel_size()
         preferences[DEFAULT_MODULE_DIRECTORY][0,0] = cellprofiler.preferences.module_directory()
@@ -461,7 +478,7 @@ class Pipeline(object):
                     
         if len(images):
             pipeline_dtype = make_cell_struct_dtype(images.keys())
-            pipeline = numpy.ndarray((1,1),dtype=pipeline_dtype)
+            pipeline = np.ndarray((1,1),dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
             for name,image in images.items():
                 pipeline[name][0,0] = images[name]
@@ -469,17 +486,17 @@ class Pipeline(object):
         no_measurements = (measurements == None or len(measurements.get_object_names())==0)
         if not no_measurements:
             measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
-            npy_measurements = numpy.ndarray((1,1),dtype=measurements_dtype)
+            npy_measurements = np.ndarray((1,1),dtype=measurements_dtype)
             handles['Measurements']=npy_measurements
             for object_name in measurements.get_object_names():
                 object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
-                object_measurements = numpy.ndarray((1,1),dtype=object_dtype)
+                object_measurements = np.ndarray((1,1),dtype=object_dtype)
                 npy_measurements[object_name][0,0] = object_measurements
                 for feature_name in measurements.get_feature_names(object_name):
-                    feature_measurements = numpy.ndarray((1,measurements.image_set_number),dtype='object')
+                    feature_measurements = np.ndarray((1,measurements.image_set_number),dtype='object')
                     object_measurements[feature_name][0,0] = feature_measurements
                     data = measurements.get_current_measurement(object_name,feature_name)
-                    feature_measurements.fill(numpy.ndarray((0,),dtype=numpy.float64))
+                    feature_measurements.fill(np.ndarray((0,),dtype=np.float64))
                     if data != None:
                         feature_measurements[0,measurements.image_set_number-1] = data
         return handles
@@ -586,13 +603,14 @@ class Pipeline(object):
                         self.set_matlab_path()
                         matlab_initialized = True
                     try:
+                        frame_if_shown = frame if module.show_frame else None
                         workspace = cpw.Workspace(self,
                                                   module,
                                                   image_set,
                                                   object_set,
                                                   measurements,
                                                   image_set_list,
-                                                  frame,
+                                                  frame_if_shown,
                                                   outlines = outlines)
                         t0 = datetime.datetime.now()
                         module.run(workspace)
@@ -618,13 +636,13 @@ class Pipeline(object):
                         should_write_measurements):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
-                                                     numpy.array([failure]));
+                                                     np.array([failure]));
                         delta = t1-t0
                         delta_sec = (delta.days * 24 * 60 *60 + delta.seconds +
                                      float(delta.microseconds) / 1000. / 1000.)
                         measurements.add_measurement('Image',
                                                      execution_time_measurement,
-                                                     numpy.array([delta_sec]))
+                                                     np.array([delta_sec]))
                     yield measurements
                 first_set = False
                 image_set_list.purge_image_set(image_number-1)
@@ -1141,7 +1159,7 @@ def add_handles_measurements(handles, measurements):
         for feature in object_fields:
             if not measurements.has_current_measurements(field,feature):
                 value = object_measurements[feature][0,set_being_analyzed-1]
-                if not isinstance(value,numpy.ndarray) or numpy.product(value.shape) > 0:
+                if not isinstance(value,np.ndarray) or np.product(value.shape) > 0:
                     # It's either not a numpy array (it's a string) or it's not the empty numpy array
                     # so add it to the measurements
                     measurements.add_measurement(field,feature,value)

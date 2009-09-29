@@ -72,6 +72,8 @@ function handles = TrackObjects(handles,varargin)
 % DistanceTraveled      |       3
 % IntegratedDistance    |       4
 % Linearity             |       5
+% LostObjectCount       |       6
+% NewObjectCount        |       7
 %
 % In addition to these, the following features are also recorded: Label, 
 % Lifetime as a per-object measurement, and the number of unique objects 
@@ -100,6 +102,12 @@ function handles = TrackObjects(handles,varargin)
 %   Linearity: A measure of how linear the object trajectity is during the
 %   object lifetime. Calculated as (distance from initial to final 
 %   location)/(integrated object distance). Value is in range of [0,1].
+%
+%	LostObjectCount: Number of objects that appear in the previous frame
+%	but have no identifiable child in the current frame
+%
+%	NewObjectCount: Number of objects that appear in the current frame but
+%	have no identifiable parent in the previous frame 
 %
 % What do you want to call the image with the tracked objects?
 % Specify a name to give the image showing the tracked objects. This image
@@ -238,7 +246,7 @@ if nargin > 1
         case 'measurements'
             if ismember(varargin{2},{ObjectName}) && strcmp(varargin{3},'TrackObjects')
                 result = {...
-                    'TrajectoryX','TrajectoryY','DistanceTraveled','IntegratedDistance','Linearity' };
+                    'TrajectoryX','TrajectoryY','DistanceTraveled','IntegratedDistance','Linearity','LostObjectCount','NewObjectCount' };
             else
                 result = {};
             end
@@ -564,7 +572,7 @@ if CollectStatistics
         [Lifetime,Linearity,IntegratedDistance] = deal(NaN(size(PreviousLabels)));
         [AbsentObjectsLabel,idx] = setdiff(PreviousLabels,CurrentLabels);
 		% Count old objects that have dissappeared
-		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'DisappearedCount',ObjectName,num2str(PixelRadius)), ...
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'LostObjectCount',ObjectName,num2str(PixelRadius)), ...
                     length(AbsentObjectsLabel));
         Lifetime(idx) = AgeOfObjects(AbsentObjectsLabel);
         IntegratedDistance(idx) = SumDistance(AbsentObjectsLabel);
@@ -578,7 +586,7 @@ if CollectStatistics
 		
 		% Count new objects that have appeared
 		NewObjectsLabel = setdiff(CurrentLabels,PreviousLabels);
-		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'AppearedCount',ObjectName,num2str(PixelRadius)), ...
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'NewObjectCount',ObjectName,num2str(PixelRadius)), ...
                     length(NewObjectsLabel));
     else %... or we reach the end of the analysis
         Lifetime = AgeOfObjects(CurrentLabels);
@@ -587,9 +595,9 @@ if CollectStatistics
 		mag = sqrt(sum((InitialObjectLocation(CurrentLabels,:) - CurrentLocations).^2,2));
         Linearity = mag./reshape(SumDistance(CurrentLabels),size(mag));
         warning('on','MATLAB:divideByZero');
-		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'DisappearedCount',ObjectName,num2str(PixelRadius)), ...
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'LostObjectCount',ObjectName,num2str(PixelRadius)), ...
                     0);
-		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'AppearedCount',ObjectName,num2str(PixelRadius)), ...
+		handles = CPaddmeasurements(handles, 'Image', CPjoinstrings(TrackingMeasurementPrefix,'NewObjectCount',ObjectName,num2str(PixelRadius)), ...
                     0);
     end
         

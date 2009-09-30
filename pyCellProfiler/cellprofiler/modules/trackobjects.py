@@ -48,6 +48,15 @@ F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
 
+'''# of objects in the current frame without parents in the previous frame'''
+F_NEW_OBJECT_COUNT = "NewObjectCount"
+'''# of objects in the previous frame without parents in the new frame'''
+F_LOST_OBJECT_COUNT = "LostObjectCount"
+'''# of objects in the current frame that have siblings'''
+F_DAUGHTER_OBJECT_COUNT = "DaughterObjectCount"
+'''# of objects in the current frame that are children of more than one parent'''
+F_MERGED_OBJECT_COUNT = "MergedObjectCount"
+
 F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_PARENT, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
@@ -123,7 +132,7 @@ Do you want to calculate statistics:
 Select whether you want statistics on the tracked objects to be added to
 the measurements for that object. The current statistics are collected:
 
-Features measured:
+Object features measured:
 TrajectoryX
 TrajectoryY
 DistanceTraveled
@@ -133,7 +142,13 @@ Parent
 Label
 Lifetime
 
-Desscription of each feature:
+Image features measured:
+NewObjectCount
+LostObjectCount
+DaughterObjectCount
+MergedObjectCount
+
+Description of each feature:
 Label: Each tracked object is assigned a unique identifier (label). 
 Results of splits or merges are seen as new objects and assigned a new
 label.

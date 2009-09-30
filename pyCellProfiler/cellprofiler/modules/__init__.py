@@ -55,6 +55,7 @@ from relate import Relate
 from rescaleintensity import RescaleIntensity
 from resize import Resize
 from saveimages import SaveImages
+from speedupcellprofiler import SpeedUpCellProfiler
 from smooth import Smooth
 from trackobjects import TrackObjects
 
@@ -104,6 +105,7 @@ def get_module_classes():
             Resize,
             SaveImages,
             Smooth,
+            SpeedUpCellProfiler,
             TrackObjects]
 
 def get_module_substitutions():
@@ -155,6 +157,7 @@ def get_module_substitutions():
             "Resize": Resize,
             "SaveImages": SaveImages,
             "SmoothOrEnhance": Smooth,
+            "SpeedUpCellProfiler": SpeedUpCellProfiler,
             "TrackObjects":TrackObjects
             }
     

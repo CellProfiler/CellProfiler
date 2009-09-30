@@ -1091,6 +1091,12 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def release_memory(self):
+        '''Release any image memory
+        
+        The image is either loaded every time or cached so this is a no-op'''
+        pass
 
 def load_using_PIL(path, index=0, seekfn=None):
     '''Get the pixel data for an image using PIL
@@ -1216,3 +1222,10 @@ class LoadImagesSTKFrameProvider(cpimage.AbstractImageProvider):
     
     def get_full_name(self):
         return os.path.join(self.get_pathname(),self.__filename)
+
+    def release_memory(self):
+        '''Release any image memory
+        
+        The image is either loaded every time or cached so this is a no-op'''
+        pass
+    

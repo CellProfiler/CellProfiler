@@ -388,6 +388,10 @@ class AbstractImageProvider(object):
         """The user-visible name for the image
         """
         raise NotImplementedError("Please implement get_name for your class")
+    
+    def release_memory(self):
+        '''Release whatever memory is associated with the image'''
+        sys.stderr.write("Warning: no memory release funtion implemented for %s image\n"%self.get_name())
 
     name = property(__get_name)
 
@@ -406,6 +410,8 @@ class VanillaImageProvider(AbstractImageProvider):
     def get_name(self):
         return self.__name
     
+    def release_memory(self):
+        self.__image = None
     
 
 class CallbackImageProvider(AbstractImageProvider):
@@ -425,7 +431,7 @@ class CallbackImageProvider(AbstractImageProvider):
     
     def get_name(self):
         return self.__name
-
+    
 class ImageSet(object):
     """Represents the images for a particular iteration of a pipeline
     
@@ -514,6 +520,15 @@ class ImageSet(object):
         """
         self.__image_providers = filter(lambda x: x.name != name, 
                                         self.__image_providers)
+        
+    def clear_image(self, name):
+        '''Remove the image memory associated with a provider
+        
+        name - the name of the provider
+        '''
+        self.get_image_provider(name).release_memory()
+        if self.__images.has_key(name):
+            del self.__images[name]
     
     def get_names(self):
         """Get the image provider names

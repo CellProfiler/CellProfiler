@@ -12,13 +12,14 @@ Website: http://www.cellprofiler.org
 """
 __version__ = "$Revision$"
 
-import numpy
+import numpy as np
 import wx
 import matplotlib
 import matplotlib.cm
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
+import sys
 
 from cellprofiler.gui import get_icon
 import cellprofiler.preferences as cpprefs
@@ -33,12 +34,7 @@ def create_or_find(parent=None, id=-1, title="",
         if window:
             if len(title) and title != window.Title:
                 window.Title = title
-            if (subplots is not None and 
-                (subplots[0] != window.subplots.shape[0] or
-                 subplots[1] != window.subplots.shape[1])):
-                window.figure.clf()
-                window.subplots = numpy.zeros(subplots,dtype=object)
-                window.zoom_rects = numpy.zeros(subplots,dtype=object)
+            window.clf()
                 
             return window
     return CPFigureFrame(parent, id, title, pos, size, style, name, subplots)
@@ -66,7 +62,7 @@ MODE_SHOW_PIXEL_DATA = 2
 class CPFigureFrame(wx.Frame):
     """A wx.Frame with a figure inside"""
     
-    def __init__(self, parent=None, id=-1, title=None, 
+    def __init__(self, parent=None, id=-1, title="", 
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, 
                  subplots=None):
@@ -96,8 +92,8 @@ class CPFigureFrame(wx.Frame):
         self.status_bar = self.CreateStatusBar()
         wx.EVT_PAINT(self, self.on_paint)
         if subplots:
-            self.subplots = numpy.zeros(subplots,dtype=object)
-            self.zoom_rects = numpy.zeros(subplots,dtype=object)
+            self.subplots = np.zeros(subplots,dtype=object)
+            self.zoom_rects = np.zeros(subplots,dtype=object)
         self.add_menu()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
@@ -129,6 +125,12 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar.Append(self.__menu_tools, "&Tools")
         wx.EVT_MENU(self, MENU_TOOLS_SHOW_PIXEL_DATA, self.on_show_pixel_data)
     
+    def clf(self):
+        '''Clear the figure window, resetting the display'''
+        self.figure.clf()
+        self.subplots[:,:] = None
+        self.zoom_rects[:,:] = None
+        
     def on_paint(self, event):
         dc = wx.PaintDC(self)
         self.panel.draw(dc)
@@ -225,20 +227,26 @@ class CPFigureFrame(wx.Frame):
             if len(images) == 1:
                 image = images[0]
                 array = image.get_array()
+                if array.dtype.type == np.uint8:
+                    def fn(x):
+                        return float(x) / 255.0
+                else:
+                    def fn(x):
+                        return x
                 if array.ndim == 2:
-                    fields += ["Intensity: %.4f"%array[yi,xi]]
+                    fields += ["Intensity: %.4f"%fn(array[yi,xi])]
                 elif array.ndim == 3:
-                    fields += ["Red: %.4f"%array[yi,xi,0],
-                               "Green: %.4f"%array[yi,xi,1],
-                               "Blue: %.4f"%array[yi,xi,2]]
+                    fields += ["Red: %.4f"%fn(array[yi,xi,0]),
+                               "Green: %.4f"%fn(array[yi,xi,1]),
+                               "Blue: %.4f"%fn(array[yi,xi,2])]
         if self.mouse_down is not None:
-            length = numpy.sqrt((x0-x1)**2 +(y0-y1)**2)
+            length = np.sqrt((x0-x1)**2 +(y0-y1)**2)
             fields.append("Length: %.1f"%length)
             if self.length_arrow is not None:
                 self.length_arrow.remove()
             xinterval = event.inaxes.xaxis.get_view_interval()
             yinterval = event.inaxes.yaxis.get_view_interval()
-            diagonal = numpy.sqrt((xinterval[1]-xinterval[0])**2 +
+            diagonal = np.sqrt((xinterval[1]-xinterval[0])**2 +
                                   (yinterval[1]-yinterval[0])**2)
             mutation_scale = min(int(length*100/diagonal), 20) 
             self.length_arrow =\
@@ -322,7 +330,7 @@ class CPFigureFrame(wx.Frame):
         x - column
         y - row
         """
-        if self.subplots[x,y] == 0:
+        if not self.subplots[x,y]:
             rows, cols = self.subplots.shape
             plot = self.figure.add_subplot(cols,rows,x+y*rows+1)
             self.subplots[x,y] = plot
@@ -384,12 +392,15 @@ class CPFigureFrame(wx.Frame):
         if clear:
             self.clear_subplot(x, y)
         if normalize:
+            image = image.astype(np.float32)
             for i in range(3):
-                im_min = numpy.min(image[:,:,i])
-                im_max = numpy.max(image[:,:,i])
+                im_min = np.min(image[:,:,i])
+                im_max = np.max(image[:,:,i])
                 if im_min != im_max:
                     image[:,:,i] -= im_min
                     image[:,:,i] /= (im_max - im_min)
+        elif image.dtype.type == np.float64:
+            image = image.astype(np.float32)
         subplot = self.subplot(x,y)
         result = subplot.imshow(image)
         if title != None:
@@ -402,6 +413,8 @@ class CPFigureFrame(wx.Frame):
         return self.subplot_imshow(x,y,labels,title,clear,cm)
     
     def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True):
+        if image.dtype.type == np.float64:
+            image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
                                    matplotlib.cm.Greys_r)
     
@@ -445,9 +458,40 @@ def renumber_labels_for_display(labels):
     so a random numbering has more color-distance between labels than a
     straightforward one
     """
-    numpy.random.seed(0)
-    label_copy = labels.copy()
-    renumber = numpy.random.permutation(numpy.max(label_copy))
+    np.random.seed(0)
+    nlabels = np.max(labels)
+    if nlabels <= 255:
+        label_copy = labels.astype(np.uint8)
+    elif nlabels < 2**16:
+        label_copy = labels.astype(np.uint16)
+    else:
+        label_copy = labels.copy()
+    renumber = np.random.permutation(np.max(label_copy))
     label_copy[label_copy != 0] = renumber[label_copy[label_copy!=0]-1]+1
     return label_copy
 
+if __name__ == "__main__":
+    import numpy as np
+    import gc
+    
+    ID_TEST_ADD_IMAGE = wx.NewId()
+    class MyApp(wx.App):
+        def OnInit(self):
+            wx.InitAllImageHandlers()
+            self.frame = CPFigureFrame(subplots=(1,1))
+            menu = wx.Menu()
+            menu.Append(ID_TEST_ADD_IMAGE, "Add image")
+            def add_image(event):
+                self.frame.clf()
+                img = np.random.uniform(size=(1000,1000,3))
+                self.frame.subplot_imshow_color(0,0,img,"Random image")
+                self.frame.figure.canvas.draw()
+                gc.collect()
+            wx.EVT_MENU(self.frame, ID_TEST_ADD_IMAGE, add_image)
+            self.frame.MenuBar.Append(menu, "Test")
+            self.SetTopWindow(self.frame)
+            self.frame.Show()
+            return True
+    app = MyApp()
+    app.MainLoop()
+        

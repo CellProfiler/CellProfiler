@@ -327,7 +327,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
  
                 for image_number in image_numbers:
                     image_set = image_set_list.get_image_set(image_number-1)
-                    image     = image_set.get_image(self.image_name,
+                    image     = image_set.get_image(self.image_name.value,
                                                     must_be_grayscale=True,
                                                     cache = False)
                     output_image_provider.add_image(image)
@@ -339,7 +339,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
         return True
         
     def run(self, workspace):
-        orig_image = workspace.image_set.get_image(self.image_name,
+        orig_image = workspace.image_set.get_image(self.image_name.value,
                                                    must_be_grayscale=True)
         pixels = orig_image.pixel_data
         if self.each_or_all == EA_ALL:

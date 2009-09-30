@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 __version = "$Revision$"
 
 import hashlib
+import gc
 import numpy as np
 import scipy.io.matlab
 import os
@@ -589,6 +590,7 @@ class Pipeline(object):
                 outlines = {}
                 should_write_measurements = True
                 for module in self.modules():
+                    gc.collect()
                     if module.should_stop_writing_measurements():
                         should_write_measurements = False
                     else:

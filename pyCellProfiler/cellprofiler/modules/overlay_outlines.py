@@ -182,7 +182,8 @@ See also identify modules.
                                                 normalize=False)
                 if self.wants_color.value:
                     figure.subplot_imshow_color(1, 0, pixel_data, 
-                                                self.output_image_name.value)
+                                                self.output_image_name.value,
+                                                normalize=False)
                 else:
                     figure.subplot_imshow_bw(1, 0, pixel_data,
                                              self.output_image_name.value)
@@ -216,10 +217,10 @@ See also identify modules.
                 self.outlines[0].outline_name.value,
                 must_be_binary = True)
             mask = outline_image.pixel_data
-            pixel_data = np.zeros((mask.shape[0],mask.shape[1],3))
+            pixel_data = np.zeros((mask.shape[0],mask.shape[1],3),np.uint8)
         else:
             image = image_set.get_image(self.image_name.value)
-            pixel_data = image.pixel_data
+            pixel_data = (image.pixel_data * 255.0).astype(np.uint8)
             if pixel_data.ndim == 2:
                 pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
             else:
@@ -229,5 +230,5 @@ See also identify modules.
                                        must_be_binary=True).pixel_data
             color = COLORS[outline.color.value]
             for i in range(3):
-                pixel_data[:,:,i][mask] = float(color[i])/255.0
+                pixel_data[:,:,i][mask] = color[i]
         return pixel_data

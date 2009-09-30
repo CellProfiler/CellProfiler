@@ -395,7 +395,7 @@ class SaveImages(cpm.CPModule):
             self.save_image(workspace)
 
     def save_image(self, workspace):
-        image = workspace.image_set.get_image(self.image_name)
+        image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
             if self.file_format != FF_MAT:

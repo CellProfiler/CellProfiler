@@ -507,6 +507,14 @@ class ImageSet(object):
         assert len(providers)==1, "More than one provider of the %s image"%(name)
         return providers[0]
     
+    def remove_image_provider(self, name):
+        """Remove a named image provider
+        
+        name - the name of the provider to remove
+        """
+        self.__image_providers = filter(lambda x: x.name != name, 
+                                        self.__image_providers)
+    
     def get_names(self):
         """Get the image provider names
         """

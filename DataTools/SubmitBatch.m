@@ -80,11 +80,16 @@ function hText=uitext(h,text, position)
         'BackgroundColor',get(h,'color'),'fontweight','bold');
 end
 
-function hEdit=uiedit(h,default_text,position)
+function hEdit=uiedit(h,default_text,position,varargin)
+	if nargin > 3, tag = varargin{1}; else tag = ''; end
     GUIhandles = guidata(gcbo);
     FontSize = GUIhandles.Preferences.FontSize;
     hEdit=uicontrol(h,'Style','edit','units','pixels','position',position,...
-        'backgroundcolor',[1 1 1],'String',default_text,'FontSize',FontSize);
+        'backgroundcolor',[1 1 1],'String',default_text,'FontSize',FontSize,'tag',tag);
+	if any(strcmpi(tag,{'LocalPath','RemotePath'}))
+		callback = @(hObject,eventdata) checkslashinpaths(hEdit);
+		set(hEdit,'callback',callback);
+	end
 end
 
 function hButton=uipushbutton(h,text,position,callback)
@@ -110,6 +115,37 @@ function resultdir=browsedir_cb(textctl,dlgcaption)
     if resultdir ~= 0 
         set(textctl,'String', resultdir);
     end;
+end
+
+function checkslashinpaths(hObject)
+
+fig = get(hObject,'parent');
+LocalPathUIBox = findobj(fig,'tag','LocalPath');
+LocalPathUIBoxStr = strtrim(get(LocalPathUIBox,'string'));
+RemotePathUIBox = findobj(fig,'tag','RemotePath');
+RemotePathUIBoxStr = strtrim(get(RemotePathUIBox,'string'));
+
+isLocalSlash = any(strcmp(LocalPathUIBoxStr(end),{'\','/'}));
+isRemoteSlash = any(strcmp(RemotePathUIBoxStr(end),{'\','/'}));
+if xor(isLocalSlash,isRemoteSlash)
+	if hObject == LocalPathUIBox
+		if isLocalSlash,
+			LocalPathUIBoxStr(end) = filesep;
+			RemotePathUIBoxStr = [RemotePathUIBoxStr, '/'];
+		else
+			RemotePathUIBoxStr = RemotePathUIBoxStr(1:end-1);
+		end
+	elseif hObject == RemotePathUIBox
+		if isRemoteSlash,
+			LocalPathUIBoxStr = [LocalPathUIBoxStr, filesep];
+		else
+			LocalPathUIBoxStr = LocalPathUIBoxStr(1:end-1);
+		end
+	end
+end
+set(LocalPathUIBox,'string',LocalPathUIBoxStr);
+set(RemotePathUIBox,'string',RemotePathUIBoxStr);
+
 end
 
 function SubmitInfo=ObjectsToSubmit(handles)
@@ -179,7 +215,7 @@ uibrowsedir(SBh,DataDirCtl,'Select the data directory',[colstart(3) line colwidt
 %
 line = line - uiheight;
 uitext (SBh,'Local mountpoint',[colstart(1) line colwidth(1) textheight]);
-LocalPathCtl=uiedit(SBh,SubmitInfo.LocalPath,[colstart(2) line colwidth(2) editheight]);
+LocalPathCtl=uiedit(SBh,SubmitInfo.LocalPath,[colstart(2) line colwidth(2) editheight],'LocalPath');
 uibrowsedir(SBh,LocalPathCtl,'Select the imaging mountpoint for your machine',...
     [colstart(3) line colwidth(3) uiheight-2]);
 %
@@ -187,7 +223,7 @@ uibrowsedir(SBh,LocalPathCtl,'Select the imaging mountpoint for your machine',..
 %
 line = line - uiheight;
 uitext(SBh, 'Unix mountpoint',[colstart(1) line colwidth(1) textheight]);
-UnixPathCtl=uiedit(SBh,SubmitInfo.UnixPath,[colstart(2) line colwidth(2) editheight]);
+UnixPathCtl=uiedit(SBh,SubmitInfo.UnixPath,[colstart(2) line colwidth(2) editheight],'RemotePath');
 %
 % Email
 %

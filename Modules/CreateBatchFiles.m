@@ -191,14 +191,13 @@ end
 
 if ~any(strcmp(OldPathname, '.'))
     % Changes the default output and image pathnames
-    if ~strcmp(OldPathname{1}, '.'),
-        NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname{1},NewPathname{1}),'\','/');
-        handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
-    end
-    if ~strcmp(OldPathname{2}, '.'),
-        NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname{2},NewPathname{2}),'\','/');
-        handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
-    end
+    for i = 1:length(OldPathname)
+		NewDefaultImageDirectory = strrep(strrep(handles.Current.DefaultImageDirectory,OldPathname{i},NewPathname{i}),'\','/');
+		handles.Current.DefaultImageDirectory = NewDefaultImageDirectory;
+		
+		NewDefaultOutputDirectory = strrep(strrep(handles.Current.DefaultOutputDirectory,OldPathname{i},NewPathname{i}),'\','/');
+		handles.Current.DefaultOutputDirectory = NewDefaultOutputDirectory;
+	end
     
     % Replaces \ with / in all image filenames (only relevant for PCs)
     % (a) handles.Pipelines

@@ -765,10 +765,18 @@ for LocalMaximaTypeNumber = 1:length(LocalMaximaTypeList)
                     DistanceTransformedImage = bwdist(~Objects);
                     %%% Add some noise to get distinct maxima
                     %%% First set seed to 0, so that it is reproducible
-                    rand('seed',0);
+                    is2008b_or_greater = ~CPverLessThan('matlab','7.7');
+					if is2008b_or_greater,
+						defaultStream = RandStream.getDefaultStream;
+						savedState = defaultStream.State;
+						RandStream.setDefaultStream(RandStream('mt19937ar','seed',0));
+					else
+						rand('seed',0);
+					end
                     DistanceTransformedImage = DistanceTransformedImage + ...
                         0.001*rand(size(DistanceTransformedImage));
-                    if strcmp(UseLowRes,'Yes')
+                    if is2008b_or_greater, defaultStream.State = savedState; end
+					if strcmp(UseLowRes,'Yes')
                         ResizedDistanceTransformedImage = imresize(DistanceTransformedImage,ImageResizeFactor,'bilinear');
                     else
                         ResizedDistanceTransformedImage = DistanceTransformedImage;

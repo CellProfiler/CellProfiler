@@ -511,7 +511,7 @@ else
         if is2008b_or_greater,
             defaultStream = RandStream.getDefaultStream;
             savedState = defaultStream.State;
-            RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock)));
+            RandStream.setDefaultStream(RandStream('mt19937ar','seed',0));
         else
             rand('seed',0);
         end

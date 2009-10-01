@@ -351,7 +351,7 @@ if ~isempty(FieldsToGroupBy)
 
         % Pull the filelist into separate structures, one for each unique
         % combination
-        handles.Pipeline.GroupFileListIDs = zeros(1,length(FileID));
+        handles.Pipeline.GroupFileListIDs = zeros(1,size(FileID,1));
         for i = 1:size(PathFileIDs,1)
             idx = all(ismember([path_idstr file_idstr],PathFileIDs(i,:)),2);
             for j = 1:length(AllImageNames),

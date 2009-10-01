@@ -412,11 +412,13 @@ class CPFigureFrame(wx.Frame):
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         return self.subplot_imshow(x,y,labels,title,clear,cm)
     
-    def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True):
+    def subplot_imshow_grayscale(self, x,y,image, title=None, clear=True,
+                                 vmin=None, vmax=None):
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
         return self.subplot_imshow(x, y, image, title, clear, 
-                                   matplotlib.cm.Greys_r)
+                                   matplotlib.cm.Greys_r,
+                                   vmin, vmax)
     
     def subplot_imshow_bw(self, x,y,image, title=None, clear=True):
         return self.subplot_imshow(x, y, image, title, clear, 

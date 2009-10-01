@@ -407,7 +407,7 @@ class TestRescaleIntensity(unittest.TestCase):
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         self.assertTrue(np.all(np.abs(pixels - expected) <= np.finfo(float).eps))
         
-    def test_04_03_manual_input_range_mask(self):
+    def test_04_04_manual_input_range_mask(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10))
         expected[0,0] = 1
@@ -424,7 +424,7 @@ class TestRescaleIntensity(unittest.TestCase):
         self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <=
                                np.finfo(float).eps))
     
-    def test_04_03_manual_input_range_truncate(self):
+    def test_04_05_manual_input_range_truncate(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10))
         expected_low_mask = np.zeros(expected.shape, bool)
@@ -481,6 +481,28 @@ class TestRescaleIntensity(unittest.TestCase):
                         high_value = 1
                     self.assertTrue(np.all(np.abs(pixels[expected_high_mask] - high_value) <= np.finfo(float).eps),
                                     "High truncate method (%s) failed"%high_truncate_method)
+    
+    def test_04_06_color_mask(self):
+        '''Regression test - color image + truncate with mask
+        
+        The bug: color image yielded a 3-d mask
+        '''
+        np.random.seed(0)
+        expected = np.random.uniform(size=(10,10,3))
+        expected_mask = (expected >= .2) & (expected <= .8)
+        expected_mask = expected_mask[:,:,0] & expected_mask[:,:,1] & expected_mask[:,:,2]
+        workspace, module = self.make_workspace(expected / 2 + .1)
+        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = False
+        module.wants_automatic_high.value = False
+        module.source_scale.min = .2
+        module.source_scale.max = .5
+        module.low_truncation_choice.value = R.R_MASK
+        module.high_truncation_choice.value = R.R_MASK
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_NAME)
+        self.assertEqual(image.mask.ndim, 2)
+        self.assertTrue(np.all(image.mask == expected_mask))
                 
     def test_05_01_manual_io_range(self):
         np.random.seed(0)
@@ -614,6 +636,7 @@ class TestRescaleIntensity(unittest.TestCase):
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         self.assertTrue(np.all(np.abs(pixels[mask] - expected[mask]) <= np.finfo(float).eps))
+        
     
     def test_11_01_convert_to_8_bit(self):
         np.random.seed(0)

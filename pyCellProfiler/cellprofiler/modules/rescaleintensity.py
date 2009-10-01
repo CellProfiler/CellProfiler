@@ -279,7 +279,26 @@ intensity range?
             rescaled_image = cpi.Image(output_image,
                                        parent_image = input_image,
                                        convert = False)
-        workspace.image_set.add(self.rescaled_image_name.value, rescaled_image) 
+        workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
+        if workspace.frame is not None:
+            self.display(workspace)
+    
+    def display(self, workspace):
+        '''Display the original and rescaled image'''
+        figure = workspace.create_or_find_figure(subplots=(2,1))
+        image_set = workspace.image_set
+        for image_name, i,j in ((self.image_name, 0,0),
+                                (self.rescaled_image_name, 1, 0)):
+            image_name = image_name.value
+            pixel_data = image_set.get_image(image_name).pixel_data
+            if pixel_data.ndim == 2:
+                figure.subplot_imshow_grayscale(i,j,pixel_data,
+                                                title = image_name,
+                                                vmin = 0, vmax = 1)
+            else:
+                figure.subplot_imshow_color(i,j,pixel_data,
+                                            title = image_name,
+                                            normalize=False)
     
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''
@@ -422,5 +441,9 @@ intensity range?
         elif self.high_truncation_choice == R_SET_TO_CUSTOM:
             rescaled_image[rescaled_image > target_max] =\
                 self.custom_high_truncation.value
+        if mask is not None and mask.ndim == 3:
+            # Color image -> 3-d mask. Collapse the 3rd dimension
+            # so any point is masked if any color fails
+            mask = np.all(mask,2)
         return rescaled_image, mask
             

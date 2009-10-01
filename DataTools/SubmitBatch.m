@@ -157,10 +157,10 @@ if strcmp(computer,'PCWIN') || strcmp(computer,'PCWIN64')
 else
     SubmitInfo.LocalPath = SubmitInfo.UnixPath;
 end;
-SubmitInfo.Email = [];
+SubmitInfo.Email = '@broadinstitute.org';
 SubmitInfo.Queue = 'broad';
 SubmitInfo.Project = [];
-SubmitInfo.Server = 'imageweb.broad.mit.edu';
+SubmitInfo.Server = 'imageweb.broadinstitute.org';
 try
     if isdeployed
         svn_ver_char = handles.Settings.CurrentSVNVersion;

@@ -103,11 +103,11 @@ function handles = TrackObjects(handles,varargin)
 %   object lifetime. Calculated as (distance from initial to final 
 %   location)/(integrated object distance). Value is in range of [0,1].
 %
-%	LostObjectCount: Number of objects that appear in the previous frame
-%	but have no identifiable child in the current frame
+%   LostObjectCount: Number of objects that appear in the previous frame
+%   but have no identifiable child in the current frame
 %
-%	NewObjectCount: Number of objects that appear in the current frame but
-%	have no identifiable parent in the previous frame 
+%   NewObjectCount: Number of objects that appear in the current frame but
+%   have no identifiable parent in the previous frame 
 %
 % What do you want to call the image with the tracked objects?
 % Specify a name to give the image showing the tracked objects. This image

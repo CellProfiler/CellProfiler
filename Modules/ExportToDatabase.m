@@ -246,10 +246,10 @@ StatisticsCalculated{2} = char(handles.Settings.VariableValues{CurrentModuleNum,
 %inputtypeVAR07 = popupmenu
 
 %textVAR08 = 
-%choiceVAR08 = Median
+%choiceVAR08 = Do not use
 %choiceVAR08 = Standard deviation
 %choiceVAR08 = Mean
-%choiceVAR08 = Do not use
+%choiceVAR08 = Median
 %defaultVAR08 = Do not use
 StatisticsCalculated{3} = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %inputtypeVAR08 = popupmenu

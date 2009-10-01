@@ -82,28 +82,28 @@ options which vary in terms of speed and sophistication. The objects that
 are found are displayed with arbitrary colors - the colors do not mean 
 anything but simply help you to tell various objects apart. You can 
 change the colormap in File > Set Preferences.
-%
+
 Requirements for the images to be fed into this module:
-* If the objects are dark on a light background, they must first be
-inverted using the Invert Intensity module.
-* If you are working with color images, they must first be converted to
-grayscale using the Color To Gray module.
-%
-Overview of the strategy ('Settings' below has more details):
+<ul><li>If the objects are dark on a light background, they must first be
+inverted using the Invert Intensity module.</li>
+<li>If you are working with color images, they must first be converted to
+grayscale using the Color To Gray module.</li></ul>
+
+<h2>Overview of the strategy ('Settings' below has more details)</h2>
   Properly identifying primary objects (nuclei) that are well-dispersed,
 non-confluent, and bright relative to the background is straightforward
 by applying a simple threshold to the image. This is fast but usually
 fails when nuclei are touching. In CellProfiler, several automatic
 thresholding methods are available, including global and adaptive, using
-Otsu's (Otsu, 1979) and our own version of a Mixture of Gaussians
-algorithm (O. Friman, unpublished). For most biological images, at least
+Otsu's <i>(Otsu, 1979)</i> and our own version of a Mixture of Gaussians
+algorithm <i>(O. Friman, unpublished)</i>. For most biological images, at least
 some nuclei are touching, so CellProfiler contains a novel modular
-three-step strategy based on previously published algorithms (Malpica et
+three-step strategy based on previously published algorithms <i>(Malpica et
 al., 1997; Meyer and Beucher, 1990; Ortiz de Solorzano et al., 1999;
-Wahlby, 2003; Wahlby et al., 2004). Choosing different options for each
+Wahlby, 2003; Wahlby et al., 2004)</i>. Choosing different options for each
 of these three steps allows CellProfiler to flexibly analyze a variety of
 different cell types. Here are the three steps:
-  In step 1, CellProfiler determines whether an object is an individual
+<ul><li>In step 1, CellProfiler determines whether an object is an individual
 nucleus or two or more clumped nuclei. This determination can be
 accomplished in two ways, depending on the cell type: When nuclei are
 bright in the middle and dimmer towards the edges (the most common case),
@@ -113,8 +113,8 @@ in the distance-transformed thresholded image (where each pixel gets a
 value equal to the distance to the nearest pixel below a certain
 threshold) works well (Shape option). For quick processing where cells
 are well-dispersed, you can choose to make no attempt to separate clumped
-objects.
-  In step 2, the edges of nuclei are identified. For nuclei within the
+objects.</li>
+<li>In step 2, the edges of nuclei are identified. For nuclei within the
 image that do not appear to touch, the edges are easily determined using
 thresholding. For nuclei that do appear to touch, there are two options
 for finding the edges of clumped nuclei. Where the dividing lines tend to
@@ -126,285 +126,51 @@ Distance option places the dividing line at a point between the two
 nuclei determined by their shape (the distance-transformed thresholded
 image is used for the watershed algorithm). In other words, the dividing
 line is usually placed where indentations occur along the edge of the
-clumped nuclei.
-  In step 3, some identified nuclei are discarded or merged together if
+clumped nuclei.</li>
+<li>In step 3, some identified nuclei are discarded or merged together if
 the user chooses. Incomplete nuclei touching the border of the image can
 be discarded. Objects smaller than a user-specified size range, which are
 likely to be fragments of real nuclei, can be discarded. Alternately, any
 of these small objects that touch a valid nucleus can be merged together
 based on a set of heuristic rules; for example similarity in intensity
 and statistics of the two objects. A separate module,
-FilterByObjectMeasurement, further refines the identified nuclei, if
+<b>FilterByObjectMeasurement</b>, further refines the identified nuclei, if
 desired, by excluding objects that are a particular size, shape,
 intensity, or texture. This refining step could eventually be extended to
 include other quality-control filters, e.g. a second watershed on the
-distance transformed image to break up remaining clusters (Wahlby et al.,
-2004).
-%
+distance transformed image to break up remaining clusters <i>(Wahlby et al.,
+2004)</i>.</ul>
+
 For more details, see the Settings section below and also the notation
 within the code itself (Developer's version).
-%
+
 Malpica, N., de Solorzano, C. O., Vaquero, J. J., Santos, A., Vallcorba,
-I., Garcia-Sagredo, J. M., and del Pozo, F. (1997). Applying watershed
-algorithms to the segmentation of clustered nuclei. Cytometry 28,
+I., Garcia-Sagredo, J. M., and del Pozo, F. (1997). <i>Applying watershed
+algorithms to the segmentation of clustered nuclei.</i> Cytometry 28,
 289-297.
-Meyer, F., and Beucher, S. (1990). Morphological segmentation. J Visual
+
+Meyer, F., and Beucher, S. (1990). <i>Morphological segmentation.</i> J Visual
 Communication and Image Representation 1, 21-46.
+
 Ortiz de Solorzano, C., Rodriguez, E. G., Jones, A., Pinkel, D., Gray, J.
-W., Sudar, D., and Lockett, S. J. (1999). Segmentation of confocal
-microscope images of cell nuclei in thick tissue sections. Journal of
+W., Sudar, D., and Lockett, S. J. (1999). <i>Segmentation of confocal
+microscope images of cell nuclei in thick tissue sections.</i> Journal of
 Microscopy-Oxford 193, 212-226.
-Wahlby, C. (2003) Algorithms for applied digital image cytometry, Ph.D.,
+
+Wahlby, C. (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D.,
 Uppsala University, Uppsala.
+
 Wahlby, C., Sintorn, I. M., Erlandsson, F., Borgefors, G., and Bengtsson,
-E. (2004). Combining intensity, edge and shape information for 2D and 3D
-segmentation of cell nuclei in tissue sections. J Microsc 215, 67-76.
-%
-Settings:
-%
-Typical diameter of objects, in pixel units (Min,Max):
-This is a very important parameter which tells the module what you are
-looking for. Most options within this module use this estimate of the
-size range of the objects in order to distinguish them from noise in the
-image. For example, for some of the identification methods, the smoothing
-applied to the image is based on the minimum size of the objects. A comma
-should be placed between the minimum and the maximum diameters. The units
-here are pixels so that it is easy to zoom in on objects and determine
-typical diameters. To measure distances easily, use the CellProfiler
-Image Tool, 'ShowOrHidePixelData', in any open window. Once this tool is
-activated, you can draw a line across objects in your image and the
-length of the line will be shown in pixel units. Note that for non-round
-objects, the diameter here is actually the 'equivalent diameter', meaning
-the diameter of a circle with the same area as the object.
-%
-Discard objects outside the diameter range:
-You can choose to discard objects outside the specified range of
-diameters. This allows you to exclude small objects (e.g. dust, noise,
-and debris) or large objects (e.g. clumps) if desired. See also the
-FilterByObjectMeasurement module to further discard objects based on some
-other measurement. During processing, the window for this module will
-show that objects outlined in green were acceptable, objects outlined in
-red were discarded based on their size, and objects outlined in yellow
-were discarded because they touch the border.
-%
-Try to merge 'too small' objects with nearby larger objects:
-Use caution when choosing 'Yes' for this option! This is an experimental
-functionality that takes objects that were discarded because they were
-smaller than the specified Minimum diameter and tries to merge them with
-other surrounding objects. This is helpful in cases when an object was
-incorrectly split into two objects, one of which is actually just a tiny
-piece of the larger object. However, this could be dangerous if you have
-selected poor settings which produce many tiny objects - the module
-will take a very long time and you will not realize that it is because
-the tiny objects are being merged. It is therefore a good idea to run the
-module first without merging objects to make sure the settings are
-reasonably effective.
-%
-Discard objects touching the border of the image:
-You can choose to discard objects that touch the border of the image.
-This is useful in cases when you do not want to make measurements of
-objects that are not fully within the field of view (because, for
-example, the area would not be accurate).
-%
-Select automatic thresholding method:
-   The threshold affects the stringency of the lines between the objects
-and the background. You can have the threshold automatically calculated
-using several methods, or you can enter an absolute number between 0 and
-1 for the threshold (to see the pixel intensities for your images in the
-appropriate range of 0 to 1, use the CellProfiler Image Tool,
-'ShowOrHidePixelData', in a window showing your image). There are
-advantages either way. An absolute number treats every image identically,
-but is not robust to slight changes in lighting/staining conditions
-between images. An automatically calculated threshold adapts to changes
-in lighting/staining conditions between images and is usually more
-robust/accurate, but it can occasionally produce a poor threshold for
-unusual/artifactual images. It also takes a small amount of time to
-calculate.
-   The threshold which is used for each image is recorded as a
-measurement in the output file, so if you find unusual measurements from
-one of your images, you might check whether the automatically calculated
-threshold was unusually high or low compared to the other images.
-   There are five methods for finding thresholds automatically, Otsu's
-method, the Mixture of Gaussian (MoG) method, the Background method, the
-Robust Background method and the Ridler-Calvard method. 
-** The Otsu method
-uses our version of the Matlab function graythresh (the code is in the
-CellProfiler subfunction CPthreshold). Our modifications include taking
-into account the max and min values in the image and log-transforming the
-image prior to calculating the threshold. Otsu's method is probably best
-if you don't know anything about the image, or if the percent of the
-image covered by objects varies substantially from image to image. If you
-know the object coverage percentage and it does not vary much from image
-to image, the MoG can be better, especially if the coverage percentage is
-not near 50%. Note, however, that the MoG function is experimental and
-has not been thoroughly validated. 
-** The Background method 
-is simple and appropriate for images in which most of the image is 
-background. It finds the mode of the histogram of the image, which is 
-assumed to be the background of the image, and chooses a threshold at 
-twice that value (which you can adjust with a Threshold Correction Factor,
-see below).  Note that the mode is protected from a high number of 
-saturated pixels by only counting pixels < 0.95. This can be very helpful,
-for example, if your images vary in overall brightness but the objects of 
-interest are always twice (or actually, any constant) as bright as the 
-background of the image. 
-** The Robust background
-method trims the brightest and dimmest 5of pixel intensities off first
-in the hopes that the remaining pixels represent a gaussian of intensity
-values that are mostly background pixels. It then calculates the mean and
-standard deviation of the remaining pixels and calculates the threshold
-as the mean + 2 times the standard deviation. 
-** The Ridler-Calvard method
-is simple and its results are often very similar to Otsu's - according to
-Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
-overall quality on testing 40 nondestructive testing images is slightly 
-better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
-It chooses an initial threshold, and then iteratively calculates the next 
-one by taking the mean of the average intensities of the background and 
-foreground pixels determined by the first threshold, repeating this until 
-the threshold converges.
-** The Kapur method
-computes the threshold of an image by
-log-transforming its values, then searching for the threshold that
-maximizes the sum of entropies of the foreground and background
-pixel values, when treated as separate distributions.
-   You can also choose between Global, Adaptive, and Per object
-thresholding:
-Global: one threshold is used for the entire image (fast).
-Adaptive: the threshold varies across the image - a bit slower but
-provides more accurate edge determination which may help to separate
-clumps, especially if you are not using a clump-separation method (see
-below).
-Per object: if you are using this module to find child objects located
-*within* parent objects, the per object method will calculate a distinct
-threshold for each parent object. This is especially helpful, for
-example, when the background brightness varies substantially among the
-parent objects. Important: the per object method requires that you run an
-IdentifyPrim module to identify the parent objects upstream in the
-pipeline. After the parent objects are identified in the pipeline, you
-must then also run a Crop module as follows: the image to be cropped is the one
-that you will want to use within this module to identify the children
-objects (e.g., ChildrenStainedImage), and the shape in which to crop
-is the name of the parent objects (e.g., Nuclei). Then, set this
-IdentifyPrimAutomatic module to identify objects within the
-CroppedChildrenStainedImage.
+E. (2004). <i>Combining intensity, edge and shape information for 2D and 3D
+segmentation of cell nuclei in tissue sections.</i> J Microsc 215, 67-76.
 
-Threshold correction factor:
-When the threshold is calculated automatically, it may consistently be
-too stringent or too lenient. You may need to enter an adjustment factor
-which you empirically determine is suitable for your images. The number 1
-means no adjustment, 0 to 1 makes the threshold more lenient and greater
-than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
-Otsu automatic thresholding inherently assumes that 50of the image is
-covered by objects. If a larger percentage of the image is covered, the
-Otsu method will give a slightly biased threshold that may have to be
-corrected using a threshold correction factor.
-
-Lower and upper bounds on threshold:
-Can be used as a safety precaution when the threshold is calculated
-automatically. For example, if there are no objects in the field of view,
-the automatic threshold will be unreasonably low. In such cases, the
-lower bound you enter here will override the automatic threshold.
-
-Approximate percentage of image covered by objects:
-An estimate of how much of the image is covered with objects. This
-information is currently only used in the MoG (Mixture of Gaussian)
-thresholding but may be used for other thresholding methods in the future
-(see below).
-
-Method to distinguish clumped objects:
-Note: to choose between these methods, you can try test mode (see the
-last setting for this module).
-* Intensity - For objects that tend to have only one peak of brightness
-per object (e.g. objects that are brighter towards their interiors), this
-option counts each intensity peak as a separate object. The objects can
-be any shape, so they need not be round and uniform in size as would be
-required for a distance-based module. The module is more successful when
-the objects have a smooth texture. By default, the image is automatically
-blurred to attempt to achieve appropriate smoothness (see blur option),
-but overriding the default value can improve the outcome on
-lumpy-textured objects. Technical description: Object centers are defined
-as local intensity maxima.
-* Shape - For cases when there are definite indentations separating
-objects. This works best for objects that are round. The intensity
-patterns in the original image are irrelevant - the image is converted to
-black and white (binary) and the shape is what determines whether clumped
-objects will be distinguished. Therefore, the cells need not be brighter
-towards the interior as is required for the Intensity option. The
-de-clumping results of this method are affected by the thresholding
-method you choose. Technical description: The binary thresholded image is
-distance-transformed and object centers are defined as peaks in this
-image. 
-
-* None (fastest option) - If objects are far apart and are very well
-separated, it may be unnecessary to attempt to separate clumped objects.
-Using the 'None' option, a simple threshold will be used to identify
-objects. This will override any declumping method chosen in the next
-question.
-
-Method to draw dividing lines between clumped objects:
-* Intensity - works best where the dividing lines between clumped
-objects are dim. Technical description: watershed on the intensity image.
-* Distance - Dividing lines between clumped objects are based on the
-shape of the clump. For example, when a clump contains two objects, the
-dividing line will be placed where indentations occur between the two
-nuclei. The intensity patterns in the original image are irrelevant - the
-cells need not be dimmer along the lines between clumped objects.
-Technical description: watershed on the distance-transformed thresholded
-image.
-* None (fastest option) - If objects are far apart and are very well
-separated, it may be unnecessary to attempt to separate clumped objects.
-Using the 'None' option, the thresholded image will be used to identify
-objects. This will override any declumping method chosen in the above
-question.
-
-Size of smoothing filter, in pixel units:
-   (Only used when distinguishing between clumped objects) This setting,
-along with the suppress local maxima setting, affects whether objects
-close to each other are considered a single object or multiple objects.
-It does not affect the dividing lines between an object and the
-background. If you see too many objects merged that ought to be separate,
-the value should be lower. If you see too many objects split up that
-ought to be merged, the value should be higher.
-   The image is smoothed based on the specified minimum object diameter
-that you have entered, but you may want to override the automatically
-calculated value here. Reducing the texture of objects by increasing the
-smoothing increases the chance that each real, distinct object has only
-one peak of intensity but also increases the chance that two distinct
-objects will be recognized as only one object. Note that increasing the
-size of the smoothing filter increases the processing time exponentially.
-%
-Suppress local maxima within this distance (a positive integer, in pixel
-units):
-   (Only used when distinguishing between clumped objects) This setting,
-along with the size of the smoothing filter, affects whether objects
-close to each other are considered a single object or multiple objects.
-It does not affect the dividing lines between an object and the
-background. This setting looks for the maximum intensity in the size 
-specified by the user.  The local intensity histogram is smoothed to 
-remove the peaks within that distance. So,if you see too many objects 
-merged that ought to be separate, the value should be lower. If you see 
-too many objects split up that ought to be merged, the value should be higher.
-   Object markers are suppressed based on the specified minimum object
-diameter that you have entered, but you may want to override the
-automatically calculated value here. The maxima suppression distance
-should be set to be roughly equivalent to the minimum radius of a real
-object of interest. Basically, any distinct 'objects' which are found but
-are within two times this distance from each other will be assumed to be
-actually two lumpy parts of the same object, and they will be merged.
-
-Speed up by using lower-resolution image to find local maxima?
-(Only used when distinguishing between clumped objects) If you have
-entered a minimum object diameter of 10 or less, setting this option to
-Yes will have no effect.
-
-Technical notes: The initial step of identifying local maxima is
+<h2>Technical notes:</h2> The initial step of identifying local maxima is
 performed on the user-controlled heavily smoothed image, the
 foreground/background is done on a hard-coded slightly smoothed image,
 and the dividing lines between clumped objects (watershed) is done on the
 non-smoothed image.
 
-Laplacian of Gaussian method:
+<h3>Laplacian of Gaussian method:</h3>
 The Laplacian of Gaussian (LOG) method uses a Laplacian of Gaussian (or Mexican
 Hat) filter to enhance local maxima of a desired size in the image.
 IdentifyPrimAutomatic can use the the LOG filter to identify the seed points
@@ -412,19 +178,19 @@ for the watershed. This involves thresholding the filtered image.
 IdentifyPrimAutomatic uses the Otsu algorithm to threshold automatically
 unless you specify a custom threshold value.
 
-Special note on saving images: Using the settings in this module, object
+<h3>Special note on saving images</h3> Using the settings in this module, object
 outlines can be passed along to the module OverlayOutlines and then saved
 with the SaveImages module. Objects themselves can be passed along to the
 object processing module ConvertToImage and then saved with the
 SaveImages module. This module produces several additional types of
 objects with names that are automatically passed along with the following
-naming structure: (1) The unedited segmented image, which includes
+naming structure: <ul><li> The unedited segmented image, which includes
 objects on the edge of the image and objects that are outside the size
 range, can be saved using the name: UneditedSegmented + whatever you
-called the objects (e.g. UneditedSegmentedNuclei). (2) The segmented
+called the objects (e.g. UneditedSegmentedNuclei). </li><li> The segmented
 image which excludes objects smaller than your selected size range can be
 saved using the name: SmallRemovedSegmented + whatever you called the
-objects (e.g. SmallRemovedSegmented Nuclei).
+objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
 """
             
     variable_revision_number = 4
@@ -606,9 +372,8 @@ thresholding but may be used for other thresholding methods in the future
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects (see help for details):', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
-Note: to choose between these methods, you can try test mode (see the
-last setting for this module).
-* Intensity - For objects that tend to have only one peak of brightness
+Note: to choose between these methods, you can try each of them in test mode.
+<ul><li>Intensity - For objects that tend to have only one peak of brightness
 per object (e.g. objects that are brighter towards their interiors), this
 option counts each intensity peak as a separate object. The objects can
 be any shape, so they need not be round and uniform in size as would be
@@ -617,8 +382,8 @@ the objects have a smooth texture. By default, the image is automatically
 blurred to attempt to achieve appropriate smoothness (see blur option),
 but overriding the default value can improve the outcome on
 lumpy-textured objects. Technical description: Object centers are defined
-as local intensity maxima.
-* Shape - For cases when there are definite indentations separating
+as local intensity maxima.</li>
+<li>Shape - For cases when there are definite indentations separating
 objects. This works best for objects that are round. The intensity
 patterns in the original image are irrelevant - the image is converted to
 black and white (binary) and the shape is what determines whether clumped
@@ -627,18 +392,22 @@ towards the interior as is required for the Intensity option. The
 de-clumping results of this method are affected by the thresholding
 method you choose. Technical description: The binary thresholded image is
 distance-transformed and object centers are defined as peaks in this
-image. 
-
-* None (fastest option) - If objects are far apart and are very well
+image. </li>
+<li>Laplacian of Gaussian - For objects that have an increasing intensity
+gradient toward their center, this option performs a Laplacian of Gaussian
+transform on the image which accentuates pixels that are local maxima. It
+thresholds the result and finds pixels that are both local maxima and above
+threshold. These pixels are used as the seeds for objects in the watershed.</li>
+<li>None (fastest option) - If objects are far apart and are very well
 separated, it may be unnecessary to attempt to separate clumped objects.
 Using the 'None' option, a simple threshold will be used to identify
 objects. This will override any declumping method chosen in the next
-question.""")
+question.</li><ul>""")
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects (see help '
             'for details):', 
             [WA_INTENSITY,WA_DISTANCE,WA_NONE], doc="""\
-* Intensity - works best where the dividing lines between clumped
+<ul><li>Intensity - works best where the dividing lines between clumped
 objects are dim. Technical description: watershed on the intensity image.
 * Distance - Dividing lines between clumped objects are based on the
 shape of the clump. For example, when a clump contains two objects, the
@@ -646,12 +415,12 @@ dividing line will be placed where indentations occur between the two
 nuclei. The intensity patterns in the original image are irrelevant - the
 cells need not be dimmer along the lines between clumped objects.
 Technical description: watershed on the distance-transformed thresholded
-image.
-* None (fastest option) - If objects are far apart and are very well
+image.</li>
+<li>None (fastest option) - If objects are far apart and are very well
 separated, it may be unnecessary to attempt to separate clumped objects.
 Using the 'None' option, the thresholded image will be used to identify
 objects. This will override any declumping method chosen in the above
-question.""")
+question.</li></ul>""")
         self.automatic_smoothing = cps.Binary(
             'Automatically calculate size of smoothing filter when separating '
             'clumped objects', 

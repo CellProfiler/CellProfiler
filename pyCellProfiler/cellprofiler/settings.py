@@ -38,6 +38,7 @@ class Setting(object):
         module - the module containing this setting
         text   - the explanatory text for the setting
         value  - the default or initial value for the setting
+        doc - documentation for the setting
         """
         self.__annotations = []
         self.__text = text
@@ -765,7 +766,11 @@ class Binary(Setting):
     def __eq__(self,x):
         if x == NO:
             x = False
-        return (self.value and x) or ((not self.value) and (not x)) 
+        return (self.value and x) or ((not self.value) and (not x))
+    
+    def __nonzero__(self):
+        '''Return the value when testing for True / False'''
+        return self.value
     
 class Choice(Setting):
     """A setting that displays a drop-down set of choices

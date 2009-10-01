@@ -14,6 +14,7 @@ __version__="$Revision$"
 
 import os
 import wx
+import wx.html
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
 from cellprofiler.gui import get_icon, get_cp_bitmap
@@ -174,20 +175,25 @@ class CPFrame(wx.Frame):
     def do_help_module(self, module_name, help_text):
         helpframe = wx.Frame(self,-1,'Help for module, "%s"' %
                              (module_name),size=(640,480))
-        font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
-        bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
         sizer = wx.BoxSizer()
-        panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
-        panel.SetBackgroundColour(bgcolor)
-        sizer.Add(panel,1,wx.EXPAND)
         helpframe.SetSizer(sizer)
-        statictext = wx.StaticText(panel,-1, help_text)
-        statictext.SetFont(font)
-        statictext.SetBackgroundColour(bgcolor)
-        sizer = wx.BoxSizer()
-        sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
-        panel.SetSizer(sizer)
-        panel.SetupScrolling()
+        if False:
+            font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FIXED_FONT)
+            bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX)
+            panel = wx.lib.scrolledpanel.ScrolledPanel(helpframe,-1,style=wx.SUNKEN_BORDER)
+            panel.SetBackgroundColour(bgcolor)
+            sizer.Add(panel,1,wx.EXPAND)
+            statictext = wx.StaticText(panel,-1, help_text)
+            statictext.SetFont(font)
+            statictext.SetBackgroundColour(bgcolor)
+            sizer = wx.BoxSizer()
+            sizer.Add(statictext,1,wx.EXPAND|wx.ALL,5)
+            panel.SetSizer(sizer)
+            panel.SetupScrolling()
+        else:
+            window = wx.html.HtmlWindow(helpframe)
+            sizer.Add(window,1,wx.EXPAND)
+            window.AppendToPage(help_text)
         helpframe.SetIcon(get_icon())
         helpframe.Layout()
         helpframe.Show()

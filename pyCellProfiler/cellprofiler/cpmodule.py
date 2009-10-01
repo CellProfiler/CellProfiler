@@ -76,7 +76,22 @@ class CPModule(object):
         self.create_settings()
         
     def create_settings(self):
-        """Create your settings by subclassing this function"""
+        """Create your settings by subclassing this function
+        
+        create_settings is called at the end of initialization. You should
+        name your module in this routine:
+        
+            # Set the name that will appear in the "AddModules" window
+            self.module_name = "My module"
+        
+        You should also create the setting variables for your module:
+            # Ask the user for the input image
+            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            # Ask the user for the name of the output image
+            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            # Ask the user for a parameter
+            self.smoothing_size = cellprofiler.settings.Float(...)
+        """
         pass
     
     def create_from_handles(self,handles,module_num):
@@ -234,12 +249,15 @@ class CPModule(object):
         self.set_settings(settings)
     
     def on_post_load(self, pipeline):
-        """This is a convenient place to do things to your module after the settings have been loaded or initialized"""
+        """This is a convenient place to do things to your module after the 
+           settings have been loaded or initialized"""
         pass
 
     def upgrade_module_from_revision(self,variable_revision_number):
-        """Possibly rewrite the settings in the module to upgrade it to its current revision number
+        """Possibly rewrite the settings in the module to upgrade it to its 
+        current revision number.
         
+        Most modules use BackwardsCompatibilize instead of this.
         """
         if variable_revision_number != self.variable_revision_number:
             raise NotImplementedError(
@@ -252,8 +270,28 @@ class CPModule(object):
     def get_help(self):
         """Return help text for the module
         
+        The default help is taken from your modules docstring and from
+        the settings.
         """
-        return self.__doc__
+        doc = self.__doc__.replace("\r","").replace("\n\n","</div><div>")
+        doc = doc.replace("\n"," ")
+        result = "<html><body><div><h1>%s</h1>" % self.module_name + doc
+        first_setting_doc = True
+        seen_setting_docs = set()
+        for setting in self.settings():
+            if setting.doc is not None:
+                key = (setting.text, setting.doc)
+                if key not in seen_setting_docs:
+                    seen_setting_docs.add(key)
+                    if first_setting_doc:
+                        result = result + "</div><div><h2>Settings:</h2>"
+                        first_setting_doc = False
+                    result = (result + "<h3>" + setting.text + "</h3><div>" +
+                              setting.doc + "</div>")
+        if not first_setting_doc:
+            result += "</div>"
+        result += "</div></body></html>"
+        return result
             
     def save_to_handles(self,handles):
         module_idx = self.module_num-1

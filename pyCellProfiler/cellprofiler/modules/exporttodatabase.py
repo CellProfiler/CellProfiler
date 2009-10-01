@@ -59,9 +59,9 @@ def get_next_result(cursor):
     except StopIteration, e:
         return None
     
-def connect_mysql(host, user, pw):
+def connect_mysql(host, user, pw, db):
     '''Creates and returns a db connection and cursor.'''
-    connection = MySQLdb.connect(host=host, user=user, passwd=pw)
+    connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
     return connection, cursor
 
@@ -341,10 +341,10 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix.value):
                 raise cps.ValidationError("Invalid table prefix",self.table_prefix)
 
-        if self.db_type.value==DB_MYSQL:
+        if self.db_type==DB_MYSQL:
             if not re.match("^[A-Za-z0-9_]+$",self.db_name.value):
                 raise cps.ValidationError("The database name has invalid characters",self.db_name)
-        elif self.db_type.value==DB_SQLITE:
+        elif self.db_type==DB_SQLITE:
             if not re.match("^[A-Za-z0-9_].*$",self.sqlite_file.value):
                 raise cps.ValidationError("The sqlite file name has invalid characters",self.sqlite_file)
 
@@ -364,10 +364,23 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(self.db_host.value, 
                                                              self.db_user.value, 
-                                                             self.db_passwd.value)
+                                                             self.db_passwd.value,
+                                                             self.db_name.value)
             elif self.db_type==DB_SQLITE:
                 db_file = self.get_output_directory()+'/'+self.sqlite_file.value
                 self.connection, self.cursor = connect_sqlite(db_file)
+            try:
+                object_table = self.get_table_prefix()+'Per_Object'
+                image_table = self.get_table_prefix()+'Per_Image'
+                r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(image_table))
+                r = execute(self.cursor, 'SELECT * FROM %s LIMIT 1'%(object_table))
+                import wx
+                dlg = wx.MessageDialog(frame, 'ExportToDatabase will overwrite your tables "%s" and "%s". OK?'%(image_table, object_table),
+                                    'Overwrite per_image and per_object table?', style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                if dlg.ShowModal() != wx.ID_OK:
+                    return False
+            except:
+                pass
             self.create_database_tables(self.cursor, 
                                         pipeline.get_measurement_columns(),
                                         not pipeline.in_batch_mode())
@@ -475,7 +488,7 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
                     self.col_dict[c[0]] = [c]
         
         # Create the database
-        if self.db_type.value==DB_MYSQL and create_database:
+        if self.db_type==DB_MYSQL and create_database:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s'%(self.db_name.value))
         execute(cursor, 'USE %s'% self.db_name.value)
         
@@ -753,31 +766,35 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         measurement_cols = workspace.pipeline.get_measurement_columns()
         index = measurements.image_set_index
         
+        # TODO:
         # Check that all image and object columns reported by 
         #  get_measurement_columns agree with measurements.get_feature_names
-        for obname, col in self.col_dict.items():
-            f1 = measurements.get_feature_names(obname)
-            f2 = [c[1] for c in self.col_dict[obname]]
-            diff = set(f1).symmetric_difference(set(f2))
-            assert not diff, 'pipeline.get_measurements and measurements.get_feature_names disagree on the following columns %s'%(diff)
+#        for obname, col in self.col_dict.items():
+#            f1 = measurements.get_feature_names(obname)
+#            f2 = [c[1] for c in self.col_dict[obname]]
+#            diff = set(f1).difference(set(f2))
+#            assert not diff, 'The following columns were returned by measurements.get_feature_names and not pipeline.get_measurements: \n %s'%(diff)
+#            diff = set(f2).difference(set(f1))
+#            assert not diff, 'The following columns were returned by pipeline.get_measurements and not measurements.get_feature_names: \n %s'%(diff)
         
         # Fill image row with non-aggregate cols    
         max_count = 0
         image_number = index + measurements.image_set_start_number
         image_row = [None for k in range(len(self.image_col_order)+1)]
         image_row[0] = (image_number, cpmeas.COLTYPE_INTEGER, 'ImageNumber')
-        for m_col in self.col_dict[cpmeas.IMAGE]:
-            feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
-            value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
-            if isinstance(value, np.ndarray):
-                value=value[0]
-            if isinstance(value, float) and not np.isfinite(value):
-                value = 0
-            if feature_name in self.image_col_order.keys():
-                image_row[self.image_col_order[feature_name]] =\
-                         (value, m_col[2], feature_name)
-                if feature_name.find('Count') != -1:
-                    max_count = max(max_count,int(value))
+        if cpmeas.IMAGE in self.col_dict.keys():
+            for m_col in self.col_dict[cpmeas.IMAGE]:
+                feature_name = "%s_%s"%(cpmeas.IMAGE, m_col[1])
+                value = measurements.get_measurement(cpmeas.IMAGE, m_col[1], index)
+                if isinstance(value, np.ndarray):
+                    value=value[0]
+                if isinstance(value, float) and not np.isfinite(value):
+                    value = 0
+                if feature_name in self.image_col_order.keys():
+                    image_row[self.image_col_order[feature_name]] =\
+                             (value, m_col[2], feature_name)
+                    if feature_name.find('Count') != -1:
+                        max_count = max(max_count,int(value))
         
         # The object columns in order
         object_cols = (['ImageNumber','ObjectNumber'] + 

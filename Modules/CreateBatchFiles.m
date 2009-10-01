@@ -235,30 +235,32 @@ if ~any(strcmp(OldPathname, '.'))
     
     % Deal with input paths that have already been saved to the handles
     % (a) handles.Pipelines
-    Fieldnames = fieldnames(handles.Pipeline);
-    PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
-    for i = 1:length(PathFieldnames),
-        handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
-        handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{2},NewPathname{2}),'\','/');
-    end
-    % (b) handles.Pipelines.GroupFileList (if it exists)
-    if isfield(handles.Pipeline,'ImageGroupFields')
-        for i = 1:length(handles.Pipeline.GroupFileList)
-            Fieldnames = fieldnames(handles.Pipeline.GroupFileList{i});
-            PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
-            for j = 1:length(PathFieldnames),
-                handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{1},NewPathname{1}),'\','/');
-                handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{2},NewPathname{2}),'\','/');
-            end
-        end
-    end
-    % (c) handles.Measurements.Image
-    Fieldnames = fieldnames(handles.Measurements.Image);
-    PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
-    for i = 1:length(PathFieldnames),
-        handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{1},NewPathname{1}),'\','/');
-        handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{2},NewPathname{2}),'\','/');
-    end
+    for k = 1:length(OldPathname)
+		Fieldnames = fieldnames(handles.Pipeline);
+		PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
+		for i = 1:length(PathFieldnames),
+			handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{k},NewPathname{k}),'\','/');
+			handles.Pipeline.(PathFieldnames{i}) = strrep(strrep(handles.Pipeline.(PathFieldnames{i}),OldPathname{k},NewPathname{k}),'\','/');
+		end
+		% (b) handles.Pipelines.GroupFileList (if it exists)
+		if isfield(handles.Pipeline,'ImageGroupFields')
+			for i = 1:length(handles.Pipeline.GroupFileList)
+				Fieldnames = fieldnames(handles.Pipeline.GroupFileList{i});
+				PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
+				for j = 1:length(PathFieldnames),
+					handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{k},NewPathname{k}),'\','/');
+					handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}) = strrep(strrep(handles.Pipeline.GroupFileList{i}.(PathFieldnames{j}),OldPathname{k},NewPathname{k}),'\','/');
+				end
+			end
+		end
+		% (c) handles.Measurements.Image
+		Fieldnames = fieldnames(handles.Measurements.Image);
+		PathFieldnames = Fieldnames(strncmpi(Fieldnames,'pathname',8));
+		for i = 1:length(PathFieldnames),
+			handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{k},NewPathname{k}),'\','/');
+			handles.Measurements.Image.(PathFieldnames{i}) = strrep(strrep(handles.Measurements.Image.(PathFieldnames{i}),OldPathname{k},NewPathname{k}),'\','/');
+		end
+	end
 end
 
 % % Make sure ModuleError has same number of elements as

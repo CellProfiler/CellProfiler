@@ -214,7 +214,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             should be placed between the minimum and the maximum diameters. The units
             here are pixels so that it is easy to zoom in on objects and determine
             typical diameters. To measure distances easily, use the CellProfiler
-            Image Tool, <i>Show pixel data</i>, in any open figure window. Once this tool is
+            Image Tool, 'ShowOrHidePixelData', in any open window. Once this tool is
             activated, you can draw a line across objects in your image and the
             length of the line will be shown in pixel units. Note that for non-round
             objects, the diameter here is actually the 'equivalent diameter', meaning
@@ -233,7 +233,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc="""\
-            Use caution when choosing <i>Yes</i> for this option! This is an experimental
+            Use caution when choosing 'Yes' for this option! This is an experimental
             functionality that takes objects that were discarded because they were
             smaller than the specified Minimum diameter and tries to merge them with
             other surrounding objects. This is helpful in cases when an object was
@@ -264,7 +264,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             can have the threshold automatically calculated using several methods,
             or you can enter an absolute number between 0 and 1 for the threshold
             (to see the pixel intensities for your images in the appropriate range
-            of 0 to 1, use the CellProfiler Image Tool, <i>Show pixel data</i>, in
+            of 0 to 1, use the CellProfiler Image Tool, 'ShowOrHidePixelData', in
             a window showing your image). There are advantages either way. An
             absolute number treats every image identically, but is not robust to
             slight changes in lighting/staining conditions between images. An
@@ -336,12 +336,13 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             parent objects. Important: the per object method requires that you run an
             IdentifyPrim module to identify the parent objects upstream in the
             pipeline. After the parent objects are identified in the pipeline, you
-            must then also run a Crop module as follows: The image to be cropped is the one
+            must then also run a Crop module as follows: the image to be cropped is the one
             that you will want to use within this module to identify the children
             objects (e.g., ChildrenStainedImage), and the shape in which to crop
             is the name of the parent objects (e.g., Nuclei). Then, set this
             IdentifyPrimAutomatic module to identify objects within the
             CroppedChildrenStainedImage.</ul>""")
+
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
                                                 doc="""\
             When the threshold is calculated automatically, it may consistently be
@@ -349,7 +350,7 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             which you empirically determine is suitable for your images. The number 1
             means no adjustment, 0 to 1 makes the threshold more lenient and greater
             than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
-            Otsu automatic thresholding inherently assumes that 50% of the image is
+            Otsu automatic thresholding inherently assumes that 50of the image is
             covered by objects. If a larger percentage of the image is covered, the
             Otsu method will give a slightly biased threshold that may have to be
             corrected using a threshold correction factor.""")
@@ -372,10 +373,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects (see help for details):', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
-<<<<<<< .mine
-            <p>To choose between these methods, using Test Mode is recommended
-            
-            <ul><li><i>Intensity</i> - For objects that tend to have only one peak of brightness
+            Note: to choose between these methods, you can try each of them in test mode.
+            <ul><li>Intensity - For objects that tend to have only one peak of brightness
             per object (e.g. objects that are brighter towards their interiors), this
             option counts each intensity peak as a separate object. The objects can
             be any shape, so they need not be round and uniform in size as would be
@@ -384,9 +383,8 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             blurred to attempt to achieve appropriate smoothness (see blur option),
             but overriding the default value can improve the outcome on
             lumpy-textured objects. Technical description: Object centers are defined
-            as local intensity maxima.
-            
-            <li><i>Shape</i> - For cases when there are definite indentations separating
+            as local intensity maxima.</li>
+            <li>Shape - For cases when there are definite indentations separating
             objects. This works best for objects that are round. The intensity
             patterns in the original image are irrelevant - the image is converted to
             black and white (binary) and the shape is what determines whether clumped
@@ -395,81 +393,36 @@ objects (e.g. SmallRemovedSegmented Nuclei).</li></ul>
             de-clumping results of this method are affected by the thresholding
             method you choose. Technical description: The binary thresholded image is
             distance-transformed and object centers are defined as peaks in this
-            image. 
-            
-            <li><i>None</i> (fastest option) - If objects are far apart and are very well
+            image. </li>
+            <li>Laplacian of Gaussian - For objects that have an increasing intensity
+            gradient toward their center, this option performs a Laplacian of Gaussian
+            transform on the image which accentuates pixels that are local maxima. It
+            thresholds the result and finds pixels that are both local maxima and above
+            threshold. These pixels are used as the seeds for objects in the watershed.</li>
+            <li>None (fastest option) - If objects are far apart and are very well
             separated, it may be unnecessary to attempt to separate clumped objects.
             Using the 'None' option, a simple threshold will be used to identify
             objects. This will override any declumping method chosen in the next
-            question.</ul>""")
-=======
-Note: to choose between these methods, you can try each of them in test mode.
-<ul><li>Intensity - For objects that tend to have only one peak of brightness
-per object (e.g. objects that are brighter towards their interiors), this
-option counts each intensity peak as a separate object. The objects can
-be any shape, so they need not be round and uniform in size as would be
-required for a distance-based module. The module is more successful when
-the objects have a smooth texture. By default, the image is automatically
-blurred to attempt to achieve appropriate smoothness (see blur option),
-but overriding the default value can improve the outcome on
-lumpy-textured objects. Technical description: Object centers are defined
-as local intensity maxima.</li>
-<li>Shape - For cases when there are definite indentations separating
-objects. This works best for objects that are round. The intensity
-patterns in the original image are irrelevant - the image is converted to
-black and white (binary) and the shape is what determines whether clumped
-objects will be distinguished. Therefore, the cells need not be brighter
-towards the interior as is required for the Intensity option. The
-de-clumping results of this method are affected by the thresholding
-method you choose. Technical description: The binary thresholded image is
-distance-transformed and object centers are defined as peaks in this
-image. </li>
-<li>Laplacian of Gaussian - For objects that have an increasing intensity
-gradient toward their center, this option performs a Laplacian of Gaussian
-transform on the image which accentuates pixels that are local maxima. It
-thresholds the result and finds pixels that are both local maxima and above
-threshold. These pixels are used as the seeds for objects in the watershed.</li>
-<li>None (fastest option) - If objects are far apart and are very well
-separated, it may be unnecessary to attempt to separate clumped objects.
-Using the 'None' option, a simple threshold will be used to identify
-objects. This will override any declumping method chosen in the next
-question.</li><ul>""")
->>>>>>> .r8051
+            question.</li><ul>""")
+
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects (see help '
             'for details):', 
             [WA_INTENSITY,WA_DISTANCE,WA_NONE], doc="""\
-<<<<<<< .mine
-            <ul><li><i>Intensity</i> - works best where the dividing lines between clumped
+            <ul><li>Intensity - works best where the dividing lines between clumped
             objects are dim. Technical description: watershed on the intensity image.
-            <li><i>Distance</i> - Dividing lines between clumped objects are based on the
+            * Distance - Dividing lines between clumped objects are based on the
             shape of the clump. For example, when a clump contains two objects, the
             dividing line will be placed where indentations occur between the two
             nuclei. The intensity patterns in the original image are irrelevant - the
             cells need not be dimmer along the lines between clumped objects.
             Technical description: watershed on the distance-transformed thresholded
-            image.
-            <li><i>None</i> (fastest option) - If objects are far apart and are very well
+            image.</li>
+            <li>None (fastest option) - If objects are far apart and are very well
             separated, it may be unnecessary to attempt to separate clumped objects.
             Using the 'None' option, the thresholded image will be used to identify
             objects. This will override any declumping method chosen in the above
-            question.</ul>""")
-=======
-<ul><li>Intensity - works best where the dividing lines between clumped
-objects are dim. Technical description: watershed on the intensity image.
-* Distance - Dividing lines between clumped objects are based on the
-shape of the clump. For example, when a clump contains two objects, the
-dividing line will be placed where indentations occur between the two
-nuclei. The intensity patterns in the original image are irrelevant - the
-cells need not be dimmer along the lines between clumped objects.
-Technical description: watershed on the distance-transformed thresholded
-image.</li>
-<li>None (fastest option) - If objects are far apart and are very well
-separated, it may be unnecessary to attempt to separate clumped objects.
-Using the 'None' option, the thresholded image will be used to identify
-objects. This will override any declumping method chosen in the above
-question.</li></ul>""")
->>>>>>> .r8051
+            question.</li></ul>""")
         self.automatic_smoothing = cps.Binary(
             'Automatically calculate size of smoothing filter when separating '
             'clumped objects', 
@@ -487,13 +440,21 @@ question.</li></ul>""")
             'resolution images with small objects (< ~5 pixels in diameter) '
             'to prevent any \ image smoothing.', 
             10, doc="""\
-            <p>The image is smoothed based on the specified minimum object diameter
+            (Only used when distinguishing between clumped objects) This setting,
+            along with the suppress local maxima setting, affects whether objects
+            close to each other are considered a single object or multiple objects.
+            It does not affect the dividing lines between an object and the
+            background. If you see too many objects merged that ought to be separate,
+            the value should be lower. If you see too many objects split up that
+            ought to be merged, the value should be higher.
+               The image is smoothed based on the specified minimum object diameter
             that you have entered, but you may want to override the automatically
             calculated value here. Reducing the texture of objects by increasing the
             smoothing increases the chance that each real, distinct object has only
             one peak of intensity but also increases the chance that two distinct
             objects will be recognized as only one object. Note that increasing the
             size of the smoothing filter increases the processing time exponentially.""")
+
         self.automatic_suppression = cps.Binary(
             'Automatically calculate minimum size of local maxima for clumped '
             'objects', True, doc="""\
@@ -511,23 +472,37 @@ question.</li></ul>""")
             diameter that you have entered, but you may want to override the
             automatically calculated value here by unchecking this box.
             """)
+        
         self.maxima_suppression_size = cps.Integer(
             'Suppress local maxima within this distance, (a positive integer, '
             'in pixel units) (if you are distinguishing between clumped '
             'objects)', 
             7, doc="""\
-            <p>The maxima suppression distance
+            <p>(Only used when distinguishing between clumped objects) This setting,
+            along with the size of the smoothing filter, affects whether objects
+            close to each other are considered a single object or multiple objects.
+            It does not affect the dividing lines between an object and the
+            background. This setting looks for the maximum intensity in the size 
+            specified by the user.  The local intensity histogram is smoothed to 
+            remove the peaks within that distance. So,if you see too many objects 
+            merged that ought to be separate, the value should be lower. If you see 
+            too many objects split up that ought to be merged, the value should be higher.
+            <p>Object markers are suppressed based on the specified minimum object
+            diameter that you have entered, but you may want to override the
+            automatically calculated value here. The maxima suppression distance
             should be set to be roughly equivalent to the minimum radius of a real
-            object of interest. Basically, any distinct objects which are found but
+            object of interest. Basically, any distinct 'objects' which are found but
             are within two times this distance from each other will be assumed to be
             actually two lumpy parts of the same object, and they will be merged.""")
+        
         self.low_res_maxima = cps.Binary(
             'Speed up by using lower-resolution image to find local maxima '
             '(if you are distinguishing between clumped objects)?', 
             True, doc="""\
-            <i>(Only used when distinguishing between clumped objects)</i>
-            <p>If you have entered a minimum object diameter of 10 or less, setting this option to
-            <i>Yes</i> will have no effect.""")
+            (Only used when distinguishing between clumped objects) If you have
+            entered a minimum object diameter of 10 or less, setting this option to
+            Yes will have no effect.""")
+
         self.should_save_outlines = cps.Binary(
             'Do you want to save outlines?', False)
         self.save_outlines = cps.OutlineNameProvider(

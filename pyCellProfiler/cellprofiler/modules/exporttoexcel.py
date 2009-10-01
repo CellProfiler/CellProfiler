@@ -47,7 +47,7 @@ OG_FILE_NAME = "FileName"
 OG_REMOVE_BUTTON = "RemoveButton"
 
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 6
+SETTING_OG_OFFSET = 9
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -117,7 +117,7 @@ named, "XZ29_A01.csv".
 '''
 
     category = 'File Processing'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.module_name = 'ExportToExcel'
@@ -128,6 +128,31 @@ named, "XZ29_A01.csv".
         self.add_indexes = cps.Binary("Do you want to add an image set number column to your image data and image set number and object number columns to your object data?", False)
         self.excel_limits = cps.Binary("Do you want to limit output to what is allowed in Excel?", False)
         self.pick_columns = cps.Binary("Do you want to pick the columns to output?", False)
+        self.wants_aggregate_means = cps.Binary(
+            "Do you want to compute the aggregate mean value for object measurements?", 
+            False,
+            doc = ("ExportToExcel can compute the mean value for all of the "
+                   "cells in an image set and save that value as an aggregate "
+                   "measurement in the image file. Check this setting to add "
+                   "these columns to your image file. Uncheck it to remove "
+                   "these columns from your image file."))
+        self.wants_aggregate_medians = cps.Binary(
+            "Do you want to compute the aggregate median value for object measurements?", 
+            False,
+            doc = ("ExportToExcel can compute the median value for all of the "
+                   "cells in an image set and save that value as an aggregate "
+                   "measurement in the image file. Check this setting to add "
+                   "these columns to your image file. Uncheck it to remove "
+                   "these columns from your image file."))
+        self.wants_aggregate_std = cps.Binary(
+            "Do you want to compute the standard deviation for object measurements?", 
+            False,
+            doc = ("ExportToExcel can compute the standard deviation for all of the "
+                   "cells in an image set and save that value as an aggregate "
+                   "measurement in the image file. Check this setting to add "
+                   "these columns to your image file. Uncheck it to remove "
+                   "these columns from your image file."))
+        
         self.object_groups = []
         self.add_object_group()
         self.add_button = cps.DoSomething("Add a new data source.", "Add",
@@ -202,13 +227,20 @@ named, "XZ29_A01.csv".
                 setting_values.extend([name, cps.NO, "%s.csv"%(name)])
             variable_revision_number = 1
             from_matlab = False
+        if variable_revision_number == 1 and not from_matlab:
+            # Added aggregate questions
+            setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] + 
+                              setting_values[6:])
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
     def settings(self):
         """Return the settings in the order used when storing """
         result = [self.delimiter, self.prepend_output_filename,
                   self.add_metadata, self.add_indexes,
-                  self.excel_limits, self.pick_columns]
+                  self.excel_limits, self.pick_columns,
+                  self.wants_aggregate_means, self.wants_aggregate_medians,
+                  self.wants_aggregate_std]
         for group in self.object_groups:
             result += [group[OG_OBJECT_NAME], group[OG_PREVIOUS_FILE],
                        group[OG_FILE_NAME]]
@@ -218,7 +250,9 @@ named, "XZ29_A01.csv".
         """Return the settings as seen by the user"""
         result = [self.delimiter, self.prepend_output_filename,
                   self.add_metadata, self.add_indexes,
-                  self.excel_limits, self.pick_columns]
+                  self.excel_limits, self.pick_columns,
+                  self.wants_aggregate_means, self.wants_aggregate_medians,
+                  self.wants_aggregate_std]
         previous_group = None
         for group in self.object_groups:
             result += [group[OG_OBJECT_NAME]]
@@ -364,7 +398,15 @@ named, "XZ29_A01.csv".
             if self.add_indexes.value:
                 image_features.insert(0, IMAGE_NUMBER)
             for index in image_set_indexes:
-                agg_measurements = m.compute_aggregate_measurements(index)
+                aggs = []
+                if self.wants_aggregate_means:
+                    aggs.append(cpmeas.AGG_MEAN)
+                if self.wants_aggregate_medians:
+                    aggs.append(cpmeas.AGG_MEDIAN)
+                if self.wants_aggregate_std:
+                    aggs.append(cpmeas.AGG_STD_DEV)
+                agg_measurements = m.compute_aggregate_measurements(index,
+                                                                    aggs)
                 if index == image_set_indexes[0]:
                     ordered_agg_names = list(agg_measurements.keys())
                     ordered_agg_names.sort()

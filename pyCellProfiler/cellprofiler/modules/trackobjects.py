@@ -141,6 +141,8 @@ Linearity
 Parent
 Label
 Lifetime
+LostObjectCount
+NewObjectCount
 
 Image features measured:
 NewObjectCount
@@ -176,7 +178,13 @@ Linearity: A measure of how linear the object trajectity is during the
 object lifetime. Calculated as (distance from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].
 
-What do you want to call the image with the tracked objects?
+LostObjectCount: Number of objects that appear in the previous frame
+but have no identifiable child in the current frame
+ 
+NewObjectCount: Number of objects that appear in the current frame but
+have no identifiable parent in the previous frame 
+        
+<b><i>What do you want to call the image with the tracked objects?</i></b>
 Specify a name to give the image showing the tracked objects. This image
 can be saved with a SaveImages module placed after this module.
 
@@ -201,18 +209,55 @@ See also: Any of the Measure* modules, IdentifyPrimAutomatic
     def create_settings(self):
         self.module_name = 'TrackObjects'
         self.tracking_method = cps.Choice('Choose a tracking method',
-                                          TM_ALL)
+                                          TM_ALL, doc="""\
+        <p>Choose between the methods based on which is most consistent from frame
+        to frame of your movie. For each, the maximum search distance that a 
+        tracked object will looked for is specified with the Distance setting
+        below:
+         
+        <ul><li>Overlap - Compare the amount of overlaps between identified objects in 
+            the previous frame with those in the current frame. The object with the
+            greatest amount of overlap will be assigned the same label. Recommended
+            for movies with high frame rates as compared to object motion.
+                
+        <li>Distance - Compare the distance between the centroid of each identified
+            object in the previous frame with that of the current frame. The 
+            closest objects to each other will be assigned the same label.
+            Distances are measured from the perimeter of each object. Recommended
+            for movies with lower frame rates as compared to object motion, but
+            the objects are clearly separable.
+         
+        <li>Measurement - Compare the specified measurement of each object in the 
+            current frame with that of objects in the previous frame. The object 
+            with the closest measurement will be selected as a match and will be 
+            assigned the same label. This selection requires that you run the 
+            specified Measurement module previous to this module in the pipeline so
+            that the measurement values can be used to track the objects.</ul>""")
         self.object_name = cps.ObjectNameSubscriber(
             'What did you call the objects you want to track?','None')
         self.measurement = cps.Measurement(
             'What measurement do you want to use?',
-            lambda : self.object_name.value)
+            lambda : self.object_name.value, doc="""\
+            Specifies which type of measurement (catagory) and which feature from the
+            Measure module will be used for tracking. Select the feature name from 
+            the popup box or see each Measure module's help for the numbered list of
+            the features measured by that module. Additional details such as the 
+            image that the measurements originated from and the scale used as
+            specified below if neccesary.""")
         self.pixel_radius = cps.Integer(
             'Within what pixel distance will objects be considered to find '
-            'a potential match?',50,minval=1)
+            'a potential match?',50,minval=1, doc="""\
+            This indicates the region (in pixels) within which objects in the
+            next frame are to be compared. To determine pixel distances, you can look
+            at the axis increments on each image (shown in pixel units) or
+            using the Show Pixel Data tool under the Tools menu of 
+            any CellProfiler figure window""")
         self.display_type = cps.Choice(
             'How do you want to display the tracked objects?',
-            DT_ALL)
+            DT_ALL, doc="""\
+            The output image can be saved as either a color-labelled image, with each tracked
+            object assigned a unique color, or a color-labelled image with the tracked object 
+            number superimposed.""")
         self.wants_image = cps.Binary(
             "Do you want to save the image with tracked, color-coded objects?",
             False)

@@ -188,47 +188,47 @@ See also Identify primary modules.
                                  [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, 
                                   M_DISTANCE_N, M_DISTANCE_B],
                                  M_PROPAGATION, doc="""\
-  <p> This setting performs two tasks: (a) finding the dividing lines 
-  between secondary objects which touch each other. Three methods are 
-  available: Propagation, Watershed (an older version of Propagation), and Distance.
-  (b) finding the dividing lines between the secondary objects and the
-  background of the image. This is done by thresholding the image stained
-  for secondary objects, except when using Distance - N.<p>
-  
-  <p><i>Propagation</i> - For task (a), this method will find dividing lines
-  between clumped objects where the image stained for secondary objects
-  shows a change in staining (i.e. either a dimmer or a brighter line).
-  Smoother lines work better, but unlike the watershed method, small gaps
-  are tolerated. This method is considered an improvement on the
-  traditional watershed method. The dividing lines between objects are
-  determined by a combination of the distance to the nearest primary object
-  and intensity gradients. This algorithm uses local image similarity to
-  guide the location of boundaries between cells. Boundaries are
-  preferentially placed where the image's local appearance changes
-  perpendicularly to the boundary. Reference: TR Jones, AE Carpenter, P
-  Golland (2005) Voronoi-Based Segmentation of Cells on Image Manifolds,
-  ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
-  535-543. For task (b), thresholding is used.<p>
- 
-  <p><i>Watershed</i> - For task (a), this method will find dividing lines between
-  objects by looking for dim lines between objects. For task (b),
-  thresholding is used. Reference: Vincent, Luc, and Pierre Soille,
-  "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
-  Simulations," IEEE Transactions of Pattern Analysis and Machine
-  Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598.<p>
- 
-  <p><i>Distance</i> - This method is bit unusual because the edges of the primary
-  objects are expanded a specified distance to create the secondary
-  objects. For example, if nuclei are labeled but there is no stain to help
-  locate cell edges, the nuclei can simply be expanded in order to estimate
-  the cell's location. This is often called the 'doughnut' or 'annulus' or
-  'ring' approach for identifying the cytoplasmic compartment. Using the
-  Distance - N method, the image of the secondary staining is not used at
-  all, and these expanded objects are the final secondary objects. Using
-  the Distance - B method, thresholding is used to eliminate background
-  regions from the secondary objects. This allows the extent of the
-  secondary objects to be limited to a certain distance away from the edge
-  of the primary objects.<p>""")
+            <p> This setting performs two tasks: (a) finding the dividing lines 
+            between secondary objects which touch each other. Three methods are 
+            available: Propagation, Watershed (an older version of Propagation), and Distance.
+            (b) finding the dividing lines between the secondary objects and the
+            background of the image. This is done by thresholding the image stained
+            for secondary objects, except when using Distance - N.<p>
+            
+            <p><i>Propagation</i> - For task (a), this method will find dividing lines
+            between clumped objects where the image stained for secondary objects
+            shows a change in staining (i.e. either a dimmer or a brighter line).
+            Smoother lines work better, but unlike the watershed method, small gaps
+            are tolerated. This method is considered an improvement on the
+            traditional watershed method. The dividing lines between objects are
+            determined by a combination of the distance to the nearest primary object
+            and intensity gradients. This algorithm uses local image similarity to
+            guide the location of boundaries between cells. Boundaries are
+            preferentially placed where the image's local appearance changes
+            perpendicularly to the boundary. Reference: TR Jones, AE Carpenter, P
+            Golland (2005) Voronoi-Based Segmentation of Cells on Image Manifolds,
+            ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
+            535-543. For task (b), thresholding is used.<p>
+           
+            <p><i>Watershed</i> - For task (a), this method will find dividing lines between
+            objects by looking for dim lines between objects. For task (b),
+            thresholding is used. Reference: Vincent, Luc, and Pierre Soille,
+            "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
+            Simulations," IEEE Transactions of Pattern Analysis and Machine
+            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598.<p>
+           
+            <p><i>Distance</i> - This method is bit unusual because the edges of the primary
+            objects are expanded a specified distance to create the secondary
+            objects. For example, if nuclei are labeled but there is no stain to help
+            locate cell edges, the nuclei can simply be expanded in order to estimate
+            the cell's location. This is often called the 'doughnut' or 'annulus' or
+            'ring' approach for identifying the cytoplasmic compartment. Using the
+            Distance - N method, the image of the secondary staining is not used at
+            all, and these expanded objects are the final secondary objects. Using
+            the Distance - B method, thresholding is used to eliminate background
+            regions from the secondary objects. This allows the extent of the
+            secondary objects to be limited to a certain distance away from the edge
+            of the primary objects.<p>""")
         self.image_name = cps.ImageNameSubscriber("What did you call the images to be used to find the edges of the secondary objects? For DISTANCE - N, this will not affect object identification, only the final display.",
                                                   "None")
         self.threshold_method = cps.Choice('''Select an automatic thresholding method or choose "Manual" to enter a threshold manually.  To choose a binary image, select "Binary image".  Choosing 'All' will use the Otsu Global method to calculate a single threshold for the entire image group. The other methods calculate a threshold for each image individually. "Set interactively" will allow you to manually adjust the threshold during the first cycle to determine what will work well.''',
@@ -239,129 +239,128 @@ See also Identify primary modules.
                                             cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE, cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,
                                             cpthresh.TM_KAPUR_GLOBAL,cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT,
                                             cpthresh.TM_MANUAL, cpthresh.TM_BINARY_IMAGE], doc="""\
-The threshold affects the stringency of the lines between the objects and the background. You
-can have the threshold automatically calculated using several methods,
-or you can enter an absolute number between 0 and 1 for the threshold
-(to see the pixel intensities for your images in the appropriate range
-of 0 to 1, use the CellProfiler Image Tool, 'ShowOrHidePixelData', in
-a window showing your image). There are advantages either way. An
-absolute number treats every image identically, but is not robust to
-slight changes in lighting/staining conditions between images. An
-automatically calculated threshold adapts to changes in
-lighting/staining conditions between images and is usually more
-robust/accurate, but it can occasionally produce a poor threshold for
-unusual/artifactual images. It also takes a small amount of time to
-calculate.
-   <p>The threshold which is used for each image is recorded as a
-measurement in the output file, so if you find unusual measurements from
-one of your images, you might check whether the automatically calculated
-threshold was unusually high or low compared to the other images.
-   <p>There are five methods for finding thresholds automatically, Otsu's
-method, the Mixture of Gaussian (MoG) method, the Background method, the
-Robust Background method and the Ridler-Calvard method.
-<ul><li> The Otsu method
-uses our version of the Matlab function graythresh (the code is in the
-CellProfiler subfunction CPthreshold). Our modifications include taking
-into account the max and min values in the image and log-transforming the
-image prior to calculating the threshold. Otsu's method is probably best
-if you don't know anything about the image, or if the percent of the
-image covered by objects varies substantially from image to image. If you
-know the object coverage percentage and it does not vary much from image
-to image, the MoG can be better, especially if the coverage percentage is
-not near 50%. Note, however, that the MoG function is experimental and
-has not been thoroughly validated. 
-<li>The Background method 
-is simple and appropriate for images in which most of the image is 
-background. It finds the mode of the histogram of the image, which is 
-assumed to be the background of the image, and chooses a threshold at 
-twice that value (which you can adjust with a Threshold Correction Factor,
-see below).  Note that the mode is protected from a high number of 
-saturated pixels by only counting pixels < 0.95. This can be very helpful,
-for example, if your images vary in overall brightness but the objects of 
-interest are always twice (or actually, any constant) as bright as the 
-background of the image. 
-<li>The Robust background
-method trims the brightest and dimmest 5of pixel intensities off first
-in the hopes that the remaining pixels represent a gaussian of intensity
-values that are mostly background pixels. It then calculates the mean and
-standard deviation of the remaining pixels and calculates the threshold
-as the mean + 2 times the standard deviation. 
-<li>The Ridler-Calvard method
-is simple and its results are often very similar to Otsu's - according to
-Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
-overall quality on testing 40 nondestructive testing images is slightly 
-better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
-It chooses an initial threshold, and then iteratively calculates the next 
-one by taking the mean of the average intensities of the background and 
-foreground pixels determined by the first threshold, repeating this until 
-the threshold converges.
-<li>The Kapur method
-computes the threshold of an image by
-log-transforming its values, then searching for the threshold that
-maximizes the sum of entropies of the foreground and background
-pixel values, when treated as separate distributions.
-</ul>
-   <p>You can also choose between Global, Adaptive, and Per object
-thresholding:
-<ul><li> Global: one threshold is used for the entire image (fast).
-Adaptive: the threshold varies across the image - a bit slower but
-provides more accurate edge determination which may help to separate
-clumps, especially if you are not using a clump-separation method (see
-below).
-<li>Per object: if you are using this module to find child objects located
-*within* parent objects, the per object method will calculate a distinct
-threshold for each parent object. This is especially helpful, for
-example, when the background brightness varies substantially among the
-parent objects. Important: the per object method requires that you run an
-IdentifyPrim module to identify the parent objects upstream in the
-pipeline. After the parent objects are identified in the pipeline, you
-must then also run a Crop module as follows: the image to be cropped is the one
-that you will want to use within this module to identify the children
-objects (e.g., ChildrenStainedImage), and the shape in which to crop
-is the name of the parent objects (e.g., Nuclei). Then, set this
-IdentifyPrimAutomatic module to identify objects within the
-CroppedChildrenStainedImage.</ul>""")
+            The threshold affects the stringency of the lines between the objects and the background. You
+            can have the threshold automatically calculated using several methods,
+            or you can enter an absolute number between 0 and 1 for the threshold
+            (to see the pixel intensities for your images in the appropriate range
+            of 0 to 1, use the CellProfiler Image Tool, <i>Show pixel data</i>, in
+            a window showing your image). There are advantages either way. An
+            absolute number treats every image identically, but is not robust to
+            slight changes in lighting/staining conditions between images. An
+            automatically calculated threshold adapts to changes in
+            lighting/staining conditions between images and is usually more
+            robust/accurate, but it can occasionally produce a poor threshold for
+            unusual/artifactual images. It also takes a small amount of time to
+            calculate.
+               <p>The threshold which is used for each image is recorded as a
+            measurement in the output file, so if you find unusual measurements from
+            one of your images, you might check whether the automatically calculated
+            threshold was unusually high or low compared to the other images.
+               <p>There are five methods for finding thresholds automatically, Otsu's
+            method, the Mixture of Gaussian (MoG) method, the Background method, the
+            Robust Background method and the Ridler-Calvard method.
+            <ul><li> The Otsu method
+            uses our version of the Matlab function graythresh (the code is in the
+            CellProfiler subfunction CPthreshold). Our modifications include taking
+            into account the max and min values in the image and log-transforming the
+            image prior to calculating the threshold. Otsu's method is probably best
+            if you don't know anything about the image, or if the percent of the
+            image covered by objects varies substantially from image to image. If you
+            know the object coverage percentage and it does not vary much from image
+            to image, the MoG can be better, especially if the coverage percentage is
+            not near 50%. Note, however, that the MoG function is experimental and
+            has not been thoroughly validated. 
+            <li>The Background method 
+            is simple and appropriate for images in which most of the image is 
+            background. It finds the mode of the histogram of the image, which is 
+            assumed to be the background of the image, and chooses a threshold at 
+            twice that value (which you can adjust with a Threshold Correction Factor,
+            see below).  Note that the mode is protected from a high number of 
+            saturated pixels by only counting pixels < 0.95. This can be very helpful,
+            for example, if your images vary in overall brightness but the objects of 
+            interest are always twice (or actually, any constant) as bright as the 
+            background of the image. 
+            <li>The Robust background
+            method trims the brightest and dimmest 5of pixel intensities off first
+            in the hopes that the remaining pixels represent a gaussian of intensity
+            values that are mostly background pixels. It then calculates the mean and
+            standard deviation of the remaining pixels and calculates the threshold
+            as the mean + 2 times the standard deviation. 
+            <li>The Ridler-Calvard method
+            is simple and its results are often very similar to Otsu's - according to
+            Sezgin and Sankur's paper (Journal of Electronic Imaging 2004), Otsu's 
+            overall quality on testing 40 nondestructive testing images is slightly 
+            better than Ridler's (Average error - Otsu: 0.318, Ridler: 0.401). 
+            It chooses an initial threshold, and then iteratively calculates the next 
+            one by taking the mean of the average intensities of the background and 
+            foreground pixels determined by the first threshold, repeating this until 
+            the threshold converges.
+            <li>The Kapur method
+            computes the threshold of an image by
+            log-transforming its values, then searching for the threshold that
+            maximizes the sum of entropies of the foreground and background
+            pixel values, when treated as separate distributions.
+            </ul>
+               <p>You can also choose between Global, Adaptive, and Per object
+            thresholding:
+            <ul><li> Global: one threshold is used for the entire image (fast).
+            Adaptive: the threshold varies across the image - a bit slower but
+            provides more accurate edge determination which may help to separate
+            clumps, especially if you are not using a clump-separation method (see
+            below).
+            <li>Per object: if you are using this module to find child objects located
+            *within* parent objects, the per object method will calculate a distinct
+            threshold for each parent object. This is especially helpful, for
+            example, when the background brightness varies substantially among the
+            parent objects. Important: the per object method requires that you run an
+            IdentifyPrim module to identify the parent objects upstream in the
+            pipeline. After the parent objects are identified in the pipeline, you
+            must then also run a Crop module as follows: the image to be cropped is the one
+            that you will want to use within this module to identify the children
+            objects (e.g., ChildrenStainedImage), and the shape in which to crop
+            is the name of the parent objects (e.g., Nuclei). Then, set this
+            IdentifyPrimAutomatic module to identify objects within the
+            CroppedChildrenStainedImage.</ul>""")
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1, 
                                                      doc="""\
-When the threshold is calculated automatically, it may consistently be
-too stringent or too lenient. You may need to enter an adjustment factor
-which you empirically determine is suitable for your images. The number 1
-means no adjustment, 0 to 1 makes the threshold more lenient and greater
-than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
-Otsu automatic thresholding inherently assumes that 50of the image is
-covered by objects. If a larger percentage of the image is covered, the
-Otsu method will give a slightly biased threshold that may have to be
-corrected using a threshold correction factor.""")
+            When the threshold is calculated automatically, it may consistently be
+            too stringent or too lenient. You may need to enter an adjustment factor
+            which you empirically determine is suitable for your images. The number 1
+            means no adjustment, 0 to 1 makes the threshold more lenient and greater
+            than 1 (e.g. 1.3) makes the threshold more stringent. For example, the
+            Otsu automatic thresholding inherently assumes that 50of the image is
+            covered by objects. If a larger percentage of the image is covered, the
+            Otsu method will give a slightly biased threshold that may have to be
+            corrected using a threshold correction factor.""")
         self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold, in the range [0,1]', (0,1),minval=0,maxval=1, 
                                               doc="""\
-Can be used as a safety precaution when the threshold is calculated
-automatically. For example, if there are no objects in the field of view,
-the automatic threshold will be unreasonably low. In such cases, the
-lower bound you enter here will override the automatic threshold.""")
+            Can be used as a safety precaution when the threshold is calculated
+            automatically. For example, if there are no objects in the field of view,
+            the automatic threshold will be unreasonably low. In such cases, the
+            lower bound you enter here will override the automatic threshold.""")
         self.object_fraction = cps.CustomChoice('For MoG thresholding, what is the approximate fraction of image covered by objects?',
                                                 ['0.01','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','0.99'], 
                                                 doc="""\
-An estimate of how much of the image is covered with objects. This
-information is currently only used in the MoG (Mixture of Gaussian)
-thresholding but may be used for other thresholding methods in the future
-(see below).""")
+            An estimate of how much of the image is covered with objects. This
+            information is currently only used in the MoG (Mixture of Gaussian)
+            thresholding but may be used for other thresholding methods in the future""")
         self.manual_threshold = cps.Float("What is the manual threshold?",value=0.0,minval=0.0,maxval=1.0)
         self.binary_image = cps.ImageNameSubscriber("What is the binary thresholding image?","None")
         self.distance_to_dilate = cps.Integer("Enter the number of pixels by which to expand the primary objects [Positive integer]",10,minval=1)
         self.regularization_factor = cps.Float("Enter the regularization factor (0 to infinity). Larger=distance,0=intensity)",0.05,minval=0,
                                                doc="""\
-(<i>For propagation method only</i>):
-  This method takes two factors into account when deciding where to draw
-  the dividing line between two touching secondary objects: the distance to
-  the nearest primary object, and the intensity of the secondary object
-  image. The regularization factor controls the balance between these two
-  considerations: A value of zero means that the distance to the nearest
-  primary object is ignored and the decision is made entirely on the
-  intensity gradient between the two competing primary objects. Larger
-  values weight the distance between the two values more and more heavily.
-  The regularization factor can be infinitely large, but around 10 or so,
-  the intensity image is almost completely ignored and the dividing line
-  will simply be halfway between the two competing primary objects.""")
+            (<i>For propagation method only</i>):
+              This method takes two factors into account when deciding where to draw
+              the dividing line between two touching secondary objects: the distance to
+              the nearest primary object, and the intensity of the secondary object
+              image. The regularization factor controls the balance between these two
+              considerations: A value of zero means that the distance to the nearest
+              primary object is ignored and the decision is made entirely on the
+              intensity gradient between the two competing primary objects. Larger
+              values weight the distance between the two values more and more heavily.
+              The regularization factor can be infinitely large, but around 10 or so,
+              the intensity image is almost completely ignored and the dividing line
+              will simply be halfway between the two competing primary objects.""")
         self.use_outlines = cps.Binary("Do you want to save outlines of the images?",False)
         self.outlines_name = cps.OutlineNameProvider("What do you want to call the outlines?","SecondaryOutlines")
         self.two_class_otsu = cps.Choice('Does your image have two classes of intensity value or three?',

@@ -1315,6 +1315,14 @@ function [SettingsPathname, SettingsFileName, errFlg, handles] = ...
 % all pipeline files, and loads/executes each one sequentially. Output is
 % stored in the directory where the pipeline was located.
 
+%% Initial message for user
+msg = {'You will be prompted to specify the directory where your pipelines are located. If you have pipelines located in subfolders below a root folder, select the root folder and the all the pipelines within it will be located. You will then be prompted which of the pipelines you want to execute.',...
+    '',...
+    'You will then receive a series of prompts as to whether you want to be prompted for a new output file, where any output is to be saved, and how module windows are to be displayed.',...
+    '',...
+    'NOTE: Prompts within the modules for file overwrites, etc are still enabled. Either disable them within the module or remove any duplicate files in the output folder.'};
+uiwait(msgbox(msg));
+
 %%% Define a couple of helpful variables for later use
 FrontEndFigure = handles.figure1;
 PipelineFileIdentifier = 'PIPE';
@@ -1346,7 +1354,7 @@ FilesAndDirsStructure = FilesAndDirsStructure(~LogicalIsDirectory);
 AllPotentialPipelineFilenames = cat(1,{FilesAndDirsStructure.name});
 FilesWithPIPEInName = regexp(AllPotentialPipelineFilenames,PipelineFileIdentifier);     % Match string to filename
 FilesWithPIPEInName(cellfun('isempty',FilesWithPIPEInName)) = {0};                      % Insert 0 for []
-FilesAndDirsStructure = FilesAndDirsStructure(find(cell2mat(FilesWithPIPEInName)));     % Remove non-PIPE files 
+FilesAndDirsStructure = FilesAndDirsStructure(find(cell2mat(FilesWithPIPEInName)));           % Remove non-PIPE files 
 
 %%% Saves the filename and directory lists separately.
 PipelinePathnames = {FilesAndDirsStructure.dir};
@@ -1373,6 +1381,36 @@ handles.Current.PipelineDirectories.Filenames = PipelineFilenames;
 
 ErrorsInPipeline = cell(1,length(PipelineFilenames));
 
+%%% Ask whether the user wants to be prompted to write a new output file
+ButtonName = questdlg('If an output file (DefaultOUT_*.mat) already exists , do you want to continue automatically or be prompted?', ...
+                         'RunMultiplePipelines: Output file prompt', ...
+                         'Continue','Prompt','Cancel','Continue');
+switch lower(ButtonName)
+    case 'continue', eventdata.isOutputFilePrompt = 0;
+    case 'prompt', eventdata.isOutputFilePrompt = 1;
+    case 'cancel', return;
+end
+
+%%% Ask where the user wants the output to be deposited
+ButtonName = questdlg('Do you want all output to to be saved in the current Default Output folder or in the folder containing each pipeline?', ...
+                         'RunMultiplePipelines: Output file location', ...
+                         'Current output folder','Pipeline folder','Cancel','Current output folder');
+switch lower(ButtonName)
+    case 'current output folder', eventdata.OutputFolderValue = 1;
+    case 'pipeline folder', eventdata.OutputFolderValue = 2;
+    case 'cancel', return;
+end
+
+%%% Ask whether the user wants module window displayed
+ButtonName = questdlg('At the beginning of each pipeline, do you want to display all windows, display no windows, or specify which module windows to display? See File > Set Preferences for more details', ...
+                         'RunMultiplePipelines: Display mode', ...
+                         'All','None','Specify','None');
+switch lower(ButtonName)
+    case 'all', eventdata.DisplayModeValue = 1;
+    case 'none', eventdata.DisplayModeValue = 2;
+    case 'specify', eventdata.DisplayModeValue = 3;
+end
+
 %%% Start processing each pipeline in order
 for i = 1:length(PipelineFilenames);
     handles = guidata(FrontEndFigure);
@@ -1381,7 +1419,7 @@ for i = 1:length(PipelineFilenames);
     %%% Beforehand, change the Default Image and Output directories to be 
     %%% the same location as the current directory.
     errFlg = 0;
-
+   
     try    %%% Attempt to run the pipeline
         %%% Place the relevant parameters into eventdata and invoke 
         %%% LoadPipeline_Callback
@@ -1395,7 +1433,9 @@ for i = 1:length(PipelineFilenames);
         %%% Set the current image and output directories to that in which the current pipeline is located
         handles = guidata(FrontEndFigure);
         handles.Current.DefaultImageDirectory = SettingsPathname;
-        handles.Current.DefaultOutputDirectory = SettingsPathname;
+        switch eventdata.OutputFolderValue
+            case 2, handles.Current.DefaultOutputDirectory = SettingsPathname;
+        end
         guidata(gcbo,handles);
         
         %%% Displays the chosen directories in the 
@@ -1434,7 +1474,7 @@ for i = 1:length(PipelineFilenames);
         error(['Image processing was canceled in RunMultiplePipelines due to an error.']);
     end
 end
-
+        
 %%% If any errors occured in the pipelines, let the user know where they happened
 ismoduleerror = ~cellfun('isempty',ErrorsInPipeline);
 if any(ismoduleerror)
@@ -4107,11 +4147,13 @@ else
     %%% Call Callback function of FileNameEditBox to update filename
     tmp = get(handles.OutputFileNameEditBox,'string');
     OutputFileNameEditBox_Callback(hObject, eventdata, handles)
-    if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
-        Answer = CPquestdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes'); %When closing this dialog box, it assumes 'Yes' was chosen
-        if ~strcmp(Answer,'Yes')
-            set(handles.OutputFileNameEditBox,'string',tmp)
-            return
+    if isempty(eventdata) || (~isempty(eventdata) && isfield(eventdata,'isOutputFilePrompt') && eventdata.isOutputFilePrompt)
+        if ~strcmp(tmp,get(handles.OutputFileNameEditBox,'string'))
+            Answer = CPquestdlg('The output file already exists. A new file name has been generated. Continue?','Output file exists','Yes','Cancel','Yes'); %When closing this dialog box, it assumes 'Yes' was chosen
+            if ~strcmp(Answer,'Yes')
+                set(handles.OutputFileNameEditBox,'string',tmp)
+                return
+            end
         end
     end
 
@@ -4130,9 +4172,9 @@ else
             try
                 handles.Preferences = rmfield(handles.Preferences,'DisplayWindows');
             end
-            if handles.Preferences.DisplayModeValue == 2
+            if handles.Preferences.DisplayModeValue == 2 || (~isempty(eventdata) && isfield(eventdata,'DisplayModeValue') && eventdata.DisplayModeValue == 2)
                 handles.Preferences.DisplayWindows = zeros(handles.Current.NumberOfModules,1);
-            elseif handles.Preferences.DisplayModeValue == 3
+            elseif handles.Preferences.DisplayModeValue == 3 || (~isempty(eventdata) && isfield(eventdata,'DisplayModeValue') && eventdata.DisplayModeValue == 3)
                 try
                     handles.Preferences.DisplayWindows = CPselectmodules(handles.Settings.ModuleNames);
                 catch

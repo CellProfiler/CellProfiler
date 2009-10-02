@@ -1,15 +1,59 @@
-"""measureobjectintensity - take intensity measurements on an object set
+"""<b>MeasureObjectIntensity</b> - Measures several intensity features for identified objects.
+<hr>
+Given an image with objects identified (e.g. nuclei or cells), this
+module extracts intensity features for each object based on a
+corresponding grayscale image. Measurements are recorded for each object.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Retrieves objects in label matrix format and a corresponding original
+grayscale image and makes measurements of the objects. The label matrix
+image should be "compacted": that is, each number should correspond to an
+object, with no numbers skipped. So, if some objects were discarded from
+the label matrix image, the image should be converted to binary and
+re-made into a label matrix image before feeding it to this module.
 
-Developed by the Broad Institute
-Copyright 2003-2009
 
-Please see the AUTHORS file for credits.
+<ul><li>IntegratedIntensity - The sum of the pixel intensities within an
+ object.</li>
+<li>MeanIntensity - The average pixel intensity within an object.</li>
+<li>StdIntensity - The standard deviation of the pixel intensities within
+ an object.</li>
+<li>MaxIntensity - The maximal pixel intensity within an object.</li>
+<li>MinIntensity - The minimal pixel intensity within an object.</li>
+<li>IntegratedIntensityEdge - The sum of the edge pixel intensities of an
+ object.</li>
+<li>MeanIntensityEdge - The average edge pixel intensity of an object.</li>
+<li>StdIntensityEdge - The standard deviation of the edge pixel intensities
+ of an object.</li>
+<li>MaxIntensityEdge - The maximal edge pixel intensity of an object.</li>
+<li>MinIntensityEdge - The minimal edge pixel intensity of an object.</li>
+<li>MassDisplacement - The distance between the centers of gravity in the
+ gray-level representation of the object and the binary representation of
+ the object.</li>
+<li>LowerQuartileIntensity - the intensity value of the pixel for which 25%
+ of the pixels in the object have lower values.</li>
+<li>MedianIntensity - the median intensity value within the object</li>
+<li>UpperQuartileIntensity - the intensity value of the pixel for which 75%
+ of the pixels in the object have lower values.</li></ul>
 
-Website: http://www.cellprofiler.org
+For publication purposes, it is important to note that the units of
+intensity from microscopy images are usually described as "Intensity
+units" or "Arbitrary intensity units" since microscopes are not 
+callibrated to an absolute scale. Also, it is important to note whether 
+you are reporting either the mean or the integrated intensity, so specify
+"Mean intensity units" or "Integrated intensity units" accordingly.
+
+See also <b>MeasureImageIntensity</b>.
 """
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -46,72 +90,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                         MEDIAN_INTENSITY, UPPER_QUARTILE_INTENSITY]
 
 class MeasureObjectIntensity(cpm.CPModule):
-    """% SHORT DESCRIPTION:
-Measures several intensity features for identified objects.
-*************************************************************************
 
-Given an image with objects identified (e.g. nuclei or cells), this
-module extracts intensity features for each object based on a
-corresponding grayscale image. Measurements are recorded for each object.
-
-Features measured:       Feature Number:
-IntegratedIntensity     |       1
-MeanIntensity           |       2
-StdIntensity            |       3
-MinIntensity            |       4
-MaxIntensity            |       5
-IntegratedIntensityEdge |       6
-MeanIntensityEdge       |       7
-StdIntensityEdge        |       8
-MinIntensityEdge        |       9
-MaxIntensityEdge        |      10
-MassDisplacement        |      11
-LowerQuartileIntensity  |      12
-MedianIntensity         |      13
-UpperQuartileIntensity  |      14
-
-How it works:
-Retrieves objects in label matrix format and a corresponding original
-grayscale image and makes measurements of the objects. The label matrix
-image should be "compacted": that is, each number should correspond to an
-object, with no numbers skipped. So, if some objects were discarded from
-the label matrix image, the image should be converted to binary and
-re-made into a label matrix image before feeding it to this module.
-
-Intensity Measurement descriptions:
-
-* IntegratedIntensity - The sum of the pixel intensities within an
- object.
-* MeanIntensity - The average pixel intensity within an object.
-* StdIntensity - The standard deviation of the pixel intensities within
- an object.
-* MaxIntensity - The maximal pixel intensity within an object.
-* MinIntensity - The minimal pixel intensity within an object.
-* IntegratedIntensityEdge - The sum of the edge pixel intensities of an
- object.
-* MeanIntensityEdge - The average edge pixel intensity of an object.
-* StdIntensityEdge - The standard deviation of the edge pixel intensities
- of an object.
-* MaxIntensityEdge - The maximal edge pixel intensity of an object.
-* MinIntensityEdge - The minimal edge pixel intensity of an object.
-* MassDisplacement - The distance between the centers of gravity in the
- gray-level representation of the object and the binary representation of
- the object.
-* LowerQuartileIntensity - the intensity value of the pixel for which 25%
- of the pixels in the object have lower values.
-* MedianIntensity - the median intensity value within the object
-* UpperQuartileIntensity - the intensity value of the pixel for which 75%
- of the pixels in the object have lower values.
-
-For publication purposes, it is important to note that the units of
-intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not 
-callibrated to an absolute scale. Also, it is important to note whether 
-you are reporting either the mean or the integrated intensity, so specify
-"Mean intensity units" or "Integrated intensity units" accordingly.
-
-See also MeasureImageIntensity.
-"""
     variable_revision_number = 2
     category = "Measurement"
     

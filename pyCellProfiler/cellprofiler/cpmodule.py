@@ -16,6 +16,7 @@ __version__="$Revision$"
 
 import re
 import os
+import sys
 
 import numpy
 
@@ -61,6 +62,8 @@ class CPModule(object):
     """
     
     def __init__(self):
+        if self.__doc__ is None:
+            self.__doc__ = sys.modules[self.__module__].__doc__
         self.__module_num = -1
         self.__settings = []
         self.__notes = []
@@ -286,7 +289,7 @@ class CPModule(object):
                     if first_setting_doc:
                         result = result + "</div><div><h2>Settings:</h2>"
                         first_setting_doc = False
-                    result = (result + "<h3>" + setting.text + "</h3><div>" +
+                    result = (result + "<h4>" + setting.text + "</h4><div>" +
                               setting.doc + "</div>")
         if not first_setting_doc:
             result += "</div>"
@@ -322,6 +325,18 @@ class CPModule(object):
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
         return None
+    
+    def turn_off_batch_mode(self):
+        '''Reset the module to an editable state if batch mode is on
+        
+        A module is allowed to create hidden information that it uses
+        to turn batch mode on or to save state to be used in batch mode.
+        This call signals that the pipeline has been opened for editing,
+        even if it is a batch pipeline; all modules should be restored
+        to a state that's appropriate for creating a batch file, not
+        for running a batch file
+        '''
+        pass
     
     def test_valid(self,pipeline):
         """Test to see if the module is in a valid state to run

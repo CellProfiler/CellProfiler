@@ -1,15 +1,31 @@
-'''overlay_outlines.py - module to create images with outlines
+'''<b>Overlay outlines</b> places outlines produced by an identify module over a desired image.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Outlines (in a special format produced by an identify module) can be
+placed on any desired image (grayscale, color, or blank) and then this 
+resulting image can be saved using the SaveImages module.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+Settings:
+Would you like to set the intensity (brightness) of the outlines to be
+the same as the brightest point in the image, or the maximum possible
+value for this image format?
 
-Please see the AUTHORS file for credits.
+If you choose to display outlines on a Blank image, the maximum intensity
+will default to 'Max possible'.
 
-Website: http://www.cellprofiler.org
+See also <b>IdentifyPrimAutomatic, IdentifySecondary, IdentifyTertiarySubregion</b>
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -35,41 +51,23 @@ COLORS = { "White":  (255,255,255),
 COLOR_ORDER = ["Red", "Green", "Blue","Yellow","White","Black"]
 
 class OverlayOutlines(cpm.CPModule):
-    ''' SHORT DESCRIPTION:
-Places outlines produced by an identify module over a desired image.
-*************************************************************************
-
-Outlines (in a special format produced by an identify module) can be
-placed on any desired image (grayscale, color, or blank) and then this 
-resulting image can be saved using the SaveImages module.
-
-Settings:
-Would you like to set the intensity (brightness) of the outlines to be
-the same as the brightest point in the image, or the maximum possible
-value for this image format?
-
-If your image is quite dim, then putting bright white lines onto it may
-not be useful. It may be preferable to make the outlines equal to the
-maximal brightness already occurring in the image.
-
-If you choose to display outlines on a Blank image, the maximum intensity
-will default to 'Max possible'.
-
-See also identify modules.
-'''
 
     variable_revision_number = 1
     category = "Image Processing"
     
     def create_settings(self):
-        self.module_name = 'OverlayOutlines'
+        self.module_name = 'Overlay outlines'
         self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",False)
         self.image_name = cps.ImageNameSubscriber("On which image would you like to display the outlines?","None")
         self.output_image_name = cps.ImageNameProvider("What do you want to call the image with the outlines displayed?")
         self.wants_color = cps.Choice("Do you want the output image to have color outlines or have outlines drawn on a grayscale image",
                                       [WANTS_COLOR, WANTS_GRAYSCALE])
         self.max_type = cps.Choice("Would you like the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format? Note: if you chose to display on a Blank image, this will default to Max possible.",
-                                   [MAX_IMAGE, MAX_POSSIBLE])
+                                   [MAX_IMAGE, MAX_POSSIBLE],
+                                   doc = """
+If your image is quite dim, then putting bright white lines onto it may
+not be useful. It may be preferable to make the outlines equal to the
+maximal brightness already occurring in the image.""")
         self.outlines = []
         self.add_outline()
         self.add_outline_button = cps.DoSomething("Add another outline","Add", self.add_outline)

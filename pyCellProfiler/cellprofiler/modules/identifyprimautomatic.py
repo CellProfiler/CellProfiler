@@ -205,9 +205,9 @@ class IdentifyPrimAutomatic(cpmi.Identify):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "What did you call the images you want to process?")
+            "Select the input image")
         self.object_name = cps.ObjectNameProvider(
-            "What do you want to call the objects identified by this module?",
+            "Name the identified primary objects",
             "Nuclei")
         self.size_range = cps.IntegerRange(
             "Typical diameter of objects, in pixel units (Min,Max):", 
@@ -373,8 +373,7 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             lower bound you enter here will override the automatic threshold.""")
         
         self.object_fraction = cps.CustomChoice(
-            'For MoG thresholding, what is the  approximate fraction of image '
-            'covered by objects?', 
+            'What is the approximate fraction of image covered by objects?', 
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9',
              '0.99'], doc="""\
             <i>(Only used when applying the Mixture of Gaussian thresholding method)</i>
@@ -512,10 +511,10 @@ class IdentifyPrimAutomatic(cpmi.Identify):
             <i>Yes</i> will have no effect.""")
 
         self.should_save_outlines = cps.Binary(
-            'Do you want to save outlines?', False)
+            'Save outlines of the identified objects?', False)
         
         self.save_outlines = cps.OutlineNameProvider(
-            'What do you want to call the outlines of the identified objects?', doc="""\
+            'Name the outline image',"PrimaryOutlines", doc="""\
             The outlines of the identified objects may be used by modules downstream,
             by selecting them from any drop-down image list.""")
         

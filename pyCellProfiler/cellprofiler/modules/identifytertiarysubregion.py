@@ -1,15 +1,34 @@
-"""identifytertiarysubregion.py - identify a subregion object by subtraction
+'''<b>Identify Tertiary Subregion</b> identifies (e.g. cytoplasm) by removing the primary
+objects (e.g. nuclei) from secondary objects (e.g. cells) leaving a ring shape.
+<hr>
+This module will take the smaller identified objects and remove from them
+the larger identified objects. For example, "subtracting" the nuclei from
+the cells will leave just the cytoplasm, the properties of which can then
+be measured by Measure modules. The larger objects should therefore be
+equal in size or larger than the smaller objects and must completely
+contain the smaller objects.  Both inputs should be objects produced by
+identify modules, not images.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+<p>Note: Creating subregions using this module can result in objects that
+are not contiguous, which does not cause problems when running the
+<b>Measure Intensity</b> and <b>Measure Texture</b> modules, but does cause 
+problems when running the <b>Measure AreaShape</b> module because calculations 
+of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
+objects.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+See also <b>Identify Primary</b> and <b>Identify Secondary</b> modules.
+'''
 
-Please see the AUTHORS file for credits.
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
-Website: http://www.cellprofiler.org
-"""
 __version__="$Revision$"
 
 import numpy as np
@@ -27,29 +46,6 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 
 class IdentifyTertiarySubregion(cpm.CPModule):
-    """% SHORT DESCRIPTION:
-Identifies tertiary obects (e.g. cytoplasm) by removing the primary
-objects (e.g. nuclei) from secondary objects (e.g. cells) leaving a
-ring shape.
-*************************************************************************
-
-This module will take the smaller identified objects and remove from them
-the larger identified objects. For example, "subtracting" the nuclei from
-the cells will leave just the cytoplasm, the properties of which can then
-be measured by Measure modules. The larger objects should therefore be
-equal in size or larger than the smaller objects and must completely
-contain the smaller objects.  Both inputs should be objects produced by
-identify modules, not images.
-
-Note: creating subregions using this module can result in objects that
-are not contiguous, which does not cause problems when running the
-Measure Intensity and Texture modules, but does cause problems when
-running the Measure Area Shape module because calculations of the
-perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
-objects.
-
-See also Identify Primary and Identify Secondary modules.
-"""
 
     variable_revision_number = 1
     category = "Object Processing"
@@ -60,11 +56,14 @@ See also Identify Primary and Identify Secondary modules.
         Create the settings for the module during initialization.
         """
         self.module_name = "IdentifyTertiarySubregion"
-        self.secondary_objects_name = cps.ObjectNameSubscriber("What did you call the larger identified objects?","None")
-        self.primary_objects_name = cps.ObjectNameSubscriber("What did you call the smaller identified objects?","None")
-        self.subregion_objects_name = cps.ObjectNameProvider("What do you want to call the new subregions?","Cytoplasm")
-        self.use_outlines = cps.Binary("Do you want to save the outlines of the identified objects?",False)
-        self.outlines_name = cps.OutlineNameProvider("What do you want to call the outlines of the identified objects?","CytoplasmOutlines") 
+        self.secondary_objects_name = cps.ObjectNameSubscriber("Select the larger identified objects?","None")
+        self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects?","None")
+        self.subregion_objects_name = cps.ObjectNameProvider("Name the identified subregion objects?","Cytoplasm",doc="""
+        The new tertiary subregion will consist of the primary object subtracted from the secondary object.""")
+        self.use_outlines = cps.Binary("Save outlines of the identified objects?",False)
+        self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
+            The outlines of the identified objects may be used by modules downstream,
+            by selecting them from any drop-down image list.""") 
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

@@ -1,15 +1,27 @@
-'''relate.py - Relate child objects to parents
+'''<b>Relate</b> assigns relationships; all objects (e.g. speckles) within a parent object
+(e.g. nucleus) become its children
+<hr>
+Allows associating "children" objects with "parent" objects. This is
+useful for counting the number of children associated with each parent,
+and for calculating mean measurement values for all children that are
+associated with each parent.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+<p>An object will be considered a child even if the edge is the only part
+touching a parent object. If an object is touching two parent objects,
+the object will be assigned to the parent that shares the largest
+number of pixels with the child.
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import sys
@@ -37,41 +49,35 @@ FF_MEAN = 'Mean_%s_%s'
 FF_SUB_OBJECT_FLAG = 'SubObjectFlag'
 
 class Relate(cpm.CPModule):
-    ''' SHORT DESCRIPTION:
-    Assigns relationships: All objects (e.g. speckles) within a parent object
-    (e.g. nucleus) become its children.
-    *************************************************************************
-    
-    Allows associating "children" objects with "parent" objects. This is
-    useful for counting the number of children associated with each parent,
-    and for calculating mean measurement values for all children that are
-    associated with each parent. For every measurement that has been made of
-    the children objects upstream in the pipeline, this module calculates the
-    mean value of that measurement over all children and stores it as a
-    measurement for the parent, as "Mean_<child>_<category>_<feature>". 
-    For this reason, this module should be placed *after* all Measure modules
-    that make measurements of the children objects.
-
-    An object will be considered a child even if the edge is the only part
-    touching a parent object. If an object is touching two parent objects,
-    the object will be assigned to the parent that shares the largest
-    number of pixels with the child.
-    '''
 
     category = "Object Processing"
     variable_revision_number = 1
     
     def create_settings(self):
         self.module_name = 'Relate'
-        self.sub_object_name = cps.ObjectNameSubscriber('What objects do you want as the children (i.e. sub-objects)?',
-                                                        'None')
-        self.parent_name = cps.ObjectNameSubscriber('What objects do you want as the parents?',
-                                                    'None')
+        self.sub_object_name = cps.ObjectNameSubscriber('Select the input child objects',
+                                                        'None',doc="""
+            The child objects are defined as those objects contained within the 
+            parent object.For example, to <b>Relate</b> a speckle to a containing
+            nucleus, the child is the speckle object(s).""")
+        self.parent_name = cps.ObjectNameSubscriber('Select the input parent objects',
+                                                    'None',doc="""
+            The parent objects are defined as those objects which encompass the 
+            child object. For example, to <b>Relate</b> a speckle to a containing
+            nucleus, the parent is the nucleus object.""")
         self.find_parent_child_distances = cps.Choice("Do you want to find minimum distances of each child to its parent?",
-                                                      [D_NONE, D_MINIMUM])
+                                                      [D_NONE, D_MINIMUM],doc="""
+            The <i>minimum distance</i> is the distance from the centroid of the
+            child object to the closest perimeter point on the parent object.""")
         self.step_parent_name = cps.ObjectNameSubscriber("What other object do you want to find distances to?", None)
-        self.wants_per_parent_means = cps.Binary('Do you want to generate per-parent means for all child measurements?',
-                                                 False)
+        self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
+                                                 False,doc="""
+            For every measurement that has been made of
+            the children objects upstream in the pipeline, this module calculates the
+            mean value of that measurement over all children and stores it as a
+            measurement for the parent, as "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;". 
+            For this reason, this module should be placed <i>after</i> all <b>Measure</b>
+            modules that make measurements of the children objects.""")
 
     def settings(self):
         return [self.sub_object_name, self.parent_name, 

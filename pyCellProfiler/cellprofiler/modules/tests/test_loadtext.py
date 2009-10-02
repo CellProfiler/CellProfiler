@@ -164,7 +164,8 @@ class TestLoadText(unittest.TestCase):
             self.assertEqual(pixels.shape[0],640)
             c0_ran[0] = True
             
-        c0 = C0(callback)
+        c0 = C0()
+        c0.callback = callback
         c0.module_num = 1
         pipeline.add_module(c0)
                 
@@ -187,7 +188,8 @@ class TestLoadText(unittest.TestCase):
             imgset = workspace.image_set
             self.assertEqual(len(imgset.get_names()),0)
             c0_ran[0] = True
-        c0 = C0(callback)
+        c0 = C0()
+        c0.callback = callback
         c0.module_num = 1
         pipeline.add_module(c0)
         try:
@@ -300,9 +302,9 @@ class TestLoadText(unittest.TestCase):
                 self.assertEqual(row, match.group("ROW"))
 
 class C0(cpm.CPModule):
-    module_name = 'C0'
-    def __init__(self, callback):
-        self.callback = callback
+    def create_settings(self):
+        module_name = 'C0'
+        self.callback = None
         
     def run(self, workspace):
         self.callback(workspace)

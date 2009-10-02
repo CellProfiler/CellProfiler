@@ -261,6 +261,14 @@ Press this button to add another path mapping.
         cpprefs.set_default_output_directory(self.custom_output_directory.value)
         cpprefs.set_default_image_directory(self.default_image_directory.value)
     
+    def turn_off_batch_mode(self):
+        '''Remove any indications that we are in batch mode
+        
+        This call restores the module to an editable state.
+        '''
+        self.batch_mode.value = False
+        self.pickled_image_set_list.value = ""
+    
     def alter_path(self, path, **varargs):
         '''Modify the path passed so that it can be executed on the remote host
         

@@ -68,6 +68,8 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_FRAMES, self.on_show_all_frames)
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_FRAMES, self.on_hide_all_frames)
         
+        wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
+        
         wx.EVT_CLOSE(frame, self.__on_close)
         
         if not USE_TIMER:
@@ -145,6 +147,7 @@ class PipelineController:
                 self.__pipeline.create_from_handles(handles['handles'][0,0])
             else:
                 self.__pipeline.create_from_handles(handles)
+            self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
             cellprofiler.preferences.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False
@@ -299,6 +302,9 @@ class PipelineController:
             self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame)
             if USE_TIMER:
                 wx.CallLater(1,self.on_idle, None)
+    
+    def on_frame_menu_open(self, event):
+        pass
     
     def on_stop_running(self,event):
         self.stop_running()

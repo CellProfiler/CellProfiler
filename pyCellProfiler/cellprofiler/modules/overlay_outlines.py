@@ -48,7 +48,7 @@ class OverlayOutlines(cpm.CPModule):
     category = "Image Processing"
     
     def create_settings(self):
-        self.module_name = 'Overlay outlines'
+        self.module_name = 'OverlayOutlines'
         self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",
                                       False, doc="""
                         If you check this setting, the module will produce an
@@ -209,6 +209,7 @@ class OverlayOutlines(cpm.CPModule):
                                                 self.image_name.value,
                                                 normalize=False)
                 if self.wants_color.value:
+                    pixel_data = (pixel_data * 255.0).astype(np.uint8)
                     figure.subplot_imshow_color(1, 0, pixel_data, 
                                                 self.output_image_name.value,
                                                 normalize=False)
@@ -245,10 +246,10 @@ class OverlayOutlines(cpm.CPModule):
                 self.outlines[0].outline_name.value,
                 must_be_binary = True)
             mask = outline_image.pixel_data
-            pixel_data = np.zeros((mask.shape[0],mask.shape[1],3),np.uint8)
+            pixel_data = np.zeros((mask.shape[0],mask.shape[1],3))
         else:
             image = image_set.get_image(self.image_name.value)
-            pixel_data = (image.pixel_data * 255.0).astype(np.uint8)
+            pixel_data = image.pixel_data
             if pixel_data.ndim == 2:
                 pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
             else:
@@ -258,5 +259,5 @@ class OverlayOutlines(cpm.CPModule):
                                        must_be_binary=True).pixel_data
             color = COLORS[outline.color.value]
             for i in range(3):
-                pixel_data[:,:,i][mask] = color[i]
+                pixel_data[:,:,i][mask] = float(color[i])/255.0
         return pixel_data

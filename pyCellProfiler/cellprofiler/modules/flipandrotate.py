@@ -1,14 +1,8 @@
-'''flipandrotate - flip and/or rotate an image
+'''<b>Flip and rotate</b>: Flips (mirror image) and/or rotates an image.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+Features that can be measured by this module:
+<ul> <li>Rotation - the angle of rotation</li></ul>
 '''
 
 __version__="$Revision$"
@@ -31,21 +25,21 @@ FLIP_TOP_TO_BOTTOM = 'Top to bottom'
 FLIP_BOTH = 'Left to right and top to bottom'
 FLIP_ALL = [FLIP_NONE, FLIP_LEFT_TO_RIGHT, FLIP_TOP_TO_BOTTOM, FLIP_BOTH]
 
-ROTATE_NONE = "None"
-ROTATE_COORDINATES = "Coordinates"
-ROTATE_MOUSE = "Mouse"
-ROTATE_ANGLE = "Angle"
-ROTATE_ALL = [ROTATE_NONE, ROTATE_COORDINATES, ROTATE_MOUSE, ROTATE_ANGLE]
+ROTATE_NONE = 'Do not rotate'
+ROTATE_ANGLE = 'Enter angle'
+ROTATE_COORDINATES = 'Enter coordinates'
+ROTATE_MOUSE = 'Use mouse'
+ROTATE_ALL = [ROTATE_NONE, ROTATE_ANGLE, ROTATE_COORDINATES, ROTATE_MOUSE]
 
-IO_INDIVIDUALLY = "Individually"
-IO_ONCE = "Only Once"
+IO_INDIVIDUALLY = 'Individually'
+IO_ONCE = 'Only Once'
 IO_ALL = [IO_INDIVIDUALLY, IO_ONCE]
 
-C_HORIZONTALLY = "horizontally"
-C_VERTICALLY = "vertically"
+C_HORIZONTALLY = 'horizontally'
+C_VERTICALLY = 'vertically'
 C_ALL = [C_HORIZONTALLY, C_VERTICALLY]
 
-D_ANGLE = "angle"
+D_ANGLE = 'angle'
 
 '''Rotation measurement category'''
 M_ROTATION_CATEGORY = "Rotation"
@@ -53,33 +47,7 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s"% M_ROTATION_CATEGORY
 
 class FlipAndRotate(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Flips (mirror image) and rotates an image.
-*****************************************************************************
-
-Features measured:
-Rotation - the angle of rotation
-
-Settings:
-
-Rotation method:
-* Coordinates - you can provide the X,Y pixel locations of two
-  points in the image which should be aligned horizontally or vertically.
-* Mouse - CellProfiler will pause. You can grab the image by clicking down
-          with the left mouse button and rotate the image by dragging with
-          the mouse. Press the "Done" button on the image after rotating
-          the image appropriately
-* Angle - you can provide the numerical angle by which the image should be
-  rotated.
-
-Would you like to crop away the rotated edges?
-When an image is rotated, there will be black space at the corners/edges
-unless you choose to crop away the incomplete rows and columns of the
-image. This cropping will produce an image that is not the exact same
-size as the original, which may affect downstream modules.
-
-See also Crop.
-'''
+ 
     category = 'Image Processing'
     variable_revision_number = 1
     
@@ -91,10 +59,28 @@ See also Crop.
             "FlippedOrigBlue")
         self.flip_choice = cps.Choice("How do you want to flip the image?",
                                       FLIP_ALL)
-        self.rotate_choice = cps.Choice("Choose the rotation method:",
-                                        ROTATE_ALL)
+        self.rotate_choice = cps.Choice("How do you want to rotate the image?",
+                                        ROTATE_ALL, doc='''
+             <ul> <li> Angle - you can provide the numerical angle by which the 
+             image should be rotated.</li>
+             <li> Coordinates - you can provide the X,Y pixel locations of 
+             two points in the image which should be aligned horizontally or 
+             vertically.</li> 
+             <li> Mouse - CellProfiler will pause so you can select the 
+             rotation interactively. You can grab the image by 
+             clicking down with the left mouse button and rotate the image by 
+             dragging with the mouse. Press the "Done" button on the image 
+             after rotating the image appropriately.</li>
+             </ul>''')
+        
         self.wants_crop = cps.Binary(
-            "Would you like to crop away the rotated edges?", True)
+            "Would you like to crop away the rotated edges?", True, doc=
+             '''When an image is rotated, there will be black space at the 
+             corners/edges unless you choose to crop away the incomplete rows 
+             and columns of the image. This cropping will produce an image that 
+             is not the exact same size as the original, which may affect 
+             downstream modules.''')
+                
         self.how_often = cps.Choice(
             "Do you want to determine the amount of rotation for each image "
             "individually as you cycle through, or do you want to define it "

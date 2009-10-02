@@ -76,7 +76,7 @@ def fill_modules():
     for mod, name in pymodule_to_cpmodule.items():
         m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
         pymodules.append(m)
-        all_modules[mod] = m.__dict__[name]
+        all_modules[name] = m.__dict__[name]
 fill_modules()
     
 __all__ = ['instantiate_module', 'get_module_classes', 'reload_modules']

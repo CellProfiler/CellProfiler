@@ -1,15 +1,97 @@
-"""measureobjectareashape.py - Measure area features for an object
+'''<b>Measure Object AreaShape </b> several area and shape features of identified objects
+<hr>
+Given an image with identified objects (e.g. nuclei or cells), this
+module extracts area and shape features of each object. Note that these
+features are only reliable for objects that are completely inside the
+image borders, so you may wish to exclude objects touching the edge of
+the image using <b>IdentifyPrimAutomatic</b>.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+Features that can be measured by this module:
+<ul>
+<li>Area</li>
+<li>Perimeter</li>
+<li>FormFactor</li>
+<li>Eccentricity</li>
+<li>Solidity</li>
+<li>Extent</li>
+<li>EulerNumber</li>
+<li>MajorAxisLength</li>
+<li>MinorAxisLength</li>
+<li>Orientation:</li>
+<li>Zernike shape features</li> 
+</ul>
 
-Developed by the Broad Institute
-Copyright 2003-2009
+<h2>Technical notes:</h2>
 
-Please see the AUTHORS file for credits.
+<p>This module retrieves objects in label matrix format and measures them.
+The label matrix image should be "compacted": that is, each number should
+correspond to an object, with no numbers skipped. So, if some objects
+were discarded from the label matrix image, the image should be converted
+to binary and re-made into a label matrix image before feeding into this
+module.
 
-Website: http://www.cellprofiler.org
-"""
+A more descriptive list of feature definitions:
+<ul>
+<li><i>Area:</i> The actual number of pixels in the region.</li>
+
+<li><i>Perimeter:</i> The total number of pixels around the boundary of each
+region in the image.</li>
+
+<li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
+perfectly circular object.</li>
+
+<li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
+same second-moments as the region. The eccentricity is the ratio of the
+distance between the foci of the ellipse and its major axis length. The
+value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
+eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
+is 1 is a line segment.) This property is supported only for 2-D input
+label matrices.</li>
+
+<li><i>Solidity:</i> The proportion of the pixels in the convex hull that
+are also in the region. Also known as <i>convexity</i>. Computed as Area/ConvexArea.</li>
+
+<li><i>Extent:</i> The proportion of the pixels in the bounding box that
+are also in the region. Computed as the Area divided by the area of the
+bounding box.</li>
+
+<li><i>EulerNumber:</i> The number of objects in the region
+minus the number of holes in those objects, assuming 8-connectivity.</li>
+
+<li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
+the ellipse that has the same normalized second central moments as the
+region.</li>
+
+<li><i>MinorAxisLength:</i> The length (in pixels) of the minor axis of
+the ellipse that has the same normalized second central moments as the
+region.</li>
+
+<li><i>Orientation:</i> The angle (in degrees ranging from -90 to 90
+degrees) between the x-axis and the major axis of the ellipse that has the
+same second-moments as the region.</li>
+
+<li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
+more precisely, a patch with background and an object in the center) in a
+basis of Zernike polynomials, using the coefficients as features <i>(Boland
+et al., 1998</i>. Currently, Zernike polynomials from order 0 to order 9 are
+calculated, giving in total 30 measurements. While there is no limit to
+the order which can be calculated (and indeed users could add more by
+adjusting the code), the higher order polynomials carry less information.</li>
+</ul>
+
+See also <b>MeasureImageAreaOccupied</b>
+'''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision: 1 $"
 
 import numpy as np
@@ -57,112 +139,6 @@ F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
                F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
                F_ORIENTATION ]
 class MeasureObjectAreaShape(cpm.CPModule):
-    """SHORT DESCRIPTION:
-Measures several area and shape features of identified objects.
-*************************************************************************
-
-Given an image with objects identified (e.g. nuclei or cells), this
-module extracts area and shape features of each object. Note that these
-features are only reliable for objects that are completely inside the
-image borders, so you may wish to exclude objects touching the edge of
-the image in Identify modules.
-
-Basic shape features:     Feature Number:
-
-Zernike shape features measure shape by describing a binary object (or
-more precisely, a patch with background and an object in the center) in a
-basis of Zernike polynomials, using the coefficients as features (Boland
-et al., 1998). Currently, Zernike polynomials from order 0 to order 9 are
-calculated, giving in total 30 measurements. While there is no limit to
-the order which can be calculated (and indeed users could add more by
-adjusting the code), the higher order polynomials carry less information.
-
-Details about how measurements are calculated:
-This module retrieves objects in label matrix format and measures them.
-The label matrix image should be "compacted": that is, each number should
-correspond to an object, with no numbers skipped. So, if some objects
-were discarded from the label matrix image, the image should be converted
-to binary and re-made into a label matrix image before feeding into this
-module.
-
-*Area - Computed from the the actual number of pixels in the region.
-*Eccentricity - Also known as elongation or elongatedness. For an ellipse
-that has the same second-moments as the object, the eccentricity is the
-ratio of the between-foci distance and the major axis length. The value
-is between 0 (a circle) and 1 (a line segment).
-*Solidity - Also known as convexity. The proportion of the pixels in the
-convex hull that are also in the object. Computed as Area/ConvexArea.
-*Extent - The proportion of the pixels in the bounding box that are also
-in the region. Computed as the Area divided by the area of the bounding box.
-*EulerNumber - Equal to the number of objects in the image minus the
-number of holes in those objects. For modules built to date, the number
-of objects in the image is always 1.
-*MajorAxisLength - The length (in pixels) of the major axis of the
-ellipse that has the same normalized second central moments as the
-region.
-*MinorAxisLength - The length (in pixels) of the minor axis of the
-ellipse that has the same normalized second central moments as the
-region.
-*Perimeter - the total number of pixels around the boundary of each
-region in the image.
-
-In addition, the following feature is calculated:
-
-FormFactor = 4*pi*Area/Perimeter^2, equals 1 for a perfectly circular
-object
-
-HERE IS MORE DETAILED INFORMATION ABOUT THE MEASUREMENTS FOR YOUR
-REFERENCE
-
-'Area' ? Scalar; the actual number of pixels in the region. (This value
-might differ slightly from the value returned by bwarea, which weights
-different patterns of pixels differently.)
-
-'Eccentricity' ? Scalar; the eccentricity of the ellipse that has the
-same second-moments as the region. The eccentricity is the ratio of the
-distance between the foci of the ellipse and its major axis length. The
-value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
-eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
-is 1 is a line segment.) This property is supported only for 2-D input
-label matrices.
-
-'Solidity' -? Scalar; the proportion of the pixels in the convex hull that
-are also in the region. Computed as Area/ConvexArea. This property is
-supported only for 2-D input label matrices.
-
-'Extent' ? Scalar; the proportion of the pixels in the bounding box that
-are also in the region. Computed as the Area divided by the area of the
-bounding box. This property is supported only for 2-D input label matrices.
-
-'EulerNumber' ? Scalar; equal to the number of objects in the region
-minus the number of holes in those objects. This property is supported
-only for 2-D input label matrices. regionprops uses 8-connectivity to
-compute the EulerNumber measurement. To learn more about connectivity,
-see Pixel Connectivity.
-
-'perimeter' ? p-element vector containing the distance around the boundary
-of each contiguous region in the image, where p is the number of regions.
-regionprops computes the perimeter by calculating the distance between
-each adjoining pair of pixels around the border of the region. If the
-image contains discontiguous regions, regionprops returns unexpected
-results. The following figure shows the pixels included in the perimeter
-calculation for this object
-
-'MajorAxisLength' ? Scalar; the length (in pixels) of the major axis of
-the ellipse that has the same normalized second central moments as the
-region. This property is supported only for 2-D input label matrices.
-
-'MinorAxisLength' ? Scalar; the length (in pixels) of the minor axis of
-the ellipse that has the same normalized second central moments as the
-region. This property is supported only for 2-D input label matrices.
-
-'Orientation' ? Scalar; the angle (in degrees ranging from -90 to 90
-degrees) between the x-axis and the major axis of the ellipse that has the
-same second-moments as the region. This property is supported only for
-2-D input label matrices.
-
-See also MeasureImageAreaOccupied.
-"""
 
     variable_revision_number = 1
     category = 'Measurement'
@@ -177,7 +153,11 @@ See also MeasureImageAreaOccupied.
         self.object_groups = []
         self.add_object_cb()
         self.add_objects = cps.DoSomething("Add another object","Add",self.add_object_cb)
-        self.calculate_zernikes = cps.Binary("Would you like to calculate the Zernike features for each object  (with lots of objects, this can be very slow)?",True)
+        self.calculate_zernikes = cps.Binary('Would you like to calculate the Zernike features for each object '
+                                             '(with lots of objects, this can be very slow)?',True, doc="""
+                                            Check this box to calculayte the Zernike shape features. Since the
+                                            first ten Zernike polynomials (from order 0 to order 9) are
+                                            calculated, this operation can be time consuming.""")
     
     def settings(self):
         """The settings as they appear in the save file"""

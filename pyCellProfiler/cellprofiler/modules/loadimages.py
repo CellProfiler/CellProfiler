@@ -20,7 +20,7 @@ import wx
 import wx.html
 
 import Image as PILImage
-import PIL.TiffImagePlugin as TIFF
+import TiffImagePlugin as TIFF
 import cellprofiler.dib
 import numpy
 import matplotlib.image

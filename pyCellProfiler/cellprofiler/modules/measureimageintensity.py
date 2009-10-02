@@ -1,15 +1,37 @@
-'''measureimageintensity.py - Measure imagewide intensity
+'''<b>MeasureImageIntensity</b>- Measures the total image intensity by summing pixel intensity
+<hr>
+This module will sum all pixel values to measure the total image
+intensity. The user can measure all pixels in the image or can restrict
+the measurement to pixels within objects. If the image has a mask, only
+unmasked pixels will be measured.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+Features measured:
+<ul><li>TotalIntensity: Sum of all pixel values.
+<li>MeanIntensity: Sum of all pixel values divided by number of pixels measured.
+<li>TotalArea: Number of pixels measured.</ul>
+<h2>Settings:</h2>
+<h3>What did you call the images whose intensity you want to measure?</h3>
+Choose an image name from the drop-down to calculate intensity for that
+image. Use the "Add image" button below to add additional images which will be
+measured. You can add the same image multiple times if you want to measure
+the intensity within several different objects.
+<h3>Do you want to measure intensity only from areas of the image that contain
+objects you've identified?</h3>
+Check this option to restrict the pixels being measured to those within
+the boundaries of some object.
+<h3>What is the name of the objects to use?</h3>
+The intensity will be restricted to within the objects you name here.
 '''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__="$Revision$"
 
 import numpy as np
@@ -41,35 +63,6 @@ MIN_INTENSITY = 'MinIntensity'
 TOTAL_AREA = 'TotalArea'
 
 class MeasureImageIntensity(cpm.CPModule):
-    '''Measures the total image intensity by summing pixel intensity
-****************************************************************
-
-This module will sum all pixel values to measure the total image
-intensity. The user can measure all pixels in the image or can restrict
-the measurement to pixels within objects. If the image has a mask, only
-unmasked pixels will be measured.
-
-Features measured:
-TotalIntensity    - Sum of all pixel values
-MeanIntensity     - Sum of all pixel values divided by number of pixels
-                    measured
-TotalArea         - number of pixels measured
-
-Settings:
-What did you call the images whose intensity you want to measure?
-Choose an image name from the drop-down to calculate intensity for that
-image. Use the "Add image" button below to add additional images which will be
-measured. You can add the same image multiple times if you want to measure
-the intensity within several different objects.
-
-Do you want to measure intensity only from areas of the image that contain
-objects you've identified?
-Check this option to restrict the pixels being measured to those within
-the boundaries of some object.
-What is the name of the objects to use?
-The intensity will be restricted to within the objects you name here.
-
-    '''
 
     category = "Measurement"
     variable_revision_number = 1

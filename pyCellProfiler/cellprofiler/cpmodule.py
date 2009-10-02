@@ -276,9 +276,9 @@ class CPModule(object):
         The default help is taken from your modules docstring and from
         the settings.
         """
-        doc = self.__doc__.replace("\r","").replace("\n\n","</div><div>")
+        doc = self.__doc__.replace("\r","").replace("\n\n","<p>")
         doc = doc.replace("\n"," ")
-        result = "<html><body><div><h1>%s</h1>" % self.module_name + doc
+        result = "<html><body><h1>%s</h1>" % self.module_name + doc
         first_setting_doc = True
         seen_setting_docs = set()
         for setting in self.settings():
@@ -293,7 +293,7 @@ class CPModule(object):
                               setting.doc + "</div>")
         if not first_setting_doc:
             result += "</div>"
-        result += "</div></body></html>"
+        result += "</body></html>"
         return result
             
     def save_to_handles(self,handles):

@@ -1,14 +1,39 @@
-'''align.py - Align images, adjusting for camera misplacement
+'''<b>Align</b>: Aligns images relative to each other, for example to correct 
+   shifts in the optical path of a microscope in each channel of a multi-channel 
+   set of images.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+For two or more input images, this module determines the optimal alignment 
+among them. Aligning images is useful to obtain proper measurements of the 
+intensities in one channel based on objects identified in another channel, 
+for example. Alignment is often needed when the microscope is not perfectly 
+calibrated. It can also be useful to align images in a time-lapse series of 
+images.
 
-Developed by the Broad Institute
-Copyright 2003-2009
 
-Please see the AUTHORS file for credits.
+Some important notes for proper use of this module:
+<ul> 
+<li> Regardless of the number of input images, they will all be aligned
+with respect to the first image.</li>
+<li> If cropping is enabled, the images are cropped according to the 
+smallest input image. If the images are all the same size, then no cropping
+is performed.</li>
+<li> If an image is aligned, the padded pixels are assigned a fill value 
+of zero. The resulting image is masked in the filled area.</li>
+<li> The module stores the amount of shift between images as a
+measurement, which can be useful for quality control purposes.
+</ul>
 
-Website: http://www.cellprofiler.org
+
+Features that can be measured by this module:
+<ul> 
+<li>Xshift_Image1NamevsImage2Name  (e.g., Xshift_BluevsRed)</li>
+<li>Yshift_Image1NamevsImage2Name  (e.g., Yshift_BluevsRed)</li>
+<li>Xshift_Image1NamevsImage3Name  (e.g., Xshift_RedvsGreen)</li>
+<li>Yshift_Image1NamevsImage3Name  (e.g., Yshift_RedvsGreen)</li>
+<li>etc...</li>
+</ul>
+
 '''
 __version__ = "$Revision$"
 
@@ -34,47 +59,7 @@ A_SEPARATELY = 'Separately'
 MEASUREMENT_FORMAT = "Align_%sshift_%s_vs_%s"
 
 class Align(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Aligns images relative to each other.
-*************************************************************************
-
-For two or more input images, this module determines the optimal
-alignment among them. Aligning images is useful to obtain proper
-measurements of the intensities in one channel based on objects
-identified in another channel, for example. Alignment is often needed
-when the microscope is not perfectly calibrated. It can also be useful to
-align images in a time-lapse series of images.
-
-Some important notes for proper use of this module:
-(1) Regardless of the number of input images, they will all be aligned
-with respect to the first image.
-(2) If cropping is enabled, the images are cropped according to the 
-smallest input image. If the images are all the same size, then no cropping
-is performed.
-(3) If an image is aligned, the padded pixels are assigned a fill value 
-of zero. The resulting image is masked in the filled area.
-(4) The module stores the amount of shift between images as a
-measurement, which can be useful for quality control purposes.
-
-Measured feature:                 
-Xshift_Image1NamevsImage2Name  (e.g., Xshift_BluevsRed)
-Yshift_Image1NamevsImage2Name  (e.g., Yshift_BluevsRed)
-Xshift_Image1NamevsImage3Name  (e.g., Xshift_RedvsGreen)
-Yshift_Image1NamevsImage3Name  (e.g., Yshift_RedvsGreen)
-etc...
-
-Settings:
-* Crop images similarly?
-If this is set, all output images are cropped to the size of the smallest
-image after alignment.
-* "Mutual Information" method: alignment works whether the images are
-correlated or anti-correlated (bright in one = bright in the other, or
-bright in one = dim in the other). 
-* "Normalized Cross Correlation" method: alignment works only when the
-images are correlated (they have matching bright and dark areas). When
-using the cross correlation method, the second image should serve as a
-template and be smaller than the first image selected.
-'''
+    
     category = 'Image Processing'
     variable_revision_number = 1
 
@@ -92,9 +77,20 @@ template and be smaller than the first image selected.
         self.add_button = cps.DoSomething("Add another image","Add",
                                           self.add_image)
         self.alignment_method = cps.Choice("Which alignment method would you like to use?",
-                                           M_ALL)
+                                           M_ALL, doc='''
+             <ul> <li> Mutual Information method: With this method, alignment works whether the 
+             images are correlated (bright in one = bright in the other) or 
+             anti-correlated (bright in one = dim in the other). </li>
+             <li> Normalized Cross Correlation method: With this method, alignment works only 
+             when the images are correlated (bright in one = bright in the 
+             other). When using the cross correlation method, the second 
+             image should serve as a template and be smaller than the first 
+             image selected.</li></ul>''')
         self.wants_cropping = cps.Binary("Crop all images to the size of the smallest?",
-                                         True)
+                                         True, doc='''
+             If you select this option, all output images are cropped to the 
+             size of the smallest image after alignment. If not, the unaligned 
+             portions of each image are padded and appear as black space.''')
     
     def add_image(self):
         '''Add an image + associated questions and buttons'''

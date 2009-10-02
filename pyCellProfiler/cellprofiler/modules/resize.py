@@ -1,15 +1,19 @@
-"""resize.py - the Resize module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+"""<b>Resize</b> - Resizes images
+<hr>
+Images are resized (smaller or larger) based on the user's inputs. You
+can resize an image by applying a resizing factor or by specifying a
+pixel size for the resized image. You can also select which interpolation
+method to use. 
 """
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import numpy as np
@@ -39,15 +43,6 @@ TT_ALL = {I_NEAREST_NEIGHBOR:TT_NEAREST_NEIGHBOR,
           I_BICUBIC: TT_BICUBIC }
 
 class Resize(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Resizes images.
-*************************************************************************
-
-Images are resized (smaller or larger) based on the user's inputs. You
-can resize an image by applying a resizing factor or by specifying a
-pixel size for the resized image. You can also select which interpolation
-method to use. 
-'''
 
     category = "Image Processing"
     variable_revision_number = 1
@@ -64,7 +59,13 @@ method to use.
         self.specific_width = cps.Integer("Enter the width of the final image:", 100, minval=1)
         self.specific_height = cps.Integer("Enter the height of the final image:", 100, minval=1)
         self.interpolation = cps.Choice("Enter the interpolation method",
-                                        I_ALL,tooltips=TT_ALL)
+                                        I_ALL,tooltips=TT_ALL, doc = '''<ul><li>Nearest Neighbor: Each output pixel is given the intensity of the nearest
+                                        corresponding pixel in the input image.</li>
+                                        <li>Bilinear: Each output pixel is given the intensity of the weighted average
+                                        of the 2x2 neighborhood at the corresponding position in the input image.</li>
+                                        <li>Bicubic: Each output pixel is given the intensity of the weighted average
+                                        of the 4x4 neighborhood at the corresponding position in the input image.</li>
+                                        </ul>''')
 
     def settings(self):
         return [self.image_name, self.resized_image_name, self.size_method,

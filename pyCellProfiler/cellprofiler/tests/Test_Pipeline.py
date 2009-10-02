@@ -282,20 +282,6 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(len(choices),1)
         self.assertEqual(choices[0],"Hello")
     
-    def test_08_01_empty_variable(self):
-        """Regression test that we can save and load the variable, ''"""
-        x = cellprofiler.pipeline.Pipeline()
-        module = MyClassForTest0801()
-        module.set_module_num(1)
-        x.add_module(module)
-        fh = cStringIO.StringIO()
-        x.save(fh)
-        y = cellprofiler.pipeline.Pipeline()
-        y.load(fh)
-        self.assertEqual(len(y.modules()),1)
-        module = y.module(1)
-        self.assertEqual(module.my_variable.value,'')
-    
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         x = cellprofiler.pipeline.Pipeline()
@@ -394,8 +380,9 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(expects[0], 'PostRun')
             expects[0],expects[1] = ('Done', 0)
         
-        module = GroupModule((keys,groupings), prepare_run, prepare_group,
-                             run, post_group, post_run)
+        module = GroupModule()
+        module.setup((keys,groupings), prepare_run, prepare_group,
+                     run, post_group, post_run)
         module.module_num = 1
         pipeline.add_module(module)
         measurements = pipeline.run()
@@ -459,8 +446,9 @@ class TestPipeline(unittest.TestCase):
             self.assertEqual(expects[0], 'PostRun')
             expects[0],expects[1] = ('Done', 0)
         
-        module = GroupModule((keys,groupings), prepare_run, prepare_group,
-                             run, post_group, post_run)
+        module = GroupModule()
+        module.setup((keys,groupings), prepare_run, prepare_group,
+                     run, post_group, post_run)
         module.module_num = 1
         pipeline.add_module(module)
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
@@ -487,7 +475,7 @@ class MyClassForTest0801(cellprofiler.cpmodule.CPModule):
 
 class GroupModule(cellprofiler.cpmodule.CPModule):
     module_name = "Group"
-    def __init__(self, groupings, 
+    def setup(self, groupings, 
                  prepare_run_callback = None,
                  prepare_group_callback = None,
                  run_callback = None,

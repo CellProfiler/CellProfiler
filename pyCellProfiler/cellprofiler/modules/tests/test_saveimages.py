@@ -12,14 +12,16 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import base64
 import matplotlib.image
 import numpy
 import os
 import sys
 import Image as PILImage
+from StringIO import StringIO
 import unittest
-import base64
 import tempfile
+import zlib
 
 import cellprofiler.modules.saveimages as cpm_si
 import cellprofiler.modules.loadimages as cpm_li
@@ -54,6 +56,64 @@ class TestSaveImages(unittest.TestCase):
     def on_event(self, pipeline, event):
         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         
+    def test_00_01_load_matlab(self):
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUnArylTwTy5RMDBSMDS1Mja2MrBUMDIAEiQDBkZPX34GBoYsRgaG'
+                'ijl7J5/1OuwgcFw981aX0+uLk7/cmCy/XU701cIFKyU0q+5cy4zw2KQof/SH'
+                'jVwNS3+tiXnupbxpF9Z0WxioGFvvn/tw/25bBokyRqs/1Ufutqzd2n1DwKZf'
+                '1kdIakehtI6F9qfsd8ZCgUbfC9z2iCTfiJw5n8X725zW3UvZv02ryhCO13mW'
+                'tvyfzOKKXToHk35O3Lf4+QX+llVTU/13LDJMdTwo/vv0zdj4aR611Xf2R1XL'
+                '9kjJ/nKyW7+/qXZvaPB9oVf+lSbb8s3vrGh8HbYj16Z3RfQnc94/G488/ziD'
+                'l2kazyWJr8/5mcM7jbXmMIp3/U3JW2L5XNs+WnSun8rcTz/yWgPNIlK4+aeW'
+                'Tnq+L/zJGa70prNXLFYfinzgpvL7fPVC6+166vPzCzzN7pjL1K1Pso+tXeEf'
+                'U6I8ra1+v/8Ng/0V60t+W6W0Tt5Tvue++5Xdly9cf1L/V8rvqWxM9rfXmQVi'
+                '6vbnt985rV8qK7dCf+2Z/wwneDJMAawzzdI=')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.image_name.value, "DNA")
+        self.assertEqual(module.file_image_name.value, "OrigDNA")
+        self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
+        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
+        self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
+        self.assertFalse(module.overwrite)
+    
+    def test_00_03_load_v2(self):
+        data = ('eJztVsFu0zAYdrJ0MCohNC47+ogQVNlQ0eiFdZSKSms70WriiJc6wZITR45T'
+                'Vk48Ao/HY+wRiCNnSaywJK3EhVmy4t/+Pn+/v9iWp8PlxfAc9ns2nA6Xr11C'
+                'MbykSLiM+wMYiFfwA8dI4BVkwQCOOYFzR0D7BB6/HRz3B2/68MS234HtijGZ'
+                'Pk0+t10A9pPv46SaaqijYqNQZbzAQpDAizrAAkeq/3dSrxAn6JriK0RjHOUS'
+                'Wf8kcNlyE94NTdkqpniG/CI4KbPYv8Y8mrsZUQ1fkhtMF+QH1paQwT7jNYkI'
+                'CxRfza/33ukyoekuvrHvY56ko80v/flp5f4YFf4cFvol/hTkeKsC3yngn6l4'
+                '4iMPK75dw98r8ffAaDbcifephvdcy1fGY858SGTSUO7ZIHOuyfofafPJeM6J'
+                'l+WzK/+shv9E48t4xGDABIwjtQG28TMMvEZ+HoGyvoxH2EUxFZDFIowFXBGO'
+                'HcH4pkkeVmk+C8xYgJvwjBLPSH1vwjNLPDPRA41872rrlvHHNeYb6Gwcmu+f'
+                'tnlf7Jh3W389jhr9l231/sY7bXkPFXX2NXxWMvxBgXdWk1/V+UmvAo+zONxd'
+                '/3/L+4H3wPsXvF8FXtX9UbxXJf4ruP88vQTl8yRjB1MacibfBLznp4+tqBeh'
+                'NU4PWtRbJM30rRNVr+egQqeYl5m0Dmt80Nef+3L7fhs9s0KvW8Oz1Eta8r6A'
+                'dr6/uAcPKvBt1yPbfwCfYqjK')
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.image_name.value, "DNA")
+        self.assertEqual(module.file_image_name.value, "OrigDNA")
+        self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
+        self.assertEqual(module.pathname_choice.value, cpm_si.PC_DEFAULT)
+        self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
+        self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
+        self.assertFalse(module.overwrite)
+    
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')

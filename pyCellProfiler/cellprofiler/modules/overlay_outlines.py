@@ -5,14 +5,6 @@ Outlines (in a special format produced by an identify module) can be
 placed on any desired image (grayscale, color, or blank) and then this 
 resulting image can be saved using the SaveImages module.
 
-Settings:
-Would you like to set the intensity (brightness) of the outlines to be
-the same as the brightest point in the image, or the maximum possible
-value for this image format?
-
-If you choose to display outlines on a Blank image, the maximum intensity
-will default to 'Max possible'.
-
 See also <b>IdentifyPrimAutomatic, IdentifySecondary, IdentifyTertiarySubregion</b>
 '''
 
@@ -57,17 +49,44 @@ class OverlayOutlines(cpm.CPModule):
     
     def create_settings(self):
         self.module_name = 'Overlay outlines'
-        self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",False)
-        self.image_name = cps.ImageNameSubscriber("On which image would you like to display the outlines?","None")
-        self.output_image_name = cps.ImageNameProvider("What do you want to call the image with the outlines displayed?")
-        self.wants_color = cps.Choice("Do you want the output image to have color outlines or have outlines drawn on a grayscale image",
-                                      [WANTS_COLOR, WANTS_GRAYSCALE])
-        self.max_type = cps.Choice("Would you like the intensity (brightness) of the outlines to be the same as the brightest point in the image, or the maximum possible value for this image format? Note: if you chose to display on a Blank image, this will default to Max possible.",
-                                   [MAX_IMAGE, MAX_POSSIBLE],
-                                   doc = """
-If your image is quite dim, then putting bright white lines onto it may
-not be useful. It may be preferable to make the outlines equal to the
-maximal brightness already occurring in the image.""")
+        self.blank_image = cps.Binary("Do you want to display outlines on a blank image?",
+                                      False, doc="""
+                        If you check this setting, the module will produce an
+                        image of the outlines on a black background. If the
+                        setting is unchecked, the module will overlay the 
+                        outlines on an image of your choosing.""")
+        self.image_name = cps.ImageNameSubscriber(
+            "On which image would you like to display the outlines?","None", doc="""
+            Choose the image to serve as the background for the outlines.
+            You can choose from images that were loaded or created by modules
+            previous to this one""")
+        self.output_image_name = cps.ImageNameProvider(
+            "What do you want to call the image with the outlines displayed?",
+            "OrigOverlay",
+            doc="""
+            This setting names the overlay image. The name you provide will
+            show up in image lists in later modules (for instance 
+            <b>SaveImages</b>)""")
+        self.wants_color = cps.Choice(
+            "Do you want the output image to have color outlines or have "
+            "outlines drawn on a grayscale image",
+            [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
+            This option chooses how to display the outline contours around
+            your objects. Color outlines produce a clearer display for
+            images where the cell borders have a high intensity, but take
+            up more space in memory. Grayscale outlines are displayed with
+            either the highest possible intensity or the same intensity
+            as the brightest pixel in the image.""")
+        self.max_type = cps.Choice(
+            "Would you like the intensity (brightness) of the outlines to be "
+            "the same as the brightest point in the image, or the maximum "
+            "possible value for this image format?",
+            [MAX_IMAGE, MAX_POSSIBLE],
+            doc = """
+            If your image is quite dim, then putting bright white lines
+            onto it may not be useful. It may be preferable to make the
+            outlines equal to the maximal brightness already occurring 
+            in the image.""")
         self.outlines = []
         self.add_outline()
         self.add_outline_button = cps.DoSomething("Add another outline","Add", self.add_outline)
@@ -81,12 +100,22 @@ maximal brightness already occurring in the image.""")
                     index =  [x.key for x in outlines].index(key)
                     del outlines[index]
                 
-                self.outline_name = cps.OutlineNameSubscriber("What did you call the outlines that you would like to display?","None")
+                self.outline_name = cps.OutlineNameSubscriber(
+                    "What did you call the outlines that you would like to display?",
+                    "None", doc="""
+                    Choose an outline from a previous <b>IdentifyPrimAutomatic</b>,
+                    <b>IdentifySecondary</b> or <b>IdentifyTertiarySubregion</b>
+                    module. Each of the Identify modules has a checkbox that
+                    determines whether the outlines are saved. If you check this,
+                    you'll be asked to supply a name for the outline; you
+                    can then select that name here.
+                    """)
                 default_color = (COLOR_ORDER[len(outlines)]
                                  if len(outlines) < len(COLOR_ORDER)
                                  else COLOR_ORDER[0])
-                self.color = cps.Choice("What color do you want the outlines to be?",
-                                        COLORS.keys(), default_color)
+                self.color = cps.Choice(
+                    "What color do you want the outlines to be?",
+                    COLORS.keys(), default_color)
                 self.remove_button = cps.DoSomething("Remove the above outline",
                                                      "Remove",
                                                      remove)
@@ -139,7 +168,8 @@ maximal brightness already occurring in the image.""")
         if not self.blank_image.value:
             result += [self.image_name]
         result += [self.output_image_name, self.wants_color]
-        if self.wants_color.value == WANTS_GRAYSCALE:
+        if (self.wants_color.value == WANTS_GRAYSCALE and not
+            self.blank_image.value):
             result += [self.max_type]
         for outline in self.outlines:
             result += outline.visible_settings(self.wants_color.value ==

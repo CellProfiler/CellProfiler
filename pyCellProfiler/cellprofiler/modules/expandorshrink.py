@@ -1,15 +1,34 @@
-'''expandorshrink.py - expand or shrink objects
+'''<b>ExpandOrShrink</b> - Expands or shrinks objects by a defined distance
+<hr>
+The module expands or shrinks objects by adding or removing border
+pixels. You can specify a certain number of border pixels to be
+added or removed, expand objects until they are almost touching or shrink
+objects down to a point. Objects are never lost using this module (shrinking 
+stops when an object becomes a single pixel). The module can separate touching
+objects (which can be created by <b>IdentifySecondary</b>) without otherwise shrinking
+the objects.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+ExpandOrShrink can perform some specialized morphological operations that 
+remove pixels without completely removing an object.  See the settings (below)
+for more detail.
 
-Developed by the Broad Institute
-Copyright 2003-2009
+Special note on saving images: Using the settings in this module, object
+outlines can be passed along to the module <b>OverlayOutlines</b> and then saved
+with the <b>SaveImages</b> module. Objects themselves can be passed along to the
+object processing module <b>ConvertToImage</b> and then saved with the
+SaveImages module.
 
-Please see the AUTHORS file for credits.
+See also <b>Identify</b> modules.'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
-Website: http://www.cellprofiler.org
-'''
 __version__="$Revision$"
 
 import numpy as np
@@ -68,31 +87,7 @@ the hole. If you fill the holes in each object, then each object will shrink
 to a single point.'''
 
 class ExpandOrShrink(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-Expands or shrinks identified objects by a defined distance.
-*************************************************************************
 
-The module expands or shrinks objects by adding or removing border
-pixels. The user can specify a certain number of border pixels to be
-added or removed, expand objects until they are almost touching or shrink
-objects down to a point. Objects are never lost using this module (shrinking 
-stops when an object becomes a single pixel). The module can separate touching
-objects (which can be created by IdentifySecondary) without otherwise shrinking
-the objects.
-
-ExpandOrShrink can perform some specialized morphological operations that 
-remove pixels without completely removing an object:
-* Skeletonize - reduce each object to its skeleton
-* 
-
-Special note on saving images: Using the settings in this module, object
-outlines can be passed along to the module OverlayOutlines and then saved
-with the SaveImages module. Objects themselves can be passed along to the
-object processing module ConvertToImage and then saved with the
-SaveImages module.
-
-See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
-'''
     category = 'Object Processing'
     variable_revision_number = 1
     def create_settings(self):
@@ -102,7 +97,28 @@ See also IdentifyPrimAutomatic, IdentifyPrimManual, IdentifySecondary.
         self.output_object_name = cps.ObjectNameProvider("What do you want to call the resulting objects?", 
                                                          "ShrunkenNuclei")
         self.operation = cps.Choice("What operation do you want to perform?",
-                                    O_ALL, tooltips = TT_ALL)
+                                    O_ALL, tooltips = TT_ALL, doc = '''
+                                    <ul><li>Shrink objects to a point: Remove all pixels but one from filled objects. Thin objects
+                                    with holes to loops unless the "fill" option is checked.</li>
+                                    <li>Expand objects until touching: Expand objects, assigning every pixel in the image to an
+                                    object. Background pixels are assigned to the nearest object.</li>
+                                    <li>Add partial dividing lines between objects: Remove pixels from an object that are adjacent to another
+                                    object's pixels unless doing so would change the object's Euler number
+                                    (break an object in two, remove the object completely or open a hole in
+                                    an object).</li>
+                                    <li>Shrink objects by a specified number of pixels: Remove pixels around the perimeter of an object unless doing
+                                    so would break the object in two, remove the object completely or open
+                                    a hole in the object. The user can choose the number of times to remove
+                                    perimeter pixels. Processing stops automatically when there are no more
+                                    pixels to remove.</li>
+                                    <li>Expand objects by a specified number of pixels: Expand each object by adding background pixels adjacent to the
+                                    image. The user can choose the number of times to expand. Processing stops
+                                    automatically if there are no more background pixels.</li>
+                                    <li>Skeletonize each object: Erode each object to its skeleton.</li>
+                                    <li>Remove spurs: Remove or reduce the length of spurs in a skeletonized image.
+                                    The algorithm reduces spur size by the number of pixels indicated in the
+                                    setting "Enter the number of pixels by which to expand or shrink."</li> </ul>              
+                                    ''')
         self.iterations = cps.Integer("Enter the number of pixels by which to expand or shrink",
                                       1, minval=1)
         self.wants_fill_holes = cps.Binary("Do you want to fill holes in objects so that all objects shrink to a single point?",

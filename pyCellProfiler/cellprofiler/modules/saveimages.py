@@ -172,7 +172,7 @@ class SaveImages(cpm.CPModule):
   See also LoadImages, SpeedUpCellProfiler.
 """
 
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "File Processing"
     
     def create_settings(self):
@@ -204,7 +204,7 @@ class SaveImages(cpm.CPModule):
         self.pathname = cps.Text("Enter the pathname of the directory where you want to save images:",".")
         self.bit_depth = cps.Choice("Enter the bit depth at which to save the images:",
                                     ["8","12","16"])
-        self.overwrite_check = cps.Binary("Do you want to check for file overwrites?",True)
+        self.overwrite = cps.Binary("Do you want to overwrite existing files without warning?",False)
         self.when_to_save = cps.Choice("At what point do you want to save the image?",
                                        [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
                                        WS_EVERY_CYCLE)
@@ -225,7 +225,7 @@ class SaveImages(cpm.CPModule):
                 self.file_name_method, self.file_image_name,
                 self.single_file_name, self.file_name_suffix, self.file_format,
                 self.pathname_choice, self.pathname, self.bit_depth,
-                self.overwrite_check, self.when_to_save,
+                self.overwrite, self.when_to_save,
                 self.when_to_save_movie, self.rescale, self.colormap, 
                 self.update_file_names, self.create_subdirectories]
     
@@ -286,8 +286,17 @@ class SaveImages(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
-        return setting_values, variable_revision_number, from_matlab
+            
+        if not from_matlab and variable_revision_number == 1:
+            # The logic of the question about overwriting was reversed.            
+            if setting_values[11] == cps.YES:
+                setting_values[11] = cps.NO
+            else: 
+                setting_values[11] = cps.YES       
+            variable_revision_number = 2
 
+        return setting_values, variable_revision_number, from_matlab
+    
     def visible_settings(self):
         """Return only the settings that should be shown"""
         result = [self.save_image_or_figure]
@@ -317,7 +326,7 @@ class SaveImages(cpm.CPModule):
                 result.append(self.pathname)
             if self.file_format != FF_MAT:
                 result.append(self.bit_depth)
-            result.append(self.overwrite_check)
+            result.append(self.overwrite)
             result.append(self.when_to_save)
             if (self.save_image_or_figure == IF_IMAGE and
                 self.file_format != FF_MAT):
@@ -332,7 +341,7 @@ class SaveImages(cpm.CPModule):
             result.append(self.movie_pathname_choice)
             if self.movie_pathname_choice == PC_CUSTOM:
                 result.append(self.pathname)
-            result.append(self.overwrite_check)
+            result.append(self.overwrite)
             result.append(self.when_to_save_movie)
             result.append(self.rescale)
             result.append(self.colormap)
@@ -442,7 +451,7 @@ class SaveImages(cpm.CPModule):
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
             pil = PILImage.fromarray(pixels,mode)
-            if self.overwrite_check.value and os.path.isfile(filename):
+            if not self.overwrite.value and os.path.isfile(filename):
                 over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
                                      "Warning: overwriting file", wx.YES_NO)
                 if over == wx.ID_NO:

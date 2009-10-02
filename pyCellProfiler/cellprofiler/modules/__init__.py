@@ -74,7 +74,6 @@ pymodules = []
 def fill_modules():
     del pymodules[:]
     for mod, name in pymodule_to_cpmodule.items():
-        print mod, name
         m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
         pymodules.append(m)
         all_modules[mod] = m.__dict__[name]

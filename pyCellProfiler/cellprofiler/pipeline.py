@@ -799,6 +799,19 @@ class Pipeline(object):
             batch_mode = module.in_batch_mode()
             if batch_mode is not None:
                 return batch_mode
+            
+    def turn_off_batch_mode(self):
+        '''Reset the pipeline to an editable state if batch mode is on
+        
+        A module is allowed to create hidden information that it uses
+        to turn batch mode on or to save state to be used in batch mode.
+        This call signals that the pipeline has been opened for editing,
+        even if it is a batch pipeline; all modules should be restored
+        to a state that's appropriate for creating a batch file, not
+        for running a batch file.
+        '''
+        for module in self.modules():
+            module.turn_off_batch_mode()
 
     def set_matlab_path(self):
         matlab = get_matlab_instance()

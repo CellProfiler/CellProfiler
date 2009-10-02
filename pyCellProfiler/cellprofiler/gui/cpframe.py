@@ -44,6 +44,7 @@ ID_DEBUG_STOP = wx.NewId()
 ID_DEBUG_STEP = wx.NewId()
 ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
 ID_DEBUG_NEXT_GROUP = wx.NewId()
+ID_DEBUG_RELOAD = wx.NewId()
 
 ID_WINDOW_CLOSE_ALL = wx.NewId()
 ID_WINDOW_SHOW_ALL_FRAMES = wx.NewId()
@@ -115,6 +116,8 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to next module\tF6','Execute the currently selected module')
         self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next image set\tF7','Advance to the next image set')
         self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &group\tF8','Advance to the next group in the image set')
+        if not hasattr(sys, 'frozen'):
+            self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload modules' source")
         self.__menu_debug.Enable(ID_DEBUG_STOP,False)
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)

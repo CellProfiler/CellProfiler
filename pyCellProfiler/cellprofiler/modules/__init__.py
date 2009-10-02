@@ -11,155 +11,86 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
-from align import Align
-from applythreshold import ApplyThreshold
-from calculatemath import CalculateMath
-from colortogray import ColorToGray
-from converttoimage import ConvertToImage
-from correctillumination_calculate import CorrectIllumination_Calculate
-from correctillumination_apply import CorrectIllumination_Apply
-from createbatchfiles import CreateBatchFiles
-from crop import Crop
-from enhanceorsuppressspeckles import EnhanceOrSuppressSpeckles
-from expandorshrink import ExpandOrShrink
-from exporttodatabase import ExportToDatabase
-from exporttoexcel import ExportToExcel
-from filterbyobjectmeasurement import FilterByObjectMeasurement
-from findedges import FindEdges
-from flagimage import FlagImage
-from flipandrotate import FlipAndRotate
-from graytocolor import GrayToColor
-from identifyprimautomatic import IdentifyPrimAutomatic
-from identifysecondary import IdentifySecondary
-from identifytertiarysubregion import IdentifyTertiarySubregion
-from imagemath import ImageMath
-from invertforprinting import InvertForPrinting
-from loadimages import LoadImages
-from loadsingleimage import LoadSingleImage
-from loadtext import LoadText
-from makeprojection import MakeProjection
-from maskimage import MaskImage
-from measurecorrelation import MeasureCorrelation
-from measureimageareaoccupied import MeasureImageAreaOccupied
-from measureimagegranularity import MeasureImageGranularity
-from measureimageintensity import MeasureImageIntensity
-from measureimagequality import MeasureImageQuality
-from measureobjectintensity import MeasureObjectIntensity
-from measureobjectareashape import MeasureObjectAreaShape
-from measureobjectneighbors import MeasureObjectNeighbors
-from measureobjectradialdistribution import MeasureObjectRadialDistribution
-from measuretexture import MeasureTexture
-from morph import Morph
-from overlay_outlines import OverlayOutlines
-from relate import Relate
-from rescaleintensity import RescaleIntensity
-from resize import Resize
-from saveimages import SaveImages
-from speedupcellprofiler import SpeedUpCellProfiler
-from smooth import Smooth
-from trackobjects import TrackObjects
 
-def get_module_classes():
-    return [Align,
-            ApplyThreshold,
-            CalculateMath,
-            ColorToGray,
-            ConvertToImage,
-            CorrectIllumination_Calculate,
-            CorrectIllumination_Apply,
-            Crop,
-            CreateBatchFiles,
-            EnhanceOrSuppressSpeckles,
-            ExpandOrShrink,
-            ExportToDatabase,
-            ExportToExcel,
-            FindEdges,
-            FilterByObjectMeasurement,
-            FlagImage,
-            FlipAndRotate,
-            GrayToColor,
-            IdentifyPrimAutomatic,
-            IdentifySecondary,
-            IdentifyTertiarySubregion,
-            ImageMath,
-            InvertForPrinting,
-            LoadImages,
-            LoadSingleImage,
-            LoadText,
-            MakeProjection,
-            MaskImage,
-            MeasureCorrelation,
-            MeasureImageAreaOccupied,
-            MeasureImageGranularity,
-            MeasureImageIntensity,
-            MeasureImageQuality,
-            MeasureObjectAreaShape,
-            MeasureObjectIntensity,
-            MeasureObjectNeighbors,
-            MeasureObjectRadialDistribution,
-            MeasureTexture,
-            Morph,
-            OverlayOutlines,
-            Relate,
-            RescaleIntensity,
-            Resize,
-            SaveImages,
-            Smooth,
-            SpeedUpCellProfiler,
-            TrackObjects]
+# python modules and their corresponding cellprofiler.module classes
+pymodule_to_cpmodule = {'align' : 'Align',
+                        'applythreshold' : 'ApplyThreshold',
+                        'calculatemath' : 'CalculateMath',
+                        'colortogray' : 'ColorToGray',
+                        'converttoimage' : 'ConvertToImage',
+                        'correctillumination_calculate' : 'CorrectIllumination_Calculate',
+                        'correctillumination_apply' : 'CorrectIllumination_Apply',
+                        'createbatchfiles' : 'CreateBatchFiles',
+                        'crop' : 'Crop',
+                        'enhanceorsuppressspeckles' : 'EnhanceOrSuppressSpeckles',
+                        'expandorshrink' : 'ExpandOrShrink',
+                        'exporttodatabase' : 'ExportToDatabase',
+                        'exporttoexcel' : 'ExportToExcel',
+                        'filterbyobjectmeasurement' : 'FilterByObjectMeasurement',
+                        'findedges' : 'FindEdges',
+                        'flagimage' : 'FlagImage',
+                        'flipandrotate' : 'FlipAndRotate',
+                        'graytocolor' : 'GrayToColor',
+                        'identifyprimautomatic' : 'IdentifyPrimAutomatic',
+                        'identifysecondary' : 'IdentifySecondary',
+                        'identifytertiarysubregion' : 'IdentifyTertiarySubregion',
+                        'imagemath' : 'ImageMath',
+                        'invertforprinting' : 'InvertForPrinting',
+                        'loadimages' : 'LoadImages',
+                        'loadsingleimage' : 'LoadSingleImage',
+                        'loadtext' : 'LoadText',
+                        'makeprojection' : 'MakeProjection',
+                        'maskimage' : 'MaskImage',
+                        'measurecorrelation' : 'MeasureCorrelation',
+                        'measureimageareaoccupied' : 'MeasureImageAreaOccupied',
+                        'measureimagegranularity' : 'MeasureImageGranularity',
+                        'measureimageintensity' : 'MeasureImageIntensity',
+                        'measureimagequality' : 'MeasureImageQuality',
+                        'measureobjectintensity' : 'MeasureObjectIntensity',
+                        'measureobjectareashape' : 'MeasureObjectAreaShape',
+                        'measureobjectneighbors' : 'MeasureObjectNeighbors',
+                        'measureobjectradialdistribution' : 'MeasureObjectRadialDistribution',
+                        'measuretexture' : 'MeasureTexture',
+                        'morph' : 'Morph',
+                        'overlay_outlines' : 'OverlayOutlines',
+                        'relate' : 'Relate',
+                        'rescaleintensity' : 'RescaleIntensity',
+                        'resize' : 'Resize',
+                        'saveimages' : 'SaveImages',
+                        'speedupcellprofiler' : 'SpeedUpCellProfiler',
+                        'smooth' : 'Smooth',
+                        'trackobjects' : 'TrackObjects',
+                        }
 
-def get_module_substitutions():
-    """Return a dictionary of matlab module names and replacement classes
+# CP-Matlab to CP-python module substitutions
+substitutions = {'FlagImageForQC' : 'FlagImage',
+                 'KeepLargestObject' : 'FilterByObjectMeasurement',
+                 'MeasureRadialDistribution' : 'MeasureObjectRadialDistribution',
+                 'SmoothOrEnhance' : 'Smooth',
+                 }
+
+all_modules = {}
+pymodules = []
+def fill_modules():
+    del pymodules[:]
+    for mod, name in pymodule_to_cpmodule.items():
+        print mod, name
+        m = __import__('cellprofiler.modules.' + mod, globals(), locals(), [name])
+        pymodules.append(m)
+        all_modules[mod] = m.__dict__[name]
+fill_modules()
     
-    """
-    return {"Align": Align,
-            "ApplyThreshold": ApplyThreshold,
-            "CalculateMath": CalculateMath,
-            "ColorToGray":ColorToGray,
-            "ConvertToImage":ConvertToImage,
-            "CorrectIllumination_Calculate":CorrectIllumination_Calculate,
-            "CorrectIllumination_Apply":CorrectIllumination_Apply,
-            "Crop": Crop,
-            "CreateBatchFiles": CreateBatchFiles,
-            "ExpandOrShrink": ExpandOrShrink,
-            "ExportToDatabase": ExportToDatabase,
-            "ExportToExcel": ExportToExcel,
-            "FindEdges": FindEdges,
-            "FilterByObjectMeasurement": FilterByObjectMeasurement,
-            "FlagImageForQC": FlagImage,
-            "FlipAndRotate": FlipAndRotate,
-            "GrayToColor":GrayToColor,
-            "IdentifyPrimAutomatic":IdentifyPrimAutomatic,
-            "IdentifySecondary":IdentifySecondary,
-            "IdentifyTertiarySubregion":IdentifyTertiarySubregion,
-            "ImageMath":ImageMath,
-            "InvertForPrinting":InvertForPrinting,
-            "KeepLargestObject":FilterByObjectMeasurement,
-            "LoadImages":LoadImages,
-            "LoadSingleImage":LoadSingleImage,
-            "LoadText":LoadText,
-            "MakeProjection":MakeProjection,
-            "MaskImage": MaskImage,
-            "MeasureCorrelation": MeasureCorrelation,
-            "MeasureImageAreaOccupied": MeasureImageAreaOccupied,
-            "MeasureImageGranularity": MeasureImageGranularity,
-            "MeasureImageIntensity": MeasureImageIntensity,
-            "MeasureImageQuality": MeasureImageQuality,
-            "MeasureObjectAreaShape": MeasureObjectAreaShape,
-            "MeasureObjectIntensity": MeasureObjectIntensity,
-            "MeasureObjectNeighbors": MeasureObjectNeighbors,
-            "MeasureRadialDistribution": MeasureObjectRadialDistribution,
-            "MeasureTexture": MeasureTexture,
-            "Morph": Morph,
-            "OverlayOutlines": OverlayOutlines,
-            "Relate": Relate,
-            "RescaleIntensity": RescaleIntensity,
-            "Resize": Resize,
-            "SaveImages": SaveImages,
-            "SmoothOrEnhance": Smooth,
-            "SpeedUpCellProfiler": SpeedUpCellProfiler,
-            "TrackObjects":TrackObjects
-            }
-    
+__all__ = ['instantiate_module', 'get_module_classes', 'reload_modules']
 
- 
+def instantiate_module(module_name):
+    if module_name in substitutions: 
+        module_name = substitutions[module_name]
+    return all_modules[module_name.split('.')[-1]]()
+
+def get_module_names():
+    return all_modules.keys()
+
+def reload_modules():
+    for m in pymodules:
+        reload(m)
+    fill_modules()

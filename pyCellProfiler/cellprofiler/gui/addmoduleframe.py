@@ -140,12 +140,12 @@ class AddModuleFrame(wx.Frame):
             finally:
                 fid.close()
         
-        for mc in cellprofiler.modules.get_module_classes():
-            def loader(module_num, mc=mc):
-                module = mc()
+        for mn in cellprofiler.modules.get_module_names():
+            def loader(module_num, mn=mn):
+                module = cellprofiler.modules.instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
-            module = mc()
+            module = cellprofiler.modules.instantiate_module(mn)
             self.__module_dict[module.category][module.module_name] = loader
     
     def __set_categories(self):

@@ -63,6 +63,7 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
+        wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
         
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_FRAMES, self.on_show_all_frames)
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_FRAMES, self.on_hide_all_frames)
@@ -417,6 +418,9 @@ class PipelineController:
             self.__movie_viewer.slider.value = 0
             self.__debug_outlines = {}
             
+    def on_debug_reload(self, event):
+        self.__pipeline.reload_modules()
+
     def on_idle(self,event):
         '''Run one iteration of the pipeline
         

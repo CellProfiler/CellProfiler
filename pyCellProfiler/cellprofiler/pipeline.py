@@ -316,18 +316,13 @@ class Pipeline(object):
     
     def instantiate_module(self,module_name):
         import cellprofiler.modules
+        return cellprofiler.modules.instantiate_module(module_name)
+
+    def reload_modules(self):
+        import cellprofiler.modules
+        reload(cellprofiler.modules)
+        cellprofiler.modules.reload_modules()
         
-        substitutions = cellprofiler.modules.get_module_substitutions()
-        if substitutions.has_key(module_name):
-            module = substitutions[module_name]()
-        elif module_name.find('.') != -1:
-            parts     = module_name.split('.')
-            pkg_name  = '.'.join(parts[:-1])
-            pkg       = __import__(pkg_name)
-            module    = eval("%s()"%(module_name))
-        else:
-            module = cellprofiler.cpmodule.MatlabModule()
-        return module
         
     def save_to_handles(self):
         """Create a numpy array representing this pipeline

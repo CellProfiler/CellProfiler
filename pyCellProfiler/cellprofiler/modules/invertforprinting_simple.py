@@ -15,6 +15,7 @@ __version__ = "$Revision: 8009 $"
 
 verbose_name = 'Invert for printing'
 category = 'Image Processing'
+settings_revision_number = 1
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -59,36 +60,17 @@ blue_output_image = ImageNameProvider("What do you want to call the blue image?"
 color_output_image = ImageNameProvider("What do you want to call the inverted color image?",
                                            "InvertedColor")
 
-    
-def convert_settings_from_old_versions(setting_values, 
-                                       variable_revision_number, module_name, 
-                                       from_matlab):
-    if from_matlab and variable_revision_number == 1:
-        setting_values = dict(
-            input_color_choice=CC_GRAYSCALE,
-            CC_GRAYSCALE,                # input_color_choice
-            setting_values[0] != 'None', # wants_red_input
-            setting_values[0],           # red_input_image
-            setting_values[1] != 'None',
-            setting_values[1],
-            setting_values[2] != 'None',
-            setting_values[2],
-            'None',                      # color
-            CC_GRAYSCALE,                # output_color_choice
-            setting_values[3] != 'None',
-            setting_values[3],
-            setting_values[4] != 'None',
-            setting_values[4],
-            setting_values[5] != 'None',
-            setting_values[5],
-            'InvertedColor']
-        from_matlab = False
-        variable_revision_number = 1
-
-    return setting_values, variable_revision_number, from_matlab
+def settings():
+    return [input_color_choice, wants_red_input, red_input_image, 
+            wants_green_input, green_input_image, wants_blue_input,
+            blue_input_image, color_input_image, output_color_choice, 
+            wants_red_output, red_output_image, wants_green_output, 
+            green_output_image, wants_blue_output, blue_output_image,
+            color_output_image]
         
-def visible_settings:
-    '''Return a list of the names of settings to display in the user interface.'''
+def visible_settings():
+    '''Return a list of the names of settings to display in the user
+    interface.'''
     result = [input_color_choice]
     if input_color_choice.value.is(CC_GRAYSCALE):
         result.append(wants_red_input)
@@ -116,6 +98,33 @@ def visible_settings:
     else:
         result.append(color_output_image)
     return result
+
+def convert_settings_from_old_versions(setting_values, 
+                                       variable_revision_number, module_name, 
+                                       from_matlab):
+    if from_matlab and variable_revision_number == 1:
+        setting_values = dict(
+            input_color_choice=CC_GRAYSCALE,
+            CC_GRAYSCALE,                # input_color_choice
+            setting_values[0] != 'None', # wants_red_input
+            setting_values[0],           # red_input_image
+            setting_values[1] != 'None',
+            setting_values[1],
+            setting_values[2] != 'None',
+            setting_values[2],
+            'None',                      # color
+            CC_GRAYSCALE,                # output_color_choice
+            setting_values[3] != 'None',
+            setting_values[3],
+            setting_values[4] != 'None',
+            setting_values[4],
+            setting_values[5] != 'None',
+            setting_values[5],
+            'InvertedColor']
+        from_matlab = False
+        variable_revision_number = 1
+
+    return setting_values, variable_revision_number, from_matlab
 
 def validate_module(pipeline):
     '''Make sure the user has at least one of the grayscale boxes checked'''

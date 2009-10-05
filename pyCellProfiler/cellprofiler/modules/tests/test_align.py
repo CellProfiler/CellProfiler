@@ -13,15 +13,14 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import base64
-from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import unittest
 import zlib
 
+from cellprofiler.modules.tests import example_images_directory
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -30,6 +29,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
+
+from cellprofiler.modules.loadimages import load_using_PIL
 
 class TestAlign(unittest.TestCase):
     def make_workspace(self, images, cropping_masks):
@@ -67,30 +68,30 @@ class TestAlign(unittest.TestCase):
         
     def test_01_01_load_matlab(self):
         '''Load a Matlab pipeline'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-                'sSU1RyM+zUggH0l6leQpGJgqGxlamplbGJgpGBgaWCiQDBkZPX34GBoalTA'
-                'wMFXPeRtzNum0gMTV495LYF7fieic25rPtjry2cXZsWUqz2DYdnaUGN45ei'
-                'Shk3ZT6J/hS7BvLbxbV02LfGqpZhiVxW2+KNd+hzBRo5/q8xsp91ddiBgaL'
-                'Sq4Der9vp25lFjvqkaQbWmnjmNgRa23QwDdP5e3+yL0tdm3hLLFOQgsZdLo'
-                'z7MvTvzy6Fv3vS2eUoKPyiyXWm4265mg/YZ+fzjTjj82xYhe1H+xMN5V21T'
-                'qaWxy44vuBc/+dXWe8nTXfM66+X60tb3KSfe7VxyHW7+u5wv5+lbnPF/yXf'
-                '3JV47OHp/mLLXh92dsuZ58rXvTg5skPbxi+i/Z83h/6YJfC7P3Sz8ttmJxL'
-                'pu/RmjPv4MsEgUeRknOmHcxMCLj0/PgkP7n9yjfKJqo+OWaj8DD4Z5pHjY1'
-                'd+YJeoT8zmepVHvYH7Ttuw3x+q7RM/4PAn1v0P374YWsaKzUrsOFUv/vWdS'
-                'GPX3hWyKl/Vk25271u28ctpTH/d+/b2LQcqK7CpZZdaNv/iGcXljsm8K18r'
-                '7zt0c13l8r2+oJU+b5evct/b+bOeVa/vSvO9vnoXg9Nlz+2rjV/g6hjUtK+'
-                '6yyadlf3lBvVyH7z1WiffD4wPvKa1uu1GuvfuEfuW1QcJnh/ZVM+f0rts41'
-                'vD99O4OI89XC1VdzU+tCfs75tfjEn5sj37Py/to8DV/1dd/9uxcTbdr17nl'
-                'Ve2vfGy2YRh1zh+jWL1N//2yLVfvLf1InXVfxjbWdf2jj3/ts/ec+37/2s/'
-                'ftzwJ+9779u0pTlT92be2v62+8LZs0zXvujZlnjm99psf/tg3ZUvOE69fnJ'
-                '3uKieZxluZsqItfU3u++f7+ljtXufZxp25suM5eWnlqrwyw/NeuvnW1+k97'
-                'uevy37dpzts9Kz9a05WVsygfGw5b61/b135b/33z+Y73j1tLPSb71gbdu/Z'
-                'c/7tH7BAAjAIGJ')
+        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
+                'SU1RyM+zUvDNz1PwTy5RMDBVMLCwMjWyMjRQMDIwsFQgGTAwevryMzAwlDIx'
+                'MFTMeRvhmH/ZQKTs9pbXyzJLdh9gXCazM8AhxoKPV0XNcea1TCH39YXG3n4y'
+                'queufDT+Ib+76NnyD8Zlc+Za5T5K3ZpuFNUZtWnR8z3f9763vf2xu5yB4V0w'
+                'g9Wfm0/3ci5bq/vUbSF3ZYfE4YXztzQyzzv58f6e+QclDhc3nVPwDGRK05W3'
+                '5zr+5YvWrL2/vPZOWcDI03VqD++lBzJHT24vzNOIl3/MqeT8h7mx6PRVvwuq'
+                'fga8S/ceCXdPr9MM/vPuw7+06nntbZPaxd5XtxYurGd49svP9V4V6995b5Zn'
+                'HIqrnXVAsJj5hJv4zHhev9Utl5keZs/4Wb9+4+umTf/zntl3cKScOLI+eFO5'
+                'w/yHGztjF6dcZ6g9XGMb+IPrJ/PBuo49c7YF3slldT/hzvhl4pOPkcn7V994'
+                'L/Zp2sMviy9Mf//6weLTp6cl6T/pv8KrWXyZZebnC2vZZftzj8adKKr7VJDV'
+                'm977uf6RTHbBPG0LJ7kLFg0t8/nnVUtcVinkz5RR3rfp5/X60Mcxj3WOVb6w'
+                '/Jzn+niDpfwNVv3IJbV3a3LO2ctU/RCq1lTRE7v/a09VFU/drsr8aQWzat7r'
+                'tx+vLfW7a1NiMZurb8JfiThVZY9PVZWSPwNfX3tfc1Wk8sa5z/fX8Uf/q7y7'
+                '9tEXM7H/5iKvb2n9ZubtX/XzhNlC+csmm46v/WU/8/GumtOLV/jNOd5VfvVR'
+                'zPPsnT+jwvYs+xxQvmd1V3j4vivpdz/OerTup13Pe94d/2NCzoffrtgXYLG3'
+                'xuNM4ap3M1nOCbTbzbz3IeL625u1HDui40tMPprv3LL96uZV1vejfmVbz7Uu'
+                'fPVGZuXn10e//jv/d+V9+4SPNuLHW/+dZv1V+Xv6L7Xz0euv10cCALr4bf0=') 
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.load(fd)
         #
-        # The pipeline has four modules and Align is the third. It has
+        # The pipeline has three modules and Align is the third. It has
         # the following settings:
         # input image name = Template
         # output image name = AlignedTemplate
@@ -105,7 +106,7 @@ class TestAlign(unittest.TestCase):
         self.assertEqual(module.second_input_image.value, "Image")
         self.assertEqual(module.second_output_image.value, "AlignedImage")
         self.assertEqual(module.alignment_method.value, A.M_CROSS_CORRELATION)
-        self.assertTrue(module.wants_cropping.value)
+        self.assertFalse(module.wants_cropping.value)
     
     def test_01_02_load_v1(self):
         '''Load a version 1 pipeline'''
@@ -295,4 +296,22 @@ class TestAlign(unittest.TestCase):
         m = workspace.measurements
         self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned1'),1)
         self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned1'),-1)
+        
+    def test_05_01_align_self(self):
+        '''Align an image from the fly screen against itself.
+        
+        This is a regression test for the bug, IMG-284
+        '''
+        fly_file = '01_POS002_D.TIF'
+        fly_dir = "ExampleFlyImages"
+        path = os.path.join(example_images_directory(), fly_dir, fly_file)
+        image = load_using_PIL(path)
+        image = image[0:300,0:300] # make smaller so as to be faster
+        workspace, module = self.make_workspace((image, image),(None,None))
+        module.alignment_method.value = A.M_MUTUAL_INFORMATION
+        module.wants_cropping.value = False
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertEqual(m.get_current_image_measurement('Align_Xshift_Aligned0_vs_Aligned1'), 0)
+        self.assertEqual(m.get_current_image_measurement('Align_Yshift_Aligned0_vs_Aligned1'), 0)
         

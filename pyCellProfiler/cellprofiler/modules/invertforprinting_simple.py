@@ -72,7 +72,7 @@ def visible_settings():
     '''Return a list of the names of settings to display in the user
     interface.'''
     result = [input_color_choice]
-    if input_color_choice.value.is(CC_GRAYSCALE):
+    if input_color_choice.value.value == CC_GRAYSCALE:
         result.append(wants_red_input)
         if wants_red_input.is_yes:
             results.append(red_input_image)
@@ -85,7 +85,7 @@ def visible_settings():
     else:
         result.append(color_input_image)
     result.append(output_color_choice)
-    if output_color_choice.is(CC_GRAYSCALE):
+    if output_color_choice.value == CC_GRAYSCALE:
         result.append(wants_red_output)
         if wants_red_output.is_yes:
             results.append(red_output_image)
@@ -128,7 +128,7 @@ def convert_settings_from_old_versions(setting_values,
 
 def validate_module(pipeline):
     '''Make sure the user has at least one of the grayscale boxes checked'''
-    if (input_color_choice.is(CC_GRAYSCALE) and
+    if (input_color_choice.value == CC_GRAYSCALE and
         wants_red_input.value.is_no and
         wants_green_input.value.is_no and
         wants_blue_input.value.is_no):
@@ -162,9 +162,9 @@ def run(workspace):
                                           must_be_color=True).pixel_data
         return color_image[:,:,0], color_image[:,:,1], color_image[:,:,2]
 
-    if input_color_choice.is(CC_GRAYSCALE):
+    if input_color_choice.value == CC_GRAYSCALE:
             red, green, blue = input_images_grayscale()
-    elif input_color_choice.is(CC_COLOR):
+    elif input_color_choice.value == CC_COLOR:
             red, green, blue, input_images_color()
     else:
         raise ValueError("Unimplemented color choice: %s" %
@@ -175,14 +175,14 @@ def run(workspace):
     inverted_blue = (1 - red) * (1 - green)
     inverted_color = np.dstack((inverted_red, inverted_green, inverted_blue))
 
-    if output_color_choice.is(CC_GRAYSCALE):
+    if output_color_choice.value == CC_GRAYSCALE:
         if wants_red_output.is_yes:
             image_set.add(red_output_image.value, cpi.Image(inverted_red))
         if wants_green_output.is_yes:
             image_set.add(green_output_image.value, cpi.Image(inverted_green))
         if wants_blue_output.is_yes:
             image_set.add(blue_output_image.value, cpi.Image(inverted_blue))
-    elif output_color_choice.is(CC_COLOR):
+    elif output_color_choice.value == CC_COLOR:
         image_set.add(color_output_image.value, cpi.Image(inverted_color))
     else:
         raise ValueError("Unimplemented color choice: %s" %

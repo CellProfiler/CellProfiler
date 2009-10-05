@@ -430,7 +430,9 @@ class LoadImages(cpmodule.CPModule):
         """Set up image providers for image files"""
         files = self.collect_files()
         if len(files) == 0:
-            raise ValueError("there are no image files in the chosen directory (or subdirectories, if you requested them to be analyzed as well)")
+            raise ValueError("CellProfiler did not find any image files that "
+                             'matched your matching pattern: "%s"' %
+                             self.images[0][FD_COMMON_TEXT])
         
         if (self.group_by_metadata.value and len(self.get_metadata_tags())):
             self.organize_by_metadata(pipeline, image_set_list, files, frame)

@@ -49,7 +49,7 @@ M_ROTATION_F = "%s_%%s"% M_ROTATION_CATEGORY
 class FlipAndRotate(cpm.CPModule):
  
     category = 'Image Processing'
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -146,6 +146,17 @@ class FlipAndRotate(cpm.CPModule):
                 setting_values[10]]      # angle
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab) and variable_revision_number == 1:
+            # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
+            if setting_values[3] == "Mouse":
+                setting_values[3] = ROTATE_MOUSE
+            elif setting_values[3] == "None":
+                setting_values[3] = ROTATE_NONE
+            elif setting_values[3] == "Coordinates":
+                setting_values[3] = ROTATE_COORDINATES
+            elif setting_values[3] == "Angle":
+                setting_values[3] = ROTATE_ANGLE
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
     def prepare_group(self, pipeline, image_set_list, grouping,

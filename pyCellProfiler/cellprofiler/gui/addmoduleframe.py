@@ -113,33 +113,6 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
             
-        if os.access(cellprofiler.preferences.module_directory(), os.R_OK):
-            files = [x for x in os.listdir(cellprofiler.preferences.module_directory())
-                     if os.path.splitext(x)[1] == cellprofiler.preferences.module_extension()]
-        else:
-            files = []
-        files.sort()
-        for file in files:
-            module_path = os.path.join(cellprofiler.preferences.module_directory(),file)
-            fid = open(module_path,'r')
-            try:
-                category = 'Other'
-                for line in fid:
-                    match = re.match('^% Category: (.+)$',line)
-                    if match:
-                        category = match.groups()[0]
-                        break
-                if not self.__module_dict.has_key(category):
-                    self.__module_files.insert(-1,category)
-                    self.__module_dict[category] = {}
-                def loader(module_num, module_path = module_path):
-                    module = cellprofiler.cpmodule.MatlabModule()
-                    module.create_from_file(module_path, module_num)
-                    return module
-                self.__module_dict[category][os.path.splitext(file)[0]] = loader
-            finally:
-                fid.close()
-        
         for mn in cellprofiler.modules.get_module_names():
             def loader(module_num, mn=mn):
                 module = cellprofiler.modules.instantiate_module(mn)

@@ -16,7 +16,7 @@ __version__="$Revision$"
 import sys
 import os
 
-if sys.platform.startswith("win") or False:
+if sys.platform.startswith("win") and False:
     import _get_proper_case_filename
     def get_proper_case_filename(path):
         result = _get_proper_case_filename.get_proper_case_filename(unicode(path))

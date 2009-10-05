@@ -26,7 +26,7 @@ except ImportError:
 
 def configuration():
     extensions = []
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith('win') and False:
         extensions += [Extension(name="_get_proper_case_filename",
                                  sources=["get_proper_case_filename.c"],
                                  libraries=["shlwapi", "shell32", "ole32"],

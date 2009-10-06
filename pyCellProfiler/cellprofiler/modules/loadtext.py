@@ -28,7 +28,7 @@ from cellprofiler.modules.loadimages import LoadImagesImageProvider
 DIR_DEFAULT_IMAGE = 'Default Image Directory'
 DIR_DEFAULT_OUTPUT = 'Default Output Directory'
 DIR_OTHER = 'Elsewhere...'
-DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT]
+DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT,DIR_OTHER]
 
 PATH_NAME = 'PathName'
 FILE_NAME = 'FileName'
@@ -223,7 +223,7 @@ that can be processed by different nodes in a cluster.
     @property
     def legacy_field_key(self):
         '''The key to use to retrieve the metadata from the image set list'''
-        return 'LoadTextMetadata_%s'%str(self.uuid)
+        return 'LoadTextMetadata_%d'%self.module_num
     
     def get_header(self):
         '''Read the header fields from the csv file
@@ -251,7 +251,7 @@ that can be processed by different nodes in a cluster.
     
     def prepare_run(self, pipeline, image_set_list, frame):
         '''Load the CSV file at the outset and populate the image set list'''
-        if self.in_batch_mode():
+        if pipeline.in_batch_mode():
             return True
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
@@ -347,8 +347,16 @@ that can be processed by different nodes in a cluster.
         path_keys = [key for key in dictionary.keys()
                      if key.startswith('Image_PathName_')]
         for key in path_keys:
-            dictionary[key] = fn_alter_path(dictionary[key])
+            dictionary[key] = np.array([fn_alter_path(path) 
+                                        for path in dictionary[key]])
         
+        if self.csv_directory_choice == DIR_DEFAULT_IMAGE:
+            self.csv_directory_choice.value = DIR_OTHER
+            self.csv_custom_directory.value = cpprefs.get_default_image_directory()
+        elif self.csv_directory_choice == DIR_DEFAULT_OUTPUT:
+            self.csv_directory_choice.value = DIR_OTHER
+            self.csv_custom_directory.value = cpprefs.get_default_output_directory()
+        self.csv_custom_directory.value = fn_alter_path(self.csv_custom_directory.value)
         self.image_custom_directory.value = \
             fn_alter_path(self.image_custom_directory.value)
         return True

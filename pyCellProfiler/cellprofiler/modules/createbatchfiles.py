@@ -230,8 +230,9 @@ Press this button to add another path mapping.
         bizarro_self = pipeline.module(self.module_num)
         assert isinstance(bizarro_self, CreateBatchFiles)
         bizarro_self.pickled_image_set_list.value = image_set_list.save_state()
-        bizarro_self.custom_output_directory.value = \
-                    self.alter_path(cpprefs.get_default_output_directory())
+        if self.wants_default_output_directory:
+            bizarro_self.custom_output_directory.value = \
+                        self.alter_path(cpprefs.get_default_output_directory())
         bizarro_self.default_image_directory.value = \
                     self.alter_path(cpprefs.get_default_image_directory())
         bizarro_self.batch_mode.value = True

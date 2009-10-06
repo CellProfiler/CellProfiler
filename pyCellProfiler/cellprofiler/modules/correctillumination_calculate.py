@@ -320,7 +320,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                     progress_dialog = wx.ProgressDialog("#%d: CorrectIllumination_Calculate for %s"%(self.module_num, self.image_name),
                                                         "CorrectIllumination_Calculate is averaging %d images while preparing for run"%(image_set_list.count()),
                                                         image_set_list.count(),
-                                                        frame,
+                                                        None,
                                                         wx.PD_APP_MODAL |
                                                         wx.PD_AUTO_HIDE |
                                                         wx.PD_CAN_ABORT)
@@ -332,7 +332,7 @@ See also Average, CorrectIllumination_Apply, and Smooth modules.
                                                     cache = False)
                     output_image_provider.add_image(image)
                     if not pipeline.in_batch_mode():
-                        should_continue, skip = progress_dialog.Update(i+1)
+                        should_continue, skip = progress_dialog.Update(image_number)
                         if not should_continue:
                             progress_dialog.EndModal(0)
                             return False

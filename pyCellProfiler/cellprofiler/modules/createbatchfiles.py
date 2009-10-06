@@ -290,6 +290,7 @@ Press this button to add another path mapping.
             path = path.replace('/','\\')
         elif (varargs.has_key("regexp_substitution") and
                  varargs["regexp_substitution"]):
+            path = re.subn('\\\\\\\\','/',path)[0]
             path = re.subn('\\\\(?!g\\<[^>]*\\>)','/',path)[0]
         else:
             path = path.replace('\\','/')

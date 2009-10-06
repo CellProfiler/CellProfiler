@@ -122,7 +122,8 @@ class Relate(cpm.CPModule):
                 data = m.get_current_measurement(self.sub_object_name.value,
                                                  feature_name)
                 if data is not None:
-                    means = fix(scind.mean(data, parents_of, parent_indexes))
+                    means = fix(scind.mean(data.astype(float), 
+                                           parents_of, parent_indexes))
                     mean_feature_name = FF_MEAN%(self.sub_object_name.value,
                                                  feature_name)
                     m.add_measurement(self.parent_name.value, mean_feature_name,

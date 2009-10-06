@@ -1,26 +1,30 @@
-"""colortogray.py 
-
-This module converts an image with 3 color channels to an NxM
-grayscale image
-"""
+'''
+<b> Color to Gray</b> converts an image with 3 color channels to 1 <i>or</i> 3 grayscale images.
+<hr>
+Converts RGB (Red, Green, Blue) color images to grayscale. All channels
+can be merged into one grayscale image (<b>combine</b> option) or each channel 
+can be extracted into a separate grayscale image (<b>split</b>  option). If using <i>combine</i>, 
+the <i>relative weights</i> will adjust the contribution of the colors relative to each other.<br>
+<br>
+<b>Note:</b>  this module is helpful as all identify modules require grayscale images.
+<br>
+See also <b>GrayToColor</b>.
+'''
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import wx
 import matplotlib.cm
 import matplotlib.backends.backend_wxagg
 
-"""colortogray.py
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
 __version__="$Revision$"
 
 import cellprofiler.cpmodule as cpm
@@ -33,62 +37,45 @@ COMBINE = "Combine"
 SPLIT = "Split"
 
 class ColorToGray(cpm.CPModule):
-    """SHORT DESCRIPTION:
-Converts RGB (Red, Green, Blue) color images to grayscale. All channels
-can be merged into one grayscale image (COMBINE option) or each channel 
-can be extracted into a separate grayscale image (SPLIT option).
-*************************************************************************
-Note: this module is especially helpful because all identify modules
-require grayscale images.
-
-Settings:
-
-Split:
-Takes a color image and splits the three channels (red, green, blue) into
-three separate grayscale images.
-
-Combine:
-Takes a color image and converts it to grayscale by combining the three
-channels (red, green, blue) together.
-
-Adjustment factors: Leaving the adjustment factors set to 1 will balance
-all three colors equally in the final image, which will use the same
-range of intensities as the incoming image.  To weight colors relative to
-each other, the adjustment factor can be increased (to increase the
-weighting) or decreased (to decrease the weighting).
-
-See also GrayToColor.
-"""
 
     variable_revision_number = 1
     category = "Image Processing"
     
     def create_settings(self):
         self.module_name = "ColorToGray"
-        self.image_name = cps.NameSubscriber("Which image do you want to convert to gray?",
+        self.image_name = cps.NameSubscriber("Select the input image",
                                              "imagegroup","None")
-        self.combine_or_split = cps.Choice("How do you want to convert the color image?",
-                                           [COMBINE,SPLIT])
+        self.combine_or_split = cps.Choice("Method",
+                                           [COMBINE,SPLIT],doc='''<b>How do you want to convert the color image? Split:</b> takes a color image and 
+            splits the three channels (red, green, blue) into three separate grayscale images. <b>Combine:</b>
+            takes a color image and converts it to a grayscale image by combining the three channels (red, 
+            green, blue) together.''')
         
         # The following settings are used for the combine option
-        self.grayscale_name = cps.NameProvider("What do you want to call the resulting grayscale image?",
+        self.grayscale_name = cps.NameProvider("Name the output image",
                                                "imagegroup","OrigGray")
-        self.red_contribution = cps.Float("Enter the relative contribution of the red channel",
-                                          1,0)
-        self.green_contribution = cps.Float("Enter the relative contribution of the green channel",
-                                            1,0)
-        self.blue_contribution = cps.Float("Enter the relative contribution of the blue channel",
-                                           1,0)
+        self.red_contribution = cps.Float("Relative weight of the red channel:",
+                                          1,0,doc='''Relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.green_contribution = cps.Float("Relative weight of the green channel:",
+                                            1,0,doc='''Relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.blue_contribution = cps.Float("Relative weight of the blue channel:",
+                                           1,0,doc='''Relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
         
         # The following settings are used for the split option
-        self.use_red = cps.Binary('Create an image from the red channel?',True)
-        self.red_name = cps.NameProvider('What do you want to call the image that was red?',
+        self.use_red = cps.Binary('Convert red to gray?',True)
+        self.red_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigRed")
-        self.use_green = cps.Binary('Create an image from the green channel?',True)
-        self.green_name = cps.NameProvider('What do you want to call the image that was green?',
+        self.use_green = cps.Binary('Convert green to gray?',True)
+        self.green_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigGreen")
-        self.use_blue = cps.Binary('Create an image from the blue channel?',True)
-        self.blue_name = cps.NameProvider('What do you want to call the image that was blue?',
+        self.use_blue = cps.Binary('Convert blue to gray?',True)
+        self.blue_name = cps.NameProvider('Name the output image',
                                          "imagegroup","OrigBlue")
 
     def visible_settings(self):

@@ -412,7 +412,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
             # Add an outline if asked to do so
             #
             if wants_outlines:
-                outline_image = cpi.Image(outline(target_labels),
+                outline_image = cpi.Image(outline(target_labels) > 0,
                                           parent_image = target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 

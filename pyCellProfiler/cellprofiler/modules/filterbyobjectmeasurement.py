@@ -16,6 +16,7 @@ import numpy as np
 import scipy.ndimage as scind
 import uuid
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -373,7 +374,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
         # Loop over both the primary and additional objects
         #
         object_list = ([(self.object_name.value, self.target_name.value,
-                         self.wants_outlines.value, self.outlines_name)] + 
+                         self.wants_outlines.value, self.outlines_name.value)] + 
                        [(x.object_name.value, x.target_name.value, 
                          x.wants_outlines.value, x.outlines_name.value)
                          for x in self.additional_objects])
@@ -411,8 +412,9 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
             # Add an outline if asked to do so
             #
             if wants_outlines:
-                outline_image = outline(target_labels)
-                workspace.add_outline(outlines_name, outline_image)
+                outline_image = cpi.Image(outline(target_labels),
+                                          parent = target_objects.parent_image)
+                workspace.image_set.add(outlines_name, outline_image)
 
         if not workspace.frame is None:
             self.display(workspace)

@@ -226,6 +226,13 @@ class Measurements(object):
             image_set_index = self.image_set_index
         result = ''
         while True:
+            # Replace double \\ with \
+            m = re.search('\\\\\\\\', pattern)
+            if m:
+                result += pattern[:m.start()]+'\\'
+                pattern = pattern[m.end():]
+                continue
+            # Replace a tag
             m = re.search('\\(\\?[<](.+?)[>]\\)', pattern)
             if not m:
                 m = re.search('\\\\g[<](.+?)[>]', pattern)

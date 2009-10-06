@@ -413,7 +413,7 @@ MeasureCorrelation, CalculateRatios, and MeasureObjectNeighbors modules.
             #
             if wants_outlines:
                 outline_image = cpi.Image(outline(target_labels),
-                                          parent = target_objects.parent_image)
+                                          parent_image = target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
         if not workspace.frame is None:

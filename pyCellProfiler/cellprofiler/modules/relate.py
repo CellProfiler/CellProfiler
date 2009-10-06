@@ -46,8 +46,6 @@ FF_CHILDREN_COUNT = "Children_%s_Count"
 
 FF_MEAN = 'Mean_%s_%s'
 
-FF_SUB_OBJECT_FLAG = 'SubObjectFlag'
-
 class Relate(cpm.CPModule):
 
     category = "Object Processing"
@@ -131,9 +129,6 @@ class Relate(cpm.CPModule):
         m.add_measurement(self.sub_object_name.value,
                           FF_PARENT%(self.parent_name.value),
                           parents_of)
-        m.add_measurement(self.sub_object_name.value,
-                          FF_SUB_OBJECT_FLAG,
-                          np.ones(len(parents_of), int))
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
@@ -155,9 +150,6 @@ class Relate(cpm.CPModule):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,
                     FF_PARENT%(self.parent_name.value),
-                    cpmeas.COLTYPE_INTEGER),
-                   (self.sub_object_name.value,
-                    FF_SUB_OBJECT_FLAG,
                     cpmeas.COLTYPE_INTEGER),
                    (self.parent_name.value,
                     FF_CHILDREN_COUNT%self.sub_object_name.value,

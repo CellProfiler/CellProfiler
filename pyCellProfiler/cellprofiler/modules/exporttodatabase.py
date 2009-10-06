@@ -423,7 +423,6 @@ Step 7: Run FINISH script: "@DefaultDB_FINISH.SQL"
     def ignore_feature(self, object_name, feature_name, measurements=None):
         """Return true if we should ignore a feature"""
         if (self.ignore_object(object_name) or 
-            feature_name == "SubObjectFlag" or 
             feature_name.startswith('Description_') or 
             feature_name.startswith('ModuleError_') or 
             feature_name.startswith('TimeElapsed_') or 

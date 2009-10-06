@@ -1,15 +1,68 @@
-'''measureimagegranularity.py - Measure image granularity module
+'''<b>Measure image granularity</b> outputs a spectra of size measurements 
+of the textures in the image.
+<hr>
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+Image granularity is a texture measure that tries a series of structure elements 
+of increasing size and outputs a spectrum of measures of how well these structure 
+elements fit in the texture of the image. Granularity is measured as described by 
+Ilya Ravkin (ref below). The size of the starting structure element as well as the
+length of the spectrum is given as input. The module returns one measurement 
+for each instant of the granularity spectrum.
+<br><br>
+Image sampling: If the textures of interest are larger than a few pixels, it is recommended 
+to subsample the image with a factor &lt;1 to speed up the processing. Down sampling the 
+image will let you detect larger structures with a smaller sized structure element.
+<br><br>
+More detail: The subsampling fraction is to compensate for the
+usually oversampled images; at least they are oversampled in both
+Transfluor library image sets. Subsampling by 1/4 reduces computation time by (1/4)^3 because the size
+of the image is (1/4)^2 of original and length of granular spectrum can
+be 1/4 of original. Moreover, the results were actually a little better
+with subsampling, which is probably because with subsampling the
+individual granular spectrum components can be used as features, whereas
+without subsampling a feature should be a sum of several adjacent
+granular spectrum components. The recommendation on the numerical value
+can't be given in advance; an analysis like in the above reference is
+required before running the whole set.
+See <a href="http://www.ravkin.net/presentations/">
+http://www.ravkin.net/presentations/Statistical_properties_of_algorithms_for_analysis_of_cell_images.pdf</a> 
+slides 27-31, 49-50.
+<br><br>
+It is also important to remove low frequency image background variations as 
+they will affect the final granularity measure. Any method can be used (as 
+a pre-processing step to this module). This module simply subtracts a highly 
+open image, where the degree of opening is decided by how much the image is 
+down sampled before opening.
+<br><br>
+References:<i>
+<br><br>
+J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
+Press, London, 1989 Maragos,P. "Pattern spectrum and multiscale shape
+representation", IEEE Transactions on Pattern Analysis and Machine
+Intelligence, 11, N 7, pp. 701-716, 1989
+<br><br>
+L.Vincent "Granulometries and Opening Trees", Fundamenta Informaticae,
+41, No. 1-2, pp. 57-90, IOS Press, 2000.
+<br><br>
+L.Vincent "Morphological Area Opening and Closing for Grayscale Images",
+Proc. NATO Shape in Picture Workshop, Driebergen, The Netherlands, pp.
+197-208, 1992.
+<br><br>
+I.Ravkin, V.Temov "Bit representation techniques and image processing",
+Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
+1988 (in Russian)</i>
 '''
+
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 
 __version__="$Revision$"
 
@@ -28,75 +81,6 @@ import cellprofiler.cpmath.cpmorphology as morph
 C_GRANULARITY = "Granularity"
 
 class MeasureImageGranularity(cpm.CPModule):
-    '''SHORT DESCRIPTION:
-This module measures the image granularity as described by Ilya Ravkin.
-*************************************************************************
-
-Image granularity can be useful to measure particular assays, in
-particular the "Transfluor" assay which depends on cellular
-texture/smoothness.
-
-The module returns one measurement for each granular spectrum length between
-1 and the maximum.
-
-Settings for this module:
-
-Subsampling size: Only a subsample of the image is processed, to speed up
-the calculation. Increasing the fraction will increase the accuracy but
-will require more processing time. Images are typically of higher
-resolution than is required for this step, so the default is to subsample
-25of the image. For low-resolution images, increase the subsampling
-fraction and for high-resolution images, decrease the subsampling
-fraction. More detail: The subsampling fraction is to compensate for the
-usually oversampled images; at least they are oversampled in both
-Transfluor library image sets. See
-http://www.ravkin.net/presentations/Statistical20properties20of20algor
-ith ms20for20analysis20of20cell20images.pdf slides 27-31, 49-50.
-Subsampling by 1/4 reduces computation time by (1/4)^3 because the size
-of the image is (1/4)^2 of original and length of granular spectrum can
-be 1/4 of original. Moreover, the results were actually a little better
-with subsampling, which is probably because with subsampling the
-individual granular spectrum components can be used as features, whereas
-without subsampling a feature should be a sum of several adjacent
-granular spectrum components. The recommendation on the numerical value
-can't be given in advance; an analysis like in the above reference is
-required before running the whole set.
-
-Subsample fraction: Background removal is just to remove low frequency in
-the image. Any method can be used. We subtract a highly open image. To do
-it fast we subsample the image first. The subsampling fraction is usually
-[0.125 - 0.25].  This is highly empirical. The significance of background
-removal in the context of granulometry is only in that image volume at
-certain thickness is normalized by total volume, which depends on how the
-background was removed.
-
-Structuring element size: Radius of the structuring element (in
-subsampled image). Radius of structuring element after subsampling is
-usually [6-16]. It is better to think of this radius in the original
-image scale and then to multiply by subsampling fraction. In the original
-image scale it should be [30-60]. This is highly empirical.
-
-Granular Spectrum Length (default = 16): Needs a trial run to see which
-Granular Spectrum Length yields informative measurements.
-
-
-References for Granular Spectrum:
-J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic
-Press, London, 1989 Maragos,P. "Pattern spectrum and multiscale shape
-representation", IEEE Transactions on Pattern Analysis and Machine
-Intelligence, 11, N 7, pp. 701-716, 1989
-
-L.Vincent "Granulometries and Opening Trees", Fundamenta Informaticae,
-41, No. 1-2, pp. 57-90, IOS Press, 2000.
-
-L.Vincent "Morphological Area Opening and Closing for Grayscale Images",
-Proc. NATO Shape in Picture Workshop, Driebergen, The Netherlands, pp.
-197-208, 1992.
-
-I.Ravkin, V.Temov "Bit representation techniques and image processing",
-Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow,
-1988 (in Russian)
-'''
     category = "Measurement"
     variable_revision_number = 1
     def create_settings(self):
@@ -273,20 +257,41 @@ class ImageSetting(object):
         self.can_delete = can_delete
         self.key = uuid.uuid4()
         self.image_name = cps.ImageNameSubscriber(
-            "What did you call the image whose granularity you would like to measure?",
+            "Select the input image",
             "None")
         self.subsample_size = cps.Float(
-            "What do you want the image subsample size to be?",
-            .25, minval = np.finfo(float).eps, maxval = 1)
+            "Subsampling factor for granularity measurements",
+            .25, minval = np.finfo(float).eps, maxval = 1,doc='''Subsampling factor for granularity 
+            measurements: If the textures of 
+            interest are larger than a few pixels, it is recommended to subsample the image with a factor 
+            &lt;1 to speed up the processing. Down sampling the image will let you detect larger 
+            structures with a smaller sized structure element. A factor &gt;1 will increase the accuracy 
+            but also require more processing time. Images are typically of higher resolution than is 
+            required for granularity measurements, so the default is 0.25. For low-resolution images, 
+            increase the subsampling fraction and for high-resolution images, decrease the subsampling 
+            fraction. ''')
         self.image_sample_size = cps.Float(
-            "What fraction of the resulting image do you want to sample?",
-            .25, minval = np.finfo(float).eps, maxval = 1)
+            "Subsampling factor for background reduction",
+            .25, minval = np.finfo(float).eps, maxval = 1,doc='''Reduce background: It is important to 
+            remove low frequency image background variations as they will affect the final granularity 
+            measure. Here we simply subtract a highly open image. To do it fast we subsample the image 
+            first. The subsampling factor for background reduction is usually [0.125 - 0.25].  This is 
+            highly empirical, but a small factor should be use if the structures of interest are large. The 
+            significance of background removal in the context of granulometry is that image 
+            volume at certain granular size is normalized by the total image volume, which depends on 
+            how the background was removed.''')
         self.element_size = cps.Integer(
-            "What is the size of the structuring element?",
-            10, minval = 1)
+            "Radius of structuring element",
+            10, minval = 1,doc='''Radius of the structuring element: 
+            This radius should correspond to the radius of the textures of interest <i>after</i> 
+            subsampling. I.e., if textures in the original image scale have a radius of 40 
+            pixels, and a subsampling factor of 0.25 is used, the structuring element size should be
+            10, or slightly smaller, and the range of the spectrum defined below will cover more sizes.''')
         self.granular_spectrum_length = cps.Integer(
-            "What do you want to be the length of the granular spectrum?",
-            16, minval = 1)
+            "Length of the granular spectrum",
+            16, minval = 1,doc='''Granular spectrum length: Needs a trial run to see which Granular 
+            Spectrum Length yields informative measurements. Start by using a wide spectrum, and 
+            narrow it down to the informative range to save time.''')
         if can_delete:
             def remove():
                 index = [x.key for x in image_settings].index(self.key)

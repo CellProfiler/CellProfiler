@@ -1,15 +1,32 @@
-"""measureimageareaoccupied.py - measure the area of an image occupied by objects
+"""<b> Measure Image Area Occupied</b>
+measures total image area occupied by objects
+<hr>
+This module reports the sum of the areas of the objects defined by one
+of the Identify modules (<b>IdentifyPrimAutomatic</b>, <b>IdentifyPrimSecondary</b>, etc.).
+Both the area occupied and the total image area will respect
+the masking, if any, of the primary image used by the Identify module.
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
+If you want to threshold an image and then measure the number of pixels
+above that threshold, this can be done by using this module together with IdentifyPrimAutomatic as
+your thresholder.
+<br>
+<br>
+Features that can be measured by this module:
+<ul>
+<li>AreaOccupied
+<li>TotalImageArea
+</ul>
 """
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
+
 __version__ = "$Revision$"
 
 import numpy as np
@@ -26,38 +43,6 @@ F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
 F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
 
 class MeasureImageAreaOccupied(cpm.CPModule):
-    """% SHORT DESCRIPTION:
-Measures total area occupied by objects within an image
-*************************************************************************
-This module reports the sum of the areas of the objects segmented by one
-of the Identify modules (IdentifyPrimAutomatic, IdentifyPrimSecondary, etc.).
-The numbers it reports are those of the filtered image, so they may exclude
-objects touching the image boundary and objects filtered out because of
-their size. Both the area occupied and the total image area will respect
-the masking, if any, of the primary image used by the Identify module.
-
-You may want to threshold an image and then measure the number of pixels
-above that threshold. This can be done by using IdentifyPrimAutomatic as
-your thresholder. If you use it for this purpose, you may want to turn off
-features that either filter out images (Discard objects touching the border,
-Discard too-small objects).
-
-Features measured:
-AreaOccupied
-TotalImageArea
-
-Settings:
-
-What is the name of the object in which you want to measure the image area?
-This is the object name that is specified in one of the Identify modules
-from earlier in the pipeline.
-
-Do you want to save the object labels as a binary image?
-You can check the checkbox for this option and fill in a name in the text
-box that appears below the checkbox if you want to create a binary image
-of the labeled pixels being processed by this  module.
-"""
-
     category = "Measurement"
     variable_revision_number = 1
     
@@ -66,9 +51,16 @@ of the labeled pixels being processed by this  module.
         
         """
         self.module_name = "MeasureImageAreaOccupied"
-        self.object_name = cps.ObjectNameSubscriber("What is the name of the object in which you want to measure the image area?","None")
-        self.should_save_image = cps.Binary("Do you want to save the object labels as a binary image?",False)
-        self.image_name = cps.ImageNameProvider("What do you want to call the output binary image showing the object area occupied? (StainName)","Stain")
+        self.object_name = cps.ObjectNameSubscriber("Select the object name","None",
+            doc='''What is the name of the object for which you want to measure the occupied image area? 
+            This is the object name that was specified in one of the Identify modules from earlier 
+            in the pipeline.''')
+        self.should_save_image = cps.Binary("Save object labels as a binary image?",False,
+            doc='''You can check the checkbox for this option and fill in a name in the text box that 
+            appears below the checkbox if you want to create a binary image of the labeled pixels being 
+            processed by this  module.''')
+        self.image_name = cps.ImageNameProvider("Name the output binary image",
+            "Stain",doc='''What do you want to call the output binary image showing the area occupied by objects?''')
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):

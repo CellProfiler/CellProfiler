@@ -1,15 +1,22 @@
-"""graytocolor.py - the GrayToColor module
+'''
+<b> Gray to Color</b> takes up to 3 grayscale images and and produces a
+new color (RGB) image. 
+<hr>
+This module takes 1 to 3 grayscale images as input and assigns them to colors in a final red, green,
+blue (RGB) image. Each color's brightness is adjusted independently by using relative weights.
+<br>
+See also <b>ColorToGray</b>.'''
 
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+#CellProfiler is distributed under the GNU General Public License.
+#See the accompanying file LICENSE for details.
+#
+#Developed by the Broad Institute
+#Copyright 2003-2009
+#
+#Please see the AUTHORS file for credits.
+#
+#Website: http://www.cellprofiler.org
 
-Developed by the Broad Institute
-Copyright 2003-2009
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
 __version__="$Revision$"
 
 import numpy as np
@@ -27,56 +34,36 @@ OFF_GREEN_ADJUSTMENT_FACTOR = 5
 OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
 class GrayToColor(cpm.CPModule):
-    """SHORT DESCRIPTION:
-Takes 1 to 3 images and assigns them to colors in a final red, green,
-blue (RGB) image. Each color's brightness can be adjusted independently.
-*************************************************************************
-
-This module takes up to three grayscale images as inputs, and produces a
-new color (RGB) image which results from assigning each of the input
-images the colors red, green, and blue in the color image, respectively.
-In addition, each color's intensity can be adjusted independently by
-using adjustment factors (see below).
-
-Settings:
-
-Choose the input images: You must select at least one image which you
-would like to use to create the color image. Also, all images must be the
-same size, since they will combined pixel by pixel.
-
-Adjustment factors: Leaving the adjustment factors set to 1 will balance
-all three colors equally in the final image, and they will use the same
-range of intensities as each individual incoming image. Using factors
-less than 1 will decrease the intensity of that color in the final image,
-and values greater than 1 will increase it. Setting the adjustment factor
-to zero will cause that color to be entirely blank.
-
-See also ColorToGray.
-    """
     variable_revision_number = 1
     category = "Image Processing"
     def create_settings(self):
         self.module_name = 'GrayToColor'
-        self.red_image_name = cps.ImageNameSubscriber("What did you call the image to be colored red?",
+        self.red_image_name = cps.ImageNameSubscriber("Select input image to be colored red",
                                                       can_be_blank = True,
                                                       blank_text = "Leave this black")
-        self.green_image_name = cps.ImageNameSubscriber("What did you call the image to be colored green?",
+        self.green_image_name = cps.ImageNameSubscriber("Select input image to be colored green?",
                                                         can_be_blank = True,
                                                         blank_text = "Leave this black")
-        self.blue_image_name = cps.ImageNameSubscriber("What did you call the image to be colored blue?",
+        self.blue_image_name = cps.ImageNameSubscriber("Select input image to be colored blue?",
                                                        can_be_blank = True,
                                                        blank_text = "Leave this black")
-        self.rgb_image_name = cps.ImageNameProvider("What do you want to call the resulting image?",
+        self.rgb_image_name = cps.ImageNameProvider("Name the output image",
                                                     "ColorImage")
-        self.red_adjustment_factor = cps.Float("Enter the adjustment factor for the red image:",
+        self.red_adjustment_factor = cps.Float("Relative weight for the red image:",
                                                value=1,
-                                               minval=0)
-        self.green_adjustment_factor = cps.Float("Enter the adjustment factor for the green image:",
+                                               minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.green_adjustment_factor = cps.Float("Relative weight for the green image:",
                                                  value=1,
-                                                 minval=0)
-        self.blue_adjustment_factor = cps.Float("Enter the adjustment factor for the blue image:",
+                                                 minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
+        self.blue_adjustment_factor = cps.Float("Relative weight for the blue image:",
                                                 value=1,
-                                                minval=0)
+                                                minval=0,doc='''Enter the relative weights: If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, the relative
+            weights can be increased or decreased.''')
     
     def settings(self):
         return [self.red_image_name, self.green_image_name, self.blue_image_name,

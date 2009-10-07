@@ -75,9 +75,13 @@ def cooccurrence(quantized_image, labels, scale=3):
                  (labels[:,:-scale] > 0))
     if np.any(equilabel):
             
-        P, bins_P = np.histogramdd([labels_ab[equilabel]-1, image_a[equilabel],
-                                    image_b[equilabel]],
-                                   (nobjects, nlevels, nlevels))
+	Q = (nlevels*nlevels*(labels_ab[equilabel]-1)+
+	     nlevels*image_a[equilabel]+image_b[equilabel])
+	R = np.bincount(Q)
+	if R.size != nobjects*nlevels*nlevels:
+	    S = zeros(nobjects*nlevels*nlevels-R.size)
+	    R = hstack((R, S))
+	P = R.reshape(nobjects, nlevels, nlevels)
         pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
                                     np.arange(nobjects)+1))
         pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],

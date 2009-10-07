@@ -294,7 +294,10 @@ class PipelineListView(object):
                     if self.__pipeline_movie.slider.value >= module.module_num:
                         self.__pipeline_movie.slider.value = module.module_num - 1
                     return
-
+                
+    def on_stop_debugging(self):
+        self.__pipeline_movie.slider.value = 0
+        
     def on_idle(self,event):
         modules = self.__pipeline.modules()
         for idx,module in zip(range(len(modules)),modules):

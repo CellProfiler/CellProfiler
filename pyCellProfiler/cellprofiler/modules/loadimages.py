@@ -1050,7 +1050,20 @@ class LoadImages(cpmodule.CPModule):
             cols += [('Image', 'Metadata_'+token, cpm.COLTYPE_VARCHAR_PATH_NAME) for token in tokens]
         
         return cols
-            
+    
+    def check_for_prepare_run_setting(self, setting):
+        '''Check to see if changing the given setting means you have to restart
+        
+        Some settings, esp in modules like LoadImages, affect more than
+        the current image set when changed. For instance, if you change
+        the name specification for files, you have to reload your image_set_list.
+        Override this and return True if changing the given setting means
+        that you'll have to do "prepare_run".
+        '''
+        #
+        # It's safest to say that any change in loadimages requires a restart
+        #
+        return True
             
             
 def is_image(filename):

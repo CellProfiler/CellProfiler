@@ -258,12 +258,22 @@ class PipelineController:
                 if self.__setting_errors.has_key(setting.key()):
                     self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))                    
             self.__pipeline.remove_module(module.module_num)
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
             
     def on_module_up(self,event):
         """Move the currently selected modules up"""
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
             self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_UP);
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
@@ -271,6 +281,11 @@ class PipelineController:
         selected_modules.reverse()
         for module in selected_modules:
             self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_DOWN);
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
     
     def on_add_to_pipeline(self,caller,event):
         """Add a module to the pipeline using the event's module loader"""
@@ -281,6 +296,11 @@ class PipelineController:
             # insert module last if nothing selected
             module_num = len(self.__pipeline.modules())+1 
         self.__pipeline.add_module(event.module_loader(module_num))
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
         
     def __on_module_view_event(self,caller,event):
         assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
@@ -288,6 +308,17 @@ class PipelineController:
         proposed_value = event.get_proposed_value()
         setting.value = proposed_value
         self.__pipeline.edit_module(event.get_module().module_num)
+        if self.is_in_debug_mode():
+            #
+            # If someone edits a really important setting in debug mode,
+            # then you want to reset the debugger to reprocess the image set
+            # list.
+            #
+            for module in self.__pipeline.modules():
+                setting = event.get_setting()
+                if setting in module.settings():
+                    if module.check_for_prepare_run_setting(event.get_setting()):
+                        self.stop_debugging()
             
     def on_analyze_images(self,event):
         if len(self.__setting_errors):
@@ -349,6 +380,7 @@ class PipelineController:
         self.__debug_measurements = None
         self.__debug_object_set = None
         self.__debug_outlines = None
+        self.__pipeline_list_view.on_stop_debugging()
     
     def on_debug_step(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()

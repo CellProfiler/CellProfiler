@@ -326,6 +326,17 @@ class CPModule(object):
         '''Return True if the module knows that the pipeline is in batch mode'''
         return None
     
+    def check_for_prepare_run_setting(self, setting):
+        '''Check to see if changing the given setting means you have to restart
+        
+        Some settings, esp in modules like LoadImages, affect more than
+        the current image set when changed. For instance, if you change
+        the name specification for files, you have to reload your image_set_list.
+        Override this and return True if changing the given setting means
+        that you'll have to do "prepare_run".
+        '''
+        return False
+    
     def turn_off_batch_mode(self):
         '''Reset the module to an editable state if batch mode is on
         

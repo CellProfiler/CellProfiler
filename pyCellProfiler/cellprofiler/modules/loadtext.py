@@ -482,6 +482,19 @@ that can be processed by different nodes in a cluster.
                     if x.split('_')[0] == category]
         except:
             return []
+        
+    def check_for_prepare_run_setting(self, setting):
+        '''Check to see if changing the given setting means you have to restart
+        
+        Some settings, esp in modules like LoadImages, affect more than
+        the current image set when changed. For instance, if you change
+        the name specification for files, you have to reload your image_set_list.
+        Override this and return True if changing the given setting means
+        that you'll have to do "prepare_run".
+        '''
+        if self.wants_images or setting == self.wants_images:
+            return True
+        return False
 
 def best_cast(sequence):
     '''Return the best cast (integer, float or string) of the sequence

@@ -1073,7 +1073,7 @@ class Measurement(Setting):
                                                         category,
                                                         feature_name,
                                                         image_name))
-        result = list(scales)
+        result = [str(scale) for scale in scales]
         result.sort()
         return result
         
@@ -1105,7 +1105,8 @@ class Measurement(Setting):
             len(self.get_image_name_choices(pipeline))):
             raise ValidationError("%s has an unavailable image name" %
                                   self.value, self)
-        if self.get_scale(pipeline) and len(self.get_scale_choices(pipeline)):
+        if (self.get_scale(pipeline) not in self.get_scale_choices(pipeline)
+            and len(self.get_scale_choices(pipeline)) > 0):
             raise ValidationError("%s has an unavailable scale" %
                                   self.value, self)
 

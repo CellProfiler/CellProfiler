@@ -272,8 +272,8 @@ class MeasureTexture(cpm.CPModule):
         object_name - name of objects being measured
         category - measurement category
         '''
-        if len(self.get_categories(pipeline, object_name)) > 0:
-            return F_HARALICK
+        if category in self.get_categories(pipeline, object_name):
+            return F_HARALICK+[F_GABOR]
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):

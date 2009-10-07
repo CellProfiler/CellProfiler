@@ -43,41 +43,14 @@ from cellprofiler.cpmath.cpmorphology import skeletonize_labels, spur
 from cellprofiler.cpmath.outline import outline
 
 O_SHRINK_INF = 'Shrink objects to a point'
-TT_SHRINK_INF = '''Remove all pixels but one from filled objects. Thin objects
-with holes to loops unless the "fill" option is checked.'''
 O_EXPAND_INF = 'Expand objects until touching'
-TT_EXPAND_INF = '''Expand objects, assigning every pixel in the image to an
-object. Background pixels are assigned to the nearest object'''
 O_DIVIDE = 'Add partial dividing lines between objects'
-TT_DIVIDE = '''Remove pixels from an object that are adjacent to another
-object's pixels unless doing so would change the object's Euler number
-(break an object in two, remove the object completely or open a hole in
-an object)'''
 O_SHRINK = 'Shrink objects by a specified number of pixels'
-TT_SHRINK = '''Remove pixels around the perimeter of an object unless doing
-so would break the object in two, remove the object completely or open
-a hole in the object. The user can choose the number of times to remove
-perimeter pixels. Processing stops automatically when there are no more
-pixels to remove.'''
 O_EXPAND = 'Expand objects by a specified number of pixels'
-TT_EXPAND = '''Expand each object by adding background pixels adjacent to the
-image. The user can choose the number of times to expand. Processing stops
-automatically if there are no more background pixels.'''
 O_SKELETONIZE = 'Skeletonize each object'
-TT_SKELETONIZE = '''Erode each object to its skeleton'''
 O_SPUR = 'Remove spurs'
-TT_SPUR = '''Remove or reduce the length of spurs in a skeletonized image.
-The algorithm reduces spur size by the number of pixels indicated in the
-setting "Enter the number of pixels by which to expand or shrink."'''
 O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
-TT_ALL = {O_SHRINK_INF:  TT_SHRINK_INF, 
-          O_EXPAND_INF:  TT_EXPAND_INF,
-          O_DIVIDE:      TT_DIVIDE, 
-          O_SHRINK:      TT_SHRINK,
-          O_EXPAND:      TT_EXPAND,
-          O_SKELETONIZE: TT_SKELETONIZE,
-          O_SPUR:        TT_SPUR}
 
 DOC_FILL_HOLES = '''The shrink algorithm preserves each object's Euler number
 which means that it will erode an object with a hole to a ring in order to
@@ -97,7 +70,7 @@ class ExpandOrShrink(cpm.CPModule):
         self.output_object_name = cps.ObjectNameProvider("What do you want to call the resulting objects?", 
                                                          "ShrunkenNuclei")
         self.operation = cps.Choice("What operation do you want to perform?",
-                                    O_ALL, tooltips = TT_ALL, doc = '''
+                                    O_ALL,  doc = '''
                                     <ul><li>Shrink objects to a point: Remove all pixels but one from filled objects. Thin objects
                                     with holes to loops unless the "fill" option is checked.</li>
                                     <li>Expand objects until touching: Expand objects, assigning every pixel in the image to an

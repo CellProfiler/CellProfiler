@@ -28,19 +28,11 @@ R_TO_SIZE = "Resize to a size in pixels"
 R_ALL = [R_BY_FACTOR, R_TO_SIZE]
 
 I_NEAREST_NEIGHBOR = 'Nearest Neighbor'
-TT_NEAREST_NEIGHBOR = '''Each output pixel is given the intensity of the nearest
-corresponding pixel in the input image'''
-
 I_BILINEAR = 'Bilinear'
-TT_BILINEAR = '''Each output pixel is given the intensity of the weighted average
-of the 2x2 neighborhood at the corresponding position in the input image.'''
 I_BICUBIC = 'Bicubic'
-TT_BICUBIC = '''Each output pixel is given the intensity of the weighted average
-of the 4x4 neighborhood at the corresponding position in the input image.'''
+
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
-TT_ALL = {I_NEAREST_NEIGHBOR:TT_NEAREST_NEIGHBOR, 
-          I_BILINEAR: TT_BILINEAR, 
-          I_BICUBIC: TT_BICUBIC }
+
 
 class Resize(cpm.CPModule):
 
@@ -59,7 +51,7 @@ class Resize(cpm.CPModule):
         self.specific_width = cps.Integer("Enter the width of the final image:", 100, minval=1)
         self.specific_height = cps.Integer("Enter the height of the final image:", 100, minval=1)
         self.interpolation = cps.Choice("Enter the interpolation method",
-                                        I_ALL,tooltips=TT_ALL, doc = '''<ul><li>Nearest Neighbor: Each output pixel is given the intensity of the nearest
+                                        I_ALL, doc = '''<ul><li>Nearest Neighbor: Each output pixel is given the intensity of the nearest
                                         corresponding pixel in the input image.</li>
                                         <li>Bilinear: Each output pixel is given the intensity of the weighted average
                                         of the 2x2 neighborhood at the corresponding position in the input image.</li>

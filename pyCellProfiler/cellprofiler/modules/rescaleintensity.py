@@ -42,52 +42,6 @@ M_ALL = [M_STRETCH, M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE,
          M_DIVIDE_BY_VALUE, M_DIVIDE_BY_MEASUREMENT, 
          M_SCALE_BY_IMAGE_MAXIMUM, M_CONVERT_TO_8_BIT]
 
-M_TOOLTIPS = {
-              M_STRETCH:
-'''Find the minimum and maximum values within the unmasked part of the image
-(or the whole image if there is no mask) and rescale every pixel so that
-the minimum has an intensity of zero and the maximum has an intensity of
-one.''',
-              M_MANUAL_INPUT_RANGE:
-'''Enter the minimum and maximum values of the original image. Pixels are
-scaled from their user-specified original range to the range, 0 to 1.
-Options are available to handle values outside of the original range.
-    
-To convert 12-bit images saved in 16-bit format to the correct range,
-use the range, 0 to 0.0625. The value 0.0625 is equivalent 
-to 2^12 divided by 2^16, so it will convert a 16 bit image containing 
-only 12 bits of data to the proper range.''',
-              M_MANUAL_IO_RANGE:
-'''Enter the minimum and maximum values of the original image and of
-the target image. Pixels are scaled from their original range to
-the new target range. Options are available to handle values outside
-of the original range.''',
-              M_DIVIDE_BY_IMAGE_MINIMUM:
-'''Divide the intensity value of each pixel by the image's minimum intensity
-value so that all pixel intensities are equal to or greater than 1.
-You can use the output from this option in CorrectIllumination_Apply.
-The image becomes an illumination correction function.''',
-              M_DIVIDE_BY_IMAGE_MAXIMUM:
-'''Divide the intensity value of each pixel by the image's maximum intensity
-value so that all pixel intensities are less than or equal to 1.''', 
-              M_DIVIDE_BY_VALUE:
-'''Divide the intensity value of each pixel by the value entered.''',
-              M_DIVIDE_BY_MEASUREMENT:
-'''Divide the intensity value of each pixel by some previously calculated
-measurement. This measurement can be the output of some other module
-or can be a value loaded by the LoadText module.''',
-              M_SCALE_BY_IMAGE_MAXIMUM:
-'''Scale an image so that its maximum value is the same as the maximum value
-within the target image.''',
-              M_CONVERT_TO_8_BIT:
-'''Images in CellProfiler are normally stored as a floating point number in
-the range of 0 to 1. This option converts these images to class uint8, 
-meaning an 8 bit integer in the range of 0 to 255.  This is useful to
-reduce the amount of memory required to store the image. Warning: Most
-CellProfiler modules require the incoming image to be in the standard 0
-to 1 range, so this conversion may cause downstream modules to behave 
-unexpectedly.'''
-              }
 
 R_SCALE = 'Scale similarly to others'
 R_MASK = 'Mask pixels'
@@ -105,7 +59,7 @@ class RescaleIntensity(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber("What did you call the image to be rescaled?","None")
         self.rescaled_image_name = cps.ImageNameProvider("What do you want to call the rescaled image?","RescaledBlue")
         self.rescale_method = cps.Choice('Which rescaling method do you want to use?',
-                                         choices=M_ALL,tooltips = M_TOOLTIPS, doc='''There are nine options for rescaling the input image: 
+                                         choices=M_ALL, doc='''There are nine options for rescaling the input image: 
                                          <ul><li>Stretch each image to use the full intensity range: Find the minimum and maximum values within the unmasked part of the image 
                                          (or the whole image if there is no mask) and rescale every pixel so that 
                                          the minimum has an intensity of zero and the maximum has an intensity of one.</li>

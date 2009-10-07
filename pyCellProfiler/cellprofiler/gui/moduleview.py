@@ -150,6 +150,16 @@ def image_control_name(v):
 def image_text_control_name(v):
     return "%s_image_text"%(str(v.key()))
 
+def object_control_name(v):
+    '''For measurements, return the control that sets the object name
+
+    v - the setting
+    '''
+    return "%s_object"%(str(v.key()))
+
+def object_text_control_name(v):
+    return "%s_object_text"%(str(v.key()))
+
 def scale_control_name(v):
     '''For measurements, return the control that sets the measurement scale
 
@@ -711,14 +721,22 @@ class ModuleView:
         Category - a measurement category like AreaShape or Intensity
         Feature name - the feature being measured or algorithm applied
         Image name - an optional image that was used to compute the measurement
+        Object name - an optional set of objects used to compute the measurement
         Scale - an optional scale, generally in pixels, that controls the size
                 of the measured features.
         '''
-        
+        #
+        # We either come in here with:
+        # * panel = None - create the controls
+        # * panel != None - find the controls
+        #
         if not panel:
             panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.VERTICAL)
             panel.SetSizer(sizer)
+            #
+            # The category combo-box
+            #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer,0,wx.ALIGN_LEFT)
             category_text_ctrl = wx.StaticText(panel,label='Category:',
@@ -727,6 +745,9 @@ class ModuleView:
             category_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
                                         name=category_control_name(v))
             sub_sizer.Add(category_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            #
+            # The measurement / feature combo-box
+            #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0 , wx.ALIGN_LEFT)
             feature_text_ctrl = wx.StaticText(panel, label='Measurement:',
@@ -735,6 +756,9 @@ class ModuleView:
             feature_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
                                        name=feature_control_name(v))
             sub_sizer.Add(feature_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            #
+            # The image combo-box
+            #
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
             image_text_ctrl = wx.StaticText(panel, label='Image:',
@@ -743,6 +767,18 @@ class ModuleView:
             image_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
                                      name=image_control_name(v))
             sub_sizer.Add(image_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            #
+            # The object combo-box
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
+            object_text_ctrl = wx.StaticText(panel, label='Object:',
+                                            name = object_text_control_name(v))
+            sub_sizer.Add(object_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
+            object_ctrl = wx.ComboBox(panel, style=wx.CB_READONLY,
+                                      name=object_control_name(v))
+            sub_sizer.Add(object_ctrl, 0, wx.EXPAND|wx.ALL, 2)
+            #
+            # The scale combo-box
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT)
             scale_text_ctrl = wx.StaticText(panel, label='Scale:',
@@ -766,6 +802,7 @@ class ModuleView:
             def on_change(event, v=v, category_ctrl = category_ctrl,
                           feature_ctrl = feature_ctrl,
                           image_ctrl = image_ctrl,
+                          object_ctrl = object_ctrl,
                           scale_ctrl = scale_ctrl):
                 '''Reconstruct the measurement value if anything changes'''
                 def value_of(ctrl):
@@ -773,6 +810,7 @@ class ModuleView:
                 value = v.construct_value(value_of(category_ctrl),
                                           value_of(feature_ctrl),
                                           value_of(image_ctrl),
+                                          value_of(object_ctrl),
                                           value_of(scale_ctrl))
                 setting_edited_event = SettingEditedEvent(v,
                                                           self.__module,
@@ -781,15 +819,21 @@ class ModuleView:
                 self.notify(setting_edited_event)
                 self.reset_view()
             
-            for ctrl in (category_ctrl, feature_ctrl, image_ctrl, scale_ctrl):
+            for ctrl in (category_ctrl, feature_ctrl, image_ctrl, 
+                         object_ctrl, scale_ctrl):
                 panel.Bind(wx.EVT_COMBOBOX, on_change, ctrl)
         else:
+            #
+            # Find the controls from inside the panel
+            #
             category_ctrl = panel.FindWindowByName(category_control_name(v))
             category_text_ctrl = panel.FindWindowByName(category_text_control_name(v))
             feature_ctrl = panel.FindWindowByName(feature_control_name(v))
             feature_text_ctrl = panel.FindWindowByName(feature_text_control_name(v))
             image_ctrl = panel.FindWindowByName(image_control_name(v))
             image_text_ctrl = panel.FindWindowByName(image_text_control_name(v))
+            object_ctrl = panel.FindWindowByName(object_control_name(v))
+            object_text_ctrl = panel.FindWindowByName(object_text_control_name(v))
             scale_ctrl = panel.FindWindowByName(scale_control_name(v))
             scale_text_ctrl = panel.FindWindowByName(scale_text_ctrl_name(v))
         category = v.get_category(self.__pipeline)
@@ -798,6 +842,8 @@ class ModuleView:
         feature_names = v.get_feature_name_choices(self.__pipeline)
         image_name = v.get_image_name(self.__pipeline)
         image_names = v.get_image_name_choices(self.__pipeline)
+        object_name = v.get_object_name(self.__pipeline)
+        object_names = v.get_object_name_choices(self.__pipeline)
         scale = v.get_scale(self.__pipeline)
         scales = v.get_scale_choices(self.__pipeline)
         def set_up_combobox(ctrl, text_ctrl, choices, value, always_show=False):
@@ -821,6 +867,7 @@ class ModuleView:
         set_up_combobox(feature_ctrl, feature_text_ctrl, 
                         feature_names, feature_name)
         set_up_combobox(image_ctrl, image_text_ctrl, image_names, image_name)
+        set_up_combobox(object_ctrl, object_text_ctrl, object_names, object_name)
         set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel
     

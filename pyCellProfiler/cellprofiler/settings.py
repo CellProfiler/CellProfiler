@@ -920,6 +920,11 @@ class DoSomething(Setting):
     def on_event_fired(self):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
+        
+class Divider(Setting):
+    """The divider setting displays a vertical bar in the GUI"""
+    def __init__(self, text = "", *args, **kwargs):
+        super(Divider, self).__init__(text, 'n/a', *args, **kwargs)
 
 class Measurement(Setting):
     '''A measurement done on a class of objects (or Experiment or Image)

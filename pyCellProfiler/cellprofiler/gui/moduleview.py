@@ -19,7 +19,7 @@ import wx.grid
 import sys
 
 import cellprofiler.pipeline
-import cellprofiler.settings
+import cellprofiler.settings as cps
 import cellprofiler.preferences
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
@@ -246,6 +246,8 @@ class ModuleView:
                 self.hide_settings()
             
             for v,i in zip(settings, range(0,len(settings))):
+                flag = 0
+                border = 0
                 control_name = edit_control_name(v)
                 text_name    = text_control_name(v)
                 static_text  = self.__module_panel.FindWindowByName(text_name)
@@ -263,54 +265,60 @@ class ModuleView:
                 if control:
                     control.Show()
                 self.__static_texts.append(static_text)
-                if isinstance(v,cellprofiler.settings.Binary):
+                if isinstance(v,cps.Binary):
                     control = self.make_binary_control(v,control_name,control)
-                elif isinstance(v, cellprofiler.settings.MultiChoice):
+                elif isinstance(v, cps.MultiChoice):
                     control = self.make_multichoice_control(v, control_name, 
                                                             control)
-                elif isinstance(v,cellprofiler.settings.CustomChoice):
+                elif isinstance(v,cps.CustomChoice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
-                elif isinstance(v,cellprofiler.settings.Colormap):
+                elif isinstance(v,cps.Colormap):
                     control = self.make_colormap_control(v, control_name, 
                                                          control)
-                elif isinstance(v,cellprofiler.settings.Choice):
+                elif isinstance(v,cps.Choice):
                     control = self.make_choice_control(v, v.get_choices(),
                                                        control_name, 
                                                        wx.CB_READONLY,
                                                        control)
-                elif isinstance(v,cellprofiler.settings.NameSubscriber):
+                elif isinstance(v,cps.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
-                elif isinstance(v,cellprofiler.settings.FigureSubscriber):
+                elif isinstance(v,cps.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(v, choices,
                                                        control_name, 
                                                        wx.CB_DROPDOWN,
                                                        control)
-                elif isinstance(v, cellprofiler.settings.DoSomething):
+                elif isinstance(v, cps.DoSomething):
                     control = self.make_callback_control(v, control_name,
                                                          control)
-                elif isinstance(v, cellprofiler.settings.IntegerRange) or\
-                     isinstance(v, cellprofiler.settings.FloatRange):
+                elif isinstance(v, cps.IntegerRange) or\
+                     isinstance(v, cps.FloatRange):
                     control = self.make_range_control(v, control)
                 elif isinstance(v,
-                                cellprofiler.settings.IntegerOrUnboundedRange):
+                                cps.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
-                elif isinstance(v, cellprofiler.settings.Coordinates):
+                elif isinstance(v, cps.Coordinates):
                     control = self.make_coordinates_control(v,control)
-                elif isinstance(v, cellprofiler.settings.RegexpText):
+                elif isinstance(v, cps.RegexpText):
                     control = self.make_regexp_control(v, control)
-                elif isinstance(v, cellprofiler.settings.Measurement):
+                elif isinstance(v, cps.Measurement):
                     control = self.make_measurement_control(v, control)
+                elif isinstance(v, cps.Divider):
+                    if control is None:
+                        control = wx.StaticLine(self.__module_panel, 
+                                                name = control_name)
+                    flag = wx.EXPAND|wx.TOP
+                    border = 5
                 else:
                     control = self.make_text_control(v, control_name, control)
-                sizer.Add(control)
+                sizer.Add(control, 0, flag, border)
                 self.__controls.append(control)
                 help_control = (wx.StaticText(self.__module_panel, -1, "")
                                 if v.doc is None else
@@ -371,7 +379,7 @@ class ModuleView:
         selections = v.selections
         choices = v.choices + [selection for selection in selections
                                if selection not in v.choices]
-        assert isinstance(v, cellprofiler.settings.MultiChoice)
+        assert isinstance(v, cps.MultiChoice)
         if not control:
             control = wx.ListBox(self.__module_panel, -1, choices=choices,
                                  style = wx.LB_EXTENDED,
@@ -408,7 +416,7 @@ class ModuleView:
         style        - one of the CB_ styles 
         """
         try:
-            if v.value == cellprofiler.settings.DEFAULT:
+            if v.value == cps.DEFAULT:
                 cmap_name = cellprofiler.preferences.get_default_colormap()
             else:
                 cmap_name = v.value
@@ -598,7 +606,7 @@ class ModuleView:
             def on_min_change(event, setting = v, control=min_ctrl):
                 old_value = str(setting)
                 if setting.unbounded_max:
-                    max_value = cellprofiler.settings.END
+                    max_value = cps.END
                 else:
                     max_value = str(setting.max)
                 proposed_value="%s,%s"%(str(control.Value),max_value)
@@ -613,7 +621,7 @@ class ModuleView:
                 if (absrel_ctrl.Value == ABSOLUTE):
                     max_value = str(control.Value)
                 elif control.Value == '0':
-                    max_value = cellprofiler.settings.END
+                    max_value = cps.END
                 else:
                     max_value = "-"+str(control.Value)
                 proposed_value="%s,%s"%(setting.display_min,max_value)
@@ -633,7 +641,7 @@ class ModuleView:
                                                 -abs(setting.max))
                 else:
                     proposed_value="%s,%s"%(setting.display_min,
-                                            cellprofiler.settings.END)
+                                            cps.END)
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
@@ -898,7 +906,7 @@ class ModuleView:
             validation_error = None
             try:
                 self.__module.test_valid(self.__pipeline)
-            except cellprofiler.settings.ValidationError, instance:
+            except cps.ValidationError, instance:
                 validation_error = instance
             for idx, setting in zip(range(len(self.__module.visible_settings())),self.__module.visible_settings()):
                 try:
@@ -911,7 +919,7 @@ class ModuleView:
                             child.SetToolTipString('')
                         self.__static_texts[idx].SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
                         self.__static_texts[idx].Refresh()
-                except cellprofiler.settings.ValidationError, instance:
+                except cps.ValidationError, instance:
                     if self.__static_texts[idx].GetForegroundColour() != ERROR_COLOR:
                         self.__controls[idx].SetToolTipString(instance.message)
                         for child in self.__controls[idx].GetChildren():

@@ -94,6 +94,7 @@ See also SubtractBackground, RescaleIntensity.
             '''The settings needed for an image'''
             def __init__(self, images, can_remove):
                 self.key = uuid.uuid4()
+                self.divider = cps.Divider()
                 def remove_image(images = images):
                     index = [x.key for x in images].index(self.key)
                     del images[index]
@@ -122,9 +123,10 @@ See also SubtractBackground, RescaleIntensity.
             
             def visible_settings(self):
                 if can_remove:
-                    return [self.image_name, self.factor, self.remove_button]
+                    return [self.image_name, self.factor, self.remove_button,
+                            self.divider]
                 else:
-                    return [self.image_name, self.factor]
+                    return [self.image_name, self.factor, self.divider]
             
             @property
             def image_name(self):

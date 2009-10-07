@@ -946,7 +946,8 @@ class Measurement(Setting):
         super(Measurement, self).__init__(text, value, *args, **kwargs)
         self.__object_fn = object_fn
     
-    def construct_value(self, category, feature_name, image_name, scale):
+    def construct_value(self, category, feature_name, image_name, object_name, 
+                        scale):
         '''Construct a value that might represent a partially complete value'''
         if category is None:
             value='None'
@@ -956,6 +957,8 @@ class Measurement(Setting):
             parts = [category, feature_name]
             if not image_name is None:
                 parts.append(image_name)
+            if object_name is not None:
+                parts.append(object_name)
             if not scale is None:
                 parts.append(scale)
             value = '_'.join(parts)
@@ -1083,17 +1086,58 @@ class Measurement(Setting):
         category = self.get_category(pipeline)
         feature_name = self.get_feature_name(pipeline)
         image_name = self.get_image_name(pipeline)
+        sub_object_name = self.get_object_name(pipeline)
         if category is None or feature_name is None:
             return None
-        if image_name is None:
-            head = '_'.join((category, feature_name))
-        else:
+        if image_name is not None:
             head = '_'.join((category, feature_name, image_name))
+        elif sub_object_name is not None:
+            head = '_'.join((category, feature_name, sub_object_name))
+        else:
+            head = '_'.join((category, feature_name))
         for scale in self.get_scale_choices(pipeline):
             if self.value == '_'.join((head, scale)):
                 return scale
         return None 
     
+    def get_object_name_choices(self, pipeline):
+        '''Return a list of objects for a particular feature
+        
+        Typically these are image features measured on the objects in the image
+        '''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        feature_name = self.get_feature_name(pipeline)
+        objects = set()
+        for module in pipeline.modules():
+            if self.key in [x.key() for x in module.settings()]:
+                break
+            objects.update(module.get_measurement_objects(pipeline,
+                                                          object_name,
+                                                          category,
+                                                          feature_name))
+        result = list(objects)
+        result.sort()
+        return result
+    
+    def get_object_name(self, pipeline):
+        '''Return the currently chosen image name'''
+        object_name = self.__object_fn()
+        category = self.get_category(pipeline)
+        if category is None:
+            return None
+        feature_name = self.get_feature_name(pipeline)
+        if feature_name is None:
+            return None
+        object_names = self.get_object_name_choices(pipeline)
+        for object_name in object_names:
+            head = '_'.join((category, feature_name, object_name))
+            if (self.value.startswith(head+'_') or
+                self.value == head):
+                return object_name
+        return None
+        
+        
     def test_valid(self, pipeline):
         if self.get_category(pipeline) is None:
             raise ValidationError("%s has an unavailable measurement category" %
@@ -1104,6 +1148,10 @@ class Measurement(Setting):
         if (self.get_image_name(pipeline) is None and
             len(self.get_image_name_choices(pipeline))):
             raise ValidationError("%s has an unavailable image name" %
+                                  self.value, self)
+        if (self.get_object_name(pipeline) is None and
+            len(self.get_object_name_choices(pipeline))):
+            raise ValidationError("%s has an unavailable object name" %
                                   self.value, self)
         if (self.get_scale(pipeline) not in self.get_scale_choices(pipeline)
             and len(self.get_scale_choices(pipeline)) > 0):

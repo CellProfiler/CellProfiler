@@ -143,6 +143,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """The measurements available for a given category"""
         if object_name == "Image" and category == "AreaOccupied":
             return ["AreaOccupied", "TotalArea"]
+        return []
 
     def get_measurement_objects(self, pipeline, object_name, category, 
                                 measurement):

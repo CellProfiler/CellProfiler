@@ -1124,9 +1124,8 @@ class ModuleSizer(wx.PySizer):
                 border = edit_item.GetBorder()
                 third_width = (text_width + edit_width - 2*border) / 3
                 item_location = wx.Point(text_width - third_width / 2, 
-                                         height + border)
-                item_size = wx.Size(third_width, 
-                                    item_height)
+                                         height + border + item_height / 2)
+                item_size = wx.Size(third_width, edit_item.Size[1])
                 edit_item.SetDimension(item_location, item_size)
                 height += item_height + 2*border
             else:

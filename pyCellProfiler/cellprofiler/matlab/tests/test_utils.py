@@ -20,28 +20,6 @@ import cellprofiler.matlab
 import cellprofiler.matlab.cputils as u
 
 class TestUtils(unittest.TestCase):
-    def test_00_00_init(self):
-        u.get_matlab_instance()
-    
-    def test_01_01_load_simple(self):
-        matlab = u.get_matlab_instance()
-        matlab.test = u.load_into_matlab({'foo':'bar'})
-        self.assertEqual(matlab.test.foo,'bar')
-    
-    def test_01_02_LoadArray(self):
-        matlab = u.get_matlab_instance()
-        matlab.test = u.load_into_matlab({'foo':numpy.zeros((3,3))})
-        self.assertTrue((matlab.test.foo == numpy.zeros((3,3))).all())
-    
-    def test_01_03_LoadStructure(self):
-        matlab = u.get_matlab_instance()
-        s = numpy.ndarray((1,1),dtype=([('foo','|O4'),('bar','|O4')]))
-        s['foo'][0,0] = 'Hello'
-        s['bar'][0,0] = 'World'
-        matlab.test = u.load_into_matlab({'foo':s})
-        self.assertEqual(matlab.test.foo.foo,'Hello')
-        self.assertEqual(matlab.test.foo.bar,'World')
-    
     def test_02_001_EncapsulateString(self):
         a = u.encapsulate_string('Hello')
         self.assertTrue(a.shape == (1,))

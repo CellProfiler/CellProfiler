@@ -32,7 +32,6 @@ import cellprofiler.objects
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
-from cellprofiler.matlab.cputils import get_matlab_instance
 import cellprofiler.modules.tests
 
 class test_IdentifyPrimAutomatic(unittest.TestCase):

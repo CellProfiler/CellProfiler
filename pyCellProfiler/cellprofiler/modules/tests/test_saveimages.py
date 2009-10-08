@@ -50,8 +50,10 @@ class TestSaveImages(unittest.TestCase):
             for filename in os.listdir(subdir):
                 os.remove(os.path.join(subdir, filename))
             os.rmdir(subdir)
-        cpprefs.set_default_image_directory(self.old_image_directory)
-        cpprefs.set_default_output_directory(self.old_output_directory)
+        if os.path.isdir(self.old_image_directory):
+            cpprefs.set_default_image_directory(self.old_image_directory)
+        if os.path.isdir(self.old_output_directory):
+            cpprefs.set_default_output_directory(self.old_output_directory)
     
     def on_event(self, pipeline, event):
         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))

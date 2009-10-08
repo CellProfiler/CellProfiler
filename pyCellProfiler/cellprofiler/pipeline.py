@@ -24,14 +24,11 @@ import datetime
 import traceback
 import cellprofiler.cpmodule
 import cellprofiler.preferences
-from cellprofiler.matlab.cputils import new_string_cell_array,get_matlab_instance
-from cellprofiler.matlab.cputils import s_cell_fun,make_cell_struct_dtype
-from cellprofiler.matlab.cputils import load_into_matlab,get_int_from_matlab
-from cellprofiler.matlab.cputils import encapsulate_strings_in_arrays
 import cellprofiler.cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
+from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = "ImageNumber"
@@ -99,96 +96,6 @@ PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE,
                                             DISPLAY_MODE_VALUE, FONT_SIZE,
                                             DISPLAY_WINDOWS])
  
-def add_matlab_images(handles,image_set):
-    """Add any images from the handles to the image set
-    Generally, the handles have images added as they get returned from a Matlab module.
-    You can use this to update the image set and capture them.
-    """
-    matlab = get_matlab_instance()
-    pipeline_fields = matlab.fields(handles.Pipeline)
-    provider_set = set([x.name for x in image_set.providers])
-    image_fields = set()
-    crop_fields = set()
-    for i in range(0,int(matlab.length(pipeline_fields)[0,0])):
-        field = matlab.cell2mat(pipeline_fields[i])
-        if field.startswith('CropMask'):
-            crop_fields.add(field)
-        elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
-            continue
-        elif field.startswith('Pathname') or field.startswith('FileList') or field.startswith('Filename'):
-            if not image_set.legacy_fields.has_key(field):
-                value = matlab.getfield(handles.Pipeline,field)
-                if not (isinstance(value,str) or isinstance(value,unicode)):
-                    # The two supported types: string/unicode or cell array of strings
-                    count = matlab.length(value)
-                    new_value = np.ndarray((1,count),dtype='object')
-                    for j in range(0,count):
-                        new_value[0,j] = matlab.cell2mat(value[j])
-                    value = new_value 
-                image_set.legacy_fields[field] = value
-        elif not field in provider_set:
-            image_fields.add(field)
-    for field in image_fields:
-        image = cellprofiler.image.Image()
-        image.Image = matlab.getfield(handles.Pipeline,field)
-        crop_field = 'CropMask'+field
-        if crop_field in crop_fields:
-            image.Mask = matlab.getfield(handles.Pipeline,crop_field)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider(field,image))
-    number_of_image_sets = get_int_from_matlab(handles.Current.NumberOfImageSets)
-    if (not image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS)) or number_of_image_sets < image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]:
-        image_set.legacy_fields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
-
-def add_matlab_objects(handles,object_set):
-    """Add any objects from the handles to the object set
-    You can use this to update the object set after calling a matlab module
-    """
-    matlab = get_matlab_instance()
-    pipeline_fields = matlab.fields(handles.Pipeline)
-    objects_names = set(object_set.get_object_names())
-    segmented_fields = set()
-    unedited_segmented_fields = set()
-    small_removed_segmented_fields = set()
-    for i in range(0,int(matlab.length(pipeline_fields)[0,0])):
-        field = matlab.cell2mat(pipeline_fields[i])
-        if field.startswith('Segmented'):
-            segmented_fields.add(field)
-        elif field.startswith('UneditedSegmented'):
-            unedited_segmented_fields.add(field)
-        elif field.startswith('SmallRemovedSegmented'):
-            small_removed_segmented_fields.add(field)
-    for field in segmented_fields:
-        object_name = field.replace('Segmented','')
-        if object_name in object_set.get_object_names():
-            continue
-        objects = cellprofiler.objects.Objects()
-        objects.segmented = matlab.getfield(handles.Pipeline,field)
-        unedited_field ='Unedited'+field
-        small_removed_segmented_field = 'SmallRemoved'+field 
-        if unedited_field in unedited_segmented_fields:
-            objects.unedited_segmented = matlab.getfield(handles.Pipeline,unedited_field)
-        if small_removed_segmented_field in small_removed_segmented_fields:
-            objects.SmallRemovedSegmented = matlab.getfield(handles.Pipeline,small_removed_segmented_field)
-        object_set.add_objects(objects,object_name)
-
-def add_matlab_measurements(handles, measurements):
-    """Get measurements made by Matlab and put them into our Python measurements object
-    """
-    matlab = get_matlab_instance()
-    measurement_fields = matlab.fields(handles.Measurements)
-    for i in range(0,int(matlab.length(measurement_fields)[0,0])):
-        field = matlab.cell2mat(measurement_fields[i])
-        object_measurements = matlab.getfield(handles.Measurements,field)
-        object_fields = matlab.fields(object_measurements)
-        for j in range(0,int(matlab.length(object_fields)[0,0])):
-            feature = matlab.cell2mat(object_fields[j])
-            if not measurements.has_current_measurements(field,feature):
-                value = matlab.cell2mat(matlab.getfield(object_measurements,feature)[measurements.image_set_number-1])
-                if not isinstance(value,np.ndarray) or np.product(value.shape) > 0:
-                    # It's either not a numpy array (it's a string) or it's not the empty numpy array
-                    # so add it to the measurements
-                    measurements.add_measurement(field,feature,value)
-
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     
@@ -394,26 +301,7 @@ class Pipeline(object):
         scipy.io.matlab.mio.savemat(filename,root,format='5',
                                     long_field_names=True)
     
-    def load_pipeline_into_matlab(self, image_set=None, object_set=None, measurements=None):
-        """Load the pipeline into the Matlab singleton and return the handles structure
-        
-        The handles structure has all of the goodies needed to run the pipeline including
-        * Settings
-        * Current (set up to run the first image with the first module
-        * Measurements - filled in from measurements (TO_DO)
-        * Pipeline - filled in from the image set (TO_DO)
-        Returns the handles proxy
-        """
-        handles = self.build_matlab_handles(image_set, object_set, measurements)
-        mat_handles = load_into_matlab(handles)
-        
-        matlab = get_matlab_instance()
-        if not handles.has_key(MEASUREMENTS):
-            mat_handles.Measurements = matlab.struct()
-        if not handles.has_key(PIPELINE):
-            mat_handles.Pipeline = matlab.struct()
-        return mat_handles
-    
+
     def build_matlab_handles(self, image_set = None, object_set = None, measurements=None):
         handles = self.save_to_handles()
         image_tools_dir = os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools')
@@ -548,7 +436,6 @@ class Pipeline(object):
                                      (key, keys))
         measurements = None
         first_set = True
-        matlab_initialized = False
         
         for grouping_keys, image_numbers in groupings:
             #
@@ -600,9 +487,6 @@ class Pipeline(object):
                                                       (module.module_num,
                                                        module.module_name))
                     failure = 1
-                    if (not matlab_initialized) and module.needs_matlab():
-                        self.set_matlab_path()
-                        matlab_initialized = True
                     try:
                         frame_if_shown = frame if module.show_frame else None
                         workspace = cpw.Workspace(self,
@@ -816,14 +700,6 @@ class Pipeline(object):
         '''
         for module in self.modules():
             module.turn_off_batch_mode()
-
-    def set_matlab_path(self):
-        matlab = get_matlab_instance()
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'DataTools'),matlab.path())
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools'),matlab.path())
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'CPsubfunctions'),matlab.path())
-        matlab.path(cellprofiler.preferences.module_directory(),matlab.path())
-        matlab.path(cellprofiler.preferences.cell_profiler_root_directory(),matlab.path())
 
     def clear(self):
         old_modules = self.__modules

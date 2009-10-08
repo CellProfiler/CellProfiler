@@ -27,7 +27,6 @@ import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
-import cellprofiler.matlab.cputils
 
 '''Use a timer (wx.CallLater) to schedule running the pipeline in the UI'''
 USE_TIMER = False
@@ -532,10 +531,3 @@ class PipelineController:
         """
         return self.__pipeline.Run(self.__frame)
     
-    def set_matlab_path(self):
-        matlab = cellprofiler.matlab.cputils.get_matlab_instance()
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'DataTools'),matlab.path())
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools'),matlab.path())
-        matlab.path(os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'CPsubfunctions'),matlab.path())
-        matlab.path(cellprofiler.preferences.module_directory(),matlab.path())
-        matlab.path(cellprofiler.preferences.cell_profiler_root_directory(),matlab.path())

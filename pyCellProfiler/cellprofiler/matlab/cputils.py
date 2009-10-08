@@ -95,17 +95,6 @@ def encapsulate_string(s):
     result[0]=s
     return result;
 
-def get_matlab_instance():
-    global __MATLAB
-    if not globals().has_key('__MATLAB'):
-        import mlabwrap
-        __MATLAB = mlabwrap.mlab
-        try:
-            __MATLAB.desktop()
-        except:
-            pass
-    return __MATLAB
-
 def g_cell_fun():
     return get_matlab_instance().eval('@(cell,x) cell{x+1}')
 

@@ -368,4 +368,20 @@ class TestCalculateMath(unittest.TestCase):
             self.assertEqual(module.get_measurements(None, OBJECT[i],"Math")[0], 
                              OUTPUT_MEASUREMENTS)
         self.assertEqual(len(module.get_categories(None,cpmeas.IMAGE)), 0)
+
+    def test_06_01_add_object_object_same(self):
+        '''Regression test: add two measurements from the same object
         
+        The bug was that the measurement gets added twice
+        '''
+        def fn(module):
+            module.operands[1].operand_objects.value = OBJECT[0]
+            module.operands[1].operand_measurement.value = "measurement0"
+        
+        measurements = self.run_workspace(C.O_ADD, False, np.array([5,6]),
+                                          False, np.array([-1,-1]), fn)
+        data = measurements.get_current_measurement(OBJECT[0], 
+                                                    MATH_OUTPUT_MEASUREMENTS)
+        self.assertEqual(len(data),2)
+        self.assertAlmostEqual(data[0], 10)
+        self.assertAlmostEqual(data[1], 12)

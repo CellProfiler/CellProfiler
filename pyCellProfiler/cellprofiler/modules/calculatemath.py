@@ -234,9 +234,9 @@ See also CalculateRatios, all Measure modules.
                                      for operand in self.operands])
         all_image_measurements = all([operand.object == cpmeas.IMAGE
                                      for operand in self.operands])
-        all_object_names = [operand.operand_objects.value
-                            for operand in self.operands
-                            if operand.object != cpmeas.IMAGE]
+        all_object_names = list(set([operand.operand_objects.value
+                                     for operand in self.operands
+                                     if operand.object != cpmeas.IMAGE]))
         for operand in self.operands:
             value = m.get_current_measurement(operand.object,
                                               operand.operand_measurement.value)

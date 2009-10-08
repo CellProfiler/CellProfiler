@@ -84,7 +84,10 @@ __all__ = ['instantiate_module', 'get_module_classes', 'reload_modules']
 def instantiate_module(module_name):
     if module_name in substitutions: 
         module_name = substitutions[module_name]
-    return all_modules[module_name.split('.')[-1]]()
+    module_class = module_name.split('.')[-1]
+    if not all_modules.has_key(module_class):
+        raise ValueError("Could not find the %s module"%module_class)
+    return all_modules[module_class]()
 
 def get_module_names():
     return all_modules.keys()

@@ -224,8 +224,12 @@ class PipelineController:
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+            if event.module is None:
+                module_name = event.module_name
+            else:
+                module_name = event.module.module_name
             message = ("Error while loading %s: %s\nDo you want to stop processing?"%
-                       (event.module.module_name, event.error.message))
+                       (module_name, event.error.message))
             if wx.MessageBox(message,"Pipeline error",wx.YES_NO | wx.ICON_ERROR,self.__frame) == wx.NO:
                 event.cancel_run = False
         elif any([isinstance(event, x) for x in

@@ -29,7 +29,7 @@ from cellprofiler.preferences import ABSPATH_OUTPUT
 
 DELIMITER_TAB = "Tab"
 DELIMITER_COMMA = 'Comma (",")'
-DELIMITERS = (DELIMITER_TAB, DELIMITER_COMMA)
+DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 
 """The object group key field - holds key for lookup as list expands/contracts"""
 OG_KEY = "Key"

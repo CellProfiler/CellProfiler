@@ -295,20 +295,24 @@ class Pipeline(object):
         settings = handles[SETTINGS][0,0]
         module_names = settings[MODULE_NAMES]
         module_count = module_names.shape[1]
+        real_module_num = 1
         for module_num in range(1,module_count+1):
             idx = module_num-1
             module_name = module_names[0,idx][0]
-            module = self.instantiate_module(module_name)
+            module = None
             try:
+                module = self.instantiate_module(module_name)
                 module.create_from_handles(handles, module_num)
+                module.module_num = real_module_num
             except Exception,instance:
                 traceback.print_exc()
-                event = LoadExceptionEvent(instance,module)
+                event = LoadExceptionEvent(instance,module, module_name)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
-                
-            self.__modules.append(module)
+            if module is not None:    
+                self.__modules.append(module)
+                real_module_num += 1
         for module in self.__modules:
             module.on_post_load(self)
             
@@ -1083,10 +1087,11 @@ class LoadExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during pipeline loading
     
     """
-    def __init__(self, error, module):
+    def __init__(self, error, module, module_name = None):
         self.error     = error
         self.cancel_run = True
         self.module    = module
+        self.module_name = module_name
     
     def event_type(self):
         return "Pipeline load exception"

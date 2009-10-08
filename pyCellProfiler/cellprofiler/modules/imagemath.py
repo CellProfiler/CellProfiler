@@ -14,7 +14,6 @@ __version__="$Revision$"
 
 import numpy as np
 from contrib.english import ordinal
-import uuid
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
@@ -28,16 +27,16 @@ O_INVERT = "Invert"
 O_LOG_TRANSFORM = "Log transform (base 2)"
 O_AVERAGE = "Average"
 O_NONE = "None"
-'''Combine is now obsolete - done by Add now'''
+# Combine is now obsolete - done by Add now, but we need the string for backwards_compatibilize
 O_COMBINE = "Combine"
-O_ALL = [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM,
-         O_AVERAGE, O_NONE]
 
-'''The number of settings aside from the image settings'''
+
+# The number of settings per image
+IMAGE_SETTING_COUNT = 2
+
+# The number of settings other than for images
 FIXED_SETTING_COUNT = 7
 
-'''The number of settings per image'''
-IMAGE_SETTING_COUNT = 2
 
 class ImageMath(cpm.CPModule):
     '''SHORT DESCRIPTION:
@@ -73,94 +72,191 @@ See also SubtractBackground, RescaleIntensity.
 '''
     category = "Image Processing"
     variable_revision_number = 1
+    module_name = "ImageMath"
+
     def create_settings(self):
-        self.module_name = "ImageMath"
+        # the list of per image settings (name & scaling factor)
         self.images = []
-        self.add_image(False,False)
-        self.add_image(False,True)
-        self.first_divider = cps.Divider()
-        self.operation = cps.Choice("What operation would you like performed?",
-                                    O_ALL)
+        # create the first two images (the default number)
+        self.add_image()
+        self.add_image()
+
+        # other settings
+        self.operation = cps.Choice("What operation would you like performed?", 
+                                    [O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_INVERT, O_LOG_TRANSFORM, O_AVERAGE, O_NONE])
+        self.divider_top = cps.Divider(line=False)
         self.exponent = cps.Float("Enter an exponent to raise the the result to *after* the chosen operation:", 1)
-        self.factor = cps.Float("Enter a factor to multiply the result by *after* the chosen operation:", 1)
+        self.after_factor = cps.Float("Enter a factor to multiply the result by *after* the chosen operation:", 1)
         self.addend = cps.Float("Enter a number to add to the result *after* the chosen operation:", 0)
         self.truncate_low = cps.Binary("Do you want negative values in the image to be set to zero?", True)
         self.truncate_high = cps.Binary("Do you want values greater than one to be set to one?", True)
         self.output_image_name = cps.ImageNameProvider("What do you want to call the resulting image?", "ImageAfterMath")
-        self.add_button = cps.DoSomething("Add another image","Add image",
-                                          self.add_image)
+        self.add_button = cps.DoSomething("Add another image","Add image", self.add_image, True)
+        self.divider_bottom = cps.Divider(line=False)
     
-    def add_image(self, can_remove=True, wants_divider = True):
-        class IMImage(object):
-            '''The settings needed for an image'''
-            def __init__(self, images, can_remove, wants_divider):
-                self.key = uuid.uuid4()
-                self.wants_divider = wants_divider
-                if wants_divider:
-                    self.divider = cps.Divider()
-                def remove_image(images = images):
-                    index = [x.key for x in images].index(self.key)
-                    del images[index]
-                    for i,image in zip(range(len(images)), images):
-                        image.image_name.text = self.subscriber_question(i+1)
-                        image.factor.text = self.factor_question(i+1)
-                
-                self.__image_name = cps.ImageNameSubscriber(self.subscriber_question(len(images)+1),
-                                                          "None")
-                self.__factor = cps.Float(self.factor_question(len(images)+1), 1)
-                self.can_remove = can_remove
-                if can_remove:
-                    self.remove_button = cps.DoSomething("Remove the above image",
-                                                         "Remove",
-                                                         remove_image)
-            def subscriber_question(self, place):
-                '''The text accompanying an image name'''
-                return "Choose %s image:"%ordinal(place)
+    def add_image(self, removable=False):
+        # The text for these settings will be replaced in renumber_settings()
+        group = cps.SettingsGroup()
+        group.append("image_name", cps.ImageNameSubscriber("", ""))
+        group.append("factor", cps.Float("", 1))
+        if removable:
+            group.append("remover", cps.RemoveSettingButton("Remove the image above", "Remove", self.images, group))
+        group.append("divider", cps.Divider())
+        self.images.append(group)
+        
+    def renumber_settings(self):
+        for idx, image in enumerate(self.images):
+            image.image_name.text = "Choose %s image:"%(ordinal(idx + 1))
+            image.factor.text = "Enter a factor to multiply the %s image by (before other operations):"%ordinal(idx + 1)
+
+    def settings(self):
+        result = [self.operation, self.exponent, self.after_factor, self.addend,
+                  self.truncate_low, self.truncate_high, 
+                  self.output_image_name]
+        for image in self.images:
+            result += [image.image_name, image.factor]
+        return result
+
+    def visible_settings(self):
+        result = [self.operation, self.divider_top]
+        self.renumber_settings()
+        single_image = self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE)
+        for index, image in enumerate(self.images):
+            if (index >= 1) and single_image:
+            # these operations use the first image only
+                break 
+            result += image.unpack_group()
+
+        if single_image:
+            result[-1] = self.divider_bottom # this looks better when there's just one image
             
-            def factor_question(self, place):
-                '''the text accompanying the multiplicative factor'''
-                return "Enter a factor to multiply the %s image by (before other operations):"%ordinal(place)
+        if not single_image:
+            result += [self.add_button, self.divider_bottom]
+
             
-            def settings(self):
-                return [self.image_name, self.factor]
-            
-            def visible_settings(self):
-                if can_remove:
-                    result = [self.image_name, self.factor, self.remove_button]
-                else:
-                    result = [self.image_name, self.factor]
-                if self.wants_divider:
-                    result.append(self.divider)
-                return result
-            
-            @property
-            def image_name(self):
-                '''The name of the image to retrieve'''
-                return self.__image_name
-            
-            @property
-            def factor(self):
-                '''Multiply the image by this much before processing'''
-                return self.__factor
-        self.images.append(IMImage(self.images,can_remove, wants_divider))
+
+        result += [self.output_image_name, self.exponent, self.after_factor, 
+                   self.addend, self.truncate_low, self.truncate_high]
+        return result
 
     def prepare_to_set_values(self, setting_values):
         value_count = len(setting_values)
         assert (value_count - FIXED_SETTING_COUNT) % IMAGE_SETTING_COUNT == 0
         image_count = (value_count - FIXED_SETTING_COUNT) / IMAGE_SETTING_COUNT
-        while len(self.images) > image_count:
-            del self.images[-1]
-        
+        # always keep the first two images
+        del self.images[2:]
         while len(self.images) < image_count:
             self.add_image()
 
-    def settings(self):
-        result = [self.operation, self.exponent, self.factor, self.addend,
-                  self.truncate_low, self.truncate_high, 
-                  self.output_image_name]
-        for image in self.images:
-            result += image.settings()
-        return result
+
+    def run(self, workspace):
+        image_names = [image.image_name.value for image in self.images]
+        image_factors = [image.factor.value for image in self.images]
+        if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
+            # these only operate on the first image
+            image_names = image_names[:1]
+            image_factors = image_factors[:1]
+
+        images = [workspace.image_set.get_image(x) for x in image_names]
+        pixel_data = [image.pixel_data for image in images]
+        masks = [image.mask if image.has_mask else None for image in images]
+
+        #
+        # Crop all of the images similarly
+        #
+        smallest = np.argmin([np.product(pd.shape) for pd in pixel_data])
+        smallest_image = images[smallest]
+        for i in [x for x in range(len(images)) if x != smallest]:
+            pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
+            if masks[i] is not None:
+                masks[i] = smallest_image.crop_image_similarly(masks[i])
+
+        #
+        # Multiply images by their factors
+        #
+        for i in range(len(image_factors)):
+            pixel_data[i] = pixel_data[i] * image_factors[i]
+
+        output_pixel_data = pixel_data[0]
+        output_mask = masks[0]
+
+        opval = self.operation.value
+        if opval in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE):
+            # Binary operations
+            if opval in (O_ADD, O_AVERAGE):
+                op = np.add
+            elif opval == O_SUBTRACT:
+                op = np.subtract
+            elif opval == O_MULTIPLY:
+                op = np.multiply
+            else:
+                op = np.divide
+            for pd, mask in zip(pixel_data[1:], masks[1:]):
+                output_pixel_data = op(output_pixel_data, pd)
+                if output_mask is None:
+                    output_mask = mask
+                elif mask is not None:
+                    output_mask = (output_mask & mask)
+            if opval == O_AVERAGE:
+                output_pixel_data /= sum(image_factors)
+        elif opval == O_INVERT:
+            output_pixel_data = 1 - output_pixel_data 
+        elif opval == O_LOG_TRANSFORM:
+            output_pixel_data = np.log2(output_pixel_data)
+        elif opval == O_NONE:
+            pass
+        else:
+            raise NotImplementedException("The operation %s has not been implemented"%opval)
+
+        #
+        # Post-processing: exponent, multiply, add
+        #
+        if self.exponent.value != 1:
+            output_pixel_data **= self.exponent.value
+        if self.after_factor.value != 1:
+            output_pixel_data *= self.after_factor.value
+        if self.addend.value != 0:
+            output_pixel_data += self.addend.value
+
+        #
+        # truncate values
+        #
+        if self.truncate_low.value:
+            output_pixel_data[output_pixel_data < 0] = 0
+        if self.truncate_high.value:
+            output_pixel_data[output_pixel_data > 1] = 1
+
+        #
+        # add the output image to the workspace
+        #
+        crop_mask = (smallest_image.crop_mask 
+                     if smallest_image.has_crop_mask else None)
+        masking_objects = (smallest_image.masking_objects 
+                           if smallest_image.has_masking_objects else None)
+        output_image = cpi.Image(output_pixel_data,
+                                 mask = output_mask,
+                                 crop_mask = crop_mask, 
+                                 parent_image = images[0],
+                                 masking_objects = masking_objects)
+        workspace.image_set.add(self.output_image_name.value, output_image)
+
+        #
+        # Display results
+        #
+        if workspace.frame is not None:
+            display_pixel_data = pixel_data + [output_pixel_data]
+            display_names = image_names + [self.output_image_name.value]
+            columns = (len(display_pixel_data) + 1 ) / 2
+            figure = workspace.create_or_find_figure(subplots=(columns, 2))
+            for i in range(len(display_pixel_data)):
+                if display_pixel_data[i].ndim == 3:
+                    figure.subplot_imshow_color(i%columns, int(i / columns),
+                                                display_pixel_data[i],
+                                                title=display_names[i])
+                else:
+                    figure.subplot_imshow_bw(i%columns, int(i / columns),
+                                             display_pixel_data[i],
+                                             title=display_names[i])
 
     def backwards_compatibilize(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
@@ -215,117 +311,3 @@ See also SubtractBackground, RescaleIntensity.
             from_matlab = False
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
-     
-    def visible_settings(self):
-        result = self.images[0].visible_settings()
-        result += [self.operation, self.first_divider]
-        if self.operation not in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
-            for image in self.images[1:]:
-                result += image.visible_settings()
-            result += [self.add_button]
-        result += [self.output_image_name, self.exponent, self.factor, 
-                   self.addend, self.truncate_low, self.truncate_high]
-        return result
-
-    def run(self, workspace):
-        if self.operation in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
-            im_images = self.images[:1]
-        else:
-            im_images = self.images
-        
-        images = [workspace.image_set.get_image(x.image_name.value)
-                  for x in im_images]
-        pixel_data = [image.pixel_data for image in images]
-        masks = [image.mask if image.has_mask else None
-                 for image in images]
-        #
-        # Crop all of the images similarly
-        #
-        smallest = np.argmin([np.product(pd.shape) for pd in pixel_data])
-        smallest_image = images[smallest]
-        for i in [x for x in range(len(images)) if x != smallest]:
-            pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
-            if masks[i] is not None:
-                masks[i] = smallest_image.crop_image_similarly(masks[i])
-        #
-        # Multiply them by their factors
-        #
-        image_factors = [im_image.factor.value for im_image in im_images]
-        for i in range(len(im_images)):
-            pixel_data[i] *= image_factors[i]
-        
-        output_pixel_data = pixel_data[0]
-        output_mask = masks[0]
-        if self.operation in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE,
-                              O_AVERAGE):
-            # Binary operations
-            if self.operation in (O_ADD, O_AVERAGE):
-                operation = np.add
-            elif self.operation == O_SUBTRACT:
-                operation = np.subtract
-            elif self.operation == O_MULTIPLY:
-                operation = np.multiply
-            else:
-                operation = np.divide
-            for pd, mask in zip(pixel_data[1:], masks[1:]):
-                output_pixel_data = operation(output_pixel_data, pd)
-                if output_mask is None:
-                    output_mask = mask
-                elif mask is not None:
-                    output_mask = (output_mask & mask)
-            if self.operation == O_AVERAGE:
-                output_pixel_data /= sum(image_factors)
-        elif self.operation == O_INVERT:
-            output_pixel_data = 1 - output_pixel_data 
-        elif self.operation == O_LOG_TRANSFORM:
-            output_pixel_data = np.log2(output_pixel_data)
-        elif self.operation == O_NONE:
-            pass
-        else:
-            raise NotImplementedException("The operation %s has not been implemented"%self.operation.value)
-        #
-        # Post-processing: exponent, multiply, add
-        #
-        if self.exponent.value != 1:
-            output_pixel_data **= self.exponent.value
-        if self.factor.value != 1:
-            output_pixel_data *= self.factor.value
-        if self.addend.value != 0:
-            output_pixel_data += self.addend.value
-        #
-        # truncate values
-        #
-        if self.truncate_low.value:
-            output_pixel_data[output_pixel_data < 0] = 0
-        if self.truncate_high.value:
-            output_pixel_data[output_pixel_data > 1] = 1
-        #
-        # add the image
-        #
-        crop_mask = (smallest_image.crop_mask 
-                     if smallest_image.has_crop_mask else None)
-        masking_objects = (smallest_image.masking_objects 
-                           if smallest_image.has_masking_objects else None)
-        output_image = cpi.Image(output_pixel_data,
-                                 mask = output_mask,
-                                 crop_mask = crop_mask, 
-                                 parent_image = images[0],
-                                 masking_objects = masking_objects)
-        workspace.image_set.add(self.output_image_name.value, output_image)
-        if workspace.frame is not None:
-            display_pixel_data = [image.pixel_data for image in images]
-            display_name = [im.image_name.value for im in im_images]
-            display_pixel_data.append(output_pixel_data)
-            display_name.append(self.output_image_name.value)
-            columns = (len(display_pixel_data) +1)/2
-            figure = workspace.create_or_find_figure(subplots=(columns, 2))
-            for i in range(len(display_pixel_data)):
-                if display_pixel_data[i].ndim == 3:
-                    figure.subplot_imshow_color(i%columns, int(i/columns),
-                                                display_pixel_data[i],
-                                                title=display_name[i])
-                else:
-                    figure.subplot_imshow_bw(i%columns, int(i/columns),
-                                             display_pixel_data[i],
-                                             title=display_name[i])
-                    

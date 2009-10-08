@@ -906,7 +906,7 @@ class DoSomething(Setting):
     """Do something in response to a button press
     """
     def __init__(self, text, label, callback, *args, **kwargs):
-        super(DoSomething,self).__init__(text, 'n/a', *args, **kwargs)
+        super(DoSomething,self).__init__(text, 'n/a', **kwargs)
         self.__label = label
         self.__callback = callback
         self.__args = args
@@ -921,10 +921,16 @@ class DoSomething(Setting):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
         
+class RemoveSettingButton(DoSomething):
+    '''A button whose only purpose is to remove something from a list.'''
+    def __init__(self, text, label, list, entry):
+        super(RemoveSettingButton, self).__init__(text, label, lambda: list.remove(entry))
+
 class Divider(Setting):
-    """The divider setting displays a vertical bar in the GUI"""
-    def __init__(self, text = "", *args, **kwargs):
-        super(Divider, self).__init__(text, 'n/a', *args, **kwargs)
+    """The divider setting inserts a vertical space, possibly with a horizontal line, in the GUI"""
+    def __init__(self, text = "", line=True):
+        super(Divider, self).__init__(text, 'n/a')
+        self.line=line
 
 class Measurement(Setting):
     '''A measurement done on a class of objects (or Experiment or Image)
@@ -1169,7 +1175,32 @@ class Colormap(Choice):
         names.sort()
         choices = [DEFAULT] + names
         super(Colormap,self).__init__(text, choices, value, *args, **kwargs)
-    
+
+class SettingsGroup(object):
+    '''A group of settings that are managed together in the UI.
+    Particulary useful when used with a RemoveSettingButton.
+    Individual settings can be added with append(), and their value
+    fetched from the group using the name given in append.
+    '''
+
+    def __init__(self):
+        self.settings = []
+
+    def append(self, name, setting):
+        '''Add a new setting to the group, with a name.  The setting
+        will then be available as group.name
+        '''
+        assert name not in self.__dict__, "%s already in SettingsGroup (previous setting or built in attribute)"%(name)
+        self.__setattr__(name, setting)
+        self.settings.append(setting)
+
+    def unpack_group(self):
+        '''Return a list of the settings in the group, in the order
+        they were added to the group.
+        '''
+        return self.settings
+        
+
 class ChangeSettingEvent(object):
     """Abstract class representing either the event that a setting will be
     changed or has been changed

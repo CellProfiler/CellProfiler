@@ -68,7 +68,7 @@ class TestImageMath(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, I.ImageMath))
-        self.assertEqual(len(module.images), 1)
+        self.assertEqual(len(module.images), 2)
         self.assertEqual(module.images[0].image_name.value, 'DNA')
         self.assertEqual(module.output_image_name.value, 'DNAAfterMath')
         self.assertEqual(module.operation.value, I.O_INVERT)
@@ -85,7 +85,7 @@ class TestImageMath(unittest.TestCase):
         self.assertEqual(module.output_image_name.value, 'ImageAfterMath')
         self.assertEqual(module.operation.value, I.O_ADD)
         self.assertEqual(module.exponent.value, 4)
-        self.assertEqual(module.factor.value, 5)
+        self.assertEqual(module.after_factor.value, 5)
         self.assertFalse(module.truncate_low.value)
         self.assertFalse(module.truncate_high.value)
         
@@ -134,12 +134,12 @@ class TestImageMath(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 6)
         for i in range(1,5):
             module = pipeline.modules()[i]
-            self.assertEqual(len(module.images), 1)
+            self.assertEqual(len(module.images), 2)
             self.assertEqual(module.operation.value, I.O_NONE)
         self.assertEqual(pipeline.modules()[1].addend.value, 1)
         self.assertEqual(pipeline.modules()[2].addend.value, -1)
-        self.assertAlmostEqual(pipeline.modules()[3].factor.value, 2)
-        self.assertAlmostEqual(pipeline.modules()[4].factor.value, .5)
+        self.assertAlmostEqual(pipeline.modules()[3].after_factor.value, 2)
+        self.assertAlmostEqual(pipeline.modules()[4].after_factor.value, .5)
         module = pipeline.modules()[5]
         self.assertEqual(len(module.images),2)
         self.assertAlmostEqual(module.addend.value, .3)
@@ -205,7 +205,7 @@ class TestImageMath(unittest.TestCase):
     def test_02_02_factor(self):
         '''Test multiplicative factor'''
         def fn(module):
-            module.factor.value = .5
+            module.after_factor.value = .5
             module.operation.value = I.O_NONE
         
         np.random.seed(0)

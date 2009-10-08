@@ -322,8 +322,12 @@ class ModuleView:
                     control = self.make_measurement_control(v, control)
                 elif isinstance(v, cps.Divider):
                     if control is None:
-                        control = wx.StaticLine(self.__module_panel, 
-                                                name = control_name)
+                        if v.line:
+                            control = wx.StaticLine(self.__module_panel, 
+                                                    name = control_name)
+                        else:
+                            control = wx.StaticText(self.__module_panel, 
+                                                    name = control_name)
                     flag = wx.EXPAND|wx.ALL
                     border = 2
                 else:
@@ -1114,12 +1118,14 @@ class ModuleSizer(wx.PySizer):
                 # A line spans both columns
                 #
                 text_item.Show(False)
-                item_height = edit_item.CalcMin()[1]
+                # make the divider height the same as a text row
+                item_height = self.GetItem(self.idx(0, i)).CalcMin()[1]
                 assert isinstance(edit_item, wx.SizerItem)
                 border = edit_item.GetBorder()
-                item_location = wx.Point(border, 
+                third_width = (text_width + edit_width - 2*border) / 3
+                item_location = wx.Point(border + third_width, 
                                          height + border)
-                item_size = wx.Size(text_width + edit_width - 2*border, 
+                item_size = wx.Size(third_width, 
                                     item_height)
                 edit_item.SetDimension(item_location, item_size)
                 height += item_height + 2*border

@@ -58,7 +58,7 @@ class AddModuleFrame(wx.Frame):
                            (right_panel,1,wx.EXPAND)])
         self.SetSizer(top_sizer)
         left_sizer = wx.BoxSizer(wx.VERTICAL)
-        left_sizer.Add(module_categories_text,0,wx.CENTER|wx.ALL,5)
+        left_sizer.Add(module_categories_text,0,wx.CENTER|wx.ALL|wx.EXPAND,5)
         left_sizer.AddSpacer(4)
         left_sizer.Add(self.__module_categories_list_box,1,wx.EXPAND|wx.LEFT|wx.RIGHT,10)
         left_sizer.AddSpacer((-1,10))

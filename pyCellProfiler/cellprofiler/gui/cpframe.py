@@ -101,7 +101,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+P','Load a pipeline from a .MAT file')
-        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...','Save a pipeline as a .MAT file')
+        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline as...\tctrl+shift+S','Save a pipeline as a .MAT file')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear pipeline','Remove all modules from the current pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze images\tctrl+N','Run the pipeline on the images in the image directory')
@@ -143,6 +143,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         accelerator_table = wx.AcceleratorTable([(wx.ACCEL_CTRL,ord('N'),ID_FILE_ANALYZE_IMAGES),
                                                  (wx.ACCEL_CTRL,ord('P'),ID_FILE_LOAD_PIPELINE),
+                                                 (wx.ACCEL_CTRL|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
                                                  (wx.ACCEL_CTRL,ord('L'),ID_WINDOW_CLOSE_ALL),
                                                  (wx.ACCEL_CTRL,ord('Q'),ID_FILE_EXIT),
                                                  (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_START),

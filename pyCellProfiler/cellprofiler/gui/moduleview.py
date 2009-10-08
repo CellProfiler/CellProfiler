@@ -1118,12 +1118,12 @@ class ModuleSizer(wx.PySizer):
                 # A line spans both columns
                 #
                 text_item.Show(False)
-                # make the divider height the same as a text row
-                item_height = self.GetItem(self.idx(0, i)).CalcMin()[1]
+                # make the divider height the same as a text row plus some
+                item_height = self.GetItem(self.idx(0, i)).CalcMin()[1] * 1.25
                 assert isinstance(edit_item, wx.SizerItem)
                 border = edit_item.GetBorder()
                 third_width = (text_width + edit_width - 2*border) / 3
-                item_location = wx.Point(border + third_width, 
+                item_location = wx.Point(text_width - third_width / 2, 
                                          height + border)
                 item_size = wx.Size(third_width, 
                                     item_height)

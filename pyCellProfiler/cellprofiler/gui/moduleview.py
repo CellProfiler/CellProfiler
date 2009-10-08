@@ -14,6 +14,7 @@ __version__="$Revision$"
 import matplotlib.cm
 import numpy as np
 import os
+import traceback
 import wx
 import wx.grid
 import sys
@@ -1006,6 +1007,7 @@ class ModuleSizer(wx.PySizer):
         self.__rows = rows
         self.__cols = cols
         self.__min_text_width = 150
+        self.__printed_exception = False
     
     def Reset(self, rows, cols=2, destroy_windows=True):
         if destroy_windows:
@@ -1032,19 +1034,27 @@ class ModuleSizer(wx.PySizer):
         the width is self.__min_text_width plus the widths of the edit
         controls and help controls.
         """
-        if self.__rows * self.__cols == 0:
-            return wx.Size(0,0)
-        height = 0
-        for j in range(0,self.__rows):
-            row_height = 0
-            for i in range(0,self.__cols):
-                item = self.GetItem(self.idx(i,j))
-                row_height = max([row_height, item.CalcMin()[1]])
-            height += row_height;
-        return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
-                       self.calc_help_size()[0],
-                       height)
-
+        try:
+            if self.__rows * self.__cols == 0:
+                return wx.Size(0,0)
+            height = 0
+            for j in range(0,self.__rows):
+                row_height = 0
+                for i in range(0,self.__cols):
+                    item = self.GetItem(self.idx(i,j))
+                    row_height = max([row_height, item.CalcMin()[1]])
+                height += row_height;
+            self.__printed_exception = False
+            return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
+                           self.calc_help_size()[0],
+                           height)
+        except:
+            # This happens, hopefully transiently, on the Mac
+            if not self.__printed_exception:
+                traceback.print_exc()
+                self.__printed_exception = True
+                return wx.Size(0,0)
+            
     def calc_column_size(self, j):
         """Return a wx.Size with the total height of the controls in
         column j and the maximum of their widths.
@@ -1086,65 +1096,71 @@ class ModuleSizer(wx.PySizer):
         """
         if self.__rows * self.__cols == 0:
             return
-        size = self.GetSize()
-        width = size[0] - 20
-        edit_width = self.calc_edit_size()[0]
-        help_width = self.calc_help_size()[0]
-        max_text_width = self.calc_max_text_width()
-        if edit_width + help_width + max_text_width < width:
-            edit_width = width - max_text_width - help_width
-        elif edit_width * 4 < width:
-            edit_width = width / 4
-        text_width = max([width - edit_width - help_width, 
-                          self.__min_text_width])
-        widths = [text_width, edit_width, help_width]
-        #
-        # Change all static text controls to wrap at the text width. Then
-        # ask the items how high they are and do the layout of the line.
-        #
-        height = 0
-        panel = self.GetContainingWindow()
-        for i in range(self.__rows):
-            text_item = self.GetItem(self.idx(0, i))
-            edit_item = self.GetItem(self.idx(1, i))
-            inner_text_width = text_width - 2 * text_item.GetBorder() 
-            control = text_item.GetWindow()
-            assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
-            text = control.GetLabel()
-            edit_control = edit_item.GetWindow()
-            if (isinstance(edit_control, wx.StaticLine) and
-                len(text) == 0):
-                #
-                # A line spans both columns
-                #
-                text_item.Show(False)
-                # make the divider height the same as a text row plus some
-                item_height = self.GetItem(self.idx(0, i)).CalcMin()[1] * 1.25
-                assert isinstance(edit_item, wx.SizerItem)
-                border = edit_item.GetBorder()
-                third_width = (text_width + edit_width - 2*border) / 3
-                item_location = wx.Point(text_width - third_width / 2, 
-                                         height + border + item_height / 2)
-                item_size = wx.Size(third_width, edit_item.Size[1])
-                edit_item.SetDimension(item_location, item_size)
-                height += item_height + 2*border
-            else:
-                text_item.Show(True)
-                if (text_width > self.__min_text_width and
-                    (text.find('\n') != -1 or
-                     control.GetTextExtent(text)[0] > inner_text_width)):
-                    text = text.replace('\n',' ')
-                    control.SetLabel(text)
-                    control.Wrap(inner_text_width)
-                for j in range(self.__cols):
-                    item = self.GetItem(self.idx(j, i))
-                    item_size = wx.Size(widths[j], item.CalcMin()[1])
-                    item_location = wx.Point(sum(widths[0:j]), height)
-                    item_location = panel.CalcScrolledPosition(item_location)
-                    item.SetDimension(item_location, item_size)
-                height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
-                               for j in range(self.__cols)])
-        panel.SetVirtualSizeWH(width,height+20)
+        try:
+            size = self.GetSize()
+            width = size[0] - 20
+            edit_width = self.calc_edit_size()[0]
+            help_width = self.calc_help_size()[0]
+            max_text_width = self.calc_max_text_width()
+            if edit_width + help_width + max_text_width < width:
+                edit_width = width - max_text_width - help_width
+            elif edit_width * 4 < width:
+                edit_width = width / 4
+            text_width = max([width - edit_width - help_width, 
+                              self.__min_text_width])
+            widths = [text_width, edit_width, help_width]
+            #
+            # Change all static text controls to wrap at the text width. Then
+            # ask the items how high they are and do the layout of the line.
+            #
+            height = 0
+            panel = self.GetContainingWindow()
+            for i in range(self.__rows):
+                text_item = self.GetItem(self.idx(0, i))
+                edit_item = self.GetItem(self.idx(1, i))
+                inner_text_width = text_width - 2 * text_item.GetBorder() 
+                control = text_item.GetWindow()
+                assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
+                text = control.GetLabel()
+                edit_control = edit_item.GetWindow()
+                if (isinstance(edit_control, wx.StaticLine) and
+                    len(text) == 0):
+                    #
+                    # A line spans both columns
+                    #
+                    text_item.Show(False)
+                    # make the divider height the same as a text row plus some
+                    item_height = self.GetItem(self.idx(0, i)).CalcMin()[1] * 1.25
+                    assert isinstance(edit_item, wx.SizerItem)
+                    border = edit_item.GetBorder()
+                    third_width = (text_width + edit_width - 2*border) / 3
+                    item_location = wx.Point(text_width - third_width / 2, 
+                                             height + border + item_height / 2)
+                    item_size = wx.Size(third_width, edit_item.Size[1])
+                    edit_item.SetDimension(item_location, item_size)
+                    height += item_height + 2*border
+                else:
+                    text_item.Show(True)
+                    if (text_width > self.__min_text_width and
+                        (text.find('\n') != -1 or
+                         control.GetTextExtent(text)[0] > inner_text_width)):
+                        text = text.replace('\n',' ')
+                        control.SetLabel(text)
+                        control.Wrap(inner_text_width)
+                    for j in range(self.__cols):
+                        item = self.GetItem(self.idx(j, i))
+                        item_size = wx.Size(widths[j], item.CalcMin()[1])
+                        item_location = wx.Point(sum(widths[0:j]), height)
+                        item_location = panel.CalcScrolledPosition(item_location)
+                        item.SetDimension(item_location, item_size)
+                    height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
+                                   for j in range(self.__cols)])
+            panel.SetVirtualSizeWH(width,height+20)
+        except:
+            # This happens, hopefully transiently, on the Mac
+            if not self.__printed_exception:
+                traceback.print_exc()
+                self.__printed_exception = True
 
     def coords(self,idx):
         """Return the column/row coordinates of an indexed item

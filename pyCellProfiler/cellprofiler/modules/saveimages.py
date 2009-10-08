@@ -13,7 +13,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import matplotlib
-import numpy
+import numpy as np
 import os
 import Image as PILImage
 import scipy.io.matlab.mio
@@ -418,12 +418,12 @@ class SaveImages(cpm.CPModule):
                     if pixels.ndim == 3:
                         # get minima along each of the color axes (but not RGB)
                         for i in range(3):
-                            img_min = numpy.min(pixels[:,:,i])
-                            img_max = numpy.max(pixels[:,:,i])
+                            img_min = np.min(pixels[:,:,i])
+                            img_max = np.max(pixels[:,:,i])
                             pixels[:,:,i]=(pixels[:,:,i]-img_min) / (img_max-img_min)
                     else:
-                        img_min = numpy.min(pixels)
-                        img_max = numpy.max(pixels)
+                        img_min = np.min(pixels)
+                        img_max = np.max(pixels)
                         pixels=(pixels-img_min) / (img_max-img_min)
                 if pixels.ndim == 2 and self.colormap != CM_GRAY:
                     cm = matplotlib.cm.get_cmap(self.colormap)
@@ -433,13 +433,13 @@ class SaveImages(cpm.CPModule):
                     else:
                         raise NotImplementedError("12 and 16-bit images not yet supported")
                 elif self.bit_depth == '8':
-                    pixels = (pixels*255).astype(numpy.uint8)
+                    pixels = (pixels*255).astype(np.uint8)
                 else:
                     raise NotImplementedError("12 and 16-bit images not yet supported")
         elif self.save_image_or_figure == IF_MASK:
-            pixels = image.mask.astype(int)*255
+            pixels = image.mask.astype(np.uint8)*255
         elif self.save_image_or_figure == IF_CROPPING:
-            pixels = image.crop_mask.astype(int)*255
+            pixels = image.crop_mask.astype(np.uint8)*255
             
         filename = self.get_filename(workspace)
         path=os.path.split(filename)[0]

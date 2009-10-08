@@ -652,14 +652,19 @@ class ModuleView:
                         proposed_value="%s,%s"%(setting.display_min,
                                                 setting.max)
                     else:
-                        proposed_value="%s,%d"%(setting.display_min,
-                                                -abs(setting.max))
+                        setting_max = setting.max
+                        if setting_max is not None:
+                            proposed_value="%s,%d"%(setting.display_min,
+                                                    -abs(setting.max))
+                        else:
+                            proposed_value = None
                 else:
                     proposed_value="%s,%s"%(setting.display_min,
                                             cps.END)
-                setting_edited_event = SettingEditedEvent(setting, self.__module,
-                                                          proposed_value,event)
-                self.notify(setting_edited_event)
+                if proposed_value is not None:
+                    setting_edited_event = SettingEditedEvent(setting, self.__module,
+                                                              proposed_value,event)
+                    self.notify(setting_edited_event)
             self.__module_panel.Bind(wx.EVT_COMBOBOX,
                                      on_absrel_change,absrel_ctrl)
         else:

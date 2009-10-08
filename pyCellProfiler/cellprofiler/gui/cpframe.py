@@ -224,11 +224,15 @@ class CPFrame(wx.Frame):
         
     def __do_layout(self):
         self.__sizer = CPSizer(2,2,0,1)
-        self.__top_left_sizer = wx.FlexGridSizer(3,1,1,1)
+        if False:
+            self.__top_left_sizer = wx.FlexGridSizer(3,1,1,1)
+        else:
+            self.__top_left_sizer = wx.BoxSizer(wx.VERTICAL)
         self.__top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
         self.__top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
         self.__top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
-        self.__top_left_sizer.AddGrowableRow(1)
+        if False:
+            self.__top_left_sizer.AddGrowableRow(1)
         self.__top_left_panel.SetSizer(self.__top_left_sizer)
         self.__sizer.AddMany([(self.__top_left_panel,0,wx.EXPAND),
                          (self.__module_panel,1,wx.EXPAND),

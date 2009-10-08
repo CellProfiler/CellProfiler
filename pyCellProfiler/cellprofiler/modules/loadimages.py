@@ -1086,11 +1086,14 @@ class LoadImagesImageProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        if self.__filename.endswith(".mat"):
+        if self.__filename.lower().endswith(".mat"):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             return cpimage.Image(imgdata["Image"])
-        img = load_using_PIL(self.get_full_name())
+        elif self.__filename.lower().endswith(".dib"):
+            img = cpimage.readc01(self.get_full_name())
+        else:
+            img = load_using_PIL(self.get_full_name())
         return cpimage.Image(img,
                              path_name = self.get_pathname(),
                              file_name = self.get_filename())

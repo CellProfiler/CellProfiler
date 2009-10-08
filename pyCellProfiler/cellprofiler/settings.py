@@ -384,17 +384,18 @@ class IntegerOrUnboundedRange(Setting):
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
         values = str(self).split(',')
-        if values[0].isdigit():
+        try:
             min = int(values[0])
-        else:
+        except:
             min = None
         if len(values) > 1:  
-            if values[1].isdigit():
-                max = int(values[1])
-            elif values[1] == END:
+            if values[1] == END:
                 max = END
             else:
-                max = None
+                try:
+                    max = int(values[1])
+                except:
+                    max = None
         else:
             max = None
         return (min,max)
@@ -432,7 +433,10 @@ class IntegerOrUnboundedRange(Setting):
         """What to display for the maximum"""
         if self.unbounded_max:
             return "0"
-        return str(abs(self.max))
+        elif self.max is not None:
+            return str(abs(self.max))
+        else:
+            return str(self.max).split(',')[1]
     display_max = property(get_display_max)
     
     def test_valid(self, pipeline):
@@ -442,7 +446,7 @@ class IntegerOrUnboundedRange(Setting):
         if len(values) > 2:
             raise ValidationError("Only two values allowed",self)
         if not values[0].isdigit():
-            raise ValidationError("%s is not an integer"%(values[0]))
+            raise ValidationError("%s is not an integer"%(values[0]),self)
         if not (values[1] == END or
                 values[1].isdigit() or
                 (values[1][0]=='-' and values[1][1:].isdigit())):

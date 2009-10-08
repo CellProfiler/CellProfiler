@@ -300,7 +300,7 @@ class PipelineListView(object):
         
     def on_idle(self,event):
         modules = self.__pipeline.modules()
-        for idx,module in zip(range(len(modules)),modules):
+        for idx,module in enumerate(modules):
             try:
                 module.test_valid(self.__pipeline)
                 target_name = module.module_name

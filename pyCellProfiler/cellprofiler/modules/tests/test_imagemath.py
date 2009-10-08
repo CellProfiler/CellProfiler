@@ -158,7 +158,7 @@ class TestImageMath(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         module = I.ImageMath()
         module.module_num = 1
-        for i,image in zip(range(len(images)), images):
+        for i,image in enumerate(images):
             pixel_data = image['pixel_data']
             mask = image.get('mask', None)
             cropping = image.get('cropping', None)
@@ -294,7 +294,7 @@ class TestImageMath(unittest.TestCase):
             for m in range(n):
                 images = [{ 'pixel_data':np.random.uniform(size=(20,20)) }
                           for i in range(n)]
-                for i,img in zip(range(n),images):
+                for i,img in enumerate(images):
                     img['cropped_data'] = img['pixel_data'][5:15,5:15]
                     if m == i:
                         img['pixel_data'] = img['cropped_data']

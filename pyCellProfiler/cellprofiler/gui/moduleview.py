@@ -965,7 +965,7 @@ class ModuleView:
                 self.__module.test_valid(self.__pipeline)
             except cps.ValidationError, instance:
                 validation_error = instance
-            for idx, setting in zip(range(len(self.__module.visible_settings())),self.__module.visible_settings()):
+            for idx, setting in enumerate(self.__module.visible_settings()):
                 try:
                     if validation_error and validation_error.setting.key() == setting.key():
                         raise validation_error

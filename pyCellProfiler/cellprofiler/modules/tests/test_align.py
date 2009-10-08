@@ -45,7 +45,7 @@ class TestAlign(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        for index, pixels, cropping_mask in zip(range(len(images)),images,cropping_masks):
+        for index, (pixels, cropping_mask) in enumerate(zip(images, cropping_masks)):
             if cropping_mask is None:
                 image = cpi.Image(pixels)
             else:

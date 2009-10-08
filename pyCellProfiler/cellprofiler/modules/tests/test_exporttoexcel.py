@@ -616,7 +616,7 @@ class TestExportToExcel(unittest.TestCase):
             header = reader.next()
             self.assertEqual(len(header),len(cpmeas.AGG_NAMES)+1)
             d = {}
-            for index, caption in zip(range(len(header)),header):
+            for index, caption in enumerate(header):
                 d[caption]=index
             
             row = reader.next()
@@ -798,7 +798,7 @@ class TestExportToExcel(unittest.TestCase):
             header = reader.next()
             self.assertEqual(len(header),3)
             d = {}
-            for index, column in zip(range(3),header):
+            for index, column in enumerate(header):
                 d[column]=index
             self.assertTrue(d.has_key("Metadata_Plate"))
             self.assertTrue(d.has_key("Metadata_Well"))

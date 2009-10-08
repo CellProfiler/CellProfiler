@@ -117,6 +117,7 @@ class TestLoadText(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
+        self.assertFalse(np.isreal(data))
         self.assertEqual(data, "Hello, world")
         os.remove(filename)
     
@@ -127,10 +128,11 @@ class TestLoadText(unittest.TestCase):
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
+        self.assertTrue(np.isreal(data))
         self.assertAlmostEqual(data, 1.5)
         os.remove(filename)
     
-    def test_02_02_int_image_measurement(self):
+    def test_02_03_int_image_measurement(self):
         csv_text = '''"Test_Measurement"
 1
 '''
@@ -152,9 +154,10 @@ class TestLoadText(unittest.TestCase):
 
     def test_04_01_load_file(self):
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_name = 'Channel2-01-A-01.tif'
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
-"Channel2-01-A-01.tif","%s"
-'''%(dir)
+"%s","%s"
+'''%(file_name, dir)
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
         def callback(workspace):
@@ -171,9 +174,16 @@ class TestLoadText(unittest.TestCase):
                 
         try:
             m = pipeline.run()
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
             self.assertEqual(hexdigest, 'c55554be83a1c928c1ae9268486a94b3')
+            self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
+                             dir)
+            self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement('FileName_DNA'),
+                             file_name)
         finally:
             os.remove(filename)
     

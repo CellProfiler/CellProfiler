@@ -33,6 +33,59 @@ DIR_ALL = [DIR_DEFAULT_IMAGE, DIR_DEFAULT_OUTPUT,DIR_OTHER]
 PATH_NAME = 'PathName'
 FILE_NAME = 'FileName'
 
+###################################################################
+#
+# Helper functions for the header columns, Image_FileName_<image-name>
+# and Image_PathName_<image-name>
+#
+# These need to be converted to FileName_<image-name> and
+# PathName_<image-name> internally.
+###################################################################
+
+def header_to_column(field):
+    '''Convert the field name in the header to a column name
+    
+    This function converts Image_FileName to FileName and 
+    Image_PathName to PathName so that the output column names
+    in the database will be Image_FileName and Image_PathName
+    '''
+    for name in (PATH_NAME, FILE_NAME):
+        if field.startswith(cpmeas.IMAGE+'_'+name+'_'):
+            return field[len(cpmeas.IMAGE)+1:]
+    return field
+
+def is_path_name_feature(feature):
+    '''Return true if the feature name is a path name'''
+    return feature.startswith(PATH_NAME+'_')
+
+def is_file_name_feature(feature):
+    '''Return true if the feature name is a file name'''
+    return feature.startswith(FILE_NAME+'_')
+
+def get_image_name(feature):
+    '''Extract the image name from a feature name'''
+    if is_path_name_feature(feature):
+        return feature[len(PATH_NAME+'_'):]
+    if is_file_name_feature(feature):
+        return feature[len(FILE_NAME+'_'):]
+    raise ValueError('"%s" is not a path feature or file name feature'%feature)
+
+def make_path_name_feature(image):
+    '''Return the path name feature, given an image name
+
+    The path name feature is the name of the measurement that stores
+    the image's path name.
+    '''
+    return PATH_NAME+'_'+image
+
+def make_file_name_feature(image):
+    '''Return the file name feature, given an image name
+    
+    The file name feature is the name of the measurement that stores
+    the image's file name.
+    '''
+    return FILE_NAME+'_'+image
+    
 class LoadText(cpm.CPModule):
     '''Short description:
 The LoadText module loads metadata to be associated with image sets.
@@ -235,16 +288,16 @@ that can be processed by different nodes in a cluster.
         reader = csv.reader(fd)
         header = reader.next()
         fd.close()
-        return header
+        return [header_to_column(column) for column in header]
         
     def get_name_providers(self, group):
         '''Get name providers from the CSV header'''
         if group=='imagegroup' and self.wants_images.value:
             try:
                 header = self.get_header()
-                return [field[len('Image_FileName_'):]
+                return [get_image_name(field)
                         for field in header
-                        if field.startswith('Image_FileName_')]
+                        if is_file_name_feature(field)]
             except Exception,e:
                 return []
         return []
@@ -255,7 +308,7 @@ that can be processed by different nodes in a cluster.
             return True
         fd = open(self.csv_path, 'rb')
         reader = csv.reader(fd)
-        header = reader.next()
+        header = [header_to_column(column) for column in reader.next()]
         if self.wants_rows.value:
             # skip initial rows
             n_to_skip = self.row_range.min-1
@@ -288,17 +341,17 @@ that can be processed by different nodes in a cluster.
                 metadata[key] = column
                 dictionary[header[i]] = column
             elif (self.wants_images.value and
-                  header[i].startswith('Image_FileName_')):
+                  is_file_name_feature(header[i])):
                 column = np.array(column)
-                image = header[i][len('Image_FileName_'):]
+                image = get_image_name(header[i])
                 if not images.has_key(image):
                     images[image] = {}
                 images[image][FILE_NAME] = column
                 dictionary[header[i]] = column
             elif (self.wants_images.value and
-                  header[i].startswith('Image_PathName_')):
-                column = np.array(column)                
-                image = header[i][len('Image_PathName_'):]
+                  is_path_name_feature(header[i])):
+                column = np.array(column)
+                image = get_image_name(header[i])
                 if not images.has_key(image):
                     images[image] = {}
                 images[image][PATH_NAME] = column
@@ -345,7 +398,7 @@ that can be processed by different nodes in a cluster.
         '''
         dictionary = image_set_list.legacy_fields[self.legacy_field_key]
         path_keys = [key for key in dictionary.keys()
-                     if key.startswith('Image_PathName_')]
+                     if is_path_name_feature(key)]
         for key in path_keys:
             dictionary[key] = np.array([fn_alter_path(path) 
                                         for path in dictionary[key]])
@@ -370,13 +423,14 @@ that can be processed by different nodes in a cluster.
                 index = image_number -1
                 image_set = image_set_list.get_image_set(index)
                 for image_name in image_names:
-                    path_name_feature = 'Image_PathName_%s'%image_name
+                    path_name_feature = make_path_name_feature(image_name)
                     if dictionary.has_key(path_name_feature):
                         path = os.path.join(path_base, 
                                             dictionary[path_name_feature][index])
                     else:
                         path = path_base
-                    filename = dictionary['Image_FileName_%s'%image_name][index]
+                    file_name_feature = make_file_name_feature(image_name)
+                    filename = dictionary[file_name_feature][index]
                     ip = LoadImagesImageProvider(image_name, path, filename)
                     image_set.providers.append(ip)
             

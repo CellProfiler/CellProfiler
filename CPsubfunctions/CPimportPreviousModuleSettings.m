@@ -106,6 +106,13 @@ if strcmp(CurrentModuleName, 'FilterByObjectMeasurement')
         SavedVarRevNum = 6;
         IsModuleModified = true;
     end
+    if SavedVarRevNum == 6      % Adding settings 10 and 11 (Classifier rules)
+        Settings.VariableValues{ModuleNum-Skipped,10} = 'Do not use';
+        Settings.VariableValues{ModuleNum-Skipped,11} = '.';
+        Settings.NumbersOfVariables(ModuleNum-Skipped) = Settings.NumbersOfVariables(ModuleNum-Skipped) + 2;
+        SavedVarRevNum = 7;
+        IsModuleModified = true;
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%

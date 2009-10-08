@@ -18,7 +18,7 @@ function handles = FilterByObjectMeasurement(handles)
 % be used for filtering. See each Measure module's help for the numbered
 % list of the features measured by that module. Additionally, you can
 % specify the Feature Name explicitly, which is useful in special cases
-% such as filtering by Location, which is created by a few modules, and 
+% such as filtering by Location, which is created by a few modules, and
 % has a Feature Name of either 'X' or 'Y'.
 %
 % Special note on saving images: Using the settings in this module, object
@@ -54,7 +54,7 @@ function handles = FilterByObjectMeasurement(handles)
 %
 % Recommended variable order (setting, followed by current variable in MATLAB CP)
 % (1) What do you want to call the filtered objects? (TargetName)
-% (2) Which object would you like to filter by, or if using a Ratio, what 
+% (2) Which object would you like to filter by, or if using a Ratio, what
 %   is the numerator object? (ObjectName)
 % (3) What measurement do you want to use (MeasurementCategory/MeasurementFeature/SizeScale,ImageName)
 % (4a) What is the minimum value of the measurement? (MinValue1)
@@ -65,27 +65,27 @@ function handles = FilterByObjectMeasurement(handles)
 %   "Do not use" to ignore. (SaveOutlines)
 %
 % (i) The Measurements for the filtered objects should be inherited from
-% the original objects, otherwise the user must add the same modules again 
+% the original objects, otherwise the user must add the same modules again
 % to obtain  measurements which already exist.
-% (ii) Setting (3): Ideally, the Measurement category/feature/image/scale 
+% (ii) Setting (3): Ideally, the Measurement category/feature/image/scale
 % settings should be drop-downs that fill in the appropriate
 % category/feature/image/scale names based on (a) the hierarchy specific
 % to the measurement type (i.e, features unique to Intensity, AreaShape,
-% etc) and (b) whether a prior Measurement module actually took the 
-% measurements (i.e, don't show all possible features for a measurement, 
+% etc) and (b) whether a prior Measurement module actually took the
+% measurements (i.e, don't show all possible features for a measurement,
 % only those for which we actually have values).
-% (iii) Buttons are needed after setting (4) to let the user add/subtract 
-% additional Measurements to measure against. The filtered objects should 
+% (iii) Buttons are needed after setting (4) to let the user add/subtract
+% additional Measurements to measure against. The filtered objects should
 % be those that satisfy all constraints simultaneously.
 % (iv) Notes on option (5): This was added to the 5811Bugfix branch for
-% a one-off user request from Ray but not incorporated in the main trunk. 
-% Description: In order to insure that correspondences are maintained 
-% between objects after filtering, a user can select an additional object 
-% to receive the same post-filtering labels. This removes the need to use 
-% IDSecondary to regenerate the 2ndary objects, or the problem of 
-% relabelling primary objects if the 2ndary/tertiary objects have been 
-% filtered. This should only be performed on object pairs that are 
-% primary/secondary/tertiary to each other since there is a 
+% a one-off user request from Ray but not incorporated in the main trunk.
+% Description: In order to insure that correspondences are maintained
+% between objects after filtering, a user can select an additional object
+% to receive the same post-filtering labels. This removes the need to use
+% IDSecondary to regenerate the 2ndary objects, or the problem of
+% relabelling primary objects if the 2ndary/tertiary objects have been
+% filtered. This should only be performed on object pairs that are
+% primary/secondary/tertiary to each other since there is a
 % guaranteed one-to-one correspondence between them. This option could
 % probably be expanded to auto-fill with primary/secondary/tertiary objects
 % to the input object as long as pyCP keeps track of these relationships.
@@ -141,55 +141,88 @@ MaxValue1 = char(handles.Settings.VariableValues{CurrentModuleNum,8});
 %infotypeVAR09 = outlinegroup indep
 SaveOutlines = char(handles.Settings.VariableValues{CurrentModuleNum,9});
 
-%%%VariableRevisionNumber = 6
+%filenametextVAR10 = (EXPERIMENTAL) Enter file with saved rules from Classifier (copy and paste within Classifier into text file).  This will override all settings execpt the first two and SaveOutlines.
+RulesFileName = char(handles.Settings.VariableValues{CurrentModuleNum,10});
+
+%pathnametextVAR11 = (EXPERIMENTAL) Enter the path name to the folder where the Rules file is located.  Type period (.) for the default image folder, or ampersand (&) for the default output folder.
+RulesPathName = char(handles.Settings.VariableValues{CurrentModuleNum,11});
+
+%%%VariableRevisionNumber = 7
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PRELIMINARY CALCULATIONS & FILE HANDLING %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 drawnow
+SetBeingAnalyzed = handles.Current.SetBeingAnalyzed;
 
-if isempty(FeatureNumOrName)
-    error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+if strcmp(RulesFileName,'Do not use'), RulesFlag = 0;
+else RulesFlag = 1;
 end
 
-if strcmp(Category,'Intensity') || strcmp(Category,'Texture')
-    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+if RulesFlag
+    %% Deal with RulesPathName
+    if strncmp(RulesPathName,'.',1)
+        if length(RulesPathName) == 1
+            RulesPathName = handles.Current.DefaultImageDirectory;
+        else
+            RulesPathName = fullfile(handles.Current.DefaultImageDirectory,strrep(strrep(RulesPathName(2:end),'/',filesep),'\',filesep),'');
+        end
+    elseif strncmp(RulesPathName, '&', 1)
+        if length(RulesPathName) == 1
+            RulesPathName = handles.Current.DefaultOutputDirectory;
+        else
+            RulesPathName = fullfile(handles.Current.DefaultOutputDirectory,strrep(strrep(RulesPathName(2:end),'/',filesep),'\',filesep),'');
+        end
+    else
+        % Strip ending slash if inserted
+        if strcmp(RulesPathName(end),'/') || strcmp(RulesPathName(end),'\'), RulesPathName = RulesPathName(1:end-1); end
+    end
+
+    LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
 else
-    OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
-end
-LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
-
-try
-    FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, ...
-        Category, FeatureNumOrName, ImageName, SizeScale);
-
-catch
-    error([lasterr '  Image processing was canceled in the ', ModuleName, ...
-        ' module (#' num2str(CurrentModuleNum) ...
-        ') because an error ocurred when retrieving the data.  '...
-        'Likely the category of measurement you chose, ',...
-        Category, ', was not available for ', ...
-        ObjectName,' with feature ' num2str(FeatureNumOrName) ...
-        ', possibly specific to image ''' ImageName ''' and/or ' ...
-        'Texture Scale = ' num2str(SizeScale) '.']);
-end
-MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){handles.Current.SetBeingAnalyzed};
-
-if strcmpi(MinValue1, 'No minimum')
-    MinValue1 = -Inf;
-else
-    MinValue1 = str2double(MinValue1);
-end
-
-if strcmpi(MaxValue1, 'No maximum')
-    MaxValue1 = Inf;
-else
-    MaxValue1 = str2double(MaxValue1);
-end
-
-if strcmpi(MinValue1, 'No minimum') && strcmpi(MaxValue1, 'No maximum')
-    CPwarndlg(['No objects are being filtered with the default settings in ' ...
-        ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
+    if isempty(FeatureNumOrName)
+        error(['Image processing was canceled in the ', ModuleName, ' module because your entry for feature number is not valid.']);
+    end
+    
+    if strcmp(Category,'Intensity') || strcmp(Category,'Texture') && ~RulesFlag
+        OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'MustBeGray','CheckScale');
+    else
+        OrigImage = CPretrieveimage(handles,ImageName,ModuleName,'DontCheckColor','CheckScale');
+    end
+    LabelMatrixImage = CPretrieveimage(handles,['Segmented' ObjectName],ModuleName,'MustBeGray','DontCheckScale');
+    
+    try
+        FeatureName = CPgetfeaturenamesfromnumbers(handles, ObjectName, ...
+            Category, FeatureNumOrName, ImageName, SizeScale);
+        
+    catch
+        error([lasterr '  Image processing was canceled in the ', ModuleName, ...
+            ' module (#' num2str(CurrentModuleNum) ...
+            ') because an error ocurred when retrieving the data.  '...
+            'Likely the category of measurement you chose, ',...
+            Category, ', was not available for ', ...
+            ObjectName,' with feature ' num2str(FeatureNumOrName) ...
+            ', possibly specific to image ''' ImageName ''' and/or ' ...
+            'Texture Scale = ' num2str(SizeScale) '.']);
+    end
+    MeasureInfo = handles.Measurements.(ObjectName).(FeatureName){SetBeingAnalyzed};
+    
+    if strcmpi(MinValue1, 'No minimum')
+        MinValue1 = -Inf;
+    else
+        MinValue1 = str2double(MinValue1);
+    end
+    
+    if strcmpi(MaxValue1, 'No maximum')
+        MaxValue1 = Inf;
+    else
+        MaxValue1 = str2double(MaxValue1);
+    end
+    
+    if strcmpi(MinValue1, 'No minimum') && strcmpi(MaxValue1, 'No maximum')
+        CPwarndlg(['No objects are being filtered with the default settings in ' ...
+            ModuleName ' (module #' num2str(CurrentModuleNum) ')'])
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%
@@ -197,10 +230,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%
 drawnow
 % Do Filtering
-Filter = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
+if RulesFlag
+    numObj = max(LabelMatrixImage(:));
+    [ToBeFilteredOut,RulesPathFilename] = ApplyRules(RulesFileName,RulesPathName,handles.Measurements,SetBeingAnalyzed,numObj);
+else 
+    ToBeFilteredOut = find((MeasureInfo < MinValue1) | (MeasureInfo > MaxValue1));
+end
 FinalLabelMatrixImage = LabelMatrixImage;
 
-FinalLabelMatrixImage(ismember(LabelMatrixImage(:),Filter(:))) = 0;
+FinalLabelMatrixImage(ismember(LabelMatrixImage(:),ToBeFilteredOut(:))) = 0;
 
 % Renumber Objects
 x = sortrows(unique([LabelMatrixImage(:) FinalLabelMatrixImage(:)],'rows'),1);
@@ -216,10 +254,16 @@ LogicalOutlines = logical(IntensityOutlines);
 %LogicalOutlines = bwperim(FinalLabelMatrixImage);
 
 %%% Determines the grayscale intensity to use for the cell outlines.
-LineIntensity = max(OrigImage(:));
+if RulesFlag
+    LineIntensity = 1;
+else
+    LineIntensity = max(OrigImage(:));
+end
 %%% Overlays the outlines on the original image.
-ObjectOutlinesOnOrigImage = OrigImage;
-ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;
+if ~RulesFlag
+    ObjectOutlinesOnOrigImage = OrigImage;
+    ObjectOutlinesOnOrigImage(LogicalOutlines) = LineIntensity;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%% DISPLAY RESULTS %%%
@@ -230,33 +274,48 @@ ThisModuleFigureNumber = handles.Current.(['FigureNumberForModule',CurrentModule
 if any(findobj == ThisModuleFigureNumber)
     %%% Activates the appropriate figure window.
     CPfigure(handles,'Image',ThisModuleFigureNumber);
-    if handles.Current.SetBeingAnalyzed == handles.Current.StartingImageSet
-        CPresizefigure(OrigImage,'TwoByTwo',ThisModuleFigureNumber);
+    if SetBeingAnalyzed == handles.Current.StartingImageSet
+        CPresizefigure(LabelMatrixImage,'TwoByTwo',ThisModuleFigureNumber);
     end
-
+    
     %%% A subplot of the figure window is set to display the original
     %%% image.
-    hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
-    CPimagesc(OrigImage,handles,hAx);
-    title(hAx,['Input Image, cycle # ',num2str(handles.Current.SetBeingAnalyzed)]);
-
+    if ~RulesFlag
+        hAx=subplot(2,2,1,'Parent',ThisModuleFigureNumber);
+        CPimagesc(OrigImage,handles,hAx);
+        title(hAx,['Input Image, cycle # ',num2str(SetBeingAnalyzed)]);
+    end
+    
     %%% A subplot of the figure window is set to display the label
     %%% matrix image.
     hAx=subplot(2,2,3,'Parent',ThisModuleFigureNumber);
     UnfilteredLabelMatrixImage = CPlabel2rgb(handles,LabelMatrixImage);
     CPimagesc(UnfilteredLabelMatrixImage,handles,hAx);
     title(hAx,['Original ',ObjectName]);
-
+        
+    text(0.1,-0.18,...
+        ['Number of objects filtered out = ' num2str(length(ToBeFilteredOut(:)))],...
+        'Color','black',...
+        'fontsize',handles.Preferences.FontSize,...
+        'Units','Normalized',...
+        'Parent',hAx);
+    
     %%% A subplot of the figure window is set to display the Overlaid image,
     %%% where the maxima are imposed on the inverted original image
     hAx=subplot(2,2,2,'Parent',ThisModuleFigureNumber);
     ColoredLabelMatrixImage = CPlabel2rgb(handles,FinalLabelMatrixImage);
     CPimagesc(ColoredLabelMatrixImage,handles,hAx);
-    title(hAx,[ObjectName,' filtered by ',FeatureName]);
-
-    hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
-    CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
-    title(hAx,[TargetName, ' Outlines on Input Image']);
+    if RulesFlag
+        title(hAx,{[ObjectName,' filtered by Classifier rules found here: '];RulesPathFilename});
+    else
+        title(hAx,[ObjectName,' filtered by ',FeatureName]);
+    end
+    
+    if ~RulesFlag
+        hAx=subplot(2,2,4,'Parent',ThisModuleFigureNumber);
+        CPimagesc(ObjectOutlinesOnOrigImage,handles,hAx);
+        title(hAx,[TargetName, ' Outlines on Input Image']);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -270,14 +329,14 @@ fieldname = ['SmallRemovedSegmented', ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if CPisimageinpipeline(handles, fieldname)
     handles = CPaddimages(handles,['SmallRemovedSegmented' TargetName],...
-                            CPretrieveimage(handles,['SmallRemovedSegmented',ObjectName],ModuleName));
+        CPretrieveimage(handles,['SmallRemovedSegmented',ObjectName],ModuleName));
 end
 
 fieldname = ['UneditedSegmented',ObjectName];
 %%% Checks whether the image exists in the handles structure.
 if CPisimageinpipeline(handles, fieldname)
     handles = CPaddimages(handles,['UneditedSegmented' TargetName],...
-                            CPretrieveimage(handles,['UneditedSegmented',ObjectName],ModuleName));
+        CPretrieveimage(handles,['UneditedSegmented',ObjectName],ModuleName));
 end
 
 handles = CPsaveObjectCount(handles, TargetName, FinalLabelMatrixImage);
@@ -289,3 +348,44 @@ if ~strcmpi(SaveOutlines,'Do not use')
         error(['The object outlines were not calculated by the ', ModuleName, ' module so these images were not saved to the handles structure. Image processing is still in progress, but the Save Images module will fail if you attempted to save these images.'])
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ToBeFilteredOut,RulesPathFilename] = ApplyRules(RulesFileName,RulesPathName,Measurements,SetBeingAnalyzed,numObj)
+%%% Parse text file %%%
+RulesPathFilename = fullfile(RulesPathName,RulesFileName);
+fid = fopen(RulesPathFilename,'r');
+if fid == -1
+    error(['Image processing was canceled in the ', ModuleName, ' module because the file could not be opened.  It might not exist or you might not have given its valid location. You specified this: ',fullfile(RulesPathName,RulesFileName)]);
+end
+
+%% Example: IF (Nuclei_Intensity_MaxIntensity_CorrNuclei > 0.4124, [0.2666, -0.2666], [-0.5869, 0.5869])
+C = textscan(fid,'IF (%s > %f, [%f, %f], [%f, %f])');
+fclose(fid);
+
+[Feature,Threshold,WeightYes1,WeightYes2,WeightNo1,WeightNo2] = deal(C{:});
+
+%% Feature has the ObjectName in it, so we need to strip it out, e.g.
+%% 'Nuclei_Intensity_MaxIntensity_CorrNuclei'
+[Object,FeatureOnly] = strtok(Feature,'_');
+FeatureOnly = cellfun(@(x) x(2:end),FeatureOnly,'UniformOutput',0);
+
+% numObj = max(LabelMatrixImage(:));
+% numFeat = length(FeatureOnly);
+WeightTotalClass1 = zeros(numObj,1);
+WeightTotalClass2 = zeros(numObj,1);
+
+%% Loop over features, adding the Above/Below threshold value weights
+% for iObj = 1:numObj
+for iFeat = 1:length(FeatureOnly)
+    FeatureVal = Measurements.(Object{iFeat}).(char(FeatureOnly(iFeat))){SetBeingAnalyzed};
+    %% Assumes two classes (for now)
+    WeightTotalClass1 = WeightTotalClass1 + ...
+        (FeatureVal > Threshold(iFeat)).*WeightYes1(iFeat) + ...
+        (FeatureVal <= Threshold(iFeat)).*WeightNo1(iFeat);
+    WeightTotalClass2 = WeightTotalClass2 + ...
+        (FeatureVal > Threshold(iFeat)).*WeightYes2(iFeat) + ...
+        (FeatureVal <= Threshold(iFeat)).*WeightNo2(iFeat);
+end
+% end
+
+ToBeFilteredOut = find(WeightTotalClass1 < WeightTotalClass2);

@@ -76,8 +76,9 @@ See also SubtractBackground, RescaleIntensity.
     def create_settings(self):
         self.module_name = "ImageMath"
         self.images = []
-        self.add_image(False)
-        self.add_image(False)
+        self.add_image(False,False)
+        self.add_image(False,True)
+        self.first_divider = cps.Divider()
         self.operation = cps.Choice("What operation would you like performed?",
                                     O_ALL)
         self.exponent = cps.Float("Enter an exponent to raise the the result to *after* the chosen operation:", 1)
@@ -89,12 +90,14 @@ See also SubtractBackground, RescaleIntensity.
         self.add_button = cps.DoSomething("Add another image","Add image",
                                           self.add_image)
     
-    def add_image(self, can_remove=True):
+    def add_image(self, can_remove=True, wants_divider = True):
         class IMImage(object):
             '''The settings needed for an image'''
-            def __init__(self, images, can_remove):
+            def __init__(self, images, can_remove, wants_divider):
                 self.key = uuid.uuid4()
-                self.divider = cps.Divider()
+                self.wants_divider = wants_divider
+                if wants_divider:
+                    self.divider = cps.Divider()
                 def remove_image(images = images):
                     index = [x.key for x in images].index(self.key)
                     del images[index]
@@ -123,10 +126,12 @@ See also SubtractBackground, RescaleIntensity.
             
             def visible_settings(self):
                 if can_remove:
-                    return [self.image_name, self.factor, self.remove_button,
-                            self.divider]
+                    result = [self.image_name, self.factor, self.remove_button]
                 else:
-                    return [self.image_name, self.factor, self.divider]
+                    result = [self.image_name, self.factor]
+                if self.wants_divider:
+                    result.append(self.divider)
+                return result
             
             @property
             def image_name(self):
@@ -137,7 +142,7 @@ See also SubtractBackground, RescaleIntensity.
             def factor(self):
                 '''Multiply the image by this much before processing'''
                 return self.__factor
-        self.images.append(IMImage(self.images,can_remove))
+        self.images.append(IMImage(self.images,can_remove, wants_divider))
 
     def prepare_to_set_values(self, setting_values):
         value_count = len(setting_values)
@@ -213,7 +218,7 @@ See also SubtractBackground, RescaleIntensity.
      
     def visible_settings(self):
         result = self.images[0].visible_settings()
-        result += [self.operation]
+        result += [self.operation, self.first_divider]
         if self.operation not in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
             for image in self.images[1:]:
                 result += image.visible_settings()

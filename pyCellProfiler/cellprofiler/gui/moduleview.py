@@ -324,8 +324,8 @@ class ModuleView:
                     if control is None:
                         control = wx.StaticLine(self.__module_panel, 
                                                 name = control_name)
-                    flag = wx.EXPAND|wx.TOP
-                    border = 5
+                    flag = wx.EXPAND|wx.ALL
+                    border = 2
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -1107,20 +1107,38 @@ class ModuleSizer(wx.PySizer):
             control = text_item.GetWindow()
             assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
             text = control.GetLabel()
-            if (text_width > self.__min_text_width and
-                (text.find('\n') != -1 or
-                 control.GetTextExtent(text)[0] > inner_text_width)):
-                text = text.replace('\n',' ')
-                control.SetLabel(text)
-                control.Wrap(inner_text_width)
-            for j in range(self.__cols):
-                item = self.GetItem(self.idx(j, i))
-                item_size = wx.Size(widths[j], item.CalcMin()[1])
-                item_location = wx.Point(sum(widths[0:j]), height)
-                item_location = panel.CalcScrolledPosition(item_location)
-                item.SetDimension(item_location, item_size)
-            height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
-                            for j in range(self.__cols)])
+            edit_control = edit_item.GetWindow()
+            if (isinstance(edit_control, wx.StaticLine) and
+                len(text) == 0):
+                #
+                # A line spans both columns
+                #
+                text_item.Show(False)
+                item_height = edit_item.CalcMin()[1]
+                assert isinstance(edit_item, wx.SizerItem)
+                border = edit_item.GetBorder()
+                item_location = wx.Point(border, 
+                                         height + border)
+                item_size = wx.Size(text_width + edit_width - 2*border, 
+                                    item_height)
+                edit_item.SetDimension(item_location, item_size)
+                height += item_height + 2*border
+            else:
+                text_item.Show(True)
+                if (text_width > self.__min_text_width and
+                    (text.find('\n') != -1 or
+                     control.GetTextExtent(text)[0] > inner_text_width)):
+                    text = text.replace('\n',' ')
+                    control.SetLabel(text)
+                    control.Wrap(inner_text_width)
+                for j in range(self.__cols):
+                    item = self.GetItem(self.idx(j, i))
+                    item_size = wx.Size(widths[j], item.CalcMin()[1])
+                    item_location = wx.Point(sum(widths[0:j]), height)
+                    item_location = panel.CalcScrolledPosition(item_location)
+                    item.SetDimension(item_location, item_size)
+                height += max([self.GetItem(self.idx(j, i)).CalcMin()[1] 
+                               for j in range(self.__cols)])
         panel.SetVirtualSizeWH(width,height+20)
 
     def coords(self,idx):

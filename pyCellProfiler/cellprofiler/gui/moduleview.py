@@ -857,8 +857,13 @@ class ModuleView:
                         all([x==y for x,y in zip(ctrl.Strings,choices)])):
                     ctrl.Clear()
                     ctrl.AppendItems(choices)
-                if (not value is None) and ctrl.Value != value:
-                    ctrl.Value = value
+                if (not value is None):
+                    try:
+                        if ctrl.Value != value:
+                            ctrl.Value = value
+                    except:
+                        # Crashes on the Mac sometimes
+                        ctrl.Value = value
                 ctrl.Show()
                 text_ctrl.Show()
             elif always_show:
